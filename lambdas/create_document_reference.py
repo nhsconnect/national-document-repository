@@ -1,7 +1,7 @@
 import os
+import uuid
 import boto3
 from botocore.exceptions import ClientError
-
 
 def create_document_reference_handler(event, context):
     print("API Gateway event received - processing starts")
@@ -11,6 +11,7 @@ def create_document_reference_handler(event, context):
 
     try:
         response = s3_client.generate_presigned_post(s3_bucket_name,
+                                                     str(uuid.uuid4()),
                                                      Fields=None,
                                                      Conditions=None,
                                                      ExpiresIn=1800)

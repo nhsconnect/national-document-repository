@@ -17,7 +17,7 @@ class TestCreateDocumentReference(TestCase):
         s3_client = boto3.client('s3', region_name="eu-west-2")
         s3_client.create_bucket(Bucket = self.test_s3_bucket_name, CreateBucketConfiguration={'LocationConstraint': 'eu-west-2'})
 
-        self.mocked_presinged_response ={
+        self.mocked_presigned_response ={
                 "url": "https://unit_test_s3_bucket.s3.amazonaws.com/",
                 "fields": {
                     "key": "test",
@@ -31,9 +31,9 @@ class TestCreateDocumentReference(TestCase):
         }
     @patch('botocore.signers.generate_presigned_post')
     def test_create_presigned_url(self, mock_generate_presigned_post : MagicMock) -> None:
-        mock_generate_presigned_post.return_value = self.mocked_presinged_response
+        mock_generate_presigned_post.return_value = self.mocked_presigned_response
         test_return_value = create_document_reference_handler(event=None, context=None)
-        self.assertEqual(test_return_value, self.mocked_presinged_response)
+        self.assertEqual(test_return_value, self.mocked_presigned_response)
         mock_generate_presigned_post.assert_called_once()
 
     def tearDown(self) -> None:
