@@ -7,7 +7,7 @@ class NHSDocumentReference:
         self.nhs_number = data["subject"]["identifier"]["value"]
         self.content_type = data["content"][0]["attachment"]["contentType"]
         self.file_name = data["description"]
-        self.created = str(datetime.now())
+        self.created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         self.deleted = None
         self.uploaded = None
         self.virus_scanner_result = "Not Scanned"
@@ -36,6 +36,6 @@ class NHSDocumentReference:
             "FileLocation": self.file_location,
             "Created": self.created,
             "ContentType": self.content_type,
-            "VirusScannerResult": self.virus_scanner_result,
+            "VirusScanResult": self.virus_scanner_result,
         }
         return document_metadata
