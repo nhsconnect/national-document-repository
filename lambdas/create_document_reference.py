@@ -18,7 +18,7 @@ def lambda_handler(event, context):
         document_object = create_document_reference_object(
             s3_bucket_name, s3_object_key, event["body"]
         )
-        create_document_reference_in_dynamo_db(document_object)
+        save_document_reference_in_dynamo_db(document_object)
         response = create_document_presigned_url_handler(s3_bucket_name, s3_object_key)
     except Exception as e:
         logger.error(e)
@@ -57,9 +57,13 @@ def create_document_reference_object(
     return new_document
 
 
-def create_document_reference_in_dynamo_db(new_document):
-    dynamodb = boto3.resource("dynamodb")
-    dynamodb_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-    logger.info("Saving DocumentReference to DynamoDB: ", dynamodb_name)
-    table = dynamodb.Table(dynamodb_name)
-    table.put_item(Item=new_document.to_dict())
+def save_document_reference_in_dynamo_db(new_document):
+    try:
+        dynamodb = boto3.resource("dynamodb")
+        dynamodb_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
+        logger.info("Saving DocumentReference to DynamoDB: ", dynamodb_name)
+        table = dynamodb.Table(dynamodb_name)
+        table.put_item(Item=new_document.to_dict())
+    except ClientError as e:
+        logger.error("Unable to connect to DB")
+        logger.error(e)

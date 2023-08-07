@@ -8,7 +8,7 @@ import moto
 from lambdas.create_document_reference import (
     create_document_presigned_url_handler,
     create_document_reference_object,
-    create_document_reference_in_dynamo_db,
+    save_document_reference_in_dynamo_db,
 )
 from lambdas.nhs_document_reference import NHSDocumentReference
 
@@ -95,7 +95,7 @@ class TestCreateDocumentReference(TestCase):
         test_document_object = NHSDocumentReference(
             self.test_document_location, self.test_s3_object_key, self.mocked_event_body
         )
-        create_document_reference_in_dynamo_db(test_document_object)
+        save_document_reference_in_dynamo_db(test_document_object)
         mock_put_item.assert_called_once()
 
     def tearDown(self) -> None:
