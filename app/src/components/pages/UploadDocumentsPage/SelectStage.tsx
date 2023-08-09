@@ -1,7 +1,7 @@
 import React from 'react';
-import { StageProps } from './types';
+import { StageProps } from '../../../types/pages/UploadDocumentsPage/types';
 
-function SelectStage({}: StageProps) {
+function SelectStage({ stage, setStage }: StageProps) {
   return <div>uploadStage</div>;
 }
 

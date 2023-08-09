@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import SelectStage from '../../components/pages/UploadDocumentsPage/SelectStage';
-import { StageProps } from '../../components/pages/UploadDocumentsPage/types';
 import UploadStage from '../../components/pages/UploadDocumentsPage/UploadStage';
 import CompleteStage from '../../components/pages/UploadDocumentsPage/CompleteStage';
-enum UPLOAD_STAGE {
-  Selecting = 0,
-  Uploading = 1,
-  Complete = 2
-}
+import {
+  StageProps,
+  UPLOAD_STAGE
+} from '../../types/pages/UploadDocumentsPage/types';
 
 type Props = {};
 const UploadDocumentsPage = (props: Props) => {
