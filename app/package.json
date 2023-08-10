@@ -24,9 +24,9 @@
     "@types/react-dom": "^18.2.7"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
