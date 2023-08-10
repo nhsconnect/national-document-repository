@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import HomePage from './pages/HomePage';
 import { useNavigate } from 'react-router';
 jest.mock('react-router');
+const mockNavigate = useNavigate as jest.Mock<typeof useNavigate>;
 
 describe('StartPage', () => {
   afterEach(() => {
@@ -9,8 +10,8 @@ describe('StartPage', () => {
   });
 
   it('renders the page header', () => {
-    const mockNavigate = jest.fn();
-    useNavigate.mockImplementation(() => mockNavigate);
+    const mockUseNavigate = jest.fn();
+    mockNavigate.mockImplementation(() => mockUseNavigate);
 
     render(<HomePage />);
 
@@ -23,7 +24,8 @@ describe('StartPage', () => {
 
   it('renders service info', () => {
     const mockNavigate = jest.fn();
-    useNavigate.mockImplementation(() => mockNavigate);
+    const mockUseNavigate = jest.fn();
+    mockNavigate.mockImplementation(() => mockUseNavigate);
 
     render(<HomePage />);
 
@@ -35,8 +37,8 @@ describe('StartPage', () => {
   });
 
   it('renders service issue guidance with a link to service desk that opens in a new tab', () => {
-    const mockNavigate = jest.fn();
-    useNavigate.mockImplementation(() => mockNavigate);
+    const mockUseNavigate = jest.fn();
+    mockNavigate.mockImplementation(() => mockUseNavigate);
 
     render(<HomePage />);
 
@@ -52,8 +54,8 @@ describe('StartPage', () => {
   });
 
   it("renders a 'Before you start' section", () => {
-    const mockNavigate = jest.fn();
-    useNavigate.mockImplementation(() => mockNavigate);
+    const mockUseNavigate = jest.fn();
+    mockNavigate.mockImplementation(() => mockUseNavigate);
 
     render(<HomePage />);
 
