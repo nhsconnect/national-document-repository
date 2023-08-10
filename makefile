@@ -11,3 +11,7 @@ clean-install:
 .PHONY: Start
 start:
 	cd ./app && npm start
+
+.PHONY: Test
+test:
+	cd ./app && npm run test-all

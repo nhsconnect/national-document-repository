@@ -27,6 +27,7 @@
     "start": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts start",
     "build": "react-scripts build",
     "test": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts test",
+    "test-all": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts test --watchAll=false",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

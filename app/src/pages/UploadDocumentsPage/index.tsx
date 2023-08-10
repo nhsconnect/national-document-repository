@@ -4,15 +4,36 @@ import CompleteStage from '../../components/pages/UploadDocumentsPage/CompleteSt
 import UploadingStage from '../../components/pages/UploadDocumentsPage/UploadingStage';
 import {
   StageProps,
-  UPLOAD_STAGE
+  UPLOAD_STAGE,
+  UploadDocument
 } from '../../types/pages/UploadDocumentsPage/types';
+import uploadDocument from '../../request/uploadDocument';
 
 type Props = {};
 function UploadDocumentsPage(props: Props) {
   const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
+  const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
+
+  const mockPatient = {
+    nhsNumber: '121212121'
+  };
+
   const stageProps: StageProps = {
     stage,
     setStage
+  };
+
+  const uploadDocuments = async () => {
+    await Promise.all(
+      documents.map((document) =>
+        uploadDocument({
+          setStage,
+          setDocuments,
+          nhsNumber: mockPatient.nhsNumber,
+          document
+        })
+      )
+    );
   };
 
   if (stage === UPLOAD_STAGE.Selecting) {
