@@ -1,12 +1,12 @@
 import {
   DOCUMENT_UPLOAD_STATE,
   UploadDocument
-} from '../types/pages/UploadDocumentsPage/types';
+} from '../../types/pages/UploadDocumentsPage/types';
 
 type Args = {
   setDocumentState: (
     id: string,
-    state?: DOCUMENT_UPLOAD_STATE,
+    state: DOCUMENT_UPLOAD_STATE,
     progress?: number
   ) => void;
   document: UploadDocument;
@@ -61,8 +61,12 @@ const uploadDocument = async ({
         'Content-Type': rawDoc.type
       },
       body: rawDoc
+      // TODO, Figure out a progress callback that can update the progress for progress bar
+
+      // onUploadProgress: ({ total, loaded }) => {
+      // setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING, (loaded / total) * 100);
+      // },
     });
-    setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
     console.log('S3 RESPONSE: ', s3Response);
   } catch (e: any) {
     console.error(e);

@@ -22,7 +22,7 @@ export enum DOCUMENT_UPLOAD_STATE {
 export type StageProps = {
   stage: UPLOAD_STAGE;
   setStage: SetUploadStage;
-  uploadDocuments?: () => void;
+  documents: Array<UploadDocument>;
 };
 
 export type UploadDocument = {

@@ -8,7 +8,7 @@ import {
   UPLOAD_STAGE,
   UploadDocument
 } from '../../types/pages/UploadDocumentsPage/types';
-import uploadDocument from '../../request/uploadDocument';
+import uploadDocument from '../../helpers/requests/uploadDocument';
 
 type Props = {};
 function UploadDocumentsPage(props: Props) {
@@ -17,7 +17,7 @@ function UploadDocumentsPage(props: Props) {
 
   const setDocumentState = (
     id: string,
-    state?: DOCUMENT_UPLOAD_STATE,
+    state: DOCUMENT_UPLOAD_STATE,
     progress?: number
   ) => {
     let shallowDocumentsCopy = documents;
@@ -39,26 +39,35 @@ function UploadDocumentsPage(props: Props) {
   };
 
   const uploadDocuments = async () => {
+    const tryUpload = false;
     setStage(UPLOAD_STAGE.Uploading);
-    await Promise.all(
-      documents.map((document) =>
-        uploadDocument({
-          setDocumentState,
-          nhsNumber: mockPatient.nhsNumber,
-          document
-        })
-      )
-    );
+    console.log(documents);
+    if (tryUpload) {
+      await Promise.all(
+        documents.map((document) =>
+          uploadDocument({
+            setDocumentState,
+            nhsNumber: mockPatient.nhsNumber,
+            document
+          })
+        )
+      );
+    }
   };
 
   const defaultStageProps: StageProps = {
     stage,
-    setStage
+    setStage,
+    documents
   };
 
   if (stage === UPLOAD_STAGE.Selecting) {
     return (
-      <SelectStage {...defaultStageProps} uploadDocuments={uploadDocuments} />
+      <SelectStage
+        {...defaultStageProps}
+        uploadDocuments={uploadDocuments}
+        setDocuments={setDocuments}
+      />
     );
   } else if (stage === UPLOAD_STAGE.Uploading) {
     return <UploadingStage {...defaultStageProps} />;

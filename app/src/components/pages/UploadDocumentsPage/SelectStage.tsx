@@ -1,22 +1,36 @@
 import React, { useRef } from 'react';
-import type { FormEvent as ReactEvent } from 'react';
+import type { FormEvent, MouseEvent } from 'react';
 import {
   DOCUMENT_UPLOAD_STATE,
-  StageProps
+  SetUploadDocuments,
+  StageProps,
+  UploadDocument
 } from '../../../types/pages/UploadDocumentsPage/types';
-import { Button, Input } from 'nhsuk-react-components';
+import { Button, Input, Table, WarningCallout } from 'nhsuk-react-components';
 import { useController, useForm } from 'react-hook-form';
 import { nanoid } from 'nanoid/non-secure';
-
-interface FileInputEvent extends ReactEvent<HTMLInputElement> {
+import formatFileSize from '../../../helpers/utils/formatFileSize';
+import uploadDocument from '../../../helpers/requests/uploadDocument';
+import toFileList from '../../../helpers/utils/toFileList';
+interface FileInputEvent extends FormEvent<HTMLInputElement> {
   target: HTMLInputElement & EventTarget;
 }
 
-function SelectStage({ stage, setStage, uploadDocuments }: StageProps) {
-  const inputRef = useRef(null);
+interface Props extends StageProps {
+  uploadDocuments: () => void;
+  setDocuments: SetUploadDocuments;
+}
+
+function SelectStage({
+  stage,
+  setStage,
+  documents,
+  uploadDocuments,
+  setDocuments
+}: Props) {
+  let inputRef = useRef<HTMLInputElement | null>(null);
   const FIVEGB = 5 * Math.pow(1024, 3);
-  const { handleSubmit, control, watch, getValues, formState, setValue } =
-    useForm();
+  const { control } = useForm();
   const {
     field: { ref, onChange, onBlur, name, value },
     fieldState
@@ -39,9 +53,18 @@ function SelectStage({ stage, setStage, uploadDocuments }: StageProps) {
     }
   });
 
-  const fileHandler = (e: FileInputEvent) => {
+  const hasDuplicateFiles =
+    value &&
+    value.some((doc: UploadDocument) => {
+      return value.some(
+        (compare: UploadDocument) =>
+          doc.file.name === compare.file.name && doc.id !== compare.id
+      );
+    });
+
+  const onInput = (e: FileInputEvent) => {
     const fileArray = Array.from(e.target.files ?? new FileList());
-    const documentMap = fileArray.map((file) => ({
+    const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
       id: nanoid(),
       file,
       state: DOCUMENT_UPLOAD_STATE.SELECTED,
@@ -50,8 +73,17 @@ function SelectStage({ stage, setStage, uploadDocuments }: StageProps) {
 
     const updatedFileList = value ? [...value, ...documentMap] : documentMap;
     onChange(updatedFileList);
+    setDocuments(updatedFileList);
   };
 
+  const onRemove = (index: number) => {
+    const updatedValues = [...value.slice(0, index), ...value.slice(index + 1)];
+    onChange(updatedValues);
+
+    if (inputRef.current) {
+      inputRef.current.files = toFileList(updatedValues);
+    }
+  };
   return (
     <>
       <Input
@@ -61,11 +93,55 @@ function SelectStage({ stage, setStage, uploadDocuments }: StageProps) {
         multiple={true}
         name={name}
         error={fieldState.error?.message}
-        onChange={fileHandler}
+        onChange={onInput}
         onBlur={onBlur}
-        inputRef={inputRef}
+        // @ts-ignore  The NHS Component library is outdated and does not allow for any reference other than a blank MutableRefObject
+        inputRef={(e: HTMLInputElement) => {
+          ref(e);
+          inputRef.current = e;
+        }}
       />
+      <div role='region' aria-live='polite'>
+        {value && value.length > 0 && (
+          <Table caption='Selected documents'>
+            <Table.Head>
+              <Table.Row>
+                <Table.Cell>Filename</Table.Cell>
+                <Table.Cell>Size</Table.Cell>
+                <Table.Cell>Remove</Table.Cell>
+              </Table.Row>
+            </Table.Head>
 
+            <Table.Body>
+              {value.map((document: UploadDocument, index: number) => (
+                <Table.Row key={document.id}>
+                  <Table.Cell>{document.file.name}</Table.Cell>
+                  <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
+                  <Table.Cell>
+                    <Button
+                      aria-label={`Remove ${document.file.name} from selection`}
+                      href=''
+                      onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                        e.preventDefault();
+                        onRemove(index);
+                      }}
+                    >
+                      X
+                    </Button>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table>
+        )}
+        {hasDuplicateFiles && (
+          <WarningCallout>
+            <WarningCallout.Label>Possible duplicate file</WarningCallout.Label>
+            <p>There are two or more documents with the same name.</p>
+            <p>Are you sure you want to proceed?</p>
+          </WarningCallout>
+        )}
+      </div>
       <Button onClick={uploadDocuments}>Upload</Button>
     </>
   );
