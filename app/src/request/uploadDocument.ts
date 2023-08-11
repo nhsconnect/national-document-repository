@@ -1,24 +1,24 @@
 import {
-  SetUploadDocuments,
-  SetUploadStage,
-  UPLOAD_STAGE,
+  DOCUMENT_UPLOAD_STATE,
   UploadDocument
 } from '../types/pages/UploadDocumentsPage/types';
 
 type Args = {
-  setStage: SetUploadStage;
-  setDocuments: SetUploadDocuments;
+  setDocumentState: (
+    id: string,
+    state?: DOCUMENT_UPLOAD_STATE,
+    progress?: number
+  ) => void;
   document: UploadDocument;
   nhsNumber: string;
 };
 
 const uploadDocument = async ({
-  setStage,
-  setDocuments,
+  setDocumentState,
   nhsNumber,
   document
 }: Args) => {
-  const rawDoc = document.data;
+  const rawDoc = document.file;
   const requestBody = {
     resourceType: 'DocumentReference',
     subject: {
@@ -46,8 +46,7 @@ const uploadDocument = async ({
     created: new Date(Date.now()).toISOString()
   };
 
-  setStage(UPLOAD_STAGE.Uploading);
-  console.log('UPLOAD STARTED');
+  setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
   const gatewayUrl = '/DocumentReference';
 
   try {
@@ -55,8 +54,7 @@ const uploadDocument = async ({
       body: JSON.stringify(requestBody)
     }).then((res) => res.json());
     const s3url = gatewayResponse.data.content[0].attachment.url;
-    console.error('GATEWAY RESPONSE: ', gatewayResponse);
-
+    console.log('GATEWAY RESPONSE: ', gatewayResponse);
     const s3Response = await fetch(s3url, {
       method: 'PUT',
       headers: {
@@ -64,11 +62,14 @@ const uploadDocument = async ({
       },
       body: rawDoc
     });
-    console.error('S3 RESPONSE: ', s3Response);
+    setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+    console.log('S3 RESPONSE: ', s3Response);
   } catch (e: any) {
-    console.error('UPLOAD FAILED');
+    console.error(e);
     if (e.response?.status === 403) {
-      console.error('UPLOAD UNAUTHORISED');
+      setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
+    } else {
+      setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
     }
   }
 };

@@ -22,9 +22,12 @@ export enum DOCUMENT_UPLOAD_STATE {
 export type StageProps = {
   stage: UPLOAD_STAGE;
   setStage: SetUploadStage;
+  uploadDocuments?: () => void;
 };
 
 export type UploadDocument = {
   state: DOCUMENT_UPLOAD_STATE;
-  data: any;
+  file: File;
+  progress: number;
+  id: string;
 };
