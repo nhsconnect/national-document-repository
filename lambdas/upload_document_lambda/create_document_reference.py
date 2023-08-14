@@ -46,14 +46,17 @@ def create_document_presigned_url_handler(s3_bucket_name, s3_object_key):
 def create_document_reference_object(
     s3_bucket_name, s3_object_key, document_request_body
 ):
+
     s3_file_location = "s3://" + s3_bucket_name + "/" + s3_object_key
-    logger.info("Input document reference location: ", s3_file_location)
+    logger.info("Input document reference location: " + s3_file_location)
+
     new_document = NHSDocumentReference(
         file_location=s3_file_location,
         reference_id=s3_object_key,
         data=document_request_body,
     )
-    logger.info("Input document reference filename: ", new_document.file_name)
+
+    logger.info("Input document reference filename: " + new_document.file_name)
     return new_document
 
 
@@ -61,9 +64,14 @@ def save_document_reference_in_dynamo_db(new_document):
     try:
         dynamodb = boto3.resource("dynamodb")
         dynamodb_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-        logger.info("Saving DocumentReference to DynamoDB: ", dynamodb_name)
+        logger.info("Saving DocumentReference to DynamoDB: " + dynamodb_name)
+        print(dynamodb_name)
         table = dynamodb.Table(dynamodb_name)
+        
+        # print(dynamodb)
+        print(table)
         table.put_item(Item=new_document.to_dict())
+        print("here")
     except ClientError as e:
         logger.error("Unable to connect to DB")
         logger.error(e)

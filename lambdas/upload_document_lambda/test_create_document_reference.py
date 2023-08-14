@@ -90,13 +90,16 @@ class TestCreateDocumentReference(TestCase):
             test_document_object.file_location, self.test_document_location
         )
 
-    @patch("boto3.dynamodb.table.put_item")
-    def test_create_document_reference_in_dynamo_db(self, mock_put_item: MagicMock):
+    @patch("boto3.resource")
+    def test_create_document_reference_in_dynamo_db(self, mock_dynamo):
         test_document_object = NHSDocumentReference(
             self.test_document_location, self.test_s3_object_key, self.mocked_event_body
         )
+
+        mock_table = MagicMock()
+        mock_dynamo.return_value.Table.return_value = mock_table
         save_document_reference_in_dynamo_db(test_document_object)
-        mock_put_item.assert_called_once()
+        mock_table.put_item.assert_called_once()
 
     def tearDown(self) -> None:
         s3_resource = boto3.resource("s3", region_name="eu-west-2")

@@ -36,6 +36,6 @@ class NHSDocumentReference:
             "FileLocation": self.file_location,
             "Created": self.created,
             "ContentType": self.content_type,
-            "VirusScanResult": self.virus_scanner_result,
+            "VirusScannerResult": self.virus_scanner_result,
         }
         return document_metadata
