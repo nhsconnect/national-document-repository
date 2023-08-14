@@ -68,8 +68,3 @@ jobs:
         role-skip-session-tagging: true
         aws-region: ${{ vars.AWS_REGION }}
     
-    - name: Deploy code to Lambda
-      uses: qubitro/action-lambda-python-zip@v1.0
-      with:
-        lambda_function_name: ${{vars.BUILD_ENV}}_${{ secrets.LAMBDA_FUNCTION_UPLOAD_DOCUMENT_NAME }}
-        lambda_region: ${{ vars.AWS_REGION }}
