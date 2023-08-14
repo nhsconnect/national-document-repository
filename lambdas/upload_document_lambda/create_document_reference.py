@@ -65,13 +65,8 @@ def save_document_reference_in_dynamo_db(new_document):
         dynamodb = boto3.resource("dynamodb")
         dynamodb_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
         logger.info("Saving DocumentReference to DynamoDB: " + dynamodb_name)
-        print(dynamodb_name)
         table = dynamodb.Table(dynamodb_name)
-        
-        # print(dynamodb)
-        print(table)
         table.put_item(Item=new_document.to_dict())
-        print("here")
     except ClientError as e:
         logger.error("Unable to connect to DB")
         logger.error(e)
