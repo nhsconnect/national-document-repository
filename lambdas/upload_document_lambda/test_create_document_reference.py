@@ -107,6 +107,6 @@ class TestCreateDocumentReference(TestCase):
         for key in s3_bucket.objects.all():
             key.delete()
         s3_bucket.delete()
-        dynamodb = boto3.resource("dynamodb")
+        dynamodb = boto3.client("dynamodb", region_name="eu-west-2")
         table = dynamodb.Table(self.test_dynamoDB_table)
         table.delete()
