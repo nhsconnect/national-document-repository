@@ -27,7 +27,7 @@ class TestCreateDocumentReference(TestCase):
             Bucket=self.test_s3_bucket_name,
             CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
         )
-        dynamodb = boto3.client("dynamodb", region_name="eu-west-2")
+        dynamodb = boto3.resource("dynamodb", region_name="eu-west-2")
         self.test_table = dynamodb.create_table(
             TableName=self.test_dynamoDB_table,
             AttributeDefinitions=[
@@ -107,6 +107,6 @@ class TestCreateDocumentReference(TestCase):
         for key in s3_bucket.objects.all():
             key.delete()
         s3_bucket.delete()
-        dynamodb = boto3.client("dynamodb", region_name="eu-west-2")
+        dynamodb = boto3.resource("dynamodb", region_name="eu-west-2")
         table = dynamodb.Table(self.test_dynamoDB_table)
         table.delete()
