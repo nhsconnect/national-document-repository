@@ -1,7 +1,7 @@
 import {
   DOCUMENT_UPLOAD_STATE,
-  UploadDocument
-} from '../../types/pages/UploadDocumentsPage/types';
+  UploadDocument,
+} from "../../types/pages/UploadDocumentsPage/types";
 
 type Args = {
   setDocumentState: (
@@ -11,63 +11,70 @@ type Args = {
   ) => void;
   document: UploadDocument;
   nhsNumber: string;
+  baseUrl: string;
 };
 
 const uploadDocument = async ({
   setDocumentState,
   nhsNumber,
-  document
+  document,
+  baseUrl,
 }: Args) => {
   const rawDoc = document.file;
   const requestBody = {
-    resourceType: 'DocumentReference',
+    resourceType: "DocumentReference",
     subject: {
       identifier: {
-        system: 'https://fhir.nhs.uk/Id/nhs-number',
-        value: nhsNumber
-      }
+        system: "https://fhir.nhs.uk/Id/nhs-number",
+        value: nhsNumber,
+      },
     },
     type: {
       coding: [
         {
-          system: 'http://snomed.info/sct',
-          code: '22151000087106'
-        }
-      ]
+          system: "http://snomed.info/sct",
+          code: "22151000087106",
+        },
+      ],
     },
     content: [
       {
         attachment: {
-          contentType: rawDoc.type
-        }
-      }
+          contentType: rawDoc.type,
+        },
+      },
     ],
     description: rawDoc.name,
-    created: new Date(Date.now()).toISOString()
+    created: new Date(Date.now()).toISOString(),
   };
 
   setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
-  const gatewayUrl = '/DocumentReference';
+  const gatewayUrl = baseUrl + "/DocumentReference";
 
   try {
     const gatewayResponse = await fetch(gatewayUrl, {
-      body: JSON.stringify(requestBody)
-    }).then((res) => res.json());
-    const s3url = gatewayResponse.data.content[0].attachment.url;
-    console.log('GATEWAY RESPONSE: ', gatewayResponse);
-    const s3Response = await fetch(s3url, {
-      method: 'PUT',
+      method: "POST",
       headers: {
-        'Content-Type': rawDoc.type
+        "Content-Type": "application/json",
       },
-      body: rawDoc
+      body: JSON.stringify(requestBody),
+    }).then((res) => res.json());
+    const formData = new FormData();
+    Object.keys(gatewayResponse.fields).forEach((key) => {
+      formData.append(key, gatewayResponse.fields[key]);
+    });
+    formData.append("file", document.file);
+    const s3url = gatewayResponse.url;
+    const s3Response = await fetch(s3url, {
+      method: "POST",
+      body: formData,
       // TODO, Figure out a progress callback that can update the progress for progress bar
 
       // onUploadProgress: ({ total, loaded }) => {
       // setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING, (loaded / total) * 100);
       // },
     });
-    console.log('S3 RESPONSE: ', s3Response);
+    console.log("S3 RESPONSE: ", s3Response);
   } catch (e: any) {
     console.error(e);
     if (e.response?.status === 403) {

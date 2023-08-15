@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import SelectStage from '../../components/pages/UploadDocumentsPage/SelectStage';
-import CompleteStage from '../../components/pages/UploadDocumentsPage/CompleteStage';
-import UploadingStage from '../../components/pages/UploadDocumentsPage/UploadingStage';
+import React, { useState } from "react";
+import SelectStage from "../../components/pages/UploadDocumentsPage/SelectStage";
+import CompleteStage from "../../components/pages/UploadDocumentsPage/CompleteStage";
+import UploadingStage from "../../components/pages/UploadDocumentsPage/UploadingStage";
 import {
   DOCUMENT_UPLOAD_STATE,
   StageProps,
   UPLOAD_STAGE,
-  UploadDocument
-} from '../../types/pages/UploadDocumentsPage/types';
-import uploadDocument from '../../helpers/requests/uploadDocument';
+  UploadDocument,
+} from "../../types/pages/UploadDocumentsPage/types";
+import uploadDocument from "../../helpers/requests/uploadDocument";
+import { useBaseAPIUrl } from "../../providers/configProvider/ConfigProvider";
 
 type Props = {};
 function UploadDocumentsPage(props: Props) {
@@ -35,30 +36,28 @@ function UploadDocumentsPage(props: Props) {
   };
 
   const mockPatient = {
-    nhsNumber: '121212121'
+    nhsNumber: "121212121",
   };
 
   const uploadDocuments = async () => {
-    const tryUpload = false;
+    const baseUrl = useBaseAPIUrl("doc-store-api");
     setStage(UPLOAD_STAGE.Uploading);
-    console.log(documents);
-    if (tryUpload) {
-      await Promise.all(
-        documents.map((document) =>
-          uploadDocument({
-            setDocumentState,
-            nhsNumber: mockPatient.nhsNumber,
-            document
-          })
-        )
-      );
-    }
+    await Promise.all(
+      documents.map((document) =>
+        uploadDocument({
+          setDocumentState,
+          nhsNumber: mockPatient.nhsNumber,
+          document,
+          baseUrl,
+        })
+      )
+    );
   };
 
   const defaultStageProps: StageProps = {
     stage,
     setStage,
-    documents
+    documents,
   };
 
   if (stage === UPLOAD_STAGE.Selecting) {
