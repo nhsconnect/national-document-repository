@@ -78,12 +78,6 @@ jobs:
         zip package_create_document.zip lambda_create_document_reference.py
         zip package_create_document.zip utils
       working-directory: ./lambdas
-
-    # - name: Organise release 
-    # - name: Zip Lambda Function
-    #   uses: montudor/action-zip@v1
-    #   with:
-    #     args: zip -qq -r create_document_reference.zip lambdas/upload_document_lambda_release
     
     - name: Upload Lambda Function
       uses: appleboy/lambda-action@master
@@ -91,5 +85,4 @@ jobs:
         aws_region: ${{ vars.AWS_REGION }}
         function_name: ${{ vars.BUILD_ENV }}_CreateDocRefLAmbda
         zip_file: package_create_document.zip
-      working-directory: ./lambdas
     
