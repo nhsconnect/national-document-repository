@@ -1,1 +1,11 @@
-This is a new document to test github action triggers
+Description of the Lambda:
+
+
+Inputs:
+
+Json Model format:
+
+
+Output:
+
+What is the expected response/responses
