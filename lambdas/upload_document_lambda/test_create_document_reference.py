@@ -10,7 +10,7 @@ from lambdas.upload_document_lambda.create_document_reference import (
     create_document_reference_object,
     save_document_reference_in_dynamo_db,
 )
-from lambdas.nhs_document_reference import NHSDocumentReference
+from lambdas.utils.nhs_document_reference import NHSDocumentReference
 
 
 @moto.mock_dynamodb

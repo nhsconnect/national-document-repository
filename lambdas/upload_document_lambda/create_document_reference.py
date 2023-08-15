@@ -1,9 +1,12 @@
+import json
 import os
 import uuid
 import boto3
 from botocore.exceptions import ClientError
 import logging
-from lambdas.nhs_document_reference import NHSDocumentReference
+
+from lambdas.utils.lambda_response import ApiGatewayResponse
+from lambdas.utils.nhs_document_reference import NHSDocumentReference
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -14,16 +17,21 @@ def lambda_handler(event, context):
     s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
     logger.info(f"S3 bucket in use: {s3_bucket_name}")
     s3_object_key = str(uuid.uuid4())
+    body = json.loads(event["body"])
+
     try:
         document_object = create_document_reference_object(
-            s3_bucket_name, s3_object_key, event["body"]
+            s3_bucket_name, s3_object_key, body
         )
         save_document_reference_in_dynamo_db(document_object)
         response = create_document_presigned_url_handler(s3_bucket_name, s3_object_key)
+        response = ApiGatewayResponse(
+            200, json.dumps(response), "POST"
+        ).create_api_gateway_response()
     except Exception as e:
         logger.error(e)
-        # create error response generator
-        return e
+        response = ApiGatewayResponse(400, e, "POST").create_api_gateway_response()
+        return response
     return response
 
 
@@ -46,7 +54,6 @@ def create_document_presigned_url_handler(s3_bucket_name, s3_object_key):
 def create_document_reference_object(
     s3_bucket_name, s3_object_key, document_request_body
 ):
-
     s3_file_location = "s3://" + s3_bucket_name + "/" + s3_object_key
     logger.info(f"Input document reference location: {s3_file_location}")
 

@@ -14,10 +14,10 @@ class NHSDocumentReference:
         self.file_location = file_location
 
     def set_uploaded(self) -> None:
-        self.uploaded = datetime.now()
+        self.uploaded = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     def set_deleted(self) -> None:
-        self.deleted = datetime.now()
+        self.deleted = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     def set_virus_scanner_result(self, updated_virus_scanner_result) -> None:
         self.virus_scanner_result = updated_virus_scanner_result
