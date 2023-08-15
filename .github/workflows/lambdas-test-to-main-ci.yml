@@ -6,12 +6,12 @@ on:
     branches:
     - main
     paths:
-    - 'lambdas/upload_document_lambda/**'
+    - 'lambdas/**'
   pull_request:
     branches:
     - main
     paths:
-    - 'lambdas/upload_document_lambda/**'
+    - 'lambdas/**'
 
 permissions:
   pull-requests: write
@@ -55,7 +55,7 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest
+        pytest test_create_document_reference
       working-directory: ./lambdas
     
     - name: Configure AWS Credentials
@@ -67,16 +67,29 @@ jobs:
     
     - name: View AWS Role
       run: aws sts get-caller-identity
-    
-    - name: Zip Lambda Function
-      uses: montudor/action-zip@v1
-      with:
-        args: zip -qq -r create_document_reference.zip lambdas/upload_document_lambda
+
+    - name: Create release package for Create Document
+      run: |
+        mkdir package_create_document  
+        pip install -r requirements.txt --target ./package_create_document
+        cd package_create_document
+        zip -r ../package_create_document.zip .
+        cd ..
+        zip package_create_document.zip lambda_create_document_reference.py
+        zip package_create_document.zip utils
+      working-directory: ./lambdas
+
+    # - name: Organise release 
+    # - name: Zip Lambda Function
+    #   uses: montudor/action-zip@v1
+    #   with:
+    #     args: zip -qq -r create_document_reference.zip lambdas/upload_document_lambda_release
     
     - name: Upload Lambda Function
       uses: appleboy/lambda-action@master
       with:
         aws_region: ${{ vars.AWS_REGION }}
         function_name: ${{ vars.BUILD_ENV }}_CreateDocRefLAmbda
-        zip_file: create_document_reference.zip
+        zip_file: package_create_document.zip
+      working-directory: ./lambdas
     

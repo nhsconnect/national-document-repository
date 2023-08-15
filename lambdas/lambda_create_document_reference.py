@@ -5,8 +5,8 @@ import boto3
 from botocore.exceptions import ClientError
 import logging
 
-from lambdas.utils.lambda_response import ApiGatewayResponse
-from lambdas.utils.nhs_document_reference import NHSDocumentReference
+from .utils.lambda_response import ApiGatewayResponse
+from .utils.nhs_document_reference import NHSDocumentReference
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

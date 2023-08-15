@@ -5,12 +5,12 @@ from unittest.mock import MagicMock, patch
 import boto3
 import moto
 
-from lambdas.upload_document_lambda.create_document_reference import (
+from .create_document_reference import (
     create_document_presigned_url_handler,
     create_document_reference_object,
     save_document_reference_in_dynamo_db,
 )
-from lambdas.utils.nhs_document_reference import NHSDocumentReference
+from .utils.nhs_document_reference import NHSDocumentReference
 
 
 @moto.mock_dynamodb
