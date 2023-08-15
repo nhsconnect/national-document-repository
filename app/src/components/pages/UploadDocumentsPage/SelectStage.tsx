@@ -79,7 +79,7 @@ function SelectStage({
   const onRemove = (index: number) => {
     const updatedValues = [...value.slice(0, index), ...value.slice(index + 1)];
     onChange(updatedValues);
-
+    setDocuments(updatedValues)
     if (inputRef.current) {
       inputRef.current.files = toFileList(updatedValues);
     }
@@ -142,7 +142,7 @@ function SelectStage({
           </WarningCallout>
         )}
       </div>
-      <Button onClick={uploadDocuments}>Upload</Button>
+      <Button onClick={uploadDocuments} disabled={!value}>Upload</Button>
     </>
   );
 }
