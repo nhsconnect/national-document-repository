@@ -1,16 +1,19 @@
 import os
+import sys
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 import boto3
 import moto
 
-from .lambda_create_document_reference import (
+sys.path.append(os.path.join(os.path.dirname(__file__)))
+
+from lambda_create_document_reference import (
     create_document_presigned_url_handler,
     create_document_reference_object,
     save_document_reference_in_dynamo_db,
 )
-from .utils.nhs_document_reference import NHSDocumentReference
+from utils.nhs_document_reference import NHSDocumentReference
 
 
 @moto.mock_dynamodb

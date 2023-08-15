@@ -70,11 +70,6 @@ jobs:
 
     - name: Create release package for Create Document
       run: |
-        mkdir package_create_document  
-        pip install -r requirements.txt --target ./package_create_document
-        # cd package_create_document
-        # zip -r ../package_create_document.zip .
-        # cd ..
         zip package_create_document.zip lambda_create_document_reference.py
         zip -r package_create_document.zip utils
       working-directory: ./lambdas

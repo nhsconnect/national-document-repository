@@ -1,12 +1,15 @@
 import json
 import os
+import sys
 import uuid
 import boto3
 from botocore.exceptions import ClientError
 import logging
 
-from .utils.lambda_response import ApiGatewayResponse
-from .utils.nhs_document_reference import NHSDocumentReference
+sys.path.append(os.path.join(os.path.dirname(__file__)))
+
+from utils.lambda_response import ApiGatewayResponse
+from utils.nhs_document_reference import NHSDocumentReference
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
