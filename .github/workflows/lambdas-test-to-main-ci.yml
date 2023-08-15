@@ -55,7 +55,7 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest test_create_document_reference
+        pytest test_create_document_reference.py
       working-directory: ./lambdas
     
     - name: Configure AWS Credentials

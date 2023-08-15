@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import boto3
 import moto
 
-from .create_document_reference import (
+from .lambda_create_document_reference import (
     create_document_presigned_url_handler,
     create_document_reference_object,
     save_document_reference_in_dynamo_db,
