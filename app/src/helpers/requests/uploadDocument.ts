@@ -74,7 +74,8 @@ const uploadDocument = async ({
       // setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING, (loaded / total) * 100);
       // },
     });
-    console.log("S3 RESPONSE: ", s3Response);
+    if (s3Response.status === 204)
+      setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED)
   } catch (e: any) {
     console.error(e);
     if (e.response?.status === 403) {

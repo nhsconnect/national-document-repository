@@ -15,6 +15,7 @@ type Props = {};
 function UploadDocumentsPage(props: Props) {
   const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
   const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
+  const baseUrl = useBaseAPIUrl("doc-store-api");
 
   const setDocumentState = (
     id: string,
@@ -40,7 +41,6 @@ function UploadDocumentsPage(props: Props) {
   };
 
   const uploadDocuments = async () => {
-    const baseUrl = useBaseAPIUrl("doc-store-api");
     setStage(UPLOAD_STAGE.Uploading);
     await Promise.all(
       documents.map((document) =>
@@ -52,6 +52,7 @@ function UploadDocumentsPage(props: Props) {
         })
       )
     );
+    setStage(UPLOAD_STAGE.Complete);
   };
 
   const defaultStageProps: StageProps = {
