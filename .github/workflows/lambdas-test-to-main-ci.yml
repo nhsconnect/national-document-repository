@@ -76,7 +76,7 @@ jobs:
         # zip -r ../package_create_document.zip .
         # cd ..
         zip package_create_document.zip lambda_create_document_reference.py
-        zip package_create_document.zip utils
+        zip -r package_create_document.zip utils
       working-directory: ./lambdas
     
     - name: Upload Lambda Function
