@@ -75,6 +75,6 @@ jobs:
       uses: appleboy/lambda-action@master
       with:
         aws_region: ${{ vars.AWS_REGION }}
-        function_name: ${{ vars.BUILD_ENV }}_CreateDocRefLAmbda
+        function_name: ${{ vars.BUILD_ENV }}_CreateDocRefLambda
         zip_file: lambdas/package_create_document.zip
     
