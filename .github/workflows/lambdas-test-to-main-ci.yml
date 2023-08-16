@@ -91,7 +91,7 @@ jobs:
       run: |
         zip package_create_document.zip lambda_create_document_reference.py
         zip -r package_create_document.zip utils
-      working-directory: /lambdas
+      working-directory: ./lambdas
     
     - name: Upload Lambda Function
       uses: appleboy/lambda-action@master
