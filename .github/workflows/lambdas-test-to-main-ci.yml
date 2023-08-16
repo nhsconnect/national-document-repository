@@ -67,12 +67,10 @@ jobs:
     - name: Lint with ruff
       run: |
         ruff check .
-      working-directory: ./lambdas
 
     - name: Test with pytest
       run: |
         pytest test_create_document_reference.py
-      working-directory: ./lambdas
     
   python_deploy_create_document_reference_lambda:
     runs-on: ubuntu-latest
@@ -80,6 +78,7 @@ jobs:
     defaults:
       run:
         working-directory: ./lambdas
+
     needs: ['python_lambdas_test', 'identify_changed_functions']
     if: needs.identify_changed_functions.outputs.utils_changed == 'true' || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
 
@@ -98,7 +97,6 @@ jobs:
       run: |
         zip package_create_document.zip lambda_create_document_reference.py
         zip -r package_create_document.zip utils
-      working-directory: ./lambdas
     
     - name: Upload Lambda Function
       uses: appleboy/lambda-action@master
