@@ -1,4 +1,3 @@
-# .github/workflows/terraform-dev
 name: 'Lambdas - Deploy to Test'
 
 on:

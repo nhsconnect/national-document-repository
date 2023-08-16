@@ -1,5 +1,4 @@
-# .github/workflows/terraform-dev
-name: 'Lambdas - Deploy to Prod'
+name: 'Lambdas - Deploy Main Branch to Prod'
 
 on:
   workflow_dispatch:
@@ -25,7 +24,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.inputs.buildBranch}}
+        ref: main
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -59,7 +58,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.inputs.buildBranch}}
+        ref: main
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2

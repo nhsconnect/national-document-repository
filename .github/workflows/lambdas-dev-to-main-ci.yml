@@ -1,4 +1,3 @@
-# .github/workflows/terraform-dev
 name: 'Lambdas - Development CI Feature Branch to Main'
 
 on:
