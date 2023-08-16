@@ -1,16 +1,19 @@
 import os
+import sys
 from unittest import TestCase
 from unittest.mock import MagicMock, patch
 
 import boto3
 import moto
 
-from lambdas.upload_document_lambda.create_document_reference import (
+sys.path.append(os.path.join(os.path.dirname(__file__)))
+
+from lambda_create_document_reference import (
     create_document_presigned_url_handler,
     create_document_reference_object,
     save_document_reference_in_dynamo_db,
 )
-from lambdas.nhs_document_reference import NHSDocumentReference
+from utils.nhs_document_reference import NHSDocumentReference
 
 
 @moto.mock_dynamodb
@@ -27,7 +30,7 @@ class TestCreateDocumentReference(TestCase):
             Bucket=self.test_s3_bucket_name,
             CreateBucketConfiguration={"LocationConstraint": "eu-west-2"},
         )
-        dynamodb = boto3.resource("dynamodb")
+        dynamodb = boto3.resource("dynamodb", region_name="eu-west-2")
         self.test_table = dynamodb.create_table(
             TableName=self.test_dynamoDB_table,
             AttributeDefinitions=[
@@ -90,13 +93,16 @@ class TestCreateDocumentReference(TestCase):
             test_document_object.file_location, self.test_document_location
         )
 
-    @patch("boto3.dynamodb.table.put_item")
-    def test_create_document_reference_in_dynamo_db(self, mock_put_item: MagicMock):
+    @patch("boto3.resource")
+    def test_create_document_reference_in_dynamo_db(self, mock_dynamo):
         test_document_object = NHSDocumentReference(
             self.test_document_location, self.test_s3_object_key, self.mocked_event_body
         )
+
+        mock_table = MagicMock()
+        mock_dynamo.return_value.Table.return_value = mock_table
         save_document_reference_in_dynamo_db(test_document_object)
-        mock_put_item.assert_called_once()
+        mock_table.put_item.assert_called_once()
 
     def tearDown(self) -> None:
         s3_resource = boto3.resource("s3", region_name="eu-west-2")
@@ -104,6 +110,6 @@ class TestCreateDocumentReference(TestCase):
         for key in s3_bucket.objects.all():
             key.delete()
         s3_bucket.delete()
-        dynamodb = boto3.resource("dynamodb")
+        dynamodb = boto3.resource("dynamodb", region_name="eu-west-2")
         table = dynamodb.Table(self.test_dynamoDB_table)
         table.delete()
