@@ -3,15 +3,15 @@ name: 'Lambdas - Deploy Feature Branch to Sandbox'
 
 on:
   workflow_dispatch:
-  inputs:
-    buildBranch:
-      description: "Feature branch to push to test?"
-      required: true
-      type: "string"
-    sandboxWorkspace:
-      description: "Which Sandbox to push to."
-      required: true
-      type: "string"
+    inputs:
+      buildBranch:
+        description: "Feature branch to push to test?"
+        required: true
+        type: "string"
+      sandboxWorkspace:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
 
 permissions:
   pull-requests: write
