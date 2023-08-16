@@ -75,7 +75,7 @@ jobs:
         pytest test_create_document_reference.py
       working-directory: ./lambdas
     
-python_deploy_create_document_reference_lambda:
+  python_deploy_create_document_reference_lambda:
     runs-on: ubuntu-latest
     environment: development
     defaults:
