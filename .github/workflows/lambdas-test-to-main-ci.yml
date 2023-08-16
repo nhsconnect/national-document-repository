@@ -33,7 +33,7 @@ jobs:
       uses: dorny/paths-filter@v2
       id: filter
       with:
-        filters |
+        filters: |
           utils: 
             - 'lambdas/utils/**'
           create_document_reference:
