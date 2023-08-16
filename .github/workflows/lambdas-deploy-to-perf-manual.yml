@@ -1,5 +1,4 @@
-# .github/workflows/terraform-dev
-name: 'Lambdas - Deploy to Perf'
+name: 'Lambdas - Deploy Main Branch to Perf'
 
 on:
   workflow_dispatch:
@@ -55,6 +54,7 @@ jobs:
     needs: ['python_lambdas_test']
 
     steps:
+
     - name: Checkout
       uses: actions/checkout@v3
       with:
@@ -67,7 +67,7 @@ jobs:
         role-skip-session-tagging: true
         aws-region: ${{ vars.AWS_REGION }}
     
-- name: Create release package for Create Document
+    - name: Create release package for Create Document
       run: |
         mkdir package_lambda_create_document_reference
         pip install -r requirements.txt --target ./package_lambda_create_document_reference
@@ -75,6 +75,7 @@ jobs:
         zip -r ../package_lambda_create_document_reference.zip
         zip package_lambda_create_document_reference.zip lambda_create_document_reference.py
         zip -r package_lambda_create_document_reference.zip utils
+    
     
     - name: Upload Lambda Function
       uses: appleboy/lambda-action@master
