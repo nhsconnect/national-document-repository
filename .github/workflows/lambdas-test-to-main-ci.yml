@@ -80,7 +80,7 @@ jobs:
     defaults:
       run:
         working-directory: ./lambdas
-    needs: python_lambdas_test && identify_changed_functions
+    needs: ['python_lambdas_test', 'identify_changed_functions']
     if: needs.identify_changed_functions.outputs.utils_changed == 'true' || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
 
     steps:
