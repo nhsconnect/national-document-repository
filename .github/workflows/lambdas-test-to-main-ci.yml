@@ -19,7 +19,27 @@ permissions:
   contents: read  # This is required for actions/checkout
 
 jobs:
-  python_process_upload_docuement:
+
+  identify_changed_functions:
+    runs-on: ubuntu-latest
+    outputs:
+      utils_changed: ${{steps.filter.outputs.utils}}
+      create_document_reference_changed: ${{steps.filter.outputs.create_document_reference}}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: filter search
+      uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters |
+          utils: 
+            - 'lambdas/utils/**'
+          create_document_reference:
+            - 'lambdas/lambda_create_document_reference.py'
+
+  python_lambdas_test:
     runs-on: ubuntu-latest
     environment: development
     defaults:
@@ -55,6 +75,15 @@ jobs:
         pytest test_create_document_reference.py
       working-directory: ./lambdas
     
+python_deploy_create_document_reference_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    defaults:
+      run:
+        working-directory: ./lambdas
+    needs: python_lambdas_test && identify_changed_functions
+    if: needs.identify_changed_functions.outputs.utils_changed == 'true' || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
+
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
