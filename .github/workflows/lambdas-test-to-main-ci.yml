@@ -77,7 +77,7 @@ jobs:
     environment: development
     defaults:
       run:
-        working-directory: ./lambdas
+        working-directory: lambdas
 
     needs: ['python_lambdas_test', 'identify_changed_functions']
     if: needs.identify_changed_functions.outputs.utils_changed == 'true' || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
@@ -90,9 +90,6 @@ jobs:
         role-skip-session-tagging: true
         aws-region: ${{ vars.AWS_REGION }}
     
-    - name: View AWS Role
-      run: aws sts get-caller-identity
-
     - name: Create release package for Create Document
       run: |
         zip package_create_document.zip lambda_create_document_reference.py
