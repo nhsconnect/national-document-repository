@@ -50,7 +50,6 @@ jobs:
         python-version: ["3.9"]
   
     steps:
-
     - name: Checkout
       uses: actions/checkout@v3
 
@@ -84,6 +83,7 @@ jobs:
     needs: python_lambdas_test && identify_changed_functions
     if: needs.identify_changed_functions.outputs.utils_changed == 'true' || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
 
+    steps:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
