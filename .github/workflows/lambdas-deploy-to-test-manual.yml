@@ -1,12 +1,16 @@
 name: "Lambdas - Deploy to Test"
 
 on:
-  workflow_dispatch:
-    inputs:
-      buildBranch:
-        description: "Feature branch to push to test?"
-        required: true
-        type: "string"
+  push:
+    branches:
+    - main
+    paths:
+    - 'lambdas/**'
+  pull_request:
+    branches:
+    - main
+    paths:
+    - 'lambdas/**'
 
 permissions:
   pull-requests: write
