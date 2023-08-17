@@ -1,2 +1,9 @@
+
+
+**/.DS_Store
+.terraform.lock.hcl
+node_modules/
+tfplan
+*.zip
 /lambdas/env/
 /.idea/
