@@ -1,0 +1,71 @@
+# .github/workflows/terraform-dev
+name: 'Lambdas - Development CI Feature Branch to Main'
+
+on:
+  push:
+    branches:
+    - main
+    paths:
+    - 'app/**'
+  pull_request:
+    branches:
+    - main
+    paths:
+    - 'app/**'
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read  # This is required for actions/checkout
+
+jobs:
+  react_testing_job:
+    runs-on: ubuntu-latest
+    environment: development
+    defaults:
+      run:
+        working-directory: ./app
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
+  
+  react_build_and_deploy_docker_image:
+    runs-on: ubuntu-latest
+    environment: development
+    defaults:
+      run:
+        working-directory: ./app
+    needs: react_testing_job
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ vars.AWS_REGION }}
+          IMAGE_TAG: 0.1
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    
