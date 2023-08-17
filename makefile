@@ -26,4 +26,4 @@ docker-up:
 
 .PHONY: Docker Down
 docker-down:
-	cd ./app && docker-compose down -d
+	cd ./app && docker-compose down
