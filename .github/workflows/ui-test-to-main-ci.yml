@@ -51,6 +51,8 @@ jobs:
     needs: react_testing_job
 
     steps:
+      - uses: actions/checkout@v2
+    
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
