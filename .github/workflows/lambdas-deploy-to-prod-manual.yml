@@ -1,0 +1,82 @@
+name: "Lambdas - Deploy Main Branch to Prod"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  python_lambdas_test:
+    runs-on: ubuntu-latest
+    environment: prod
+    defaults:
+      run:
+        working-directory: ./lambdas
+    strategy:
+      matrix:
+        python-version: ["3.9"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install ruff pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Lint with ruff
+        run: |
+          ruff check .
+
+      - name: Test with pytest
+        run: |
+          pytest
+
+  python_deploy_create_document_reference_lambda:
+    runs-on: ubuntu-latest
+    environment: prod
+    defaults:
+      run:
+        working-directory: ./lambdas
+    needs: ["python_lambdas_test"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: main
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Create Document
+        run: |
+          mkdir package_lambda_create_document_reference
+          pip install -r requirements.txt --target ./package_lambda_create_document_reference
+          cd package_lambda_create_document_reference
+          zip -r ../package_lambda_create_document_reference.zip
+          zip package_lambda_create_document_reference.zip lambda_create_document_reference.py
+          zip -r package_lambda_create_document_reference.zip utils
+
+      - name: Upload Lambda Function
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ vars.BUILD_ENV }}_CreateDocRefLambda
+          zip_file: lambdas/package_lambda_create_document_reference.zip
