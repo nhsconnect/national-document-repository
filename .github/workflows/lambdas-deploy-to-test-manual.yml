@@ -12,9 +12,8 @@ permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
   contents: read  # This is required for actions/checkout
-
+    
 jobs:
-
   python_lambdas_test:
     runs-on: ubuntu-latest
     environment: test
@@ -52,7 +51,7 @@ jobs:
     
   python_deploy_create_document_reference_lambda:
     runs-on: ubuntu-latest
-    environment: development
+    environment: test
     defaults:
       run:
         working-directory: ./lambdas
@@ -63,7 +62,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
       with:
-        ref: main
+        ref: ${{ github.event.inputs.buildBranch}}
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -88,4 +87,3 @@ jobs:
         aws_region: ${{ vars.AWS_REGION }}
         function_name: ${{ vars.BUILD_ENV }}_CreateDocRefLambda
         zip_file: lambdas/package_lambda_create_document_reference.zip
-    

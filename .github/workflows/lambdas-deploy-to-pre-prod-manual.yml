@@ -1,16 +1,7 @@
-name: 'Lambdas - Development CI Feature Branch to Main'
+name: 'Lambdas - Deploy Main Branch to Prod'
 
 on:
-  push:
-    branches:
-    - main
-    paths:
-    - 'lambdas/**'
-  pull_request:
-    branches:
-    - main
-    paths:
-    - 'lambdas/**'
+  workflow_dispatch:
 
 permissions:
   pull-requests: write
@@ -19,29 +10,9 @@ permissions:
 
 jobs:
 
-  identify_changed_functions:
-    runs-on: ubuntu-latest
-    environment: development
-    outputs:
-      utils_changed: ${{steps.filter.outputs.utils}}
-      create_document_reference_changed: ${{steps.filter.outputs.create_document_reference}}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-
-    - name: filter search
-      uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          utils: 
-            - 'lambdas/utils/**'
-          create_document_reference:
-            - 'lambdas/lambda_create_document_reference.py'
-
   python_lambdas_test:
     runs-on: ubuntu-latest
-    environment: development
+    environment: pre-prod
     defaults:
       run:
         working-directory: ./lambdas
@@ -52,6 +23,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+      with:
+        ref: main
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -74,18 +47,18 @@ jobs:
     
   python_deploy_create_document_reference_lambda:
     runs-on: ubuntu-latest
-    environment: development
+    environment: pre-prod
     defaults:
       run:
         working-directory: ./lambdas
-
-    needs: ['python_lambdas_test', 'identify_changed_functions']
-    if: needs.identify_changed_functions.outputs.utils_changed == 'true' || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
+    needs: ['python_lambdas_test']
 
     steps:
 
     - name: Checkout
       uses: actions/checkout@v3
+      with:
+        ref: main
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -103,8 +76,8 @@ jobs:
         zip package_lambda_create_document_reference.zip lambda_create_document_reference.py
         zip -r package_lambda_create_document_reference.zip utils
     
+    
     - name: Upload Lambda Function
-      if: github.ref == 'refs/heads/"main"' && github.event_name == 'push'
       uses: appleboy/lambda-action@master
       with:
         aws_region: ${{ vars.AWS_REGION }}

@@ -47,7 +47,7 @@ jobs:
     
   python_deploy_create_document_reference_lambda:
     runs-on: ubuntu-latest
-    environment: development
+    environment: prod
     defaults:
       run:
         working-directory: ./lambdas
