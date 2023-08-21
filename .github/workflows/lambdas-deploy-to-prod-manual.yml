@@ -1,7 +1,12 @@
-name: "Lambdas - Deploy Main Branch to Prod"
+name: "Lambdas - Deploy tagged version to Prod"
 
 on:
   workflow_dispatch:
+    inputs:
+      tagVersion:
+        description: "What tagged verison do you want to push to prod?"
+        required: true
+        type: "string"
 
 permissions:
   pull-requests: write
@@ -23,7 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: ${{ github.event.inputs.tagVersion}}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -56,7 +61,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: ${{ github.event.inputs.tagVersion}}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
