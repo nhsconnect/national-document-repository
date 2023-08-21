@@ -13,3 +13,6 @@ This part of the repository contains all our Lambda functions, currently these i
 ### The makefile
 
 ### Local Deployment to AWS instructions
+
+
+- Readme modification to trigger build
