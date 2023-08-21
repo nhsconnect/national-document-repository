@@ -75,9 +75,11 @@ jobs:
           mkdir package_lambda_create_document_reference
           pip install -r requirements.txt --target ./package_lambda_create_document_reference
           cd package_lambda_create_document_reference
-          zip -r ../package_lambda_create_document_reference.zip
+          zip -r ../package_lambda_create_document_reference.zip .
+          cd ..
           zip package_lambda_create_document_reference.zip lambda_create_document_reference.py
           zip -r package_lambda_create_document_reference.zip utils
+    
 
       - name: Upload Lambda Function
         uses: appleboy/lambda-action@master
