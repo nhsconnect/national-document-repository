@@ -1,7 +1,7 @@
 import { Details, Table, WarningCallout } from "nhsuk-react-components";
 import React from "react";
 import {DOCUMENT_UPLOAD_STATE} from "../../../types/pages/UploadDocumentsPage/types";
-import ErrorBox from "../../layout/ErrorBox/ErrorBox";
+import ErrorBox from "../ErrorBox/ErrorBox";
 import formatFileSize from "../../../helpers/utils/formatFileSize";
 import {getFormattedDate} from "../../../helpers/utils/formatDate";
 
@@ -12,7 +12,7 @@ const UploadSummary = ({ documents }) => {
     const failedUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.FAILED;
     });
-    console.log(documents);
+
     const tableMargin = { marginBottom: 50 };
     const tableCaption = (
         <>
