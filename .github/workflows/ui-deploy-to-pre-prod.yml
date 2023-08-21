@@ -1,17 +1,14 @@
 # .github/workflows/terraform-dev
-name: 'UI - Development CI Feature Branch to Main'
+name: 'UI - Deploy Main to Pre-Prod'
 
 on:
-  push:
-    branches:
-    - main
-    paths:
-    - 'app/**'
-  pull_request:
-    branches:
-    - main
-    paths:
-    - 'app/**'
+  workflow_dispatch:
+    inputs:
+      tagVersion:
+        description: "What tag would you like to add to this release? A new version number is recomended"
+        required: true
+        type: "string"
+
 
 permissions:
   pull-requests: write
@@ -21,7 +18,7 @@ permissions:
 jobs:
   react_testing_job:
     runs-on: ubuntu-latest
-    environment: development
+    environment: pre-prod
     defaults:
       run:
         working-directory: ./app
@@ -32,6 +29,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: main
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
@@ -44,14 +44,17 @@ jobs:
   
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest
-    environment: development
+    environment: pre-prod
     defaults:
       run:
         working-directory: ./app
     needs: react_testing_job
 
     steps:
+
     - uses: actions/checkout@v2
+      with:
+        ref: main
   
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -68,8 +71,29 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ AWS_ECR_REPO_NAME }}
-        IMAGE_TAG: latest
+        IMAGE_TAG: ${{ github.event.inputs.tagVersion}}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
   
+  tag_and_release:
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    defaults:
+      run:
+        working-directory: ./app
+    needs: react_build_and_deploy_docker_image
+
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        ref: main
+
+    - name: Create a GitHub release
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ github.event.inputs.tagVersion}}
+        name: Release ${{ github.event.inputs.tagVersion}}
+
+    

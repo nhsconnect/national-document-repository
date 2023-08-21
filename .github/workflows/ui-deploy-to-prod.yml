@@ -1,17 +1,13 @@
 # .github/workflows/terraform-dev
-name: 'UI - Development CI Feature Branch to Main'
+name: 'UI - Deploy tagged version to Prod'
 
 on:
-  push:
-    branches:
-    - main
-    paths:
-    - 'app/**'
-  pull_request:
-    branches:
-    - main
-    paths:
-    - 'app/**'
+  workflow_dispatch:
+    inputs:
+      tagVersion:
+        description: "What tagged verison do you want to push to prod?"
+        required: true
+        type: "string"
 
 permissions:
   pull-requests: write
@@ -21,7 +17,7 @@ permissions:
 jobs:
   react_testing_job:
     runs-on: ubuntu-latest
-    environment: development
+    environment: prod
     defaults:
       run:
         working-directory: ./app
@@ -32,6 +28,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.tagVersion}}
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
@@ -44,7 +43,7 @@ jobs:
   
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest
-    environment: development
+    environment: prod
     defaults:
       run:
         working-directory: ./app
@@ -52,6 +51,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.tagVersion}}
   
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -68,8 +69,8 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ AWS_ECR_REPO_NAME }}
-        IMAGE_TAG: latest
+        IMAGE_TAG: prod-${{ github.event.inputs.tagVersion}}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-  
+    

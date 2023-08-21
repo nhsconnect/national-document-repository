@@ -1,17 +1,17 @@
 # .github/workflows/terraform-dev
-name: 'UI - Development CI Feature Branch to Main'
+name: 'UI - Deploy Feature branch to Perf'
 
 on:
-  push:
-    branches:
-    - main
-    paths:
-    - 'app/**'
-  pull_request:
-    branches:
-    - main
-    paths:
-    - 'app/**'
+  workflow_dispatch:
+    inputs:
+      buildBranch:
+        description: "Feature branch to push to test?"
+        required: true
+        type: "string"
+      buildImageTag:
+        description: "What Image should be pushed? (\"lastest\" should be used for dev branches)"
+        required: true
+        type: "string"
 
 permissions:
   pull-requests: write
@@ -21,7 +21,7 @@ permissions:
 jobs:
   react_testing_job:
     runs-on: ubuntu-latest
-    environment: development
+    environment: perf
     defaults:
       run:
         working-directory: ./app
@@ -31,7 +31,11 @@ jobs:
         node-version: [16.x]
 
     steps:
+
     - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.buildBranch}}
+
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
@@ -44,7 +48,7 @@ jobs:
   
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest
-    environment: development
+    environment: perf
     defaults:
       run:
         working-directory: ./app
@@ -52,6 +56,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      with:
+        ref: ${{ github.event.inputs.buildBranch}}
   
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -68,7 +74,7 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ AWS_ECR_REPO_NAME }}
-        IMAGE_TAG: latest
+        IMAGE_TAG: perf-${{ github.event.inputs.tagVersion}}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
