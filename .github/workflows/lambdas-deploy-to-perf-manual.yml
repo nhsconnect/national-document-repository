@@ -2,6 +2,11 @@ name: "Lambdas - Deploy Main Branch to Perf"
 
 on:
   workflow_dispatch:
+    inputs:
+      buildBranch:
+        description: "Feature branch to push to test?"
+        required: true
+        type: "string"
 
 permissions:
   pull-requests: write
@@ -23,7 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: ${{ github.event.inputs.buildBranch}}
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -56,7 +61,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: ${{ github.event.inputs.buildBranch}}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
