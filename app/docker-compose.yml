@@ -1,0 +1,10 @@
+version: "3.8"
+
+services:
+  app:
+    container_name: ndr_ui
+    image: ndr_ui_image
+    build:
+      context: .
+    ports:
+      - 8080:80
