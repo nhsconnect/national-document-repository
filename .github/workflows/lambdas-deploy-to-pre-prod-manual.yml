@@ -2,6 +2,11 @@ name: "Lambdas - Deploy Main Branch to Prod"
 
 on:
   workflow_dispatch:
+    inputs:
+      tagVersion:
+        description: "What tag would you like to add to this release? A new version number is recomended"
+        required: true
+        type: "string"
 
 permissions:
   pull-requests: write
@@ -80,3 +85,23 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ vars.BUILD_ENV }}_CreateDocRefLambda
           zip_file: lambdas/package_lambda_create_document_reference.zip
+  
+  tag_and_release:
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    defaults:
+      run:
+        working-directory: ./app
+    needs: python_lambdas_test
+
+    steps:
+
+    - uses: actions/checkout@v2
+      with:
+        ref: main
+
+    - name: Create a GitHub release
+      uses: ncipollo/release-action@v1
+      with:
+        tag: ${{ github.event.inputs.tagVersion}}
+        name: Release ${{ github.event.inputs.tagVersion}}
