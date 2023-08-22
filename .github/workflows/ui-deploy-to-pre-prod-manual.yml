@@ -15,6 +15,7 @@ jobs:
     environment: pre-prod
     outputs:
       tag: ${{steps.versioning.outputs.tag}}
+      new_tag: ${{steps.versioning.outputs.new_tag}}
     defaults:
       run:
         working-directory: ./app
@@ -33,6 +34,12 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: false
         DEFAULT_BUMP: patch
+    
+    - name: View outputs
+      run: |
+        echo ${{steps.versioning.outputs.tag}} 
+        echo ${{steps.versioning.outputs.new_tag}}
+        
 
   react_testing_job:
     runs-on: ubuntu-latest
