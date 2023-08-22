@@ -1,12 +1,7 @@
-name: "Lambdas - Deploy Main Branch to Prod"
+name: "Lambdas - Deploy and Version Main to Pre-Prod"
 
 on:
   workflow_dispatch:
-    inputs:
-      tagVersion:
-        description: "What tag would you like to add to this release? A new version number is recomended"
-        required: true
-        type: "string"
 
 permissions:
   pull-requests: write
@@ -14,21 +9,55 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
+
+  tag_and_release:
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    outputs:
+      tag: ${{steps.versioning.outputs.tag}}
+      new_tag: ${{steps.versioning.outputs.new_tag}}
+    defaults:
+      run:
+        working-directory: ./app
+
+    steps:
+
+    - uses: actions/checkout@v3
+      with:
+        ref: main
+        fetch-depth: '0'
+
+    - name: Bump version and push tag
+      id: versioning
+      uses: anothrNick/github-tag-action@1.64.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: false
+        DEFAULT_BUMP: patch
+    
+    - name: View outputs
+      run: |
+        echo Current tag: ${{steps.versioning.outputs.tag}} 
+        echo New tag: ${{steps.versioning.outputs.new_tag}}
+
   python_lambdas_test:
     runs-on: ubuntu-latest
     environment: pre-prod
     defaults:
       run:
         working-directory: ./lambdas
+    needs: ['tag_and_release']
+
     strategy:
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: ${{needs.tag_and_release.outputs.tag}}
+          fetch-depth: '0'
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -55,13 +84,14 @@ jobs:
     defaults:
       run:
         working-directory: ./lambdas
-    needs: ["python_lambdas_test"]
+    needs: ["python_lambdas_test", 'tag_and_release']
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: ${{needs.tag_and_release.outputs.tag}}
+          fetch-depth: '0'
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -87,23 +117,3 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ vars.BUILD_ENV }}_CreateDocRefLambda
           zip_file: lambdas/package_lambda_create_document_reference.zip
-  
-  tag_and_release:
-    runs-on: ubuntu-latest
-    environment: pre-prod
-    defaults:
-      run:
-        working-directory: ./app
-    needs: python_lambdas_test
-
-    steps:
-
-    - uses: actions/checkout@v2
-      with:
-        ref: main
-
-    - name: Create a GitHub release
-      uses: ncipollo/release-action@v1
-      with:
-        tag: ${{ github.event.inputs.tagVersion}}
-        name: Release ${{ github.event.inputs.tagVersion}}
