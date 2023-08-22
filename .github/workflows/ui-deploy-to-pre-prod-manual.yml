@@ -22,7 +22,7 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: main
         fetch-depth: '0'
@@ -37,8 +37,8 @@ jobs:
     
     - name: View outputs
       run: |
-        echo ${{steps.versioning.outputs.tag}} 
-        echo ${{steps.versioning.outputs.new_tag}}
+        echo Current tag: ${{steps.versioning.outputs.tag}} 
+        echo New tag: ${{steps.versioning.outputs.new_tag}}
         
 
   react_testing_job:
@@ -54,9 +54,10 @@ jobs:
         node-version: [16.x]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: needs.tag_and_release.outputs.tag
+        fetch-tags: ''
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
@@ -78,9 +79,10 @@ jobs:
 
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: needs.tag_and_release.outputs.tag
+        fetch-tags: ''
   
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
