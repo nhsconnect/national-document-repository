@@ -18,7 +18,6 @@ jobs:
     defaults:
       run:
         working-directory: ./app
-    needs: react_build_and_deploy_docker_image
 
     steps:
 
