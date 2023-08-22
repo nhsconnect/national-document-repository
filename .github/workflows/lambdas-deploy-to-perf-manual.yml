@@ -28,6 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          fetch-depth: '0'
           ref: ${{ github.event.inputs.buildBranch}}
 
       - name: Set up Python ${{ matrix.python-version }}
@@ -61,6 +62,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
+          fetch-depth: '0'
           ref: ${{ github.event.inputs.buildBranch}}
 
       - name: Configure AWS Credentials
