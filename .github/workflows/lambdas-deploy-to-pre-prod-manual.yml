@@ -19,6 +19,7 @@ jobs:
     defaults:
       run:
         working-directory: ./app
+    permissions: write-all
 
     steps:
 
