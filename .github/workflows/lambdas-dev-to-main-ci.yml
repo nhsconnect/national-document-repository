@@ -80,7 +80,7 @@ jobs:
         working-directory: ./lambdas
 
     needs: ['python_lambdas_test', 'identify_changed_functions']
-    if: needs.identify_changed_functions.outputs.utils_changed == 'true' || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
+    if: (github.event.pull_request.merged) && (needs.identify_changed_functions.outputs.utils_changed == 'true' || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true')
 
     steps:
 
@@ -99,7 +99,8 @@ jobs:
         mkdir package_lambda_create_document_reference
         pip install -r requirements.txt --target ./package_lambda_create_document_reference
         cd package_lambda_create_document_reference
-        zip -r ../package_lambda_create_document_reference.zip
+        zip -r ../package_lambda_create_document_reference.zip .
+        cd ..
         zip package_lambda_create_document_reference.zip lambda_create_document_reference.py
         zip -r package_lambda_create_document_reference.zip utils
     

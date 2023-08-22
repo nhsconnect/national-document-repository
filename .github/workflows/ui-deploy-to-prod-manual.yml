@@ -30,6 +30,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.inputs.tagVersion}}
+        fetch-depth: '0'
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
@@ -53,6 +54,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.inputs.tagVersion}}
+        fetch-depth: '0'
   
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2

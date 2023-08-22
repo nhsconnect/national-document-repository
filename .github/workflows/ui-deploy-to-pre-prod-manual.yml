@@ -1,14 +1,7 @@
-# .github/workflows/terraform-dev
-name: 'UI - Deploy Main to Pre-Prod'
+name: 'UI - Deploy and Version Main to Pre-Prod'
 
 on:
   workflow_dispatch:
-    inputs:
-      tagVersion:
-        description: "What tag would you like to add to this release? A new version number is recomended"
-        required: true
-        type: "string"
-
 
 permissions:
   pull-requests: write
@@ -16,21 +9,56 @@ permissions:
   contents: read  # This is required for actions/checkout
 
 jobs:
+
+  tag_and_release:
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    outputs:
+      tag: ${{steps.versioning.outputs.tag}}
+      new_tag: ${{steps.versioning.outputs.new_tag}}
+    defaults:
+      run:
+        working-directory: ./app
+    permissions: write-all
+
+    steps:
+
+    - uses: actions/checkout@v3
+      with:
+        ref: main
+        fetch-depth: '0'
+
+    - name: Bump version and push tag
+      id: versioning
+      uses: anothrNick/github-tag-action@1.64.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: false
+        DEFAULT_BUMP: patch
+    
+    - name: View outputs
+      run: |
+        echo Current tag: ${{steps.versioning.outputs.tag}} 
+        echo New tag: ${{steps.versioning.outputs.new_tag}}
+        
+
   react_testing_job:
     runs-on: ubuntu-latest
     environment: pre-prod
     defaults:
       run:
         working-directory: ./app
+    needs: ['tag_and_release']
 
     strategy:
       matrix:
         node-version: [16.x]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
-        ref: main
+        ref: ${{needs.tag_and_release.outputs.tag}}
+        fetch-depth: '0'
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
@@ -48,13 +76,14 @@ jobs:
     defaults:
       run:
         working-directory: ./app
-    needs: react_testing_job
+    needs: ['react_testing_job', 'tag_and_release']
 
     steps:
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
-        ref: main
+        ref: ${{needs.tag_and_release.outputs.tag}}
+        fetch-depth: '0'
   
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
@@ -71,29 +100,11 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPO_NAME }}
-        IMAGE_TAG: ${{ github.event.inputs.tagVersion}}
+        IMAGE_TAG: ${{needs.tag_and_release.outputs.tag}}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-  
-  tag_and_release:
-    runs-on: ubuntu-latest
-    environment: pre-prod
-    defaults:
-      run:
-        working-directory: ./app
-    needs: react_build_and_deploy_docker_image
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-    steps:
-
-    - uses: actions/checkout@v2
-      with:
-        ref: main
-
-    - name: Create a GitHub release
-      uses: ncipollo/release-action@v1
-      with:
-        tag: ${{ github.event.inputs.tagVersion}}
-        name: Release ${{ github.event.inputs.tagVersion}}
 
     
