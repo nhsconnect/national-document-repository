@@ -4,7 +4,7 @@ import UploadSummary from "./UploadSummary";
 import {DOCUMENT_UPLOAD_STATE as documentUploadStates} from "../../../types/pages/UploadDocumentsPage/types";
 import {formatFileSize as formatSize} from "../../../helpers/utils/formatFileSize";
 import {getFormattedDate} from "../../../helpers/utils/formatDate";
-import { buildDocument, buildPatientDetails, buildTextFile } from "../../../helpers/test/testBuilders";
+import { buildDocument, buildTextFile } from "../../../helpers/test/testBuilders";
 
 
 describe("UploadSummary", () => {

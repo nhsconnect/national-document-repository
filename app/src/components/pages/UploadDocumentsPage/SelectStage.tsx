@@ -8,9 +8,7 @@ import {
 } from "../../../types/pages/UploadDocumentsPage/types";
 import { Button, Input, Table, WarningCallout } from "nhsuk-react-components";
 import { useController, useForm } from "react-hook-form";
-import { nanoid } from "nanoid/non-secure";
 import formatFileSize from "../../../helpers/utils/formatFileSize";
-import uploadDocument from "../../../helpers/requests/uploadDocument";
 import toFileList from "../../../helpers/utils/toFileList";
 interface FileInputEvent extends FormEvent<HTMLInputElement> {
   target: HTMLInputElement & EventTarget;
@@ -65,7 +63,7 @@ function SelectStage({
   const onInput = (e: FileInputEvent) => {
     const fileArray = Array.from(e.target.files ?? new FileList());
     const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
-      id: nanoid(),
+      id: (Math.floor(Math.random() * 1000000)).toString(),
       file,
       state: DOCUMENT_UPLOAD_STATE.SELECTED,
       progress: 0,
@@ -86,6 +84,7 @@ function SelectStage({
   };
   return (
     <>
+      <h1>Upload documents</h1>
       <Input
         id="documents-input"
         label="Select file(s)"
