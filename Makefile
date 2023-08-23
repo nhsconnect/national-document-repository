@@ -41,14 +41,16 @@ env:
 	./lambdas/venv/bin/pip3 install -r lambdas/requirements-test.txt
 
 zip:
-	rm -rf ./lambdas/package || true 
-	mkdir ./lambdas/package
-	./lambdas/venv/bin/pip3 install --cache-dir .pip_cache -r lambdas/requirements.txt -t ./lambdas/package
-	cp -r lambdas/handlers lambdas/package
-	cp -r lambdas/utils lambdas/package
-	cp -r lambdas/models lambdas/package
-	cp -r lambdas/services lambdas/package
-	cd ./lambdas/package; zip -r lambdas.zip .
+	rm -rf ./lambdas/package_$(lambda_name) || true 
+	mkdir ./lambdas/package_$(lambda_name)
+	./lambdas/venv/bin/pip3 install --cache-dir .pip_cache -r lambdas/requirements.txt -t ./lambdas/package_$(lambda_name)
+	mkdir ./lambdas/package_$(lambda_name)/handlers
+	cp -r lambdas/handlers/$(lambda_name).py lambdas/package_$(lambda_name)/handlers
+	cp -r lambdas/utils lambdas/package_$(lambda_name)
+	cp -r lambdas/models lambdas/package_$(lambda_name)
+	cp -r lambdas/services lambdas/package_$(lambda_name)
+	cd ./lambdas/package_$(lambda_name); zip -r ../lambdas_$(lambda_name).zip .
+	rm -rf ./lambdas/package_$(lambda_name)
 
 package: format zip
 
