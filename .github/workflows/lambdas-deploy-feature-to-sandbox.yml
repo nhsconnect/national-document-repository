@@ -64,6 +64,10 @@ jobs:
         with:
           ref: ${{ github.event.inputs.buildBranch}}
 
+      - name: Make virtual environement
+        run: | 
+          make env
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -93,6 +97,10 @@ jobs:
         with:
           ref: ${{ github.event.inputs.buildBranch}}
 
+      - name: Make virtual environement
+        run: | 
+          make env
+          
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
