@@ -84,7 +84,7 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_CreateDocRefLambda
-          zip_file: ${GITHUB_WORKSPACE}/lambdas/package_lambda_create_document_reference.zip
+          zip_file: ${{ github.workspace }}/lambdas/package_lambda_create_document_reference.zip
         
   python_deploy_search_patient_details_lambda:
     runs-on: ubuntu-latest
@@ -117,6 +117,6 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_SearchPatientDetailsHandler
-          zip_file: ${GITHUB_WORKSPACE}/lambdas/package_lambdas_search_patient_details_handler.zip
+          zip_file: ${{ github.workspace }}/lambdas/package_lambdas_search_patient_details_handler.zip
         
         
