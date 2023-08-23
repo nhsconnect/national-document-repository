@@ -24,7 +24,11 @@ To setup the Python environment for backend development, run: `make env`
 
 This will create a virtual environment with all production and test requirements. The virtual environment can be found at `.lambdas/venv`.
 
-To activate the environment run `source ./lambdas/venv/bin/activate`
+To activate the environment in Mac/Linux or UNIX based Windows terminal, run:
+ `source ./lambdas/venv/bin/activate`
+
+To activate in Windows terminals, run:
+ `./lambdas/venv/Scripts/activate`
 
 
 ## Local Deployment to AWS instructions
