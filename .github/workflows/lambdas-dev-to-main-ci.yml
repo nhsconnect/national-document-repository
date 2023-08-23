@@ -86,11 +86,12 @@ jobs:
     environment: development
     needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
-      (github.event.pull_request.merged == 'true') && 
-      (needs.identify_changed_functions.outputs.utils_changed == 'true' || 
-      needs.identify_changed_functions.outputs.services_changed == 'true' ||
-      needs.identify_changed_functions.outputs.models_changed == 'true'
-      needs.identify_changed_functions.outputs.create_document_reference_changed == 'true')
+      (github.event.pull_request.merged == 'true') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true' 
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
+          )
 
     steps:
       - name: Checkout
@@ -120,11 +121,12 @@ jobs:
     environment: development
     needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
-      (github.event.pull_request.merged == 'true') && 
-      (needs.identify_changed_functions.outputs.utils_changed == 'true' || 
-      needs.identify_changed_functions.outputs.services_changed == 'true' ||
-      needs.identify_changed_functions.outputs.models_changed == 'true' || 
-      needs.identify_changed_functions.outputs.search_patient_details_changed == 'true')
+      (github.event.pull_request.merged == 'true') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true' 
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.search_patient_details_changed == 'true'
+          )
 
     steps:
       - name: Checkout
