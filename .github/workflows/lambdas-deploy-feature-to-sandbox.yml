@@ -78,13 +78,14 @@ jobs:
       - name: Create release package for Create Document Reference
         run: |
           make lambda_name=create_document_reference_handler zip
+          ls
     
       - name: Upload Lambda Function for CreateDocRefLambda
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_CreateDocRefLambda
-          zip_file: ${{ github.workspace }}/lambdas/package_lambda_create_document_reference.zip
+          zip_file: package_lambdas_create_document_reference_handler.zip
         
   python_deploy_search_patient_details_lambda:
     runs-on: ubuntu-latest
@@ -111,6 +112,7 @@ jobs:
       - name: Create release package for Create Document Reference
         run: |
           make lambda_name=search_patient_details_handler zip
+          ls
     
       - name: Upload Lambda Function for SearchPatientDetailsHandler
         uses: appleboy/lambda-action@master
