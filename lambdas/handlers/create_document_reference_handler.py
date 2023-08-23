@@ -14,7 +14,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__)))
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
 def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
     s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
