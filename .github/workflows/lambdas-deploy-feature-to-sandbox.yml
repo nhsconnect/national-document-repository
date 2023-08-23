@@ -118,7 +118,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_SearchPatientDetailsHandler
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_SearchPatientDetailsLambda
           zip_file: package_lambdas_search_patient_details_handler.zip
         
         
