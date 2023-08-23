@@ -21,6 +21,7 @@ def lambda_handler(event, context):
     s3_object_key = str(uuid.uuid4())
     body = json.loads(event["body"])
 
+
     try:
         document_object = create_document_reference_object(
             s3_bucket_name, s3_object_key, body
