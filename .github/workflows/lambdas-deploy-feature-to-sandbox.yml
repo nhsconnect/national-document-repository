@@ -78,7 +78,6 @@ jobs:
       - name: Create release package for Create Document Reference
         run: |
           make lambda_name=create_document_reference_handler zip
-          ls
     
       - name: Upload Lambda Function for CreateDocRefLambda
         uses: appleboy/lambda-action@master
@@ -109,10 +108,9 @@ jobs:
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Create release package for Create Document Reference
+      - name: Create release package for Search Patient Details Reference
         run: |
           make lambda_name=search_patient_details_handler zip
-          ls
     
       - name: Upload Lambda Function for SearchPatientDetailsHandler
         uses: appleboy/lambda-action@master
