@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: 'UI - Development CI Feature Branch to Main'
+name: 'UI - Deploy Feature Branch to Sandbox'
 
 on:
   workflow_dispatch:
