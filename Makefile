@@ -49,8 +49,9 @@ zip:
 	cp -r lambdas/utils lambdas/package_$(lambda_name)
 	cp -r lambdas/models lambdas/package_$(lambda_name)
 	cp -r lambdas/services lambdas/package_$(lambda_name)
-	cd ./lambdas/package_$(lambda_name); zip -r ../lambdas_$(lambda_name).zip .
+	cd ./lambdas/package_$(lambda_name); zip -r ../../lambdas_$(lambda_name).zip .
 	rm -rf ./lambdas/package_$(lambda_name)
+	cd ../..
 
 package: format zip
 
