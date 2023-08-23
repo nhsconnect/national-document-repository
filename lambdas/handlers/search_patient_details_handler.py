@@ -20,7 +20,6 @@ def lambda_handler(event, context):
 
         logger.info("Retrieving patient details")
         pds_api_service = PdsApiService()
-        
 
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
         response = patient_details.model_dump_json(by_alias=True)
