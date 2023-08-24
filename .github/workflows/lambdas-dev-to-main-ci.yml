@@ -27,6 +27,7 @@ jobs:
       models_changed: ${{steps.filters.outputs.models}}
       create_document_reference_changed: ${{steps.filter.outputs.create_document_reference}}
       search_patient_details_changed: ${{steps.filter.outputs.search_patient_reference}}
+      search_document_reference_changed: ${{steps.filter.outputs.search_document_reference}}
 
     steps:
       - name: Checkout
@@ -47,6 +48,13 @@ jobs:
               - 'lambdas/handlers/create_document_reference_handler.py'
             search_patient_reference:
               - 'lambdas/handlers/search_patient_details_handler.py'
+            search_document_reference:
+              - 'lambdas/handlers/document_reference_search_handler.py'
+      - name: variable_review
+        run: |
+          echo github.event.pull_request.merged
+          echo github.event_name
+          echo github.event.action
 
   python_lambdas_test:
     runs-on: ubuntu-latest
@@ -154,3 +162,41 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ vars.BUILD_ENV }}_SearchPatientDetailsLambda
           zip_file: package_lambdas_search_patient_details_handler.zip
+
+  python_deploy_document_reference_search_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    if: |
+      (github.event.pull_request.merged == 'true') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true' 
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.search_document_reference_changed == 'true'
+          )
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Document Reference Search
+        run: |
+          make lambda_name=document_reference_search_handler zip
+
+      - name: Upload Lambda Function for DocumentReferenceSearchHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_SearchDocumentReferencesLambda
+          zip_file: package_lambdas_document_reference_search_handler.zip
