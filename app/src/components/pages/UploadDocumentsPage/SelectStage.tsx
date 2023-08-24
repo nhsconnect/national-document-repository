@@ -10,6 +10,8 @@ import { Button, Input, Table, WarningCallout } from "nhsuk-react-components";
 import { useController, useForm } from "react-hook-form";
 import formatFileSize from "../../../helpers/utils/formatFileSize";
 import toFileList from "../../../helpers/utils/toFileList";
+import PatientSummary from "../../patientSummary/PatientSummary";
+import {PatientDetails} from "../../../types/components/types";
 interface FileInputEvent extends FormEvent<HTMLInputElement> {
   target: HTMLInputElement & EventTarget;
 }
@@ -82,9 +84,19 @@ function SelectStage({
       inputRef.current.files = toFileList(updatedValues);
     }
   };
+
+  const mockPatientDetails: PatientDetails = {
+    nhsNumber: 111111111,
+    familyName: "test",
+    givenName: ["Gremlin", "Junior"],
+    birthDate: new Date("5/12/2022"),
+    postalCode: "BS37 5DH",
+  }
+
   return (
     <>
       <h1>Upload documents</h1>
+      <PatientSummary patientDetails={mockPatientDetails} />
       <Input
         id="documents-input"
         label="Select file(s)"
@@ -99,6 +111,21 @@ function SelectStage({
           ref(e);
           inputRef.current = e;
         }}
+          // @ts-ignore
+
+        hint={
+          <ul>
+            <li>{"A patient's full electronic health record including attachments must be uploaded."}</li>
+            <li>{"You can select multiple files to upload at once."}</li>
+            <li>
+              In the event documents cannot be uploaded, they must be printed and sent via{" "}
+              <a href="https://secure.pcse.england.nhs.uk/" target="_blank" rel="noreferrer">
+                Primary Care Support England
+              </a>
+              .
+            </li>
+          </ul>
+        }
       />
       <div role="region" aria-live="polite">
         {value && value.length > 0 && (
