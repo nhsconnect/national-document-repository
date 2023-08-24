@@ -65,7 +65,7 @@ jobs:
         with:
           name: build
           if-no-files-found: error
-          path: build
+          path: ./app/build
 
   cypress-run-chrome:
     runs-on: ubuntu-22.04
