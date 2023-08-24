@@ -1,6 +1,6 @@
 import React from 'react';
 import { Header as NhsHeader } from 'nhsuk-react-components';
-import NavLinks from '../NavLinks';
+import NavLinks from '../navLinks/NavLinks';
 
 type Props = {};
 

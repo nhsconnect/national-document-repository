@@ -2,8 +2,8 @@ import { Button, Fieldset, Radios } from 'nhsuk-react-components';
 import React, { useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router';
-import { routes } from '../../types/blocks/routes';
-import ErrorBox from '../../components/layout/ErrorBox';
+import { routes } from '../../types/generic/routes';
+import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 
 type Props = {};
 

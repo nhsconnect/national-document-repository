@@ -1,21 +1,21 @@
-import React, { useState } from "react";
-import SelectStage from "../../components/pages/UploadDocumentsPage/SelectStage";
-import CompleteStage from "../../components/pages/UploadDocumentsPage/CompleteStage";
-import UploadingStage from "../../components/pages/UploadDocumentsPage/UploadingStage";
+import React, { useState } from 'react';
+import SelectStage from '../../components/pages/uploadDocumentsPage/SelectStage';
+import CompleteStage from '../../components/pages/uploadDocumentsPage/CompleteStage';
+import UploadingStage from '../../components/pages/uploadDocumentsPage/UploadingStage';
 import {
   DOCUMENT_UPLOAD_STATE,
   StageProps,
   UPLOAD_STAGE,
-  UploadDocument,
-} from "../../types/pages/UploadDocumentsPage/types";
-import uploadDocument from "../../helpers/requests/uploadDocument";
-import { useBaseAPIUrl } from "../../providers/configProvider/ConfigProvider";
+  UploadDocument
+} from '../../types/pages/UploadDocumentsPage/types';
+import uploadDocument from '../../helpers/requests/uploadDocument';
+import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 
 type Props = {};
 function UploadDocumentsPage(props: Props) {
   const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
   const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
-  const baseUrl = useBaseAPIUrl("doc-store-api");
+  const baseUrl = useBaseAPIUrl('doc-store-api');
 
   const setDocumentState = (
     id: string,
@@ -37,7 +37,7 @@ function UploadDocumentsPage(props: Props) {
   };
 
   const mockPatient = {
-    nhsNumber: "121212121",
+    nhsNumber: '121212121'
   };
 
   const uploadDocuments = async () => {
@@ -48,7 +48,7 @@ function UploadDocumentsPage(props: Props) {
           setDocumentState,
           nhsNumber: mockPatient.nhsNumber,
           document,
-          baseUrl,
+          baseUrl
         })
       )
     );
@@ -58,7 +58,7 @@ function UploadDocumentsPage(props: Props) {
   const defaultStageProps: StageProps = {
     stage,
     setStage,
-    documents,
+    documents
   };
 
   if (stage === UPLOAD_STAGE.Selecting) {

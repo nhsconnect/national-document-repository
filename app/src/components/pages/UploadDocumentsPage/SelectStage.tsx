@@ -1,15 +1,15 @@
-import React, { useRef } from "react";
-import type { FormEvent, MouseEvent } from "react";
+import React, { useRef } from 'react';
+import type { FormEvent, MouseEvent } from 'react';
 import {
   DOCUMENT_UPLOAD_STATE,
   SetUploadDocuments,
   StageProps,
-  UploadDocument,
-} from "../../../types/pages/UploadDocumentsPage/types";
-import { Button, Input, Table, WarningCallout } from "nhsuk-react-components";
-import { useController, useForm } from "react-hook-form";
-import formatFileSize from "../../../helpers/utils/formatFileSize";
-import toFileList from "../../../helpers/utils/toFileList";
+  UploadDocument
+} from '../../../types/pages/UploadDocumentsPage/types';
+import { Button, Input, Table, WarningCallout } from 'nhsuk-react-components';
+import { useController, useForm } from 'react-hook-form';
+import formatFileSize from '../../../helpers/utils/formatFileSize';
+import toFileList from '../../../helpers/utils/toFileList';
 interface FileInputEvent extends FormEvent<HTMLInputElement> {
   target: HTMLInputElement & EventTarget;
 }
@@ -24,31 +24,31 @@ function SelectStage({
   setStage,
   documents,
   uploadDocuments,
-  setDocuments,
+  setDocuments
 }: Props) {
   let inputRef = useRef<HTMLInputElement | null>(null);
   const FIVEGB = 5 * Math.pow(1024, 3);
   const { control } = useForm();
   const {
     field: { ref, onChange, onBlur, name, value },
-    fieldState,
+    fieldState
   } = useController({
-    name: "documents",
+    name: 'documents',
     control,
     rules: {
       validate: {
         isFile: (value) => {
-          return (value && value.length > 0) || "Please select a file";
+          return (value && value.length > 0) || 'Please select a file';
         },
         isLessThan5GB: (value) => {
           for (let i = 0; i < value.length; i++) {
             if (value[i].file.size > FIVEGB) {
-              return "Please ensure that all files are less than 5GB in size";
+              return 'Please ensure that all files are less than 5GB in size';
             }
           }
-        },
-      },
-    },
+        }
+      }
+    }
   });
 
   const hasDuplicateFiles =
@@ -63,10 +63,10 @@ function SelectStage({
   const onInput = (e: FileInputEvent) => {
     const fileArray = Array.from(e.target.files ?? new FileList());
     const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
-      id: (Math.floor(Math.random() * 1000000)).toString(),
+      id: Math.floor(Math.random() * 1000000).toString(),
       file,
       state: DOCUMENT_UPLOAD_STATE.SELECTED,
-      progress: 0,
+      progress: 0
     }));
 
     const updatedFileList = value ? [...value, ...documentMap] : documentMap;
@@ -77,7 +77,7 @@ function SelectStage({
   const onRemove = (index: number) => {
     const updatedValues = [...value.slice(0, index), ...value.slice(index + 1)];
     onChange(updatedValues);
-    setDocuments(updatedValues)
+    setDocuments(updatedValues);
     if (inputRef.current) {
       inputRef.current.files = toFileList(updatedValues);
     }
@@ -86,9 +86,9 @@ function SelectStage({
     <>
       <h1>Upload documents</h1>
       <Input
-        id="documents-input"
-        label="Select file(s)"
-        type="file"
+        id='documents-input'
+        label='Select file(s)'
+        type='file'
         multiple={true}
         name={name}
         error={fieldState.error?.message}
@@ -100,9 +100,9 @@ function SelectStage({
           inputRef.current = e;
         }}
       />
-      <div role="region" aria-live="polite">
+      <div role='region' aria-live='polite'>
         {value && value.length > 0 && (
-          <Table caption="Selected documents">
+          <Table caption='Selected documents'>
             <Table.Head>
               <Table.Row>
                 <Table.Cell>Filename</Table.Cell>
@@ -119,7 +119,7 @@ function SelectStage({
                   <Table.Cell>
                     <Button
                       aria-label={`Remove ${document.file.name} from selection`}
-                      href=""
+                      href=''
                       onClick={(e: MouseEvent<HTMLButtonElement>) => {
                         e.preventDefault();
                         onRemove(index);
@@ -141,7 +141,9 @@ function SelectStage({
           </WarningCallout>
         )}
       </div>
-      <Button onClick={uploadDocuments} disabled={!value}>Upload</Button>
+      <Button onClick={uploadDocuments} disabled={!value}>
+        Upload
+      </Button>
     </>
   );
 }

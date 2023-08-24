@@ -4,7 +4,7 @@ import {
   DOCUMENT_UPLOAD_STATE,
   UploadDocument
 } from '../../../types/pages/UploadDocumentsPage/types';
-import ErrorBox from '../ErrorBox/ErrorBox';
+import ErrorBox from '../errorBox/ErrorBox';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 

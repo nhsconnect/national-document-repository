@@ -2,7 +2,7 @@ import React from 'react';
 import type { MouseEvent as ReactEvent } from 'react';
 import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
-import { routes } from '../../types/blocks/routes';
+import { routes } from '../../types/generic/routes';
 
 type Props = {};
 
