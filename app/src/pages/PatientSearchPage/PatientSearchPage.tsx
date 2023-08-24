@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { routes } from '../../types/generic/routes';
 import { useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
-import ServiceError from '../serviceError/ServiceError';
 import { Button, Fieldset, Input } from 'nhsuk-react-components';
 import SpinnerButton from '../../components/generic/spinnerButton/SpinnerButton';
 import { InputRef } from '../../types/generic/inputRef';
+import { USER_ROLE } from '../../types/generic/roles';
+import { useNavigate } from 'react-router';
+import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
 
 type Props = {
-  route: routes;
+  role: USER_ROLE;
 };
 
 enum SEARCH_STATES {
@@ -18,7 +20,7 @@ enum SEARCH_STATES {
   FAILED = 'failed'
 }
 
-function PatientSearchPage({ route }: Props) {
+function PatientSearchPage({ role }: Props) {
   const [submissionState, setSubmissionState] = useState<SEARCH_STATES>(
     SEARCH_STATES.IDLE
   );
@@ -35,9 +37,9 @@ function PatientSearchPage({ route }: Props) {
       message: "Enter patient's 10 digit NHS number"
     }
   });
-
-  const userIsPCSE = route === routes.DOWNLOAD_SEARCH;
-  const userIsGP = route === routes.UPLOAD_SEARCH;
+  const navigate = useNavigate();
+  const userIsPCSE = role === USER_ROLE.PCSE;
+  const userIsGP = role === USER_ROLE.GP;
   const isError = (statusCode && statusCode >= 500) || !inputError;
 
   const handleSearch = () => {
@@ -45,11 +47,13 @@ function PatientSearchPage({ route }: Props) {
     // GP Role
     if (userIsGP) {
       // Make PDS patient search request
+      navigate(routes.UPLOAD_VERIFY);
     }
 
     // PCSE Role
     else if (userIsPCSE) {
       // Make PDS and Dynamo document store search request
+      navigate(routes.DOWNLOAD_VERIFY);
     }
   };
 

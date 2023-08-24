@@ -7,8 +7,11 @@ import ConfigProvider from './providers/configProvider/ConfigProvider';
 import config from './config';
 import { routes } from './types/generic/routes';
 import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
+import PatientResultPage from './pages/patientResultPage/PatientResultPage';
+
 import OrgSelectPage from './pages/orgSelectPage/OrgSelectPage';
-import Layout from './components/layout/serviceErrorBox/ServiceErrorBox';
+import Layout from './components/layout/Layout';
+import { USER_ROLE } from './types/generic/roles';
 
 function App() {
   return (
@@ -19,16 +22,24 @@ function App() {
             <Route element={<HomePage />} path={routes.HOME} />
             <Route element={<OrgSelectPage />} path={routes.SELECT_ORG} />
             <Route
-              element={<PatientSearchPage route={routes.UPLOAD_SEARCH} />}
+              element={<PatientSearchPage role={USER_ROLE.PCSE} />}
               path={routes.UPLOAD_SEARCH}
             />
             <Route
-              element={<PatientSearchPage route={routes.DOWNLOAD_SEARCH} />}
+              element={<PatientSearchPage role={USER_ROLE.GP} />}
               path={routes.DOWNLOAD_SEARCH}
             />
             <Route
               element={<UploadDocumentsPage />}
               path={routes.UPLOAD_DOCUMENTS}
+            />
+            <Route
+              element={<PatientResultPage role={USER_ROLE.PCSE} />}
+              path={routes.UPLOAD_VERIFY}
+            />
+            <Route
+              element={<PatientResultPage role={USER_ROLE.GP} />}
+              path={routes.DOWNLOAD_VERIFY}
             />
           </Routes>
         </Layout>

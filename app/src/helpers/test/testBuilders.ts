@@ -4,9 +4,10 @@ import {
   UploadDocument,
   DOCUMENT_UPLOAD_STATE as documentUploadStates
 } from '../../types/pages/UploadDocumentsPage/types';
+import { Patient } from '../../types/generic/patient';
 
-const buildPatientDetails = (patientDetailsOverride: any) => {
-  return {
+const buildPatientDetails = (patientDetailsOverride?: Partial<Patient>) => {
+  const patient: Patient = {
     birthDate: '1970-01-01',
     familyName: 'Default Surname',
     givenName: ['Default Given Name'],
@@ -16,6 +17,8 @@ const buildPatientDetails = (patientDetailsOverride: any) => {
     restricted: false,
     ...patientDetailsOverride
   };
+
+  return patient;
 };
 
 const buildTextFile = (name: string, size?: number) => {

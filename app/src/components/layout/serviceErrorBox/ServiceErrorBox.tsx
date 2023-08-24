@@ -1,40 +1,39 @@
-import React from 'react';
-import type { ReactNode } from 'react';
-import Header from '../header/Header';
-import { Footer } from 'nhsuk-react-components';
+import { ErrorSummary } from 'nhsuk-react-components';
 
 type Props = {
-  children: ReactNode;
+  message?: string;
 };
 
-function Layout({ children }: Props) {
-  return (
-    <div>
-      <Header />
-      <div
-        className='nhsuk-width-container'
-        style={{
-          margin: `0 auto`,
-          maxWidth: 960,
-          padding: `0 1.0875rem 1.45rem`,
-          minHeight: '75vh'
-        }}
-      >
-        <main
-          className='nhsuk-main-wrapper app-homepage'
-          id='maincontent'
-          role='main'
-        >
-          <section className='app-homepage-content'>
-            <div>{children}</div>
-          </section>
-        </main>
-      </div>
-      <Footer>
-        <Footer.Copyright>&copy; {'Crown copyright'}</Footer.Copyright>
-      </Footer>
-    </div>
-  );
-}
+const ServiceError = ({ message }: Props) => {
+  const serviceErrorSummaryId = 'service-error-summary';
+  const defaultMessage = 'Please try again later.';
 
-export default Layout;
+  return (
+    <ErrorSummary
+      aria-labelledby={serviceErrorSummaryId}
+      role='alert'
+      tabIndex={-1}
+    >
+      <ErrorSummary.Title id={serviceErrorSummaryId}>
+        Sorry, the service is currently unavailable.
+      </ErrorSummary.Title>
+      <ErrorSummary.Body>
+        <p>{message || defaultMessage}</p>
+        <p>
+          Please check your internet connection. If the issue persists please
+          contact the{' '}
+          <a
+            href='https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks'
+            target='_blank'
+            rel='noreferrer'
+          >
+            NHS National Service Desk
+          </a>
+          .
+        </p>
+      </ErrorSummary.Body>
+    </ErrorSummary>
+  );
+};
+
+export default ServiceError;
