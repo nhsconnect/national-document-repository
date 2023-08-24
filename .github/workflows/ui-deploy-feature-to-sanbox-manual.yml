@@ -47,9 +47,6 @@ jobs:
   install-cypress-build:
     runs-on: ubuntu-22.04
     needs: ['react_testing_job']
-    defaults:
-      run:
-        working-directory: ./app
 
     steps:
       - name: Checkout
@@ -61,6 +58,7 @@ jobs:
           # Disable running of tests within install job
           runTests: false
           build: npm run build
+          working-directory: ./app
 
       - name: Save build folder
         uses: actions/upload-artifact@v3
