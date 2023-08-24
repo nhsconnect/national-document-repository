@@ -22,9 +22,6 @@ interface Props extends StageProps {
 }
 
 function SelectStage({
-  stage,
-  setStage,
-  documents,
   uploadDocuments,
   setDocuments,
 }: Props) {
@@ -151,6 +148,7 @@ function SelectStage({
                         e.preventDefault();
                         onRemove(index);
                       }}
+                      style={{"marginBottom": 0}}
                     >
                       X
                     </Button>

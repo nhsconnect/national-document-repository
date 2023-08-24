@@ -25,15 +25,14 @@ describe("<UploadDocumentsPage />", () => {
             setDocumentMock.mockImplementation((document) => {document.state = documentUploadStates.SELECTED, document.id = 1});
 
             const mockPatientDetails: PatientDetails = {
-                nhsNumber: 9999999999,
-                familyName: "testPatient",
-                givenName: ["Benedict", "Junior"],
-                birthDate: new Date("9/13/2017"),
-                postalCode: "SW8 3QJ",
-            };
+                nhsNumber: 111111111,
+                familyName: "test",
+                givenName: ["Gremlin", "Junior"],
+                birthDate: new Date("5/12/2022"),
+                postalCode: "BS37 5DH",
+            }
 
             render(<SelectStage setDocuments={setDocumentMock}
-                                patientDetails={mockPatientDetails}
                                 uploadDocuments={() => {}}
                                 stage={UPLOAD_STAGE.Selecting}
                                 setStage={() => {}}
@@ -41,14 +40,18 @@ describe("<UploadDocumentsPage />", () => {
             />)
 
             expect(screen.getByRole("heading", { name: "Upload documents" })).toBeInTheDocument();
+            expect(screen.getByText(mockPatientDetails.nhsNumber)).toBeInTheDocument();
             expect(screen.getByLabelText("Select file(s)")).toBeInTheDocument();
             expect(screen.getByRole("button", { name: "Upload" })).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Upload" })).toBeDisabled();
+
             act(() => {
             userEvent.upload(screen.getByLabelText("Select file(s)"), [documentOne, documentTwo, documentThree]);
             });
             expect(screen.getByText(documentOne.name)).toBeInTheDocument();
             expect(screen.getByText(documentTwo.name)).toBeInTheDocument();
             expect(screen.getByText(documentThree.name)).toBeInTheDocument();
+            expect(screen.getByRole("button", { name: "Upload" })).toBeEnabled();
         });
     });
 });
