@@ -119,4 +119,37 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ vars.BUILD_ENV }}_SearchPatientDetailsLambda
           zip_file: package_lambdas_search_patient_details_handler.zip
+
+  python_deploy_document_reference_search_lambda:
+    runs-on: ubuntu-latest
+    environment: perf
+    needs: [ "python_lambdas_test" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.buildBranch}}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Document Reference Search
+        run: |
+          make lambda_name=document_reference_search_handler zip
+
+      - name: Upload Lambda Function for DocumentReferenceSearchHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_SearchDocumentReferencesLambda
+          zip_file: package_lambdas_document_reference_search_handler.zip
         
