@@ -15,10 +15,7 @@ function UploadingStage({ stage, setStage, documents }: StageProps) {
         [DOCUMENT_UPLOAD_STATE.SUCCEEDED]: "Uploaded",
         [DOCUMENT_UPLOAD_STATE.FAILED]: "Upload failed",
     };
-  const docs = documents.map((doc: UploadDocument) => ({
-    ...doc,
-    file: doc.file.name
-  }));
+
   return  <>
                     <h1>Your documents are uploading</h1>
                     <WarningCallout>

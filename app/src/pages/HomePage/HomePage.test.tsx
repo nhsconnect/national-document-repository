@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import HomePage from './pages/HomePage';
+import HomePage from './index';
 import { useNavigate } from 'react-router';
 jest.mock('react-router');
 const mockNavigate = useNavigate as jest.Mock<typeof useNavigate>;
