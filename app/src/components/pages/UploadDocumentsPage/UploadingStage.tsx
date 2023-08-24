@@ -2,19 +2,18 @@ import React from 'react';
 import {
   DOCUMENT_UPLOAD_STATE,
   StageProps,
-  UploadDocument
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { Table, WarningCallout } from "nhsuk-react-components";
 import formatFileSize from "../../../helpers/utils/formatFileSize";
 
 
 function UploadingStage({ stage, setStage, documents }: StageProps) {
-  const uploadStateMessages : any = {
-        [DOCUMENT_UPLOAD_STATE.SELECTED]: "Waiting...",
-        [DOCUMENT_UPLOAD_STATE.UPLOADING]: "Uploading...",
-        [DOCUMENT_UPLOAD_STATE.SUCCEEDED]: "Uploaded",
-        [DOCUMENT_UPLOAD_STATE.FAILED]: "Upload failed",
-    };
+//   const uploadStateMessages : any = {
+//         [DOCUMENT_UPLOAD_STATE.SELECTED]: "Waiting...",
+//         [DOCUMENT_UPLOAD_STATE.UPLOADING]: "Uploading...",
+//         [DOCUMENT_UPLOAD_STATE.SUCCEEDED]: "Uploaded",
+//         [DOCUMENT_UPLOAD_STATE.FAILED]: "Upload failed",
+//     };
 
   return  <>
                     <h1>Your documents are uploading</h1>
