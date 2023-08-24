@@ -2,6 +2,7 @@ import React from 'react';
 import type { MouseEvent as ReactEvent } from 'react';
 import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
+import { routes } from '../../types/blocks/routes';
 
 type Props = {};
 
@@ -10,7 +11,7 @@ function HomePage(props: Props) {
 
   const navigateUpload = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
-    navigate('/upload');
+    navigate(routes.SELECT_ORG);
   };
 
   return (
