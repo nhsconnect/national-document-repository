@@ -1,17 +1,18 @@
-import React, { useState } from 'react';
-import { routes } from '../../types/blocks/routes';
-import { useForm } from 'react-hook-form';
-import ErrorBox from '../../components/layout/ErrorBox';
+import React, { useState } from "react";
+import { routes } from "../../types/blocks/routes";
+import { useForm } from "react-hook-form";
+import ErrorBox from "../../components/layout/ErrorBox";
+import ServiceError from "../ServiceError";
 
 type Props = {
   route: routes;
 };
 
 enum SEARCH_STATES {
-  IDLE = 'idle',
-  SEARCHING = 'searching',
-  SUCCEEDED = 'succeeded',
-  FAILED = 'failed'
+  IDLE = "idle",
+  SEARCHING = "searching",
+  SUCCEEDED = "succeeded",
+  FAILED = "failed",
 }
 
 function PatientSearchPage({ route }: Props) {
@@ -22,15 +23,15 @@ function PatientSearchPage({ route }: Props) {
   const [inputError, setInputError] = useState<null | string>(null);
 
   const { register, handleSubmit } = useForm({
-    reValidateMode: 'onSubmit'
+    reValidateMode: "onSubmit",
   });
-  const { ref: nhsNumberRef, ...searchProps } = register('nhsNumber', {
+  const { ref: nhsNumberRef, ...searchProps } = register("nhsNumber", {
     required: "Enter patient's 10 digit NHS number",
     pattern: {
       value:
         /(^[0-9]{10}$|^[0-9]{3}\s[0-9]{3}\s[0-9]{4}$|^[0-9]{3}-[0-9]{3}-[0-9]{4}$)/,
-      message: "Enter patient's 10 digit NHS number"
-    }
+      message: "Enter patient's 10 digit NHS number",
+    },
   });
 
   const userIsPCSE = route === routes.DOWNLOAD_SEARCH;
@@ -57,10 +58,10 @@ function PatientSearchPage({ route }: Props) {
             <ServiceError />
           ) : (
             <ErrorBox
-              messageTitle={'There is a problem'}
+              messageTitle={"There is a problem"}
               messageLinkBody={inputError}
-              errorInputLink={'#nhs-number-input'}
-              errorBoxSummaryId={'error-box-summary'}
+              errorInputLink={"#nhs-number-input"}
+              errorBoxSummaryId={"error-box-summary"}
             />
           )}
         </>
