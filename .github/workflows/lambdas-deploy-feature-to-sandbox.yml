@@ -36,11 +36,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Make virtual environement
+      - name: Make virtual environment
         run: | 
           make env
       
-      - name: Start virtual environement
+      - name: Start virtual environment
         run: |
           source ./lambdas/venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
@@ -64,7 +64,7 @@ jobs:
         with:
           ref: ${{ github.event.inputs.buildBranch}}
 
-      - name: Make virtual environement
+      - name: Make virtual environment
         run: | 
           make env
 
@@ -89,7 +89,7 @@ jobs:
   python_deploy_search_patient_details_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: ["python_lambdas_test"]
+    needs: [ "python_lambdas_test" ]
 
     steps:
       - name: Checkout
@@ -97,8 +97,8 @@ jobs:
         with:
           ref: ${{ github.event.inputs.buildBranch}}
 
-      - name: Make virtual environement
-        run: | 
+      - name: Make virtual environment
+        run: |
           make env
 
       - name: Configure AWS Credentials
@@ -111,12 +111,45 @@ jobs:
       - name: Create release package for Search Patient Details Reference
         run: |
           make lambda_name=search_patient_details_handler zip
-    
+
       - name: Upload Lambda Function for SearchPatientDetailsHandler
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_SearchPatientDetailsLambda
           zip_file: package_lambdas_search_patient_details_handler.zip
-        
+
+  python_deploy_document_reference_search_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: [ "python_lambdas_test" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.buildBranch}}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Document Reference Search
+        run: |
+          make lambda_name=document_reference_search_handler zip
+
+      - name: Upload Lambda Function for DocumentReferenceSearchHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}SearchDocumentReferencesLambda
+          zip_file: package_lambdas_document_reference_search_handler.zip
+
         
