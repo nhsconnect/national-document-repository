@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  DOCUMENT_UPLOAD_STATE,
+//   DOCUMENT_UPLOAD_STATE,
   StageProps,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { Table, WarningCallout } from "nhsuk-react-components";
