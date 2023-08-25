@@ -3,7 +3,7 @@ import { Button } from 'nhsuk-react-components';
 
 type Props = {
   status: string;
-  disabled: boolean;
+  disabled?: boolean;
 };
 
 const SpinnerButton = ({ status, disabled }: Props) => {

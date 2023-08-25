@@ -14,7 +14,9 @@ const NavLinks = () => {
 
   return isLoggedIn ? (
     <>
-      <Header.NavItem onClick={navigateRoot}>Home</Header.NavItem>
+      <Header.NavItem role='link' onClick={navigateRoot}>
+        Home
+      </Header.NavItem>
     </>
   ) : null;
 };

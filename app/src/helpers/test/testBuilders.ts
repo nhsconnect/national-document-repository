@@ -1,10 +1,10 @@
-import { nanoid } from 'nanoid';
 import {
   DOCUMENT_UPLOAD_STATE,
   UploadDocument,
   DOCUMENT_UPLOAD_STATE as documentUploadStates
 } from '../../types/pages/UploadDocumentsPage/types';
 import { Patient } from '../../types/generic/patient';
+import { nanoid } from 'nanoid/non-secure';
 
 const buildPatientDetails = (patientDetailsOverride?: Partial<Patient>) => {
   const patient: Patient = {

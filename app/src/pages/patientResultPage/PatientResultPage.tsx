@@ -1,10 +1,10 @@
-import React from "react";
-import { USER_ROLE } from "../../types/generic/roles";
-import { buildPatientDetails } from "../../helpers/test/testBuilders";
-import { Button, WarningCallout } from "nhsuk-react-components";
-import { useNavigate } from "react-router";
-import { routes } from "../../types/generic/routes";
-import PatientSummary from "../../components/pages/patientSummary/PatientSummary";
+import React from 'react';
+import { USER_ROLE } from '../../types/generic/roles';
+import { buildPatientDetails } from '../../helpers/test/testBuilders';
+import { Button, WarningCallout } from 'nhsuk-react-components';
+import { useNavigate } from 'react-router';
+import { routes } from '../../types/generic/routes';
+import PatientSummary from '../../components/pages/patientSummary/PatientSummary';
 
 type Props = {
   role: USER_ROLE;
@@ -13,6 +13,7 @@ type Props = {
 function PatientResultPage({ role }: Props) {
   const userIsPCSE = role === USER_ROLE.PCSE;
   const userIsGP = role === USER_ROLE.GP;
+
   const patientDetails = buildPatientDetails();
   const navigate = useNavigate();
 
@@ -30,11 +31,11 @@ function PatientResultPage({ role }: Props) {
   };
   return (
     <div style={{ maxWidth: 500 }}>
-      <h1 role="heading">Verify patient details</h1>
+      <h1 role='heading'>Verify patient details</h1>
       {patientDetails &&
         (patientDetails.superseded || patientDetails.restricted) && (
           <WarningCallout>
-            <WarningCallout.Label headingLevel="h2">
+            <WarningCallout.Label headingLevel='h2'>
               Information
             </WarningCallout.Label>
             {patientDetails.superseded && (
@@ -49,7 +50,7 @@ function PatientResultPage({ role }: Props) {
           </WarningCallout>
         )}
       {<PatientSummary patientDetails={patientDetails} />}
-      {userIsPCSE && (
+      {userIsGP && (
         <p>
           Ensure these patient details match the electronic health records and
           attachments you are about to upload.
@@ -58,11 +59,11 @@ function PatientResultPage({ role }: Props) {
 
       <Button onClick={handleVerify}>Accept details are correct</Button>
       <p>
-        If patient details are incorrect, please contact the{" "}
+        If patient details are incorrect, please contact the{' '}
         <a
-          href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
-          target="_blank"
-          rel="noreferrer"
+          href='https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks'
+          target='_blank'
+          rel='noreferrer'
         >
           NHS National Service Desk
         </a>

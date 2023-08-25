@@ -2,10 +2,10 @@ import { ErrorSummary } from 'nhsuk-react-components';
 
 type Props = {
   errorBoxSummaryId: string;
-  errorInputLink: string;
   messageTitle: string;
   messageBody?: string;
   messageLinkBody?: string;
+  errorInputLink?: string;
 };
 
 // @ts-ignore
