@@ -46,13 +46,13 @@ function PatientSearchPage({ role }: Props) {
     setSubmissionState(SEARCH_STATES.SEARCHING);
     // GP Role
     if (userIsGP) {
-      // Make PDS patient search request
+      // Make PDS patient search request to upload documents to patient
       navigate(routes.UPLOAD_VERIFY);
     }
 
     // PCSE Role
     else if (userIsPCSE) {
-      // Make PDS and Dynamo document store search request
+      // Make PDS and Dynamo document store search request to download documents from patient
       navigate(routes.DOWNLOAD_VERIFY);
     }
   };

@@ -24,9 +24,9 @@ function OrgSelectPage({}: Props) {
       return;
     }
     if (fieldValues.organisation === 'PCSE') {
-      navigate(routes.UPLOAD_SEARCH);
-    } else if (fieldValues.organisation === 'GP') {
       navigate(routes.DOWNLOAD_SEARCH);
+    } else if (fieldValues.organisation === 'GP') {
+      navigate(routes.UPLOAD_SEARCH);
     }
   };
 

@@ -12,6 +12,7 @@ import PatientResultPage from './pages/patientResultPage/PatientResultPage';
 import OrgSelectPage from './pages/orgSelectPage/OrgSelectPage';
 import Layout from './components/layout/Layout';
 import { USER_ROLE } from './types/generic/roles';
+import DownloadDocumentsPage from './pages/downloadDocumentsPage.tsx/DownloadDocumentsPage';
 
 function App() {
   return (
@@ -30,16 +31,20 @@ function App() {
               path={routes.DOWNLOAD_SEARCH}
             />
             <Route
-              element={<UploadDocumentsPage />}
-              path={routes.UPLOAD_DOCUMENTS}
-            />
-            <Route
               element={<PatientResultPage role={USER_ROLE.PCSE} />}
               path={routes.UPLOAD_VERIFY}
             />
             <Route
               element={<PatientResultPage role={USER_ROLE.GP} />}
               path={routes.DOWNLOAD_VERIFY}
+            />
+            <Route
+              element={<UploadDocumentsPage />}
+              path={routes.UPLOAD_DOCUMENTS}
+            />
+            <Route
+              element={<DownloadDocumentsPage />}
+              path={routes.DOWNLOAD_DOCUMENTS}
             />
           </Routes>
         </Layout>
