@@ -141,17 +141,16 @@ function SelectStage({
                   <Table.Cell>{document.file.name}</Table.Cell>
                   <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
                   <Table.Cell>
-                    <Button
+                    <a
                       aria-label={`Remove ${document.file.name} from selection`}
-                      href=""
-                      onClick={(e: MouseEvent<HTMLButtonElement>) => {
+                      href="#"
+                      onClick={(e: MouseEvent<HTMLElement>) => {
                         e.preventDefault();
                         onRemove(index);
                       }}
-                      style={{"marginBottom": 0}}
                     >
-                      X
-                    </Button>
+                      Remove
+                    </a>
                   </Table.Cell>
                 </Table.Row>
               ))}
