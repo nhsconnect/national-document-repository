@@ -1,18 +1,18 @@
-import React from 'react';
-import './styles/App.scss';
-import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import HomePage from './pages/homePage/HomePage';
-import ConfigProvider from './providers/configProvider/ConfigProvider';
-import config from './config';
-import { routes } from './types/generic/routes';
-import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
-import PatientResultPage from './pages/patientResultPage/PatientResultPage';
+import React from "react";
+import "./styles/App.scss";
+import UploadDocumentsPage from "./pages/uploadDocumentsPage/UploadDocumentsPage";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import HomePage from "./pages/homePage/HomePage";
+import ConfigProvider from "./providers/configProvider/ConfigProvider";
+import config from "./config";
+import { routes } from "./types/generic/routes";
+import PatientSearchPage from "./pages/patientSearchPage/PatientSearchPage";
+import PatientResultPage from "./pages/patientResultPage/PatientResultPage";
 
-import OrgSelectPage from './pages/orgSelectPage/OrgSelectPage';
-import Layout from './components/layout/Layout';
-import { USER_ROLE } from './types/generic/roles';
-import DownloadDocumentsPage from './pages/downloadDocumentsPage.tsx/DownloadDocumentsPage';
+import OrgSelectPage from "./pages/orgSelectPage/OrgSelectPage";
+import Layout from "./components/layout/Layout";
+import { USER_ROLE } from "./types/generic/roles";
+import DownloadDocumentsPage from "./pages/downloadDocumentsPage/DownloadDocumentsPage";
 
 function App() {
   return (

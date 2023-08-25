@@ -1,30 +1,30 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { act } from 'react-dom/test-utils';
-import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../../types/pages/UploadDocumentsPage/types';
-import { buildTextFile } from '../../../helpers/test/testBuilders';
-import UploadingStage from './UploadingStage';
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { act } from "react-dom/test-utils";
+import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from "../../../types/pages/UploadDocumentsPage/types";
+import { buildTextFile } from "../../../helpers/test/testBuilders";
+import UploadingStage from "./UploadingStage";
 
-jest.mock('react-router');
+jest.mock("react-router");
 
-describe('<UploadDocumentsPage />', () => {
-  describe('with NHS number', () => {
-    it('uploads documents and displays the progress', async () => {
+describe("<UploadDocumentsPage />", () => {
+  describe("with NHS number", () => {
+    it("uploads documents and displays the progress", async () => {
       const uploadDocumentMock = jest.fn();
       const documentOne = {
-        file: buildTextFile('one', 100),
+        file: buildTextFile("one", 100),
         state: documentUploadStates.SELECTED,
-        id: 1
+        id: 1,
       };
       const documentTwo = {
-        file: buildTextFile('two', 200),
+        file: buildTextFile("two", 200),
         state: documentUploadStates.SELECTED,
-        id: 2
+        id: 2,
       };
       const documentThree = {
-        file: buildTextFile('three', 100),
+        file: buildTextFile("three", 100),
         state: documentUploadStates.SELECTED,
-        id: 3
+        id: 3,
       };
       const uploadStateChangeTriggers = {};
       const resolvers = {};
@@ -57,11 +57,11 @@ describe('<UploadDocumentsPage />', () => {
       triggerUploadStateChange(documentOne, documentUploadStates.UPLOADING, 0);
 
       expect(
-        screen.queryByTestId('upload-document-form')
+        screen.queryByTestId("upload-document-form")
       ).not.toBeInTheDocument();
       expect(
         screen.getByText(
-          'Do not close or navigate away from this browser until upload is complete.'
+          "Do not close or navigate away from this browser until upload is complete."
         )
       ).toBeInTheDocument();
 
