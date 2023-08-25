@@ -5,7 +5,6 @@ import pytest
 from handlers.document_reference_search_handler import lambda_handler
 from utils.lambda_response import ApiGatewayResponse
 
-
 @pytest.fixture
 def valid_nhs_id_event():
     api_gateway_proxy_event = {
@@ -32,4 +31,3 @@ def test_lambda_handler_returns_200(valid_nhs_id_event, context):
     actual = lambda_handler(valid_nhs_id_event, context)
 
     assert actual == expected
-
