@@ -15,3 +15,11 @@ class ApiGatewayResponse:
             },
             "body": self.body,
         }
+
+    def __eq__(self, other):
+        return (
+                self.body == other.body and
+                self.status_code == other.status_code and
+                self.methods == other.methods)
+
+
