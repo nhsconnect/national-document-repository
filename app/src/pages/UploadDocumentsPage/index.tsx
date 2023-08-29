@@ -10,7 +10,6 @@ import {
 } from "../../types/pages/UploadDocumentsPage/types";
 import uploadDocument from "../../helpers/requests/uploadDocument";
 import { useBaseAPIUrl } from "../../providers/configProvider/ConfigProvider";
-import {PatientDetails} from "../../types/components/types";
 
 type Props = {};
 function UploadDocumentsPage(props: Props) {

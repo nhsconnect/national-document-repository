@@ -6,7 +6,7 @@ import {
     DOCUMENT_UPLOAD_STATE as documentUploadStates, UPLOAD_STAGE
 } from "../../../types/pages/UploadDocumentsPage/types";
 import { act } from "react-dom/test-utils";
-import {PatientDetails} from "../../../types/components/types";
+import { PatientDetails } from "../../../types/components/types";
 
 jest.mock("../../../helpers/utils/toFileList", () => ({
     __esModule: true,

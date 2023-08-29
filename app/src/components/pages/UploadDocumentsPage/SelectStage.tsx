@@ -6,12 +6,12 @@ import {
   StageProps,
   UploadDocument,
 } from "../../../types/pages/UploadDocumentsPage/types";
-import {Button, Fieldset, Input, Table, WarningCallout} from "nhsuk-react-components";
+import { Button, Fieldset, Input, Table, WarningCallout } from "nhsuk-react-components";
 import { useController, useForm } from "react-hook-form";
 import formatFileSize from "../../../helpers/utils/formatFileSize";
 import toFileList from "../../../helpers/utils/toFileList";
 import PatientSummary from "../../patientSummary/PatientSummary";
-import {PatientDetails} from "../../../types/components/types";
+import { PatientDetails } from "../../../types/components/types";
 interface FileInputEvent extends FormEvent<HTMLInputElement> {
   target: HTMLInputElement & EventTarget;
 }
