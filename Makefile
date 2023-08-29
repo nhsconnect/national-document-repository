@@ -84,3 +84,7 @@ docker-up:
 .PHONY: Docker Down
 docker-down:
 	cd ./app && docker-compose down
+
+.PHONY: Cypress Run
+cypress-open:
+	cd ./app && npx cypress open

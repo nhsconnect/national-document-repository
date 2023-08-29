@@ -37,18 +37,98 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
-    # needs confirmation on sass install location
-    - run: npm i sass 
-    # - run: npm run build --if-present
     - run: npm test
   
+  install-cypress-build:
+    runs-on: ubuntu-22.04
+    needs: ['react_testing_job']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Cypress install
+        uses: cypress-io/github-action@v5
+        with:
+          # Disable running of tests within install job
+          runTests: false
+          build: npm run build
+          working-directory: ./app
+
+      - name: Save build folder
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          if-no-files-found: error
+          path: ./app/build
+
+  cypress-run-chrome:
+    runs-on: ubuntu-22.04
+    needs: install-cypress-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download the build folder
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: ./app/build
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          start: npm start
+          browser: chrome
+          working-directory: ./app
+
+  cypress-run-firefox:
+    runs-on: ubuntu-22.04
+    needs: install-cypress-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download the build folder
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: ./app/build
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          start: npm start
+          browser: firefox
+          working-directory: ./app
+
+  cypress-run-edge:
+    runs-on: ubuntu-22.04
+    needs: install-cypress-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download the build folder
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: ./app/build
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          start: npm start
+          browser: edge
+          working-directory: ./app
+
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest
     environment: development
+    needs: ['cypress-run-edge', 'cypress-run-firefox', 'cypress-run-chrome']
     defaults:
       run:
         working-directory: ./app
-    needs: react_testing_job
     if: github.event.pull_request.merged
 
     steps:

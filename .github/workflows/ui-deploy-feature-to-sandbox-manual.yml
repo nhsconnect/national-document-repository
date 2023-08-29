@@ -41,25 +41,20 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
-    # needs confirmation on sass install location
-    - run: npm i sass 
-    # - run: npm run build --if-present
     - run: npm test
-  
+
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest
     environment: development
     defaults:
       run:
         working-directory: ./app
-    needs: react_testing_job
 
     steps:
     - uses: actions/checkout@v2
       with:
         ref: ${{ github.event.inputs.buildBranch}}
 
-  
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v2
       with:
