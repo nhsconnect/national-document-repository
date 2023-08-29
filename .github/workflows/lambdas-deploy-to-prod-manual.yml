@@ -19,7 +19,7 @@ jobs:
     environment: prod
     strategy:
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
@@ -54,6 +54,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     needs: ["python_lambdas_test"]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
@@ -68,6 +71,15 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+        
+      - name: Make virtual environement
+        run: | 
+          make env
 
       - name: Create release package for Create Document Reference
         run: |
@@ -84,6 +96,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     needs: ["python_lambdas_test"]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
@@ -92,10 +107,15 @@ jobs:
           ref: ${{ github.event.inputs.tagVersion}}
           fetch-depth: '0'
 
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - name: Make virtual environement
         run: | 
           make env
-
+          
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -118,12 +138,20 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     needs: [ "python_lambdas_test" ]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.tagVersion}}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environment
         run: |
