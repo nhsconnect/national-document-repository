@@ -2,6 +2,7 @@ import {
   DOCUMENT_UPLOAD_STATE,
   UploadDocument,
 } from "../../types/pages/UploadDocumentsPage/types";
+import axios from "axios";
 
 type Args = {
   setDocumentState: (
@@ -65,15 +66,17 @@ const uploadDocument = async ({
     });
     formData.append("file", document.file);
     const s3url = gatewayResponse.url;
-    const s3Response = await fetch(s3url, {
-      method: "POST",
-      body: formData,
-      // TODO, Figure out a progress callback that can update the progress for progress bar
 
-      // onUploadProgress: ({ total, loaded }) => {
-      // setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING, (loaded / total) * 100);
-      // },
-    });
+    const s3Response = await axios.post(s3url, formData, {
+      onUploadProgress: (progress => {
+        console.log(progress, "<--- axios progress");
+        const {loaded, total} = progress;
+        if (total) {
+          setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING, (loaded / total) * 100);
+        }
+      })
+    })
+
     if (s3Response.status === 204)
       setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED)
   } catch (e: any) {
