@@ -19,16 +19,18 @@ def lambda_handler(event, context):
         dynamodb = boto3.resource('dynamodb')
         table = dynamodb.Table(TABLE_NAME)
 
+        nhs_number = event["queryStringParameters"]["patientId"]
+
         response = table.query(
             IndexName='NhsNumberIndex',
-            KeyConditionExpression=Key('NhsNumber').eq('9449306621'),
+            KeyConditionExpression=Key('NhsNumber').eq(nhs_number),
             ProjectionExpression="Created, FileName"
         )
 
         if response is not None and 'Items' in response:
             results = response['Items']
         else:
-            logger.warning(f"Unrecognised response from DynamoDB: {response!r}")
+            logger.error(f"Unrecognised response from DynamoDB: {response!r}")
             return ApiGatewayResponse(500, "Unrecognised response from DynamoDB", "GET")
 
         return ApiGatewayResponse(200, results, "GET")
