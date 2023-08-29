@@ -32,7 +32,7 @@ function UploadingStage(documents : Array<UploadDocument>) {
                             <Table.Row>
                                 <Table.Cell>File Name</Table.Cell>
                                 <Table.Cell>File Size</Table.Cell>
-                                {/*<Table.Cell>File Upload Progress</Table.Cell>*/}
+                                <Table.Cell>File Upload Progress</Table.Cell>
                             </Table.Row>
                         </Table.Head>
                         <Table.Body>

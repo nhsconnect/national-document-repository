@@ -21,7 +21,7 @@ function UploadDocumentsPage(props: Props) {
     state: DOCUMENT_UPLOAD_STATE,
     progress?: number
   ) => {
-    let shallowDocumentsCopy = documents;
+    const shallowDocumentsCopy = [...documents];
     const hasDocument = documents.some((doc) => doc.id === id);
     if (hasDocument) {
       const idx = documents.findIndex((doc) => doc.id === id);
