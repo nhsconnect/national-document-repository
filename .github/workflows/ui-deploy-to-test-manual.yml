@@ -36,8 +36,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - run: npm ci
-    # needs confirmation on sass install location
-    - run: npm i sass 
     # - run: npm run build --if-present
     - run: npm test
   

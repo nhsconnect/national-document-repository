@@ -1,50 +1,39 @@
-# Getting Started with Create React App
+## National Document Repository User Interface
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### Intro
+ 
+The National Document Repository user interface (UI) has been developed with React. This is a developer's guide to run the UI and tools locally. 
 
-## Available Scripts
+### Requirements
 
-In the project directory, you can run:
+- Node: Version 16.0 or greater.
+- NPM: this should come installed with Node but if not version 8.3.1 or greater is recommended.
+- Browser: Of your choice, Chrome tends to have better development tools. 
 
-### `npm start`
+### Running the app
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+To run the UI, the team has created a Makefile in the route directory, on your first run you will need to install the required node packages for the app through a command line interface (CLI)..
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+    make install  
 
-### `npm test`
+Once the packages have been installed, you can then run the app through the following command
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+	make start
 
-### `npm run build`
+Once everything is up and running you should see a prompt in the CLI that the app is running on http://localhost:3000. You should now be able to visit the site in a browser of your choice. 
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Testing
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+There are two test paths through the app. 
+The first is unit testing. To run the unit tests within the project, you can run the following command via the CLI on the route directory…
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+	make test
 
-### `npm run eject`
+You will see the output from the tests in the CLI.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+The second is E2E / component testing through Cypress. Firstly you must have the app running through the “running the app steps”. Secondly you will want a second CLI terminal to be apple to run the following command…
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+	make cypress-open
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+This will open the cypress testing UI. At the time of writing, we would recommend following the UI through the E2E selection options to view and run the E2E tests if this is your first time using Cypress.  
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-
-
-README modifications to trigger change
