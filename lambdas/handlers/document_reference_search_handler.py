@@ -30,4 +30,4 @@ def lambda_handler(event, context):
     except ClientError as e:
         logger.error("Unable to connect to DB")
         logger.error(e)
-        return
+        return ApiGatewayResponse(500, "error", "GET")
