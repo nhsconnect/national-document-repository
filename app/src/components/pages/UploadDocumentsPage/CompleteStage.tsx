@@ -8,7 +8,7 @@ function CompleteStage({ stage, setStage, documents }: StageProps) {
   const navigate = useNavigate();
 
   return <>
-    <UploadSummary documents={documents}></UploadSummary>
+    <UploadSummary documents={documents} setStage={setStage} stage={stage}></UploadSummary>
     <p style={{fontWeight: "600"}}>If you want to upload another patient&apos;s health record</p>
     <Button
         onClick={() => {
