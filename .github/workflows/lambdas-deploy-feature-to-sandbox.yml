@@ -56,6 +56,9 @@ jobs:
   python_deploy_create_document_reference_lambda:
     runs-on: ubuntu-latest
     environment: development
+    strategy:
+      matrix:
+        python-version: [ "3.11" ]
     needs: ["python_lambdas_test"]
 
     steps:
@@ -89,6 +92,9 @@ jobs:
   python_deploy_search_patient_details_lambda:
     runs-on: ubuntu-latest
     environment: development
+    strategy:
+      matrix:
+        python-version: [ "3.11" ]
     needs: [ "python_lambdas_test" ]
 
     steps:
@@ -122,6 +128,9 @@ jobs:
   python_deploy_document_reference_search_lambda:
     runs-on: ubuntu-latest
     environment: development
+    strategy:
+      matrix:
+        python-version: [ "3.11" ]
     needs: [ "python_lambdas_test" ]
 
     steps:
