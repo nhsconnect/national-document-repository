@@ -50,6 +50,26 @@ MOCK_RESPONSE = {"Items": [
     }
 }
 
+MOCK_EMPTY_RESPONSE = {"Items": [
+],
+    "Count": 5,
+    "ScannedCount": 5,
+    "ResponseMetadata": {
+        "RequestId": "JHJBP4GU007VMB2V8C9NEKUL8VVV4KQNSO5AEMVJF66Q9ASUAAJG",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "server": "Server",
+            "date": "Tue, 29 Aug 2023 11:08:21 GMT",
+            "content-type": "application/x-amz-json-1.0",
+            "content-length": "510",
+            "connection": "keep-alive",
+            "x-amzn-requestid": "JHJBP4GU007VMB2V8C9NEKUL8VVV4KQNSO5AEMVJF66Q9ASUAAJG",
+            "x-amz-crc32": "820258331"
+        },
+        "RetryAttempts": 0
+    }
+}
+
 EXPECTED_RESPONSE = [
     {
         "FileName": "Screenshot 2023-08-16 at 15.26.11.png",
@@ -105,10 +125,32 @@ def mock_dynamo_table():
     return MagicMock()
 
 
-def test_lambda_handler_returns_200(valid_nhs_id_event, context, mock_dynamo_table, mock_boto3_dynamo):
+def test_lambda_handler_returns_items_from_dynamo(valid_nhs_id_event, context, mock_dynamo_table, mock_boto3_dynamo):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
         mock_dynamo_table.query.return_value = MOCK_RESPONSE
         expected = ApiGatewayResponse(200, EXPECTED_RESPONSE, "GET")
         actual = lambda_handler(valid_nhs_id_event, context)
-        assert expected.__eq__(actual)
+        assert expected == actual
+
+
+def test_lambda_handler_returns_200_empty_list_when_dynamo_returns_no_records(valid_nhs_id_event, context,
+                                                                              mock_dynamo_table,
+                                                                              mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.query.return_value = MOCK_EMPTY_RESPONSE
+        expected = ApiGatewayResponse(200, [], "GET")
+        actual = lambda_handler(valid_nhs_id_event, context)
+        assert expected == actual
+
+
+def test_lambda_handler_returns_500_when_dynamo_has_unexpected_response(valid_nhs_id_event, context,
+                                                                        mock_dynamo_table,
+                                                                        mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.query.return_value = {}
+        expected = ApiGatewayResponse(500, "Unrecognised response from DynamoDB", "GET")
+        actual = lambda_handler(valid_nhs_id_event, context)
+        assert expected == actual

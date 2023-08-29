@@ -25,7 +25,13 @@ def lambda_handler(event, context):
             ProjectionExpression="Created, FileName"
         )
 
-        return ApiGatewayResponse(200, response['Items'], "GET")
+        if response is not None and 'Items' in response:
+            results = response['Items']
+        else:
+            logger.warning(f"Unrecognised response from DynamoDB: {response!r}")
+            return ApiGatewayResponse(500, "Unrecognised response from DynamoDB", "GET")
+
+        return ApiGatewayResponse(200, results, "GET")
 
     except ClientError as e:
         logger.error("Unable to connect to DB")
