@@ -57,13 +57,21 @@ jobs:
     runs-on: ubuntu-latest
     environment: perf
     needs: ["python_lambdas_test"]
-
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+        
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: '0'
           ref: ${{ github.event.inputs.buildBranch}}
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
         run: | 
@@ -91,12 +99,20 @@ jobs:
     runs-on: ubuntu-latest
     environment: perf
     needs: ["python_lambdas_test"]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.buildBranch}}
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
         run: | 
@@ -124,12 +140,20 @@ jobs:
     runs-on: ubuntu-latest
     environment: perf
     needs: [ "python_lambdas_test" ]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.buildBranch}}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environment
         run: |
