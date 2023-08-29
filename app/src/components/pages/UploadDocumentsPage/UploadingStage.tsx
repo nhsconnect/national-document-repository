@@ -40,20 +40,20 @@ function UploadingStage(documents : Array<UploadDocument>) {
                                 <Table.Row key={document.id}>
                                     <Table.Cell>{document.file.name}</Table.Cell>
                                     <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
-                                    {/*<Table.Cell>*/}
-                                    {/*    <progress*/}
-                                    {/*        aria-label={`Uploading ${document.file.name}`}*/}
-                                    {/*        max="100"*/}
-                                    {/*        value={document.progress}*/}
-                                    {/*    ></progress>*/}
-                                    {/*    <p role="status" aria-label={`${document.file.name} upload status`}>*/}
-                                    {/*        {document.state === DOCUMENT_UPLOAD_STATE.UPLOADING ? (*/}
-                                    {/*            <> {Math.round(document.progress)}% uploaded... </>*/}
-                                    {/*        ) : (*/}
-                                    {/*            uploadStateMessages[document.state]*/}
-                                    {/*        )}*/}
-                                    {/*    </p>*/}
-                                    {/*</Table.Cell>*/}
+                                    <Table.Cell>
+                                        <progress
+                                            aria-label={`Uploading ${document.file.name}`}
+                                            max="100"
+                                            value={document.progress}
+                                        ></progress>
+                                        <p role="status" aria-label={`${document.file.name} upload status`}>
+                                            {document.state === DOCUMENT_UPLOAD_STATE.UPLOADING ? (
+                                                <> {Math.round(document.progress)}% uploaded... </>
+                                            ) : (
+                                                uploadStateMessages[document.state]
+                                            )}
+                                        </p>
+                                    </Table.Cell>
                                 </Table.Row>
                             ))}
                         </Table.Body>
