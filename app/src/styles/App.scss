@@ -19,11 +19,11 @@
 
 .spinner_button {
   display: flex;
-  background: $color_nhsuk-yellow;
+  background: $color_nhsuk-green;
 
   &:hover {
     color: $color_nhsuk-black;
-    background: $color_nhsuk-yellow;
+    background: $color_nhsuk-green;
   }
   &-spinner {
     border: nhsuk-spacing(1) solid rgba($color_nhsuk-white, 0.8);

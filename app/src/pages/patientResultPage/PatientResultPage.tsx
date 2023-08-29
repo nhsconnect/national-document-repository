@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { USER_ROLE } from '../../types/generic/roles';
-import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import PatientSummary from '../../components/pages/patientSummary/PatientSummary';
+import {
+  PatientContext,
+  usePatientDetailsContext
+} from '../../providers/patientProvider/PatientProvider';
 
 type Props = {
   role: USER_ROLE;
@@ -13,9 +16,14 @@ type Props = {
 function PatientResultPage({ role }: Props) {
   const userIsPCSE = role === USER_ROLE.PCSE;
   const userIsGP = role === USER_ROLE.GP;
-
-  const patientDetails = buildPatientDetails();
+  const [patientDetails] = usePatientDetailsContext() as PatientContext;
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!patientDetails) {
+      navigate(routes.HOME);
+    }
+  }, [patientDetails, navigate]);
 
   const handleVerify = () => {
     if (userIsGP) {
@@ -49,7 +57,7 @@ function PatientResultPage({ role }: Props) {
             )}
           </WarningCallout>
         )}
-      {<PatientSummary patientDetails={patientDetails} />}
+      {patientDetails && <PatientSummary patientDetails={patientDetails} />}
       {userIsGP && (
         <p>
           Ensure these patient details match the electronic health records and

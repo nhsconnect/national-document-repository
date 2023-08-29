@@ -59,23 +59,27 @@ default: help
 
 .PHONY: Install
 install:
-	cd ./app && npm install
+	npm --prefix ./app install
 
 .PHONY: Clean install
 clean-install:
-	cd ./app && npm ci
+		npm --prefix ./app ci
 
 .PHONY: Start
 start:
-	cd ./app && npm start
+		npm --prefix ./app start
 
 .PHONY: Test
 test:
-	cd ./app && npm run test-all
+		npm --prefix ./app run test-all
+
+.PHONY: Storybook
+storybook:
+		npm --prefix ./app run storybook
 
 .PHONY: Build
 build:
-	cd ./app && npm run build
+	npm --prefix ./app run build
 
 .PHONY: Docker Up
 docker-up:

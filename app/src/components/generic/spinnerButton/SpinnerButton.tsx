@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'nhsuk-react-components';
 
-type Props = {
+export type Props = {
   status: string;
   disabled?: boolean;
 };

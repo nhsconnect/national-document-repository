@@ -7,12 +7,15 @@ import { useNavigate } from 'react-router';
 type Props = {};
 
 const Header = (props: Props) => {
+  const navigateHome = () => {
+    navigate(routes.HOME);
+  };
   const navigate = useNavigate();
   return (
     <NhsHeader transactional>
       <NhsHeader.Container>
-        <NhsHeader.Logo onClick={() => navigate(routes.HOME)} />
-        <NhsHeader.ServiceName onClick={() => navigate(routes.HOME)}>
+        <NhsHeader.Logo onClick={navigateHome} />
+        <NhsHeader.ServiceName onClick={navigateHome}>
           Inactive Patient Record Administration
         </NhsHeader.ServiceName>
       </NhsHeader.Container>
