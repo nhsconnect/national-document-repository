@@ -69,6 +69,10 @@ clean-install:
 start:
 		npm --prefix ./app start
 
+.PHONY: format
+format:
+		npm --prefix ./app format
+
 .PHONY: Test
 test:
 		npm --prefix ./app run test-all
