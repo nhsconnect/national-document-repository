@@ -21,18 +21,16 @@ function UploadDocumentsPage(props: Props) {
     state: DOCUMENT_UPLOAD_STATE,
     progress?: number
   ) => {
-    const shallowDocumentsCopy = [...documents];
-    const hasDocument = documents.some((doc) => doc.id === id);
-    if (hasDocument) {
-      const idx = documents.findIndex((doc) => doc.id === id);
-      if (progress) {
-        shallowDocumentsCopy[idx].progress = progress;
-      }
-      if (state) {
-        shallowDocumentsCopy[idx].state = state;
-      }
-    }
-    setDocuments(shallowDocumentsCopy);
+    setDocuments(prevDocuments => {
+      const updatedDocuments = prevDocuments.map((document) => {
+        if (document.id === id) {
+          progress = progress ?? document.progress;
+          return {...document, state, progress};
+        }
+        return document;
+      });
+      return updatedDocuments;
+    })
   };
 
   const mockPatient = {
