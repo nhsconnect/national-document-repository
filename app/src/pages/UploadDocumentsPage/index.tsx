@@ -61,7 +61,7 @@ function UploadDocumentsPage(props: Props) {
       />
     );
   } else if (stage === UPLOAD_STAGE.Uploading) {
-    return <UploadingStage {...documents} />;
+    return <UploadingStage documents={documents} />;
   } else if (stage === UPLOAD_STAGE.Complete) {
     return <CompleteStage documents={documents}/>;
   }

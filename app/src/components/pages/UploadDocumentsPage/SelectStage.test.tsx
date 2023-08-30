@@ -3,7 +3,7 @@ import SelectStage from "./SelectStage";
 import { buildTextFile } from "../../../helpers/test/testBuilders";
 import userEvent from "@testing-library/user-event";
 import {
-    DOCUMENT_UPLOAD_STATE as documentUploadStates, UploadDocument
+    DOCUMENT_UPLOAD_STATE as documentUploadStates
 } from "../../../types/pages/UploadDocumentsPage/types";
 import { act } from "react-dom/test-utils";
 import { PatientDetails } from "../../../types/components/types";
@@ -22,15 +22,19 @@ describe("<UploadDocumentsPage />", () => {
         const documentThree = buildTextFile("three", 100);
 
         const setDocumentMock = jest.fn();
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions,no-sequences
-        setDocumentMock.mockImplementation((document) => {document.state = documentUploadStates.SELECTED, document.id = '1'});
+        setDocumentMock.mockImplementation((document) => {
+            document.state = documentUploadStates.SELECTED;
+            document.id = '1'
+        });
 
         const mockPatientDetails: PatientDetails = {
-            nhsNumber: 111111111,
+            nhsNumber: "111111111",
             familyName: "test",
             givenName: ["Gremlin", "Junior"],
-            birthDate: new Date("5/12/2022"),
+            birthDate: "5/12/2022",
             postalCode: "BS37 5DH",
+            superseded: false,
+            restricted: false
         }
 
         it("renders the page", () => {
