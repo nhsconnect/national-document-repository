@@ -2,12 +2,7 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import './styles/App.scss';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
-import {
-  BrowserRouter as Router,
-  Route,
-  Routes,
-  Outlet
-} from 'react-router-dom';
+import { Router, Route, Routes, Outlet } from 'react-router-dom';
 import HomePage from './pages/homePage/HomePage';
 import ConfigProvider from './providers/configProvider/ConfigProvider';
 import config from './config';
