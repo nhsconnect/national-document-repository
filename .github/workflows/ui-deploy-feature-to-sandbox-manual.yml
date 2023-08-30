@@ -83,7 +83,7 @@ jobs:
     # We will always use the "latest" image tag so we do not need to modify the task-definition
     - name: Download task definition
       run: |
-        aws ecs describe-task-definition --task-definition ndra-ndr-service-task --query taskDefinition > task-definition.json
+        aws ecs describe-task-definition --task-definition ${{ github.event.inputs.sandboxWorkspace}}-ndr-service-task --query taskDefinition > task-definition.json
     
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
