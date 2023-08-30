@@ -1,4 +1,38 @@
-clean: clean-build clean-py clean-test
+default: help
+
+.PHONY: Install
+install:
+	npm --prefix ./app install
+
+.PHONY: Clean install
+clean-install:
+		npm --prefix ./app ci
+
+.PHONY: Start
+start:
+		npm --prefix ./app start
+
+.PHONY: Test
+test:
+		npm --prefix ./app run test-all
+
+.PHONY: Storybook
+storybook:
+		npm --prefix ./app run storybook
+
+.PHONY: Build
+build:
+	npm --prefix ./app run build
+
+.PHONY: Docker Up
+docker-up:
+	cd ./app && docker-compose up -d
+
+.PHONY: Docker Down
+docker-down:
+	cd ./app && docker-compose down
+
+	clean: clean-build clean-py clean-test
 
 clean-build:
 	rm -fr build/
@@ -26,6 +60,7 @@ format:
 	./lambdas/venv/bin/python3 -m isort lambdas/utils/. 
 	./lambdas/venv/bin/python3 -m isort lambdas/services/. 
 	./lambdas/venv/bin/python3 -m isort lambdas/tests/. 
+	npm --prefix ./app run format
 
 test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
@@ -54,41 +89,3 @@ zip:
 	cd ../..
 
 package: format zip
-
-default: help
-
-.PHONY: Install
-install:
-	npm --prefix ./app install
-
-.PHONY: Clean install
-clean-install:
-		npm --prefix ./app ci
-
-.PHONY: Start
-start:
-		npm --prefix ./app start
-
-.PHONY: format
-format:
-		npm --prefix ./app format
-
-.PHONY: Test
-test:
-		npm --prefix ./app run test-all
-
-.PHONY: Storybook
-storybook:
-		npm --prefix ./app run storybook
-
-.PHONY: Build
-build:
-	npm --prefix ./app run build
-
-.PHONY: Docker Up
-docker-up:
-	cd ./app && docker-compose up -d
-
-.PHONY: Docker Down
-docker-down:
-	cd ./app && docker-compose down
