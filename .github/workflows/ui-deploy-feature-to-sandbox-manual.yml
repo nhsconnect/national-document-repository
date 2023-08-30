@@ -106,5 +106,5 @@ jobs:
     - name: De-register previous revision
       run: |
         aws ecs deregister-task-definition \
-          --task-definition ${{ env.task-definition }}:${{ steps.download-task.outputs.revision }}
+          --task-definition ${{ github.event.inputs.sandboxWorkspace}}-ndr-service-task:${{ steps.download-task.outputs.revision }}
   
