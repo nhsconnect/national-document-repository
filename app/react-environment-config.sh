@@ -8,7 +8,7 @@ fi
 cp .env.template .env
 
 SEDOPTION='-i ' 
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [ -z "$OSTYPE" -a "$OSTYPE" == "darwin"* ]; then
   SEDOPTION='-i '' '
 fi
 
