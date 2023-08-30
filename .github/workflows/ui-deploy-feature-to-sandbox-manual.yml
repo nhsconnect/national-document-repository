@@ -68,11 +68,11 @@ jobs:
     
     - name: Configure React environment vars
       env:
-        REACT_APP_DOC_STORE_API_ENDPOINT: test
-        REACT_APP_AWS_REGION: ${{ vars.AWS_REGION }}
-        REACT_APP_OIDC_PROVIDER_ID: test
-        REACT_APP_ENVIRONMENT: development
-        REACT_APP_IMAGE_VERSION: "ndr-${{ github.event.inputs.sandboxWorkspace}}-app:${{ github.sha }}"
+        ENDPOINT_DOC_STORE_API: test
+        AWS_REGION: ${{ vars.AWS_REGION }}
+        OIDC_PROVIDER_ID: test
+        BUILD_ENV: development
+        IMAGE_VERSION: "ndr-${{ github.event.inputs.sandboxWorkspace}}-app:${{ github.sha }}"
       run: |
         ./react-environment-config.sh
         
