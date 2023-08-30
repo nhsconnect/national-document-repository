@@ -7,7 +7,7 @@ import {getFormattedDate} from "../../../helpers/utils/formatDate";
 import PatientSummary from "../../patientSummary/PatientSummary";
 import {PatientDetails} from "../../../types/components/types";
 
-interface Props {
+export interface Props {
   documents : Array<UploadDocument>
 }
 const UploadSummary = ({documents} : Props ) => {
@@ -30,11 +30,11 @@ const UploadSummary = ({documents} : Props ) => {
         </>
     );
 
-    const mockPatientDetails: PatientDetails = {
-        nhsNumber: 111111111,
+    const mockPatientDetails:Partial<PatientDetails> = {
+        nhsNumber: "111111111",
         familyName: "test",
         givenName: ["Gremlin", "Junior"],
-        birthDate: new Date("5/12/2022"),
+        birthDate: "5/12/2022",
         postalCode: "BS37 5DH",
     }
 

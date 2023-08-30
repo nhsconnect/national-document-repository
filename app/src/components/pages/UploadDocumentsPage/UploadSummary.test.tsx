@@ -1,7 +1,10 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import UploadSummary from "./UploadSummary";
-import {DOCUMENT_UPLOAD_STATE as documentUploadStates} from "../../../types/pages/UploadDocumentsPage/types";
+import UploadSummary, { Props } from "./UploadSummary";
+import {
+    DOCUMENT_UPLOAD_STATE as documentUploadStates,
+    UploadDocument
+} from "../../../types/pages/UploadDocumentsPage/types";
 import { formatFileSize as formatSize } from "../../../helpers/utils/formatFileSize";
 import { getFormattedDate } from "../../../helpers/utils/formatDate";
 import { buildDocument, buildTextFile } from "../../../helpers/test/testBuilders";
@@ -42,7 +45,7 @@ describe("UploadSummary", () => {
     });
 
     it("displays a collapsible list of successfully uploaded docs", () => {
-        const files = [buildTextFile(), buildTextFile()];
+        const files = [buildTextFile("test1"), buildTextFile("test2")];
         const documents = files.map((file) => buildDocument(file, documentUploadStates.SUCCEEDED));
 
         renderUploadSummary({ documents });
@@ -77,7 +80,7 @@ describe("UploadSummary", () => {
     });
 
     it("does not display the successfully uploads docs list when all of the docs failed to upload", () => {
-        const documents = [buildDocument(buildTextFile(), documentUploadStates.FAILED)];
+        const documents = [buildDocument(buildTextFile("test1"), documentUploadStates.FAILED)];
 
         renderUploadSummary({ documents });
 
@@ -108,8 +111,8 @@ describe("UploadSummary", () => {
 
     it("displays an alert if some of the docs failed to upload", () => {
         const documents = [
-            buildDocument(buildTextFile(), documentUploadStates.SUCCEEDED),
-            buildDocument(buildTextFile(), documentUploadStates.FAILED),
+            buildDocument(buildTextFile("test1"), documentUploadStates.SUCCEEDED),
+            buildDocument(buildTextFile("test2"), documentUploadStates.FAILED),
         ];
 
         renderUploadSummary({ documents });
@@ -133,7 +136,7 @@ describe("UploadSummary", () => {
 
         renderUploadSummary({ documents });
 
-        const failedToUploadDocsTable = screen.getByRole("table", { id: "failed-uploads" });
+        const failedToUploadDocsTable = screen.getByRole("table", { name: /failed to upload/});
         files.forEach(({ name, size }) => {
             expect(within(failedToUploadDocsTable).getByText(name)).toBeInTheDocument();
             expect(within(failedToUploadDocsTable).getByText(formatSize(size))).toBeInTheDocument();
@@ -142,7 +145,7 @@ describe("UploadSummary", () => {
 
     it("displays number of failed uploads and total uploads when there is at least 1 failed upload", () => {
         const files = [buildTextFile("one", 100), buildTextFile("two", 101)];
-        const documents = files.map((file) => buildDocument(file, documentUploadStates.FAILED));
+        const documents:Array<UploadDocument> = files.map((file) => buildDocument(file, documentUploadStates.FAILED));
 
         renderUploadSummary({ documents });
 
@@ -150,8 +153,8 @@ describe("UploadSummary", () => {
     });
 });
 
-const renderUploadSummary = (propsOverride) => {
-    const props = {
+const renderUploadSummary = (propsOverride:Partial<Props>) => {
+    const props:Props = {
         documents: [],
         ...propsOverride,
     };
