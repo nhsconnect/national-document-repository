@@ -8,11 +8,9 @@ fi
 cp .env.template .env
 
 SEDOPTION='-i ' 
-if [ -z "$OSTYPE" -a]; then 
-    if ["$OSTYPE" == "darwin"* ]; then
-        SEDOPTION='-i '' '
-    fi
-fi
+# if [ -z "$OSTYPE" -a "$OSTYPE" == "darwin"* ]; then
+#   SEDOPTION='-i '' '
+# fi
 
 sed -i '' "s/%DOC_STORE_API_ENDPOINT%/${ENDPOINT_DOC_STORE_API}/" .env
 sed -i '' "s/%AWS_REGION%/${AWS_REGION}/" .env
