@@ -8,7 +8,7 @@ type Props = {};
 
 function HomePage(props: Props) {
   const navigate = useNavigate();
-  const endpoint = config.API.endpoints[0].endpoint;
+  const url = config.API.endpoints[0].endpoint;
 
   const navigateUpload = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
@@ -48,8 +48,13 @@ function HomePage(props: Props) {
       <ButtonLink role='button' onClick={navigateUpload}>
         Start now
       </ButtonLink>
-      <p>Current API Endpoint: {endpoint}</p>
+
+      <p> API endpoint: {process.env.REACT_APP_DOC_STORE_API_ENDPOINT}</p>
+      <p> Image Version: {process.env.REACT_APP_IMAGE_VERSION}</p>
+      
     </>
+
+    
   );
 }
 
