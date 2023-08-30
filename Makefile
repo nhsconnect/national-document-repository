@@ -6,15 +6,24 @@ install:
 
 .PHONY: Clean install
 clean-install:
-		npm --prefix ./app ci
+	npm --prefix ./app ci
 
 .PHONY: Start
 start:
-		npm --prefix ./app start
+	npm --prefix ./app start
 
 .PHONY: Test
 test:
-		npm --prefix ./app run test-all
+	npm --prefix ./app run test-all
+
+.PHONY: Pre-commit
+pre-commit:
+	cd ./app && npx lint-staged 
+
+.PHONY: Pre-push
+pre-push:
+	make test
+
 
 .PHONY: Storybook
 storybook:
