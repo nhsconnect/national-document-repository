@@ -6,10 +6,12 @@ import {
   StageProps,
   UploadDocument,
 } from "../../../types/pages/UploadDocumentsPage/types";
-import { Button, Input, Table, WarningCallout } from "nhsuk-react-components";
+import { Button, Fieldset, Input, Table, WarningCallout } from "nhsuk-react-components";
 import { useController, useForm } from "react-hook-form";
 import formatFileSize from "../../../helpers/utils/formatFileSize";
 import toFileList from "../../../helpers/utils/toFileList";
+import PatientSummary from "../../patientSummary/PatientSummary";
+import { PatientDetails } from "../../../types/components/types";
 interface FileInputEvent extends FormEvent<HTMLInputElement> {
   target: HTMLInputElement & EventTarget;
 }
@@ -20,15 +22,12 @@ interface Props extends StageProps {
 }
 
 function SelectStage({
-  stage,
-  setStage,
-  documents,
   uploadDocuments,
   setDocuments,
 }: Props) {
   let inputRef = useRef<HTMLInputElement | null>(null);
   const FIVEGB = 5 * Math.pow(1024, 3);
-  const { control } = useForm();
+  const { handleSubmit, control, formState } = useForm();
   const {
     field: { ref, onChange, onBlur, name, value },
     fieldState,
@@ -82,66 +81,98 @@ function SelectStage({
       inputRef.current.files = toFileList(updatedValues);
     }
   };
+
+  const mockPatientDetails: PatientDetails = {
+    nhsNumber: 111111111,
+    familyName: "test",
+    givenName: ["Gremlin", "Junior"],
+    birthDate: new Date("5/12/2022"),
+    postalCode: "BS37 5DH",
+  }
+
   return (
     <>
-      <h1>Upload documents</h1>
-      <Input
-        id="documents-input"
-        label="Select file(s)"
-        type="file"
-        multiple={true}
-        name={name}
-        error={fieldState.error?.message}
-        onChange={onInput}
-        onBlur={onBlur}
-        // @ts-ignore  The NHS Component library is outdated and does not allow for any reference other than a blank MutableRefObject
-        inputRef={(e: HTMLInputElement) => {
-          ref(e);
-          inputRef.current = e;
-        }}
-      />
-      <div role="region" aria-live="polite">
-        {value && value.length > 0 && (
-          <Table caption="Selected documents">
-            <Table.Head>
-              <Table.Row>
-                <Table.Cell>Filename</Table.Cell>
-                <Table.Cell>Size</Table.Cell>
-                <Table.Cell>Remove</Table.Cell>
-              </Table.Row>
-            </Table.Head>
+      <form onSubmit={handleSubmit(uploadDocuments)} noValidate data-testid="upload-document-form">
+        <Fieldset>
+          <Fieldset.Legend headingLevel="h1" isPageHeading>
+            Upload documents
+          </Fieldset.Legend>
+          <PatientSummary patientDetails={mockPatientDetails} />
+          <Input
+              id="documents-input"
+              label="Select file(s)"
+              type="file"
+              multiple={true}
+              name={name}
+              error={fieldState.error?.message}
+              onChange={onInput}
+              onBlur={onBlur}
+              // @ts-ignore  The NHS Component library is outdated and does not allow for any reference other than a blank MutableRefObject
+              inputRef={(e: HTMLInputElement) => {
+                ref(e);
+                inputRef.current = e;
+              }}
+              // @ts-ignore
+              hint={
+                <ul>
+                  <li>{"A patient's full electronic health record including attachments must be uploaded."}</li>
+                  <li>{"You can select multiple files to upload at once."}</li>
+                  <li>
+                    In the event documents cannot be uploaded, they must be printed and sent via{" "}
+                    <a href="https://secure.pcse.england.nhs.uk/" target="_blank" rel="noreferrer">
+                      Primary Care Support England
+                    </a>
+                    .
+                  </li>
+                </ul>
+              }
+          />
+          <div role="region" aria-live="polite">
+            {value && value.length > 0 && (
+                <Table caption="Selected documents">
+                  <Table.Head>
+                    <Table.Row>
+                      <Table.Cell>Filename</Table.Cell>
+                      <Table.Cell>Size</Table.Cell>
+                      <Table.Cell>Remove</Table.Cell>
+                    </Table.Row>
+                  </Table.Head>
 
-            <Table.Body>
-              {value.map((document: UploadDocument, index: number) => (
-                <Table.Row key={document.id}>
-                  <Table.Cell>{document.file.name}</Table.Cell>
-                  <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
-                  <Table.Cell>
-                    <Button
-                      aria-label={`Remove ${document.file.name} from selection`}
-                      href=""
-                      onClick={(e: MouseEvent<HTMLButtonElement>) => {
-                        e.preventDefault();
-                        onRemove(index);
-                      }}
-                    >
-                      X
-                    </Button>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table>
-        )}
-        {hasDuplicateFiles && (
-          <WarningCallout>
-            <WarningCallout.Label>Possible duplicate file</WarningCallout.Label>
-            <p>There are two or more documents with the same name.</p>
-            <p>Are you sure you want to proceed?</p>
-          </WarningCallout>
-        )}
-      </div>
-      <Button onClick={uploadDocuments} disabled={!value}>Upload</Button>
+                  <Table.Body>
+                    {value.map((document: UploadDocument, index: number) => (
+                        <Table.Row key={document.id}>
+                          <Table.Cell>{document.file.name}</Table.Cell>
+                          <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
+                          <Table.Cell>
+                            <a
+                                aria-label={`Remove ${document.file.name} from selection`}
+                                href="#"
+                                onClick={(e: MouseEvent<HTMLElement>) => {
+                                  e.preventDefault();
+                                  onRemove(index);
+                                }}
+                            >
+                              Remove
+                            </a>
+                          </Table.Cell>
+                        </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
+            )}
+            {hasDuplicateFiles && (
+                <WarningCallout>
+                  <WarningCallout.Label>Possible duplicate file</WarningCallout.Label>
+                  <p>There are two or more documents with the same name.</p>
+                  <p>Are you sure you want to proceed?</p>
+                </WarningCallout>
+            )}
+          </div>
+        </Fieldset>
+        <Button type="submit" disabled={formState.isSubmitting || !value}>
+          Upload
+        </Button>
+      </form>
     </>
   );
 }
