@@ -9,7 +9,7 @@ describe('Header', () => {
     jest.clearAllMocks();
   });
 
-  describe('default rendering', () => {
+  describe('Rendering', () => {
     it('renders the header', () => {
       const history = createMemoryHistory({
         initialEntries: ['/', '/example'],
@@ -24,7 +24,9 @@ describe('Header', () => {
 
       expect(screen.getByRole('banner')).toBeInTheDocument();
     });
+  });
 
+  describe('Navigating', () => {
     it('renders a header that navigates to the home path', async () => {
       const history = createMemoryHistory({
         initialEntries: ['/', '/example'],
