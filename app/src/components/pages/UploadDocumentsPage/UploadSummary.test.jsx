@@ -2,20 +2,24 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import UploadSummary from "./UploadSummary";
 import {DOCUMENT_UPLOAD_STATE as documentUploadStates} from "../../../types/pages/UploadDocumentsPage/types";
-import {formatFileSize as formatSize} from "../../../helpers/utils/formatFileSize";
-import {getFormattedDate} from "../../../helpers/utils/formatDate";
+import { formatFileSize as formatSize } from "../../../helpers/utils/formatFileSize";
+import { getFormattedDate } from "../../../helpers/utils/formatDate";
 import { buildDocument, buildTextFile } from "../../../helpers/test/testBuilders";
 
 
 describe("UploadSummary", () => {
     it("renders the page", () => {
-
         renderUploadSummary({ documents: [] });
 
         expect(screen.getByRole("heading", { name: "Upload Summary" })).toBeInTheDocument();
         expect(
             screen.getByRole("heading", { name: /All documents have been successfully uploaded on/ })
         ).toBeInTheDocument();
+        expect(screen.getByText("NHS Number")).toBeInTheDocument();
+        expect(screen.getByText("Surname")).toBeInTheDocument();
+        expect(screen.getByText("First name")).toBeInTheDocument();
+        expect(screen.getByText("Date of birth")).toBeInTheDocument();
+        expect(screen.getByText("Postcode")).toBeInTheDocument();
         expect(screen.getByText("Before you close this page")).toBeInTheDocument();
         expect(screen.queryByText("Some of your documents failed to upload")).not.toBeInTheDocument();
         expect(screen.queryByText("View successfully uploaded documents")).not.toBeInTheDocument();
