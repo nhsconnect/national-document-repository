@@ -19,12 +19,6 @@ export enum DOCUMENT_UPLOAD_STATE {
   UNAUTHORISED = 'UNAUTHORISED'
 }
 
-export type StageProps = {
-  stage: UPLOAD_STAGE;
-  setStage: SetUploadStage;
-  documents: Array<UploadDocument>;
-};
-
 export type UploadDocument = {
   state: DOCUMENT_UPLOAD_STATE;
   file: File;

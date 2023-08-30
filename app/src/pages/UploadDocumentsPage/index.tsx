@@ -4,13 +4,11 @@ import CompleteStage from "../../components/pages/UploadDocumentsPage/CompleteSt
 import UploadingStage from "../../components/pages/UploadDocumentsPage/UploadingStage";
 import {
   DOCUMENT_UPLOAD_STATE,
-  StageProps,
   UPLOAD_STAGE,
   UploadDocument,
 } from "../../types/pages/UploadDocumentsPage/types";
 import uploadDocument from "../../helpers/requests/uploadDocument";
 import { useBaseAPIUrl } from "../../providers/configProvider/ConfigProvider";
-import {PatientDetails} from "../../types/components/types";
 
 type Props = {};
 function UploadDocumentsPage(props: Props) {
@@ -56,24 +54,18 @@ function UploadDocumentsPage(props: Props) {
     setStage(UPLOAD_STAGE.Complete);
   };
 
-  const defaultStageProps: StageProps = {
-    stage,
-    setStage,
-    documents,
-  };
 
   if (stage === UPLOAD_STAGE.Selecting) {
     return (
       <SelectStage
-        {...defaultStageProps}
         uploadDocuments={uploadDocuments}
         setDocuments={setDocuments}
       />
     );
   } else if (stage === UPLOAD_STAGE.Uploading) {
-    return <UploadingStage {...defaultStageProps} />;
+    return <UploadingStage {...documents} />;
   } else if (stage === UPLOAD_STAGE.Complete) {
-    return <CompleteStage {...defaultStageProps} />;
+    return <CompleteStage documents={documents}/>;
   }
   return null;
 }

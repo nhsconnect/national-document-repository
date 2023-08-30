@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { act } from "react-dom/test-utils";
 import {DOCUMENT_UPLOAD_STATE as documentUploadStates} from "../../../types/pages/UploadDocumentsPage/types";
 import { buildTextFile } from "../../../helpers/test/testBuilders";

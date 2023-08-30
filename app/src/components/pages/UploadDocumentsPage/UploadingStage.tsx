@@ -1,13 +1,13 @@
 import React from 'react';
 import {
+    UploadDocument
 //   DOCUMENT_UPLOAD_STATE,
-  StageProps,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { Table, WarningCallout } from "nhsuk-react-components";
 import formatFileSize from "../../../helpers/utils/formatFileSize";
 
 
-function UploadingStage({ stage, setStage, documents }: StageProps) {
+function UploadingStage(documents : Array<UploadDocument>) {
 //   const uploadStateMessages : any = {
 //         [DOCUMENT_UPLOAD_STATE.SELECTED]: "Waiting...",
 //         [DOCUMENT_UPLOAD_STATE.UPLOADING]: "Uploading...",

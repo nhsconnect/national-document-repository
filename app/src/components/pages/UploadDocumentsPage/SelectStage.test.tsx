@@ -3,7 +3,7 @@ import SelectStage from "./SelectStage";
 import { buildTextFile } from "../../../helpers/test/testBuilders";
 import userEvent from "@testing-library/user-event";
 import {
-    DOCUMENT_UPLOAD_STATE as documentUploadStates, UPLOAD_STAGE
+    DOCUMENT_UPLOAD_STATE as documentUploadStates, UploadDocument
 } from "../../../types/pages/UploadDocumentsPage/types";
 import { act } from "react-dom/test-utils";
 import { PatientDetails } from "../../../types/components/types";
@@ -22,7 +22,8 @@ describe("<UploadDocumentsPage />", () => {
         const documentThree = buildTextFile("three", 100);
 
         const setDocumentMock = jest.fn();
-        setDocumentMock.mockImplementation((document) => {document.state = documentUploadStates.SELECTED, document.id = 1});
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions,no-sequences
+        setDocumentMock.mockImplementation((document) => {document.state = documentUploadStates.SELECTED, document.id = '1'});
 
         const mockPatientDetails: PatientDetails = {
             nhsNumber: 111111111,
@@ -146,9 +147,6 @@ const renderSelectStage = (setDocumentMock: jest.Mock) => {
     render (
         <SelectStage setDocuments={setDocumentMock}
                      uploadDocuments={() => {}}
-                     stage={UPLOAD_STAGE.Selecting}
-                     setStage={() => {}}
-                     documents={[]}
         />
     )
 }

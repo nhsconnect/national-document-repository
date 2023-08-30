@@ -1,13 +1,16 @@
 import { Details, Table, WarningCallout } from "nhsuk-react-components";
 import React from "react";
-import {DOCUMENT_UPLOAD_STATE, StageProps} from "../../../types/pages/UploadDocumentsPage/types";
+import {DOCUMENT_UPLOAD_STATE, UploadDocument} from "../../../types/pages/UploadDocumentsPage/types";
 import ErrorBox from "../ErrorBox/ErrorBox";
 import formatFileSize from "../../../helpers/utils/formatFileSize";
 import {getFormattedDate} from "../../../helpers/utils/formatDate";
 import PatientSummary from "../../patientSummary/PatientSummary";
 import {PatientDetails} from "../../../types/components/types";
 
-const UploadSummary = ({documents }: StageProps) => {
+interface Props {
+  documents : Array<UploadDocument>
+}
+const UploadSummary = ({documents} : Props ) => {
     const successfulUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED;
     });
