@@ -13,11 +13,11 @@ const NavLinks = () => {
   };
 
   return isLoggedIn ? (
-    <>
+    <Header.Nav>
       <Header.NavItem role='link' onClick={navigateRoot}>
         Home
       </Header.NavItem>
-    </>
+    </Header.Nav>
   ) : null;
 };
 

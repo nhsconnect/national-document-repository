@@ -19,9 +19,8 @@ const Header = (props: Props) => {
           Inactive Patient Record Administration
         </NhsHeader.ServiceName>
       </NhsHeader.Container>
-      <NhsHeader.Nav>
-        <NavLinks />
-      </NhsHeader.Nav>
+
+      <NavLinks />
     </NhsHeader>
   );
 };

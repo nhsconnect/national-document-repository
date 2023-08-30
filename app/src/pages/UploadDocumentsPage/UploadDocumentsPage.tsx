@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import SelectStage from '../../components/pages/uploadDocumentsPage/SelectStage';
-import CompleteStage from '../../components/pages/uploadDocumentsPage/CompleteStage';
-import UploadingStage from '../../components/pages/uploadDocumentsPage/UploadingStage';
+import SelectStage from '../../components/blocks/selectStage/SelectStage';
+import CompleteStage from '../../components/blocks/completeStage/CompleteStage';
+import UploadingStage from '../../components/blocks/uploadingStage/UploadingStage';
 import {
   DOCUMENT_UPLOAD_STATE,
   StageProps,

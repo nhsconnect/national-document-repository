@@ -1,6 +1,6 @@
 import React from 'react';
 import { StageProps } from '../../../types/pages/UploadDocumentsPage/types';
-import UploadSummary from './UploadSummary';
+import UploadSummary from '../uploadSummary/UploadSummary';
 import { Button } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 
