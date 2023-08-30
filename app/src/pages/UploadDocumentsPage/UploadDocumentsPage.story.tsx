@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Component from './PatientSummary';
-import { buildPatientDetails } from '../../../helpers/test/testBuilders';
+import Component from './UploadDocumentsPage';
 
 const meta = {
-  title: 'Blocks/PatientSummary',
+  title: 'Pages/UploadDocumentsPage',
   component: Component,
   tags: ['autodocs'],
   parameters: {
@@ -13,9 +12,7 @@ const meta = {
 
 type Story = StoryObj<typeof meta>;
 
-export const PatientSummary: Story = {
-  args: {
-    patientDetails: buildPatientDetails()
-  }
+export const UploadDocumentsPage: Story = {
+  args: {}
 };
 export default meta;
