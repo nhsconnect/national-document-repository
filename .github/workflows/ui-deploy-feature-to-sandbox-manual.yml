@@ -74,4 +74,18 @@ jobs:
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    
+    # Looks like the ECS does not check for image updates, as such we need to force a new task definition to run the new image
+    # We will always use the "latest" image tag so we do not need to modify the task-definition
+    - name: Download task definition
+      run: |
+        aws ecs describe-task-definition --task-definition ${{ github.event.inputs.sandboxWorkspace}}-ndr-service-task --query taskDefinition > task-definition.json
+    
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        service: ${{ github.event.inputs.sandboxWorkspace}}-ecs-cluster-service
+        cluster: ${{ github.event.inputs.sandboxWorkspace}}-app-cluster
+        wait-for-service-stability: true
   
