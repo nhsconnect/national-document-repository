@@ -9,7 +9,7 @@
     "test-all": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts test --watchAll=false",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "format": ""
+    "format": "prettier --write \"**/*.+(ts|tsx|json|css|md)\""
   },
   "dependencies": {
     "history": "^5.3.0",
