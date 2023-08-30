@@ -2,11 +2,13 @@ import React from 'react';
 import type { MouseEvent as ReactEvent } from 'react';
 import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
+import config from "../../config";
 
 type Props = {};
 
 function HomePage(props: Props) {
   const navigate = useNavigate();
+  const endpoint = config.API.endpoints[0].endpoint;
 
   const navigateUpload = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
@@ -46,6 +48,7 @@ function HomePage(props: Props) {
       <ButtonLink role='button' onClick={navigateUpload}>
         Start now
       </ButtonLink>
+      <p>Current API Endpoint: {endpoint}</p>
     </>
   );
 }
