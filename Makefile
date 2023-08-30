@@ -74,7 +74,6 @@ env:
 	./lambdas/venv/bin/pip3 install --upgrade pip
 	./lambdas/venv/bin/pip3 install -r lambdas/requirements.txt
 	./lambdas/venv/bin/pip3 install -r lambdas/requirements-test.txt
-	pip3 install ruff
 
 zip:
 	rm -rf ./lambdas/package_$(lambda_name) || true 
