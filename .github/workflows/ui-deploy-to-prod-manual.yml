@@ -162,8 +162,10 @@ jobs:
     # Looks like the ECS does not check for image updates, as such we need to force a new task definition to run the new image
     # We will always use the "latest" image tag so we do not need to modify the task-definition
     - name: Download task definition
+      id: download-task
       run: |
         aws ecs describe-task-definition --task-definition ${{ vars.BUILD_ENV }}-ndr-service-task --query taskDefinition > task-definition.json
+        echo "::set-output name=revision::$(cat task-definition.json | jq .revision)"
     
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
@@ -180,5 +182,10 @@ jobs:
         service: ${{ vars.BUILD_ENV }}-ecs-cluster-service
         cluster: ${{ vars.BUILD_ENV }}-app-cluster
         wait-for-service-stability: true
+  
+    - name: De-register previous revision
+      run: |
+        aws ecs deregister-task-definition \
+          --task-definition ${{ vars.BUILD_ENV }-ndr-service-task:${{ steps.download-task.outputs.revision }}
 
     
