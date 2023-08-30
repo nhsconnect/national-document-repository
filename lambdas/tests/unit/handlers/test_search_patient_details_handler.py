@@ -81,7 +81,7 @@ def test_lambda_handler_invalid_id_returns_400(event_invalid_id, context, mocker
     actual = lambda_handler(event_invalid_id, context)
 
     expected = {
-        "body": "Invalid NHS number.",
+        "body": "Invalid NHS number",
         "headers": {
             "Content-Type": "application/fhir+json",
             "Access-Control-Allow-Origin": "*",

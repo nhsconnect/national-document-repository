@@ -103,6 +103,14 @@ def valid_nhs_id_event():
 
 
 @pytest.fixture
+def invalid_nhs_id_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"patientId": "9000AB0009"},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
 def context():
     @dataclass
     class LambdaContext:
@@ -154,3 +162,9 @@ def test_lambda_handler_returns_500_when_dynamo_has_unexpected_response(valid_nh
         expected = ApiGatewayResponse(500, "Unrecognised response from DynamoDB", "GET")
         actual = lambda_handler(valid_nhs_id_event, context)
         assert expected == actual
+
+
+def test_lambda_handler_returns_400_when_id_not_valid(invalid_nhs_id_event, context):
+    expected = ApiGatewayResponse(400, "Invalid NHS number", "GET")
+    actual = lambda_handler(invalid_nhs_id_event, context)
+    assert expected == actual
