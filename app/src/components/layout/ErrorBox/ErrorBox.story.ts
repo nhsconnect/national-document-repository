@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Component from './SpinnerButton';
+import Component from './ErrorBox';
 
 const meta = {
-  title: 'Generic/SpinnerButton',
+  title: 'Generic/ErrorBox',
   component: Component,
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/react/writing-docs/autodocs
   tags: ['autodocs'],
@@ -14,10 +14,21 @@ const meta = {
 
 type Story = StoryObj<typeof meta>;
 
-export const BackButton: Story = {
+export const ErrorBox: Story = {
   args: {
-    disabled: false,
-    status: 'Loading....'
+    errorBoxSummaryId: '0',
+    messageTitle: 'This is an example error',
+    messageBody: 'Use this field to explain the error further'
+  }
+};
+
+export const ErrorLinkBox: Story = {
+  args: {
+    errorBoxSummaryId: '1',
+    messageTitle: 'This is an example linked error',
+    messageLinkBody:
+      'Use this field to explain the error further and where the link will take you to',
+    errorInputLink: '/'
   }
 };
 

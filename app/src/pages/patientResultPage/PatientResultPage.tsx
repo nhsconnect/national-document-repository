@@ -3,7 +3,7 @@ import { USER_ROLE } from '../../types/generic/roles';
 import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
-import PatientSummary from '../../components/pages/patientSummary/PatientSummary';
+import PatientSummary from '../../components/pages/patientResultPage/PatientSummary';
 import {
   PatientContext,
   usePatientDetailsContext

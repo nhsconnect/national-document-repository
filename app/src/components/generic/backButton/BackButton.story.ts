@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Component from './SpinnerButton';
+import Component from './BackButton';
 
 const meta = {
-  title: 'Generic/SpinnerButton',
+  title: 'Generic/BackButton',
   component: Component,
   // This component will have an automatically generated Autodocs entry: https://storybook.js.org/docs/react/writing-docs/autodocs
   tags: ['autodocs'],
@@ -15,10 +15,7 @@ const meta = {
 type Story = StoryObj<typeof meta>;
 
 export const BackButton: Story = {
-  args: {
-    disabled: false,
-    status: 'Loading....'
-  }
+  args: {}
 };
 
 export default meta;
