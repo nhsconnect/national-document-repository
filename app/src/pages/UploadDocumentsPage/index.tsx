@@ -4,7 +4,6 @@ import CompleteStage from "../../components/pages/UploadDocumentsPage/CompleteSt
 import UploadingStage from "../../components/pages/UploadDocumentsPage/UploadingStage";
 import {
   DOCUMENT_UPLOAD_STATE,
-  StageProps,
   UPLOAD_STAGE,
   UploadDocument,
 } from "../../types/pages/UploadDocumentsPage/types";
@@ -22,18 +21,16 @@ function UploadDocumentsPage(props: Props) {
     state: DOCUMENT_UPLOAD_STATE,
     progress?: number
   ) => {
-    let shallowDocumentsCopy = documents;
-    const hasDocument = documents.some((doc) => doc.id === id);
-    if (hasDocument) {
-      const idx = documents.findIndex((doc) => doc.id === id);
-      if (progress) {
-        shallowDocumentsCopy[idx].progress = progress;
-      }
-      if (state) {
-        shallowDocumentsCopy[idx].state = state;
-      }
-    }
-    setDocuments(shallowDocumentsCopy);
+    setDocuments((prevDocuments) => {
+      const updatedDocuments = prevDocuments.map((document) => {
+        if (document.id === id) {
+          progress = progress ?? document.progress;
+          return { ...document, state, progress };
+        }
+        return document;
+      });
+      return updatedDocuments;
+    });
   };
 
   const mockPatient = {
@@ -55,24 +52,17 @@ function UploadDocumentsPage(props: Props) {
     setStage(UPLOAD_STAGE.Complete);
   };
 
-  const defaultStageProps: StageProps = {
-    stage,
-    setStage,
-    documents,
-  };
-
   if (stage === UPLOAD_STAGE.Selecting) {
     return (
       <SelectStage
-        {...defaultStageProps}
         uploadDocuments={uploadDocuments}
         setDocuments={setDocuments}
       />
     );
   } else if (stage === UPLOAD_STAGE.Uploading) {
-    return <UploadingStage {...defaultStageProps} />;
+    return <UploadingStage documents={documents} />;
   } else if (stage === UPLOAD_STAGE.Complete) {
-    return <CompleteStage {...defaultStageProps} />;
+    return <CompleteStage documents={documents} />;
   }
   return null;
 }
