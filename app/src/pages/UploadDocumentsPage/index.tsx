@@ -21,18 +21,16 @@ function UploadDocumentsPage(props: Props) {
     state: DOCUMENT_UPLOAD_STATE,
     progress?: number
   ) => {
-    let shallowDocumentsCopy = documents;
-    const hasDocument = documents.some((doc) => doc.id === id);
-    if (hasDocument) {
-      const idx = documents.findIndex((doc) => doc.id === id);
-      if (progress) {
-        shallowDocumentsCopy[idx].progress = progress;
-      }
-      if (state) {
-        shallowDocumentsCopy[idx].state = state;
-      }
-    }
-    setDocuments(shallowDocumentsCopy);
+    setDocuments((prevDocuments) => {
+      const updatedDocuments = prevDocuments.map((document) => {
+        if (document.id === id) {
+          progress = progress ?? document.progress;
+          return { ...document, state, progress };
+        }
+        return document;
+      });
+      return updatedDocuments;
+    });
   };
 
   const mockPatient = {
@@ -54,7 +52,6 @@ function UploadDocumentsPage(props: Props) {
     setStage(UPLOAD_STAGE.Complete);
   };
 
-
   if (stage === UPLOAD_STAGE.Selecting) {
     return (
       <SelectStage
@@ -63,9 +60,9 @@ function UploadDocumentsPage(props: Props) {
       />
     );
   } else if (stage === UPLOAD_STAGE.Uploading) {
-    return <UploadingStage {...documents} />;
+    return <UploadingStage documents={documents} />;
   } else if (stage === UPLOAD_STAGE.Complete) {
-    return <CompleteStage documents={documents}/>;
+    return <CompleteStage documents={documents} />;
   }
   return null;
 }

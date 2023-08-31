@@ -7,7 +7,7 @@ const config = {
         endpoints: [
             {
                 name: "doc-store-api",
-                endpoint: "https://wfsosmq04m.execute-api.eu-west-2.amazonaws.com/dev"
+                endpoint: "https://ik2k7vs30e.execute-api.eu-west-2.amazonaws.com/prod"
             },
         ],
     },
