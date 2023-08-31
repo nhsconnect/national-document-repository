@@ -21,6 +21,7 @@ const uploadDocument = async ({
   document,
   baseUrl,
 }: Args) => {
+    console.log(baseUrl)
   const rawDoc = document.file;
   const requestBody = {
     resourceType: "DocumentReference",

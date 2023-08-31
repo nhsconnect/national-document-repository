@@ -14,8 +14,9 @@ type Props = {};
 function UploadDocumentsPage(props: Props) {
   const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
   const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
-  const baseUrl = useBaseAPIUrl("doc-store-api");
+  const baseUrl = useBaseAPIUrl();
 
+  console.log(baseUrl)
   const setDocumentState = (
     id: string,
     state: DOCUMENT_UPLOAD_STATE,

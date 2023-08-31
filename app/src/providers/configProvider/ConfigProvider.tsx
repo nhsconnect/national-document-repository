@@ -1,25 +1,15 @@
-import { createContext, useContext } from "react";
+import { createContext } from "react";
 
 const ConfigContext = createContext(null);
 
-export const useBaseAPIUrl = (apiName: string) => {
-  const config = useContext(ConfigContext);
-  // @ts-ignore
-  const apiEndpoints = config?.API.endpoints;
+export const useBaseAPIUrl = () => {
+  const apiEndpoint: string | undefined = process.env.REACT_APP_DOC_STORE_API_ENDPOINT;
 
-  if (apiEndpoints === undefined) {
-    throw Error(`Endpoint for ${apiName} is not configured`);
+  if (!apiEndpoint) {
+    throw Error(`API endpoint is not configured`);
   }
 
-  const endpointConfiguration = apiEndpoints.find(
-    (endpoint: any) => endpoint.name === apiName
-  );
-
-  if (endpointConfiguration === undefined) {
-    throw Error(`Endpoint for ${apiName} is not configured`);
-  }
-
-  return endpointConfiguration.endpoint;
+  return apiEndpoint;
 };
 
 // @ts-ignore
