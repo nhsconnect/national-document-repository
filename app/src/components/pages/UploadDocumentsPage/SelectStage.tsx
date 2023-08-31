@@ -144,7 +144,7 @@ function SelectStage({ uploadDocuments, setDocuments }: Props) {
           />
           <div role="region" aria-live="polite">
             {value && value.length > 0 && (
-              <Table caption="Selected documents">
+              <Table id="selected-documents-table" caption="Selected documents">
                 <Table.Head>
                   <Table.Row>
                     <Table.Cell>Filename</Table.Cell>
@@ -188,7 +188,7 @@ function SelectStage({ uploadDocuments, setDocuments }: Props) {
             )}
           </div>
         </Fieldset>
-        <Button type="submit" disabled={formState.isSubmitting || !value}>
+        <Button id="upload-button" type="submit" disabled={formState.isSubmitting || !value}>
           Upload
         </Button>
       </form>

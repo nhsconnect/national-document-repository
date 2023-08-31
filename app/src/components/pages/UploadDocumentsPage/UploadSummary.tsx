@@ -25,7 +25,7 @@ const UploadSummary = ({documents} : Props ) => {
                 {failedUploads.length} of {documents.length} files failed to upload
             </h3>
             <span className="nhsuk-error-message" id="example-error">
-                <span className="nhsuk-u-visually-hidden">Error:</span> Documents that have failed to upload
+                <span className="nhsuk-u-visually-hidden">Error:</span>Documents that have failed to upload
             </span>
         </>
     );
@@ -108,7 +108,7 @@ const UploadSummary = ({documents} : Props ) => {
             )}
             <PatientSummary patientDetails={mockPatientDetails} />
 
-            <WarningCallout style={{ marginTop: 75 }}>
+            <WarningCallout id="failed-upload-warning" style={{ marginTop: 75 }}>
                 <WarningCallout.Label>Before you close this page</WarningCallout.Label>
                 <ul>
                     <li>You could take a screenshot of this summary page and attach it to the patient&apos;s record</li>

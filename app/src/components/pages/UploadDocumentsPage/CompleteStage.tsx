@@ -17,6 +17,7 @@ function CompleteStage({ documents }: Props) {
         If you want to upload another patient&apos;s health record
       </p>
       <Button
+        id="start-again-button"
         onClick={() => {
           navigate("/");
         }}
