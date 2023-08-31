@@ -46,7 +46,24 @@ function HomePage(props: Props) {
       <ButtonLink role='button' onClick={navigateUpload}>
         Start now
       </ButtonLink>
+
+      
+      {
+        (process.env.REACT_APP_ENVIRONMENT === 'local' ||
+        process.env.REACT_APP_ENVIRONMENT === 'development' ||
+        process.env.REACT_APP_ENVIRONMENT === 'test') &&
+        
+        <div>
+          <br></br>
+          <h2>Test Panel</h2>
+          <p>This section should only be displayed on a test/dev environment and should be used for displaying test configurations</p>
+          <p> API endpoint: {process.env.REACT_APP_DOC_STORE_API_ENDPOINT}</p>
+          <p> Image Version: {process.env.REACT_APP_IMAGE_VERSION}</p>
+        </div>
+      }
     </>
+
+    
   );
 }
 

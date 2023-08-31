@@ -22,6 +22,9 @@ jobs:
   react_testing_job:
     runs-on: ubuntu-latest
     environment: development
+    env:
+      DOC_STORE_API_ENDPOINT: "Not configured"
+      
     defaults:
       run:
         working-directory: ./app
@@ -66,6 +69,21 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
     
+    - uses: dkershner6/aws-ssm-getparameters-action@v1
+      with:
+          parameterPairs: "/ndr/${{ github.event.inputs.sandboxWorkspace}}/api_endpoint = DOC_STORE_API_ENDPOINT"
+          withDecryption: "true" # defaults to true
+      
+    - name: Configure React environment vars
+      env:
+        ENDPOINT_DOC_STORE_API: ${{ env.DOC_STORE_API_ENDPOINT }}
+        AWS_REGION: ${{ vars.AWS_REGION }}
+        OIDC_PROVIDER_ID: not provided yet
+        BUILD_ENV: development
+        IMAGE_VERSION: "ndr-${{ github.event.inputs.sandboxWorkspace}}-app:${{ github.sha }}"
+      run: |
+        ./react-environment-config.sh
+        
     - name: Build, tag, and push image to Amazon ECR
       id: build-image
       env:
