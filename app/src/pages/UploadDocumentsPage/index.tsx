@@ -19,7 +19,7 @@ function UploadDocumentsPage(props: Props) {
   const setDocumentState = (
     id: string,
     state: DOCUMENT_UPLOAD_STATE,
-    progress?: number,
+    progress?: number
   ) => {
     setDocuments((prevDocuments) => {
       const updatedDocuments = prevDocuments.map((document) => {
@@ -46,8 +46,8 @@ function UploadDocumentsPage(props: Props) {
           nhsNumber: mockPatient.nhsNumber,
           document,
           baseUrl,
-        }),
-      ),
+        })
+      )
     );
     setStage(UPLOAD_STAGE.Complete);
   };
