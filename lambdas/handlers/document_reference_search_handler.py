@@ -5,6 +5,7 @@ from boto3.dynamodb.conditions import Key
 import logging
 from botocore.exceptions import ClientError
 
+from enums.metadata_field_names import DynamoField
 from services.dynamo_query_service import DynamoQueryService
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
@@ -24,16 +25,17 @@ def lambda_handler(event, context):
     except InvalidResourceIdException:
         return ApiGatewayResponse(400, "Invalid NHS number", "GET")
 
+    dynamo_service = DynamoQueryService(TABLE_NAME)
+
     try:
-        response = DynamoQueryService(TABLE_NAME)(nhs_number, "Created, FileName")
+        response = dynamo_service(nhs_number, [DynamoField.CREATED, DynamoField.FILE_NAME])
     except ClientError:
-        return ApiGatewayResponse(500, "error", "GET")
+        return ApiGatewayResponse(500, "An error occurred searching for available documents", "GET")
 
     if response is not None and 'Items' in response:
         results = response['Items']
     else:
         logger.error(f"Unrecognised response from DynamoDB: {response!r}")
-        return ApiGatewayResponse(500, "Unrecognised response from DynamoDB", "GET")
+        return ApiGatewayResponse(500, "Unrecognised response when searching for available documents", "GET")
 
     return ApiGatewayResponse(200, results, "GET")
-
