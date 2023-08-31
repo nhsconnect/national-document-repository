@@ -5,7 +5,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from handlers.document_reference_search_handler import lambda_handler
-from helpers.dynamo_responses import EXPECTED_RESPONSE, MOCK_RESPONSE, MOCK_EMPTY_RESPONSE, UNEXPECTED_RESPONSE
+from tests.unit.helpers.dynamo_responses import EXPECTED_RESPONSE, MOCK_RESPONSE, MOCK_EMPTY_RESPONSE, UNEXPECTED_RESPONSE
 from services.dynamo_query_service import DynamoQueryService
 from utils.lambda_response import ApiGatewayResponse
 
@@ -57,7 +57,7 @@ def test_lambda_handler_returns_500_when_dynamo_has_unexpected_response(valid_nh
     with patch.object(DynamoQueryService, "__call__", return_value=UNEXPECTED_RESPONSE):
         expected = ApiGatewayResponse(500, "Unrecognised response when searching for available documents", "GET")
         actual = lambda_handler(valid_nhs_id_event, context)
-        assert expected.__eq__(actual)
+        assert expected == actual
 
 
 def test_lambda_handler_returns_400_when_id_not_valid(invalid_nhs_id_event, context):

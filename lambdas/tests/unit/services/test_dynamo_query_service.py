@@ -5,7 +5,7 @@ import pytest
 from boto3.dynamodb.conditions import Key
 
 from enums.metadata_field_names import DynamoField
-from helpers.dynamo_responses import MOCK_RESPONSE
+from tests.unit.helpers.dynamo_responses import MOCK_RESPONSE
 from services.dynamo_query_service import DynamoQueryService
 
 
