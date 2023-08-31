@@ -19,7 +19,7 @@ jobs:
     environment: test
     strategy:
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
@@ -53,6 +53,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: test
     needs: ["python_lambdas_test"]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
@@ -60,8 +63,13 @@ jobs:
         with:
           ref: ${{ github.event.inputs.buildBranch}}
 
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
       - name: Make virtual environement
-        run: |
+        run: | 
           make env
 
       - name: Configure AWS Credentials
@@ -86,12 +94,20 @@ jobs:
     runs-on: ubuntu-latest
     environment: test
     needs: ["python_lambdas_test"]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.buildBranch}}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
         run: | 
@@ -119,15 +135,23 @@ jobs:
     runs-on: ubuntu-latest
     environment: test
     needs: [ "python_lambdas_test" ]
-
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+        
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.buildBranch}}
 
-      - name: Make virtual environment
-        run: |
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environement
+        run: | 
           make env
 
       - name: Configure AWS Credentials

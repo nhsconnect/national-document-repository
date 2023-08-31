@@ -3,11 +3,13 @@ name: "Lambdas - Development CI Feature Branch to Main"
 on:
   push:
     branches:
+      - main
       - "**"
     paths:
       - "lambdas/**"
   pull_request:
     branches:
+      - main
       - "**"
     paths:
       - "lambdas/**"
@@ -61,7 +63,7 @@ jobs:
     environment: development
     strategy:
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
@@ -100,10 +102,22 @@ jobs:
           || needs.identify_changed_functions.outputs.models_changed == 'true' 
           || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
           )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environement
+        run: |
+          make env
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -135,10 +149,18 @@ jobs:
           || needs.identify_changed_functions.outputs.models_changed == 'true' 
           || needs.identify_changed_functions.outputs.search_patient_details_changed == 'true'
           )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
         run: |
@@ -174,12 +196,20 @@ jobs:
           || needs.identify_changed_functions.outputs.models_changed == 'true' 
           || needs.identify_changed_functions.outputs.search_document_reference_changed == 'true'
           )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Make virtual environment
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environement
         run: |
           make env
 

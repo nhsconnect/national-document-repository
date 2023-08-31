@@ -56,7 +56,14 @@
     "prettier": "^3.0.3",
     "prop-types": "^15.8.1",
     "storybook": "^7.4.0",
-    "webpack": "^5.88.2"
+    "webpack": "^5.88.2",
+    "cypress": "^12.17.4"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
   "browserslist": {
     "production": [

@@ -1,48 +1,5 @@
 default: help
 
-.PHONY: Install
-install:
-	npm --prefix ./app install --legacy-peer-deps && make env
-
-.PHONY: Clean install
-clean-install:
-	npm --prefix ./app ci --legacy-peer-deps
-
-.PHONY: Start
-start:
-	npm --prefix ./app start
-
-.PHONY: Test
-test:
-	npm --prefix ./app run test-all
-
-.PHONY: Pre-commit
-pre-commit:
-	cd ./app && npx lint-staged 
-
-.PHONY: Pre-push
-pre-push:
-	make test
-
-
-.PHONY: Storybook
-storybook:
-		npm --prefix ./app run storybook
-
-.PHONY: Build
-build:
-	npm --prefix ./app run build
-
-.PHONY: Docker Up
-docker-up:
-	cd ./app && docker-compose up -d
-
-.PHONY: Docker Down
-docker-down:
-	cd ./app && docker-compose down
-
-	clean: clean-build clean-py clean-test
-
 clean-build:
 	rm -fr build/
 	rm -fr dist/
@@ -96,5 +53,51 @@ zip:
 	cd ./lambdas/package_$(lambda_name); zip -r ../../package_lambdas_$(lambda_name).zip .
 	rm -rf ./lambdas/package_$(lambda_name)
 	cd ../..
+
+.PHONY: Install
+install:
+	npm --prefix ./app install --legacy-peer-deps && make env
+
+.PHONY: Clean install
+clean-install:
+	npm --prefix ./app ci --legacy-peer-deps
+
+.PHONY: Start
+start:
+	npm --prefix ./app start
+
+.PHONY: Test
+test:
+	npm --prefix ./app run test-all
+
+.PHONY: Pre-commit
+pre-commit:
+	cd ./app && npx lint-staged 
+
+.PHONY: Pre-push
+pre-push:
+	make test
+
+.PHONY: Storybook
+storybook:
+		npm --prefix ./app run storybook
+
+.PHONY: Build
+build:
+	npm --prefix ./app run build
+
+.PHONY: Docker Up
+docker-up:
+	cd ./app && docker-compose up -d
+
+.PHONY: Docker Down
+docker-down:
+	cd ./app && docker-compose down
+
+	clean: clean-build clean-py clean-test
+
+.PHONY: Cypress Run
+cypress-open:
+	cd ./app && npx cypress open
 
 package: format zip
