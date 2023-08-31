@@ -7,10 +7,7 @@ type Props = {
   children: ReactNode;
 };
 
-export type PatientContext = [
-  Patient | null,
-  Dispatch<SetStateAction<Patient | null>>
-];
+export type PatientContext = [Patient | null, Dispatch<SetStateAction<Patient | null>>];
 
 const PatientDetailsContext = createContext<PatientContext | null>(null);
 
@@ -18,11 +15,9 @@ const PatientDetailsProvider = ({ children, patient }: Props) => {
   const patientState: PatientContext = useState(patient ?? null);
 
   return (
-    <PatientDetailsContext.Provider value={patientState}>
-      {children}
-    </PatientDetailsContext.Provider>
+    <PatientDetailsContext.Provider value={patientState}>{children}</PatientDetailsContext.Provider>
   );
 };
 
 export default PatientDetailsProvider;
-export const usePatientDetailsContext = () => useContext(PatientDetailsContext);
+export const usePatientDetailsContext = () => useContext(PatientDetailsContext) as PatientContext;

@@ -4,7 +4,7 @@ import {
   DOCUMENT_UPLOAD_STATE,
   SetUploadDocuments,
   StageProps,
-  UploadDocument
+  UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { Button, Input, Table, WarningCallout } from 'nhsuk-react-components';
 import { useController, useForm } from 'react-hook-form';
@@ -19,19 +19,13 @@ interface Props extends StageProps {
   setDocuments: SetUploadDocuments;
 }
 
-function SelectStage({
-  stage,
-  setStage,
-  documents,
-  uploadDocuments,
-  setDocuments
-}: Props) {
+function SelectStage({ stage, setStage, documents, uploadDocuments, setDocuments }: Props) {
   let inputRef = useRef<HTMLInputElement | null>(null);
   const FIVEGB = 5 * Math.pow(1024, 3);
   const { control } = useForm();
   const {
     field: { ref, onChange, onBlur, name, value },
-    fieldState
+    fieldState,
   } = useController({
     name: 'documents',
     control,
@@ -46,17 +40,16 @@ function SelectStage({
               return 'Please ensure that all files are less than 5GB in size';
             }
           }
-        }
-      }
-    }
+        },
+      },
+    },
   });
 
   const hasDuplicateFiles =
     value &&
     value.some((doc: UploadDocument) => {
       return value.some(
-        (compare: UploadDocument) =>
-          doc.file.name === compare.file.name && doc.id !== compare.id
+        (compare: UploadDocument) => doc.file.name === compare.file.name && doc.id !== compare.id,
       );
     });
 
@@ -66,7 +59,7 @@ function SelectStage({
       id: Math.floor(Math.random() * 1000000).toString(),
       file,
       state: DOCUMENT_UPLOAD_STATE.SELECTED,
-      progress: 0
+      progress: 0,
     }));
 
     const updatedFileList = value ? [...value, ...documentMap] : documentMap;
@@ -86,9 +79,9 @@ function SelectStage({
     <>
       <h1>Upload documents</h1>
       <Input
-        id='documents-input'
-        label='Select file(s)'
-        type='file'
+        id="documents-input"
+        label="Select file(s)"
+        type="file"
         multiple={true}
         name={name}
         error={fieldState.error?.message}
@@ -100,9 +93,9 @@ function SelectStage({
           inputRef.current = e;
         }}
       />
-      <div role='region' aria-live='polite'>
+      <div role="region" aria-live="polite">
         {value && value.length > 0 && (
-          <Table caption='Selected documents'>
+          <Table caption="Selected documents">
             <Table.Head>
               <Table.Row>
                 <Table.Cell>Filename</Table.Cell>
@@ -119,7 +112,7 @@ function SelectStage({
                   <Table.Cell>
                     <Button
                       aria-label={`Remove ${document.file.name} from selection`}
-                      href=''
+                      href=""
                       onClick={(e: MouseEvent<HTMLButtonElement>) => {
                         e.preventDefault();
                         onRemove(index);

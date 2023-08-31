@@ -4,10 +4,7 @@ import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import PatientSummary from '../../components/blocks/patientSummary/PatientSummary';
-import {
-  PatientContext,
-  usePatientDetailsContext
-} from '../../providers/patientProvider/PatientProvider';
+import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 
 type Props = {
   role: USER_ROLE;
@@ -16,7 +13,7 @@ type Props = {
 function PatientResultPage({ role }: Props) {
   const userIsPCSE = role === USER_ROLE.PCSE;
   const userIsGP = role === USER_ROLE.GP;
-  const [patientDetails] = usePatientDetailsContext() as PatientContext;
+  const [patientDetails] = usePatientDetailsContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,29 +36,23 @@ function PatientResultPage({ role }: Props) {
   };
   return (
     <div style={{ maxWidth: 500 }}>
-      <h1 role='heading'>Verify patient details</h1>
-      {patientDetails &&
-        (patientDetails.superseded || patientDetails.restricted) && (
-          <WarningCallout>
-            <WarningCallout.Label headingLevel='h2'>
-              Information
-            </WarningCallout.Label>
-            {patientDetails.superseded && (
-              <p>The NHS number for this patient has changed.</p>
-            )}
-            {patientDetails.restricted && (
-              <p>
-                Certain details about this patient cannot be displayed without
-                the necessary access.
-              </p>
-            )}
-          </WarningCallout>
-        )}
+      <h1 role="heading">Verify patient details</h1>
+      {patientDetails && (patientDetails.superseded || patientDetails.restricted) && (
+        <WarningCallout>
+          <WarningCallout.Label headingLevel="h2">Information</WarningCallout.Label>
+          {patientDetails.superseded && <p>The NHS number for this patient has changed.</p>}
+          {patientDetails.restricted && (
+            <p>
+              Certain details about this patient cannot be displayed without the necessary access.
+            </p>
+          )}
+        </WarningCallout>
+      )}
       {patientDetails && <PatientSummary patientDetails={patientDetails} />}
       {userIsGP && (
         <p>
-          Ensure these patient details match the electronic health records and
-          attachments you are about to upload.
+          Ensure these patient details match the electronic health records and attachments you are
+          about to upload.
         </p>
       )}
 
@@ -69,9 +60,9 @@ function PatientResultPage({ role }: Props) {
       <p>
         If patient details are incorrect, please contact the{' '}
         <a
-          href='https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks'
-          target='_blank'
-          rel='noreferrer'
+          href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
+          target="_blank"
+          rel="noreferrer"
         >
           NHS National Service Desk
         </a>

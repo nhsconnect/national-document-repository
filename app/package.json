@@ -9,7 +9,7 @@
     "test-all": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts test --watchAll=false",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "format": "prettier --write \"**/*.+(ts|tsx|json|css|md)\"",
+    "format": "prettier --write \"**/*.+(ts|tsx|js|scss|json|css|md)\"",
     "prepare": "cd ../ && husky install ./app/.husky"
   },
   "dependencies": {
