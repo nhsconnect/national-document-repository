@@ -1,7 +1,9 @@
 export type PatientDetails = {
-    nhsNumber: number;
+    nhsNumber: string;
     familyName: string;
     givenName: Array<string>;
-    birthDate: Date;
+    birthDate: string;
     postalCode: string;
+    superseded: boolean;
+    restricted: boolean;
 };

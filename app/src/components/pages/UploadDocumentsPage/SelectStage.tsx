@@ -3,7 +3,6 @@ import type { FormEvent, MouseEvent } from "react";
 import {
   DOCUMENT_UPLOAD_STATE,
   SetUploadDocuments,
-  StageProps,
   UploadDocument,
 } from "../../../types/pages/UploadDocumentsPage/types";
 import { Button, Fieldset, Input, Table, WarningCallout } from "nhsuk-react-components";
@@ -16,7 +15,7 @@ interface FileInputEvent extends FormEvent<HTMLInputElement> {
   target: HTMLInputElement & EventTarget;
 }
 
-interface Props extends StageProps {
+interface Props {
   uploadDocuments: () => void;
   setDocuments: SetUploadDocuments;
 }

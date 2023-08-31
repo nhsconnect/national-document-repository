@@ -1,11 +1,16 @@
 import { Details, Table, WarningCallout } from "nhsuk-react-components";
 import React from "react";
-import {DOCUMENT_UPLOAD_STATE} from "../../../types/pages/UploadDocumentsPage/types";
+import {DOCUMENT_UPLOAD_STATE, UploadDocument} from "../../../types/pages/UploadDocumentsPage/types";
 import ErrorBox from "../ErrorBox/ErrorBox";
 import formatFileSize from "../../../helpers/utils/formatFileSize";
 import {getFormattedDate} from "../../../helpers/utils/formatDate";
+import PatientSummary from "../../patientSummary/PatientSummary";
+import {PatientDetails} from "../../../types/components/types";
 
-const UploadSummary = ({ documents }) => {
+export interface Props {
+  documents : Array<UploadDocument>
+}
+const UploadSummary = ({documents} : Props ) => {
     const successfulUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED;
     });
@@ -24,6 +29,14 @@ const UploadSummary = ({ documents }) => {
             </span>
         </>
     );
+
+    const mockPatientDetails:Partial<PatientDetails> = {
+        nhsNumber: "111111111",
+        familyName: "test",
+        givenName: ["Gremlin", "Junior"],
+        birthDate: "5/12/2022",
+        postalCode: "BS37 5DH",
+    }
 
     return (
         <section>
@@ -93,6 +106,8 @@ const UploadSummary = ({ documents }) => {
                     </Details>
                 </>
             )}
+            <PatientSummary patientDetails={mockPatientDetails} />
+
             <WarningCallout style={{ marginTop: 75 }}>
                 <WarningCallout.Label>Before you close this page</WarningCallout.Label>
                 <ul>

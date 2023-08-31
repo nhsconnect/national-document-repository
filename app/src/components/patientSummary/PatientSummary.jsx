@@ -19,7 +19,7 @@ const PatientSummary = ({ patientDetails }) => {
             </SummaryList.Row>
             <SummaryList.Row>
                 <SummaryList.Key>Date of birth</SummaryList.Key>
-                <SummaryList.Value>{getFormattedDate(patientDetails?.birthDate)}</SummaryList.Value>
+                <SummaryList.Value>{getFormattedDate(new Date(patientDetails?.birthDate))}</SummaryList.Value>
             </SummaryList.Row>
             <SummaryList.Row>
                 <SummaryList.Key>Postcode</SummaryList.Key>
