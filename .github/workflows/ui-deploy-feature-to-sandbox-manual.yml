@@ -74,9 +74,12 @@ jobs:
           parameterPairs: "/ndr/${{ github.event.inputs.sandboxWorkspace}}/api_endpoint = DOC_STORE_API_ENDPOINT"
           withDecryption: "true" # defaults to true
 
+    - name: temp view parm store env vars
+      run: echo ${{ env.DOC_STORE_API_ENDPOINT }}
+      
     - name: Configure React environment vars
       env:
-        ENDPOINT_DOC_STORE_API: ${{env.DOC_STORE_API_ENDPOINT}}
+        ENDPOINT_DOC_STORE_API: ${{ env.DOC_STORE_API_ENDPOINT }}
         AWS_REGION: ${{ vars.AWS_REGION }}
         OIDC_PROVIDER_ID: not provided yet
         BUILD_ENV: development
