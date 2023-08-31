@@ -19,18 +19,18 @@ function UploadDocumentsPage(props: Props) {
   const setDocumentState = (
     id: string,
     state: DOCUMENT_UPLOAD_STATE,
-    progress?: number
+    progress?: number,
   ) => {
-    setDocuments(prevDocuments => {
+    setDocuments((prevDocuments) => {
       const updatedDocuments = prevDocuments.map((document) => {
         if (document.id === id) {
           progress = progress ?? document.progress;
-          return {...document, state, progress};
+          return { ...document, state, progress };
         }
         return document;
       });
       return updatedDocuments;
-    })
+    });
   };
 
   const mockPatient = {
@@ -46,12 +46,11 @@ function UploadDocumentsPage(props: Props) {
           nhsNumber: mockPatient.nhsNumber,
           document,
           baseUrl,
-        })
-      )
+        }),
+      ),
     );
     setStage(UPLOAD_STAGE.Complete);
   };
-
 
   if (stage === UPLOAD_STAGE.Selecting) {
     return (
@@ -63,7 +62,7 @@ function UploadDocumentsPage(props: Props) {
   } else if (stage === UPLOAD_STAGE.Uploading) {
     return <UploadingStage documents={documents} />;
   } else if (stage === UPLOAD_STAGE.Complete) {
-    return <CompleteStage documents={documents}/>;
+    return <CompleteStage documents={documents} />;
   }
   return null;
 }
