@@ -2,13 +2,11 @@ import React from 'react';
 import type { MouseEvent as ReactEvent } from 'react';
 import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
-import config from "../../config";
 
 type Props = {};
 
 function HomePage(props: Props) {
   const navigate = useNavigate();
-  const url = config.API.endpoints[0].endpoint;
 
   const navigateUpload = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
     e.preventDefault();
@@ -49,9 +47,20 @@ function HomePage(props: Props) {
         Start now
       </ButtonLink>
 
-      <p> API endpoint: {process.env.REACT_APP_DOC_STORE_API_ENDPOINT}</p>
-      <p> Image Version: {process.env.REACT_APP_IMAGE_VERSION}</p>
       
+      {
+        (process.env.REACT_APP_ENVIRONMENT === 'local' ||
+        process.env.REACT_APP_ENVIRONMENT === 'development' ||
+        process.env.REACT_APP_ENVIRONMENT === 'test') &&
+        
+        <div>
+          <br></br>
+          <h2>Test Panel</h2>
+          <p>This section should only be displayed on a test/dev environment and should be used for displaying test configurations</p>
+          <p> API endpoint: {process.env.REACT_APP_DOC_STORE_API_ENDPOINT}</p>
+          <p> Image Version: {process.env.REACT_APP_IMAGE_VERSION}</p>
+        </div>
+      }
     </>
 
     

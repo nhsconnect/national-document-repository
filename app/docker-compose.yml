@@ -8,6 +8,5 @@ services:
       context: .
     ports:
       - 8080:80
-    environment:
-      - REACT_CONFIG_API_ENDPOINT="http:///scoootohost"
-      - REACT_CONFIG_AWS_REGION="scoots reigion"
+    env_file:
+      - .env
