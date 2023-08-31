@@ -1,28 +1,28 @@
-import React from 'react'
-import type { ReactNode } from 'react'
-import './styles/App.scss'
-import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage'
-import HomePage from './pages/homePage/HomePage'
-import ConfigProvider from './providers/configProvider/ConfigProvider'
-import config from './config'
-import { routes } from './types/generic/routes'
-import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage'
-import PatientResultPage from './pages/patientResultPage/PatientResultPage'
-import OrgSelectPage from './pages/orgSelectPage/OrgSelectPage'
-import Layout from './components/layout/Layout'
-import { USER_ROLE } from './types/generic/roles'
-import DownloadDocumentsPage from './pages/downloadDocumentsPage/DownloadDocumentsPage'
-import PatientDetailsProvider from './providers/patientProvider/PatientProvider'
-import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom'
+import React from 'react';
+import type { ReactNode } from 'react';
+import './styles/App.scss';
+import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
+import HomePage from './pages/homePage/HomePage';
+import ConfigProvider from './providers/configProvider/ConfigProvider';
+import config from './config';
+import { routes } from './types/generic/routes';
+import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
+import PatientResultPage from './pages/patientResultPage/PatientResultPage';
+import OrgSelectPage from './pages/orgSelectPage/OrgSelectPage';
+import Layout from './components/layout/Layout';
+import { USER_ROLE } from './types/generic/roles';
+import DownloadDocumentsPage from './pages/downloadDocumentsPage/DownloadDocumentsPage';
+import PatientDetailsProvider from './providers/patientProvider/PatientProvider';
+import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
 
 function App() {
   const AuthenticatedProviders = ({ children }: { children: ReactNode }) => (
     <PatientDetailsProvider>{children}</PatientDetailsProvider>
-  )
+  );
 
   const AppProviders = ({ children }: { children: ReactNode }) => (
     <ConfigProvider config={config}>{children}</ConfigProvider>
-  )
+  );
 
   return (
     <AppProviders>
@@ -61,7 +61,7 @@ function App() {
         </Layout>
       </Router>
     </AppProviders>
-  )
+  );
 }
 
-export default App
+export default App;
