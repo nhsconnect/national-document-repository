@@ -5,6 +5,7 @@ from boto3.dynamodb.conditions import Key
 import logging
 from botocore.exceptions import ClientError
 
+from services.dynamo_query_service import DynamoQueryService
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.nhs_number_validator import validate_id
@@ -19,24 +20,13 @@ TABLE_NAME = "dev_DocumentReferenceMetadata"
 def lambda_handler(event, context):
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
+        validate_id(nhs_number)
+    except InvalidResourceIdException:
+        return ApiGatewayResponse(400, "Invalid NHS number", "GET")
 
-        try:
-            validate_id(nhs_number)
-        except InvalidResourceIdException:
-            return ApiGatewayResponse(400, "Invalid NHS number", "GET")
-
-        dynamodb = boto3.resource('dynamodb')
-        table = dynamodb.Table(TABLE_NAME)
-
-        response = table.query(
-            IndexName='NhsNumberIndex',
-            KeyConditionExpression=Key('NhsNumber').eq(nhs_number),
-            ProjectionExpression="Created, FileName"
-        )
-
-    except ClientError as e:
-        logger.error("Unable to connect to DB")
-        logger.error(e)
+    try:
+        response = DynamoQueryService(TABLE_NAME)(nhs_number, "Created, FileName")
+    except ClientError:
         return ApiGatewayResponse(500, "error", "GET")
 
     if response is not None and 'Items' in response:

@@ -123,16 +123,6 @@ def context():
     return LambdaContext()
 
 
-@pytest.fixture
-def mock_boto3_dynamo():
-    return MagicMock()
-
-
-@pytest.fixture
-def mock_dynamo_table():
-    return MagicMock()
-
-
 def test_lambda_handler_returns_items_from_dynamo(valid_nhs_id_event, context, mock_dynamo_table, mock_boto3_dynamo):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
