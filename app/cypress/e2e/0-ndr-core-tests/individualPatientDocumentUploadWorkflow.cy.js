@@ -1,6 +1,8 @@
 describe('Uploads docs and tests it looks OK', () => {
+    const localhost = 'http://localhost:3000/'
+
     beforeEach(() => {
-        cy.visit('http://localhost:3000')
+        cy.visit(localhost)
     })
 
     const uploadedFilePathNames = [
@@ -13,7 +15,7 @@ describe('Uploads docs and tests it looks OK', () => {
         cy.get('.nhsuk-button').click()
         cy.wait(20)
         cy.url().should('include', 'upload')
-        cy.url().should('eq', 'http://localhost:3000/upload')
+        cy.url().should('eq', localhost + 'upload')
 
     })
 
@@ -31,6 +33,15 @@ describe('Uploads docs and tests it looks OK', () => {
 
     })
 
+    it('On Upload button click, renders Uploading Stage', () => {
+
+        cy.get('.nhsuk-button').click()
+        cy.wait(20)
+        cy.get("input[type=file]").selectFile(uploadedFilePathNames[0])
+        cy.get("#upload-button").click()
+
+    })
+
     it('Single file - On Upload button click, renders Upload Summary with errors when upload has failed', () => {
 
         cy.get('.nhsuk-button').click()
@@ -45,7 +56,7 @@ describe('Uploads docs and tests it looks OK', () => {
         cy.get('#failed-upload-warning').should('be.visible')
         cy.get('#start-again-button').should('have.text', 'Start Again')
         cy.get('#start-again-button').click()
-        cy.url().should('eq', 'http://localhost:3000/')
+        cy.url().should('eq', localhost)
 
     })
 })
