@@ -44,6 +44,8 @@ describe('Uploads docs and tests it looks OK', () => {
         cy.get('#failed-uploads').should('contain', '1 of 1 files failed to upload')
         cy.get('#failed-upload-warning').should('be.visible')
         cy.get('#start-again-button').should('have.text', 'Start Again')
+        cy.get('#start-again-button').click()
+        cy.url().should('eq', 'http://localhost:3000/')
 
     })
 })
