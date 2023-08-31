@@ -2,11 +2,11 @@ default: help
 
 .PHONY: Install
 install:
-	npm --prefix ./app install && make env
+	npm --prefix ./app install --legacy-peer-deps && make env
 
 .PHONY: Clean install
 clean-install:
-	npm --prefix ./app ci
+	npm --prefix ./app ci --legacy-peer-deps
 
 .PHONY: Start
 start:
