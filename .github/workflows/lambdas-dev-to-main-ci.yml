@@ -54,9 +54,9 @@ jobs:
               - 'lambdas/handlers/document_reference_search_handler.py'
       - name: variable_review
         run: |
-          echo github.event.pull_request.merged
-          echo github.event_name
-          echo github.event.action
+          echo ${{ github.event.pull_request.merged}}
+          echo ${{ github.event_name }}
+          echo ${{ github.event.action }}
 
   python_lambdas_test:
     runs-on: ubuntu-latest
