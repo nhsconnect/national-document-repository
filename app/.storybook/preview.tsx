@@ -13,30 +13,26 @@ const preview: Preview = {
     controls: {
       matchers: {
         color: /(background|color)$/i,
-        date: /Date$/
-      }
-    }
+        date: /Date$/,
+      },
+    },
   },
   decorators: [
     (Story) => (
       <ConfigProvider config={config}>
-        <PatientDetailsProvider patient={{ ...buildPatientDetails() }}>
+        <PatientDetailsProvider patientDetails={{ ...buildPatientDetails() }}>
           <MemoryRouter initialEntries={['/']}>
             <div
-              className='nhsuk-width-container'
+              className="nhsuk-width-container"
               style={{
                 margin: `0 auto`,
                 maxWidth: 960,
                 padding: `0 1.0875rem 1.45rem`,
-                minHeight: '75vh'
+                minHeight: '75vh',
               }}
             >
-              <main
-                className='nhsuk-main-wrapper app-homepage'
-                id='maincontent'
-                role='main'
-              >
-                <section className='app-homepage-content'>
+              <main className="nhsuk-main-wrapper app-homepage" id="maincontent" role="main">
+                <section className="app-homepage-content">
                   <div>
                     <Story />
                   </div>
@@ -46,7 +42,7 @@ const preview: Preview = {
           </MemoryRouter>
         </PatientDetailsProvider>
       </ConfigProvider>
-    )
-  ]
+    ),
+  ],
 };
 export default preview;

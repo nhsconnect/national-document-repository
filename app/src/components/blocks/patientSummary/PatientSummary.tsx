@@ -1,9 +1,9 @@
-import React from "react";
-import { SummaryList } from "nhsuk-react-components";
-import { getFormattedDate } from "../../../helpers/utils/formatDate";
-import { Patient } from "../../../types/generic/patient";
+import React from 'react';
+import { SummaryList } from 'nhsuk-react-components';
+import { getFormattedDate } from '../../../helpers/utils/formatDate';
+import { PatientDetails } from '../../../types/generic/patientDetails';
 
-type Props = { patientDetails: Patient };
+type Props = { patientDetails: PatientDetails };
 
 const PatientSummary = ({ patientDetails }: Props) => {
   return (

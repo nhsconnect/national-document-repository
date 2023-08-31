@@ -1,17 +1,16 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { fireEvent, render, screen } from '@testing-library/react';
 import PatientDetailsProvider, { usePatientDetailsContext } from './PatientProvider';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
-import { Patient } from '../../types/generic/patient';
+import type { PatientDetails } from '../../types/generic/patientDetails';
 
 type TestProps = {
-  patientDetails: Patient;
+  patientDetails: PatientDetails;
 };
 
 describe('PatientDetailsProvider', () => {
   it('provides NHS number and family name', () => {
     const patientDetails = buildPatientDetails({
-      nhsNumber: '23456',
+      nhsNumber: '0000012007',
       familyName: 'Smith',
     });
 
@@ -24,10 +23,10 @@ describe('PatientDetailsProvider', () => {
     expect(screen.getByText('NHS Number: Null')).toBeInTheDocument();
     expect(screen.getByText('Family Name: Null')).toBeInTheDocument();
 
-    userEvent.click(screen.getByRole('button', { name: 'Update NHS Number' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Update NHS Number' }));
 
-    expect(screen.getByText(`NHS Number: ${patientDetails.nhsNumber}`)).toBeInTheDocument();
     expect(screen.getByText(`Family Name: ${patientDetails.familyName}`)).toBeInTheDocument();
+    expect(screen.getByText(`NHS Number: ${patientDetails.nhsNumber}`)).toBeInTheDocument();
   });
 });
 

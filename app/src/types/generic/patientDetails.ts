@@ -1,4 +1,4 @@
-export type Patient = {
+export type PatientDetails = {
   birthDate: string;
   familyName: string;
   givenName: Array<string>;

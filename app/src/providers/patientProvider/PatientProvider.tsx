@@ -1,18 +1,21 @@
 import { createContext, useContext, useState } from 'react';
 import type { ReactNode, Dispatch, SetStateAction } from 'react';
-import { Patient } from '../../types/generic/patient';
+import { PatientDetails } from '../../types/generic/patientDetails';
 
 type Props = {
-  patient?: Patient | null;
+  patientDetails?: PatientDetails | null;
   children: ReactNode;
 };
 
-export type PatientContext = [Patient | null, Dispatch<SetStateAction<Patient | null>>];
+export type PatientContext = [
+  PatientDetails | null,
+  Dispatch<SetStateAction<PatientDetails | null>>,
+];
 
 const PatientDetailsContext = createContext<PatientContext | null>(null);
 
-const PatientDetailsProvider = ({ children, patient }: Props) => {
-  const patientState: PatientContext = useState(patient ?? null);
+const PatientDetailsProvider = ({ children, patientDetails }: Props) => {
+  const patientState: PatientContext = useState(patientDetails ?? null);
 
   return (
     <PatientDetailsContext.Provider value={patientState}>{children}</PatientDetailsContext.Provider>
