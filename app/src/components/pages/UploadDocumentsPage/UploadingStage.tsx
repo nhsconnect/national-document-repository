@@ -21,7 +21,7 @@ function UploadingStage({ documents }: Props) {
   return (
     <>
       <h1>Your documents are uploading</h1>
-      <WarningCallout>
+      <WarningCallout id="uploading-stage-warning">
         <WarningCallout.Label>Stay on this page</WarningCallout.Label>
         <p>
           Do not close or navigate away from this browser until upload is
