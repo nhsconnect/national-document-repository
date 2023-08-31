@@ -1,7 +1,7 @@
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
-    DOCUMENT_UPLOAD_STATE as documentUploadStates
+    DOCUMENT_UPLOAD_STATE as documentUploadStates, SearchResult
 } from '../../types/pages/UploadDocumentsPage/types';
 import { PatientDetails } from '../../types/components/types';
 
@@ -16,7 +16,6 @@ const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) =
         restricted: false,
         ...patientDetailsOverride
     };
-
     return patient;
 };
 
@@ -30,7 +29,6 @@ const buildTextFile = (name: string, size?: number) => {
             value: size
         });
     }
-
     return file;
 };
 
@@ -44,8 +42,8 @@ const buildDocument = (file: File, uploadStatus: DOCUMENT_UPLOAD_STATE) => {
     return mockDocument;
 };
 
-const buildSearchResult = (searchResultOverride: any) => {
-    return {
+const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
+    const searchResult: SearchResult = {
         id: 'some-id',
         description: 'Some description',
         type: 'some type',
@@ -53,6 +51,7 @@ const buildSearchResult = (searchResultOverride: any) => {
         virusScanResult: 'Clean',
         ...searchResultOverride
     };
+    return searchResult;
 };
 
 export { buildPatientDetails, buildTextFile, buildDocument, buildSearchResult };

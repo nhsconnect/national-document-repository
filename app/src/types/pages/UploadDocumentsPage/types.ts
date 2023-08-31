@@ -25,3 +25,11 @@ export type UploadDocument = {
   progress: number;
   id: string;
 };
+
+export type SearchResult = {
+  id: string;
+  description: string;
+  type: string;
+  indexed: Date;
+  virusScanResult: string;
+};
