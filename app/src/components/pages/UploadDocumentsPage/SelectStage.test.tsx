@@ -77,7 +77,7 @@ describe("<UploadDocumentsPage />", () => {
 
       expect(screen.getByText(documentOne.name)).toBeInTheDocument();
 
-      const removeFile = await screen.findByRole("link", {
+      const removeFile = await screen.findByRole("button", {
         name: `Remove ${documentOne.name} from selection`,
       });
 
@@ -134,7 +134,7 @@ describe("<UploadDocumentsPage />", () => {
 
       act(() => {
         userEvent.click(
-          screen.getAllByRole("link", {
+          screen.getAllByRole("button", {
             name: `Remove ${documentOne.name} from selection`,
           })[1],
         );
@@ -152,7 +152,7 @@ describe("<UploadDocumentsPage />", () => {
         userEvent.upload(selectFilesLabel, documentOne);
       });
 
-      const removeFile = await screen.findByRole("link", {
+      const removeFile = await screen.findByRole("button", {
         name: `Remove ${documentOne.name} from selection`,
       });
 

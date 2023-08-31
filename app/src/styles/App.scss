@@ -44,6 +44,34 @@
   }
 }
 
+.link-button {
+  background: none;
+  border: none;
+  font: inherit;
+  outline: inherit;
+  -webkit-font-smoothing: antialiased;
+  padding: 0;
+  border-spacing: 0;
+  box-sizing: inherit;
+  text-align: left;
+  color: #005eb8;
+  text-decoration: underline;
+  &:hover {
+    color: #7c2855;
+    text-decoration: none;
+  }
+  &:active {
+    color: #002f5c;
+  }
+  &:focus {
+    background-color: #ffeb3b;
+    box-shadow: 0 -2px #ffeb3b, 0 4px #212b32;
+    color: #212b32;
+    outline: 4px solid transparent;
+    text-decoration: none;
+  }
+}
+
 @keyframes spin {
   0% {
     transform: rotate(0deg);

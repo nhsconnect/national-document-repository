@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import type { FormEvent, MouseEvent } from "react";
+import type { FormEvent } from "react";
 import {
   DOCUMENT_UPLOAD_STATE,
   SetUploadDocuments,
@@ -161,16 +161,16 @@ function SelectStage({ uploadDocuments, setDocuments }: Props) {
                         {formatFileSize(document.file.size)}
                       </Table.Cell>
                       <Table.Cell>
-                        <a
+                        <button
+                          type="button"
                           aria-label={`Remove ${document.file.name} from selection`}
-                          href="#"
-                          onClick={(e: MouseEvent<HTMLElement>) => {
-                            e.preventDefault();
+                          className="link-button"
+                          onClick={() => {
                             onRemove(index);
                           }}
                         >
                           Remove
-                        </a>
+                        </button>
                       </Table.Cell>
                     </Table.Row>
                   ))}
