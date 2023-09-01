@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     outputs:
+      enums_changed: ${{steps.filter.outputs.enums}}
       utils_changed: ${{steps.filter.outputs.utils}}
       services_changed: ${{steps.filter.outputs.services}}
       models_changed: ${{steps.filters.outputs.models}}
@@ -40,6 +41,8 @@ jobs:
         id: filter
         with:
           filters: |
+            enums:
+              - 'lambdas/enums/**'
             utils: 
               - 'lambdas/utils/**'
             services: 
@@ -74,11 +77,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Make virtual environement
+      - name: Make virtual environment
         run: |
           make env
 
-      - name: Start virtual environement
+      - name: Start virtual environment
         run: |
           source ./lambdas/venv/bin/activate
           echo PATH=$PATH >> $GITHUB_ENV
@@ -97,7 +100,8 @@ jobs:
     needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
       (github.event.pull_request.merged == 'true') 
-        && (needs.identify_changed_functions.outputs.utils_changed == 'true' 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
           || needs.identify_changed_functions.outputs.services_changed == 'true' 
           || needs.identify_changed_functions.outputs.models_changed == 'true' 
           || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
@@ -144,7 +148,8 @@ jobs:
     needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
       (github.event.pull_request.merged == 'true') 
-        && (needs.identify_changed_functions.outputs.utils_changed == 'true' 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
           || needs.identify_changed_functions.outputs.services_changed == 'true' 
           || needs.identify_changed_functions.outputs.models_changed == 'true' 
           || needs.identify_changed_functions.outputs.search_patient_details_changed == 'true'
@@ -191,7 +196,8 @@ jobs:
     needs: [ "python_lambdas_test", "identify_changed_functions" ]
     if: |
       (github.event.pull_request.merged == 'true') 
-        && (needs.identify_changed_functions.outputs.utils_changed == 'true' 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
           || needs.identify_changed_functions.outputs.services_changed == 'true' 
           || needs.identify_changed_functions.outputs.models_changed == 'true' 
           || needs.identify_changed_functions.outputs.search_document_reference_changed == 'true'

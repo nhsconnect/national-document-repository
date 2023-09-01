@@ -4,11 +4,12 @@ from models.pds_models import Patient, PatientDetails
 from requests.models import Response
 from utils.exceptions import (InvalidResourceIdException,
                               PatientNotFoundException, PdsErrorException)
+from utils.nhs_number_validator import validate_id
 
 
 class PdsApiService:
     def fetch_patient_details(self, nhs_number: str) -> PatientDetails:
-        Patient.validate_id(nhs_number)
+        validate_id(nhs_number)
 
         response = self.fake_pds_request(nhs_number)
 
@@ -22,13 +23,13 @@ class PdsApiService:
 
         if response.status_code == 404:
             raise PatientNotFoundException(
-                "Patient does not exist for given NHS number."
+                "Patient does not exist for given NHS number"
             )
 
         if response.status_code == 400:
-            raise InvalidResourceIdException("Invalid NHS number.")
+            raise InvalidResourceIdException("Invalid NHS number")
 
-        raise PdsErrorException("Error when requesting patient from PDS.")
+        raise PdsErrorException("Error when requesting patient from PDS")
 
     def fake_pds_request(self, nhsNumber: str) -> Response:
         mock_pds_results: list[dict] = []
@@ -41,7 +42,7 @@ class PdsApiService:
                 mock_pds_results.append(json.load(f))
 
         except FileNotFoundError:
-            raise PdsErrorException("Error when requesting patient from PDS.")
+            raise PdsErrorException("Error when requesting patient from PDS")
 
         pds_patient: dict = {}
 
