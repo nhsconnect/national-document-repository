@@ -24,7 +24,8 @@ format:
 	./lambdas/venv/bin/python3 -m isort lambdas/handlers/. 
 	./lambdas/venv/bin/python3 -m isort lambdas/models/. 
 	./lambdas/venv/bin/python3 -m isort lambdas/utils/. 
-	./lambdas/venv/bin/python3 -m isort lambdas/services/. 
+	./lambdas/venv/bin/python3 -m isort lambdas/services/.
+	./lambdas/venv/bin/python3 -m isort lambdas/enums/.
 	./lambdas/venv/bin/python3 -m isort lambdas/tests/. 
 
 test-unit:
@@ -49,6 +50,7 @@ zip:
 	cp -r lambdas/utils lambdas/package_$(lambda_name)
 	cp -r lambdas/models lambdas/package_$(lambda_name)
 	cp -r lambdas/services lambdas/package_$(lambda_name)
+	cp -r lambdas/enums lambdas/package_$(lambda_name)
 	cd ./lambdas/package_$(lambda_name); zip -r ../../package_lambdas_$(lambda_name).zip .
 	rm -rf ./lambdas/package_$(lambda_name)
 	cd ../..

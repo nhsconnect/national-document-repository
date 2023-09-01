@@ -1,14 +1,15 @@
 import pytest
-from models.pds_models import Patient, PatientDetails
+from models.pds_models import PatientDetails
 from tests.unit.pds_data.utils import (create_restricted_patient,
                                        create_unrestricted_patient)
 from utils.exceptions import InvalidResourceIdException
+from utils.nhs_number_validator import validate_id
 
 
 def test_validate_id_with_valid_id_returns_true():
     nhs_number = "0000000000"
 
-    result = Patient.validate_id(nhs_number)
+    result = validate_id(nhs_number)
 
     assert result
 
@@ -17,7 +18,7 @@ def test_validate_id_with_valid_id_raises_InvalidResourceIdException():
     nhs_number = "000000000"
 
     with pytest.raises(InvalidResourceIdException):
-        Patient.validate_id(nhs_number)
+        validate_id(nhs_number)
 
 
 def test_get_unrestricted_patient_details():

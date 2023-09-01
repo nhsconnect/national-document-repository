@@ -65,6 +65,21 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - uses: dkershner6/aws-ssm-getparameters-action@v1
+        with:
+          parameterPairs: '/ndr/${{ vars.BUILD_ENV }}/api_endpoint = DOC_STORE_API_ENDPOINT'
+          withDecryption: 'true' # defaults to true
+
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: ${{ env.DOC_STORE_API_ENDPOINT }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: development
+          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.event.inputs.tagVersion }}'
+        run: |
+          ./react-environment-config.sh
+
       - name: Build, tag, and push image to Amazon ECR
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -92,14 +107,6 @@ jobs:
           task-definition: ./app/task-definition.json
           container-name: ${{ vars.BUILD_ENV }}-app-container
           image: ${{ steps.build-image.outputs.image }}
-
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ./app/task-definition.json
-          service: ${{ vars.BUILD_ENV }}-ecs-cluster-service
-          cluster: ${{ vars.BUILD_ENV }}-app-cluster
-          wait-for-service-stability: true
 
       - name: De-register previous revision
         run: |

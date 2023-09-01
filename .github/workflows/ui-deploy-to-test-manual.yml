@@ -142,6 +142,21 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - uses: dkershner6/aws-ssm-getparameters-action@v1
+        with:
+          parameterPairs: '/ndr/${{ vars.BUILD_ENV }}/api_endpoint = DOC_STORE_API_ENDPOINT'
+          withDecryption: 'true' # defaults to true
+
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: ${{ env.DOC_STORE_API_ENDPOINT }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: ${{ vars.BUILD_ENV }}
+          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
+        run: |
+          ./react-environment-config.sh
+
       - name: Build, tag, and push image to Amazon ECR
         id: build-image
         env:
@@ -150,7 +165,7 @@ jobs:
           IMAGE_TAG: latest
           IMAGE_TAG_SHA: ${{ github.sha }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" >> $GITHUB_OUTPUT
