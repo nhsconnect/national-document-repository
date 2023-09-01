@@ -4,83 +4,91 @@
 @import 'node_modules/nhsuk-frontend/packages/components/input/input';
 @import 'node_modules/nhsuk-frontend/packages/components/tables/tables';
 
-.spinner-button {
-  border: nhsuk-spacing(1) solid rgba($color_nhsuk-white, 0.3);
-  border-top: nhsuk-spacing(1) solid $color_nhsuk-white;
-  animation: spin 1s linear infinite;
-  box-sizing: border-box;
-  margin: 5px;
-  margin-right: 10px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
-.spinner-blue {
-  animation: spin 2s linear infinite;
-  border: nhsuk-spacing(3) solid $color_nhsuk-grey-4;
-  border-top: nhsuk-spacing(3) solid tint($color_nhsuk-blue, 15%);
-  display: inline-block;
-  box-sizing: border-box;
-  margin: auto;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
+.spinner_button {
+    display: flex;
+    background: $color_nhsuk-green;
+
+    &:hover {
+        color: $color_nhsuk-black;
+        background: $color_nhsuk-green;
+    }
+    &-spinner {
+        border: nhsuk-spacing(1) solid rgba($color_nhsuk-white, 0.8);
+        border-top: nhsuk-spacing(1) solid $color_nhsuk-black;
+        animation: spin 1s linear infinite;
+        box-sizing: border-box;
+        margin: 5px;
+        margin-right: 10px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+    }
 }
 
 .nhsuk-loader {
-  @include nhsuk-responsive-margin(4, bottom);
-  @include nhsuk-responsive-margin(4, top);
-  position: relative;
-  text-align: center;
-  padding-top: 150px;
-  padding-bottom: 150px;
-  &__text {
-    @include nhsuk-typography-responsive(19);
-    padding-bottom: 16px;
-    font-weight: 700;
-    display: block;
-    margin-bottom: 0;
-  }
+    @include nhsuk-responsive-margin(4, bottom);
+    @include nhsuk-responsive-margin(4, top);
+    position: relative;
+    text-align: center;
+    padding-top: 150px;
+    padding-bottom: 150px;
+    &__text {
+        @include nhsuk-typography-responsive(19);
+        padding-bottom: 16px;
+        font-weight: 700;
+        display: block;
+        margin-bottom: 0;
+    }
 }
 
 .link-button {
-  background: none;
-  border: none;
-  font: inherit;
-  outline: inherit;
-  -webkit-font-smoothing: antialiased;
-  padding: 0;
-  border-spacing: 0;
-  box-sizing: inherit;
-  text-align: left;
-  color: #005eb8;
-  text-decoration: underline;
-  &:hover {
-    color: #7c2855;
-    text-decoration: none;
-  }
-  &:active {
-    color: #002f5c;
-  }
-  &:focus {
-    background-color: #ffeb3b;
-    box-shadow: 0 -2px #ffeb3b, 0 4px #212b32;
-    color: #212b32;
-    outline: 4px solid transparent;
-    text-decoration: none;
-  }
+    background: none;
+    border: none;
+    font: inherit;
+    outline: inherit;
+    -webkit-font-smoothing: antialiased;
+    padding: 0;
+    border-spacing: 0;
+    box-sizing: inherit;
+    text-align: left;
+    color: #005eb8;
+    text-decoration: underline;
+    &:hover {
+        color: #7c2855;
+        text-decoration: none;
+    }
+    &:active {
+        color: #002f5c;
+    }
+    &:focus {
+        background-color: #ffeb3b;
+        box-shadow:
+            0 -2px #ffeb3b,
+            0 4px #212b32;
+        color: #212b32;
+        outline: 4px solid transparent;
+        text-decoration: none;
+    }
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .table-column-header {
-  font-size: 24px;
+    font-size: 24px;
 }

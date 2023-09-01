@@ -1,62 +1,51 @@
-import {
-    DOCUMENT_UPLOAD_STATE,
-    UploadDocument,
-} from "../../types/pages/UploadDocumentsPage/types";
-import axios from "axios";
+import { ErrorResponse } from '../../types/generic/response';
+import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
+import axios from 'axios';
 
 type Args = {
-    setDocumentState: (
-        id: string,
-        state: DOCUMENT_UPLOAD_STATE,
-        progress?: number
-    ) => void;
+    setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
     document: UploadDocument;
     nhsNumber: string;
     baseUrl: string;
 };
 
-const uploadDocument = async ({
-  setDocumentState,
-  nhsNumber,
-  document,
-  baseUrl,
-}: Args) => {
-  const rawDoc = document.file;
-  const requestBody = {
-    resourceType: "DocumentReference",
-    subject: {
-      identifier: {
-        system: "https://fhir.nhs.uk/Id/nhs-number",
-        value: nhsNumber,
-      },
-    },
-    type: {
-      coding: [
-        {
-          system: "http://snomed.info/sct",
-          code: "22151000087106",
+const uploadDocument = async ({ setDocumentState, nhsNumber, document, baseUrl }: Args) => {
+    const rawDoc = document.file;
+    const requestBody = {
+        resourceType: 'DocumentReference',
+        subject: {
+            identifier: {
+                system: 'https://fhir.nhs.uk/Id/nhs-number',
+                value: nhsNumber,
+            },
         },
-      ],
-    },
-    content: [
-      {
-        attachment: {
-          contentType: rawDoc.type,
+        type: {
+            coding: [
+                {
+                    system: 'http://snomed.info/sct',
+                    code: '22151000087106',
+                },
+            ],
         },
-      },
-    ],
-    description: rawDoc.name,
-    created: new Date(Date.now()).toISOString(),
-  };
+        content: [
+            {
+                attachment: {
+                    contentType: rawDoc.type,
+                },
+            },
+        ],
+        description: rawDoc.name,
+        created: new Date(Date.now()).toISOString(),
+    };
 
     setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
-    const gatewayUrl = baseUrl + "/DocumentReference";
+    const gatewayUrl = baseUrl + '/DocumentReference';
 
     try {
         const gatewayResponse = await fetch(gatewayUrl, {
-            method: "POST",
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify(requestBody),
         }).then((res) => res.json());
@@ -64,23 +53,27 @@ const uploadDocument = async ({
         Object.keys(gatewayResponse.fields).forEach((key) => {
             formData.append(key, gatewayResponse.fields[key]);
         });
-        formData.append("file", document.file);
+        formData.append('file', document.file);
         const s3url = gatewayResponse.url;
 
         const s3Response = await axios.post(s3url, formData, {
-            onUploadProgress: (progress => {
-                const {loaded, total} = progress;
+            onUploadProgress: (progress) => {
+                const { loaded, total } = progress;
                 if (total) {
-                    setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING, (loaded / total) * 100);
+                    setDocumentState(
+                        document.id,
+                        DOCUMENT_UPLOAD_STATE.UPLOADING,
+                        (loaded / total) * 100,
+                    );
                 }
-            })
-        })
+            },
+        });
 
         if (s3Response.status === 204)
-            setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED)
-    } catch (e: any) {
-        console.error(e);
-        if (e.response?.status === 403) {
+            setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+    } catch (e) {
+        const error = e as ErrorResponse;
+        if (error.response.status === 403) {
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
         } else {
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);

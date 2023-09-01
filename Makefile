@@ -57,34 +57,36 @@ package: format zip
 
 default: help
 
-.PHONY: Install
-install:
-	cd ./app && npm install
+setup:
+	npm --prefix ./app install --legacy-peer-deps
+	make env
 
-.PHONY: Clean install
 clean-install:
-	cd ./app && npm ci
+	npm --prefix ./app ci --legacy-peer-deps
 
-.PHONY: Start
+pre-commit:
+	npm exec --prefix ./app lint-staged 
+
+pre-push:
+	make test
+
 start:
-	cd ./app && npm start
+	npm --prefix ./app start
 
-.PHONY: Test
+storybook:
+	npm --prefix ./app run storybook
+
 test:
-	cd ./app && npm run test-all
+	npm --prefix ./app run test --watchAll
 
-.PHONY: Build
 build:
-	cd ./app && npm run build
+	npm --prefix ./app run build
 
-.PHONY: Docker Up
 docker-up:
 	cd ./app && docker-compose up -d
 
-.PHONY: Docker Down
 docker-down:
 	cd ./app && docker-compose down
 
-.PHONY: Cypress Run
 cypress-open:
 	cd ./app && npx cypress open

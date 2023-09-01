@@ -1,0 +1,39 @@
+import React from 'react';
+import { SummaryList } from 'nhsuk-react-components';
+import { getFormattedDate } from '../../../helpers/utils/formatDate';
+import { PatientDetails } from '../../../types/generic/patientDetails';
+
+type Props = { patientDetails: PatientDetails };
+
+const PatientSummary = ({ patientDetails }: Props) => {
+    return (
+        <SummaryList>
+            <SummaryList.Row>
+                <SummaryList.Key>NHS Number</SummaryList.Key>
+                <SummaryList.Value>{patientDetails?.nhsNumber}</SummaryList.Value>
+            </SummaryList.Row>
+            <SummaryList.Row>
+                <SummaryList.Key>Surname</SummaryList.Key>
+                <SummaryList.Value>{patientDetails?.familyName}</SummaryList.Value>
+            </SummaryList.Row>
+            <SummaryList.Row>
+                <SummaryList.Key>First name</SummaryList.Key>
+                <SummaryList.Value>
+                    {patientDetails?.givenName?.map((name) => `${name} `)}
+                </SummaryList.Value>
+            </SummaryList.Row>
+            <SummaryList.Row>
+                <SummaryList.Key>Date of birth</SummaryList.Key>
+                <SummaryList.Value>
+                    {getFormattedDate(new Date(patientDetails?.birthDate))}
+                </SummaryList.Value>
+            </SummaryList.Row>
+            <SummaryList.Row>
+                <SummaryList.Key>Postcode</SummaryList.Key>
+                <SummaryList.Value>{patientDetails?.postalCode}</SummaryList.Value>
+            </SummaryList.Row>
+        </SummaryList>
+    );
+};
+
+export default PatientSummary;
