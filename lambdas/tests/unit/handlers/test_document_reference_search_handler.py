@@ -27,36 +27,41 @@ def context():
 
 
 def test_lambda_handler_returns_items_from_dynamo(event_valid_id, context):
-    with patch.object(DynamoQueryService, "__call__", return_value=MOCK_RESPONSE):
-        expected = ApiGatewayResponse(200, EXPECTED_RESPONSE, "GET")
-        actual = lambda_handler(event_valid_id, context)
-        assert expected == actual
+    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+        with patch.object(DynamoQueryService, "__call__", return_value=MOCK_RESPONSE):
+            expected = ApiGatewayResponse(200, EXPECTED_RESPONSE, "GET")
+            actual = lambda_handler(event_valid_id, context)
+            assert expected == actual
 
 
 def test_lambda_handler_returns_200_empty_list_when_dynamo_returns_no_records(event_valid_id, context):
-    with patch.object(DynamoQueryService, "__call__", return_value=MOCK_EMPTY_RESPONSE):
-        expected = ApiGatewayResponse(200, [], "GET")
-        actual = lambda_handler(event_valid_id, context)
-        assert expected == actual
+    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+        with patch.object(DynamoQueryService, "__call__", return_value=MOCK_EMPTY_RESPONSE):
+            expected = ApiGatewayResponse(200, [], "GET")
+            actual = lambda_handler(event_valid_id, context)
+            assert expected == actual
 
 
 def test_lambda_handler_returns_500_when_dynamo_has_unexpected_response(event_valid_id, context):
-    with patch.object(DynamoQueryService, "__call__", return_value=UNEXPECTED_RESPONSE):
-        expected = ApiGatewayResponse(500, "Unrecognised response when searching for available documents", "GET")
-        actual = lambda_handler(event_valid_id, context)
-        assert expected == actual
+    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+        with patch.object(DynamoQueryService, "__call__", return_value=UNEXPECTED_RESPONSE):
+            expected = ApiGatewayResponse(500, "Unrecognised response when searching for available documents", "GET")
+            actual = lambda_handler(event_valid_id, context)
+            assert expected == actual
 
 
 def test_lambda_handler_returns_400_when_id_not_valid(invalid_nhs_id_event, context):
-    expected = ApiGatewayResponse(400, "Invalid NHS number", "GET")
-    actual = lambda_handler(invalid_nhs_id_event, context)
-    assert expected == actual
+    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+        expected = ApiGatewayResponse(400, "Invalid NHS number", "GET")
+        actual = lambda_handler(invalid_nhs_id_event, context)
+        assert expected == actual
 
 
 def test_lambda_handler_returns_400_when_id_not_supplied(empty_nhs_id_event, context):
-    expected = ApiGatewayResponse(400, "Please supply an NHS number", "GET")
-    actual = lambda_handler(empty_nhs_id_event, context)
-    assert expected == actual
+    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+        expected = ApiGatewayResponse(400, "Please supply an NHS number", "GET")
+        actual = lambda_handler(empty_nhs_id_event, context)
+        assert expected == actual
 
 
 def test_lambda_handler_returns_500_when_client_error_thrown(event_valid_id, context):
@@ -68,11 +73,11 @@ def test_lambda_handler_returns_500_when_client_error_thrown(event_valid_id, con
     }
 
     exception = ClientError(error, "Query")
-
-    with patch.object(DynamoQueryService, "__call__", side_effect=exception):
-        expected = ApiGatewayResponse(500, "An error occurred searching for available documents", "GET")
-        actual = lambda_handler(event_valid_id, context)
-        assert expected == actual
+    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+        with patch.object(DynamoQueryService, "__call__", side_effect=exception):
+            expected = ApiGatewayResponse(500, "An error occurred searching for available documents", "GET")
+            actual = lambda_handler(event_valid_id, context)
+            assert expected == actual
 
 
 def test_lambda_handler_returns_400_when_no_fields_requested(event_valid_id, context):
