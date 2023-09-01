@@ -4,7 +4,7 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
-from enums.metadata_field_names import DynamoField
+from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -22,7 +22,7 @@ class DynamoQueryService:
             table = dynamodb.Table(self.TABLE_NAME)
 
             if requested_fields is None:
-                requested_fields = DynamoField.list()
+                requested_fields = DynamoDocumentMetadataTableFields.list()
 
             projection_expression, expression_attribute_names = self.create_expressions(requested_fields)
 
@@ -48,16 +48,14 @@ class DynamoQueryService:
 
         for field_definition in requested_fields:
             if len(projection_expression) > 0:
-                projection_expression = "{},{}".format(projection_expression, field_definition.field_alias)
+                projection_expression = f'{projection_expression},{field_definition.field_alias}'
             else:
                 projection_expression = field_definition.field_alias
 
-            new_attribute_name_expression = '"{}":"{}"'.format(field_definition.field_alias,
-                                                               field_definition.field_name)
+            new_attribute_name_expression = f'"{field_definition.field_alias}":"{field_definition.field_name}"'
 
             if len(expression_attribute_names) > 0:
-                expression_attribute_names = "{},{}".format(expression_attribute_names,
-                                                            new_attribute_name_expression)
+                expression_attribute_names = f'{expression_attribute_names},{new_attribute_name_expression}'
             else:
                 expression_attribute_names = new_attribute_name_expression
 

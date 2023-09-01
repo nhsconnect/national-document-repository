@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class DynamoField(Enum):
+class DynamoDocumentMetadataTableFields(Enum):
     ID = "ID", "#id"
     CONTENT_TYPE = "ContentType", "#contentType"
     CREATED = "Created", "#created"
@@ -20,14 +20,14 @@ class DynamoField(Enum):
     @staticmethod
     def list():
         return [
-            DynamoField.ID,
-            DynamoField.CONTENT_TYPE,
-            DynamoField.CREATED,
-            DynamoField.DOCUMENT_UPLOADED,
-            DynamoField.FILE_NAME,
-            DynamoField.INDEXED,
-            DynamoField.LOCATION,
-            DynamoField.NHS_NUMBER,
-            DynamoField.TYPE,
-            DynamoField.VIRUS_SCAN_RESULT,
+            DynamoDocumentMetadataTableFields.ID,
+            DynamoDocumentMetadataTableFields.CONTENT_TYPE,
+            DynamoDocumentMetadataTableFields.CREATED,
+            DynamoDocumentMetadataTableFields.DOCUMENT_UPLOADED,
+            DynamoDocumentMetadataTableFields.FILE_NAME,
+            DynamoDocumentMetadataTableFields.INDEXED,
+            DynamoDocumentMetadataTableFields.LOCATION,
+            DynamoDocumentMetadataTableFields.NHS_NUMBER,
+            DynamoDocumentMetadataTableFields.TYPE,
+            DynamoDocumentMetadataTableFields.VIRUS_SCAN_RESULT,
         ]

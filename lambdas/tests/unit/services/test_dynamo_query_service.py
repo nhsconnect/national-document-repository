@@ -4,7 +4,7 @@ import boto3
 import pytest
 from boto3.dynamodb.conditions import Key
 
-from enums.metadata_field_names import DynamoField
+from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 from tests.unit.helpers.dynamo_responses import MOCK_RESPONSE
 from services.dynamo_query_service import DynamoQueryService
 
@@ -24,7 +24,7 @@ def test_create_expressions_correctly_creates_an_expression_of_one_field():
     expected_projection = "#vscanResult"
     expected_expr_attr_names = '"#vscanResult":"VirusScanResult"'
 
-    fields_requested = [DynamoField.VIRUS_SCAN_RESULT]
+    fields_requested = [DynamoDocumentMetadataTableFields.VIRUS_SCAN_RESULT]
 
     actual_projection, actual_expr_attr_names = query_service.create_expressions(fields_requested)
 
@@ -37,7 +37,7 @@ def test_create_expressions_correctly_creates_an_expression_of_multiple_fields()
     expected_projection = "#nhsNumber,#indexed,#type"
     expected_expr_attr_names = '"#nhsNumber":"NhsNumber","#indexed":"Indexed","#type":"Type"'
 
-    fields_requested = [DynamoField.NHS_NUMBER, DynamoField.INDEXED, DynamoField.TYPE]
+    fields_requested = [DynamoDocumentMetadataTableFields.NHS_NUMBER, DynamoDocumentMetadataTableFields.INDEXED, DynamoDocumentMetadataTableFields.TYPE]
 
     actual_projection, actual_expr_attr_names = query_service.create_expressions(fields_requested)
 
@@ -52,7 +52,7 @@ def test_lambda_handler_returns_items_from_dynamo(mock_dynamo_table, mock_boto3_
         expected = MOCK_RESPONSE
 
         query_service = DynamoQueryService("test_table")
-        actual = query_service("1234567890", [DynamoField.FILE_NAME, DynamoField.CREATED])
+        actual = query_service("1234567890", [DynamoDocumentMetadataTableFields.FILE_NAME, DynamoDocumentMetadataTableFields.CREATED])
 
         search_key_obj = Key('NhsNumber').eq("1234567890")
 

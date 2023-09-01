@@ -23,13 +23,13 @@ class PdsApiService:
 
         if response.status_code == 404:
             raise PatientNotFoundException(
-                "Patient does not exist for given NHS number."
+                "Patient does not exist for given NHS number"
             )
 
         if response.status_code == 400:
             raise InvalidResourceIdException("Invalid NHS number")
 
-        raise PdsErrorException("Error when requesting patient from PDS.")
+        raise PdsErrorException("Error when requesting patient from PDS")
 
     def fake_pds_request(self, nhsNumber: str) -> Response:
         mock_pds_results: list[dict] = []
@@ -42,7 +42,7 @@ class PdsApiService:
                 mock_pds_results.append(json.load(f))
 
         except FileNotFoundError:
-            raise PdsErrorException("Error when requesting patient from PDS.")
+            raise PdsErrorException("Error when requesting patient from PDS")
 
         pds_patient: dict = {}
 
