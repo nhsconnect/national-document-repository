@@ -77,6 +77,10 @@ jobs:
           name: build
           path: ./app/build
 
+      - name: Cypress install
+        run: npm install --legacy-peer-deps
+        working-directory: ./app
+        
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
@@ -98,6 +102,10 @@ jobs:
           name: build
           path: ./app/build
 
+      - name: Cypress install
+        run: npm install --legacy-peer-deps
+        working-directory: ./app
+
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
@@ -118,6 +126,10 @@ jobs:
         with:
           name: build
           path: ./app/build
+
+      - name: Cypress install
+        run: npm install --legacy-peer-deps
+        working-directory: ./app
 
       - name: Cypress run
         uses: cypress-io/github-action@v5
