@@ -81,4 +81,4 @@ def test_lambda_handler_returns_400_when_no_fields_requested(event_valid_id, con
         with patch.object(DynamoQueryService, "__call__", side_effect=exception):
             expected = ApiGatewayResponse(400, "No data was requested to be returned in query", "GET")
             actual = lambda_handler(event_valid_id, context)
-            assert expected.__eq__(actual)
+            assert expected == actual
