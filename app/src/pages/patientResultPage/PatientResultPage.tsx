@@ -36,7 +36,7 @@ function PatientResultPage({ role }: Props) {
     };
     return (
         <div style={{ maxWidth: 500 }}>
-            <h1 role="heading">Verify patient details</h1>
+            <h1>Verify patient details</h1>
             {patientDetails && (patientDetails.superseded || patientDetails.restricted) && (
                 <WarningCallout>
                     <WarningCallout.Label headingLevel="h2">Information</WarningCallout.Label>

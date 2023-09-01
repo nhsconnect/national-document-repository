@@ -1,13 +1,13 @@
 import { UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 
 export const toFileList = (uploadDocs: Array<UploadDocument>) => {
-  const updatedFileList = new DataTransfer();
+    const updatedFileList = new DataTransfer();
 
-  uploadDocs.forEach((doc) => {
-    updatedFileList.items.add(doc.file);
-  });
+    uploadDocs.forEach((doc) => {
+        updatedFileList.items.add(doc.file);
+    });
 
-  return updatedFileList.files;
+    return updatedFileList.files;
 };
 
 export default toFileList;

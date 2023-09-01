@@ -5,9 +5,7 @@ import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 
-type Props = {};
-
-function RoleSelectPage({}: Props) {
+function RoleSelectPage() {
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
 
