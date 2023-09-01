@@ -68,15 +68,22 @@ const uploadDocument = async ({
         formData.append("file", document.file);
         const s3url = gatewayResponse.url;
         console.log("form data: " + formData);
+        console.log(formData);
         console.log("s3 url: " + s3url);
-        const s3Response = await axios.post(s3url, formData, {
-            onUploadProgress: (progress => {
+        const config = {
+            headers: {
+                'Content-Type': `multipart/form-data;`,
+                'Access-Control-Request-Method': 'POST',
+            },
+            onUploadProgress: ((progress: { loaded: number; total: number; }) => {
                 const {loaded, total} = progress;
                 if (total) {
                     setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING, (loaded / total) * 100);
                 }
             })
-        })
+        };
+        // @ts-ignore
+        const s3Response = await axios.post(s3url, formData, config)
 
         if (s3Response.status === 204)
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED)

@@ -1,5 +1,5 @@
 describe('Uploads docs and tests it looks OK', () => {
-    const localhost = 'http://localhost:3000/'
+    const localhost = 'https://ndra.access-request-fulfilment.patient-deductions.nhs.uk/'
 
     beforeEach(() => {
         cy.visit(localhost)
