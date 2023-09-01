@@ -130,7 +130,7 @@ jobs:
       - name: Cypress install
         run: npm install --legacy-peer-deps
         working-directory: ./app
-        
+
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
@@ -146,7 +146,7 @@ jobs:
     defaults:
       run:
         working-directory: ./app
-    if: github.event.pull_request.merged
+    if: github.ref == 'refs/heads/master'
 
     steps:
       - uses: actions/checkout@v2
