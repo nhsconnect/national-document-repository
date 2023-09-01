@@ -51,7 +51,7 @@ const UploadSummary = ({documents} : Props ) => {
                     }
                 ></ErrorBox>
             )}
-            <h1>Upload Summary</h1>
+            <h1 id="upload-summary-header">Upload Summary</h1>
             {failedUploads.length > 0 && (
                 <div className={"nhsuk-form-group--error"}>
                     <Table responsive caption={tableCaption} style={tableMargin} id="failed-uploads">
@@ -69,7 +69,7 @@ const UploadSummary = ({documents} : Props ) => {
                 </div>
             )}
             {failedUploads.length === 0 && (
-                <h2>All documents have been successfully uploaded on {getFormattedDate(new Date())}</h2>
+                <h2 id="upload-summary-confirmation">All documents have been successfully uploaded on {getFormattedDate(new Date())}</h2>
             )}
             {successfulUploads.length > 0 && (
                 <>
@@ -84,6 +84,7 @@ const UploadSummary = ({documents} : Props ) => {
                                 captionProps={{
                                     className: "nhsuk-u-visually-hidden",
                                 }}
+                                id="successful-uploads"
                             >
                                 <Table.Head role="rowgroup">
                                     <Table.Row>
@@ -108,7 +109,7 @@ const UploadSummary = ({documents} : Props ) => {
             )}
             <PatientSummary patientDetails={mockPatientDetails} />
 
-            <WarningCallout id="failed-upload-warning" style={{ marginTop: 75 }}>
+            <WarningCallout id="close-page-warning" style={{ marginTop: 75 }}>
                 <WarningCallout.Label>Before you close this page</WarningCallout.Label>
                 <ul>
                     <li>You could take a screenshot of this summary page and attach it to the patient&apos;s record</li>
