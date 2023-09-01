@@ -68,7 +68,7 @@ pre-commit:
 	npm exec --prefix ./app lint-staged 
 
 pre-push:
-	make test
+	npm --prefix ./app run test
 
 start:
 	npm --prefix ./app start
