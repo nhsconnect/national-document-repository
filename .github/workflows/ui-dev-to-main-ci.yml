@@ -46,6 +46,7 @@ jobs:
 
       - name: Cypress install
         run: npm install --legacy-peer-deps
+        working-directory: ./app
 
       - name: Cypress build
         uses: cypress-io/github-action@v5
