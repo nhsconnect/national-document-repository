@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from unittest.mock import patch
 
@@ -8,6 +9,7 @@ from handlers.document_reference_search_handler import lambda_handler
 from tests.unit.helpers.dynamo_responses import EXPECTED_RESPONSE, MOCK_RESPONSE, MOCK_EMPTY_RESPONSE, \
     UNEXPECTED_RESPONSE
 from services.dynamo_query_service import DynamoQueryService
+from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 
 
@@ -71,3 +73,12 @@ def test_lambda_handler_returns_500_when_client_error_thrown(event_valid_id, con
         expected = ApiGatewayResponse(500, "An error occurred searching for available documents", "GET")
         actual = lambda_handler(event_valid_id, context)
         assert expected == actual
+
+
+def test_lambda_handler_returns_400_when_no_fields_requested(event_valid_id, context):
+    exception = InvalidResourceIdException
+    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+        with patch.object(DynamoQueryService, "__call__", side_effect=exception):
+            expected = ApiGatewayResponse(400, "No data was requested to be returned in query", "GET")
+            actual = lambda_handler(event_valid_id, context)
+            assert expected.__eq__(actual)

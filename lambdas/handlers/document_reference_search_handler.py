@@ -14,8 +14,8 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
+    table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
     try:
-        table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
         nhs_number = event["queryStringParameters"]["patientId"]
         validate_id(nhs_number)
     except InvalidResourceIdException:
@@ -28,7 +28,7 @@ def lambda_handler(event, context):
     try:
         response = dynamo_service('NhsNumber', nhs_number, [DynamoDocumentMetadataTableFields.CREATED, DynamoDocumentMetadataTableFields.FILE_NAME])
     except InvalidResourceIdException:
-        return ApiGatewayResponse(500, "No data was requested to be returned in query", "GET")
+        return ApiGatewayResponse(400, "No data was requested to be returned in query", "GET")
     except ClientError:
         return ApiGatewayResponse(500, "An error occurred searching for available documents", "GET")
 
