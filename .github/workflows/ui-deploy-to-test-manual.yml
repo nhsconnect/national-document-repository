@@ -79,6 +79,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
+          install: false
           start: npm start
           browser: chrome
           working-directory: ./app
@@ -99,6 +100,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
+          install: false
           start: npm start
           browser: firefox
           working-directory: ./app
@@ -119,6 +121,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
+          install: false
           start: npm start
           browser: edge
           working-directory: ./app
