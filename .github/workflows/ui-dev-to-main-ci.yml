@@ -54,7 +54,7 @@ jobs:
           AWS_REGION: ${{ vars.AWS_REGION }}
           OIDC_PROVIDER_ID: not provided yet
           BUILD_ENV: development
-          IMAGE_VERSION: 'ndr-${{ github.event.inputs.sandboxWorkspace}}-app:${{ github.sha }}'
+          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
         run: |
           ./react-environment-config.sh
         working-directory: ./app

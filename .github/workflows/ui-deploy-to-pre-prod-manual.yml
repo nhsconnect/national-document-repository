@@ -73,6 +73,17 @@ jobs:
         run: npm install --legacy-peer-deps
         working-directory: ./app
 
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: development
+          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app::${{ github.sha }}'
+        run: |
+          ./react-environment-config.sh
+        working-directory: ./app
+
       - name: Cypress build
         uses: cypress-io/github-action@v5
         with:
@@ -105,7 +116,7 @@ jobs:
       - name: Cypress install
         run: npm install --legacy-peer-deps
         working-directory: ./app
-        
+
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
