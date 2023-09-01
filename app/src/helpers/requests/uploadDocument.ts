@@ -67,7 +67,8 @@ const uploadDocument = async ({
         });
         formData.append("file", document.file);
         const s3url = gatewayResponse.url;
-
+        console.log("form data: " + formData);
+        console.log("s3 url: " + s3url);
         const s3Response = await axios.post(s3url, formData, {
             onUploadProgress: (progress => {
                 const {loaded, total} = progress;
