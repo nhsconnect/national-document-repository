@@ -68,7 +68,7 @@ pre-commit:
 	npm exec --prefix ./app lint-staged 
 
 pre-push:
-	npm --prefix ./app run test-all
+	make test-ui
 
 start:
 	npm --prefix ./app start
@@ -76,8 +76,8 @@ start:
 storybook:
 	npm --prefix ./app run storybook
 
-test:
-	npm --prefix ./app run test
+test-ui:
+	npm --prefix ./app run test-all
 
 build:
 	npm --prefix ./app run build
