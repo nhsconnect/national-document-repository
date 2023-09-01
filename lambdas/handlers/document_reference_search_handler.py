@@ -23,10 +23,12 @@ def lambda_handler(event, context):
     except KeyError:
         return ApiGatewayResponse(400, "Please supply an NHS number", "GET")
 
-    dynamo_service = DynamoQueryService(table_name)
+    dynamo_service = DynamoQueryService(table_name, 'NhsNumberIndex')
 
     try:
-        response = dynamo_service(nhs_number, [DynamoDocumentMetadataTableFields.CREATED, DynamoDocumentMetadataTableFields.FILE_NAME])
+        response = dynamo_service('NhsNumber', nhs_number, [DynamoDocumentMetadataTableFields.CREATED, DynamoDocumentMetadataTableFields.FILE_NAME])
+    except InvalidResourceIdException:
+        return ApiGatewayResponse(500, "No data was requested to be returned in query", "GET")
     except ClientError:
         return ApiGatewayResponse(500, "An error occurred searching for available documents", "GET")
 

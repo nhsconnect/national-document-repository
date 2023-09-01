@@ -4,31 +4,30 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
-from enums.metadata_field_names import DynamoDocumentMetadataTableFields
+from utils.exceptions import InvalidResourceIdException
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-ALL_FIELDS = "ID, ContentType, Created, DocumentUploaded, FileName, Indexed, Location, NhsNumber, Type, VirusScanResult"
-
 
 class DynamoQueryService:
-    def __init__(self, table_name):
+    def __init__(self, table_name, index_name):
         self.TABLE_NAME = table_name
+        self.INDEX_NAME = index_name
 
-    def __call__(self, nhs_number: str, requested_fields: list = None):
+    def __call__(self, search_key, search_condition: str, requested_fields: list = None):
         try:
             dynamodb = boto3.resource('dynamodb')
             table = dynamodb.Table(self.TABLE_NAME)
 
-            if requested_fields is None:
-                requested_fields = DynamoDocumentMetadataTableFields.list()
+            if requested_fields is None or len(requested_fields) == 0:
+                raise InvalidResourceIdException
 
             projection_expression, expression_attribute_names = self.create_expressions(requested_fields)
 
             return table.query(
-                IndexName='NhsNumberIndex',
-                KeyConditionExpression=Key('NhsNumber').eq(nhs_number),
+                IndexName=self.INDEX_NAME,
+                KeyConditionExpression=Key(search_key).eq(search_condition),
                 ExpressionAttributeNames=expression_attribute_names,
                 ProjectionExpression=projection_expression
             )
