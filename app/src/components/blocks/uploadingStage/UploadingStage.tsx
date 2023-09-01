@@ -10,19 +10,12 @@ interface Props {
     documents: Array<UploadDocument>;
 }
 
-type UploadMessages = {
-    [DOCUMENT_UPLOAD_STATE.SELECTED]: 'Waiting...';
-    [DOCUMENT_UPLOAD_STATE.UPLOADING]: 'Uploading...';
-    [DOCUMENT_UPLOAD_STATE.SUCCEEDED]: 'Uploaded';
-    [DOCUMENT_UPLOAD_STATE.FAILED]: 'Upload failed';
-};
-
 function UploadingStage({ documents }: Props) {
-    const uploadStateMessages: UploadMessages = {
-        [DOCUMENT_UPLOAD_STATE.SELECTED]: 'Waiting...',
-        [DOCUMENT_UPLOAD_STATE.UPLOADING]: 'Uploading...',
-        [DOCUMENT_UPLOAD_STATE.SUCCEEDED]: 'Uploaded',
-        [DOCUMENT_UPLOAD_STATE.FAILED]: 'Upload failed',
+    const getUploadMessage = (type: DOCUMENT_UPLOAD_STATE) => {
+        if (type === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
+        else if (type === DOCUMENT_UPLOAD_STATE.UPLOADING) return 'Uploading...';
+        else if (type === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Uploaded';
+        else if (type === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
     };
 
     return (
@@ -61,7 +54,7 @@ function UploadingStage({ documents }: Props) {
                                     {document.state === DOCUMENT_UPLOAD_STATE.UPLOADING ? (
                                         <> {Math.round(document.progress)}% uploaded... </>
                                     ) : (
-                                        uploadStateMessages[document.state]
+                                        <>{getUploadMessage(document.state)}</>
                                     )}
                                 </p>
                             </Table.Cell>
