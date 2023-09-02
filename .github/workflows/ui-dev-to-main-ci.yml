@@ -68,12 +68,12 @@ jobs:
       
       - name: check directory root
         run: |
-          ls
+          ls -a
       
       - name: check directory app
         run: |
           cd app
-          ls
+          ls -a
 
       # - name: File contents
       #   run: echo "${ steps.read_file.outputs.contents }"
