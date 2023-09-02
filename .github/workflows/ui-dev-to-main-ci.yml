@@ -177,7 +177,7 @@ jobs:
     defaults:
       run:
         working-directory: ./app
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v2
