@@ -134,6 +134,9 @@ jobs:
           name: build
           path: ./app/build
 
+      - name: install serve
+        run: npm install -g serve 
+
       - name: Cypress install
         run: | 
           npm install --legacy-peer-deps
@@ -161,9 +164,7 @@ jobs:
           path: ./app/build
 
       - name: Cypress install
-        run: | 
-          npm install --legacy-peer-deps
-          npm install -g serve
+        run: npm install --legacy-peer-deps
         working-directory: ./app
 
       - name: Cypress run
