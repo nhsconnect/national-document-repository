@@ -76,7 +76,7 @@ jobs:
       - name: Configure React environment vars
         env:
           ENDPOINT_DOC_STORE_API: http://test-endpoint.com
-          AWS_REGION: ${{ vars.AWS_REGION }}
+          AWS_REGION: test region
           OIDC_PROVIDER_ID: not provided yet
           BUILD_ENV: development
           IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app::${{ github.sha }}'
@@ -113,15 +113,20 @@ jobs:
           name: build
           path: ./app/build
 
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally 
+        run: npm install -g serve 
+
       - name: Cypress install
-        run: npm install --legacy-peer-deps
+        run: | 
+          npm install --legacy-peer-deps
         working-directory: ./app
 
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
           install: false
-          start: npm start
+          start: serve -s build
           browser: chrome
           working-directory: ./app
 
@@ -138,15 +143,20 @@ jobs:
           name: build
           path: ./app/build
 
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally 
+        run: npm install -g serve 
+
       - name: Cypress install
-        run: npm install --legacy-peer-deps
+        run: | 
+          npm install --legacy-peer-deps
         working-directory: ./app
 
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
           install: false
-          start: npm start
+          start: serve -s build
           browser: firefox
           working-directory: ./app
 
@@ -163,15 +173,20 @@ jobs:
           name: build
           path: ./app/build
 
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally 
+        run: npm install -g serve 
+
       - name: Cypress install
-        run: npm install --legacy-peer-deps
+        run: | 
+          npm install --legacy-peer-deps
         working-directory: ./app
 
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
           install: false
-          start: npm start
+          start: serve -s build
           browser: edge
           working-directory: ./app
 
