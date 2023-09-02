@@ -59,24 +59,6 @@ jobs:
           ./react-environment-config.sh
         working-directory: ./app
         shell: bash
-      
-      # - name: Read file contents
-      #   id: read_file
-      #   uses: andstor/file-reader-action@v1
-      #   with:
-      #     path: "/app/.env"
-      
-      - name: check directory root
-        run: |
-          ls -a
-      
-      - name: check directory app
-        run: |
-          cd app
-          ls -a
-
-      # - name: File contents
-      #   run: echo "${ steps.read_file.outputs.contents }"
 
       # - name: Cypress build
       #   uses: cypress-io/github-action@v5
@@ -114,6 +96,19 @@ jobs:
           name: build
           path: ./app/build
 
+      # if this works then we know cypres sis running a locla instance not the build
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
+          AWS_REGION: test region
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: development
+          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
+        run: |
+          ./react-environment-config.sh
+        working-directory: ./app
+        shell: bash
+
       - name: Cypress install
         run: npm install --legacy-peer-deps
         working-directory: ./app
@@ -140,14 +135,16 @@ jobs:
           path: ./app/build
 
       - name: Cypress install
-        run: npm install --legacy-peer-deps
+        run: | 
+          npm install --legacy-peer-deps
+          npm install serve
         working-directory: ./app
 
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
           install: false
-          start: npm start
+          start: serve -s build
           browser: firefox
           working-directory: ./app
 
