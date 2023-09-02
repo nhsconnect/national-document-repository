@@ -1,11 +1,16 @@
 #!/bin/sh -eu
 
+echo "script started"
 
 if test -f ".env"; then
     rm .env
 fi
 
+echo "any existing .env file remove"
+
 cp .env.template .env
+
+echo "created new .env file from template"
 
 SEDOPTION='-i ' 
 
@@ -14,11 +19,14 @@ SEDOPTION='-i '
 #   SEDOPTION='-i '' '
 # fi
 
-sed $SEDOPTION "s@%DOC_STORE_API_ENDPOINT%@${ENDPOINT_DOC_STORE_API}@" .env
-sed $SEDOPTION "s/%AWS_REGION%/${AWS_REGION}/" .env
-sed $SEDOPTION "s/%OIDC_PROVIDER_ID%/${OIDC_PROVIDER_ID}/" .env
-sed $SEDOPTION "s/%BUILD_ENV%/${BUILD_ENV}/" .env
-sed $SEDOPTION "s/%IMAGE_VERSION%/${IMAGE_VERSION}/" .env
+echo "filling in vars"
+sed -i "s@%DOC_STORE_API_ENDPOINT%@${ENDPOINT_DOC_STORE_API}@" .env
+sed -i "s/%AWS_REGION%/${AWS_REGION}/" .env
+sed -i "s/%OIDC_PROVIDER_ID%/${OIDC_PROVIDER_ID}/" .env
+sed -i "s/%BUILD_ENV%/${BUILD_ENV}/" .env
+sed -i "s/%IMAGE_VERSION%/${IMAGE_VERSION}/" .env
+
+echo "var transformation completed"
 
 
 
