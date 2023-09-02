@@ -59,11 +59,11 @@ jobs:
           ./react-environment-config.sh
         working-directory: ./app
       
-      - name: Read file contents
-        id: read_file
-        uses: andstor/file-reader-action@v1
-        with:
-          path: "/app/.env"
+      # - name: Read file contents
+      #   id: read_file
+      #   uses: andstor/file-reader-action@v1
+      #   with:
+      #     path: "/app/.env"
       
       - name: check directory root
         run: |
