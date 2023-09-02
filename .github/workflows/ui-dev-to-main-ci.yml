@@ -58,6 +58,7 @@ jobs:
         run: |
           ./react-environment-config.sh
         working-directory: ./app
+        shell: bash
       
       # - name: Read file contents
       #   id: read_file
