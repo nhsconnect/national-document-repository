@@ -58,17 +58,30 @@ jobs:
         run: |
           ./react-environment-config.sh
         working-directory: ./app
-
-      - name: Cypress build
-        uses: cypress-io/github-action@v5
-        env:
-          REACT_APP_DOC_STORE_API_ENDPOINT: http://test-endpoint.com
+      
+      - name: Read file contents
+        id: read_file
+        uses: andstor/file-reader-action@v1
         with:
-          # Disable running of tests within install job
-          install: false
-          runTests: false
-          build: npm run build
-          working-directory: ./app
+          path: "/app/.env"
+
+      - name: File contents
+        run: echo "${ steps.read_file.outputs.contents }"
+
+      # - name: Cypress build
+      #   uses: cypress-io/github-action@v5
+      #   env:
+      #     REACT_APP_DOC_STORE_API_ENDPOINT: http://test-endpoint.com
+      #   with:
+      #     # Disable running of tests within install job
+      #     install: false
+      #     runTests: false
+      #     build: npm run build
+      #     working-directory: ./app
+      
+      - name : Node react build
+        run: |
+          make build
 
       - name: Save build folder
         uses: actions/upload-artifact@v3
