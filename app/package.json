@@ -3,9 +3,9 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "start": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts start",
+        "start": "GENERATE_SOURCE_MAP=false ./app/node_modules/.bin/react-scripts start",
         "build": "react-scripts build",
-        "build-env-check": "node ./checkenvs.js && react-scripts build",
+        "build-env-check": "node ./react-build-env-checker.js && react-scripts build",
         "test": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts test",
         "test-all": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts test --watchAll=false",
         "storybook": "storybook dev -p 6006",
@@ -27,7 +27,8 @@
         "react-scripts": "5.0.1",
         "sass": "^1.66.1",
         "typescript": "^4.9.5",
-        "web-vitals": "^2.1.4"
+        "web-vitals": "^2.1.4",
+        "dotenv": "^16.3.1"
     },
     "devDependencies": {
         "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
