@@ -137,7 +137,6 @@ jobs:
       - name: Cypress install
         run: | 
           npm install --legacy-peer-deps
-          npm install serve --legacy-peer-deps
         working-directory: ./app
 
       - name: Cypress run
@@ -169,7 +168,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           install: false
-          start: npm start
+          start: npm start build
           browser: edge
           working-directory: ./app
 
