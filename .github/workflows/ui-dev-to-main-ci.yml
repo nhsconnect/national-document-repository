@@ -64,9 +64,18 @@ jobs:
         uses: andstor/file-reader-action@v1
         with:
           path: "/app/.env"
+      
+      - name: check directory root
+        run: |
+          ls
+      
+      - name: check directory app
+        run: |
+          cd app
+          ls
 
-      - name: File contents
-        run: echo "${ steps.read_file.outputs.contents }"
+      # - name: File contents
+      #   run: echo "${ steps.read_file.outputs.contents }"
 
       # - name: Cypress build
       #   uses: cypress-io/github-action@v5
@@ -78,7 +87,7 @@ jobs:
       #     runTests: false
       #     build: npm run build
       #     working-directory: ./app
-      
+
       - name : Node react build
         run: |
           make build
