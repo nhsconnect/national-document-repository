@@ -60,21 +60,14 @@ jobs:
         working-directory: ./app
         shell: bash
 
-      # - name: Cypress build
-      #   uses: cypress-io/github-action@v5
-      #   env:
-      #     REACT_APP_DOC_STORE_API_ENDPOINT: http://test-endpoint.com
-      #   with:
-      #     # Disable running of tests within install job
-      #     install: false
-      #     runTests: false
-      #     build: npm run build
-      #     working-directory: ./app
-
-      - name : Node react build
-        run: |
-
-          make build-env-check
+      - name: Cypress build
+        uses: cypress-io/github-action@v5
+        with:
+          # Disable running of tests within install job
+          install: false
+          runTests: false
+          build: npm run build
+          working-directory: ./app
 
       - name: Save build folder
         uses: actions/upload-artifact@v3
@@ -96,28 +89,20 @@ jobs:
           name: build
           path: ./app/build
 
-      # if this works then we know cypres sis running a locla instance not the build
-      - name: Configure React environment vars
-        env:
-          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
-          AWS_REGION: test region
-          OIDC_PROVIDER_ID: not provided yet
-          BUILD_ENV: development
-          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
-        run: |
-          ./react-environment-config.sh
-        working-directory: ./app
-        shell: bash
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally 
+        run: npm install -g serve 
 
       - name: Cypress install
-        run: npm install --legacy-peer-deps
+        run: | 
+          npm install --legacy-peer-deps
         working-directory: ./app
 
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
           install: false
-          start: npm start
+          start: serve -s build
           browser: chrome
           working-directory: ./app
 
@@ -134,7 +119,8 @@ jobs:
           name: build
           path: ./app/build
 
-      - name: install serve
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally 
         run: npm install -g serve 
 
       - name: Cypress install
@@ -163,6 +149,15 @@ jobs:
           name: build
           path: ./app/build
 
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally 
+        run: npm install -g serve 
+
+      - name: Cypress install
+        run: | 
+          npm install --legacy-peer-deps
+        working-directory: ./app
+
       - name: Cypress install
         run: npm install --legacy-peer-deps
         working-directory: ./app
@@ -171,7 +166,7 @@ jobs:
         uses: cypress-io/github-action@v5
         with:
           install: false
-          start: npm start build
+          start: serve -s build
           browser: edge
           working-directory: ./app
 
