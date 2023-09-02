@@ -55,7 +55,7 @@ describe('Home Page Tests', () => {
     cy.get('.nhsuk-button').click()
     cy.wait(20)
     cy.url().should('include', 'upload')
-    cy.url().should('eq', 'http://localhost:3000/upload')
+    cy.url().should('eq', 'http://localhost:3000/upload/submit')
 
   })
 

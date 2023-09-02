@@ -1,9 +1,10 @@
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
-    DOCUMENT_UPLOAD_STATE as documentUploadStates, SearchResult
+    DOCUMENT_UPLOAD_STATE as documentUploadStates,
 } from '../../types/pages/UploadDocumentsPage/types';
-import { PatientDetails } from '../../types/components/types';
+import { PatientDetails } from '../../types/generic/patientDetails';
+import { SearchResult } from '../../types/generic/searchResult';
 
 const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) => {
     const patient: PatientDetails = {
@@ -14,21 +15,23 @@ const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) =
         postalCode: 'AA1 1AA',
         superseded: false,
         restricted: false,
-        ...patientDetailsOverride
+        ...patientDetailsOverride,
     };
+
     return patient;
 };
 
 const buildTextFile = (name: string, size?: number) => {
     const file = new File(['test'], `${name}.txt`, {
-        type: 'text/plain'
+        type: 'text/plain',
     });
 
     if (size) {
         Object.defineProperty(file, 'size', {
-            value: size
+            value: size,
         });
     }
+
     return file;
 };
 
@@ -43,15 +46,15 @@ const buildDocument = (file: File, uploadStatus: DOCUMENT_UPLOAD_STATE) => {
 };
 
 const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
-    const searchResult: SearchResult = {
+    const result: SearchResult = {
         id: 'some-id',
         description: 'Some description',
         type: 'some type',
         indexed: new Date(Date.UTC(2022, 7, 10, 10, 34, 41, 515)),
         virusScanResult: 'Clean',
-        ...searchResultOverride
+        ...searchResultOverride,
     };
-    return searchResult;
+    return result;
 };
 
 export { buildPatientDetails, buildTextFile, buildDocument, buildSearchResult };
