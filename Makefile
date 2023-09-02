@@ -84,6 +84,9 @@ test-ui:
 build:
 	npm --prefix ./app run build
 
+build-env-check:
+	npm --prefix ./app run build-env-check
+
 docker-up:
 	cd ./app && docker-compose up -d
 
