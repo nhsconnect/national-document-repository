@@ -17,11 +17,11 @@ SEDOPTION='-i '
 # fi
 
 echo "filling in vars"
-sed SEDOPTION='-i '  "s@%DOC_STORE_API_ENDPOINT%@${ENDPOINT_DOC_STORE_API}@" .env
-sed SEDOPTION='-i '  "s/%AWS_REGION%/${AWS_REGION}/" .env
-sed SEDOPTION='-i '  "s/%OIDC_PROVIDER_ID%/${OIDC_PROVIDER_ID}/" .env
-sed SEDOPTION='-i '  "s/%BUILD_ENV%/${BUILD_ENV}/" .env
-sed SEDOPTION='-i '  "s/%IMAGE_VERSION%/${IMAGE_VERSION}/" .env
+sed $SEDOPTION "s@%DOC_STORE_API_ENDPOINT%@${ENDPOINT_DOC_STORE_API}@" .env
+sed $SEDOPTION "s/%AWS_REGION%/${AWS_REGION}/" .env
+sed $SEDOPTION "s/%OIDC_PROVIDER_ID%/${OIDC_PROVIDER_ID}/" .env
+sed $SEDOPTION "s/%BUILD_ENV%/${BUILD_ENV}/" .env
+sed $SEDOPTION "s/%IMAGE_VERSION%/${IMAGE_VERSION}/" .env
 
 echo "var transformation completed"
 
