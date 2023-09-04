@@ -44,29 +44,28 @@ function PatientSearchPage({ role }: Props) {
         setStatusCode(null);
         const nhsNumber = data.nhsNumber.replace(/[-\s]/gi, '');
 
-        const patientDetails = await getPatientDetails({
-            nhsNumber,
-            setStatusCode,
-            baseUrl,
-        });
+        try {
+            const patientDetails = await getPatientDetails({
+                nhsNumber,
+                setStatusCode,
+                baseUrl,
+            });
 
-        setPatientDetails(patientDetails);
-        if (!patientDetails) {
+            setPatientDetails(patientDetails);
+            setSubmissionState(SEARCH_STATES.SUCCEEDED);
+            // GP Role
+            if (userIsGP) {
+                // Make PDS patient search request to upload documents to patient
+                navigate(routes.UPLOAD_VERIFY);
+            }
+
+            // PCSE Role
+            else if (userIsPCSE) {
+                // Make PDS and Dynamo document store search request to download documents from patient
+                navigate(routes.DOWNLOAD_VERIFY);
+            }
+        } catch (e) {
             setSubmissionState(SEARCH_STATES.FAILED);
-            return;
-        }
-
-        setSubmissionState(SEARCH_STATES.SUCCEEDED);
-        // GP Role
-        if (userIsGP) {
-            // Make PDS patient search request to upload documents to patient
-            navigate(routes.UPLOAD_VERIFY);
-        }
-
-        // PCSE Role
-        else if (userIsPCSE) {
-            // Make PDS and Dynamo document store search request to download documents from patient
-            navigate(routes.DOWNLOAD_VERIFY);
         }
     };
     const handleError = (fields: FieldValues) => {

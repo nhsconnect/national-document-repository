@@ -21,9 +21,8 @@ const getPatientDetails = async ({ setStatusCode, nhsNumber, baseUrl }: Args) =>
                 'Content-Type': 'application/json',
             },
             params: {
-                'subject.identifier': `https://fhir.nhs.uk/Id/nhs-number|${nhsNumber}`,
+                patientId: nhsNumber,
             },
-            withCredentials: true,
         });
         return data;
     } catch (e) {
