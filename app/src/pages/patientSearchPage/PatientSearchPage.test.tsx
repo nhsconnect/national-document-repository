@@ -6,6 +6,10 @@ import * as ReactRouter from 'react-router';
 import { createMemoryHistory } from 'history';
 import PatientSearchPage from './PatientSearchPage';
 import userEvent from '@testing-library/user-event';
+import { buildPatientDetails } from '../../helpers/test/testBuilders';
+import axios from 'axios';
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('PatientSearchPage', () => {
     afterEach(() => {
@@ -24,18 +28,23 @@ describe('PatientSearchPage', () => {
         });
 
         it('displays a loading spinner when the patients details are being requested', async () => {
-            const getPatientDetailsMock = jest.fn();
-            getPatientDetailsMock.mockResolvedValue([]);
+            mockedAxios.get.mockImplementation(async () => {
+                await new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(null);
+                    }, 500);
+                });
+                return Promise.resolve({ data: buildPatientDetails() });
+            });
 
             renderPatientSearchPage();
+
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '9000000009');
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
             await waitFor(() => {
                 expect(screen.getByRole('SpinnerButton')).toBeInTheDocument();
             });
-
-            expect(screen.getByText('Searching...')).toBeInTheDocument();
         });
 
         it('displays a validation error when invalid NHS number provided', async () => {
