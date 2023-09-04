@@ -91,6 +91,7 @@ const UploadSummary = ({ documents }: Props) => {
                                 captionProps={{
                                     className: 'nhsuk-u-visually-hidden',
                                 }}
+                                id="successful-uploads"
                             >
                                 <Table.Head role="rowgroup">
                                     <Table.Row>
