@@ -14,7 +14,7 @@ type GetPatientDetailsResponse = {
 };
 
 const getPatientDetails = async ({ setStatusCode, nhsNumber, baseUrl }: Args) => {
-    const gatewayUrl = baseUrl + '/PatientDetails';
+    const gatewayUrl = baseUrl + '/SearchPatient';
     try {
         const { data }: GetPatientDetailsResponse = await axios.get(gatewayUrl, {
             headers: {
@@ -23,6 +23,7 @@ const getPatientDetails = async ({ setStatusCode, nhsNumber, baseUrl }: Args) =>
             params: {
                 'subject.identifier': `https://fhir.nhs.uk/Id/nhs-number|${nhsNumber}`,
             },
+            withCredentials: true,
         });
         return data;
     } catch (e) {
