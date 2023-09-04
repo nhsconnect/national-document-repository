@@ -48,20 +48,6 @@ describe('PatientSearchPage', () => {
                 ).toBeInTheDocument();
             });
         });
-
-        // it('displays server error message when server is down', async () => {
-        //     const getPatientDetailsMock = jest.fn();
-        //     getPatientDetailsMock.mockRejectedValue(null);
-
-        //     renderPatientSearchPage();
-        //     userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '0987654321');
-        //     userEvent.click(screen.getByRole('button', { name: 'Search' }));
-        //     await waitFor(() => {
-        //         expect(
-        //             screen.getByText('Sorry, the service is currently unavailable.'),
-        //         ).toBeInTheDocument();
-        //     });
-        // });
     });
 
     describe('Navigation', () => {});
