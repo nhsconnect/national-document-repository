@@ -8,19 +8,13 @@ import { InputRef } from '../../types/generic/inputRef';
 import { USER_ROLE } from '../../types/generic/roles';
 import { useNavigate } from 'react-router';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
-import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
+import getPatientDetails from '../../helpers/requests/getPatientDetails';
+import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
 
 type Props = {
     role: USER_ROLE;
 };
-
-enum SEARCH_STATES {
-    IDLE = 'idle',
-    SEARCHING = 'searching',
-    SUCCEEDED = 'succeeded',
-    FAILED = 'failed',
-}
 
 function PatientSearchPage({ role }: Props) {
     const [, setPatientDetails] = usePatientDetailsContext();
@@ -42,15 +36,22 @@ function PatientSearchPage({ role }: Props) {
     const userIsGP = role === USER_ROLE.GP;
     const isError = (statusCode && statusCode >= 500) || !inputError;
 
-    const handleSearch = (data: FieldValues) => {
+    const handleSearch = async (data: FieldValues) => {
+        setSubmissionState(SEARCH_STATES.SEARCHING);
         setInputError(null);
         setStatusCode(null);
-
-        setSubmissionState(SEARCH_STATES.SEARCHING);
         const nhsNumber = data.nhsNumber.replace(/[-\s]/gi, '');
 
-        const patientDetails = buildPatientDetails({ nhsNumber });
+        const patientDetails = await getPatientDetails({
+            nhsNumber,
+            setStatusCode,
+        });
+
         setPatientDetails(patientDetails);
+        if (!patientDetails) {
+            setSubmissionState(SEARCH_STATES.FAILED);
+            return;
+        }
 
         setSubmissionState(SEARCH_STATES.SUCCEEDED);
         // GP Role
@@ -65,12 +66,12 @@ function PatientSearchPage({ role }: Props) {
             navigate(routes.DOWNLOAD_VERIFY);
         }
     };
-
-    const handleError = async () => {
-        setSubmissionState(SEARCH_STATES.FAILED);
-        setInputError("Enter patient's 10 digit NHS number");
+    const handleError = (fields: FieldValues) => {
+        const errorMessages = Object.entries(fields).map(
+            ([k, v]: [string, { message: string }]) => v.message,
+        );
+        setInputError(errorMessages[0]);
     };
-
     return (
         <>
             {submissionState === SEARCH_STATES.FAILED && (
