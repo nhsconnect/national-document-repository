@@ -14,6 +14,11 @@ from tests.unit.helpers.dynamo_responses import (EXPECTED_RESPONSE,
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 
+PATCH_ENV_VAR = {
+    "DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table",
+    "LLOYD_GEORGE_DYNAMODB_NAME": "another_real_table",
+}
+
 
 @pytest.fixture
 def context():
@@ -29,7 +34,7 @@ def context():
 
 
 def test_lambda_handler_returns_items_from_dynamo(event_valid_id, context):
-    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+    with patch.dict(os.environ, PATCH_ENV_VAR):
         with patch.object(DynamoQueryService, "__call__", return_value=MOCK_RESPONSE):
             expected = ApiGatewayResponse(
                 200, json.dumps(EXPECTED_RESPONSE), "GET"
@@ -41,7 +46,7 @@ def test_lambda_handler_returns_items_from_dynamo(event_valid_id, context):
 def test_lambda_handler_returns_204_empty_list_when_dynamo_returns_no_records(
     event_valid_id, context
 ):
-    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+    with patch.dict(os.environ, PATCH_ENV_VAR):
         with patch.object(
             DynamoQueryService, "__call__", return_value=MOCK_EMPTY_RESPONSE
         ):
@@ -53,7 +58,7 @@ def test_lambda_handler_returns_204_empty_list_when_dynamo_returns_no_records(
 def test_lambda_handler_returns_500_when_dynamo_has_unexpected_response(
     event_valid_id, context
 ):
-    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+    with patch.dict(os.environ, PATCH_ENV_VAR):
         with patch.object(
             DynamoQueryService, "__call__", return_value=UNEXPECTED_RESPONSE
         ):
@@ -67,7 +72,7 @@ def test_lambda_handler_returns_500_when_dynamo_has_unexpected_response(
 
 
 def test_lambda_handler_returns_400_when_id_not_valid(invalid_nhs_id_event, context):
-    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+    with patch.dict(os.environ, PATCH_ENV_VAR):
         expected = ApiGatewayResponse(
             400, "Invalid NHS number", "GET"
         ).create_api_gateway_response()
@@ -76,7 +81,7 @@ def test_lambda_handler_returns_400_when_id_not_valid(invalid_nhs_id_event, cont
 
 
 def test_lambda_handler_returns_400_when_id_not_supplied(empty_nhs_id_event, context):
-    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+    with patch.dict(os.environ, PATCH_ENV_VAR):
         expected = ApiGatewayResponse(
             400, "Please supply an NHS number", "GET"
         ).create_api_gateway_response()
@@ -88,7 +93,7 @@ def test_lambda_handler_returns_500_when_client_error_thrown(event_valid_id, con
     error = {"Error": {"Code": 500, "Message": "DynamoDB is down"}}
 
     exception = ClientError(error, "Query")
-    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+    with patch.dict(os.environ, PATCH_ENV_VAR):
         with patch.object(DynamoQueryService, "__call__", side_effect=exception):
             expected = ApiGatewayResponse(
                 500, "An error occurred searching for available documents", "GET"
@@ -97,12 +102,12 @@ def test_lambda_handler_returns_500_when_client_error_thrown(event_valid_id, con
             assert expected == actual
 
 
-def test_lambda_handler_returns_400_when_no_fields_requested(event_valid_id, context):
+def test_lambda_handler_returns_500_when_no_fields_requested(event_valid_id, context):
     exception = InvalidResourceIdException
-    with patch.dict(os.environ, {"DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table"}):
+    with patch.dict(os.environ, PATCH_ENV_VAR):
         with patch.object(DynamoQueryService, "__call__", side_effect=exception):
             expected = ApiGatewayResponse(
-                400, "No data was requested to be returned in query", "GET"
+                500, "No data was requested to be returned in query", "GET"
             ).create_api_gateway_response()
             actual = lambda_handler(event_valid_id, context)
             assert expected == actual
