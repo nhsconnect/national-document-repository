@@ -11,6 +11,7 @@ import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBo
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import getPatientDetails from '../../helpers/requests/getPatientDetails';
 import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
+import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 
 type Props = {
     role: USER_ROLE;
@@ -35,6 +36,7 @@ function PatientSearchPage({ role }: Props) {
     const userIsPCSE = role === USER_ROLE.PCSE;
     const userIsGP = role === USER_ROLE.GP;
     const isError = (statusCode && statusCode >= 500) || !inputError;
+    const baseUrl = useBaseAPIUrl();
 
     const handleSearch = async (data: FieldValues) => {
         setSubmissionState(SEARCH_STATES.SEARCHING);
@@ -45,6 +47,7 @@ function PatientSearchPage({ role }: Props) {
         const patientDetails = await getPatientDetails({
             nhsNumber,
             setStatusCode,
+            baseUrl,
         });
 
         setPatientDetails(patientDetails);

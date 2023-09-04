@@ -1,20 +1,29 @@
+import { PatientDetails } from '../../types/generic/patientDetails';
 import { ErrorResponse } from '../../types/generic/response';
 import { SetSearchErrorCode } from '../../types/pages/patientSearchPage';
-import { buildPatientDetails } from '../test/testBuilders';
-
+import axios from 'axios';
 type Args = {
     setStatusCode: SetSearchErrorCode;
     nhsNumber: string;
+    baseUrl: string;
 };
 
-const getPatientDetails = async ({ setStatusCode, nhsNumber }: Args) => {
+type GetPatientDetailsResponse = {
+    data: PatientDetails;
+};
+
+const getPatientDetails = async ({ setStatusCode, nhsNumber, baseUrl }: Args) => {
+    const gatewayUrl = baseUrl + '/PatientDetails';
     try {
-        await new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(null);
-            }, 2000);
+        const { data }: GetPatientDetailsResponse = await axios.get(gatewayUrl, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            params: {
+                'subject.identifier': `https://fhir.nhs.uk/Id/nhs-number|${nhsNumber}`,
+            },
         });
-        return buildPatientDetails();
+        return data;
     } catch (e) {
         const error = e as ErrorResponse;
         setStatusCode(error.response.status);
