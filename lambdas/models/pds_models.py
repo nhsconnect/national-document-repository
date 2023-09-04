@@ -1,8 +1,6 @@
-import re
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, ValidationError
-from utils.exceptions import InvalidResourceIdException
 
 
 def to_camel(string: str) -> str:
@@ -100,4 +98,3 @@ class Patient(BaseModel):
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
         )
-

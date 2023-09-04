@@ -16,8 +16,8 @@ def test_lambda_handler_valid_id_returns_200(event_valid_id, context, mocker):
 
     expected = {
         "body": '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22",'
-                '"postalCode":"LS1 6AE","nhsNumber":"9000000009","superseded":false,'
-                '"restricted":false}',
+        '"postalCode":"LS1 6AE","nhsNumber":"9000000009","superseded":false,'
+        '"restricted":false}',
         "headers": {
             "Access-Control-Allow-Methods": "GET",
             "Access-Control-Allow-Origin": "*",
@@ -55,7 +55,7 @@ def test_lambda_handler_invalid_id_returns_400(event_invalid_id, context, mocker
 
 
 def test_lambda_handler_valid_id_not_in_pds_returns_404(
-        event_valid_id, context, mocker
+    event_valid_id, context, mocker
 ):
     response = Response()
     response.status_code = 404
@@ -81,7 +81,7 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
 
 
 def test_lambda_handler_missing_id_in_query_params_returns_400(
-        event_missing_id, context, mocker
+    event_missing_id, context, mocker
 ):
     response = Response()
     response.status_code = 400

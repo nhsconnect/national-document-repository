@@ -1,8 +1,8 @@
+import json
 import logging
 import os
 
 from botocore.exceptions import ClientError
-
 from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 from services.dynamo_query_service import DynamoQueryService
 from utils.exceptions import InvalidResourceIdException
@@ -19,23 +19,45 @@ def lambda_handler(event, context):
         nhs_number = event["queryStringParameters"]["patientId"]
         validate_id(nhs_number)
     except InvalidResourceIdException:
-        return ApiGatewayResponse(400, "Invalid NHS number", "GET")
+        return ApiGatewayResponse(
+            400, "Invalid NHS number", "GET"
+        ).create_api_gateway_response()
     except KeyError:
-        return ApiGatewayResponse(400, "Please supply an NHS number", "GET")
+        return ApiGatewayResponse(
+            400, "Please supply an NHS number", "GET"
+        ).create_api_gateway_response()
 
-    dynamo_service = DynamoQueryService(table_name, 'NhsNumberIndex')
+    dynamo_service = DynamoQueryService(table_name, "NhsNumberIndex")
 
     try:
-        response = dynamo_service('NhsNumber', nhs_number, [DynamoDocumentMetadataTableFields.CREATED, DynamoDocumentMetadataTableFields.FILE_NAME])
+        response = dynamo_service(
+            "NhsNumber",
+            nhs_number,
+            [
+                DynamoDocumentMetadataTableFields.CREATED,
+                DynamoDocumentMetadataTableFields.FILE_NAME,
+            ],
+        )
     except InvalidResourceIdException:
-        return ApiGatewayResponse(400, "No data was requested to be returned in query", "GET")
+        return ApiGatewayResponse(
+            400, "No data was requested to be returned in query", "GET"
+        ).create_api_gateway_response()
     except ClientError:
-        return ApiGatewayResponse(500, "An error occurred searching for available documents", "GET")
+        return ApiGatewayResponse(
+            500, "An error occurred searching for available documents", "GET"
+        ).create_api_gateway_response()
 
-    if response is not None and 'Items' in response:
-        results = response['Items']
+    if response is not None and "Items" in response:
+        results = response["Items"]
+        if len(results) == 0:
+            return ApiGatewayResponse(204, [], "GET").create_api_gateway_response()
+
     else:
         logger.error(f"Unrecognised response from DynamoDB: {response!r}")
-        return ApiGatewayResponse(500, "Unrecognised response when searching for available documents", "GET")
+        return ApiGatewayResponse(
+            500, "Unrecognised response when searching for available documents", "GET"
+        ).create_api_gateway_response()
 
-    return ApiGatewayResponse(200, results, "GET")
+    return ApiGatewayResponse(
+        200, json.dumps(results), "GET"
+    ).create_api_gateway_response()

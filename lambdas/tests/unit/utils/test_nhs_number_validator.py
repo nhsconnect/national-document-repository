@@ -1,5 +1,4 @@
 import pytest
-
 from utils.exceptions import InvalidResourceIdException
 from utils.nhs_number_validator import validate_id
 
