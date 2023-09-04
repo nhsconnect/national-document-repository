@@ -10,7 +10,7 @@ describe('Header', () => {
     });
 
     describe('Rendering', () => {
-        it('renders the header', () => {
+        it('displays the header', () => {
             const history = createMemoryHistory({
                 initialEntries: ['/', '/example'],
                 initialIndex: 1,
@@ -27,7 +27,7 @@ describe('Header', () => {
     });
 
     describe('Navigating', () => {
-        it('renders a header that navigates to the home path', async () => {
+        it('navigates to the home page when header is clicked', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/', '/example'],
                 initialIndex: 1,
@@ -47,7 +47,7 @@ describe('Header', () => {
             });
         });
 
-        it('renders a logo that navigates to the home path', async () => {
+        it('navigates to the home page when logo is clicked', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/', '/example'],
                 initialIndex: 1,
