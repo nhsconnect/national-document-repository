@@ -73,7 +73,7 @@ const uploadDocument = async ({ setDocumentState, nhsNumber, document, baseUrl }
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
     } catch (e) {
         const error = e as ErrorResponse;
-        if (error.response.status === 403) {
+        if (error.response?.status === 403) {
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
         } else {
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
