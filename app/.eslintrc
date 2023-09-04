@@ -4,12 +4,13 @@
         "es6": true,
         "node": true
     },
-    "plugins": ["unused-imports"],
-    "extends": ["react-app", "react-app/jest", "plugin:prettier/recommended"],
+    "plugins": ["unused-imports", "cypress"],
+    "extends": ["react-app", "react-app/jest", "plugin:prettier/recommended", "plugin:cypress/recommended"],
     "parserOptions": {
         "ecmaVersion": 2020
     },
     "rules": {
+        "cypress/no-unnecessary-waiting": "warn",
         "object-curly-spacing": ["warn", "always"],
         "@typescript-eslint/semi": ["off"],
         "@typescript-eslint/no-unused-vars": [
