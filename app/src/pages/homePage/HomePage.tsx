@@ -11,7 +11,7 @@ function HomePage(props: Props) {
 
     const navigateUpload = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
         e.preventDefault();
-        navigate(routes.UPLOAD_DOCUMENTS);
+        navigate(routes.SELECT_ORG);
     };
 
     return (
