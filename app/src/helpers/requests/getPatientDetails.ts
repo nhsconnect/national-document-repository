@@ -13,7 +13,7 @@ type GetPatientDetailsResponse = {
     data: PatientDetails;
 };
 
-const getPatientDetails = async ({ setStatusCode, nhsNumber, baseUrl }: Args) => {
+const getPatientDetails = async ({ nhsNumber, baseUrl }: Args) => {
     const gatewayUrl = baseUrl + '/SearchPatient';
     try {
         const { data }: GetPatientDetailsResponse = await axios.get(gatewayUrl, {
@@ -27,8 +27,7 @@ const getPatientDetails = async ({ setStatusCode, nhsNumber, baseUrl }: Args) =>
         return data;
     } catch (e) {
         const error = e as ErrorResponse;
-        setStatusCode(error.response.status);
-        return null;
+        throw error;
     }
 };
 

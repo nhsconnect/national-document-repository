@@ -12,10 +12,13 @@ import { usePatientDetailsContext } from '../../providers/patientProvider/Patien
 import getPatientDetails from '../../helpers/requests/getPatientDetails';
 import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
+import { ErrorResponse } from '../../types/generic/response';
 
 type Props = {
     role: USER_ROLE;
 };
+
+export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
 function PatientSearchPage({ role }: Props) {
     const [, setPatientDetails] = usePatientDetailsContext();
@@ -26,10 +29,10 @@ function PatientSearchPage({ role }: Props) {
         reValidateMode: 'onSubmit',
     });
     const { ref: nhsNumberRef, ...searchProps } = register('nhsNumber', {
-        required: "Enter patient's 10 digit NHS number",
+        required: incorrectFormatMessage,
         pattern: {
             value: /(^[0-9]{10}$|^[0-9]{3}\s[0-9]{3}\s[0-9]{4}$|^[0-9]{3}-[0-9]{3}-[0-9]{4}$)/,
-            message: "Please enter patient's 10 digit NHS number",
+            message: incorrectFormatMessage,
         },
     });
     const navigate = useNavigate();
@@ -65,7 +68,16 @@ function PatientSearchPage({ role }: Props) {
                 navigate(routes.DOWNLOAD_VERIFY);
             }
         } catch (e) {
+            const error = e as ErrorResponse;
+            setStatusCode(error.response.status);
             setSubmissionState(SEARCH_STATES.FAILED);
+            if (error.response?.status === 400) {
+                setInputError('Enter a valid patient NHS number.');
+            } else if (error.response?.status === 403) {
+                navigate(routes.HOME);
+            } else if (error.response?.status === 404) {
+                setInputError('Sorry, patient data not found.');
+            }
         }
     };
     const handleError = (fields: FieldValues) => {
