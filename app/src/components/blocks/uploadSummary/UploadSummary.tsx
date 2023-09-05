@@ -81,7 +81,10 @@ const UploadSummary = ({ documents }: Props) => {
             {successfulUploads.length > 0 && (
                 <>
                     <Details style={tableMargin}>
-                        <Details.Summary aria-label="View successfully uploaded documents">
+                        <Details.Summary
+                            id="successful-uploads-dropdown"
+                            aria-label="View successfully uploaded documents"
+                        >
                             View successfully uploaded documents
                         </Details.Summary>
                         <Details.Text>
@@ -91,6 +94,7 @@ const UploadSummary = ({ documents }: Props) => {
                                 captionProps={{
                                     className: 'nhsuk-u-visually-hidden',
                                 }}
+                                id="successful-uploads"
                             >
                                 <Table.Head role="rowgroup">
                                     <Table.Row>

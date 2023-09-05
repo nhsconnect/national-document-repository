@@ -112,6 +112,9 @@ jobs:
         with:
           name: build
           path: ./app/build
+        env: 
+          CYPRESS_BASE_URL: "http://localhost:3000"
+          CYPRESS_RUN_AS_SMOKETEST: false
 
       # Npm run will run the app locally, we want to test the built application with env vars using serve
       - name: Install serve globally 
@@ -159,6 +162,9 @@ jobs:
           start: serve -s build
           browser: firefox
           working-directory: ./app
+        env: 
+          CYPRESS_BASE_URL: "http://localhost:3000"
+          CYPRESS_RUN_AS_SMOKETEST: false
 
   cypress-run-edge:
     runs-on: ubuntu-22.04
@@ -189,6 +195,9 @@ jobs:
           start: serve -s build
           browser: edge
           working-directory: ./app
+        env: 
+          CYPRESS_BASE_URL: "http://localhost:3000"
+          CYPRESS_RUN_AS_SMOKETEST: false
 
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest

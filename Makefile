@@ -61,7 +61,6 @@ default: help
 
 setup:
 	npm --prefix ./app install --legacy-peer-deps
-	make env
 
 clean-install:
 	npm --prefix ./app ci --legacy-peer-deps
@@ -94,4 +93,4 @@ docker-down:
 	cd ./app && docker-compose down
 
 cypress-open:
-	cd ./app && npx cypress open
+	cd ./app && npx cypress open --env CYPRESS_BASE_URL=http://localhost:3000/,CYPRESS_RUN_AS_SMOKETEST=false
