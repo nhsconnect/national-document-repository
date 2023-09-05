@@ -66,7 +66,7 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
 
     if len(responses) == 0:
-        return ApiGatewayResponse(204, [], "GET").create_api_gateway_response()
+        return ApiGatewayResponse(204, "", "GET").create_api_gateway_response()
 
     return ApiGatewayResponse(
         200, json.dumps(responses), "GET"
