@@ -22,6 +22,11 @@ describe('Home Page Tests', () => {
         cy.visit(baseUrl);
     });
 
+    it('On Start now button click, redirect to uploads is successful', () => {
+        //ensure the page header is visable
+        cy.url().should('eq', 'http://localhost:3000/');
+    });
+
     it('displays expected page header on home page', () => {
         //ensure the page header is visable
         cy.get('header').should('have.length', 1);
