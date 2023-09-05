@@ -1,3 +1,5 @@
+default: help
+
 clean: clean-build clean-py clean-test
 
 clean-build:
@@ -57,8 +59,6 @@ zip:
 
 package: format zip
 
-default: help
-
 setup:
 	npm --prefix ./app install --legacy-peer-deps
 
@@ -87,10 +87,10 @@ build-env-check:
 	npm --prefix ./app run build-env-check
 
 docker-up:
-	cd ./app && docker-compose up -d
+	docker-compose -f ./app/docker-compose.yml up -d
 
 docker-down:
-	cd ./app && docker-compose down
+	docker-compose -f ./app/docker-compose.yml down
 
 cypress-open:
-	cd ./app && npx cypress open --env CYPRESS_BASE_URL=http://localhost:3000/,CYPRESS_RUN_AS_SMOKETEST=false
+	npm exec --prefix ./app cypress open --env CYPRESS_BASE_URL=http://localhost:3000/,CYPRESS_RUN_AS_SMOKETEST=false
