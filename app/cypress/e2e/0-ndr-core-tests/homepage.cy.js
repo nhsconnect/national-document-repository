@@ -12,7 +12,7 @@
 // https://on.cypress.io/introduction-to-cypress
 
 describe('Home Page Tests', () => {
-    const baseUrl = Cypress.env('CYPRESS_BASE_URL') + '/';
+    const baseUrl = Cypress.env('CYPRESS_BASE_URL');
 
     beforeEach(() => {
         // Cypress starts out with a blank slate for each test
@@ -22,7 +22,7 @@ describe('Home Page Tests', () => {
         cy.visit(baseUrl);
     });
 
-    it('On Start now button click, redirect to uploads is successful', () => {
+    it('Test expected URL is correct', () => {
         //ensure the page header is visable
         cy.url().should('eq', 'http://localhost:3000/');
     });
