@@ -59,7 +59,9 @@ function PatientResultPage({ role }: Props) {
                 </p>
             )}
 
-            <Button onClick={handleVerify}>Accept details are correct</Button>
+            <Button onClick={handleVerify} id="verify-submit">
+                Accept details are correct
+            </Button>
             <p>
                 If patient details are incorrect, please contact the{' '}
                 <a

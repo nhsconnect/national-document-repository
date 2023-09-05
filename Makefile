@@ -59,7 +59,7 @@ zip:
 
 package: format zip
 
-setup:
+install:
 	npm --prefix ./app install --legacy-peer-deps
 
 clean-install:
@@ -93,4 +93,4 @@ docker-down:
 	docker-compose -f ./app/docker-compose.yml down
 
 cypress-open:
-	npm exec --prefix ./app cypress open --env CYPRESS_BASE_URL=http://localhost:3000/,CYPRESS_RUN_AS_SMOKETEST=false
+	npm --prefix ./app run cypress

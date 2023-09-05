@@ -45,17 +45,29 @@ function RoleSelectPage() {
                         error={inputError}
                         hint="You are associated to more than one organisation, select an organisation you would like to view."
                     >
-                        <Radios.Radio value={'GP'} inputRef={organisationRef} {...radioProps}>
+                        <Radios.Radio
+                            value={'GP'}
+                            inputRef={organisationRef}
+                            {...radioProps}
+                            id="gp-radio-button"
+                        >
                             <p style={{ margin: 0, fontWeight: 'bold' }}>GP Role</p>
                             <p>{'[A9A5A] GP Practice'}</p>
                         </Radios.Radio>
-                        <Radios.Radio value={'PCSE'} inputRef={organisationRef} {...radioProps}>
+                        <Radios.Radio
+                            value={'PCSE'}
+                            inputRef={organisationRef}
+                            {...radioProps}
+                            id="pcse-radio-button"
+                        >
                             <p style={{ margin: 0, fontWeight: 'bold' }}>PCSE Role</p>
                             <p>{'[B9A5A] Primary Care Support England'}</p>
                         </Radios.Radio>
                     </Radios>
                 </Fieldset>
-                <Button type="submit">Continue</Button>
+                <Button type="submit" id="role-submit-button">
+                    Continue
+                </Button>
             </form>
         </div>
     );

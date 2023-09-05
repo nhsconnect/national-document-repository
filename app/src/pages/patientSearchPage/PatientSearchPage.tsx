@@ -13,6 +13,8 @@ import getPatientDetails from '../../helpers/requests/getPatientDetails';
 import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import { ErrorResponse } from '../../types/generic/response';
+import { buildPatientDetails } from '../../helpers/test/testBuilders';
+import BackButton from '../../components/generic/backButton/BackButton';
 
 type Props = {
     role: USER_ROLE;
@@ -41,6 +43,18 @@ function PatientSearchPage({ role }: Props) {
     const isError = (statusCode && statusCode >= 500) || !inputError;
     const baseUrl = useBaseAPIUrl();
 
+    const search = async (nhsNumber: string) => {
+        if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+            return buildPatientDetails({ nhsNumber });
+        } else {
+            return await getPatientDetails({
+                nhsNumber,
+                setStatusCode,
+                baseUrl,
+            });
+        }
+    };
+
     const handleSearch = async (data: FieldValues) => {
         setSubmissionState(SEARCH_STATES.SEARCHING);
         setInputError(null);
@@ -48,11 +62,7 @@ function PatientSearchPage({ role }: Props) {
         const nhsNumber = data.nhsNumber.replace(/[-\s]/gi, '');
 
         try {
-            const patientDetails = await getPatientDetails({
-                nhsNumber,
-                setStatusCode,
-                baseUrl,
-            });
+            const patientDetails = await search(nhsNumber);
 
             setPatientDetails(patientDetails);
             setSubmissionState(SEARCH_STATES.SUCCEEDED);
@@ -88,6 +98,7 @@ function PatientSearchPage({ role }: Props) {
     };
     return (
         <>
+            <BackButton />
             {submissionState === SEARCH_STATES.FAILED && (
                 <>
                     {isError ? (
@@ -129,7 +140,9 @@ function PatientSearchPage({ role }: Props) {
                 {submissionState === SEARCH_STATES.SEARCHING ? (
                     <SpinnerButton status="Searching..." disabled={true} />
                 ) : (
-                    <Button type="submit">Search</Button>
+                    <Button type="submit" id="search-submit">
+                        Search
+                    </Button>
                 )}
             </form>
         </>
