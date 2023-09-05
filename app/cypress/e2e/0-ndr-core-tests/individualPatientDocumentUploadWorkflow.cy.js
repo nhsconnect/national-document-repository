@@ -7,6 +7,7 @@ describe('Uploads docs and tests it looks OK', () => {
     const successNoContent = 204;
 
     beforeEach(() => {
+        console.log(baseUrl);
         cy.visit(baseUrl);
     });
 
