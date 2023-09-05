@@ -93,4 +93,4 @@ docker-down:
 	cd ./app && docker-compose down
 
 cypress-open:
-	cd ./app && npx cypress open --env baseUrl=http://localhost:3000,smoketest=false
+	cd ./app && npx cypress open --env CYPRESS_BASE_URL=http://localhost:3000,CYPRESS_RUN_AS_SMOKETEST=false

@@ -12,7 +12,7 @@
 // https://on.cypress.io/introduction-to-cypress
 
 describe('Home Page Tests', () => {
-    const baseUrl = Cypress.env('baseUrl') + '/';
+    const baseUrl = Cypress.env('CYPRESS_BASE_URL') + '/';
 
     beforeEach(() => {
         // Cypress starts out with a blank slate for each test

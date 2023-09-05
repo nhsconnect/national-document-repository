@@ -1,8 +1,8 @@
 describe('Uploads docs and tests it looks OK', () => {
     const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
 
-    const baseUrl = Cypress.env('baseUrl') + '/';
-    const smokeTest = Cypress.env('smoketest');
+    const baseUrl = Cypress.env('CYPRESS_BASE_URL') + '/';
+    const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST');
     const serverError = 500;
     const successNoContent = 204;
 
