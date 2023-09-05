@@ -33,15 +33,24 @@ def context():
     return LambdaContext()
 
 
-def test_lambda_handler_returns_items_from_dynamo(event_valid_id, context):
+def test_lambda_handler_returns_items_from_both_tables_dynamo(event_valid_id, context):
     with patch.dict(os.environ, PATCH_ENV_VAR):
         with patch.object(DynamoQueryService, "__call__", return_value=MOCK_RESPONSE):
+            expected = ApiGatewayResponse(
+                200, json.dumps(EXPECTED_RESPONSE * 2), "GET"
+            ).create_api_gateway_response()
+            actual = lambda_handler(event_valid_id, context)
+            assert expected == actual
+
+
+def test_lambda_handler_returns_items_from_doc_store_only(event_valid_id, context):
+    with patch.dict(os.environ, PATCH_ENV_VAR):
+        with patch.object(DynamoQueryService, "__call__", side_effect=[MOCK_RESPONSE, MOCK_EMPTY_RESPONSE]):
             expected = ApiGatewayResponse(
                 200, json.dumps(EXPECTED_RESPONSE), "GET"
             ).create_api_gateway_response()
             actual = lambda_handler(event_valid_id, context)
             assert expected == actual
-
 
 def test_lambda_handler_returns_204_empty_list_when_dynamo_returns_no_records(
     event_valid_id, context
@@ -50,7 +59,7 @@ def test_lambda_handler_returns_204_empty_list_when_dynamo_returns_no_records(
         with patch.object(
             DynamoQueryService, "__call__", return_value=MOCK_EMPTY_RESPONSE
         ):
-            expected = ApiGatewayResponse(204, [], "GET").create_api_gateway_response()
+            expected = ApiGatewayResponse(204, "", "GET").create_api_gateway_response()
             actual = lambda_handler(event_valid_id, context)
             assert expected == actual
 

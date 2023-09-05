@@ -68,7 +68,7 @@ EXPECTED_RESPONSE = [
         "FileName": "Screenshot 2023-08-15 at 16.17.56.png",
         "Created": "2023-08-23T00:38:04.101Z",
     },
-] * 2
+]
 
 UNEXPECTED_RESPONSE = {
     "Sentences": [

@@ -36,7 +36,7 @@ def lambda_handler(event, context):
     }
 
     try:
-        responses = []
+        results = []
         for dynamo_service in dynamo_service_for_tables.values():
             response = dynamo_service(
                 "NhsNumber",
@@ -54,7 +54,7 @@ def lambda_handler(event, context):
                     "GET",
                 ).create_api_gateway_response()
 
-            responses += response["Items"]
+            results += response["Items"]
 
     except InvalidResourceIdException:
         return ApiGatewayResponse(
@@ -65,9 +65,9 @@ def lambda_handler(event, context):
             500, "An error occurred searching for available documents", "GET"
         ).create_api_gateway_response()
 
-    if len(responses) == 0:
+    if len(results) == 0:
         return ApiGatewayResponse(204, "", "GET").create_api_gateway_response()
 
     return ApiGatewayResponse(
-        200, json.dumps(responses), "GET"
+        200, json.dumps(results), "GET"
     ).create_api_gateway_response()
