@@ -1,6 +1,14 @@
 describe('Uploads docs and tests it looks OK', () => {
-    const baseUrl = 'https://ndra.access-request-fulfilment.patient-deductions.nhs.uk/';
-    const bucketUrl = 'https://ndra-document-store.s3.amazonaws.com/';
+    const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
+
+    const baseUrl = Cypress.env('baseUrl') + '/';
+    const smokeTest = Cypress.env('smoketest');
+    const serverError = 500;
+    const successNoContent = 204;
+
+    beforeEach(() => {
+        cy.visit(baseUrl);
+    });
 
     const navigateToUploadPage = () => {
         cy.get('.nhsuk-button').click();
@@ -62,6 +70,27 @@ describe('Uploads docs and tests it looks OK', () => {
     });
 
     it('(Smoke test) Single file - On Upload button click, renders Upload Summary for successful upload', () => {
+        if (smokeTest === false) {
+            cy.intercept('POST', '**/DocumentReference', {
+                statusCode: 200,
+                body: {
+                    url: 'http://' + bucketUrlIdentifer,
+                    fields: {
+                        key: 'test key',
+                        'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                        'x-amz-credential': 'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                        'x-amz-date': '20230904T125954Z',
+                        'x-amz-security-token': 'xxxxxxxxx',
+                        'x-amz-signature': '9xxxxxxxx',
+                    },
+                },
+            });
+
+            cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
+                statusCode: 204,
+            });
+        }
+
         cy.get('input[type=file]').selectFile(uploadedFilePathNames[0]);
 
         clickUploadButton();
@@ -132,7 +161,7 @@ describe('Uploads docs and tests it looks OK', () => {
 
     it('Single file - On Upload button click, renders Upload Summary with error box when the s3 bucket POST request fails', () => {
         // intercept this response and return an error
-        cy.intercept('POST', bucketUrl, {
+        cy.intercept('POST', bucketUrlIdentifer, {
             statusCode: 500,
         });
 
@@ -170,6 +199,27 @@ describe('Uploads docs and tests it looks OK', () => {
     });
 
     it('(Smoke test) Multiple files - On Upload button click, renders Upload Summary for successful upload', () => {
+        if (smokeTest === false) {
+            cy.intercept('POST', '**/DocumentReference', {
+                statusCode: 200,
+                body: {
+                    url: 'http://' + bucketUrlIdentifer,
+                    fields: {
+                        key: 'test key',
+                        'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                        'x-amz-credential': 'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                        'x-amz-date': '20230904T125954Z',
+                        'x-amz-security-token': 'xxxxxxxxx',
+                        'x-amz-signature': '9xxxxxxxx',
+                    },
+                },
+            });
+
+            cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
+                statusCode: 204,
+            });
+        }
+
         cy.get('input[type=file]').selectFile(uploadedFilePathNames);
 
         clickUploadButton();
@@ -189,6 +239,32 @@ describe('Uploads docs and tests it looks OK', () => {
     });
 
     it('(Smoke test) Multiple files - On Upload button click, renders Uploading Stage', () => {
+        cy.intercept('POST', '**/DocumentReference*', (req) => {
+            req.reply({
+                statusCode: 200,
+                body: {
+                    url: bucketUrlIdentifer,
+                    fields: {
+                        key: '382d3db4-9625-4bd9-ad46-c2e31451efd2',
+                        'x-amz-algorithm': 'AWS4-HMAC-SHA256',
+                        'x-amz-credential':
+                            'ASIAXYSUA44VYD2FFBHK/20230904/eu-west-2/s3/aws4_request',
+                        'x-amz-date': '20230904T125954Z',
+                        'x-amz-security-token':
+                            'IQoJb3JpZ2luX2VjEG0aCWV1LXdlc3QtMiJHMEUCIQC1Mx4VTrF2alA9s8P5HJ+j9y2XJmAF5ODdZGEui/QMGwIgRdGiuXVqq8Uq6l5dJZpAx39b1kro7x1Q0FQn6rWRUvUqggMIRhABGgw1MzM4MjU5MDY0NzUiDOeBIQxpj1BmAtTeVSrfAsugZpo7cQzj+R0uwE9o3bxMyR7lqdVCkaAb/ZVF4iBY/Cn7FYCB+pO3nvS6CWLClcIbNhhZkqgJOZvBJ+fua5QvchxX4LO+sq0Or+s29Ym8mSNHpB4mLi3iyQZ08Iw1p9c52Mfo6B5mh5IGKu8gvKf1y9gOWKAJTTuLbuzKKkbII4tRr+1PSAeFwLgSSzeDInv9QnTbKAPSbVMAWBic07MTlQpeMD3SNiXqKz+f/HNiujCOxfvUO0Yvw5GXx0FBrGjaHY979YGJuuC35yMqnFG0tvdd/8OfdUhHDM6XqRMGmceMkdMldQsw4VwhSd+uI4qIrHopMNQ+XKdqDjrkmlRprATIT9boO1fQ1GFO2l1YVVM2WzORIwVd2hGQr6anfXyOePk8N8MYNuzwZdgOiEKPwS2b6vByMBr/U7jNUuUZNd9rhbZIv5dsMF2xszXq8co3ZngvPjWKYsdZF6eGUDDHqdenBjqeAYZZ0oBZqtgVF3ebT86UWZ40zS0vGZSzSt5P5DhlTP01LRPeQCARoETZ/IsUzvrP5QLwmkOjSoJlYIu/U1SeqvVZblnPHsHVi/0QI4FuZhPL9LnA628+euBTaO6I2DSf1ugPmwMc/YMYwHQdkSKNsejAPczYSxAyPAWLtiLckMPqo5YyyiRYMHpmZwrqJsdbAVogVhIgfYx53OJIhblI',
+                        policy: 'eyJleHBpcmF0aW9uIjogIjIwMjMtMDktMDRUMTM6Mjk6NTRaIiwgImNvbmRpdGlvbnMiOiBbeyJidWNrZXQiOiAibmRyYS1kb2N1bWVudC1zdG9yZSJ9LCB7ImtleSI6ICIzODJkM2RiNC05NjI1LTRiZDktYWQ0Ni1jMmUzMTQ1MWVmZDIifSwgeyJ4LWFtei1hbGdvcml0aG0iOiAiQVdTNC1ITUFDLVNIQTI1NiJ9LCB7IngtYW16LWNyZWRlbnRpYWwiOiAiQVNJQVhZU1VBNDRWWUQyRkZCSEsvMjAyMzA5MDQvZXUtd2VzdC0yL3MzL2F3czRfcmVxdWVzdCJ9LCB7IngtYW16LWRhdGUiOiAiMjAyMzA5MDRUMTI1OTU0WiJ9LCB7IngtYW16LXNlY3VyaXR5LXRva2VuIjogIklRb0piM0pwWjJsdVgyVmpFRzBhQ1dWMUxYZGxjM1F0TWlKSE1FVUNJUUMxTXg0VlRyRjJhbEE5czhQNUhKK2o5eTJYSm1BRjVPRGRaR0V1aS9RTUd3SWdSZEdpdVhWcXE4VXE2bDVkSlpwQXgzOWIxa3JvN3gxUTBGUW42cldSVXZVcWdnTUlSaEFCR2d3MU16TTRNalU1TURZME56VWlET2VCSVF4cGoxQm1BdFRlVlNyZkFzdWdacG83Y1F6aitSMHV3RTlvM2J4TXlSN2xxZFZDa2FBYi9aVkY0aUJZL0NuN0ZZQ0IrcE8zbnZTNkNXTENsY0liTmhoWmtxZ0pPWnZCSitmdWE1UXZjaHhYNExPK3NxME9yK3MyOVltOG1TTkhwQjRtTGkzaXlRWjA4SXcxcDljNTJNZm82QjVtaDVJR0t1OGd2S2YxeTlnT1dLQUpUVHVMYnV6S0trYklJNHRScisxUFNBZUZ3TGdTU3plREludjlRblRiS0FQU2JWTUFXQmljMDdNVGxRcGVNRDNTTmlYcUt6K2YvSE5pdWpDT3hmdlVPMFl2dzVHWHgwRkJyR2phSFk5NzlZR0p1dUMzNXlNcW5GRzB0dmRkLzhPZmRVaEhETTZYcVJNR21jZU1rZE1sZFFzdzRWd2hTZCt1STRxSXJIb3BNTlErWEtkcURqcmttbFJwckFUSVQ5Ym9PMWZRMUdGTzJsMVlWVk0yV3pPUkl3VmQyaEdRcjZhbmZYeU9lUGs4TjhNWU51endaZGdPaUVLUHdTMmI2dkJ5TUJyL1U3ak5VdVVaTmQ5cmhiWkl2NWRzTUYyeHN6WHE4Y28zWm5ndlBqV0tZc2RaRjZlR1VEREhxZGVuQmpxZUFZWlowb0JacXRnVkYzZWJUODZVV1o0MHpTMHZHWlN6U3Q1UDVEaGxUUDAxTFJQZVFDQVJvRVRaL0lzVXp2clA1UUx3bWtPalNvSmxZSXUvVTFTZXF2VlpibG5QSHNIVmkvMFFJNEZ1WmhQTDlMbkE2MjgrZXVCVGFPNkkyRFNmMXVnUG13TWMvWU1Zd0hRZGtTS05zZWpBUGN6WVN4QXlQQVdMdGlMY2tNUHFvNVl5eWlSWU1IcG1ad3JxSnNkYkFWb2dWaElnZll4NTNPSkloYmxJIn1dfQ==',
+                        'x-amz-signature':
+                            '9e861ee405f4930c8fd992e631fa202563b50b23c2f505cbfcbd407198cd594d',
+                    },
+                },
+            });
+            req.on('response', (res) => {
+                // Throttle the response to 1 Mbps to simulate a
+                // mobile 3G connection
+                res.setThrottle(1000);
+            });
+        });
+
         cy.get('input[type=file]').selectFile(uploadedImagesPathNames);
 
         clickUploadButton();
@@ -248,7 +324,7 @@ describe('Uploads docs and tests it looks OK', () => {
         cy.intercept('POST', '**/DocumentReference*', {
             statusCode: 200,
             body: {
-                url: bucketUrl,
+                url: bucketUrlIdentifer,
                 fields: {
                     key: '382d3db4-9625-4bd9-ad46-c2e31451efd2',
                     'x-amz-algorithm': 'AWS4-HMAC-SHA256',
@@ -264,10 +340,10 @@ describe('Uploads docs and tests it looks OK', () => {
         });
 
         let requestCount = 0;
-        cy.intercept('POST', bucketUrl, (req) => {
+        cy.intercept('POST', '**' + bucketUrlIdentifer + '**', (req) => {
             requestCount += 1;
             req.reply({
-                statusCode: requestCount % 2 === 1 ? 500 : 204,
+                statusCode: requestCount % 2 === 1 ? serverError : successNoContent,
             });
         });
 
