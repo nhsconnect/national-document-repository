@@ -81,7 +81,10 @@ const UploadSummary = ({ documents }: Props) => {
             {successfulUploads.length > 0 && (
                 <>
                     <Details style={tableMargin}>
-                        <Details.Summary aria-label="View successfully uploaded documents">
+                        <Details.Summary
+                            id="successful-uploads-dropdown"
+                            aria-label="View successfully uploaded documents"
+                        >
                             View successfully uploaded documents
                         </Details.Summary>
                         <Details.Text>

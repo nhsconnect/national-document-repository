@@ -100,7 +100,7 @@ describe('Uploads docs and tests it looks OK', () => {
 
         cy.get('#upload-summary-confirmation').should('be.visible');
         cy.get('#upload-summary-header').should('be.visible');
-        cy.get('#successful-uploads').should('be.visible');
+        cy.get('#successful-uploads-dropdown').should('be.visible');
         cy.get('#successful-uploads tbody tr').should('have.length', 1);
         cy.get('#successful-uploads tbody tr')
             .first()
@@ -229,7 +229,7 @@ describe('Uploads docs and tests it looks OK', () => {
 
         cy.get('#upload-summary-confirmation').should('be.visible');
         cy.get('#upload-summary-header').should('be.visible');
-        cy.get('#successful-uploads').should('be.visible');
+        cy.get('#successful-uploads-dropdown').should('be.visible');
         cy.get('#successful-uploads tbody tr').should('have.length', 2);
         cy.get('#successful-uploads tbody tr')
             .first()
