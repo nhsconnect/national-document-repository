@@ -2,7 +2,7 @@ from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 
 
 def test_can_get_one_field_name():
-    subject = DynamoDocumentMetadataTableFields['NHS_NUMBER']
+    subject = DynamoDocumentMetadataTableFields["NHS_NUMBER"]
     assert subject.field_name == "NhsNumber"
     assert subject.field_alias == "#nhsNumber"
 

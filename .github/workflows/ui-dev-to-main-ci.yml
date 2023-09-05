@@ -90,11 +90,11 @@ jobs:
           path: ./app/build
 
       # Npm run will run the app locally, we want to test the built application with env vars using serve
-      - name: Install serve globally 
-        run: npm install -g serve 
+      - name: Install serve globally
+        run: npm install -g serve
 
       - name: Cypress install
-        run: | 
+        run: |
           npm install --legacy-peer-deps
         working-directory: ./app
 
@@ -120,11 +120,11 @@ jobs:
           path: ./app/build
 
       # Npm run will run the app locally, we want to test the built application with env vars using serve
-      - name: Install serve globally 
-        run: npm install -g serve 
+      - name: Install serve globally
+        run: npm install -g serve
 
       - name: Cypress install
-        run: | 
+        run: |
           npm install --legacy-peer-deps
         working-directory: ./app
 
@@ -150,11 +150,11 @@ jobs:
           path: ./app/build
 
       # Npm run will run the app locally, we want to test the built application with env vars using serve
-      - name: Install serve globally 
-        run: npm install -g serve 
+      - name: Install serve globally
+        run: npm install -g serve
 
       - name: Cypress install
-        run: | 
+        run: |
           npm install --legacy-peer-deps
         working-directory: ./app
 
@@ -177,7 +177,7 @@ jobs:
     defaults:
       run:
         working-directory: ./app
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - uses: actions/checkout@v2
