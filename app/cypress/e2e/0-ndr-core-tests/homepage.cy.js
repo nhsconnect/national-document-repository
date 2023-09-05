@@ -12,7 +12,8 @@
 // https://on.cypress.io/introduction-to-cypress
 
 describe('Home Page Tests', () => {
-    const baseUrl = Cypress.env('CYPRESS_BASE_URL');
+    const baseUrl = 'http://localhost:3000/';
+    const smokeTest = false;
 
     beforeEach(() => {
         // Cypress starts out with a blank slate for each test
