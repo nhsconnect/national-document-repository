@@ -44,7 +44,10 @@ function PatientSearchPage({ role }: Props) {
     const baseUrl = useBaseAPIUrl();
 
     const search = async (nhsNumber: string) => {
-        if (!process.env.BUILD_ENV || ['development', 'test'].includes(process.env.BUILD_ENV)) {
+        if (
+            !process.env.REACT_APP_ENVIRONMENT ||
+            ['development', 'test'].includes(process.env.REACT_APP_ENVIRONMENT)
+        ) {
             return buildPatientDetails({ nhsNumber });
         } else {
             return await getPatientDetails({

@@ -13,6 +13,9 @@ jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('PatientSearchPage', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+    });
     afterEach(() => {
         jest.clearAllMocks();
     });
