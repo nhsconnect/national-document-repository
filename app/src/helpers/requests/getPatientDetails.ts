@@ -15,13 +15,9 @@ type GetPatientDetailsResponse = {
 };
 
 const getPatientDetails = async ({ nhsNumber, baseUrl }: Args) => {
-    const isTestPatient = ['9000000009', '1000000001'].includes(nhsNumber);
-    const isLocal =
-        (!process.env.REACT_APP_ENVIRONMENT || process.env.REACT_APP_ENVIRONMENT === 'local') &&
-        !isTestPatient;
     const gatewayUrl = baseUrl + '/SearchPatient';
     try {
-        if (isLocal) {
+        if (!process.env.REACT_APP_ENVIRONMENT || process.env.REACT_APP_ENVIRONMENT === 'local') {
             return buildPatientDetails({ nhsNumber });
         } else {
             const { data }: GetPatientDetailsResponse = await axios.get(gatewayUrl, {

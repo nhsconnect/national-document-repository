@@ -54,7 +54,6 @@ function PatientSearchPage({ role }: Props) {
                 setStatusCode,
                 baseUrl,
             });
-            console.log(patientDetails);
             setPatientDetails(patientDetails);
             setSubmissionState(SEARCH_STATES.SUCCEEDED);
             // GP Role
