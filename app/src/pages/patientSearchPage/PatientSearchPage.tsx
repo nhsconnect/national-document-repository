@@ -13,7 +13,6 @@ import getPatientDetails from '../../helpers/requests/getPatientDetails';
 import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import { ErrorResponse } from '../../types/generic/response';
-import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import BackButton from '../../components/generic/backButton/BackButton';
 
 type Props = {
@@ -43,21 +42,6 @@ function PatientSearchPage({ role }: Props) {
     const isError = (statusCode && statusCode >= 500) || !inputError;
     const baseUrl = useBaseAPIUrl();
 
-    const search = async (nhsNumber: string) => {
-        if (
-            !process.env.REACT_APP_ENVIRONMENT ||
-            ['development', 'test'].includes(process.env.REACT_APP_ENVIRONMENT)
-        ) {
-            return buildPatientDetails({ nhsNumber });
-        } else {
-            return await getPatientDetails({
-                nhsNumber,
-                setStatusCode,
-                baseUrl,
-            });
-        }
-    };
-
     const handleSearch = async (data: FieldValues) => {
         setSubmissionState(SEARCH_STATES.SEARCHING);
         setInputError(null);
@@ -65,8 +49,12 @@ function PatientSearchPage({ role }: Props) {
         const nhsNumber = data.nhsNumber.replace(/[-\s]/gi, '');
 
         try {
-            const patientDetails = await search(nhsNumber);
-
+            const patientDetails = await getPatientDetails({
+                nhsNumber,
+                setStatusCode,
+                baseUrl,
+            });
+            console.log(patientDetails);
             setPatientDetails(patientDetails);
             setSubmissionState(SEARCH_STATES.SUCCEEDED);
             // GP Role
@@ -82,7 +70,7 @@ function PatientSearchPage({ role }: Props) {
             }
         } catch (e) {
             const error = e as ErrorResponse;
-            setStatusCode(error.response.status);
+            setStatusCode(error.response?.status);
             setSubmissionState(SEARCH_STATES.FAILED);
             if (error.response?.status === 400) {
                 setInputError('Enter a valid patient NHS number.');

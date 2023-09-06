@@ -39,11 +39,11 @@ function App() {
                         >
                             <Route
                                 element={<PatientSearchPage role={USER_ROLE.PCSE} />}
-                                path={routes.UPLOAD_SEARCH}
+                                path={routes.DOWNLOAD_SEARCH}
                             />
                             <Route
                                 element={<PatientSearchPage role={USER_ROLE.GP} />}
-                                path={routes.DOWNLOAD_SEARCH}
+                                path={routes.UPLOAD_SEARCH}
                             />
                             <Route
                                 element={<PatientResultPage role={USER_ROLE.PCSE} />}

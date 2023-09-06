@@ -53,7 +53,7 @@ function PatientResultPage({ role }: Props) {
             )}
             {patientDetails && <PatientSummary patientDetails={patientDetails} />}
             {userIsGP && (
-                <p>
+                <p id="gp-message">
                     Ensure these patient details match the electronic health records and attachments
                     you are about to upload.
                 </p>
