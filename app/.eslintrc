@@ -5,7 +5,12 @@
         "node": true
     },
     "plugins": ["unused-imports", "cypress"],
-    "extends": ["react-app", "react-app/jest", "plugin:prettier/recommended", "plugin:cypress/recommended"],
+    "extends": [
+        "react-app",
+        "react-app/jest",
+        "plugin:prettier/recommended",
+        "plugin:cypress/recommended"
+    ],
     "parserOptions": {
         "ecmaVersion": 2020
     },

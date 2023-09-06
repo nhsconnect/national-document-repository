@@ -12,8 +12,8 @@ import { usePatientDetailsContext } from '../../providers/patientProvider/Patien
 import getPatientDetails from '../../helpers/requests/getPatientDetails';
 import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
-import { ErrorResponse } from '../../types/generic/response';
 import BackButton from '../../components/generic/backButton/BackButton';
+import { AxiosError } from 'axios';
 
 type Props = {
     role: USER_ROLE;
@@ -54,6 +54,7 @@ function PatientSearchPage({ role }: Props) {
                 setStatusCode,
                 baseUrl,
             });
+
             setPatientDetails(patientDetails);
             setSubmissionState(SEARCH_STATES.SUCCEEDED);
             // GP Role
@@ -68,8 +69,8 @@ function PatientSearchPage({ role }: Props) {
                 navigate(routes.DOWNLOAD_VERIFY);
             }
         } catch (e) {
-            const error = e as ErrorResponse;
-            setStatusCode(error.response?.status);
+            const error = e as AxiosError;
+            setStatusCode(error.response?.status ?? null);
             setSubmissionState(SEARCH_STATES.FAILED);
             if (error.response?.status === 400) {
                 setInputError('Enter a valid patient NHS number.');

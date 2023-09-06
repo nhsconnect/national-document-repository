@@ -1,6 +1,8 @@
+import { AxiosError } from 'axios';
+
 export type ErrorResponse = {
-    response: {
+    response?: {
         status: number;
         message: string;
-    };
+    } & AxiosError;
 };

@@ -1,8 +1,6 @@
 import { PatientDetails } from '../../types/generic/patientDetails';
-import { ErrorResponse } from '../../types/generic/response';
 import { SetSearchErrorCode } from '../../types/pages/patientSearchPage';
-import axios from 'axios';
-import { buildPatientDetails } from '../test/testBuilders';
+import axios, { AxiosError } from 'axios';
 
 type Args = {
     setStatusCode: SetSearchErrorCode;
@@ -17,21 +15,17 @@ type GetPatientDetailsResponse = {
 const getPatientDetails = async ({ nhsNumber, baseUrl }: Args) => {
     const gatewayUrl = baseUrl + '/SearchPatient';
     try {
-        if (!process.env.REACT_APP_ENVIRONMENT || process.env.REACT_APP_ENVIRONMENT === 'local') {
-            return buildPatientDetails({ nhsNumber });
-        } else {
-            const { data }: GetPatientDetailsResponse = await axios.get(gatewayUrl, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                params: {
-                    patientId: nhsNumber,
-                },
-            });
-            return data;
-        }
+        const { data }: GetPatientDetailsResponse = await axios.get(gatewayUrl, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            params: {
+                patientId: nhsNumber,
+            },
+        });
+        return data;
     } catch (e) {
-        const error = e as ErrorResponse;
+        const error = e as AxiosError;
         throw error;
     }
 };
