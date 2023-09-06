@@ -3,7 +3,7 @@ export type PatientDetails = {
     familyName: string;
     givenName: Array<string>;
     nhsNumber: string;
-    postalCode: string;
+    postalCode: string | null;
     superseded: boolean;
     restricted: boolean;
 };

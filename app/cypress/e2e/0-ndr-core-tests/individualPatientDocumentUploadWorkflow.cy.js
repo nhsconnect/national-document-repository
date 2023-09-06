@@ -14,7 +14,14 @@ describe('Uploads docs and tests it looks OK', () => {
     });
 
     const navigateToUploadPage = () => {
-        cy.get('.nhsuk-button').click();
+        cy.get('#start-button').click();
+        cy.get('#gp-radio-button').click();
+        cy.get('#role-submit-button').click();
+        cy.get('#nhs-number-input').click();
+        cy.get('#nhs-number-input').type('9000000009');
+        cy.get('#search-submit').click();
+        cy.get('#verify-submit').click();
+
         cy.wait(20);
     };
 

@@ -61,7 +61,7 @@ describe('Home Page Tests', () => {
         //ensure the page header is visable
         cy.get('.nhsuk-button').click();
         cy.wait(20);
-        cy.url().should('include', 'upload');
-        cy.url().should('eq', 'http://localhost:3000/upload/submit');
+        cy.url().should('include', 'organisation');
+        cy.url().should('eq', 'http://localhost:3000/select-organisation');
     });
 });

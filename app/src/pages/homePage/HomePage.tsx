@@ -11,7 +11,7 @@ function HomePage(props: Props) {
 
     const navigateUpload = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
         e.preventDefault();
-        navigate(routes.UPLOAD_DOCUMENTS);
+        navigate(routes.SELECT_ORG);
     };
 
     return (
@@ -43,7 +43,7 @@ function HomePage(props: Props) {
             </p>
             <h2>Before You Start</h2>
             <p>You can only use this service if you have a valid NHS smartcard.</p>
-            <ButtonLink role="button" onClick={navigateUpload}>
+            <ButtonLink role="button" id="start-button" onClick={navigateUpload}>
                 Start now
             </ButtonLink>
 

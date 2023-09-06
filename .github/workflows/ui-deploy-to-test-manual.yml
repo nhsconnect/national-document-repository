@@ -32,6 +32,19 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
+
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
+          AWS_REGION: test region
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: development
+          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
+        run: |
+          ./react-environment-config.sh
+        working-directory: ./app
+        shell: bash
+
       - run: make clean-install
       - run: make test-ui
 
@@ -57,7 +70,7 @@ jobs:
         run: |
           ./react-environment-config.sh
         working-directory: ./app
-        
+
       - name: Cypress build
         uses: cypress-io/github-action@v5
         with:
@@ -80,7 +93,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        
+
       - name: Download the build folder
         uses: actions/download-artifact@v3
         with:
@@ -88,11 +101,11 @@ jobs:
           path: ./app/build
 
       # Npm run will run the app locally, we want to test the built application with env vars using serve
-      - name: Install serve globally 
-        run: npm install -g serve 
+      - name: Install serve globally
+        run: npm install -g serve
 
       - name: Cypress install
-        run: | 
+        run: |
           npm install --legacy-peer-deps
         working-directory: ./app
 
@@ -103,8 +116,8 @@ jobs:
           start: serve -s build
           browser: chrome
           working-directory: ./app
-        env: 
-          CYPRESS_BASE_URL: "http://localhost:3000"
+        env:
+          CYPRESS_BASE_URL: 'http://localhost:3000'
           CYPRESS_RUN_AS_SMOKETEST: false
 
   cypress-run-firefox:
@@ -121,11 +134,11 @@ jobs:
           path: ./app/build
 
       # Npm run will run the app locally, we want to test the built application with env vars using serve
-      - name: Install serve globally 
-        run: npm install -g serve 
+      - name: Install serve globally
+        run: npm install -g serve
 
       - name: Cypress install
-        run: | 
+        run: |
           npm install --legacy-peer-deps
         working-directory: ./app
 
@@ -136,8 +149,8 @@ jobs:
           start: serve -s build
           browser: firefox
           working-directory: ./app
-        env: 
-          CYPRESS_BASE_URL: "http://localhost:3000"
+        env:
+          CYPRESS_BASE_URL: 'http://localhost:3000'
           CYPRESS_RUN_AS_SMOKETEST: false
 
   cypress-run-edge:
@@ -154,11 +167,11 @@ jobs:
           path: ./app/build
 
       # Npm run will run the app locally, we want to test the built application with env vars using serve
-      - name: Install serve globally 
-        run: npm install -g serve 
+      - name: Install serve globally
+        run: npm install -g serve
 
       - name: Cypress install
-        run: | 
+        run: |
           npm install --legacy-peer-deps
         working-directory: ./app
 
@@ -169,8 +182,8 @@ jobs:
           start: serve -s build
           browser: edge
           working-directory: ./app
-        env: 
-          CYPRESS_BASE_URL: "http://localhost:3000"
+        env:
+          CYPRESS_BASE_URL: 'http://localhost:3000'
           CYPRESS_RUN_AS_SMOKETEST: false
 
   react_build_and_deploy_docker_image:

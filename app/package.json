@@ -3,15 +3,16 @@
     "version": "0.1.0",
     "private": true,
     "scripts": {
-        "start": "GENERATE_SOURCE_MAP=false react-scripts start",
+        "start": "react-scripts start",
         "build": "react-scripts build",
         "build-env-check": "node ./react-build-env-checker.js && react-scripts build",
-        "test": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts test",
-        "test-all": "GENERATE_SOURCE_MAP=false ./node_modules/.bin/react-scripts test --watchAll=false",
+        "test": "./node_modules/.bin/react-scripts test --watchAll=true",
+        "test-all": "./node_modules/.bin/react-scripts test --watchAll=false",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "format": "prettier --write \"**/*.+(ts|tsx|js|scss|json|css|md)\"",
-        "prepare": "cd ../ && husky install ./app/.husky"
+        "prepare": "cd ../ && husky install ./app/.husky",
+        "cypress": "cypress open --env CYPRESS_BASE_URL=http://localhost:3000/,CYPRESS_RUN_AS_SMOKETEST=false"
     },
     "dependencies": {
         "axios": "^1.5.0",
@@ -75,5 +76,10 @@
             "last 1 firefox version",
             "last 1 safari version"
         ]
+    },
+    "jest": {
+        "moduleNameMapper": {
+            "axios": "axios/dist/node/axios.cjs"
+        }
     }
 }

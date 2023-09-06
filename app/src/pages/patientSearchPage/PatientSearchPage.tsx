@@ -8,19 +8,19 @@ import { InputRef } from '../../types/generic/inputRef';
 import { USER_ROLE } from '../../types/generic/roles';
 import { useNavigate } from 'react-router';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
-import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
+import getPatientDetails from '../../helpers/requests/getPatientDetails';
+import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
+import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
+import { ErrorResponse } from '../../types/generic/response';
+import { buildPatientDetails } from '../../helpers/test/testBuilders';
+import BackButton from '../../components/generic/backButton/BackButton';
 
 type Props = {
     role: USER_ROLE;
 };
 
-enum SEARCH_STATES {
-    IDLE = 'idle',
-    SEARCHING = 'searching',
-    SUCCEEDED = 'succeeded',
-    FAILED = 'failed',
-}
+export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
 function PatientSearchPage({ role }: Props) {
     const [, setPatientDetails] = usePatientDetailsContext();
@@ -31,48 +31,77 @@ function PatientSearchPage({ role }: Props) {
         reValidateMode: 'onSubmit',
     });
     const { ref: nhsNumberRef, ...searchProps } = register('nhsNumber', {
-        required: "Enter patient's 10 digit NHS number",
+        required: incorrectFormatMessage,
         pattern: {
             value: /(^[0-9]{10}$|^[0-9]{3}\s[0-9]{3}\s[0-9]{4}$|^[0-9]{3}-[0-9]{3}-[0-9]{4}$)/,
-            message: "Please enter patient's 10 digit NHS number",
+            message: incorrectFormatMessage,
         },
     });
     const navigate = useNavigate();
     const userIsPCSE = role === USER_ROLE.PCSE;
     const userIsGP = role === USER_ROLE.GP;
     const isError = (statusCode && statusCode >= 500) || !inputError;
+    const baseUrl = useBaseAPIUrl();
 
-    const handleSearch = (data: FieldValues) => {
+    const search = async (nhsNumber: string) => {
+        if (
+            !process.env.REACT_APP_ENVIRONMENT ||
+            ['development', 'test'].includes(process.env.REACT_APP_ENVIRONMENT)
+        ) {
+            return buildPatientDetails({ nhsNumber });
+        } else {
+            return await getPatientDetails({
+                nhsNumber,
+                setStatusCode,
+                baseUrl,
+            });
+        }
+    };
+
+    const handleSearch = async (data: FieldValues) => {
+        setSubmissionState(SEARCH_STATES.SEARCHING);
         setInputError(null);
         setStatusCode(null);
-
-        setSubmissionState(SEARCH_STATES.SEARCHING);
         const nhsNumber = data.nhsNumber.replace(/[-\s]/gi, '');
 
-        const patientDetails = buildPatientDetails({ nhsNumber });
-        setPatientDetails(patientDetails);
+        try {
+            const patientDetails = await search(nhsNumber);
 
-        setSubmissionState(SEARCH_STATES.SUCCEEDED);
-        // GP Role
-        if (userIsGP) {
-            // Make PDS patient search request to upload documents to patient
-            navigate(routes.UPLOAD_VERIFY);
-        }
+            setPatientDetails(patientDetails);
+            setSubmissionState(SEARCH_STATES.SUCCEEDED);
+            // GP Role
+            if (userIsGP) {
+                // Make PDS patient search request to upload documents to patient
+                navigate(routes.UPLOAD_VERIFY);
+            }
 
-        // PCSE Role
-        else if (userIsPCSE) {
-            // Make PDS and Dynamo document store search request to download documents from patient
-            navigate(routes.DOWNLOAD_VERIFY);
+            // PCSE Role
+            else if (userIsPCSE) {
+                // Make PDS and Dynamo document store search request to download documents from patient
+                navigate(routes.DOWNLOAD_VERIFY);
+            }
+        } catch (e) {
+            const error = e as ErrorResponse;
+            setStatusCode(error.response.status);
+            setSubmissionState(SEARCH_STATES.FAILED);
+            if (error.response?.status === 400) {
+                setInputError('Enter a valid patient NHS number.');
+            } else if (error.response?.status === 403) {
+                navigate(routes.HOME);
+            } else if (error.response?.status === 404) {
+                setInputError('Sorry, patient data not found.');
+            }
         }
     };
-
-    const handleError = async () => {
-        setSubmissionState(SEARCH_STATES.FAILED);
-        setInputError("Enter patient's 10 digit NHS number");
+    const handleError = (fields: FieldValues) => {
+        const errorMessages = Object.entries(fields).map(
+            ([k, v]: [string, { message: string }]) => v.message,
+        );
+        setInputError(errorMessages[0]);
     };
-
     return (
         <>
+            <BackButton />
             {submissionState === SEARCH_STATES.FAILED && (
                 <>
                     {isError ? (
@@ -114,7 +143,9 @@ function PatientSearchPage({ role }: Props) {
                 {submissionState === SEARCH_STATES.SEARCHING ? (
                     <SpinnerButton status="Searching..." disabled={true} />
                 ) : (
-                    <Button type="submit">Search</Button>
+                    <Button type="submit" id="search-submit">
+                        Search
+                    </Button>
                 )}
             </form>
         </>
