@@ -47,11 +47,11 @@ function App() {
                             />
                             <Route
                                 element={<PatientResultPage role={USER_ROLE.PCSE} />}
-                                path={routes.UPLOAD_VERIFY}
+                                path={routes.DOWNLOAD_VERIFY}
                             />
                             <Route
                                 element={<PatientResultPage role={USER_ROLE.GP} />}
-                                path={routes.DOWNLOAD_VERIFY}
+                                path={routes.UPLOAD_VERIFY}
                             />
                             <Route
                                 element={<UploadDocumentsPage />}

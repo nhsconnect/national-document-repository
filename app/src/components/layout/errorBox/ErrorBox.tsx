@@ -18,19 +18,21 @@ const ErrorBox = ({
 }: Props) => {
     const hasInputLink = errorInputLink && messageLinkBody;
     return (
-        <ErrorSummary aria-labelledby={errorBoxSummaryId} role="alert" tabIndex={-1}>
-            <ErrorSummary.Title id={errorBoxSummaryId}>{messageTitle}</ErrorSummary.Title>
-            <ErrorSummary.Body>
-                <ErrorSummary.List>
-                    {messageBody && <p>{messageBody}</p>}
-                    {hasInputLink && (
-                        <ErrorSummary.Item href={errorInputLink}>
-                            <p>{messageLinkBody}</p>
-                        </ErrorSummary.Item>
-                    )}
-                </ErrorSummary.List>
-            </ErrorSummary.Body>
-        </ErrorSummary>
+        <div id="error-box">
+            <ErrorSummary aria-labelledby={errorBoxSummaryId} role="alert" tabIndex={-1}>
+                <ErrorSummary.Title id={errorBoxSummaryId}>{messageTitle}</ErrorSummary.Title>
+                <ErrorSummary.Body>
+                    <ErrorSummary.List>
+                        {messageBody && <p>{messageBody}</p>}
+                        {hasInputLink && (
+                            <ErrorSummary.Item href={errorInputLink}>
+                                <p>{messageLinkBody}</p>
+                            </ErrorSummary.Item>
+                        )}
+                    </ErrorSummary.List>
+                </ErrorSummary.Body>
+            </ErrorSummary>
+        </div>
     );
 };
 

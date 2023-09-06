@@ -9,7 +9,12 @@ const ServiceError = ({ message }: Props) => {
     const defaultMessage = 'Please try again later.';
 
     return (
-        <ErrorSummary aria-labelledby={serviceErrorSummaryId} role="alert" tabIndex={-1}>
+        <ErrorSummary
+            aria-labelledby={serviceErrorSummaryId}
+            role="alert"
+            tabIndex={-1}
+            id="service-error"
+        >
             <ErrorSummary.Title id={serviceErrorSummaryId}>
                 Sorry, the service is currently unavailable.
             </ErrorSummary.Title>

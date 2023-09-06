@@ -6,7 +6,18 @@ import {
 import { PatientDetails } from '../../types/generic/patientDetails';
 import { SearchResult } from '../../types/generic/searchResult';
 
+const notFoundPatient = '1000000001';
+
 const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) => {
+    const errorResponse = {
+        response: {
+            status: 400,
+            message: '400 Patient not found.',
+        },
+    };
+    if (patientDetailsOverride?.nhsNumber === notFoundPatient) {
+        throw errorResponse;
+    }
     const patient: PatientDetails = {
         birthDate: '1970-01-01',
         familyName: 'Default Surname',
