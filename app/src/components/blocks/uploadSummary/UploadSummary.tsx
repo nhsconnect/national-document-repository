@@ -8,12 +8,13 @@ import formatFileSize from '../../../helpers/utils/formatFileSize';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import PatientSummary from '../../generic/patientSummary/PatientSummary';
-import { buildPatientDetails } from '../../../helpers/test/testBuilders';
+import { usePatientDetailsContext } from '../../../providers/patientProvider/PatientProvider';
 
 export interface Props {
     documents: Array<UploadDocument>;
 }
 const UploadSummary = ({ documents }: Props) => {
+    const [patientDetails] = usePatientDetailsContext();
     const successfulUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED;
     });
@@ -33,8 +34,6 @@ const UploadSummary = ({ documents }: Props) => {
             </span>
         </>
     );
-
-    const mockPatientDetails = buildPatientDetails();
 
     return (
         <section>
@@ -119,7 +118,7 @@ const UploadSummary = ({ documents }: Props) => {
                     </Details>
                 </>
             )}
-            <PatientSummary patientDetails={mockPatientDetails} />
+            {patientDetails && <PatientSummary patientDetails={patientDetails} />}
 
             <WarningCallout style={{ marginTop: 75 }} id="close-page-warning">
                 <WarningCallout.Label>Before you close this page</WarningCallout.Label>
