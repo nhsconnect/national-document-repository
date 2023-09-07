@@ -4,13 +4,11 @@ on:
   push:
     branches:
       - main
-      - "**"
     paths:
       - "lambdas/**"
   pull_request:
     branches:
       - main
-      - "**"
     paths:
       - "lambdas/**"
 
@@ -99,7 +97,7 @@ jobs:
     environment: development
     needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
-      (github.event.pull_request.merged == 'true') 
+      (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
           || needs.identify_changed_functions.outputs.enums_changed == 'true'
           || needs.identify_changed_functions.outputs.services_changed == 'true' 
@@ -147,7 +145,7 @@ jobs:
     environment: development
     needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
-      (github.event.pull_request.merged == 'true') 
+      (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
           || needs.identify_changed_functions.outputs.enums_changed == 'true'
           || needs.identify_changed_functions.outputs.services_changed == 'true' 
@@ -195,7 +193,7 @@ jobs:
     environment: development
     needs: [ "python_lambdas_test", "identify_changed_functions" ]
     if: |
-      (github.event.pull_request.merged == 'true') 
+      (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
           || needs.identify_changed_functions.outputs.enums_changed == 'true'
           || needs.identify_changed_functions.outputs.services_changed == 'true' 
