@@ -12,7 +12,7 @@
         "build-storybook": "storybook build",
         "format": "prettier --write \"**/*.+(ts|tsx|js|scss|json|css|md)\"",
         "prepare": "cd ../ && husky install ./app/.husky",
-        "cypress": "cypress open --env CYPRESS_BASE_URL=http://localhost:3000/,CYPRESS_RUN_AS_SMOKETEST=false,CYPRESS_RUN_ENVIRONMENT=local"
+        "cypress": "cypress open --env CYPRESS_BASE_URL=http://localhost:3000/,CYPRESS_RUN_AS_SMOKETEST=false"
     },
     "dependencies": {
         "axios": "^1.5.0",

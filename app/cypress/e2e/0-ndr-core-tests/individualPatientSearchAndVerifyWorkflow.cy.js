@@ -3,25 +3,17 @@ describe('Patient search and verify', () => {
         GP: 'gp',
         PCSE: 'pcse',
     });
-    const environments = Object.freeze({
-        local: 'local',
-        dev: 'development',
-    });
 
     const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
     const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
-    const runEnvironment = Cypress.env('CYPRESS_RUN_ENVIRONMENT') ?? environments.dev;
-    const isLocal = runEnvironment === environments.local;
-    const testPatient = '9000000009';
-    const testNotFoundPatient = '1000000001';
-
     const noPatientError = 400;
-
+    const testNotFoundPatient = '1000000001';
+    const testPatient = '9000000009';
     const patient = {
         birthDate: '1970-01-01',
         familyName: 'Default Surname',
         givenName: ['Default Given Name'],
-        nhsNumber: '0000000000',
+        nhsNumber: testPatient,
         postalCode: 'AA1 1AA',
         superseded: false,
         restricted: false,
