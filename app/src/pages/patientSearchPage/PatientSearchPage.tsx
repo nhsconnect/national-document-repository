@@ -72,7 +72,6 @@ function PatientSearchPage({ role }: Props) {
         try {
             const patientDetails = await getPatientDetails({
                 nhsNumber,
-                setStatusCode,
                 baseUrl,
             });
             handleSuccess(patientDetails);
