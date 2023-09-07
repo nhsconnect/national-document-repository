@@ -39,41 +39,34 @@ describe('Patient search and verify', () => {
     };
 
     const navigateToVerify = (role) => {
+        cy.intercept('GET', '/SearchPatient*', {
+            statusCode: 200,
+            body: patient,
+        }).as('search');
         cy.get('#start-button').click();
         cy.get(`#${role}-radio-button`).click();
         cy.get('#role-submit-button').click();
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 
-        if (isLocal) {
+        cy.get('#search-submit').click();
+        cy.wait('@search');
+    };
+
+    it('(Smoke test) shows patient upload screen when patient search is used by a GP', () => {
+        if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
                 body: patient,
             }).as('search');
-            cy.get('#search-submit').click();
-            cy.wait('@search');
-        } else {
-            cy.get('#search-submit').click();
-            cy.wait(20);
         }
-    };
 
-    it('shows patient upload screen when patient search is used by a GP', () => {
         nagivateToSearch(roles.GP);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 
-        if (isLocal) {
-            cy.intercept('GET', '/SearchPatient*', {
-                statusCode: 200,
-                body: patient,
-            }).as('search');
-            cy.get('#search-submit').click();
-            cy.wait('@search');
-        } else {
-            cy.get('#search-submit').click();
-            cy.wait(20);
-        }
+        cy.get('#search-submit').click();
+        cy.wait('@search');
 
         cy.url().should('include', 'upload');
         cy.url().should('eq', baseUrl + 'search/upload/result');
@@ -88,22 +81,19 @@ describe('Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'upload/submit');
     });
 
-    it('shows patient download screen when patient search is used by PCSE', () => {
-        nagivateToSearch(roles.PCSE);
-        cy.get('#nhs-number-input').click();
-        cy.get('#nhs-number-input').type(testPatient);
-
-        if (isLocal) {
+    it('(Smoke test) shows patient download screen when patient search is used by PCSE', () => {
+        if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
                 body: patient,
             }).as('search');
-            cy.get('#search-submit').click();
-            cy.wait('@search');
-        } else {
-            cy.get('#search-submit').click();
-            cy.wait(20);
         }
+        nagivateToSearch(roles.PCSE);
+        cy.get('#nhs-number-input').click();
+        cy.get('#nhs-number-input').type(testPatient);
+
+        cy.get('#search-submit').click();
+        cy.wait('@search');
 
         cy.url().should('include', 'result');
         cy.url().should('eq', baseUrl + 'search/patient/result');
@@ -115,21 +105,19 @@ describe('Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/results');
     });
 
-    it('does not show verify patient when the search finds no patient', () => {
+    it('(Smoke test) does not show verify patient when the search finds no patient', () => {
+        if (!smokeTest) {
+            cy.intercept('GET', '/SearchPatient*', {
+                statusCode: noPatientError,
+            }).as('search');
+        }
+
         nagivateToSearch(roles.GP);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testNotFoundPatient);
-        if (isLocal) {
-            cy.intercept('GET', '/SearchPatient*', {
-                statusCode: noPatientError,
-                message: `${noPatientError} Patient Not Found`,
-            }).as('search');
-            cy.get('#search-submit').click();
-            cy.wait('@search');
-        } else {
-            cy.get('#search-submit').click();
-            cy.wait(20);
-        }
+
+        cy.get('#search-submit').click();
+        cy.wait('@search');
 
         cy.get('#nhs-number-input--error-message').should('be.visible');
         cy.get('#nhs-number-input--error-message').should(
@@ -140,7 +128,7 @@ describe('Patient search and verify', () => {
         cy.get('#error-box-summary').should('have.text', 'There is a problem');
     });
 
-    it('(Smoke test) shows the upload documents page when upload patient is verified', () => {
+    it('shows the upload documents page when upload patient is verified', () => {
         navigateToVerify(roles.GP);
         cy.get('#verify-submit').click();
 
@@ -148,7 +136,7 @@ describe('Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'upload/submit');
     });
 
-    it('(Smoke test) shows the download documents page when download patient is verified', () => {
+    it('shows the download documents page when download patient is verified', () => {
         navigateToVerify(roles.PCSE);
         cy.get('#verify-submit').click();
 
@@ -157,74 +145,67 @@ describe('Patient search and verify', () => {
     });
 
     it('(Smoke test) searches for a patient when the user enters an nhs number', () => {
-        nagivateToSearch(roles.PCSE);
-
-        cy.get('#nhs-number-input').click();
-        cy.get('#nhs-number-input').type(testPatient);
-
-        if (isLocal) {
+        if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
                 body: patient,
             }).as('search');
-            cy.get('#search-submit').click();
-            cy.wait('@search');
-        } else {
-            cy.get('#search-submit').click();
-            cy.wait(20);
         }
+
+        nagivateToSearch(roles.PCSE);
+        cy.get('#nhs-number-input').click();
+        cy.get('#nhs-number-input').type(testPatient);
+
+        cy.get('#search-submit').click();
+        cy.wait('@search');
 
         cy.url().should('include', 'result');
         cy.url().should('eq', baseUrl + 'search/patient/result');
     });
 
     it('(Smoke test) searches for a patient when the user enters an nhs number with spaces', () => {
-        nagivateToSearch(roles.PCSE);
-        cy.get('#nhs-number-input').click();
-        cy.get('#nhs-number-input').type(testPatient);
-
-        if (isLocal) {
+        if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
                 body: {
                     data: patient,
                 },
             }).as('search');
-            cy.get('#search-submit').click();
-            cy.wait('@search');
-        } else {
-            cy.get('#search-submit').click();
-            cy.wait(20);
         }
+
+        nagivateToSearch(roles.PCSE);
+        cy.get('#nhs-number-input').click();
+        cy.get('#nhs-number-input').type(testPatient);
+
+        cy.get('#search-submit').click();
+        cy.wait('@search');
 
         cy.url().should('include', 'result');
         cy.url().should('eq', baseUrl + 'search/patient/result');
     });
 
     it('(Smoke test) searches for a patient when the user enters an nhs number with dashed', () => {
-        nagivateToSearch(roles.PCSE);
-        cy.get('#nhs-number-input').click();
-        cy.get('#nhs-number-input').type(testPatient);
-
-        if (isLocal) {
+        if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
                 body: {
                     data: patient,
                 },
             }).as('search');
-            cy.get('#search-submit').click();
-            cy.wait('@search');
-        } else {
-            cy.get('#search-submit').click();
-            cy.wait(20);
         }
+
+        nagivateToSearch(roles.PCSE);
+        cy.get('#nhs-number-input').click();
+        cy.get('#nhs-number-input').type(testPatient);
+
+        cy.get('#search-submit').click();
+        cy.wait('@search');
 
         cy.url().should('include', 'result');
         cy.url().should('eq', baseUrl + 'search/patient/result');
     });
 
-    it("(Smoke test) fails to search for a patient when the user doesn't enter an nhs number", () => {
+    it("fails to search for a patient when the user doesn't enter an nhs number", () => {
         nagivateToSearch(roles.GP);
         cy.get('#search-submit').click();
         cy.get('#nhs-number-input--error-message').should('be.visible');
@@ -234,7 +215,7 @@ describe('Patient search and verify', () => {
         );
     });
 
-    it('(Smoke test) fails to search for a patient when the user enters an invalid nhs number', () => {
+    it('fails to search for a patient when the user enters an invalid nhs number', () => {
         nagivateToSearch(roles.GP);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type('900');

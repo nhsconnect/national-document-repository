@@ -14,6 +14,8 @@ import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import BackButton from '../../components/generic/backButton/BackButton';
 import { AxiosError } from 'axios';
+import { PatientDetails } from '../../types/generic/patientDetails';
+import { buildPatientDetails } from '../../helpers/test/testBuilders';
 
 type Props = {
     role: USER_ROLE;
@@ -42,6 +44,25 @@ function PatientSearchPage({ role }: Props) {
     const isError = (statusCode && statusCode >= 500) || !inputError;
     const baseUrl = useBaseAPIUrl();
 
+    const isLocal =
+        !process.env.REACT_APP_ENVIRONMENT || process.env.REACT_APP_ENVIRONMENT === 'local';
+
+    const handleSuccess = (patientDetails: PatientDetails) => {
+        setPatientDetails(patientDetails);
+        setSubmissionState(SEARCH_STATES.SUCCEEDED);
+        // GP Role
+        if (userIsGP) {
+            // Make PDS patient search request to upload documents to patient
+            navigate(routes.UPLOAD_VERIFY);
+        }
+
+        // PCSE Role
+        else if (userIsPCSE) {
+            // Make PDS and Dynamo document store search request to download documents from patient
+            navigate(routes.DOWNLOAD_VERIFY);
+        }
+    };
+
     const handleSearch = async (data: FieldValues) => {
         setSubmissionState(SEARCH_STATES.SEARCHING);
         setInputError(null);
@@ -54,24 +75,13 @@ function PatientSearchPage({ role }: Props) {
                 setStatusCode,
                 baseUrl,
             });
-
-            setPatientDetails(patientDetails);
-            setSubmissionState(SEARCH_STATES.SUCCEEDED);
-            // GP Role
-            if (userIsGP) {
-                // Make PDS patient search request to upload documents to patient
-                navigate(routes.UPLOAD_VERIFY);
-            }
-
-            // PCSE Role
-            else if (userIsPCSE) {
-                // Make PDS and Dynamo document store search request to download documents from patient
-                navigate(routes.DOWNLOAD_VERIFY);
-            }
+            handleSuccess(patientDetails);
         } catch (e) {
             const error = e as AxiosError;
-            setStatusCode(error.response?.status ?? null);
-            setSubmissionState(SEARCH_STATES.FAILED);
+            if (isLocal && error.code === 'ERR_NETWORK') {
+                handleSuccess(buildPatientDetails());
+                return;
+            }
             if (error.response?.status === 400) {
                 setInputError('Enter a valid patient NHS number.');
             } else if (error.response?.status === 403) {
@@ -79,6 +89,8 @@ function PatientSearchPage({ role }: Props) {
             } else if (error.response?.status === 404) {
                 setInputError('Sorry, patient data not found.');
             }
+            setStatusCode(error.response?.status ?? null);
+            setSubmissionState(SEARCH_STATES.FAILED);
         }
     };
     const handleError = (fields: FieldValues) => {
