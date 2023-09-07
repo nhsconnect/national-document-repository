@@ -12,9 +12,10 @@ import { usePatientDetailsContext } from '../../providers/patientProvider/Patien
 import getPatientDetails from '../../helpers/requests/getPatientDetails';
 import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
-import { ErrorResponse } from '../../types/generic/response';
-import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import BackButton from '../../components/generic/backButton/BackButton';
+import { AxiosError } from 'axios';
+import { PatientDetails } from '../../types/generic/patientDetails';
+import { buildPatientDetails } from '../../helpers/test/testBuilders';
 
 type Props = {
     role: USER_ROLE;
@@ -43,18 +44,22 @@ function PatientSearchPage({ role }: Props) {
     const isError = (statusCode && statusCode >= 500) || !inputError;
     const baseUrl = useBaseAPIUrl();
 
-    const search = async (nhsNumber: string) => {
-        if (
-            !process.env.REACT_APP_ENVIRONMENT ||
-            ['development', 'test'].includes(process.env.REACT_APP_ENVIRONMENT)
-        ) {
-            return buildPatientDetails({ nhsNumber });
-        } else {
-            return await getPatientDetails({
-                nhsNumber,
-                setStatusCode,
-                baseUrl,
-            });
+    const isLocal =
+        !process.env.REACT_APP_ENVIRONMENT || process.env.REACT_APP_ENVIRONMENT === 'local';
+
+    const handleSuccess = (patientDetails: PatientDetails) => {
+        setPatientDetails(patientDetails);
+        setSubmissionState(SEARCH_STATES.SUCCEEDED);
+        // GP Role
+        if (userIsGP) {
+            // Make PDS patient search request to upload documents to patient
+            navigate(routes.UPLOAD_VERIFY);
+        }
+
+        // PCSE Role
+        else if (userIsPCSE) {
+            // Make PDS and Dynamo document store search request to download documents from patient
+            navigate(routes.DOWNLOAD_VERIFY);
         }
     };
 
@@ -65,25 +70,17 @@ function PatientSearchPage({ role }: Props) {
         const nhsNumber = data.nhsNumber.replace(/[-\s]/gi, '');
 
         try {
-            const patientDetails = await search(nhsNumber);
-
-            setPatientDetails(patientDetails);
-            setSubmissionState(SEARCH_STATES.SUCCEEDED);
-            // GP Role
-            if (userIsGP) {
-                // Make PDS patient search request to upload documents to patient
-                navigate(routes.UPLOAD_VERIFY);
-            }
-
-            // PCSE Role
-            else if (userIsPCSE) {
-                // Make PDS and Dynamo document store search request to download documents from patient
-                navigate(routes.DOWNLOAD_VERIFY);
-            }
+            const patientDetails = await getPatientDetails({
+                nhsNumber,
+                baseUrl,
+            });
+            handleSuccess(patientDetails);
         } catch (e) {
-            const error = e as ErrorResponse;
-            setStatusCode(error.response.status);
-            setSubmissionState(SEARCH_STATES.FAILED);
+            const error = e as AxiosError;
+            if (isLocal && error.code === 'ERR_NETWORK') {
+                handleSuccess(buildPatientDetails());
+                return;
+            }
             if (error.response?.status === 400) {
                 setInputError('Enter a valid patient NHS number.');
             } else if (error.response?.status === 403) {
@@ -91,6 +88,8 @@ function PatientSearchPage({ role }: Props) {
             } else if (error.response?.status === 404) {
                 setInputError('Sorry, patient data not found.');
             }
+            setStatusCode(error.response?.status ?? null);
+            setSubmissionState(SEARCH_STATES.FAILED);
         }
     };
     const handleError = (fields: FieldValues) => {

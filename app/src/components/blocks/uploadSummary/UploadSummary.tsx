@@ -33,9 +33,7 @@ const UploadSummary = ({ documents }: Props) => {
             </span>
         </>
     );
-
-    const mockPatientDetails = buildPatientDetails();
-
+    const mockDetails = buildPatientDetails();
     return (
         <section>
             {failedUploads.length > 0 && (
@@ -119,7 +117,7 @@ const UploadSummary = ({ documents }: Props) => {
                     </Details>
                 </>
             )}
-            <PatientSummary patientDetails={mockPatientDetails} />
+            <PatientSummary patientDetails={mockDetails} />
 
             <WarningCallout style={{ marginTop: 75 }} id="close-page-warning">
                 <WarningCallout.Label>Before you close this page</WarningCallout.Label>

@@ -1,6 +1,5 @@
-import { ErrorResponse } from '../../types/generic/response';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 type Args = {
     setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
@@ -72,7 +71,7 @@ const uploadDocument = async ({ setDocumentState, nhsNumber, document, baseUrl }
         if (s3Response.status === 204)
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
     } catch (e) {
-        const error = e as ErrorResponse;
+        const error = e as AxiosError;
         if (error.response?.status === 403) {
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
         } else {
