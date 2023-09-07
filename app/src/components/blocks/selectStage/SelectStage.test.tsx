@@ -162,6 +162,19 @@ describe('<UploadDocumentsPage />', () => {
     });
 });
 
-const renderSelectStage = (setDocumentMock: jest.Mock) => {
-    render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
+const renderSelectStage = (
+    setDocumentMock: jest.Mock,
+    patientDetails: Partial<PatientDetails> = {},
+) => {
+    const mockPatient = {
+        ...buildPatientDetails(),
+        ...patientDetails,
+    };
+    render(
+        <SelectStage
+            patientDetails={mockPatient}
+            setDocuments={setDocumentMock}
+            uploadDocuments={() => {}}
+        />,
+    );
 };

@@ -10,7 +10,7 @@ import { useController, useForm } from 'react-hook-form';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import toFileList from '../../../helpers/utils/toFileList';
 import PatientSummary from '../../generic/patientSummary/PatientSummary';
-import { buildPatientDetails } from '../../../helpers/test/testBuilders';
+import { PatientDetails } from '../../../types/generic/patientDetails';
 interface FileInputEvent extends FormEvent<HTMLInputElement> {
     target: HTMLInputElement & EventTarget;
 }
@@ -18,9 +18,10 @@ interface FileInputEvent extends FormEvent<HTMLInputElement> {
 interface Props {
     uploadDocuments: () => void;
     setDocuments: SetUploadDocuments;
+    patientDetails: PatientDetails;
 }
 
-function SelectStage({ uploadDocuments, setDocuments }: Props) {
+function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
     let inputRef = useRef<HTMLInputElement | null>(null);
     const FIVEGB = 5 * Math.pow(1024, 3);
     const { handleSubmit, control, formState } = useForm();
@@ -78,8 +79,6 @@ function SelectStage({ uploadDocuments, setDocuments }: Props) {
         }
     };
 
-    const mockPatientDetails = buildPatientDetails();
-
     return (
         <>
             <form
@@ -91,7 +90,7 @@ function SelectStage({ uploadDocuments, setDocuments }: Props) {
                     <Fieldset.Legend headingLevel="h1" isPageHeading>
                         Upload documents
                     </Fieldset.Legend>
-                    <PatientSummary patientDetails={mockPatientDetails} />
+                    <PatientSummary patientDetails={patientDetails} />
                     <Input
                         id="documents-input"
                         label="Select file(s)"
