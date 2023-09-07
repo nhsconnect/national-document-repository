@@ -118,3 +118,49 @@ UNEXPECTED_RESPONSE = {
         "RetryAttempts": 0,
     },
 }
+
+LOCATION_QUERY_RESPONSE = {
+      "Items": [
+        {
+          "Location": "s3://dev-document-store-20230724132334705600000001/0e1ba46f-ab14-4cf2-8750-8bc407417160"
+        },
+        {
+          "Location": "s3://dev-document-store-20230724132334705600000001/ae436109-1142-42b1-9ca7-3730486c8f87"
+        },
+        {
+          "Location": "s3://dev-document-store-20230724132334705600000001/19a98b49-3b85-4aaa-83ce-3be9bafe83de"
+        },
+        {
+          "Location": "s3://dev-document-store-20230724132334705600000001/2508f7ee-1527-4f72-babf-fb85c38ec92e"
+        },
+        {
+          "Location": "s3://dev-document-store-20230724132334705600000001/92aef408-728c-4452-80ff-d6d8e24570e5"
+        }
+      ],
+      "Count": 5,
+      "ScannedCount": 5,
+      "ResponseMetadata": {
+        "RequestId": "VNS38QDVQCIQ1EMGKQ1EA2E5MVVV4KQNSO5AEMVJF66Q9ASUAAJG",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+          "server": "Server",
+          "date": "Thu, 07 Sep 2023 11:14:01 GMT",
+          "content-type": "application/x-amz-json-1.0",
+          "content-length": "583",
+          "connection": "keep-alive",
+          "x-amzn-requestid": "VNS38QDVQCIQ1EMGKQ1EA2E5MVVV4KQNSO5AEMVJF66Q9ASUAAJG",
+          "x-amz-crc32": "2636774765"
+        },
+        "RetryAttempts": 0
+      }
+}
+
+
+
+
+
+
+
+
+
+
