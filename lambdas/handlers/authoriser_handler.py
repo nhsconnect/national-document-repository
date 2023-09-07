@@ -9,16 +9,35 @@ or in the "license" file accompanying this file. This file is distributed on an 
 """
 from __future__ import print_function
 
+import logging
 import re
 
+import boto3
+import botocore
+import jwt
 
-def lambda_handler(event, context):
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+
+def lambda_handler(event):
     """Do not print the auth token unless absolutely necessary """
     print("Client token: " + event['authorizationToken'])
     print(f"incoming event: {event}")
-
-
-
+    try:
+        client = boto3.client('ssm')
+        public_key = client.get_parameter(
+        Name='jwt_token_public_key',
+        WithDecryption=True
+        )
+        decoded = jwt.decode(event['authorizationToken'], public_key, algorithms=["RS256"])
+        user = decoded['user_role']
+        logger.info(f"decoded JWT: {decoded}")
+    except botocore.exceptions.ClientError as e:
+        logger.error(e)
+    except jwt.PyJWTError as e:
+        user = 'Unauthorised'
+        logger.info(f"error while decoding JWT: {e}")
 
     # print("Method ARN: " + event['methodArn'])
     """validate the incoming token"""
@@ -59,9 +78,9 @@ def lambda_handler(event, context):
     policy.region = tmp[3]
     policy.stage = apiGatewayArnTmp[1]
 
-    if event['authorizationToken'] == "test":
+    if user == "GP":
         policy.allowAllMethods()
-    elif event['authorizationToken'] == "test_get":
+    elif user == "PCSE":
         policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
     else:
         policy.denyAllMethods()
@@ -69,7 +88,7 @@ def lambda_handler(event, context):
 
     # Finally, build the policy
     authResponse = policy.build()
-    print(authResponse, "<--- auth response")
+    # logger.info(authResponse, "<--- auth response")
 
     # new! -- add additional key-value pairs associated with the authenticated principal
     # these are made available by APIGW like so: $context.authorizer.<key>
