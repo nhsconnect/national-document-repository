@@ -7,7 +7,11 @@ import {
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { formatFileSize as formatSize } from '../../../helpers/utils/formatFileSize';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
-import { buildDocument, buildTextFile } from '../../../helpers/test/testBuilders';
+import {
+    buildDocument,
+    buildPatientDetails,
+    buildTextFile,
+} from '../../../helpers/test/testBuilders';
 
 describe('UploadSummary', () => {
     it('renders the page', () => {
@@ -186,6 +190,7 @@ describe('UploadSummary', () => {
 const renderUploadSummary = (propsOverride: Partial<Props>) => {
     const props: Props = {
         documents: [],
+        patientDetails: buildPatientDetails(),
         ...propsOverride,
     };
 

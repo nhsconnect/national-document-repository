@@ -9,10 +9,10 @@ import { SearchResult } from '../../types/generic/searchResult';
 const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) => {
     const patient: PatientDetails = {
         birthDate: '1970-01-01',
-        familyName: 'Default Surname',
-        givenName: ['Default Given Name'],
-        nhsNumber: '0000000000',
-        postalCode: 'AA1 1AA',
+        familyName: 'Doe',
+        givenName: ['John'],
+        nhsNumber: '9000000009',
+        postalCode: 'BS3 3NQ',
         superseded: false,
         restricted: false,
         ...patientDetailsOverride,

@@ -4,12 +4,12 @@ import {
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
     UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
-import { buildTextFile } from '../../../helpers/test/testBuilders';
+import { buildPatientDetails, buildTextFile } from '../../../helpers/test/testBuilders';
 import CompleteStage from './CompleteStage';
 import { useNavigate } from 'react-router';
 
 jest.mock('react-router');
-
+const mockPatientDetails = buildPatientDetails();
 describe('<CompleteStage />', () => {
     describe('Show complete stage', () => {
         it('with successfully uploaded docs', async () => {
@@ -36,7 +36,7 @@ describe('<CompleteStage />', () => {
             // @ts-ignore
             useNavigate.mockImplementation(() => navigateMock);
             const documents: Array<UploadDocument> = [documentOne, documentTwo, documentThree];
-            render(<CompleteStage documents={documents} />);
+            render(<CompleteStage patientDetails={mockPatientDetails} documents={documents} />);
             expect(
                 await screen.findByRole('heading', { name: 'Upload Summary' }),
             ).toBeInTheDocument();

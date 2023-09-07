@@ -5,9 +5,11 @@ import {
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
+import { PatientDetails } from '../../../types/generic/patientDetails';
 
 interface Props {
     documents: Array<UploadDocument>;
+    patientDetails: PatientDetails;
 }
 
 function UploadingStage({ documents }: Props) {
