@@ -1,13 +1,11 @@
+from dataclasses import dataclass
 from unittest.mock import patch
 
+import boto3
 import jwt
 import pytest
-import boto3
-from moto import mock_ssm
-from dataclasses import dataclass
-
 from handlers.authoriser_handler import lambda_handler
-
+from moto import mock_ssm
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:fake_arn:fake_api_endpoint/dev"
 TEST_PUBLIC_KEY = "test_public_key"
@@ -25,7 +23,9 @@ def context():
 
 @pytest.fixture()
 def mock_ssm_public_key():
-    with patch.dict("os.environ", {"SSM_PARAM_JWT_TOKEN_PUBLIC_KEY": TEST_PUBLIC_KEY_SSM_PARAM_NAME}):
+    with patch.dict(
+        "os.environ", {"SSM_PARAM_JWT_TOKEN_PUBLIC_KEY": TEST_PUBLIC_KEY_SSM_PARAM_NAME}
+    ):
         with mock_ssm():
             ssm = boto3.client("ssm")
             ssm.put_parameter(
