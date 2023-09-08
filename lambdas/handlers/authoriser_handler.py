@@ -22,6 +22,7 @@ def lambda_handler(event, context):
     """Do not print the auth token unless absolutely necessary """
     print("Client token: " + event['authorizationToken'])
     print(f"incoming event: {event}")
+    user = 'Unauthorised'
     try:
         client = boto3.client('ssm')
         ssm_response = client.get_parameter(
@@ -35,11 +36,11 @@ def lambda_handler(event, context):
     except botocore.exceptions.ClientError as e:
         logger.error(e)
     except jwt.PyJWTError as e:
-        user = 'Unauthorised'
         logger.info(f"error while decoding JWT: {e}")
+    except KeyError as e:
+        logger.error(e)
 
     principalId = "user|a1b2c3d4"
-
     tmp = event['methodArn'].split(':')
     apiGatewayArnTmp = tmp[5].split('/')
     awsAccountId = tmp[4]
