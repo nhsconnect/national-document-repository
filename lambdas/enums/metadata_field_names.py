@@ -11,7 +11,7 @@ class DynamoDocumentMetadataTableFields(Enum):
     LOCATION = "Location", "#location"
     NHS_NUMBER = "NhsNumber", "#nhsNumber"
     TYPE = "Type", "#type"
-    VIRUS_SCAN_RESULT = "VirusScanResult", "#vscanResult"
+    VIRUS_SCAN_RESULT = "VirusScannerResult", "#vscanResult"
 
     def __init__(self, field_name, field_alias):
         self.field_name = field_name

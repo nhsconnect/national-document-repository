@@ -1,14 +1,7 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, ValidationError
-
-
-def to_camel(string: str) -> str:
-    string_split = string.split("_")
-    return string_split[0] + "".join(word.capitalize() for word in string_split[1:])
-
-
-conf = ConfigDict(alias_generator=to_camel)
+from models.config import conf
+from pydantic import BaseModel, ValidationError
 
 
 class Period(BaseModel):

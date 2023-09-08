@@ -2,7 +2,7 @@ import pytest
 from models.pds_models import PatientDetails
 from requests.models import Response
 from services.pds_api_service import PdsApiService
-from tests.unit.pds_data.utils import load_pds_data
+from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from utils.exceptions import (InvalidResourceIdException,
                               PatientNotFoundException, PdsErrorException)
 
@@ -14,7 +14,7 @@ def test_fetch_patient_details_valid_returns_PatientDetails(mocker):
 
     response = Response()
     response.status_code = 200
-    response._content = load_pds_data()[0]
+    response._content = PDS_PATIENT
 
     mocker.patch(
         "services.pds_api_service.PdsApiService.fake_pds_request", return_value=response
@@ -47,7 +47,7 @@ def test_handle_response_200_returns_PatientDetails():
 
     response = Response()
     response.status_code = 200
-    response._content = load_pds_data()[0]
+    response._content = PDS_PATIENT
 
     actual = pds_service.handle_response(response, nhs_number)
 

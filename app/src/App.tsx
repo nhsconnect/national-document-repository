@@ -13,6 +13,7 @@ import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom
 import RoleSelectPage from './pages/roleSelectPage/RoleSelectPage';
 import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
+import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
 
 function App() {
     const AuthenticatedProviders = ({ children }: { children: ReactNode }) => (
@@ -56,6 +57,10 @@ function App() {
                             <Route
                                 element={<UploadDocumentsPage />}
                                 path={routes.UPLOAD_DOCUMENTS}
+                            />
+                            <Route
+                                element={<DocumentSearchResultsPage />}
+                                path={routes.DOWNLOAD_DOCUMENTS}
                             />
                         </Route>
                     </Routes>
