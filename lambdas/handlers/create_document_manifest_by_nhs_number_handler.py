@@ -1,12 +1,25 @@
 from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 from services.dynamo_query_service import DynamoQueryService
+from utils.exceptions import InvalidResourceIdException
+from utils.lambda_response import ApiGatewayResponse
+from utils.nhs_number_validator import validate_id
 
 TABLE_NAME = "test table"
 INDEX_NAME = "test index name"
 
 
 def lambda_handler(event, context):
-    pass
+    try:
+        nhs_number = event["queryStringParameters"]["patientId"]
+        validate_id(nhs_number)
+    except InvalidResourceIdException:
+        return ApiGatewayResponse(
+            400, "Invalid NHS number", "GET"
+        ).create_api_gateway_response()
+    except KeyError:
+        return ApiGatewayResponse(
+            400, "Please supply an NHS number", "GET"
+        ).create_api_gateway_response()
 
 
 def find_document_locations(nhs_number):

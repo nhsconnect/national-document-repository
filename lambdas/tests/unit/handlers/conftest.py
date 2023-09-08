@@ -2,6 +2,10 @@ from dataclasses import dataclass
 
 import pytest
 
+PATCH_DYNAMO_TABLES_ENV_VAR = {
+    "DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table",
+    "LLOYD_GEORGE_DYNAMODB_NAME": "another_real_table",
+}
 
 @pytest.fixture
 def valid_id_event():
