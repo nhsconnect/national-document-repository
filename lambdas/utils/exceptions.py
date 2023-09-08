@@ -8,3 +8,7 @@ class InvalidResourceIdException(Exception):
 
 class PdsErrorException(Exception):
     pass
+
+
+class DynamoDbException(Exception):
+    pass

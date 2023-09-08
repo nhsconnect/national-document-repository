@@ -4,7 +4,7 @@ import pytest
 
 
 @pytest.fixture
-def event_valid_id():
+def valid_id_event():
     api_gateway_proxy_event = {
         "queryStringParameters": {"patientId": "9000000009"},
     }
@@ -12,7 +12,7 @@ def event_valid_id():
 
 
 @pytest.fixture
-def event_invalid_id():
+def invalid_id_event():
     api_gateway_proxy_event = {
         "queryStringParameters": {"patientId": "900000000900"},
     }
@@ -20,25 +20,9 @@ def event_invalid_id():
 
 
 @pytest.fixture
-def invalid_nhs_id_event():
+def missing_id_event():
     api_gateway_proxy_event = {
-        "queryStringParameters": {"patientId": "9000AB0009"},
-    }
-    return api_gateway_proxy_event
-
-
-@pytest.fixture
-def empty_nhs_id_event():
-    api_gateway_proxy_event = {
-        "queryStringParameters": {"inpatientId": "blah"},
-    }
-    return api_gateway_proxy_event
-
-
-@pytest.fixture
-def event_missing_id():
-    api_gateway_proxy_event = {
-        "queryStringParameters": {"invalid": "9000000009"},
+        "queryStringParameters": {"invalid": ""},
     }
     return api_gateway_proxy_event
 

@@ -47,11 +47,9 @@ const buildDocument = (file: File, uploadStatus: DOCUMENT_UPLOAD_STATE) => {
 
 const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
     const result: SearchResult = {
-        id: 'some-id',
-        description: 'Some description',
-        type: 'some type',
-        indexed: new Date(Date.UTC(2022, 7, 10, 10, 34, 41, 515)),
-        virusScanResult: 'Clean',
+        fileName: 'Some description',
+        created: '2023-09-06T10:41:51.899908Z',
+        virusScannerResult: 'Clean',
         ...searchResultOverride,
     };
     return result;

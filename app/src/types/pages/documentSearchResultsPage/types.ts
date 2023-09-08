@@ -1,0 +1,6 @@
+export enum SUBMISSION_STATE {
+    INITIAL = 'INITIAL',
+    PENDING = 'PENDING',
+    SUCCEEDED = 'SUCCEEDED',
+    FAILED = 'FAILED',
+}

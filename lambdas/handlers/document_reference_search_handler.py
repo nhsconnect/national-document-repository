@@ -5,7 +5,7 @@ import os
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 from services.dynamo_query_service import DynamoQueryService
-from utils.exceptions import InvalidResourceIdException
+from utils.exceptions import DynamoDbException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.nhs_number_validator import validate_id
 
@@ -44,6 +44,7 @@ def lambda_handler(event, context):
                 [
                     DynamoDocumentMetadataTableFields.CREATED,
                     DynamoDocumentMetadataTableFields.FILE_NAME,
+                    DynamoDocumentMetadataTableFields.VIRUS_SCAN_RESULT,
                 ],
             )
             if response is None or ("Items" not in response):
@@ -60,14 +61,32 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(
             500, "No data was requested to be returned in query", "GET"
         ).create_api_gateway_response()
-    except ClientError:
+    except ClientError as e:
+        logger.error(f"Unable to connect to DynamoDB: str({e})")
         return ApiGatewayResponse(
-            500, "An error occurred searching for available documents", "GET"
+            500, "An error occurred when searching for available documents", "GET"
+        ).create_api_gateway_response()
+    except DynamoDbException as e:
+        return ApiGatewayResponse(
+            500,
+            f"An error occurred when searching for available documents: {str(e)}",
+            "GET",
         ).create_api_gateway_response()
 
-    if len(results) == 0:
-        return ApiGatewayResponse(204, "", "GET").create_api_gateway_response()
+    response = [decapitalise_keys(result) for result in results]
+
+    if not results or not response:
+        return ApiGatewayResponse(
+            204, json.dumps([]), "GET"
+        ).create_api_gateway_response()
 
     return ApiGatewayResponse(
-        200, json.dumps(results), "GET"
+        200, json.dumps(response), "GET"
     ).create_api_gateway_response()
+
+
+def decapitalise_keys(values):
+    data = {}
+    for key, value in values.items():
+        data[key[0].lower() + key[1:]] = value
+    return data
