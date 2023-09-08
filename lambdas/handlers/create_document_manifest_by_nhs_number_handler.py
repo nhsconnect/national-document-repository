@@ -25,9 +25,11 @@ def lambda_handler(event, context):
     # Find the locations of the docs for this patient
     documents = find_document_locations(nhs_number)
     if len(documents) == 0:
-        return ApiGatewayResponse(204, "No documents found for given NHS number", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(204, "No documents found for given NHS number", "GET"
+                                  ).create_api_gateway_response()
 
-    return ApiGatewayResponse(200, "OK", "GET").create_api_gateway_response()
+    return ApiGatewayResponse(200, "OK", "GET"
+                              ).create_api_gateway_response()
 
     # Download all of these documents and zip them
     # Be wary of OutOfMemory errors
