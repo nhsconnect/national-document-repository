@@ -27,7 +27,7 @@ def lambda_handler(event, context):
     ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
 
     try:
-        client = boto3.client("ssm")
+        client = boto3.client("ssm", region_name="eu-west-2")
         ssm_response = client.get_parameter(
             Name=ssm_public_key_parameter_name, WithDecryption=True
         )
