@@ -14,16 +14,16 @@ class S3UploadService:
     s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
     s3_object_key = str(uuid.uuid4())
 
-    def __init__(self):
-        pass
+    def __init__(self, s3_bucket_name):
+        self.s3_bucket_name = s3_bucket_name
 
-    def create_document_presigned_url_handler(self, s3_bucket_name, s3_object_key):
+    def create_document_presigned_url_handler(self, s3_object_key):
         # Generate a presigned S3 POST URL
         s3_client = boto3.client("s3", region_name="eu-west-2")
 
         try:
             response = s3_client.generate_presigned_post(
-                s3_bucket_name, s3_object_key, Fields=None, Conditions=None, ExpiresIn=1800
+                self.s3_bucket_name, s3_object_key, Fields=None, Conditions=None, ExpiresIn=1800
             )
         except ClientError as e:
             logger.error(e)
@@ -33,9 +33,9 @@ class S3UploadService:
         return response
 
     def create_document_reference_object(
-            self, s3_bucket_name, s3_object_key, document_request_body
+            self, s3_object_key, document_request_body
     ):
-        s3_file_location = "s3://" + s3_bucket_name + "/" + s3_object_key
+        s3_file_location = "s3://" + self.s3_bucket_name + "/" + s3_object_key
         logger.info(f"Input document reference location: {s3_file_location}")
 
         new_document = NHSDocumentReference(
