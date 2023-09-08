@@ -9,6 +9,7 @@ INDEX_NAME = "test index name"
 
 
 def lambda_handler(event, context):
+    # Get and validate the NHS number
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
         validate_id(nhs_number)
@@ -20,11 +21,20 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(
             400, "Please supply an NHS number", "GET"
         ).create_api_gateway_response()
+
+    # Find the locations of the docs for this patient
     documents = find_document_locations(nhs_number)
     if len(documents) == 0:
         return ApiGatewayResponse(204, "No documents found for given NHS number", "GET").create_api_gateway_response()
 
     return ApiGatewayResponse(200, "OK", "GET").create_api_gateway_response()
+
+    # Download all of these documents and zip them
+    # Be wary of OutOfMemory errors
+
+    # Upload the new Zip file to S3
+
+    # Return the zip file pre-signed URL
 
 
 def find_document_locations(nhs_number):
@@ -37,3 +47,11 @@ def find_document_locations(nhs_number):
         document_locations.append(item["Location"])
 
     return document_locations
+
+
+def generate_zip_of_documents(locations: list):
+    pass
+
+def upload_to_s3(zip_file):
+    pass
+
