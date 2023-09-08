@@ -8,8 +8,8 @@ from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 from handlers.create_document_manifest_by_nhs_number_handler import lambda_handler, find_document_locations
 from services.dynamo_query_service import DynamoQueryService
 from helpers.dynamo_responses import LOCATION_QUERY_RESPONSE, MOCK_EMPTY_RESPONSE
-from botocore.exceptions import ClientError
 
+from botocore.exceptions import ClientError
 from utils.lambda_response import ApiGatewayResponse
 
 NHS_NUMBER = 1111111111
@@ -20,7 +20,7 @@ def mock_dynamo_service():
     return MagicMock()
 
 
-def test_find_docs_retrieves_something(mock_dynamo_service):
+def test_find_docs_returns_items_from_dynamo_response(mock_dynamo_service):
     with patch.object(DynamoQueryService, "__call__", new=mock_dynamo_service) as call_mock:
         call_mock.return_value = LOCATION_QUERY_RESPONSE
         actual = find_document_locations(NHS_NUMBER)
