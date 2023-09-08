@@ -1,12 +1,11 @@
 """
 Copyright 2015-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
+This code has been modified from AWS blueprint.
 Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-
      http://aws.amazon.com/apache2.0/
-
 or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 """
+
 from __future__ import print_function
 
 import logging
@@ -19,17 +18,17 @@ import jwt
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
-def lambda_handler(event):
+def lambda_handler(event, context):
     """Do not print the auth token unless absolutely necessary """
     print("Client token: " + event['authorizationToken'])
     print(f"incoming event: {event}")
     try:
         client = boto3.client('ssm')
-        public_key = client.get_parameter(
+        ssm_response = client.get_parameter(
         Name='jwt_token_public_key',
         WithDecryption=True
         )
+        public_key = ssm_response['Parameter']['Value']
         decoded = jwt.decode(event['authorizationToken'], public_key, algorithms=["RS256"])
         user = decoded['user_role']
         logger.info(f"decoded JWT: {decoded}")
@@ -39,35 +38,7 @@ def lambda_handler(event):
         user = 'Unauthorised'
         logger.info(f"error while decoding JWT: {e}")
 
-    # print("Method ARN: " + event['methodArn'])
-    """validate the incoming token"""
-    """and produce the principal user identifier associated with the token"""
-
-    """this could be accomplished in a number of ways:"""
-    """1. Call out to OAuth provider"""
-    """2. Decode a JWT token inline"""
-    """3. Lookup in a self-managed DB"""
     principalId = "user|a1b2c3d4"
-
-    """you can send a 401 Unauthorized response to the client by failing like so:"""
-    """raise Exception('Unauthorized')"""
-
-    """if the token is valid, a policy must be generated which will allow or deny access to the client"""
-
-    """if access is denied, the client will recieve a 403 Access Denied response"""
-    """if access is allowed, API Gateway will proceed with the backend integration configured on the method that was called"""
-
-    """this function must generate a policy that is associated with the recognized principal user identifier."""
-    """depending on your use case, you might store policies in a DB, or generate them on the fly"""
-
-    """keep in mind, the policy is cached for 5 minutes by default (TTL is configurable in the authorizer)"""
-    """and will apply to subsequent calls to any method/resource in the RestApi"""
-    """made with the same token"""
-
-    """the example policy below denies access to all resources in the RestApi"""
-
-
-
 
     tmp = event['methodArn'].split(':')
     apiGatewayArnTmp = tmp[5].split('/')
@@ -86,25 +57,11 @@ def lambda_handler(event):
         policy.denyAllMethods()
 
 
-    # Finally, build the policy
     authResponse = policy.build()
-    # logger.info(authResponse, "<--- auth response")
-
-    # new! -- add additional key-value pairs associated with the authenticated principal
-    # these are made available by APIGW like so: $context.authorizer.<key>
-    # additional context is cached
-    context = {
-        'key': 'value',  # $context.authorizer.key -> value
-        'number': 1,
-        'bool': True
-    }
-    # context['arr'] = ['foo'] <- this is invalid, APIGW will not accept it
-    # context['obj'] = {'foo':'bar'} <- also invalid
 
     authResponse['context'] = context
 
     return authResponse
-
 
 class HttpVerb:
     GET = "GET"
@@ -116,39 +73,17 @@ class HttpVerb:
     OPTIONS = "OPTIONS"
     ALL = "*"
 
-
 class AuthPolicy(object):
     awsAccountId = ""
-    """The AWS account id the policy will be generated for. This is used to create the method ARNs."""
     principalId = ""
-    """The principal used for the policy, this should be a unique identifier for the end user."""
     version = "2012-10-17"
-    """The policy version used for the evaluation. This should always be '2012-10-17'"""
     pathRegex = "^[/.a-zA-Z0-9-\*]+$"
-    """The regular expression used to validate resource paths for the policy"""
-
-    """these are the internal lists of allowed and denied methods. These are lists
-    of objects and each object has 2 properties: A resource ARN and a nullable
-    conditions statement.
-    the build method processes these lists and generates the approriate
-    statements for the final policy"""
     allowMethods = []
     denyMethods = []
 
     restApiId = "<<restApiId>>"
-    """ Replace the placeholder value with a default API Gateway API id to be used in the policy. 
-    Beware of using '*' since it will not simply mean any API Gateway API id, because stars will greedily expand over '/' or other separators. 
-    See https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_resource.html for more details. """
-
     region = "<<region>>"
-    """ Replace the placeholder value with a default region to be used in the policy. 
-    Beware of using '*' since it will not simply mean any region, because stars will greedily expand over '/' or other separators. 
-    See https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_resource.html for more details. """
-
     stage = "<<stage>>"
-    """ Replace the placeholder value with a default stage to be used in the policy. 
-    Beware of using '*' since it will not simply mean any stage, because stars will greedily expand over '/' or other separators. 
-    See https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_resource.html for more details. """
 
     def __init__(self, principal, awsAccountId):
         self.awsAccountId = awsAccountId
@@ -237,18 +172,6 @@ class AuthPolicy(object):
         """Adds an API Gateway method (Http verb + Resource path) to the list of denied
         methods for the policy"""
         self._addMethod("Deny", verb, resource, [])
-
-    def allowMethodWithConditions(self, verb, resource, conditions):
-        """Adds an API Gateway method (Http verb + Resource path) to the list of allowed
-        methods and includes a condition for the policy statement. More on AWS policy
-        conditions here: http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements.html#Condition"""
-        self._addMethod("Allow", verb, resource, conditions)
-
-    def denyMethodWithConditions(self, verb, resource, conditions):
-        """Adds an API Gateway method (Http verb + Resource path) to the list of denied
-        methods and includes a condition for the policy statement. More on AWS policy
-        conditions here: http://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements.html#Condition"""
-        self._addMethod("Deny", verb, resource, conditions)
 
     def build(self):
         """Generates the policy document based on the internal lists of allowed and denied
