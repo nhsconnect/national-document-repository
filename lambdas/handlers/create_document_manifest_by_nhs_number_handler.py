@@ -54,6 +54,6 @@ def find_document_locations(nhs_number):
 def generate_zip_of_documents(locations: list):
     pass
 
+
 def upload_to_s3(zip_file):
     pass
-
