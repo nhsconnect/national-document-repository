@@ -1,7 +1,10 @@
 import os
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
+
+import pytest
 
 from conftest import PATCH_DYNAMO_TABLES_ENV_VAR
+from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 from handlers.create_document_manifest_by_nhs_number_handler import lambda_handler, find_document_locations
 from services.dynamo_query_service import DynamoQueryService
 from helpers.dynamo_responses import LOCATION_QUERY_RESPONSE, MOCK_EMPTY_RESPONSE
@@ -12,10 +15,17 @@ from utils.lambda_response import ApiGatewayResponse
 NHS_NUMBER = 1111111111
 
 
-def test_find_docs_retrieves_something():
-    with patch.object(DynamoQueryService, "__call__", return_value=LOCATION_QUERY_RESPONSE):
-        actual = find_document_locations(NHS_NUMBER)
+@pytest.fixture
+def mock_dynamo_service():
+    return MagicMock()
 
+
+def test_find_docs_retrieves_something(mock_dynamo_service):
+    with patch.object(DynamoQueryService, "__call__", new=mock_dynamo_service) as call_mock:
+        call_mock.return_value = LOCATION_QUERY_RESPONSE
+        actual = find_document_locations(NHS_NUMBER)
+        call_mock.assert_called_with("NhsNumber", NHS_NUMBER,
+                                     [DynamoDocumentMetadataTableFields.LOCATION])
         assert len(actual) == 5
         assert "s3://" in actual[0]
         assert "dev-document-store" in actual[0]
