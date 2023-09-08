@@ -67,6 +67,7 @@ jobs:
           AWS_REGION: test region
           OIDC_PROVIDER_ID: not provided yet
           BUILD_ENV: development
+          CI: false # Eslint treats warnings as errors when process.env.CI = true.
           IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
         run: |
           ./react-environment-config.sh
