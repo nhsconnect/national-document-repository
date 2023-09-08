@@ -27,7 +27,7 @@ def mock_ssm_public_key():
         "os.environ", {"SSM_PARAM_JWT_TOKEN_PUBLIC_KEY": TEST_PUBLIC_KEY_SSM_PARAM_NAME}
     ):
         with mock_ssm():
-            ssm = boto3.client("ssm")
+            ssm = boto3.client("ssm", region_name="eu-west-2")
             ssm.put_parameter(
                 Name=TEST_PUBLIC_KEY_SSM_PARAM_NAME,
                 Value=TEST_PUBLIC_KEY,
