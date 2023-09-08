@@ -20,6 +20,8 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(
             400, "Please supply an NHS number", "GET"
         ).create_api_gateway_response()
+    documents = find_document_locations(nhs_number)
+    return ApiGatewayResponse(204, "No documents found for given NHS number", "GET").create_api_gateway_response()
 
 
 def find_document_locations(nhs_number):

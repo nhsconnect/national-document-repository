@@ -20,6 +20,17 @@ def mock_dynamo_service():
     return MagicMock()
 
 
+def test_lambda_handler_returns_error_response_when_no_documents_returned_from_dynamo_response(mock_dynamo_service,
+                                                                                               event_valid_id, context):
+    expected = ApiGatewayResponse(204, "No documents found for given NHS number", "GET").create_api_gateway_response()
+    with patch.object(DynamoQueryService, "__call__", new=mock_dynamo_service) as call_mock:
+        call_mock.return_value = LOCATION_QUERY_RESPONSE
+        actual = lambda_handler(event_valid_id, context)
+        call_mock.assert_called_with("NhsNumber", "9000000009",
+                                     [DynamoDocumentMetadataTableFields.LOCATION])
+    assert expected == actual
+
+
 def test_find_docs_returns_items_from_dynamo_response(mock_dynamo_service):
     with patch.object(DynamoQueryService, "__call__", new=mock_dynamo_service) as call_mock:
         call_mock.return_value = LOCATION_QUERY_RESPONSE

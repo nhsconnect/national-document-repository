@@ -7,6 +7,7 @@ PATCH_DYNAMO_TABLES_ENV_VAR = {
     "LLOYD_GEORGE_DYNAMODB_NAME": "another_real_table",
 }
 
+
 @pytest.fixture
 def valid_id_event():
     api_gateway_proxy_event = {
