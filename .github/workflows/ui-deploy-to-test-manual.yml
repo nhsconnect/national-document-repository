@@ -38,7 +38,7 @@ jobs:
           ENDPOINT_DOC_STORE_API: http://test-endpoint.com
           AWS_REGION: test region
           OIDC_PROVIDER_ID: not provided yet
-          BUILD_ENV: development
+          BUILD_ENV: test
           IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
         run: |
           ./react-environment-config.sh
@@ -65,7 +65,7 @@ jobs:
           ENDPOINT_DOC_STORE_API: http://test-endpoint.com
           AWS_REGION: test region
           OIDC_PROVIDER_ID: not provided yet
-          BUILD_ENV: development
+          BUILD_ENV: test
           IMAGE_VERSION: 'ndr-${{ secrets.AWS_ECR_REPO_NAME }}-app::${{ github.sha }}'
         run: |
           ./react-environment-config.sh
