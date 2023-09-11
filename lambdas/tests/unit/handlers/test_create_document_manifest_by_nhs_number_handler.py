@@ -3,11 +3,11 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from conftest import PATCH_DYNAMO_TABLES_ENV_VAR
+from tests.unit.conftest import PATCH_DYNAMO_TABLES_ENV_VAR
 from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 from handlers.create_document_manifest_by_nhs_number_handler import lambda_handler, find_document_locations
 from services.dynamo_query_service import DynamoQueryService
-from helpers.dynamo_responses import LOCATION_QUERY_RESPONSE, MOCK_EMPTY_RESPONSE
+from tests.unit.helpers.dynamo_responses import LOCATION_QUERY_RESPONSE, MOCK_EMPTY_RESPONSE
 
 from botocore.exceptions import ClientError
 from utils.lambda_response import ApiGatewayResponse

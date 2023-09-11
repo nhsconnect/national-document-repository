@@ -1,7 +1,5 @@
 import os
 
-from models.nhs_document_reference import NHSDocumentReference
-
 REGION_NAME = "eu-west-2"
 MOCK_BUCKET = "test_s3_bucket"
 MOCK_DYNAMODB = "test_dynamoDB_table"
