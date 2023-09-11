@@ -1,6 +1,5 @@
 import os
 
-from handlers.create_document_reference_handler import create_document_reference_object
 from services.s3_upload_service import S3UploadService
 
 MOCK_PRESIGNED_POST_RESPONSE = {
