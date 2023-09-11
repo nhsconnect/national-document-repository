@@ -11,14 +11,14 @@ logger.setLevel(logging.INFO)
 
 
 class S3UploadService:
-    s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
     s3_object_key = str(uuid.uuid4())
 
     def __init__(self, s3_bucket_name):
         self.s3_bucket_name = s3_bucket_name
 
+    # Generate a presigned S3 POST URL
+    # The response contains the presigned URL and required fields
     def create_document_presigned_url_handler(self, s3_object_key):
-        # Generate a presigned S3 POST URL
         s3_client = boto3.client("s3", region_name="eu-west-2")
 
         try:
@@ -29,13 +29,14 @@ class S3UploadService:
             logger.error(e)
             return None
 
-        # The response contains the presigned URL and required fields
         return response
 
-    def create_document_reference_object(
-            self, s3_object_key, document_request_body
+    # Previously Create Document Reference Object
+    # Creates the necessary data to upload to Dynamo DocumentReferenceMetadata table
+    def create_document_dynamo_reference_object(
+            self, s3_object_key: str, document_request_body
     ):
-        s3_file_location = "s3://" + self.s3_bucket_name + "/" + s3_object_key
+        s3_file_location = f"s3://{self.s3_bucket_name}/{s3_object_key}"
         logger.info(f"Input document reference location: {s3_file_location}")
 
         new_document = NHSDocumentReference(
