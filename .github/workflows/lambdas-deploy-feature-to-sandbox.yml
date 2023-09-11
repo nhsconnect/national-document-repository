@@ -179,6 +179,7 @@ jobs:
   python_deploy_document_manifest_by_nhs_number_lambda:
     runs-on: ubuntu-latest
     environment: test
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
         python-version: ["3.11"]
