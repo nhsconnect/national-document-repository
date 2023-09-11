@@ -29,6 +29,7 @@ jobs:
       create_document_reference_changed: ${{steps.filter.outputs.create_document_reference}}
       search_patient_details_changed: ${{steps.filter.outputs.search_patient_reference}}
       search_document_reference_changed: ${{steps.filter.outputs.search_document_reference}}
+      document_manifest_by_nhs_number_changed: ${{steps.filter.outputs.document_manifest_by_nhs_number_reference}}
 
     steps:
       - name: Checkout
@@ -53,11 +54,8 @@ jobs:
               - 'lambdas/handlers/search_patient_details_handler.py'
             search_document_reference:
               - 'lambdas/handlers/document_reference_search_handler.py'
-      - name: variable_review
-        run: |
-          echo ${{ github.event.pull_request.merged}}
-          echo ${{ github.event_name }}
-          echo ${{ github.event.action }}
+            document_manifest_by_nhs_number_reference:
+              - 'lambdas/handlers/document_manifest_by_nhs_number_handler.py'
 
   python_lambdas_test:
     runs-on: ubuntu-latest
@@ -234,3 +232,50 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_SearchDocumentReferencesLambda
           zip_file: package_lambdas_document_reference_search_handler.zip
+
+  python_deploy_document_manifest_by_nhs_number_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    if: |
+      (github.ref == 'refs/heads/main') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.document_manifest_by_nhs_number_changed == 'true'
+          )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environement
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Document Manifest By NHS Number
+        run: |
+          make lambda_name=document_manifest_by_nhs_number_handler zip
+
+      - name: Upload Lambda Function for DocumentReferenceSearchHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_DocumentManifestByNHSNumberLambda
+          zip_file: package_lambdas_document_manifest_by_nhs_number_handler.zip
