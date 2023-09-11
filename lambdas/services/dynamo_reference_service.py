@@ -19,7 +19,7 @@ class DynamoReferenceService:
     # Creates the necessary data to upload to Dynamo DocumentReferenceMetadata table
     def create_document_dynamo_reference_object(
             self, s3_bucket_name, s3_object_key: str, document_request_body
-    ):
+    ) -> NHSDocumentReference:
         s3_file_location = f"s3://{s3_bucket_name}/{s3_object_key}"
         logger.info(f"Input document reference location: {s3_file_location}")
 

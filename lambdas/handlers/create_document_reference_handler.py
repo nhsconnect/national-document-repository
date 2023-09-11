@@ -16,10 +16,13 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
+
     s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
     dynamo_table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
+
     logger.info(f"S3 bucket in use: {s3_bucket_name}")
     logger.info(f"Dynamo table in use: {dynamo_table}")
+
     body = json.loads(event["body"])
     dynamo_reference_service = DynamoReferenceService(dynamo_table)
     s3_upload_service = S3UploadService(s3_bucket_name)
@@ -33,7 +36,7 @@ def lambda_handler(event, context):
         s3_response = s3_upload_service.create_document_presigned_url_handler(s3_object_key)
     except Exception as e:
         logger.error(e)
-        response = ApiGatewayResponse(400, e, "POST").create_api_gateway_response()
+        response = ApiGatewayResponse(400, "An error occurred when getting ready to upload", "POST").create_api_gateway_response()
         return response
     return ApiGatewayResponse(
         200, json.dumps(s3_response), "POST"
