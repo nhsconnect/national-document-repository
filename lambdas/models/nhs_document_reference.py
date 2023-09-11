@@ -39,3 +39,16 @@ class NHSDocumentReference:
             "VirusScannerResult": self.virus_scanner_result,
         }
         return document_metadata
+
+    def __eq__(self, other):
+        return self.id == other.id and \
+            self.nhs_number == other.nhs_number and \
+            self.content_type == other.content_type and \
+            self.file_name == other.file_name and \
+            self.created == other.created and \
+            self.deleted == other.deleted and \
+            self.uploaded == other.uploaded and \
+            self.virus_scanner_result == other.virus_scan_result and \
+            self.file_location == other.file_location
+
+

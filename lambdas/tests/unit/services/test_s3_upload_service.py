@@ -1,7 +1,6 @@
 import os
 
-import pytest
-
+from handlers.create_document_reference_handler import create_document_reference_object
 from services.s3_upload_service import S3UploadService
 
 MOCK_PRESIGNED_POST_RESPONSE = {
@@ -47,3 +46,4 @@ def test_create_presigned_url(mocker):
 
     assert return_value == MOCK_PRESIGNED_POST_RESPONSE
     mock_generate_presigned_post.assert_called_once()
+
