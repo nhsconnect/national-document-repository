@@ -11,7 +11,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
-    """Do not print the auth token unless absolutely necessary """
     print(f"incoming event: {event}")
     try:
         client = boto3.client('ssm')
