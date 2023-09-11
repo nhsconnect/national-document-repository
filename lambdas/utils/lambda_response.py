@@ -1,8 +1,9 @@
 class ApiGatewayResponse:
-    def __init__(self, status_code, body, methods) -> None:
+    def __init__(self, status_code, body, methods, **headers) -> None:
         self.status_code = status_code
         self.body = body
         self.methods = methods
+        self.headers = headers
 
     def create_api_gateway_response(self):
         return {
@@ -12,6 +13,7 @@ class ApiGatewayResponse:
                 "Content-Type": "application/fhir+json",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": self.methods,
+                ** self.headers
             },
             "body": self.body,
         }
