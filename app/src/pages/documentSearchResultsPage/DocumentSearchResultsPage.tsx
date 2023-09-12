@@ -65,7 +65,7 @@ function DocumentSearchResultsPage() {
 
     return (
         <>
-            <h1>Download electronic health records and attachments</h1>
+            <h1 id="download-page-title">Download electronic health records and attachments</h1>
 
             {(submissionState === SUBMISSION_STATE.FAILED ||
                 downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
@@ -115,7 +115,9 @@ function DocumentSearchResultsPage() {
 
                     {searchResults.length === 0 && (
                         <p>
-                            <strong>There are no documents available for this patient.</strong>
+                            <strong id="no-files-message">
+                                There are no documents available for this patient.
+                            </strong>
                         </p>
                     )}
                 </>

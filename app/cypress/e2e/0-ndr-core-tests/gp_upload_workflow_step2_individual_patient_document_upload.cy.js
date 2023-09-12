@@ -19,8 +19,6 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
     };
 
     const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
-    // const baseUrl = Cypress.env('CYPRESS_BASE_URL');
-    // const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST');
     const serverError = 500;
     const successNoContent = 204;
 
