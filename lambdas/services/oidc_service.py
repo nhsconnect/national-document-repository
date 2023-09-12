@@ -19,7 +19,6 @@ class OidcService:
         self._oidc_token_url = os.environ["OIDC_TOKEN_URL"]
         self._oidc_userinfo_url = os.environ["OIDC_USER_INFO_URL"]
         self._oidc_callback_uri = os.environ["OIDC_CALLBACK_URL"]
-        # auth_endpoint = f"{cis2_base_url}/authorize"
         self.scope = "openid profile nationalrbacaccess associatedorgs"
 
         self.oidc_client = WebApplicationClient(client_id=self._client_id)

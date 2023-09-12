@@ -1,10 +1,9 @@
 import json
 import logging
 
-import boto3
-import botocore
-import jwt
-import time
+
+from services.oidc_service import OidcService
+from utils.exceptions import AuthorisationException
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
@@ -12,41 +11,61 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    # grab auth code from event
-    # get auth code from
-    #
+    if "code" not in event:
+        return ApiGatewayResponse(
+            400, "Please supply an authorisation code", "GET"
+        ).create_api_gateway_response()
 
-    print(f"incoming event: {event}")
     try:
-        client = boto3.client("ssm")
-        logger.info("starting ssm request")
-        ssm_response = client.get_parameter(
-            Name="jwt_token_private_key", WithDecryption=True
-        )
-        logger.info("ending ssm request")
-        cis2_user_info = event["body"]["user"]
-        cis2_user_info["exp"] = time.time() + 60 * 15
-        cis2_user_info["iss"] = "nhs repo"
-        private_key = ssm_response["Parameter"]["Value"]
-        logger.info("starting encoding request")
-        token = jwt.encode(cis2_user_info, private_key, algorithm="RS256")
-        logger.info(f"encoded JWT: {token}")
-    except botocore.exceptions.ClientError as e:
-        logger.error(e)
-        return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
-    except jwt.PyJWTError as e:
-        logger.info(f"error while encoding JWT: {e}")
-        return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
-    except (KeyError, TypeError) as e:
-        logger.error(e)
-        return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
+        auth_code = event["code"]
+        oidc_service = OidcService()
+        logger.info("Fetching access token from OIDC Provider")
 
-    response = {
-        "access_token": token,
-        "token_type": "Bearer",
-        "expires_in": 3600,
-    }
+        access_token = oidc_service.fetch_access_token(auth_code)
+
+        logger.info(
+            "Got access token. Will use the token to fetch user's organisation codes"
+        )
+        org_codes = oidc_service.fetch_user_org_codes(access_token)
+        response = {"Organisations": org_codes}
+
+    except AuthorisationException:
+        return ApiGatewayResponse(
+            401, "Failed to authenticate user with OIDC service", "GET"
+        ).create_api_gateway_response()
 
     return ApiGatewayResponse(
         200, json.dumps(response), "GET"
     ).create_api_gateway_response()
+
+    # COMMENT OUT the logic for JWT signing for the moment
+    # try:
+    #     client = boto3.client("ssm")
+    #     logger.info("starting ssm request")
+    #     ssm_response = client.get_parameter(
+    #         Name="jwt_token_private_key", WithDecryption=True
+    #     )
+    #     logger.info("ending ssm request")
+    #     cis2_user_info = event["body"]["user"]
+    #     cis2_user_info["exp"] = time.time() + 60 * 15
+    #     cis2_user_info["iss"] = "nhs repo"
+    #     private_key = ssm_response["Parameter"]["Value"]
+    #     logger.info("starting encoding request")
+    #     token = jwt.encode(cis2_user_info, private_key, algorithm="RS256")
+    #     logger.info(f"encoded JWT: {token}")
+    # except botocore.exceptions.ClientError as e:
+    #     logger.error(e)
+    #     return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
+    # except jwt.PyJWTError as e:
+    #     logger.info(f"error while encoding JWT: {e}")
+    #     return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
+    # except (KeyError, TypeError) as e:
+    #     logger.error(e)
+    #     return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
+    #
+    # response = {
+    #     "access_token": token,
+    #     "token_type": "Bearer",
+    #     "expires_in": 3600,
+    # }
+    #
