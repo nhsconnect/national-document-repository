@@ -30,7 +30,7 @@ const DocumentSearchResults = (props: Props) => {
                     {searchResults.map((result, index) => (
                         <Table.Row
                             className={'available-files-row'}
-                            id="available-files-row-${index}"
+                            id={'available-files-row-' + index}
                             key={`document-${index}`}
                             data-testid="search-result"
                         >
