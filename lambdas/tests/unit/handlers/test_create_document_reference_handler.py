@@ -35,36 +35,13 @@ MOCK_PRESIGNED_POST_RESPONSE = {
     }
 }
 
-
 @pytest.fixture
-def valid_event():
-    api_gateway_proxy_event = {
-        "body": '{ \
-            "subject": { \
-                "identifier": { \
-                    "value": "1234567890" \
-                } \
-            }, \
-            "content": [ \
-                { \
-                    "attachment": { \
-                        "contentType": "image/jpeg" \
-                    } \
-                } \
-            ], \
-            "description": "This is not a real file" \
-        }'
-    }
-    return api_gateway_proxy_event
-
-
-@pytest.fixture
-def invalid_event():
+def event():
     api_gateway_proxy_event = {"body": '{"test":"blah"}'}
     return api_gateway_proxy_event
 
 
-def test_creates_document_reference_and_returns_presigned_url(invalid_event, context, mocker):
+def test_creates_document_reference_and_returns_presigned_url(event, context, mocker):
     os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = MOCK_DYNAMODB
     os.environ["DOCUMENT_STORE_BUCKET_NAME"] = MOCK_BUCKET
 
@@ -78,12 +55,12 @@ def test_creates_document_reference_and_returns_presigned_url(invalid_event, con
                     200, json.dumps(MOCK_PRESIGNED_POST_RESPONSE), "POST"
                 ).create_api_gateway_response()
 
-                actual = lambda_handler(invalid_event, context)
+                actual = lambda_handler(event, context)
 
                 assert actual == expected
 
 
-def test_returns_500_when_error_connecting_to_aws_resources(invalid_event, context, mocker):
+def test_returns_500_when_error_connecting_to_aws_resources(event, context, mocker):
     os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = MOCK_DYNAMODB
     os.environ["DOCUMENT_STORE_BUCKET_NAME"] = MOCK_BUCKET
 
@@ -99,6 +76,6 @@ def test_returns_500_when_error_connecting_to_aws_resources(invalid_event, conte
                 expected = ApiGatewayResponse(400, "An error occurred when getting ready to upload",
                                               "POST").create_api_gateway_response()
 
-                actual = lambda_handler(invalid_event, context)
+                actual = lambda_handler(event, context)
 
                 assert actual == expected
