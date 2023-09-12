@@ -42,7 +42,8 @@ class OidcService:
                 )
         else:
             logger.error(
-                f"Got error response from OIDC provider. details: {access_token_response!r}"
+                f"Got error response from OIDC provider: {access_token_response.status_code} "
+                f"{access_token_response.content}"
             )
             raise AuthorisationException("Failed to retrieve access token")
 
@@ -59,7 +60,8 @@ class OidcService:
             return userinfo_response.json()
         else:
             logger.error(
-                f"Got error response from OIDC provider. details: {userinfo_response!r}"
+                f"Got error response from OIDC provider: {userinfo_response.status_code} "
+                f"{userinfo_response.content}"
             )
             raise AuthorisationException("Failed to retrieve userinfo")
 

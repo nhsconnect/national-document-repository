@@ -11,13 +11,14 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    if "code" not in event:
+    try:
+        auth_code = event["queryStringParameters"]["code"]
+    except KeyError:
         return ApiGatewayResponse(
             400, "Please supply an authorisation code", "GET"
         ).create_api_gateway_response()
 
     try:
-        auth_code = event["code"]
         oidc_service = OidcService()
         logger.info("Fetching access token from OIDC Provider")
 
