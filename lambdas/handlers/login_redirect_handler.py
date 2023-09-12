@@ -1,10 +1,13 @@
+import logging
 import os
 
+from oauthlib.oauth2 import WebApplicationClient
 import boto3
 
-from lambdas.utils.lambda_response import ApiGatewayResponse
+from utils.lambda_response import ApiGatewayResponse
 
-
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
 
     ssm_parameters_names = ["OIDC_AUTHORISE_URL", "OIDC_CLIENT_ID"]
@@ -13,18 +16,21 @@ def lambda_handler(event, context):
         Names=ssm_parameters_names
     )
     oidc_parameters = {'redirect_uri': os.environ["OIDC_CALLBACK_URL"],
-                       'response_type': 'code',
-                       'scope': ["openid", "profile", "nationalrbacaccess", "associatedorgs"]}
+                       }
     for parameter in ssm_response['Parameters']:
         oidc_parameters[parameter['Name']] = parameter['Value']
-    headers = {"Location" : f"{oidc_parameters['OIDC_AUTHORISE_URL']}?"
-                            f"response_type={oidc_parameters['response_type']}&"
-                            f"scope={oidc_parameters['scope']}&"
-                            f"client_id={oidc_parameters['OIDC_CLIENT_ID']}&"
-                            f"state=&"
-                            f"redirect_uri={oidc_parameters['redirect_uri']}"}
+    client = WebApplicationClient(
+            client_id=oidc_parameters['OIDC_CLIENT_ID'],
+        )
+    location_header, headers, body = client.prepare_authorization_request(
+    authorization_url=oidc_parameters['OIDC_AUTHORISE_URL'],
+    redirect_url=os.environ["OIDC_CALLBACK_URL"],
+    scope=["openid", "profile", "nationalrbacaccess", "associatedorgs"],
+    )
+    logger.info(location_header)
+
+    headers = {"Location" : location_header}
 
     return ApiGatewayResponse(
-        302, "", "GET", headers=headers
-    ).create_api_gateway_response()
-
+        302, "", "GET"
+    ).create_api_gateway_response(headers=headers)
