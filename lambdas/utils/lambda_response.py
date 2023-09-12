@@ -12,7 +12,7 @@ class ApiGatewayResponse:
                 "Content-Type": "application/fhir+json",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": self.methods,
-                **headers['headers']
+                **headers["headers"],
             },
             "body": self.body,
         }
