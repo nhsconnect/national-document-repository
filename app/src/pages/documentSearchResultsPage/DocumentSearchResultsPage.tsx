@@ -127,6 +127,7 @@ function DocumentSearchResultsPage() {
                 submissionState === SUBMISSION_STATE.SUCCEEDED) && (
                 <p>
                     <Link
+                        id="start-again-link"
                         to=""
                         onClick={(e) => {
                             e.preventDefault();

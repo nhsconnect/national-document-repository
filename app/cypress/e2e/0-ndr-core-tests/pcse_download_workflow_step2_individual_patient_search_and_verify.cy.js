@@ -184,4 +184,21 @@ describe('PCSE Download Workflow: Access and download found files', () => {
 
         cy.get('.progress-bar').should('exist');
     });
+
+    it('Start again button takes us to the home page', () => {
+        const searchDocumentReferencesResponse = [];
+
+        cy.intercept({ url: '/SearchDocumentReferences*', middleware: true }, (req) => {
+            req.reply({
+                statusCode: 204,
+                body: searchDocumentReferencesResponse,
+            });
+        }).as('search');
+
+        navigateToDownload(roles.PCSE);
+
+        cy.get('#start-again-link').should('exist');
+        cy.get('#start-again-link').click();
+        cy.url().should('eq', baseUrl);
+    });
 });
