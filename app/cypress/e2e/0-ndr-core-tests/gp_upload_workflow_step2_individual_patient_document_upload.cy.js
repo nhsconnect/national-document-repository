@@ -1,4 +1,8 @@
-describe('Uploads docs and tests it looks OK', () => {
+describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => {
+    // env vars
+    const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+    const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
+
     const roles = Object.freeze({
         GP: 'gp',
         PCSE: 'pcse',
@@ -15,8 +19,6 @@ describe('Uploads docs and tests it looks OK', () => {
     };
 
     const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
-    const baseUrl = 'http://localhost:3000/';
-    const smokeTest = false;
     // const baseUrl = Cypress.env('CYPRESS_BASE_URL');
     // const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST');
     const serverError = 500;
@@ -81,8 +83,6 @@ describe('Uploads docs and tests it looks OK', () => {
         cy.url().should('include', 'upload');
         cy.url().should('eq', baseUrl + 'upload/submit');
     });
-
-    // patient selection not implemented yet
 
     it('(Smoke test) Single file - On Choose files button click, file selection is visible', () => {
         cy.get('#selected-documents-table').should('not.exist');
