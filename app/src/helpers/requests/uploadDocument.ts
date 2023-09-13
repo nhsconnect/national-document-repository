@@ -9,17 +9,11 @@ type Args = {
     setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
     document: UploadDocument;
     nhsNumber: string;
-    docType: DOCUMENT_TYPE;
     baseUrl: string;
+    docType: DOCUMENT_TYPE;
 };
 
-const uploadDocument = async ({
-    nhsNumber,
-    docType,
-    setDocumentState,
-    document,
-    baseUrl,
-}: Args) => {
+const uploadDocument = async ({ nhsNumber, setDocumentState, document, baseUrl }: Args) => {
     const rawDoc = document.file;
     const requestBody = {
         resourceType: 'DocumentReference',
@@ -52,16 +46,18 @@ const uploadDocument = async ({
     const gatewayUrl = baseUrl + '/DocumentReference';
 
     try {
-        const params = new URLSearchParams({
-            documentType: docType.toString(),
-        }).toString();
-        const url = gatewayUrl + `?${params}`;
-        const { data: gatewayResponse } = await axios.post(url, {
-            headers: {
-                'Content-Type': 'application/json',
+        const { data: gatewayResponse } = await axios.post(
+            gatewayUrl,
+            JSON.stringify(requestBody),
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                params: {
+                    documentType: document.docType.toString(),
+                },
             },
-            body: JSON.stringify(requestBody),
-        });
+        );
         const formData = new FormData();
         Object.keys(gatewayResponse.fields).forEach((key) => {
             formData.append(key, gatewayResponse.fields[key]);
