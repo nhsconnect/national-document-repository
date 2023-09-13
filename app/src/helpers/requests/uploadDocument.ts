@@ -1,14 +1,25 @@
-import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
+import {
+    DOCUMENT_TYPE,
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../types/pages/UploadDocumentsPage/types';
 import axios, { AxiosError } from 'axios';
 
 type Args = {
     setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
     document: UploadDocument;
     nhsNumber: string;
+    docType: DOCUMENT_TYPE;
     baseUrl: string;
 };
 
-const uploadDocument = async ({ setDocumentState, nhsNumber, document, baseUrl }: Args) => {
+const uploadDocument = async ({
+    nhsNumber,
+    docType,
+    setDocumentState,
+    document,
+    baseUrl,
+}: Args) => {
     const rawDoc = document.file;
     const requestBody = {
         resourceType: 'DocumentReference',
@@ -41,13 +52,15 @@ const uploadDocument = async ({ setDocumentState, nhsNumber, document, baseUrl }
     const gatewayUrl = baseUrl + '/DocumentReference';
 
     try {
-        const gatewayResponse = await fetch(gatewayUrl, {
-            method: 'POST',
+        const { data: gatewayResponse } = await axios.post(gatewayUrl, {
             headers: {
                 'Content-Type': 'application/json',
             },
+            params: {
+                documentType: docType,
+            },
             body: JSON.stringify(requestBody),
-        }).then((res) => res.json());
+        });
         const formData = new FormData();
         Object.keys(gatewayResponse.fields).forEach((key) => {
             formData.append(key, gatewayResponse.fields[key]);

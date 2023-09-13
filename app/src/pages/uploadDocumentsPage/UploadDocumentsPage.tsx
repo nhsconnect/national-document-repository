@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
+    DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     UPLOAD_STAGE,
     UploadDocument,
@@ -46,8 +47,9 @@ function UploadDocumentsPage(props: Props) {
             await Promise.all(
                 documents.map((document) =>
                     uploadDocument({
-                        setDocumentState,
                         nhsNumber: patientDetails.nhsNumber,
+                        docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                        setDocumentState,
                         document,
                         baseUrl,
                     }),

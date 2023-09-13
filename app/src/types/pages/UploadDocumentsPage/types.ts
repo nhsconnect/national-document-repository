@@ -9,6 +9,12 @@ export enum UPLOAD_STAGE {
     Complete = 2,
 }
 
+export enum DOCUMENT_TYPE {
+    LLOYD_GEORGE = 'LG',
+    ARF = 'ARF',
+    Complete = 2,
+}
+
 export enum DOCUMENT_UPLOAD_STATE {
     SELECTED = 'SELECTED',
     UPLOADING = 'UPLOADING',
