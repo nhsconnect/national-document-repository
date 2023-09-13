@@ -3,11 +3,11 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from tests.unit.conftest import PATCH_DYNAMO_TABLES_ENV_VAR
+from tests.unit.handlers.conftest import PATCH_DYNAMO_TABLES_ENV_VAR
 from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 from handlers.create_document_manifest_by_nhs_number_handler import lambda_handler, find_document_locations
 from services.dynamo_query_service import DynamoQueryService
-from tests.unit.helpers.dynamo_responses import LOCATION_QUERY_RESPONSE, MOCK_EMPTY_RESPONSE
+from tests.unit.helpers.data.dynamo_responses import LOCATION_QUERY_RESPONSE, MOCK_EMPTY_RESPONSE
 
 from botocore.exceptions import ClientError
 from utils.lambda_response import ApiGatewayResponse
@@ -21,11 +21,11 @@ def mock_dynamo_service():
 
 
 def test_lambda_handler_returns_error_response_when_no_documents_returned_from_dynamo_response(mock_dynamo_service,
-                                                                                               event_valid_id, context):
+                                                                                               valid_id_event, context):
     expected = ApiGatewayResponse(204, "No documents found for given NHS number", "GET").create_api_gateway_response()
     with patch.object(DynamoQueryService, "__call__", new=mock_dynamo_service) as call_mock:
         call_mock.return_value = MOCK_EMPTY_RESPONSE
-        actual = lambda_handler(event_valid_id, context)
+        actual = lambda_handler(valid_id_event, context)
         call_mock.assert_called_with("NhsNumber", "9000000009",
                                      [DynamoDocumentMetadataTableFields.LOCATION])
     assert expected == actual
@@ -33,11 +33,11 @@ def test_lambda_handler_returns_error_response_when_no_documents_returned_from_d
 
 def test_lambda_handler_does_not_return_error_response_when_documents_are_returned_from_dynamo_response(
         mock_dynamo_service,
-        event_valid_id, context):
+        valid_id_event, context):
     expected = ApiGatewayResponse(200, "OK", "GET").create_api_gateway_response()
     with patch.object(DynamoQueryService, "__call__", new=mock_dynamo_service) as call_mock:
         call_mock.return_value = LOCATION_QUERY_RESPONSE
-        actual = lambda_handler(event_valid_id, context)
+        actual = lambda_handler(valid_id_event, context)
         call_mock.assert_called_with("NhsNumber", "9000000009",
                                      [DynamoDocumentMetadataTableFields.LOCATION])
     assert expected == actual
@@ -72,19 +72,19 @@ def test_exception_thrown_by_dynamo():
             assert True
 
 
-def test_lambda_handler_returns_400_when_id_not_valid(invalid_nhs_id_event, context):
+def test_lambda_handler_returns_400_when_id_not_valid(invalid_id_event, context):
     with patch.dict(os.environ, PATCH_DYNAMO_TABLES_ENV_VAR):
         expected = ApiGatewayResponse(
             400, "Invalid NHS number", "GET"
         ).create_api_gateway_response()
-        actual = lambda_handler(invalid_nhs_id_event, context)
+        actual = lambda_handler(invalid_id_event, context)
         assert expected == actual
 
 
-def test_lambda_handler_returns_400_when_id_not_supplied(empty_nhs_id_event, context):
+def test_lambda_handler_returns_400_when_id_not_supplied(missing_id_event, context):
     with patch.dict(os.environ, PATCH_DYNAMO_TABLES_ENV_VAR):
         expected = ApiGatewayResponse(
             400, "Please supply an NHS number", "GET"
         ).create_api_gateway_response()
-        actual = lambda_handler(empty_nhs_id_event, context)
+        actual = lambda_handler(missing_id_event, context)
         assert expected == actual
