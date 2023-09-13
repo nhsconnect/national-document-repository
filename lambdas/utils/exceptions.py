@@ -12,3 +12,11 @@ class PdsErrorException(Exception):
 
 class AuthorisationException(Exception):
     pass
+
+
+class OrganisationNotFoundException(Exception):
+    pass
+
+
+class OdsErrorException(Exception):
+    pass
