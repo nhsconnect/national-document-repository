@@ -1,4 +1,3 @@
-import os
 from unittest.mock import patch
 
 import pytest
@@ -6,7 +5,7 @@ import pytest
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
 
-PATCH_ENV_VAR = {
+MOCK_PARAMETERS = {
     "OIDC_CLIENT_ID": "mock_client_id",
     "OIDC_CLIENT_SECRET": "mock_client_secret",
     "OIDC_ISSUER_URL": "https://localhost:3000/mock_issuer_url",
@@ -18,7 +17,8 @@ PATCH_ENV_VAR = {
 
 @pytest.fixture
 def oidc_service():
-    with patch.dict(os.environ, PATCH_ENV_VAR):
+    with patch.object(OidcService, "fetch_oidc_parameters") as mock_fetch_parameters:
+        mock_fetch_parameters.return_value(MOCK_PARAMETERS)
         oidc_service = OidcService()
         yield oidc_service
 
@@ -30,6 +30,9 @@ class MockResponse:
 
     def json(self):
         return self.json_data
+
+    def content(self):
+        return repr(self.json_data)
 
 
 def test_oidc_service_fetch_the_access_token(mocker, oidc_service):
