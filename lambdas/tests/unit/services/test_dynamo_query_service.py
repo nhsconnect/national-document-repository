@@ -106,6 +106,13 @@ def test_error_raised_when_fields_requested_is_none(
         with pytest.raises(InvalidResourceIdException):
             query_service.query_service("test_index", "NhsNumber", "0123456789")
 
+def test_post_item_to_dynamo(mock_dynamo_table, mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        db_service = DynamoDBService("test_table")
+        db_service.post_item_service({"NhsNumber": "0123456789"})
+        mock_dynamo_table.put_item.assert_called_once()
+
 
 def test_DynamoDbException_raised_when_results_are_invalid(
     mock_dynamo_table, mock_boto3_dynamo
@@ -117,7 +124,7 @@ def test_DynamoDbException_raised_when_results_are_invalid(
             search_key_obj = Key("NhsNumber").eq("1234567890")
 
             with patch.object(Key, "eq", return_value=search_key_obj):
-                query_service = DynamoQueryService("test_table", "NhsNumberIndex")
+                query_service = DynamoDBService("test_table", "NhsNumberIndex")
                 query_service(
                     "NhsNumber",
                     "0123456789",
