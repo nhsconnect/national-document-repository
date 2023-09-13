@@ -1,7 +1,7 @@
 import json
 import logging
 
-
+from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
 from utils.lambda_response import ApiGatewayResponse
@@ -20,14 +20,20 @@ def lambda_handler(event, context):
 
     try:
         oidc_service = OidcService()
+
         logger.info("Fetching access token from OIDC Provider")
+        access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
 
-        access_token = oidc_service.fetch_access_token(auth_code)
-
-        logger.info(
-            "Got access token. Will use the token to fetch user's organisation codes"
-        )
+        logger.info("Use the access token to fetch user's organisation codes")
         org_codes = oidc_service.fetch_user_org_codes(access_token)
+
+        permitted_orgs_and_roles = OdsApiService.fetch_permitted_organisation_and_role_data(org_codes)
+        if len(permitted_orgs_and_roles) == 0:
+            logger.info("User has no valid organisations to log in")
+            raise AuthorisationException('No valid organisations for user')
+
+        # create session after all verifications done
+
         response = {"Organisations": org_codes}
 
     except AuthorisationException:
