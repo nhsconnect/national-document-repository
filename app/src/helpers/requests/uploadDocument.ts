@@ -52,12 +52,13 @@ const uploadDocument = async ({
     const gatewayUrl = baseUrl + '/DocumentReference';
 
     try {
-        const { data: gatewayResponse } = await axios.post(gatewayUrl, {
+        const params = new URLSearchParams({
+            documentType: docType.toString(),
+        }).toString();
+        const url = gatewayUrl + `?${params}`;
+        const { data: gatewayResponse } = await axios.post(url, {
             headers: {
                 'Content-Type': 'application/json',
-            },
-            params: {
-                documentType: docType,
             },
             body: JSON.stringify(requestBody),
         });
