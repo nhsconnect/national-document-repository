@@ -2,7 +2,7 @@ import pytest
 from models.pds_models import PatientDetails
 from requests.models import Response
 from services.pds_api_service import PdsApiService
-from tests.unit.pds_data.utils import load_pds_data
+from tests.unit.test_data.utils import load_pds_data
 from utils.exceptions import (InvalidResourceIdException,
                               PatientNotFoundException, PdsErrorException)
 

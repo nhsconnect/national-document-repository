@@ -1,6 +1,6 @@
 from handlers.search_patient_details_handler import lambda_handler
 from requests.models import Response
-from tests.unit.pds_data.utils import load_pds_data
+from tests.unit.test_data.utils import load_pds_data
 
 
 def test_lambda_handler_valid_id_returns_200(event_valid_id, context, mocker):
