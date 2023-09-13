@@ -16,7 +16,10 @@ const DocumentSearchResults = (props: Props) => {
 
     return (
         <>
-            <Table caption=<h2 style={{ fontSize: 32 }}>List of documents available</h2>>
+            <Table
+                id="available-files-table-title"
+                caption=<h2 style={{ fontSize: 32 }}>List of documents available</h2>
+            >
                 <Table.Head>
                     <Table.Row>
                         <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
@@ -25,9 +28,22 @@ const DocumentSearchResults = (props: Props) => {
                 </Table.Head>
                 <Table.Body>
                     {searchResults.map((result, index) => (
-                        <Table.Row key={`document-${index}`} data-testid="search-result">
-                            <Table.Cell data-testid="filename">{result.fileName}</Table.Cell>
-                            <Table.Cell data-testid="created">
+                        <Table.Row
+                            className={'available-files-row'}
+                            id={'available-files-row-' + index}
+                            key={`document-${index}`}
+                            data-testid="search-result"
+                        >
+                            <Table.Cell
+                                id={'available-files-row-' + index + '-filename'}
+                                data-testid="filename"
+                            >
+                                {result.fileName}
+                            </Table.Cell>
+                            <Table.Cell
+                                id={'available-files-row-' + index + '-created-date'}
+                                data-testid="created"
+                            >
                                 {getFormattedDatetime(new Date(result.created))}
                             </Table.Cell>
                         </Table.Row>
