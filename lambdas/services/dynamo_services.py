@@ -42,12 +42,26 @@ class DynamoDBService:
         except ClientError as e:
             logger.error("Unable to get query")
             logger.error(e)
-            raise e
-        if results is None or "Items" not in results:
-            logger.error(f"Unusable results in DynamoDB: {results!r}")
-            raise DynamoDbException("Unrecognised response from DynamoDB")
+            raise e    if results is None or "Items" not in results:
+                logger.error(f"Unusable results in DynamoDB: {results!r}")
+                raise DynamoDbException("Unrecognised response from DynamoDB")
 
-        return results
+            return results
+        except ClientError as e:
+            logger.error("Unable to get query")
+            logger.error(e)
+            raise e
+
+    def post_item_service(self, item):
+        try:
+            self.table.put_item(
+                Item=item
+            )
+            logger.info(f"Saving item to DynamoDB: {self.TABLE_NAME}")
+        except ClientError as e:
+            logger.error("Unable to get write to table")
+            logger.error(e)
+            raise e
 
     def post_item_service(self, item):
         try:
