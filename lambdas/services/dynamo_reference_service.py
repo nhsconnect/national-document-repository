@@ -18,7 +18,7 @@ class DynamoReferenceService:
     # Previously Create Document Reference Object
     # Creates the necessary data to upload to Dynamo DocumentReferenceMetadata table
     def create_document_dynamo_reference_object(
-            self, s3_bucket_name, s3_object_key: str, document_request_body
+        self, s3_bucket_name, s3_object_key: str, document_request_body
     ) -> NHSDocumentReference:
         s3_file_location = f"s3://{s3_bucket_name}/{s3_object_key}"
         logger.info(f"Input document reference location: {s3_file_location}")
@@ -35,7 +35,9 @@ class DynamoReferenceService:
     def save_document_reference_in_dynamo_db(self, new_document: NHSDocumentReference):
         try:
             dynamodb = boto3.resource("dynamodb")
-            logger.info(f"Saving DocumentReference to DynamoDB: {self.dynamo_table_name}")
+            logger.info(
+                f"Saving DocumentReference to DynamoDB: {self.dynamo_table_name}"
+            )
             table = dynamodb.Table(self.dynamo_table_name)
             table.put_item(Item=new_document.to_dict())
         except ClientError as e:

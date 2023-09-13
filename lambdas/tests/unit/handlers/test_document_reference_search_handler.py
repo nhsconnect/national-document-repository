@@ -3,10 +3,9 @@ import os
 from unittest.mock import patch
 
 from botocore.exceptions import ClientError
-
-from tests.unit.handlers.conftest import PATCH_DYNAMO_TABLES_ENV_VAR, missing_id_event
 from handlers.document_reference_search_handler import lambda_handler
 from services.dynamo_query_service import DynamoQueryService
+from tests.unit.handlers.conftest import PATCH_DYNAMO_TABLES_ENV_VAR
 from tests.unit.helpers.data.dynamo_responses import (EXPECTED_RESPONSE,
                                                       MOCK_EMPTY_RESPONSE,
                                                       MOCK_RESPONSE)

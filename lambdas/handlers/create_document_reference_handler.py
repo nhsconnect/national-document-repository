@@ -29,14 +29,21 @@ def lambda_handler(event, context):
 
     try:
         s3_object_key = str(uuid.uuid4())
-        document_object = dynamo_reference_service.create_document_dynamo_reference_object(s3_bucket_name,
-                                                                                           s3_object_key, body)
+        document_object = (
+            dynamo_reference_service.create_document_dynamo_reference_object(
+                s3_bucket_name, s3_object_key, body
+            )
+        )
         dynamo_reference_service.save_document_reference_in_dynamo_db(document_object)
 
-        s3_response = s3_upload_service.create_document_presigned_url_handler(s3_object_key)
+        s3_response = s3_upload_service.create_document_presigned_url_handler(
+            s3_object_key
+        )
     except Exception as e:
         logger.error(e)
-        response = ApiGatewayResponse(400, "An error occurred when getting ready to upload", "POST").create_api_gateway_response()
+        response = ApiGatewayResponse(
+            400, "An error occurred when getting ready to upload", "POST"
+        ).create_api_gateway_response()
         return response
     return ApiGatewayResponse(
         200, json.dumps(s3_response), "POST"

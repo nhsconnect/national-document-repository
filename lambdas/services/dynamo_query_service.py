@@ -2,7 +2,6 @@ import logging
 
 import boto3
 from boto3.dynamodb.conditions import Key
-from botocore.exceptions import ClientError
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 
 logger = logging.getLogger()
@@ -17,29 +16,28 @@ class DynamoQueryService:
     def __call__(
         self, search_key, search_condition: str, requested_fields: list = None
     ):
-        
-            dynamodb = boto3.resource("dynamodb")
-            table = dynamodb.Table(self.TABLE_NAME)
+        dynamodb = boto3.resource("dynamodb")
+        table = dynamodb.Table(self.TABLE_NAME)
 
-            if requested_fields is None or len(requested_fields) == 0:
-                raise InvalidResourceIdException
+        if requested_fields is None or len(requested_fields) == 0:
+            raise InvalidResourceIdException
 
-            projection_expression, expression_attribute_names = self.create_expressions(
-                requested_fields
-            )
+        projection_expression, expression_attribute_names = self.create_expressions(
+            requested_fields
+        )
 
-            results = table.query(
-                IndexName=self.INDEX_NAME,
-                KeyConditionExpression=Key(search_key).eq(search_condition),
-                ExpressionAttributeNames=expression_attribute_names,
-                ProjectionExpression=projection_expression,
-            )
+        results = table.query(
+            IndexName=self.INDEX_NAME,
+            KeyConditionExpression=Key(search_key).eq(search_condition),
+            ExpressionAttributeNames=expression_attribute_names,
+            ProjectionExpression=projection_expression,
+        )
 
-            if results is None or "Items" not in results:
-                logger.error(f"Unusable results in DynamoDB: {results!r}")
-                raise DynamoDbException("Unrecognised response from DynamoDB")
-            
-            return results    
+        if results is None or "Items" not in results:
+            logger.error(f"Unusable results in DynamoDB: {results!r}")
+            raise DynamoDbException("Unrecognised response from DynamoDB")
+
+        return results
 
     # Make the expressions
     # ExpressionAttributeNames = {"#create": "Created", "#file": "FileName", "#doc": "DocumentUploaded"}

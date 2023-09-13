@@ -1,7 +1,7 @@
 import logging
 import uuid
-import boto3
 
+import boto3
 from botocore.exceptions import ClientError
 
 logger = logging.getLogger()
@@ -21,7 +21,11 @@ class S3UploadService:
 
         try:
             response = s3_client.generate_presigned_post(
-                self.s3_bucket_name, s3_object_key, Fields=None, Conditions=None, ExpiresIn=1800
+                self.s3_bucket_name,
+                s3_object_key,
+                Fields=None,
+                Conditions=None,
+                ExpiresIn=1800,
             )
         except ClientError as e:
             logger.error(e)
