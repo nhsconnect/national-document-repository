@@ -28,12 +28,12 @@ MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE ={
     }
 }
 
-MOCK_MULTI_STRING_PARAMETERs_RESPONSE ={
+MOCK_MULTI_STRING_PARAMETERS_RESPONSE ={
         'Parameters': [
             {
-                'Name': 'string_1',
+                'Name': 'OIDC_AUTHORISE_URL',
                 'Type': 'String',
-                'Value': 'string_value_1',
+                'Value': 'https://www.string_value_1.com',
                 'Version': 123,
                 'Selector': 'string',
                 'SourceResult': 'string',
@@ -42,9 +42,9 @@ MOCK_MULTI_STRING_PARAMETERs_RESPONSE ={
                 'DataType': 'string'
             },
             {
-                'Name': 'string_2',
+                'Name': 'OIDC_CLIENT_ID',
                 'Type': 'String',
-                'Value': 'string_value_2',
+                'Value': '1122121212',
                 'Version': 123,
                 'Selector': 'string',
                 'SourceResult': 'string',
@@ -58,7 +58,7 @@ MOCK_MULTI_STRING_PARAMETERs_RESPONSE ={
         ]
     }
 
-MOCK_MULTI_MIXED_PARAMETERs_RESPONSE ={
+MOCK_MULTI_MIXED_PARAMETERS_RESPONSE ={
     'Parameters': [
         {
             'Name': 'string_1',
@@ -73,7 +73,7 @@ MOCK_MULTI_MIXED_PARAMETERs_RESPONSE ={
         },
         {
             'Name': 'string_2',
-            'Type': 'String',
+            'Type': 'SecureString',
             'Value': 'string_value_2',
             'Version': 123,
             'Selector': 'string',

@@ -6,7 +6,6 @@ import boto3
 from botocore.exceptions import ClientError
 from oauthlib.oauth2 import WebApplicationClient, InsecureTransportError
 from utils.lambda_response import ApiGatewayResponse
-
 from services.dynamo_services import DynamoDBService
 
 logger = logging.getLogger()
@@ -31,7 +30,7 @@ def lambda_handler(event, context):
             scope=["openid", "profile", "nationalrbacaccess", "associatedorgs"],
         )
 
-        save_state_in_dynamo_db(oidc_client.state)
+        # save_state_in_dynamo_db(oidc_client.state)
 
         location_header = {"Location": url}
     except ClientError as e:
