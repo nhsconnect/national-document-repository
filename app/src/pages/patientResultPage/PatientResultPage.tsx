@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
+import BackButton from '../../components/generic/backButton/BackButton';
 
 type Props = {
     role: USER_ROLE;
@@ -36,6 +37,7 @@ function PatientResultPage({ role }: Props) {
     };
     return (
         <div style={{ maxWidth: 500 }}>
+            <BackButton />
             <h1>Verify patient details</h1>
             {patientDetails && (patientDetails.superseded || patientDetails.restricted) && (
                 <WarningCallout>

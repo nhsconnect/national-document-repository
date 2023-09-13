@@ -11,7 +11,11 @@ const BackButton = () => {
         navigate(-1);
     };
 
-    return <BackLink onClick={onBack}>Back</BackLink>;
+    return (
+        <BackLink className="clickable" onClick={onBack}>
+            Back
+        </BackLink>
+    );
 };
 
 export default BackButton;
