@@ -1,11 +1,14 @@
 import logging
 import os
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import boto3
+import jwt
 import requests
 from oauthlib.oauth2 import WebApplicationClient
+from requests import Response
 
+from models.oidc_models import IdTokenClaimSet, AccessToken
 from utils.exceptions import AuthorisationException
 
 logger = logging.getLogger()
@@ -24,11 +27,38 @@ class OidcService:
         self._oidc_token_url = oidc_parameters["OIDC_TOKEN_URL"]
         self._oidc_userinfo_url = oidc_parameters["OIDC_USER_INFO_URL"]
         self._oidc_callback_uri = oidc_parameters["OIDC_CALLBACK_URL"]
+        self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
         self.scope = "openid profile nationalrbacaccess associatedorgs"
 
         self.oidc_client = WebApplicationClient(client_id=self._client_id)
 
-    def fetch_access_token(self, auth_code: str) -> str:
+    def validate_and_decode_token(self, signed_token: str) -> Dict:
+        try:
+            jwks_client = jwt.PyJWKClient(
+                self._oidc_jwks_url, cache_jwk_set=True, lifespan=360
+            )
+            cis2_signing_key = jwks_client.get_signing_key_from_jwt(signed_token)
+
+            return jwt.decode(
+                signed_token,
+                cis2_signing_key.key,
+                algorithms=["RS256"],
+                issuer=self._oidc_issuer_url,
+                audience=self._client_id,
+                options={
+                    "verify_signature": True,
+                    "verify_exp": True,
+                    "verify_nbf": True,
+                    "verify_iat": True,
+                    "verify_aud": True,
+                    "verify_iss": True,
+                },
+            )
+        except jwt.exceptions.PyJWTError as err:
+            logger.error(err)
+            raise AuthorisationException("The given JWT is invalid or expired.")
+
+    def fetch_tokens(self, auth_code: str) -> Tuple[AccessToken, IdTokenClaimSet]:
         url, headers, body = self.oidc_client.prepare_token_request(
             token_url=self._oidc_token_url,
             code=auth_code,
@@ -38,25 +68,37 @@ class OidcService:
 
         access_token_response = requests.post(url=url, data=body, headers=headers)
         if access_token_response.status_code == 200:
-            try:
-                access_token = access_token_response.json()["access_token"]
-                return access_token
-            except KeyError:
-                raise AuthorisationException(
-                    "Access Token not found in provider's response"
-                )
+            return self.parse_fetch_tokens_response(access_token_response)
         else:
             logger.error(
                 f"Got error response from OIDC provider: {access_token_response.status_code} "
                 f"{access_token_response.content}"
             )
-            raise AuthorisationException("Failed to retrieve access token")
+            raise AuthorisationException(
+                "Failed to retrieve access token from ID Provider"
+            )
+
+    def parse_fetch_tokens_response(self, fetch_token_response: Response) -> Tuple[AccessToken, IdTokenClaimSet]:
+        try:
+            response_content = fetch_token_response.json()
+            access_token: AccessToken = response_content["access_token"]
+            raw_id_token = response_content["id_token"]
+
+            id_token_claims_set: IdTokenClaimSet = IdTokenClaimSet.model_validate(
+                self.validate_and_decode_token(raw_id_token)
+            )
+
+            return access_token, id_token_claims_set
+        except KeyError:
+            raise AuthorisationException(
+                "Access Token not found in ID Provider's response"
+            )
 
     def fetch_user_org_codes(self, access_token: str) -> List[str]:
         userinfo = self.fetch_userinfo(access_token)
         return self.extract_org_codes(userinfo)
 
-    def fetch_userinfo(self, access_token: str) -> Dict:
+    def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         userinfo_response = requests.get(
             self._oidc_userinfo_url,
             headers={"Authorization": f"Bearer {access_token}"},
@@ -81,6 +123,7 @@ class OidcService:
             "OIDC_ISSUER_URL",
             "OIDC_TOKEN_URL",
             "OIDC_USER_INFO_URL",
+            "OIDC_JWKS_URL",
         ]
 
         ssm_client = boto3.client("ssm", region_name="eu-west-2")
