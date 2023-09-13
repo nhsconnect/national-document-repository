@@ -125,7 +125,7 @@ def test_DynamoDbException_raised_when_results_are_invalid(
 
             with patch.object(Key, "eq", return_value=search_key_obj):
                 query_service = DynamoDBService("test_table", "NhsNumberIndex")
-                query_service(
+                query_service.query_service(
                     "NhsNumber",
                     "0123456789",
                     [
