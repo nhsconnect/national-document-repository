@@ -7,6 +7,8 @@ from botocore.exceptions import ClientError
 from oauthlib.oauth2 import WebApplicationClient, InsecureTransportError
 from utils.lambda_response import ApiGatewayResponse
 
+from services.dynamo_services import DynamoDBService
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -33,7 +35,7 @@ def lambda_handler(event, context):
 
         location_header = {"Location": url}
     except ClientError as e:
-        logger.error(f"Error getting ssm parameter: {e}")
+        logger.error(f"Error getting using aws client: {e}")
         return ApiGatewayResponse(500, e, "GET").create_api_gateway_response()
     except InsecureTransportError as e:
         logger.error(f"Error preparing auth request: {e}")
@@ -42,17 +44,9 @@ def lambda_handler(event, context):
         headers=location_header
     )
 
-
 def save_state_in_dynamo_db(state):
-    try:
-        dynamodb = boto3.resource("dynamodb")
-        dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
-        logger.info(f"Saving state to DynamoDB: {dynamodb_name}")
-        table = dynamodb.Table(dynamodb_name)
-        ttl = round(time.time()) + 60 * 10
-        table.put_item(
-            Item={"State": state, "TimeToExist": ttl}
-        )
-    except ClientError as e:
-        logger.error("Unable to connect to DB")
-        logger.error(e)
+    dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
+    dynamodb_service = DynamoDBService(dynamodb_name)
+    ttl = round(time.time()) + 60 * 10
+    item = {"State": state, "TimeToExist": ttl}
+    dynamodb_service.post_item_service(item=item)

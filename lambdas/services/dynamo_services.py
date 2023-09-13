@@ -9,17 +9,21 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-class DynamoQueryService:
-    def __init__(self, table_name, index_name):
-        self.TABLE_NAME = table_name
-        self.INDEX_NAME = index_name
-
-    def __call__(
-        self, search_key, search_condition: str, requested_fields: list = None
-    ):
-        
+class DynamoDBService:
+    def __init__(self, table_name):
+        try:
+            self.TABLE_NAME = table_name
             dynamodb = boto3.resource("dynamodb")
-            table = dynamodb.Table(self.TABLE_NAME)
+            self.table = dynamodb.Table(self.TABLE_NAME)
+        except ClientError as e:
+            logger.error("Unable to connect to DB")
+            logger.error(e)
+            raise e
+
+    def query_service(
+        self, index_name, search_key, search_condition: str, requested_fields: list = None
+    ):
+        try:
 
             if requested_fields is None or len(requested_fields) == 0:
                 raise InvalidResourceIdException
@@ -28,18 +32,34 @@ class DynamoQueryService:
                 requested_fields
             )
 
-            results = table.query(
-                IndexName=self.INDEX_NAME,
+            results = self.table.query(
+                IndexName=index_name,
                 KeyConditionExpression=Key(search_key).eq(search_condition),
                 ExpressionAttributeNames=expression_attribute_names,
                 ProjectionExpression=projection_expression,
             )
 
-            if results is None or "Items" not in results:
-                logger.error(f"Unusable results in DynamoDB: {results!r}")
-                raise DynamoDbException("Unrecognised response from DynamoDB")
-            
-            return results    
+        except ClientError as e:
+            logger.error("Unable to get query")
+            logger.error(e)
+            raise e
+        if results is None or "Items" not in results:
+            logger.error(f"Unusable results in DynamoDB: {results!r}")
+            raise DynamoDbException("Unrecognised response from DynamoDB")
+
+        return results
+
+    def post_item_service(self, item):
+        try:
+            self.table.put_item(
+                Item=item
+            )
+            logger.info(f"Saving item to DynamoDB: {self.TABLE_NAME}")
+        except ClientError as e:
+            logger.error("Unable to get write to table")
+            logger.error(e)
+            raise e
+
 
     # Make the expressions
     # ExpressionAttributeNames = {"#create": "Created", "#file": "FileName", "#doc": "DocumentUploaded"}
