@@ -49,15 +49,14 @@ def lambda_handler(event, context):
     except KeyError as e:
         logger.error(e)
 
-    principalId = ""
-    tmp = event["methodArn"].split(":")
-    apiGatewayArnTmp = tmp[5].split("/")
-    awsAccountId = tmp[4]
+    principal_id = ""
+    _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
+    api_id, stage, http_verb, resource_name = api_gateway_arn.split("/")
 
-    policy = AuthPolicy(principalId, awsAccountId)
-    policy.restApiId = apiGatewayArnTmp[0]
-    policy.region = tmp[3]
-    policy.stage = apiGatewayArnTmp[1]
+    policy = AuthPolicy(principal_id, aws_account_id)
+    policy.restApiId = api_id
+    policy.region = region
+    policy.stage = stage
 
     if user == "GP":
         policy.allowAllMethods()
@@ -68,9 +67,9 @@ def lambda_handler(event, context):
     else:
         policy.denyAllMethods()
 
-    authResponse = policy.build()
+    auth_response = policy.build()
 
-    return authResponse
+    return auth_response
 
 
 class HttpVerb:
