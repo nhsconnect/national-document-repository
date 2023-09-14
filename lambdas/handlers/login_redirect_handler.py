@@ -29,8 +29,7 @@ def lambda_handler(event, context):
             redirect_url=os.environ["OIDC_CALLBACK_URL"],
             scope=["openid", "profile", "nationalrbacaccess", "associatedorgs"],
         )
-
-        # save_state_in_dynamo_db(oidc_client.state)
+        save_state_in_dynamo_db(oidc_client.state)
 
         location_header = {"Location": url}
     except ClientError as e:
