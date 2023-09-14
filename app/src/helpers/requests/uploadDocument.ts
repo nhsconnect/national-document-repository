@@ -54,7 +54,7 @@ const uploadDocument = async ({ nhsNumber, setDocumentState, document, baseUrl }
                     'Content-Type': 'application/json',
                 },
                 params: {
-                    documentType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                    documentType: document.docType,
                 },
             },
         );
