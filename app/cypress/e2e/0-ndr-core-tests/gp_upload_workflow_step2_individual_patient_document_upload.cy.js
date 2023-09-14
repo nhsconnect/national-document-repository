@@ -7,6 +7,10 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
         GP: 'gp',
         PCSE: 'pcse',
     });
+    const formTypes = Object.freeze({
+        LG: 'LG',
+        ARF: 'ARF',
+    });
     const testPatient = '9000000009';
     const patient = {
         birthDate: '1970-01-01',
@@ -25,6 +29,8 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
     beforeEach(() => {
         cy.visit(baseUrl);
     });
+
+    const selectForm = (formType) => cy.get(`#${formType}-documents-input`);
 
     const navigateToUploadPage = () => {
         cy.intercept('GET', '/SearchPatient*', {
@@ -84,7 +90,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
 
     it('(Smoke test) Single file - On Choose files button click, file selection is visible', () => {
         cy.get('#selected-documents-table').should('not.exist');
-        cy.get('input[type=file]').selectFile(uploadedFilePathNames[0]);
+        selectForm(formTypes.ARF).selectFile(uploadedFilePathNames[0]);
         cy.get('#selected-documents-table').should('be.visible');
         cy.get('#selected-documents-table tbody tr').should('have.length', 1);
         cy.get('#selected-documents-table tbody tr')
@@ -96,7 +102,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
 
     it('(Smoke test) Single file - On Upload button click, renders Upload Summary for successful upload', () => {
         if (smokeTest === false) {
-            cy.intercept('POST', '**/DocumentReference', {
+            cy.intercept('POST', '**/DocumentReference**', {
                 statusCode: 200,
                 body: {
                     url: 'http://' + bucketUrlIdentifer,
@@ -116,7 +122,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
             });
         }
 
-        cy.get('input[type=file]').selectFile(uploadedFilePathNames[0]);
+        selectForm(formTypes.ARF).selectFile(uploadedFilePathNames[0]);
 
         clickUploadButton();
 
@@ -140,7 +146,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
             statusCode: 500,
         });
 
-        cy.get('input[type=file]').selectFile(uploadedFilePathNames[0]);
+        selectForm(formTypes.ARF).selectFile(uploadedFilePathNames[0]);
 
         clickUploadButton();
 
@@ -164,7 +170,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
             statusCode: 404,
         });
 
-        cy.get('input[type=file]').selectFile(uploadedFilePathNames[1]);
+        selectForm(formTypes.ARF).selectFile(uploadedFilePathNames[1]);
 
         clickUploadButton();
 
@@ -190,7 +196,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
             statusCode: 500,
         });
 
-        cy.get('input[type=file]').selectFile(uploadedImagesPathNames[0]);
+        selectForm(formTypes.ARF).selectFile(uploadedImagesPathNames[0]);
 
         clickUploadButton();
 
@@ -210,7 +216,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
 
     it('(Smoke test) Multiple files - On Choose files button click, file selection is visible', () => {
         cy.get('#selected-documents-table').should('not.exist');
-        cy.get('input[type=file]').selectFile(uploadedFilePathNames);
+        selectForm(formTypes.ARF).selectFile(uploadedFilePathNames);
         cy.get('#selected-documents-table').should('be.visible');
         cy.get('#selected-documents-table tbody tr').should('have.length', 2);
         cy.get('#selected-documents-table tbody tr')
@@ -225,7 +231,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
 
     it('(Smoke test) Multiple files - On Upload button click, renders Upload Summary for successful upload', () => {
         if (smokeTest === false) {
-            cy.intercept('POST', '**/DocumentReference', {
+            cy.intercept('POST', '**/DocumentReference**', {
                 statusCode: 200,
                 body: {
                     url: 'http://' + bucketUrlIdentifer,
@@ -245,7 +251,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
             });
         }
 
-        cy.get('input[type=file]').selectFile(uploadedFilePathNames);
+        selectForm(formTypes.ARF).selectFile(uploadedFilePathNames);
 
         clickUploadButton();
 
@@ -290,7 +296,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
             });
         });
 
-        cy.get('input[type=file]').selectFile(uploadedImagesPathNames);
+        selectForm(formTypes.ARF).selectFile(uploadedImagesPathNames);
 
         clickUploadButton();
 
@@ -303,7 +309,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
             statusCode: 500,
         });
 
-        cy.get('input[type=file]').selectFile(uploadedImagesPathNames);
+        selectForm(formTypes.ARF).selectFile(uploadedImagesPathNames);
 
         clickUploadButton();
 
@@ -327,7 +333,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
             statusCode: 404,
         });
 
-        cy.get('input[type=file]').selectFile(uploadedImagesPathNames);
+        selectForm(formTypes.ARF).selectFile(uploadedImagesPathNames);
 
         clickUploadButton();
 
@@ -372,7 +378,7 @@ describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => 
             });
         });
 
-        cy.get('input[type=file]').selectFile(uploadedImagesPathNames);
+        selectForm(formTypes.ARF).selectFile(uploadedImagesPathNames);
 
         clickUploadButton();
 
