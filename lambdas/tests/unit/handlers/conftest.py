@@ -23,11 +23,42 @@ def invalid_id_event():
     }
     return api_gateway_proxy_event
 
+@pytest.fixture
+def invalid_id_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"patientId": "900000000900"},
+    }
+    return api_gateway_proxy_event
+
 
 @pytest.fixture
 def missing_id_event():
     api_gateway_proxy_event = {
         "queryStringParameters": {"invalid": ""},
+    }
+    return api_gateway_proxy_event
+
+@pytest.fixture
+def arf_document_type_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"documentType": "arf"},
+        "body": '{"test":"blah"}',
+    }
+    return api_gateway_proxy_event
+
+@pytest.fixture
+def lg_document_type_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"documentType": "lg"},
+        "body": '{"test":"blah"}'
+    }
+    return api_gateway_proxy_event
+
+@pytest.fixture
+def invalid_document_type_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"documentType": "arflg"},
+        "body": '{"test":"blah"}'
     }
     return api_gateway_proxy_event
 

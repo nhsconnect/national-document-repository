@@ -44,9 +44,6 @@ def lambda_handler(event, context):
     logger.info(f"Dynamo table in use: {dynamo_table}")
 
     body = json.loads(event["body"])
-    logging.info(event["body"])
-    logging.info(body)
-    
     dynamo_reference_service = DynamoReferenceService()
     s3_upload_service = S3UploadService()
 
