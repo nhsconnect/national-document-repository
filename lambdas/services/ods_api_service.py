@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, List, Dict, Tuple, TypeAlias
+from typing import Optional, List, Dict, NamedTuple
 
 import requests
 
@@ -9,10 +9,11 @@ from utils.exceptions import OrganisationNotFoundException, OdsErrorException
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-OdsCode: TypeAlias = str
-OrganisationName: TypeAlias = str
-PermittedRoleName: TypeAlias = str
-Organisation: TypeAlias = Tuple[OdsCode, OrganisationName, PermittedRoleName]
+
+class Organisation(NamedTuple):
+    org_name: str
+    ods_code: str
+    role: str
 
 
 class OdsApiService:
@@ -35,14 +36,18 @@ class OdsApiService:
     def parse_ods_response(cls, response_json) -> Optional[Organisation]:
         try:
             org_name = response_json["Organisation"]["Name"]
-            org_ods_code = response_json["Organisation"]["OrgId"]["extension"]
+            ods_code = response_json["Organisation"]["OrgId"]["extension"]
 
             json_roles: List[Dict] = response_json["Organisation"]["Roles"]["Role"]
 
             for json_role in json_roles:
                 if json_role["id"] in PermittedRole.list():
                     # early return with the first permitted role found. convert role code to role name as well.
-                    return org_name, org_ods_code, PermittedRole(json_role["id"]).name
+                    return Organisation(
+                        org_name=org_name,
+                        ods_code=ods_code,
+                        role=PermittedRole(json_role["id"]).name,
+                    )
 
             logger.info("No permitted role was found for given ods code")
             return None
@@ -53,11 +58,13 @@ class OdsApiService:
 
     @classmethod
     def fetch_organisation_with_permitted_role(
-        cls, ods_code_list: list[OdsCode]
-    ) -> List[Organisation]:
-        ods_response_list = [
-            cls.fetch_organisation_data(ods_code) for ods_code in ods_code_list
-        ]
+        cls, ods_code_list: list[str]
+    ) -> List[Dict]:
+        valid_orgs = []
+        for ods_code in ods_code_list:
+            response = cls.fetch_organisation_data(ods_code)
+            organisation_info = cls.parse_ods_response(response)
+            if organisation_info is not None:
+                valid_orgs.append(organisation_info._asdict())
 
-        org_info = [cls.parse_ods_response(res) for res in ods_response_list]
-        return [org for org in org_info if org]
+        return valid_orgs

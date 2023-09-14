@@ -29,16 +29,20 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
 
     try:
-        # TODO: refactor this to use the dynamo db service from other branch.
-        # Right now the implementation doesn't allow us to query without field name defined
-        state_table_name = os.environ['AUTH_STATE_TABLE_NAME']
+        # TODO: after merging with other branch, refactor dynamo db service to allow query with only P-Key
+        # Right now the implementation in other branch doesn't allow us to query without other field names defined
+        state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
         temp_dynamo_resource = boto3.resource("dynamodb")
         state_table = temp_dynamo_resource.Table(state_table_name)
-        query_response = state_table.query(KeyConditionExpression=Key("State").eq(state))
+        query_response = state_table.query(
+            KeyConditionExpression=Key("State").eq(state)
+        )
 
-        if 'Count' not in query_response or query_response['Count'] == 0:
+        if "Count" not in query_response or query_response["Count"] == 0:
             return ApiGatewayResponse(
-                400, f"Mismatching state values. Cannot find state {state} in record", "GET"
+                400,
+                f"Mismatching state values. Cannot find state {state} in record",
+                "GET",
             ).create_api_gateway_response()
 
         oidc_service = OidcService()
@@ -49,19 +53,21 @@ def lambda_handler(event, context):
         logger.info("Use the access token to fetch user's organisation codes")
         org_codes = oidc_service.fetch_user_org_codes(access_token)
 
-        permitted_orgs_and_roles = OdsApiService.fetch_organisation_with_permitted_role(org_codes)
+        permitted_orgs_and_roles = OdsApiService.fetch_organisation_with_permitted_role(
+            org_codes
+        )
         if len(permitted_orgs_and_roles) == 0:
             logger.info("User has no valid organisations to log in")
-            raise AuthorisationException('No valid organisations for user')
+            raise AuthorisationException("No valid organisations for user")
 
-        session_table_name = os.environ['AUTH_SESSION_TABLE_NAME']
+        session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
         session_table_dynamo_service = DynamoDBService(table_name=session_table_name)
         session_id = str(uuid.uuid4())
         session_record = {
             "NDRSessionId": session_id,
             "sid": id_token_claim_set.sid,
             "Subject": id_token_claim_set.sub,
-            "TimeToExist": id_token_claim_set.exp
+            "TimeToExist": id_token_claim_set.exp,
         }
         session_table_dynamo_service.post_item_service(item=session_record)
 
@@ -75,16 +81,22 @@ def lambda_handler(event, context):
         logger.info("ending ssm request")
         private_key = ssm_response["Parameter"]["Value"]
 
-        ndr_token_content = {}
-        ndr_token_content["exp"] = min(time.time() + 60 * 30, id_token_claim_set.exp)
-        ndr_token_content["iss"] = "nhs repo"
-        ndr_token_content["organisations"] = permitted_orgs_and_roles
-        ndr_token_content["ndr_session_id"] = session_id
+        ndr_token_content = {
+            "exp": min(time.time() + 60 * 30, id_token_claim_set.exp),
+            "iss": "nhs repo",
+            "organisations": permitted_orgs_and_roles,
+            "ndr_session_id": session_id,
+        }
 
-        authorisation_token = jwt.encode(ndr_token_content, private_key, algorithm="RS256")
+        authorisation_token = jwt.encode(
+            ndr_token_content, private_key, algorithm="RS256"
+        )
         logger.info(f"encoded JWT: {authorisation_token}")
 
-        response = {"organisations": permitted_orgs_and_roles, "authorisation_token": authorisation_token}
+        response = {
+            "organisations": permitted_orgs_and_roles,
+            "authorisation_token": authorisation_token,
+        }
 
     except AuthorisationException:
         return ApiGatewayResponse(
