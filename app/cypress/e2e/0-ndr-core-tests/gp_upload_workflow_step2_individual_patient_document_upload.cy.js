@@ -117,17 +117,13 @@ describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', 
         cy.get('#upload-summary-confirmation').should('be.visible');
         cy.get('#upload-summary-header').should('be.visible');
         cy.get('#successful-uploads-dropdown').should('be.visible');
+        cy.get('#successful-uploads-dropdown').click();
+
         cy.get('#successful-uploads tbody tr').should('have.length', 2);
+        cy.get('#successful-uploads tbody tr').eq(0).should('contain', 'test_patient_record.pdf');
         cy.get('#successful-uploads tbody tr')
-            .first()
-            .get('td')
-            .first()
-            .should('contain', 'test_patient_record.pdf');
-        cy.get('#successful-uploads tbody tr')
-            .first()
-            .get('td')
-            .first()
-            .should('contain', 'test_patient_record.pdf');
+            .eq(1)
+            .should('contain', 'test_patient_record_two.pdf');
         cy.get('#close-page-warning').should('be.visible');
 
         testStartAgainButton();
@@ -184,19 +180,15 @@ Object.values(formTypes).forEach((type) => {
 
             cy.get('#failed-document-uploads-summary-title').should('be.visible');
             cy.get('#failed-uploads').should('be.visible');
-            cy.get('#failed-uploads tbody tr').should('have.length', 2);
+            cy.get('#failed-uploads tbody tr').should('have.length', 1);
             cy.get('#failed-uploads tbody tr')
                 .first()
-                .get('td')
-                .first()
-                .should('contain', 'test_patient_record.pdf');
-            cy.get('#failed-uploads tbody tr')
-                .second()
                 .get('td')
                 .first()
                 .should('contain', 'test_patient_record_two.pdf');
             cy.get('#failed-uploads').should('contain', '1 of 1 files failed to upload');
             cy.get('#close-page-warning').should('be.visible');
+
             testStartAgainButton();
         });
 
