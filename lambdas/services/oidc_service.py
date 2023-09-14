@@ -15,11 +15,20 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+
 class OidcService:
+    VERIFY_ALL = {
+        "verify_signature": True,
+        "verify_exp": True,
+        "verify_nbf": True,
+        "verify_iat": True,
+        "verify_aud": True,
+        "verify_iss": True,
+    }
     def __init__(self):
         oidc_parameters = self.fetch_oidc_parameters()
 
-        logger.info(f"Initialising OIDC service with parameter: {oidc_parameters}")
+        # logger.info(f"Initialising OIDC service with parameter: {oidc_parameters}")
 
         self._client_id = oidc_parameters["OIDC_CLIENT_ID"]
         self._client_secret = oidc_parameters["OIDC_CLIENT_SECRET"]
@@ -30,33 +39,9 @@ class OidcService:
         self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
         self.scope = "openid profile nationalrbacaccess associatedorgs"
 
+
         self.oidc_client = WebApplicationClient(client_id=self._client_id)
 
-    def validate_and_decode_token(self, signed_token: str) -> Dict:
-        try:
-            jwks_client = jwt.PyJWKClient(
-                self._oidc_jwks_url, cache_jwk_set=True, lifespan=360
-            )
-            cis2_signing_key = jwks_client.get_signing_key_from_jwt(signed_token)
-
-            return jwt.decode(
-                signed_token,
-                cis2_signing_key.key,
-                algorithms=["RS256"],
-                issuer=self._oidc_issuer_url,
-                audience=self._client_id,
-                options={
-                    "verify_signature": True,
-                    "verify_exp": True,
-                    "verify_nbf": True,
-                    "verify_iat": True,
-                    "verify_aud": True,
-                    "verify_iss": True,
-                },
-            )
-        except jwt.exceptions.PyJWTError as err:
-            logger.error(err)
-            raise AuthorisationException("The given JWT is invalid or expired.")
 
     def fetch_tokens(self, auth_code: str) -> Tuple[AccessToken, IdTokenClaimSet]:
         url, headers, body = self.oidc_client.prepare_token_request(
@@ -93,6 +78,25 @@ class OidcService:
             raise AuthorisationException(
                 "Access Token not found in ID Provider's response"
             )
+
+    def validate_and_decode_token(self, signed_token: str) -> Dict:
+        try:
+            jwks_client = jwt.PyJWKClient(
+                self._oidc_jwks_url, cache_jwk_set=True, lifespan=360
+            )
+            cis2_signing_key = jwks_client.get_signing_key_from_jwt(signed_token)
+
+            return jwt.decode(
+                jwt=signed_token,
+                key=cis2_signing_key.key,
+                algorithms=["RS256"],
+                issuer=self._oidc_issuer_url,
+                audience=self._client_id,
+                options=self.VERIFY_ALL,
+            )
+        except jwt.exceptions.PyJWTError as err:
+            logger.error(err)
+            raise AuthorisationException("The given JWT is invalid or expired.")
 
     def fetch_user_org_codes(self, access_token: str) -> List[str]:
         userinfo = self.fetch_userinfo(access_token)

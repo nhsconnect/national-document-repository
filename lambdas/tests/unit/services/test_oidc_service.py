@@ -1,7 +1,10 @@
-from unittest.mock import patch
+from unittest.mock import patch, ANY
 
+import jwt
 import pytest
+import pytest_mock
 
+from models.oidc_models import IdTokenClaimSet
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
 
@@ -34,29 +37,50 @@ class MockResponse:
     def content(self):
         return repr(self.json_data)
 
-def skip_test_oidc_service_fetch_the_access_token(mocker, oidc_service):
-    # FIXME: this test will fail now as we added jwks signature validation. need to mock that.
-    auth_code = "fake_auth_code"
-    expected = "mock_access_token"
-    mock_response = MockResponse(
+
+def test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
+    mock_access_token = "mock_access_token"
+    mock_id_token = "mock_id_token"
+    mock_cis2_public_key = "mock_cis2_public_key"
+    mock_cis2_response = MockResponse(
         status_code=200,
         json_data={
-            "access_token": expected,
+            "access_token": mock_access_token,
             "scope": "openid",
-            "id_token": "fake_id_token",
+            "id_token": mock_id_token,
             "token_type": "Bearer",
             "expires_in": 3599,
         },
     )
+    mock_decoded_claim_set = {
+        "sid": "fake_cis2_session_id",
+        "sub": "fake_cis2_login_id",
+        "exp": 1234567890
+    }
+    mock_cis2_signing_key = mocker.Mock()
+    mock_cis2_signing_key.key = mock_cis2_public_key
 
-    mocker.patch("requests.post", return_value=mock_response)
+    mocker.patch.object(jwt.PyJWKClient, "get_signing_key_from_jwt", return_value=mock_cis2_signing_key)
+    mocked_jwt_decode = mocker.patch("jwt.decode", return_value=mock_decoded_claim_set)
+    mocker.patch("requests.post", return_value=mock_cis2_response)
 
-    actual = oidc_service.fetch_tokens(auth_code)
+    expected = (mock_access_token,  IdTokenClaimSet(**mock_decoded_claim_set))
+
+    actual = oidc_service.fetch_tokens("fake_auth_code")
 
     assert actual == expected
 
+    mocked_jwt_decode.assert_called_with(
+        jwt=mock_id_token,
+        key=mock_cis2_public_key,
+        algorithms=["RS256"],
+        audience=MOCK_PARAMETERS["OIDC_CLIENT_ID"],
+        issuer=MOCK_PARAMETERS["OIDC_ISSUER_URL"],
+        options=OidcService.VERIFY_ALL
+    )
 
-def test_oidc_service_fetch_the_access_token_raises_AuthorisationException_for_invalid_auth_code(
+
+def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_auth_code(
     mocker, oidc_service
 ):
     mocker.patch(

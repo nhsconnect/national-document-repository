@@ -51,7 +51,7 @@ class OdsApiService:
             return None
 
     @classmethod
-    def fetch_permitted_organisation_and_role_data(
+    def fetch_organisation_with_permitted_role(
         cls, ods_code_list: list[OdsCode]
     ) -> List[Organisation]:
         ods_response_list = [
