@@ -26,6 +26,8 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
     let arfInputRef = useRef<HTMLInputElement | null>(null);
     let lgInputRef = useRef<HTMLInputElement | null>(null);
 
+    const hasFileInput = [...arfDocuments, ...lgDocuments].length;
+
     const FIVEGB = 5 * Math.pow(1024, 3);
     const { handleSubmit, control, formState } = useForm();
     const formController = useController({
@@ -33,8 +35,8 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
         control,
         rules: {
             validate: {
-                isFile: (value) => {
-                    return (value && value.length > 0) || 'Please select a file';
+                isFile: () => {
+                    return !!hasFileInput || 'Please select a file';
                 },
                 isLessThan5GB: (value) => {
                     for (let i = 0; i < value.length; i++) {
