@@ -10,23 +10,31 @@ import { FieldValues, UseControllerReturn } from 'react-hook-form';
 
 type Props = {
     documents: Array<UploadDocument>;
-    hasDuplicateFiles: boolean;
     formController: UseControllerReturn<FieldValues, string>;
     inputRef: React.MutableRefObject<HTMLInputElement | null>;
     onDocumentRemove: (index: number, docType: DOCUMENT_TYPE) => void;
     onDocumentInput: (e: FileInputEvent, docType: DOCUMENT_TYPE) => void;
     formType: DOCUMENT_TYPE;
+    initial?: boolean;
 };
 
 const DocumentInputForm = ({
     documents,
-    hasDuplicateFiles,
     onDocumentRemove,
     onDocumentInput,
     formController,
     inputRef,
     formType,
+    initial = false,
 }: Props) => {
+    const hasDuplicateFiles = documents.some((doc: UploadDocument) => {
+        return documents.some(
+            (compare: UploadDocument) =>
+                doc.file.name === compare.file.name &&
+                doc.file.size === compare.file.size &&
+                doc.id !== compare.id,
+        );
+    });
     return (
         <>
             <Input
@@ -53,18 +61,20 @@ const DocumentInputForm = ({
                             }
                         </li>
                         <li>{'You can select multiple files to upload at once.'}</li>
-                        <li>
-                            In the event documents cannot be uploaded, they must be printed and sent
-                            via{' '}
-                            <a
-                                href="https://secure.pcse.england.nhs.uk/"
-                                target="_blank"
-                                rel="noreferrer"
-                            >
-                                Primary Care Support England
-                            </a>
-                            .
-                        </li>
+                        {initial && (
+                            <li>
+                                In the event documents cannot be uploaded, they must be printed and
+                                sent via{' '}
+                                <a
+                                    href="https://secure.pcse.england.nhs.uk/"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    Primary Care Support England
+                                </a>
+                                .
+                            </li>
+                        )}
                     </ul>
                 }
             />

@@ -54,15 +54,6 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
     const lgController = useController(formConfig('lg-documents'));
     const arfController = useController(formConfig('arf-documents'));
 
-    const hasDuplicateFiles =
-        mergedDocuments &&
-        mergedDocuments.some((doc: UploadDocument) => {
-            return mergedDocuments.some(
-                (compare: UploadDocument) =>
-                    doc.file.name === compare.file.name && doc.id !== compare.id,
-            );
-        });
-
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {
         const fileArray = Array.from(e.target.files ?? new FileList());
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
@@ -120,9 +111,9 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                         Upload documents
                     </Fieldset.Legend>
                     <PatientSummary patientDetails={patientDetails} />
-                    <Fieldset.Legend headingLevel="h2">Electronic health records</Fieldset.Legend>
+                    <h2>Electronic health records</h2>
                     <DocumentInputForm
-                        hasDuplicateFiles={hasDuplicateFiles}
+                        initial
                         documents={arfDocuments}
                         onDocumentRemove={onRemove}
                         onDocumentInput={onInput}
@@ -130,9 +121,10 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                         inputRef={arfInputRef}
                         formType={DOCUMENT_TYPE.ARF}
                     />
-                    <Fieldset.Legend headingLevel="h2">Lloyd George records</Fieldset.Legend>
+                    <br />
+                    <br />
+                    <h2>Lloyd George records</h2>
                     <DocumentInputForm
-                        hasDuplicateFiles={hasDuplicateFiles}
                         documents={lgDocuments}
                         onDocumentRemove={onRemove}
                         onDocumentInput={onInput}

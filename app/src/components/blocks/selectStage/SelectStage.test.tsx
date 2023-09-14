@@ -1,5 +1,5 @@
 /* eslint-disable testing-library/no-unnecessary-act */
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import SelectStage from './SelectStage';
 import { buildPatientDetails, buildTextFile } from '../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
@@ -109,14 +109,12 @@ describe('<UploadDocumentsPage />', () => {
             renderSelectStage(setDocumentMock);
 
             act(() => {
-                userEvent.upload(screen.getByLabelText('Select file(s)'), [
-                    documentOne,
-                    documentOne,
-                ]);
+                userEvent.upload(screen.getByTestId('ARF-input'), [documentOne, documentOne]);
             });
 
-            expect(await screen.findByText(duplicateFileWarning)).toBeInTheDocument();
-
+            await waitFor(() => {
+                expect(screen.getByText(duplicateFileWarning)).toBeInTheDocument();
+            });
             act(() => {
                 userEvent.click(
                     screen.getAllByRole('button', {
@@ -131,7 +129,7 @@ describe('<UploadDocumentsPage />', () => {
         it('allows the user to add the same file again if they remove it', async () => {
             renderSelectStage(setDocumentMock);
 
-            const selectFilesLabel = screen.getByLabelText('Select file(s)');
+            const selectFilesLabel = screen.getByTestId('ARF-input');
 
             act(() => {
                 userEvent.upload(selectFilesLabel, documentOne);
