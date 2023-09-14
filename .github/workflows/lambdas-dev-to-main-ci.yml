@@ -273,7 +273,7 @@ jobs:
         run: |
           make lambda_name=document_manifest_by_nhs_number_handler zip
 
-      - name: Upload Lambda Function for DocumentReferenceSearchHandler
+      - name: Upload Lambda Function for _DocumentManifestByNHSNumberLambda
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
