@@ -40,7 +40,7 @@ def test_parse_ods_response_extract_organisation_with_permitted_gp_role(
     test_response = mock_ods_responses["with_valid_gp_role"]
 
     actual = OdsApiService.parse_ods_response(test_response)
-    expect = ("PORTWAY LIFESTYLE CENTRE", "A9A5A", PermittedRole.GP)
+    expect = ("PORTWAY LIFESTYLE CENTRE", "A9A5A", PermittedRole.GP.name)
 
     assert actual == expect
 
@@ -51,7 +51,7 @@ def test_parse_ods_response_extract_organisation_with_permitted_PCSE_role(
     test_response = mock_ods_responses["with_valid_pcse_role"]
 
     actual = OdsApiService.parse_ods_response(test_response)
-    expect = ("Primary Care Support England", "B9A5A", PermittedRole.PCSE)
+    expect = ("Primary Care Support England", "B9A5A", PermittedRole.PCSE.name)
 
     assert actual == expect
 
@@ -62,7 +62,7 @@ def test_parse_ods_response_return_the_first_valid_role_if_more_than_one_exists(
     test_response = mock_ods_responses["with_multiple_valid_roles"]
 
     actual = OdsApiService.parse_ods_response(test_response)
-    expect = ("PORTWAY LIFESTYLE CENTRE", "A9A5A", PermittedRole.GP)
+    expect = ("PORTWAY LIFESTYLE CENTRE", "A9A5A", PermittedRole.GP.name)
 
     assert actual == expect
 

@@ -11,7 +11,8 @@ logger.setLevel(logging.INFO)
 
 OdsCode: TypeAlias = str
 OrganisationName: TypeAlias = str
-Organisation: TypeAlias = Tuple[OdsCode, OrganisationName, PermittedRole]
+PermittedRoleName: TypeAlias = str
+Organisation: TypeAlias = Tuple[OdsCode, OrganisationName, PermittedRoleName]
 
 
 class OdsApiService:
@@ -40,8 +41,8 @@ class OdsApiService:
 
             for json_role in json_roles:
                 if json_role["id"] in PermittedRole.list():
-                    # early return with the first permitted role found
-                    return org_name, org_ods_code, PermittedRole(json_role["id"])
+                    # early return with the first permitted role found. convert role code to role name as well.
+                    return org_name, org_ods_code, PermittedRole(json_role["id"]).name
 
             logger.info("No permitted role was found for given ods code")
             return None
@@ -58,8 +59,5 @@ class OdsApiService:
             cls.fetch_organisation_data(ods_code) for ods_code in ods_code_list
         ]
 
-        return [
-            valid_org := cls.parse_ods_response(res)
-            for res in ods_response_list
-            if valid_org
-        ]
+        org_info = [cls.parse_ods_response(res) for res in ods_response_list]
+        return [org for org in org_info if org]

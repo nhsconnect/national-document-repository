@@ -164,7 +164,8 @@ def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_inva
     mock_response = MockResponse(
         status_code=401,
         json_data={
-            "error_description": "The access token provided is expired, revoked, malformed, or invalid for other reasons.",
+            "error_description":
+                "The access token provided is expired, revoked, malformed, or invalid for other reasons.",
             "error": "invalid_token",
         },
     )
