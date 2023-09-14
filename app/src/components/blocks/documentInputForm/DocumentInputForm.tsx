@@ -15,7 +15,7 @@ type Props = {
     onDocumentRemove: (index: number, docType: DOCUMENT_TYPE) => void;
     onDocumentInput: (e: FileInputEvent, docType: DOCUMENT_TYPE) => void;
     formType: DOCUMENT_TYPE;
-    initial?: boolean;
+    showHelp?: boolean;
 };
 
 const DocumentInputForm = ({
@@ -25,7 +25,7 @@ const DocumentInputForm = ({
     formController,
     inputRef,
     formType,
-    initial = false,
+    showHelp = false,
 }: Props) => {
     const hasDuplicateFiles = documents.some((doc: UploadDocument) => {
         return documents.some(
@@ -61,7 +61,7 @@ const DocumentInputForm = ({
                             }
                         </li>
                         <li>{'You can select multiple files to upload at once.'}</li>
-                        {initial && (
+                        {showHelp && (
                             <li>
                                 In the event documents cannot be uploaded, they must be printed and
                                 sent via{' '}

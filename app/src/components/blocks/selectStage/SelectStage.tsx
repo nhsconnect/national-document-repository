@@ -113,7 +113,7 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                     <PatientSummary patientDetails={patientDetails} />
                     <h2>Electronic health records</h2>
                     <DocumentInputForm
-                        initial
+                        showHelp
                         documents={arfDocuments}
                         onDocumentRemove={onRemove}
                         onDocumentInput={onInput}
