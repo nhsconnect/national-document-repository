@@ -28,17 +28,18 @@ describe('<UploadDocumentsPage />', () => {
 
         const mockPatientDetails: PatientDetails = buildPatientDetails();
 
-        it('renders the page', () => {
+        it('renders the page', async () => {
             renderSelectStage(setDocumentMock);
 
             expect(screen.getByRole('heading', { name: 'Upload documents' })).toBeInTheDocument();
             expect(screen.getByText(mockPatientDetails.nhsNumber)).toBeInTheDocument();
-            expect(screen.getByLabelText('Select file(s)')).toBeInTheDocument();
+            expect(await screen.findAllByText('Select file(s)')).toHaveLength(2);
+
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
 
             act(() => {
-                userEvent.upload(screen.getByLabelText('Select file(s)'), [
+                userEvent.upload(screen.getByTestId('ARF-input'), [
                     documentOne,
                     documentTwo,
                     documentThree,
@@ -55,7 +56,7 @@ describe('<UploadDocumentsPage />', () => {
             renderSelectStage(setDocumentMock);
 
             act(() => {
-                userEvent.upload(screen.getByLabelText('Select file(s)'), [
+                userEvent.upload(screen.getByTestId('ARF-input'), [
                     documentOne,
                     documentTwo,
                     documentThree,
@@ -83,7 +84,7 @@ describe('<UploadDocumentsPage />', () => {
             const documentBig = buildTextFile('four', 6 * Math.pow(1024, 3));
 
             act(() => {
-                userEvent.upload(screen.getByLabelText('Select file(s)'), [
+                userEvent.upload(screen.getByTestId('ARF-input'), [
                     documentOne,
                     documentTwo,
                     documentThree,

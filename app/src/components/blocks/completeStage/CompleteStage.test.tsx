@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
+    DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
     UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
@@ -19,18 +20,21 @@ describe('<CompleteStage />', () => {
                 progress: 0,
                 state: documentUploadStates.FAILED,
                 id: '1',
+                docType: DOCUMENT_TYPE.ARF,
             };
             const documentTwo: UploadDocument = {
                 file: buildTextFile('two', 200),
                 progress: 0,
                 state: documentUploadStates.SUCCEEDED,
                 id: '2',
+                docType: DOCUMENT_TYPE.ARF,
             };
             const documentThree: UploadDocument = {
                 file: buildTextFile('three', 100),
                 progress: 0,
                 state: documentUploadStates.SUCCEEDED,
                 id: '3',
+                docType: DOCUMENT_TYPE.ARF,
             };
 
             // @ts-ignore

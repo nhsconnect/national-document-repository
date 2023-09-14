@@ -1,4 +1,4 @@
-import type { Dispatch, SetStateAction } from 'react';
+import type { Dispatch, FormEvent, SetStateAction } from 'react';
 
 export type SetUploadStage = Dispatch<SetStateAction<UPLOAD_STAGE>>;
 export type SetUploadDocuments = Dispatch<SetStateAction<Array<UploadDocument>>>;
@@ -27,6 +27,7 @@ export type UploadDocument = {
     file: File;
     progress: number;
     id: string;
+    docType: DOCUMENT_TYPE;
 };
 
 export type SearchResult = {
@@ -36,3 +37,7 @@ export type SearchResult = {
     indexed: Date;
     virusScanResult: string;
 };
+
+export interface FileInputEvent extends FormEvent<HTMLInputElement> {
+    target: HTMLInputElement & EventTarget;
+}
