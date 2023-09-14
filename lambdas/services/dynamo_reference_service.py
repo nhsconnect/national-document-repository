@@ -20,12 +20,6 @@ class DynamoReferenceService:
         s3_file_location = f"s3://{s3_bucket_name}/{s3_object_key}"
         logger.info(f"Input document reference location: {s3_file_location}")
 
-        logger.info("request body:")
-        logger.info(document_request_body)
-        logger.info(document_request_body[["subject"]])
-        logger.info(document_request_body[["content"]])
-        logger.info(document_request_body[["description"]])
-
         new_document = NHSDocumentReference(
             file_location=s3_file_location,
             reference_id=s3_object_key,
