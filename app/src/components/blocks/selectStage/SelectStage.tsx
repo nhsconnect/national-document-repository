@@ -26,44 +26,44 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
     let arfInputRef = useRef<HTMLInputElement | null>(null);
     let lgInputRef = useRef<HTMLInputElement | null>(null);
 
-    const hasFileInput = [...arfDocuments, ...lgDocuments].length;
+    const mergedDocuments = [...arfDocuments, ...lgDocuments];
+    const hasFileInput = mergedDocuments.length;
 
     const FIVEGB = 5 * Math.pow(1024, 3);
     const { handleSubmit, control, formState } = useForm();
-    const formController = useController({
-        name: 'documents',
+    const formConfig = (name: string) => ({
+        name,
         control,
         rules: {
             validate: {
                 isFile: () => {
                     return !!hasFileInput || 'Please select a file';
                 },
-                isLessThan5GB: (value) => {
-                    for (let i = 0; i < value.length; i++) {
-                        if (value[i].file.size > FIVEGB) {
-                            return 'Please ensure that all files are less than 5GB in size';
+                isLessThan5GB: (value?: Array<UploadDocument>) => {
+                    if (Array.isArray(value)) {
+                        for (let i = 0; i < value.length; i++) {
+                            if (value[i].file.size > FIVEGB) {
+                                return 'Please ensure that all files are less than 5GB in size';
+                            }
                         }
                     }
                 },
             },
         },
     });
-
-    const {
-        field: { onChange, value },
-    } = formController;
+    const lgController = useController(formConfig('lg-documents'));
+    const arfController = useController(formConfig('arf-documents'));
 
     const hasDuplicateFiles =
-        value &&
-        value.some((doc: UploadDocument) => {
-            return value.some(
+        mergedDocuments &&
+        mergedDocuments.some((doc: UploadDocument) => {
+            return mergedDocuments.some(
                 (compare: UploadDocument) =>
                     doc.file.name === compare.file.name && doc.id !== compare.id,
             );
         });
 
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {
-        console.log('DOCUMENT IS TYPE: ', docType);
         const fileArray = Array.from(e.target.files ?? new FileList());
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
             id: Math.floor(Math.random() * 1000000).toString(),
@@ -73,37 +73,39 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
             docType: docType,
         }));
         const isArfDoc = docType === DOCUMENT_TYPE.ARF;
+        const mergeList = isArfDoc ? lgDocuments : arfDocuments;
         const docTypeList = isArfDoc ? arfDocuments : lgDocuments;
         const updatedDocList = [...documentMap, ...docTypeList];
         if (isArfDoc) {
             setArfDocuments(updatedDocList);
+            arfController.field.onChange(updatedDocList);
         } else {
             setLgDocuments(updatedDocList);
+            lgController.field.onChange(updatedDocList);
         }
-        const updatedFileList = [...lgDocuments, ...arfDocuments];
-        onChange(updatedFileList);
+        const updatedFileList = [...mergeList, ...updatedDocList];
         setDocuments(updatedFileList);
     };
 
     const onRemove = (index: number, docType: DOCUMENT_TYPE) => {
         const isArfDoc = docType === DOCUMENT_TYPE.ARF;
+        const mergeList = isArfDoc ? lgDocuments : arfDocuments;
         const docTypeList = isArfDoc ? arfDocuments : lgDocuments;
-
-        const updatedValues = [...docTypeList.slice(0, index), ...docTypeList.slice(index + 1)];
+        const updatedDocList = [...docTypeList.slice(0, index), ...docTypeList.slice(index + 1)];
         if (isArfDoc) {
-            setArfDocuments(updatedValues);
+            setArfDocuments(updatedDocList);
             if (arfInputRef.current) {
-                arfInputRef.current.files = toFileList(updatedValues);
+                arfInputRef.current.files = toFileList(updatedDocList);
             }
         } else {
-            setLgDocuments(updatedValues);
+            setLgDocuments(updatedDocList);
             if (lgInputRef.current) {
-                lgInputRef.current.files = toFileList(updatedValues);
+                lgInputRef.current.files = toFileList(updatedDocList);
             }
         }
 
-        const updatedFileList = [...lgDocuments, ...arfDocuments];
-        onChange(updatedFileList);
+        const updatedFileList = [...mergeList, ...updatedDocList];
+        setDocuments(updatedFileList);
     };
 
     return (
@@ -124,7 +126,7 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                         documents={arfDocuments}
                         onDocumentRemove={onRemove}
                         onDocumentInput={onInput}
-                        formController={formController}
+                        formController={arfController}
                         inputRef={arfInputRef}
                         formType={DOCUMENT_TYPE.ARF}
                     />
@@ -134,7 +136,7 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                         documents={lgDocuments}
                         onDocumentRemove={onRemove}
                         onDocumentInput={onInput}
-                        formController={formController}
+                        formController={lgController}
                         inputRef={lgInputRef}
                         formType={DOCUMENT_TYPE.LLOYD_GEORGE}
                     />
@@ -142,7 +144,7 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                 <Button
                     type="submit"
                     id="upload-button"
-                    disabled={formState.isSubmitting || !value}
+                    disabled={formState.isSubmitting || !hasFileInput}
                 >
                     Upload
                 </Button>

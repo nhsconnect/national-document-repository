@@ -42,6 +42,7 @@ function UploadDocumentsPage(props: Props) {
     };
 
     const uploadDocuments = async () => {
+        console.log('ON UPLOAD', documents);
         if (patientDetails) {
             setStage(UPLOAD_STAGE.Uploading);
             await Promise.all(
