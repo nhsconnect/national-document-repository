@@ -15,5 +15,5 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     return ApiGatewayResponse(
-    200, json.dumps(os.environ.items()), "GET"
+    200, json.dumps(dict(os.environ)), "GET"
     ).create_api_gateway_response()
