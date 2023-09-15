@@ -1,16 +1,16 @@
-name: "Lambdas - Deploy Feature Branch to Sandbox"
+name: 'Lambdas - Deploy Feature Branch to Sandbox'
 
 on:
   workflow_dispatch:
     inputs:
       buildBranch:
-        description: "Feature branch to push to test?"
+        description: 'Feature branch to push to test?'
         required: true
-        type: "string"
+        type: 'string'
       sandboxWorkspace:
-        description: "Which Sandbox to push to."
+        description: 'Which Sandbox to push to.'
         required: true
-        type: "string"
+        type: 'string'
 
 permissions:
   pull-requests: write
@@ -23,7 +23,7 @@ jobs:
     environment: development
     strategy:
       matrix:
-        python-version: ["3.11"]
+        python-version: ['3.11']
 
     steps:
       - name: Checkout
@@ -37,9 +37,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environment
-        run: | 
+        run: |
           make env
-      
+
       - name: Start virtual environment
         run: |
           source ./lambdas/venv/bin/activate
@@ -58,8 +58,8 @@ jobs:
     environment: development
     strategy:
       matrix:
-        python-version: [ "3.11" ]
-    needs: ["python_lambdas_test"]
+        python-version: ['3.11']
+    needs: ['python_lambdas_test']
 
     steps:
       - name: Checkout
@@ -73,7 +73,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environment
-        run: | 
+        run: |
           make env
 
       - name: Configure AWS Credentials
@@ -86,21 +86,21 @@ jobs:
       - name: Create release package for Create Document Reference
         run: |
           make lambda_name=create_document_reference_handler zip
-    
+
       - name: Upload Lambda Function for CreateDocRefLambda
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_CreateDocRefLambda
           zip_file: package_lambdas_create_document_reference_handler.zip
-        
+
   python_deploy_search_patient_details_lambda:
     runs-on: ubuntu-latest
     environment: development
     strategy:
       matrix:
-        python-version: [ "3.11" ]
-    needs: [ "python_lambdas_test" ]
+        python-version: ['3.11']
+    needs: ['python_lambdas_test']
 
     steps:
       - name: Checkout
@@ -140,8 +140,8 @@ jobs:
     environment: development
     strategy:
       matrix:
-        python-version: [ "3.11" ]
-    needs: [ "python_lambdas_test" ]
+        python-version: ['3.11']
+    needs: ['python_lambdas_test']
 
     steps:
       - name: Checkout
@@ -176,13 +176,54 @@ jobs:
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_SearchDocumentReferencesLambda
           zip_file: package_lambdas_document_reference_search_handler.zip
 
+  python_deploy_test_reference_search_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    strategy:
+      matrix:
+        python-version: ['3.11']
+    needs: ['python_lambdas_test']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.buildBranch}}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Test Reference Search
+        run: |
+          make lambda_name=test_reference_search_handler zip
+
+      - name: Upload Lambda Function for TestReferenceSearchHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_TestDocumentReferencesLambda
+          zip_file: package_lambdas_test_reference_search_handler.zip
+
   python_deploy_document_manifest_by_nhs_number_lambda:
     runs-on: ubuntu-latest
     environment: test
-    needs: ["python_lambdas_test"]
+    needs: ['python_lambdas_test']
     strategy:
       matrix:
-        python-version: ["3.11"]
+        python-version: ['3.11']
 
     steps:
       - name: Checkout
@@ -214,5 +255,3 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_DocumentManifestByNHSNumberLambda
           zip_file: package_lambdas_document_manifest_by_nhs_number_handler.zip
-
-        
