@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import {
+    DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
     UploadDocument,
@@ -30,18 +31,21 @@ describe('<UploadDocumentsPage />', () => {
                 state: documentUploadStates.SELECTED,
                 id: '1',
                 progress: 0,
+                docType: DOCUMENT_TYPE.ARF,
             };
             const documentTwo = {
                 file: buildTextFile('two', 200),
                 state: documentUploadStates.SELECTED,
                 id: '2',
                 progress: 0,
+                docType: DOCUMENT_TYPE.ARF,
             };
             const documentThree = {
                 file: buildTextFile('three', 100),
                 state: documentUploadStates.SELECTED,
                 id: '3',
                 progress: 0,
+                docType: DOCUMENT_TYPE.ARF,
             };
 
             render(
@@ -67,18 +71,21 @@ describe('<UploadDocumentsPage />', () => {
                 state: documentUploadStates.SELECTED,
                 id: '1',
                 progress: 0,
+                docType: DOCUMENT_TYPE.ARF,
             };
             const documentTwo = {
                 file: buildTextFile('two', 200),
                 state: documentUploadStates.SELECTED,
                 id: '2',
                 progress: 0,
+                docType: DOCUMENT_TYPE.ARF,
             };
             const documentThree = {
                 file: buildTextFile('three', 100),
                 state: documentUploadStates.SELECTED,
                 id: '3',
                 progress: 0,
+                docType: DOCUMENT_TYPE.ARF,
             };
 
             const { rerender } = render(
