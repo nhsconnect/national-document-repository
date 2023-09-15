@@ -14,6 +14,9 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
+        return ApiGatewayResponse(
+        200, json.dumps(os.environ.items()), "GET"
+    ).create_api_gateway_response()
     document_store_table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
     lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
     list_of_table_names = [document_store_table_name, lloyd_george_table_name]
