@@ -7,6 +7,7 @@ import pytest
 
 from models.oidc_models import IdTokenClaimSet
 from services.oidc_service import OidcService
+from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import AuthorisationException
 
 MOCK_PARAMETERS = {
@@ -27,18 +28,6 @@ def oidc_service(mocker):
     ):
         oidc_service = OidcService()
         yield oidc_service
-
-
-class MockResponse:
-    def __init__(self, status_code, json_data):
-        self.status_code = status_code
-        self.json_data = json_data
-
-    def json(self):
-        return self.json_data
-
-    def content(self):
-        return repr(self.json_data)
 
 
 def test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
@@ -164,8 +153,8 @@ def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_inva
     mock_response = MockResponse(
         status_code=401,
         json_data={
-            "error_description":
-                "The access token provided is expired, revoked, malformed, or invalid for other reasons.",
+            "error_description": "The access token provided is expired, revoked, "
+            "malformed, or invalid for other reasons.",
             "error": "invalid_token",
         },
     )
