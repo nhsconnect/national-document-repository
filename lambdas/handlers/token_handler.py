@@ -30,7 +30,7 @@ def lambda_handler(event, _context):
 
     try:
         # TODO: after merging with other branch, refactor dynamo db service to allow query with only P-Key
-        # Right now the implementation in other branch doesn't allow us to query without other field names defined
+        # Right now the implementation in this branch doesn't allow us to query without other field names
         state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
         temp_dynamo_resource = boto3.resource("dynamodb")
         state_table = temp_dynamo_resource.Table(state_table_name)
@@ -104,19 +104,17 @@ def lambda_handler(event, _context):
             "authorisation_token": authorisation_token,
         }
 
-    except AuthorisationException:
+    except AuthorisationException as error:
+        logger.error(error)
         return ApiGatewayResponse(
             401, "Failed to authenticate user with OIDC service", "GET"
         ).create_api_gateway_response()
-    except botocore.exceptions.ClientError as e:
-        logger.error(e)
-        return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
-    except jwt.PyJWTError as e:
-        logger.info(f"error while encoding JWT: {e}")
-        return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
-    except (KeyError, TypeError) as e:
-        logger.error(e)
-        return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
+    except (botocore.exceptions.ClientError, KeyError, TypeError) as error:
+        logger.error(error)
+        return ApiGatewayResponse(500, f"{str(error)}", "GET").create_api_gateway_response()
+    except jwt.PyJWTError as error:
+        logger.info(f"error while encoding JWT: {error}")
+        return ApiGatewayResponse(500, f"{str(error)}", "GET").create_api_gateway_response()
 
     return ApiGatewayResponse(
         200, json.dumps(response), "GET"
