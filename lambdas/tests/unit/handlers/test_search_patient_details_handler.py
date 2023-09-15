@@ -1,18 +1,18 @@
 from handlers.search_patient_details_handler import lambda_handler
 from requests.models import Response
-from tests.unit.test_data.utils import load_pds_data
+from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 
 
-def test_lambda_handler_valid_id_returns_200(event_valid_id, context, mocker):
+def test_lambda_handler_valid_id_returns_200(valid_id_event, context, mocker):
     response = Response()
     response.status_code = 200
-    response._content = load_pds_data()[0]
+    response._content = PDS_PATIENT
 
     mocker.patch(
         "services.pds_api_service.PdsApiService.fake_pds_request", return_value=response
     )
 
-    actual = lambda_handler(event_valid_id, context)
+    actual = lambda_handler(valid_id_event, context)
 
     expected = {
         "body": '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22",'
@@ -30,7 +30,7 @@ def test_lambda_handler_valid_id_returns_200(event_valid_id, context, mocker):
     assert expected == actual
 
 
-def test_lambda_handler_invalid_id_returns_400(event_invalid_id, context, mocker):
+def test_lambda_handler_invalid_id_returns_400(invalid_id_event, context, mocker):
     response = Response()
     response.status_code = 400
 
@@ -38,7 +38,7 @@ def test_lambda_handler_invalid_id_returns_400(event_invalid_id, context, mocker
         "services.pds_api_service.PdsApiService.fake_pds_request", return_value=response
     )
 
-    actual = lambda_handler(event_invalid_id, context)
+    actual = lambda_handler(invalid_id_event, context)
 
     expected = {
         "body": "Invalid NHS number",
@@ -55,7 +55,7 @@ def test_lambda_handler_invalid_id_returns_400(event_invalid_id, context, mocker
 
 
 def test_lambda_handler_valid_id_not_in_pds_returns_404(
-    event_valid_id, context, mocker
+    valid_id_event, context, mocker
 ):
     response = Response()
     response.status_code = 404
@@ -64,7 +64,7 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
         "services.pds_api_service.PdsApiService.fake_pds_request", return_value=response
     )
 
-    actual = lambda_handler(event_valid_id, context)
+    actual = lambda_handler(valid_id_event, context)
 
     expected = {
         "body": "Patient does not exist for given NHS number",
@@ -81,7 +81,7 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
 
 
 def test_lambda_handler_missing_id_in_query_params_returns_400(
-    event_missing_id, context, mocker
+    missing_id_event, context, mocker
 ):
     response = Response()
     response.status_code = 400
@@ -90,7 +90,7 @@ def test_lambda_handler_missing_id_in_query_params_returns_400(
         "services.pds_api_service.PdsApiService.fake_pds_request", return_value=response
     )
 
-    actual = lambda_handler(event_missing_id, context)
+    actual = lambda_handler(missing_id_event, context)
 
     expected = {
         "body": "No NHS number found in request parameters.",

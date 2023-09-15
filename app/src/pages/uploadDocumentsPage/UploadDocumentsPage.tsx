@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     DOCUMENT_UPLOAD_STATE,
     UPLOAD_STAGE,
@@ -9,12 +9,23 @@ import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import SelectStage from '../../components/blocks/selectStage/SelectStage';
 import UploadingStage from '../../components/blocks/uploadingStage/UploadingStage';
 import CompleteStage from '../../components/blocks/completeStage/CompleteStage';
+import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
+import { useNavigate } from 'react-router';
+import { routes } from '../../types/generic/routes';
 
 type Props = {};
 function UploadDocumentsPage(props: Props) {
     const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const baseUrl = useBaseAPIUrl();
+    const [patientDetails] = usePatientDetailsContext();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!patientDetails) {
+            navigate(routes.HOME);
+        }
+    }, [patientDetails, navigate]);
 
     const setDocumentState = (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => {
         setDocuments((prevDocuments) => {
@@ -29,31 +40,35 @@ function UploadDocumentsPage(props: Props) {
         });
     };
 
-    const mockPatient = {
-        nhsNumber: '121212121',
-    };
-
     const uploadDocuments = async () => {
-        setStage(UPLOAD_STAGE.Uploading);
-        await Promise.all(
-            documents.map((document) =>
-                uploadDocument({
-                    setDocumentState,
-                    nhsNumber: mockPatient.nhsNumber,
-                    document,
-                    baseUrl,
-                }),
-            ),
-        );
-        setStage(UPLOAD_STAGE.Complete);
+        if (patientDetails) {
+            setStage(UPLOAD_STAGE.Uploading);
+            await Promise.all(
+                documents.map((document) =>
+                    uploadDocument({
+                        setDocumentState,
+                        nhsNumber: patientDetails.nhsNumber,
+                        document,
+                        baseUrl,
+                    }),
+                ),
+            );
+            setStage(UPLOAD_STAGE.Complete);
+        }
     };
 
-    if (stage === UPLOAD_STAGE.Selecting) {
-        return <SelectStage uploadDocuments={uploadDocuments} setDocuments={setDocuments} />;
-    } else if (stage === UPLOAD_STAGE.Uploading) {
-        return <UploadingStage documents={documents} />;
-    } else if (stage === UPLOAD_STAGE.Complete) {
-        return <CompleteStage documents={documents} />;
+    if (stage === UPLOAD_STAGE.Selecting && patientDetails) {
+        return (
+            <SelectStage
+                patientDetails={patientDetails}
+                uploadDocuments={uploadDocuments}
+                setDocuments={setDocuments}
+            />
+        );
+    } else if (stage === UPLOAD_STAGE.Uploading && patientDetails) {
+        return <UploadingStage patientDetails={patientDetails} documents={documents} />;
+    } else if (stage === UPLOAD_STAGE.Complete && patientDetails) {
+        return <CompleteStage patientDetails={patientDetails} documents={documents} />;
     }
     return null;
 }

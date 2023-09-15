@@ -3,16 +3,27 @@ MOCK_RESPONSE = {
         {
             "FileName": "Screenshot 2023-08-16 at 15.26.11.png",
             "Created": "2023-08-23T00:38:04.103Z",
+            "VirusScannerResult": "Clean",
         },
-        {"FileName": "GIF.gif", "Created": "2023-08-22T17:38:31.890Z"},
+        {
+            "FileName": "GIF.gif",
+            "Created": "2023-08-22T17:38:31.890Z",
+            "VirusScannerResult": "Clean",
+        },
         {
             "FileName": "Screen Recording 2023-08-15 at 16.18.31.mov",
             "Created": "2023-08-23T00:38:04.095Z",
+            "VirusScannerResult": "Clean",
         },
-        {"FileName": "screenshot guidance.png", "Created": "2023-08-22T23:39:27.178Z"},
+        {
+            "FileName": "screenshot guidance.png",
+            "Created": "2023-08-22T23:39:27.178Z",
+            "VirusScannerResult": "Clean",
+        },
         {
             "FileName": "Screenshot 2023-08-15 at 16.17.56.png",
             "Created": "2023-08-23T00:38:04.101Z",
+            "VirusScannerResult": "Clean",
         },
     ],
     "Count": 5,
@@ -55,18 +66,29 @@ MOCK_EMPTY_RESPONSE = {
 
 EXPECTED_RESPONSE = [
     {
-        "FileName": "Screenshot 2023-08-16 at 15.26.11.png",
-        "Created": "2023-08-23T00:38:04.103Z",
+        "fileName": "Screenshot 2023-08-16 at 15.26.11.png",
+        "created": "2023-08-23T00:38:04.103Z",
+        "virusScannerResult": "Clean",
     },
-    {"FileName": "GIF.gif", "Created": "2023-08-22T17:38:31.890Z"},
     {
-        "FileName": "Screen Recording 2023-08-15 at 16.18.31.mov",
-        "Created": "2023-08-23T00:38:04.095Z",
+        "fileName": "GIF.gif",
+        "created": "2023-08-22T17:38:31.890Z",
+        "virusScannerResult": "Clean",
     },
-    {"FileName": "screenshot guidance.png", "Created": "2023-08-22T23:39:27.178Z"},
     {
-        "FileName": "Screenshot 2023-08-15 at 16.17.56.png",
-        "Created": "2023-08-23T00:38:04.101Z",
+        "fileName": "Screen Recording 2023-08-15 at 16.18.31.mov",
+        "created": "2023-08-23T00:38:04.095Z",
+        "virusScannerResult": "Clean",
+    },
+    {
+        "fileName": "screenshot guidance.png",
+        "created": "2023-08-22T23:39:27.178Z",
+        "virusScannerResult": "Clean",
+    },
+    {
+        "fileName": "Screenshot 2023-08-15 at 16.17.56.png",
+        "created": "2023-08-23T00:38:04.101Z",
+        "virusScannerResult": "Clean",
     },
 ]
 

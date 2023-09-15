@@ -5,8 +5,9 @@ import pytest
 from boto3.dynamodb.conditions import Key
 from enums.metadata_field_names import DynamoDocumentMetadataTableFields
 from services.dynamo_query_service import DynamoQueryService
-from tests.unit.helpers.dynamo_responses import MOCK_RESPONSE
-from utils.exceptions import InvalidResourceIdException
+from tests.unit.helpers.data.dynamo_responses import (MOCK_RESPONSE,
+                                                      UNEXPECTED_RESPONSE)
+from utils.exceptions import DynamoDbException, InvalidResourceIdException
 
 
 @pytest.fixture
@@ -22,7 +23,7 @@ def mock_dynamo_table():
 def test_create_expressions_correctly_creates_an_expression_of_one_field():
     query_service = DynamoQueryService("test_table", "test_index")
     expected_projection = "#vscanResult"
-    expected_expr_attr_names = {"#vscanResult": "VirusScanResult"}
+    expected_expr_attr_names = {"#vscanResult": "VirusScannerResult"}
 
     fields_requested = [DynamoDocumentMetadataTableFields.VIRUS_SCAN_RESULT]
 
@@ -103,3 +104,24 @@ def test_error_raised_when_fields_requested_is_none(
         query_service = DynamoQueryService("test_table", "test_index")
         with pytest.raises(InvalidResourceIdException):
             query_service("NhsNumber", "0123456789")
+
+
+def test_DynamoDbException_raised_when_results_are_invalid(
+    mock_dynamo_table, mock_boto3_dynamo
+):
+    with pytest.raises(DynamoDbException):
+        with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+            mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+            mock_dynamo_table.query.return_value = UNEXPECTED_RESPONSE
+            search_key_obj = Key("NhsNumber").eq("1234567890")
+
+            with patch.object(Key, "eq", return_value=search_key_obj):
+                query_service = DynamoQueryService("test_table", "NhsNumberIndex")
+                query_service(
+                    "NhsNumber",
+                    "0123456789",
+                    [
+                        DynamoDocumentMetadataTableFields.FILE_NAME,
+                        DynamoDocumentMetadataTableFields.CREATED,
+                    ],
+                )

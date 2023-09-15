@@ -13,6 +13,7 @@ import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom
 import RoleSelectPage from './pages/roleSelectPage/RoleSelectPage';
 import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
+import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
 
 function App() {
     const AuthenticatedProviders = ({ children }: { children: ReactNode }) => (
@@ -39,23 +40,27 @@ function App() {
                         >
                             <Route
                                 element={<PatientSearchPage role={USER_ROLE.PCSE} />}
-                                path={routes.UPLOAD_SEARCH}
-                            />
-                            <Route
-                                element={<PatientSearchPage role={USER_ROLE.GP} />}
                                 path={routes.DOWNLOAD_SEARCH}
                             />
                             <Route
+                                element={<PatientSearchPage role={USER_ROLE.GP} />}
+                                path={routes.UPLOAD_SEARCH}
+                            />
+                            <Route
                                 element={<PatientResultPage role={USER_ROLE.PCSE} />}
-                                path={routes.UPLOAD_VERIFY}
+                                path={routes.DOWNLOAD_VERIFY}
                             />
                             <Route
                                 element={<PatientResultPage role={USER_ROLE.GP} />}
-                                path={routes.DOWNLOAD_VERIFY}
+                                path={routes.UPLOAD_VERIFY}
                             />
                             <Route
                                 element={<UploadDocumentsPage />}
                                 path={routes.UPLOAD_DOCUMENTS}
+                            />
+                            <Route
+                                element={<DocumentSearchResultsPage />}
+                                path={routes.DOWNLOAD_DOCUMENTS}
                             />
                         </Route>
                     </Routes>

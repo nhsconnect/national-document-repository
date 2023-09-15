@@ -5,6 +5,7 @@ export enum routes {
     DOWNLOAD_SEARCH = '/search/patient',
     DOWNLOAD_VERIFY = '/search/patient/result',
     DOWNLOAD_DOCUMENTS = '/search/results',
+    DELETE_DOCUMENTS = '/search/results/delete',
 
     UPLOAD_SEARCH = '/search/upload',
     UPLOAD_VERIFY = '/search/upload/result',

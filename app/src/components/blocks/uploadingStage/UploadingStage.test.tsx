@@ -5,10 +5,11 @@ import {
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
     UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
-import { buildTextFile } from '../../../helpers/test/testBuilders';
+import { buildPatientDetails, buildTextFile } from '../../../helpers/test/testBuilders';
 import UploadingStage from './UploadingStage';
 
 jest.mock('react-router');
+const mockPatient = buildPatientDetails();
 
 describe('<UploadDocumentsPage />', () => {
     describe('with NHS number', () => {
@@ -43,7 +44,12 @@ describe('<UploadDocumentsPage />', () => {
                 progress: 0,
             };
 
-            render(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
+            render(
+                <UploadingStage
+                    patientDetails={mockPatient}
+                    documents={[documentOne, documentTwo, documentThree]}
+                />,
+            );
 
             triggerUploadStateChange(documentOne, documentUploadStates.UPLOADING, 0);
 
@@ -76,7 +82,10 @@ describe('<UploadDocumentsPage />', () => {
             };
 
             const { rerender } = render(
-                <UploadingStage documents={[documentOne, documentTwo, documentThree]} />,
+                <UploadingStage
+                    patientDetails={mockPatient}
+                    documents={[documentOne, documentTwo, documentThree]}
+                />,
             );
             const getProgressBarValue = (document: UploadDocument) => {
                 const progressBar: HTMLProgressElement = screen.getByRole('progressbar', {
@@ -91,27 +100,52 @@ describe('<UploadDocumentsPage />', () => {
             };
 
             triggerUploadStateChange(documentOne, documentUploadStates.UPLOADING, 10);
-            rerender(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
+            rerender(
+                <UploadingStage
+                    patientDetails={mockPatient}
+                    documents={[documentOne, documentTwo, documentThree]}
+                />,
+            );
             expect(getProgressBarValue(documentOne)).toEqual(10);
             expect(getProgressText(documentOne)).toContain('10% uploaded...');
 
             triggerUploadStateChange(documentOne, documentUploadStates.UPLOADING, 70);
-            rerender(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
+            rerender(
+                <UploadingStage
+                    patientDetails={mockPatient}
+                    documents={[documentOne, documentTwo, documentThree]}
+                />,
+            );
             expect(getProgressBarValue(documentOne)).toEqual(70);
             expect(getProgressText(documentOne)).toContain('70% uploaded...');
 
             triggerUploadStateChange(documentTwo, documentUploadStates.UPLOADING, 20);
-            rerender(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
+            rerender(
+                <UploadingStage
+                    patientDetails={mockPatient}
+                    documents={[documentOne, documentTwo, documentThree]}
+                />,
+            );
             expect(getProgressBarValue(documentTwo)).toEqual(20);
             expect(getProgressText(documentTwo)).toContain('20% uploaded...');
 
             triggerUploadStateChange(documentTwo, documentUploadStates.SUCCEEDED, 100);
-            rerender(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
+            rerender(
+                <UploadingStage
+                    patientDetails={mockPatient}
+                    documents={[documentOne, documentTwo, documentThree]}
+                />,
+            );
             expect(getProgressBarValue(documentTwo)).toEqual(100);
             expect(getProgressText(documentTwo)).toContain('Uploaded');
 
             triggerUploadStateChange(documentOne, documentUploadStates.FAILED, 0);
-            rerender(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
+            rerender(
+                <UploadingStage
+                    patientDetails={mockPatient}
+                    documents={[documentOne, documentTwo, documentThree]}
+                />,
+            );
             expect(getProgressBarValue(documentOne)).toEqual(0);
             expect(getProgressText(documentOne)).toContain('Upload failed');
         });

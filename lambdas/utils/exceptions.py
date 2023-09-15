@@ -20,3 +20,7 @@ class OrganisationNotFoundException(Exception):
 
 class OdsErrorException(Exception):
     pass
+
+
+class DynamoDbException(Exception):
+    pass

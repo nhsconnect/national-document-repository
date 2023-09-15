@@ -1,11 +1,24 @@
-describe('Uploads docs and tests it looks OK', () => {
+describe('GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => {
+    // env vars
+    const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+    const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
+
+    const roles = Object.freeze({
+        GP: 'gp',
+        PCSE: 'pcse',
+    });
+    const testPatient = '9000000009';
+    const patient = {
+        birthDate: '1970-01-01',
+        familyName: 'Default Surname',
+        givenName: ['Default Given Name'],
+        nhsNumber: testPatient,
+        postalCode: 'AA1 1AA',
+        superseded: false,
+        restricted: false,
+    };
+
     const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
-
-    const baseUrl = 'http://localhost:3000/';
-    const smokeTest = false;
-    // const baseUrl = Cypress.env('CYPRESS_BASE_URL');
-    // const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST');
-
     const serverError = 500;
     const successNoContent = 204;
 
@@ -14,15 +27,19 @@ describe('Uploads docs and tests it looks OK', () => {
     });
 
     const navigateToUploadPage = () => {
+        cy.intercept('GET', '/SearchPatient*', {
+            statusCode: 200,
+            body: patient,
+        }).as('search');
         cy.get('#start-button').click();
-        cy.get('#gp-radio-button').click();
+        cy.get(`#${roles.GP}-radio-button`).click();
         cy.get('#role-submit-button').click();
         cy.get('#nhs-number-input').click();
-        cy.get('#nhs-number-input').type('9000000009');
-        cy.get('#search-submit').click();
-        cy.get('#verify-submit').click();
+        cy.get('#nhs-number-input').type(testPatient);
 
-        cy.wait(20);
+        cy.get('#search-submit').click();
+        cy.wait('@search');
+        cy.get('#verify-submit').click();
     };
 
     const clickUploadButton = () => {
@@ -64,8 +81,6 @@ describe('Uploads docs and tests it looks OK', () => {
         cy.url().should('include', 'upload');
         cy.url().should('eq', baseUrl + 'upload/submit');
     });
-
-    // patient selection not implemented yet
 
     it('(Smoke test) Single file - On Choose files button click, file selection is visible', () => {
         cy.get('#selected-documents-table').should('not.exist');

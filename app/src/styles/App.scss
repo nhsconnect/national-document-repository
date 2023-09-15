@@ -15,11 +15,12 @@
 
 .spinner_button {
     display: flex;
-    background: $color_nhsuk-green;
+    color: $color_nhsuk-black;
+    background: $color_nhsuk-yellow;
 
     &:hover {
         color: $color_nhsuk-black;
-        background: $color_nhsuk-green;
+        background: $color_nhsuk-yellow;
     }
     &-spinner {
         border: nhsuk-spacing(1) solid rgba($color_nhsuk-white, 0.8);

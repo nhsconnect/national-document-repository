@@ -1,10 +1,7 @@
 import { PatientDetails } from '../../types/generic/patientDetails';
-import { ErrorResponse } from '../../types/generic/response';
-import { SetSearchErrorCode } from '../../types/pages/patientSearchPage';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 type Args = {
-    setStatusCode: SetSearchErrorCode;
     nhsNumber: string;
     baseUrl: string;
 };
@@ -26,7 +23,7 @@ const getPatientDetails = async ({ nhsNumber, baseUrl }: Args) => {
         });
         return data;
     } catch (e) {
-        const error = e as ErrorResponse;
+        const error = e as AxiosError;
         throw error;
     }
 };
