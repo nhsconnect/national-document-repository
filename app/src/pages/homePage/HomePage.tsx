@@ -1,21 +1,33 @@
 import React from 'react';
 import type { MouseEvent as ReactEvent } from 'react';
-import { ButtonLink } from 'nhsuk-react-components';
+import { Button, ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
-
+import axios from 'axios';
+import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 type Props = {};
 
 function HomePage(props: Props) {
     const navigate = useNavigate();
+    const baseUrl = useBaseAPIUrl();
 
     const navigateUpload = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
         e.preventDefault();
         navigate(routes.SELECT_ORG);
     };
+    const testLambda = async () => {
+        const gatewayUrl = baseUrl + '/TestDocumentReferences';
+        const response = await axios.get(gatewayUrl, {
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        console.log(response);
+    };
 
     return (
         <>
+            <Button onClick={testLambda}>TEST LAMBDA</Button>
             <h1>Inactive Patient Record Administration</h1>
             <p>
                 When a patient is inactive, NHS England via Primary Care Support England are
