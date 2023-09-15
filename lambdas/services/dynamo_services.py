@@ -72,6 +72,17 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
+    def delete_item_service(self, key):
+        try:
+            self.table.delete_item(
+                Key=key,
+            )
+            logger.info(f"Delete item to DynamoDB: {self.TABLE_NAME}")
+        except ClientError as e:
+            logger.error("Unable to get write to table")
+            logger.error(e)
+            raise e
+
     # Make the expressions
     # ExpressionAttributeNames = {"#create": "Created", "#file": "FileName", "#doc": "DocumentUploaded"}
     # ProjectionExpression = "#id,#create,#file,#doc"
