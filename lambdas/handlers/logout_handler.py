@@ -4,8 +4,8 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 
-from lambdas.services.dynamo_services import DynamoDBService
-from lambdas.utils.lambda_response import ApiGatewayResponse
+from services.dynamo_services import DynamoDBService
+from utils.lambda_response import ApiGatewayResponse
 import jwt
 
 
@@ -13,7 +13,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
-    token = event['authorizationToken']
+    token = event['headers']['authorizationToken']
     logout_handler(token)
 
 def logout_handler(token):
@@ -22,15 +22,19 @@ def logout_handler(token):
         ssm_response = get_ssm_parameter(key = ssm_public_key_parameter_name)
         jwt_class = jwt
         public_key = ssm_response["Parameter"]["Value"]
+        logger.info("decoding token")
         decoded_token = decode_token(jwt_class=jwt_class, token=token, key=public_key)
         session_id = decoded_token["ndr_session_id"]
         remove_session_from_dynamo_db(session_id)
 
     except ClientError as e:
-        logger.error(f"Error getting using aws client: {e}")
-        return ApiGatewayResponse(500, e, "GET").create_api_gateway_response()
-
+        logger.error(f"Error logging out user: {e}")
+        return ApiGatewayResponse(500, "Error logging user out", "GET").create_api_gateway_response()
+    except jwt.PyJWTError as e:
+        logger.error(f"error while decoding JWT: {e}")
+        return ApiGatewayResponse(500, "Error logging user out", "GET").create_api_gateway_response()
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
+
 def get_ssm_parameter(key):
     client = boto3.client("ssm", region_name="eu-west-2")
     ssm_response = client.get_parameter(
@@ -44,10 +48,11 @@ def decode_token(jwt_class, token, key):
     )
 
 def remove_session_from_dynamo_db(session_id):
+    logger.info(f"Session to be removed: {session_id}")
     dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
     dynamodb_service = DynamoDBService(dynamodb_name)
     dynamodb_service.delete_item_service(
         key={
-            'NDRSessionID' : f"${session_id}"
+            'NDRSessionId' : session_id
         }
     )
