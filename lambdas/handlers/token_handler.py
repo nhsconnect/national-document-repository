@@ -8,7 +8,6 @@ import boto3
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
-
 # from services.dynamo_services import DynamoDBService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
@@ -111,10 +110,14 @@ def lambda_handler(event, _context):
         ).create_api_gateway_response()
     except (botocore.exceptions.ClientError, KeyError, TypeError) as error:
         logger.error(error)
-        return ApiGatewayResponse(500, "Server error", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(
+            500, "Server error", "GET"
+        ).create_api_gateway_response()
     except jwt.PyJWTError as error:
         logger.info(f"error while encoding JWT: {error}")
-        return ApiGatewayResponse(500, "Server error", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(
+            500, "Server error", "GET"
+        ).create_api_gateway_response()
 
     return ApiGatewayResponse(
         200, json.dumps(response), "GET"

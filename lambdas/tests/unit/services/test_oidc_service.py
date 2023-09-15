@@ -2,9 +2,8 @@ import time
 from unittest.mock import patch
 
 import jwt
-from cryptography.hazmat.primitives.asymmetric import rsa
 import pytest
-
+from cryptography.hazmat.primitives.asymmetric import rsa
 from models.oidc_models import IdTokenClaimSet
 from services.oidc_service import OidcService
 from tests.unit.helpers.mock_response import MockResponse

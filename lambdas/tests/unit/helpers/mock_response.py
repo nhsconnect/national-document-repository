@@ -8,4 +8,3 @@ class MockResponse:
 
     def content(self):
         return repr(self.json_data)
-

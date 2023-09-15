@@ -19,7 +19,6 @@ import boto3
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
-
 from enums.permitted_role import PermittedRole
 from utils.exceptions import AuthorisationException
 
@@ -44,26 +43,34 @@ def lambda_handler(event, context):
 
         ndr_session_id = decoded["ndr_session_id"]
 
-        logger.debug("Retrieving session for session ID ending in: " + ndr_session_id[-4:])
+        logger.debug(
+            "Retrieving session for session ID ending in: " + ndr_session_id[-4:]
+        )
 
         # TODO: add this env var to terraform
         # TODO: switch to use the DynamoDBService from other branch once we merge with other branch
         session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
         temp_dynamo_resource = boto3.resource("dynamodb")
         session_table = temp_dynamo_resource.Table(session_table_name)
-        query_response = session_table.query(KeyConditionExpression=Key("NDRSessionId").eq(ndr_session_id))
+        query_response = session_table.query(
+            KeyConditionExpression=Key("NDRSessionId").eq(ndr_session_id)
+        )
 
         if "Count" not in query_response or query_response["Count"] == 0:
-            raise AuthorisationException(f"Unable to find session for session ID ending in: {ndr_session_id[-4:]}")
+            raise AuthorisationException(
+                f"Unable to find session for session ID ending in: {ndr_session_id[-4:]}"
+            )
 
-        current_session = query_response['Items'][0]
-        expiry_time = current_session['TimeToExist']
+        current_session = query_response["Items"][0]
+        expiry_time = current_session["TimeToExist"]
         time_now = time.time()
         if expiry_time <= time_now:
-            raise AuthorisationException(f"The session is already expired for session ID ending in: {ndr_session_id[-4:]}")
+            raise AuthorisationException(
+                f"The session is already expired for session ID ending in: {ndr_session_id[-4:]}"
+            )
 
         # if user has a valid session, assign their role
-        user_roles = [org['role'] for org in decoded["organisations"]]
+        user_roles = [org["role"] for org in decoded["organisations"]]
 
         logger.info(f"decoded JWT: {decoded}")
     except AuthorisationException as e:

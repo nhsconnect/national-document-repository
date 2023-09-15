@@ -5,15 +5,13 @@ from typing import Dict, List, Tuple
 import boto3
 import jwt
 import requests
+from models.oidc_models import AccessToken, IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
 from requests import Response
-
-from models.oidc_models import IdTokenClaimSet, AccessToken
 from utils.exceptions import AuthorisationException
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
 
 
 class OidcService:
@@ -25,6 +23,7 @@ class OidcService:
         "verify_aud": True,
         "verify_iss": True,
     }
+
     def __init__(self):
         oidc_parameters = self.fetch_oidc_parameters()
 
@@ -39,9 +38,7 @@ class OidcService:
         self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
         self.scope = "openid profile nationalrbacaccess associatedorgs"
 
-
         self.oidc_client = WebApplicationClient(client_id=self._client_id)
-
 
     def fetch_tokens(self, auth_code: str) -> Tuple[AccessToken, IdTokenClaimSet]:
         url, headers, body = self.oidc_client.prepare_token_request(
@@ -63,7 +60,9 @@ class OidcService:
                 "Failed to retrieve access token from ID Provider"
             )
 
-    def parse_fetch_tokens_response(self, fetch_token_response: Response) -> Tuple[AccessToken, IdTokenClaimSet]:
+    def parse_fetch_tokens_response(
+        self, fetch_token_response: Response
+    ) -> Tuple[AccessToken, IdTokenClaimSet]:
         try:
             response_content = fetch_token_response.json()
             access_token: AccessToken = response_content["access_token"]

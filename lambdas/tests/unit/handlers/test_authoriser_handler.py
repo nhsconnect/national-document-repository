@@ -4,7 +4,6 @@ from unittest.mock import patch
 
 import jwt
 import pytest
-
 from enums.permitted_role import PermittedRole
 from handlers.authoriser_handler import lambda_handler
 

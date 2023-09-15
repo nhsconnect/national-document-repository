@@ -2,7 +2,6 @@ from typing import TypeAlias
 
 from pydantic import BaseModel
 
-
 AccessToken: TypeAlias = str
 
 

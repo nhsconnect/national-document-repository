@@ -1,10 +1,9 @@
 import logging
-from typing import Optional, List, Dict, NamedTuple
+from typing import Dict, List, NamedTuple, Optional
 
 import requests
-
 from enums.permitted_role import PermittedRole
-from utils.exceptions import OrganisationNotFoundException, OdsErrorException
+from utils.exceptions import OdsErrorException, OrganisationNotFoundException
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -30,7 +29,9 @@ class OdsApiService:
                 "Organisation does not exist for given ODS code"
             )
         else:
-            logger.info(f"Got error response from ODS API with ods code {ods_code}: {response}")
+            logger.info(
+                f"Got error response from ODS API with ods code {ods_code}: {response}"
+            )
             raise OdsErrorException("Failed to fetch organisation data from ODS")
 
     @classmethod

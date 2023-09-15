@@ -4,9 +4,8 @@ from unittest.mock import patch
 
 import pytest
 from botocore.exceptions import ClientError
-from jwt import PyJWTError
-
 from handlers.token_handler import lambda_handler
+from jwt import PyJWTError
 from models.oidc_models import IdTokenClaimSet
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
