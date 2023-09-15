@@ -30,6 +30,7 @@ class OdsApiService:
                 "Organisation does not exist for given ODS code"
             )
         else:
+            logger.info(f"Got error response from ODS API with ods code {ods_code}: {response}")
             raise OdsErrorException("Failed to fetch organisation data from ODS")
 
     @classmethod
@@ -49,11 +50,10 @@ class OdsApiService:
                         role=PermittedRole(json_role["id"]).name,
                     )
 
-            logger.info("No permitted role was found for given ods code")
             return None
 
         except KeyError:
-            logger.info("Got response from ODS in unexpected format")
+            logger.info(f"Got response from ODS in unexpected format: {response_json}")
             return None
 
     @classmethod

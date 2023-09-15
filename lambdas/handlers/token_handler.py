@@ -111,10 +111,10 @@ def lambda_handler(event, _context):
         ).create_api_gateway_response()
     except (botocore.exceptions.ClientError, KeyError, TypeError) as error:
         logger.error(error)
-        return ApiGatewayResponse(500, f"{str(error)}", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(500, "Server error", "GET").create_api_gateway_response()
     except jwt.PyJWTError as error:
         logger.info(f"error while encoding JWT: {error}")
-        return ApiGatewayResponse(500, f"{str(error)}", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(500, "Server error", "GET").create_api_gateway_response()
 
     return ApiGatewayResponse(
         200, json.dumps(response), "GET"

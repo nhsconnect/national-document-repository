@@ -67,7 +67,7 @@ def test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
 
     expected = (mock_access_token, IdTokenClaimSet(**mock_decoded_claim_set))
 
-    actual = oidc_service.fetch_tokens("fake_auth_code")
+    actual = oidc_service.fetch_tokens("test_auth_code")
 
     assert actual == expected
     mocked_id_token_validation.assert_called_with(mock_id_token)
@@ -112,7 +112,7 @@ def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_id_
     )
 
     with pytest.raises(AuthorisationException):
-        oidc_service.fetch_tokens("fake_auth_code")
+        oidc_service.fetch_tokens("test_auth_code")
 
 
 def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
