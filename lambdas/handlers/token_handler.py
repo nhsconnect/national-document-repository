@@ -5,11 +5,11 @@ import time
 import uuid
 
 import boto3
-import botocore
+import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
 
-from services.dynamo_services import DynamoDBService
+# from services.dynamo_services import DynamoDBService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
@@ -19,7 +19,7 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def lambda_handler(event, context):
+def lambda_handler(event, _context):
     try:
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
@@ -61,7 +61,12 @@ def lambda_handler(event, context):
             raise AuthorisationException("No valid organisations for user")
 
         session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
-        session_table_dynamo_service = DynamoDBService(table_name=session_table_name)
+
+        # TODO: switch to use the DynamoDBService from other branch once we merge
+        # session_table_dynamo_service = DynamoDBService(table_name=session_table_name)
+
+        session_table = temp_dynamo_resource.Table(session_table_name)
+
         session_id = str(uuid.uuid4())
         session_record = {
             "NDRSessionId": session_id,
@@ -69,7 +74,8 @@ def lambda_handler(event, context):
             "Subject": id_token_claim_set.sub,
             "TimeToExist": id_token_claim_set.exp,
         }
-        session_table_dynamo_service.post_item_service(item=session_record)
+        session_table.put_item(Item=session_record)
+        # session_table_dynamo_service.post_item_service(item=session_record)
 
         # issue Authorisation token
         ssm_client = boto3.client("ssm")
