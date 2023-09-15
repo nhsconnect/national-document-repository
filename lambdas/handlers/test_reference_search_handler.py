@@ -16,7 +16,7 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     arr = []
     for name, value in os.environ.items():
-        arr.insert("[{0}, {1}]".format(name, value))
+        arr.append("[{0}, {1}]".format(name, value))
     return ApiGatewayResponse(
     200, arr, "GET"
     ).create_api_gateway_response()
