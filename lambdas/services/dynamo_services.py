@@ -24,7 +24,6 @@ class DynamoDBService:
         self, index_name, search_key, search_condition: str, requested_fields: list = None
     ):
         try:
-
             if requested_fields is None or len(requested_fields) == 0:
                 raise InvalidResourceIdException
 
@@ -39,10 +38,7 @@ class DynamoDBService:
                 ProjectionExpression=projection_expression,
             )
 
-        except ClientError as e:
-            logger.error("Unable to get query")
-            logger.error(e)
-            raise e    if results is None or "Items" not in results:
+            if results is None or "Items" not in results:
                 logger.error(f"Unusable results in DynamoDB: {results!r}")
                 raise DynamoDbException("Unrecognised response from DynamoDB")
 
@@ -63,17 +59,18 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
-    def post_item_service(self, item):
+    def update_item_service(self, key, update_expression, expression_attribute_values):
         try:
-            self.table.put_item(
-                Item=item
+            self.table.update_item(
+                Key=key,
+                UpdateExpression=update_expression,
+                ExpressionAttributeValues=expression_attribute_values
             )
             logger.info(f"Saving item to DynamoDB: {self.TABLE_NAME}")
         except ClientError as e:
             logger.error("Unable to get write to table")
             logger.error(e)
             raise e
-
 
     # Make the expressions
     # ExpressionAttributeNames = {"#create": "Created", "#file": "FileName", "#doc": "DocumentUploaded"}
