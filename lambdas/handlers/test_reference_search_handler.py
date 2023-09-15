@@ -18,5 +18,5 @@ def lambda_handler(event, context):
     for name, value in os.environ.items():
         arr.append("[{0}, {1}]".format(name, value))
     return ApiGatewayResponse(
-    200, arr, "GET"
+    200, json.dumps(arr), "GET"
     ).create_api_gateway_response()
