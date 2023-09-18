@@ -252,9 +252,9 @@ jobs:
         run: |
           make lambda_name=login_redirect_handler zip
 
-      - name: Upload Lambda Function for _LoginRedirectHandlerLambda
+      - name: Upload Lambda Function for _LoginRedirectHandler
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_LoginRedirectHandlerLambda
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_LoginRedirectHandler
           zip_file: package_lambdas_login_redirect_handler.zip
