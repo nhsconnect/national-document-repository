@@ -9,6 +9,3 @@ class IdTokenClaimSet(BaseModel):
     sub: str
     sid: str
     exp: int
-
-
-# class AuthRecord(BaseModel):
