@@ -13,7 +13,7 @@ class DynamoDBService:
     def __init__(self, table_name):
         try:
             self.TABLE_NAME = table_name
-            dynamodb = boto3.resource("dynamodb")
+            dynamodb = boto3.resource("dynamodb", region_name="eu-west-2")
             self.table = dynamodb.Table(self.TABLE_NAME)
         except ClientError as e:
             logger.error("Unable to connect to DB")
