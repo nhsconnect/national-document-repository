@@ -40,38 +40,16 @@ def lambda_handler(event, context):
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]
         )
+        logger.debug(f"decoded JWT auth token: {decoded}")
 
         ndr_session_id = decoded["ndr_session_id"]
 
-        logger.debug(
-            "Retrieving session for session ID ending in: " + ndr_session_id[-4:]
-        )
-
-        # TODO: switch to use the DynamoDBService from other branch once we merge with other branch
-        session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
-        temp_dynamo_resource = boto3.resource("dynamodb")
-        session_table = temp_dynamo_resource.Table(session_table_name)
-        query_response = session_table.query(
-            KeyConditionExpression=Key("NDRSessionId").eq(ndr_session_id)
-        )
-
-        if "Count" not in query_response or query_response["Count"] == 0:
-            raise AuthorisationException(
-                f"Unable to find session for session ID ending in: {ndr_session_id[-4:]}"
-            )
-
-        current_session = query_response["Items"][0]
-        expiry_time = current_session["TimeToExist"]
-        time_now = time.time()
-        if expiry_time <= time_now:
-            raise AuthorisationException(
-                f"The session is already expired for session ID ending in: {ndr_session_id[-4:]}"
-            )
+        current_session = find_login_session(ndr_session_id)
+        validate_login_session(current_session, ndr_session_id)
 
         # if user has a valid session, assign their role
         user_roles = [org["role"] for org in decoded["organisations"]]
 
-        logger.info(f"decoded JWT: {decoded}")
     except AuthorisationException as e:
         logger.error(e)
     except botocore.exceptions.ClientError as e:
@@ -103,6 +81,35 @@ def lambda_handler(event, context):
     auth_response = policy.build()
 
     return auth_response
+
+
+def find_login_session(ndr_session_id):
+    logger.debug("Retrieving session for session ID ending in: " + ndr_session_id[-4:])
+    # TODO: switch to use the DynamoDBService from other branch once we merge with other branch
+    session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
+    temp_dynamo_resource = boto3.resource("dynamodb")
+    session_table = temp_dynamo_resource.Table(session_table_name)
+    query_response = session_table.query(
+        KeyConditionExpression=Key("NDRSessionId").eq(ndr_session_id)
+    )
+
+    try:
+        current_session = query_response["Items"][0]
+        return current_session
+    except (KeyError, IndexError) as error:
+        logger.info(error)
+        raise AuthorisationException(
+            f"Unable to find session for session ID ending in: {ndr_session_id[-4:]}"
+        )
+
+
+def validate_login_session(current_session, ndr_session_id):
+    expiry_time = current_session["TimeToExist"]
+    time_now = time.time()
+    if expiry_time <= time_now:
+        raise AuthorisationException(
+            f"The session is already expired for session ID ending in: {ndr_session_id[-4:]}"
+        )
 
 
 class HttpVerb:
