@@ -14,8 +14,8 @@ const Header = (props: Props) => {
     return (
         <NhsHeader transactional>
             <NhsHeader.Container>
-                <NhsHeader.Logo onClick={navigateHome} />
-                <NhsHeader.ServiceName onClick={navigateHome}>
+                <NhsHeader.Logo onClick={navigateHome} className="clickable" />
+                <NhsHeader.ServiceName onClick={navigateHome} className="clickable">
                     Inactive Patient Record Administration
                 </NhsHeader.ServiceName>
             </NhsHeader.Container>

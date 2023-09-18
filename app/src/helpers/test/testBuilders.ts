@@ -1,4 +1,5 @@
 import {
+    DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
@@ -35,12 +36,17 @@ const buildTextFile = (name: string, size?: number) => {
     return file;
 };
 
-const buildDocument = (file: File, uploadStatus: DOCUMENT_UPLOAD_STATE) => {
+const buildDocument = (
+    file: File,
+    uploadStatus: DOCUMENT_UPLOAD_STATE,
+    docType?: DOCUMENT_TYPE,
+) => {
     const mockDocument: UploadDocument = {
         file,
         state: uploadStatus ?? documentUploadStates.SUCCEEDED,
         progress: 0,
         id: Math.floor(Math.random() * 1000000).toString(),
+        docType: docType ?? DOCUMENT_TYPE.ARF,
     };
     return mockDocument;
 };

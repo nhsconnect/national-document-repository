@@ -1,19 +1,17 @@
-import React, { useRef } from 'react';
-import type { FormEvent } from 'react';
+import React, { useRef, useState } from 'react';
 import {
+    DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
+    FileInputEvent,
     SetUploadDocuments,
     UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
-import { Button, Fieldset, Input, Table, WarningCallout } from 'nhsuk-react-components';
+import { Button, Fieldset } from 'nhsuk-react-components';
 import { useController, useForm } from 'react-hook-form';
-import formatFileSize from '../../../helpers/utils/formatFileSize';
 import toFileList from '../../../helpers/utils/toFileList';
 import PatientSummary from '../../generic/patientSummary/PatientSummary';
 import { PatientDetails } from '../../../types/generic/patientDetails';
-interface FileInputEvent extends FormEvent<HTMLInputElement> {
-    target: HTMLInputElement & EventTarget;
-}
+import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 
 interface Props {
     uploadDocuments: () => void;
@@ -22,61 +20,83 @@ interface Props {
 }
 
 function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
-    let inputRef = useRef<HTMLInputElement | null>(null);
+    const [arfDocuments, setArfDocuments] = useState<Array<UploadDocument>>([]);
+    const [lgDocuments, setLgDocuments] = useState<Array<UploadDocument>>([]);
+
+    let arfInputRef = useRef<HTMLInputElement | null>(null);
+    let lgInputRef = useRef<HTMLInputElement | null>(null);
+
+    const mergedDocuments = [...arfDocuments, ...lgDocuments];
+    const hasFileInput = mergedDocuments.length;
+
     const FIVEGB = 5 * Math.pow(1024, 3);
     const { handleSubmit, control, formState } = useForm();
-    const {
-        field: { ref, onChange, onBlur, name, value },
-        fieldState,
-    } = useController({
-        name: 'documents',
+    const formConfig = (name: string) => ({
+        name,
         control,
         rules: {
             validate: {
-                isFile: (value) => {
-                    return (value && value.length > 0) || 'Please select a file';
+                isFile: () => {
+                    return !!hasFileInput || 'Please select a file';
                 },
-                isLessThan5GB: (value) => {
-                    for (let i = 0; i < value.length; i++) {
-                        if (value[i].file.size > FIVEGB) {
-                            return 'Please ensure that all files are less than 5GB in size';
+                isLessThan5GB: (value?: Array<UploadDocument>) => {
+                    if (Array.isArray(value)) {
+                        for (let i = 0; i < value.length; i++) {
+                            if (value[i].file.size > FIVEGB) {
+                                return 'Please ensure that all files are less than 5GB in size';
+                            }
                         }
                     }
                 },
             },
         },
     });
+    const lgController = useController(formConfig('lg-documents'));
+    const arfController = useController(formConfig('arf-documents'));
 
-    const hasDuplicateFiles =
-        value &&
-        value.some((doc: UploadDocument) => {
-            return value.some(
-                (compare: UploadDocument) =>
-                    doc.file.name === compare.file.name && doc.id !== compare.id,
-            );
-        });
-
-    const onInput = (e: FileInputEvent) => {
+    const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {
         const fileArray = Array.from(e.target.files ?? new FileList());
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
             id: Math.floor(Math.random() * 1000000).toString(),
             file,
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,
+            docType: docType,
         }));
-
-        const updatedFileList = value ? [...value, ...documentMap] : documentMap;
-        onChange(updatedFileList);
+        const isArfDoc = docType === DOCUMENT_TYPE.ARF;
+        const mergeList = isArfDoc ? lgDocuments : arfDocuments;
+        const docTypeList = isArfDoc ? arfDocuments : lgDocuments;
+        const updatedDocList = [...documentMap, ...docTypeList];
+        if (isArfDoc) {
+            setArfDocuments(updatedDocList);
+            arfController.field.onChange(updatedDocList);
+        } else {
+            setLgDocuments(updatedDocList);
+            lgController.field.onChange(updatedDocList);
+        }
+        const updatedFileList = [...mergeList, ...updatedDocList];
         setDocuments(updatedFileList);
     };
 
-    const onRemove = (index: number) => {
-        const updatedValues = [...value.slice(0, index), ...value.slice(index + 1)];
-        onChange(updatedValues);
-        setDocuments(updatedValues);
-        if (inputRef.current) {
-            inputRef.current.files = toFileList(updatedValues);
+    const onRemove = (index: number, docType: DOCUMENT_TYPE) => {
+        const isArfDoc = docType === DOCUMENT_TYPE.ARF;
+        const mergeList = isArfDoc ? lgDocuments : arfDocuments;
+        const docTypeList = isArfDoc ? arfDocuments : lgDocuments;
+        const updatedDocList = [...docTypeList.slice(0, index), ...docTypeList.slice(index + 1)];
+        if (isArfDoc) {
+            setArfDocuments(updatedDocList);
+            if (arfInputRef.current) {
+                arfInputRef.current.files = toFileList(updatedDocList);
+            }
+        } else {
+            setLgDocuments(updatedDocList);
+            if (lgInputRef.current) {
+                lgInputRef.current.files = toFileList(updatedDocList);
+            }
         }
+
+        const updatedFileList = [...mergeList, ...updatedDocList];
+        setDocuments(updatedFileList);
     };
 
     return (
@@ -91,92 +111,32 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                         Upload documents
                     </Fieldset.Legend>
                     <PatientSummary patientDetails={patientDetails} />
-                    <Input
-                        id="documents-input"
-                        label="Select file(s)"
-                        type="file"
-                        multiple={true}
-                        name={name}
-                        error={fieldState.error?.message}
-                        onChange={onInput}
-                        onBlur={onBlur}
-                        // @ts-ignore  The NHS Component library is outdated and does not allow for any reference other than a blank MutableRefObject
-                        inputRef={(e: HTMLInputElement) => {
-                            ref(e);
-                            inputRef.current = e;
-                        }}
-                        // @ts-ignore
-                        hint={
-                            <ul>
-                                <li>
-                                    {
-                                        "A patient's full electronic health record including attachments must be uploaded."
-                                    }
-                                </li>
-                                <li>{'You can select multiple files to upload at once.'}</li>
-                                <li>
-                                    In the event documents cannot be uploaded, they must be printed
-                                    and sent via{' '}
-                                    <a
-                                        href="https://secure.pcse.england.nhs.uk/"
-                                        target="_blank"
-                                        rel="noreferrer"
-                                    >
-                                        Primary Care Support England
-                                    </a>
-                                    .
-                                </li>
-                            </ul>
-                        }
+                    <h2>Electronic health records</h2>
+                    <DocumentInputForm
+                        showHelp
+                        documents={arfDocuments}
+                        onDocumentRemove={onRemove}
+                        onDocumentInput={onInput}
+                        formController={arfController}
+                        inputRef={arfInputRef}
+                        formType={DOCUMENT_TYPE.ARF}
                     />
-                    <div role="region" aria-live="polite">
-                        {value && value.length > 0 && (
-                            <Table caption="Selected documents" id="selected-documents-table">
-                                <Table.Head>
-                                    <Table.Row>
-                                        <Table.Cell>Filename</Table.Cell>
-                                        <Table.Cell>Size</Table.Cell>
-                                        <Table.Cell>Remove</Table.Cell>
-                                    </Table.Row>
-                                </Table.Head>
-
-                                <Table.Body>
-                                    {value.map((document: UploadDocument, index: number) => (
-                                        <Table.Row key={document.id}>
-                                            <Table.Cell>{document.file.name}</Table.Cell>
-                                            <Table.Cell>
-                                                {formatFileSize(document.file.size)}
-                                            </Table.Cell>
-                                            <Table.Cell>
-                                                <button
-                                                    type="button"
-                                                    aria-label={`Remove ${document.file.name} from selection`}
-                                                    className="link-button"
-                                                    onClick={() => {
-                                                        onRemove(index);
-                                                    }}
-                                                >
-                                                    Remove
-                                                </button>
-                                            </Table.Cell>
-                                        </Table.Row>
-                                    ))}
-                                </Table.Body>
-                            </Table>
-                        )}
-                        {hasDuplicateFiles && (
-                            <WarningCallout>
-                                <WarningCallout.Label>Possible duplicate file</WarningCallout.Label>
-                                <p>There are two or more documents with the same name.</p>
-                                <p>Are you sure you want to proceed?</p>
-                            </WarningCallout>
-                        )}
-                    </div>
+                    <br />
+                    <br />
+                    <h2>Lloyd George records</h2>
+                    <DocumentInputForm
+                        documents={lgDocuments}
+                        onDocumentRemove={onRemove}
+                        onDocumentInput={onInput}
+                        formController={lgController}
+                        inputRef={lgInputRef}
+                        formType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                    />
                 </Fieldset>
                 <Button
                     type="submit"
                     id="upload-button"
-                    disabled={formState.isSubmitting || !value}
+                    disabled={formState.isSubmitting || !hasFileInput}
                 >
                     Upload
                 </Button>
