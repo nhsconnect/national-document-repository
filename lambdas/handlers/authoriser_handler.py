@@ -47,7 +47,6 @@ def lambda_handler(event, context):
             "Retrieving session for session ID ending in: " + ndr_session_id[-4:]
         )
 
-        # TODO: add this env var to terraform
         # TODO: switch to use the DynamoDBService from other branch once we merge with other branch
         session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
         temp_dynamo_resource = boto3.resource("dynamodb")
