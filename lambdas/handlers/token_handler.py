@@ -25,7 +25,7 @@ def lambda_handler(event, _context):
     try:
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
-    except KeyError:
+    except (KeyError, TypeError):
         return ApiGatewayResponse(
             400, "Please supply an authorisation code and state", "GET"
         ).create_api_gateway_response()
