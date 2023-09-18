@@ -1,4 +1,3 @@
-import abc
 import logging
 import os
 import time
@@ -16,11 +15,15 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     return prepare_redirect_response(WebApplicationClient)
 
+
 def prepare_redirect_response(web_application_client_class):
     try:
         ssm_response = get_ssm_parameters()
 
-        oidc_parameters = {parameter["Name"] : parameter["Value"] for parameter in ssm_response["Parameters"]}
+        oidc_parameters = {
+            parameter["Name"]: parameter["Value"]
+            for parameter in ssm_response["Parameters"]
+        }
 
         oidc_client = web_application_client_class(
             client_id=oidc_parameters["OIDC_CLIENT_ID"],
@@ -38,13 +41,18 @@ def prepare_redirect_response(web_application_client_class):
 
     except ClientError as e:
         logger.error(f"Error getting using aws client: {e}")
-        return ApiGatewayResponse(500, "Server error", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(
+            500, "Server error", "GET"
+        ).create_api_gateway_response()
     except InsecureTransportError as e:
         logger.error(f"Error preparing auth request: {e}")
-        return ApiGatewayResponse(500, "Server error", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(
+            500, "Server error", "GET"
+        ).create_api_gateway_response()
     return ApiGatewayResponse(302, "", "GET").create_api_gateway_response(
         headers=location_header
     )
+
 
 def save_state_in_dynamo_db(state):
     dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
@@ -52,6 +60,7 @@ def save_state_in_dynamo_db(state):
     ttl = round(time.time()) + 60 * 10
     item = {"State": state, "TimeToExist": ttl}
     dynamodb_service.post_item_service(item=item)
+
 
 def get_ssm_parameters():
     ssm_parameters_names = ["OIDC_AUTHORISE_URL", "OIDC_CLIENT_ID"]
