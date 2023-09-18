@@ -1,9 +1,9 @@
-import os
+import json
 
-from handlers.create_document_reference_handler import (
-    create_document_presigned_url_handler, create_document_reference_object,
-    save_document_reference_in_dynamo_db)
-from models.nhs_document_reference import NHSDocumentReference
+import pytest
+from botocore.exceptions import ClientError
+from handlers.create_document_reference_handler import lambda_handler
+from utils.lambda_response import ApiGatewayResponse
 
 REGION_NAME = "eu-west-2"
 MOCK_BUCKET = "test_s3_bucket"
@@ -17,56 +17,102 @@ MOCK_EVENT_BODY = {
     "description": "test_filename.pdf",
 }
 
-os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = MOCK_DYNAMODB
+MOCK_PRESIGNED_POST_RESPONSE = {
+    "url": "https://ndr-dev-document-store.s3.amazonaws.com/",
+    "fields": {
+        "key": "0abed67c-0d0b-4a11-a600-a2f19ee61281",
+        "x-amz-algorithm": "AWS4-HMAC-SHA256",
+        "x-amz-credential": "ASIAXYSUA44VTL5M5LWL/20230911/eu-west-2/s3/aws4_request",
+        "x-amz-date": "20230911T084756Z",
+        "x-amz-security-token": "test-security-token",
+        "policy": "test-policy",
+        "x-amz-signature": "b6afcf8b27fc883b0e0a25a789dd2ab272ea4c605a8c68267f73641d7471132f",
+    },
+}
 
 
-def test_create_presigned_url(mocker):
-    mock_generate_presigned_post = mocker.patch(
-        "botocore.signers.generate_presigned_post"
-    )
-
-    mocked_presigned_response = {
-        "url": "https://test_s3_bucket.s3.amazonaws.com/",
-        "fields": {
-            "key": "test",
-            "x-amz-algorithm": "test",
-            "x-amz-credential": "test",
-            "x-amz-date": "20230801T105444Z",
-            "x-amz-security-token": "test",
-            "policy": "test",
-            "x-amz-signature": "test",
-        },
+@pytest.fixture
+def event():
+    api_gateway_proxy_event = {
+        "body": '{"subject": {"identifier": {"value": "test"}}, '
+        '"content": [{"attachment": {"contentType": "test"}}], '
+        '"description": "test"}'
     }
+    return api_gateway_proxy_event
 
-    mock_generate_presigned_post.return_value = mocked_presigned_response
 
-    test_return_value = create_document_presigned_url_handler(
-        MOCK_BUCKET, TEST_OBJECT_KEY
+def test_create_document_reference_valid_returns_200(set_env, event, context, mocker):
+    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+
+    mock_presigned = mocker.patch(
+        "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
+    mock_presigned.return_value = MOCK_PRESIGNED_POST_RESPONSE
 
-    assert test_return_value == mocked_presigned_response
-    mock_generate_presigned_post.assert_called_once()
+    expected = ApiGatewayResponse(
+        200, json.dumps(MOCK_PRESIGNED_POST_RESPONSE), "POST"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(event, context)
+
+    assert actual == expected
 
 
-def test_create_document_reference_object():
-    test_document_object = create_document_reference_object(
-        MOCK_BUCKET, TEST_OBJECT_KEY, MOCK_EVENT_BODY
+def test_create_document_reference_dynamo_ClientError_returns_500(
+    set_env, event, context, mocker
+):
+    error = {"Error": {"Code": 500, "Message": "S3 is down"}}
+    exception = ClientError(error, "Query")
+
+    mock_dynamo = mocker.patch(
+        "services.dynamo_service.DynamoDBService.post_item_service"
     )
-    assert test_document_object.file_name == "test_filename.pdf"
-    assert test_document_object.content_type == "application/pdf"
-    assert test_document_object.nhs_number == 111111000
-    assert test_document_object.file_location == TEST_DOCUMENT_LOCATION
+    mock_dynamo.side_effect = exception
 
-
-def test_create_document_reference_in_dynamo_db(mocker):
-    mock_dynamo = mocker.patch("boto3.resource")
-    mock_table = mocker.MagicMock()
-
-    test_document_object = NHSDocumentReference(
-        TEST_OBJECT_KEY, TEST_DOCUMENT_LOCATION, MOCK_EVENT_BODY
+    mock_presigned = mocker.patch(
+        "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
+    mock_presigned.return_value = MOCK_PRESIGNED_POST_RESPONSE
 
-    mock_dynamo.return_value.Table.return_value = mock_table
+    expected = ApiGatewayResponse(
+        500, "An error occurred when creating document reference", "POST"
+    ).create_api_gateway_response()
 
-    save_document_reference_in_dynamo_db(test_document_object)
-    mock_table.put_item.assert_called_once()
+    actual = lambda_handler(event, context)
+
+    assert actual == expected
+
+
+def test_create_document_reference_s3_ClientError_returns_500(
+    set_env, event, context, mocker
+):
+    error = {"Error": {"Code": 500, "Message": "DynamoDB is down"}}
+    exception = ClientError(error, "Query")
+
+    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+
+    mock_presigned = mocker.patch(
+        "services.s3_service.S3Service.create_document_presigned_url_handler"
+    )
+    mock_presigned.side_effect = exception
+
+    expected = ApiGatewayResponse(
+        500, "An error occurred when creating document reference", "POST"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(event, context)
+
+    assert actual == expected
+
+
+def test_lambda_handler_missing_environment_variables_returns_400(
+    set_env, monkeypatch, valid_id_event, context
+):
+    monkeypatch.delenv("DOCUMENT_STORE_DYNAMODB_NAME")
+    expected = ApiGatewayResponse(
+        400,
+        "An error occurred due to missing key: 'DOCUMENT_STORE_DYNAMODB_NAME'",
+        "POST",
+    ).create_api_gateway_response()
+    actual = lambda_handler(valid_id_event, context)
+    assert expected == actual

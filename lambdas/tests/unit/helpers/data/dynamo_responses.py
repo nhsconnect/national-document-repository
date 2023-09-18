@@ -118,3 +118,39 @@ UNEXPECTED_RESPONSE = {
         "RetryAttempts": 0,
     },
 }
+
+MOCK_MANIFEST_QUERY_RESPONSE = {
+    "Items": [
+        {
+            "FileName": "document.csv",
+            "Location": "s3://test-bucket/test-key-123",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "FileName": "results.pdf",
+            "Location": "s3://test-bucket/test-key-456",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "FileName": "output.csv",
+            "Location": "s3://test-bucket/test-key-789",
+            "VirusScannerResult": "Clean",
+        },
+    ],
+    "Count": 5,
+    "ScannedCount": 5,
+    "ResponseMetadata": {
+        "RequestId": "VNS38QDVQCIQ1EMGKQ1EA2E5MVVV4KQNSO5AEMVJF66Q9ASUAAJG",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "server": "Server",
+            "date": "Thu, 07 Sep 2023 11:14:01 GMT",
+            "content-type": "application/x-amz-json-1.0",
+            "content-length": "583",
+            "connection": "keep-alive",
+            "x-amzn-requestid": "VNS38QDVQCIQ1EMGKQ1EA2E5MVVV4KQNSO5AEMVJF66Q9ASUAAJG",
+            "x-amz-crc32": "2636774765",
+        },
+        "RetryAttempts": 0,
+    },
+}

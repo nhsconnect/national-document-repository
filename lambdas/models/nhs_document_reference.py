@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 
+from enums.metadata_field_names import DocumentReferenceMetadataFields
+
 
 class NHSDocumentReference:
     def __init__(self, reference_id, file_location, data) -> None:
@@ -30,12 +32,25 @@ class NHSDocumentReference:
 
     def to_dict(self):
         document_metadata = {
-            "ID": str(self.id),
-            "NhsNumber": self.nhs_number,
-            "FileName": self.file_name,
-            "FileLocation": self.file_location,
-            "Created": self.created,
-            "ContentType": self.content_type,
-            "VirusScannerResult": self.virus_scanner_result,
+            DocumentReferenceMetadataFields.ID.field_name: str(self.id),
+            DocumentReferenceMetadataFields.NHS_NUMBER.field_name: self.nhs_number,
+            DocumentReferenceMetadataFields.FILE_NAME.field_name: self.file_name,
+            DocumentReferenceMetadataFields.LOCATION.field_name: self.file_location,
+            DocumentReferenceMetadataFields.CREATED.field_name: self.created,
+            DocumentReferenceMetadataFields.CONTENT_TYPE.field_name: self.content_type,
+            DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT.field_name: self.virus_scanner_result,
         }
         return document_metadata
+
+    def __eq__(self, other):
+        return (
+            self.id == other.id
+            and self.nhs_number == other.nhs_number
+            and self.content_type == other.content_type
+            and self.file_name == other.file_name
+            and self.created == other.created
+            and self.deleted == other.deleted
+            and self.uploaded == other.uploaded
+            and self.virus_scanner_result == other.virus_scan_result
+            and self.file_location == other.file_location
+        )

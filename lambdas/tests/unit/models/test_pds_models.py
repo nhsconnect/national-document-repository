@@ -3,7 +3,7 @@ from models.pds_models import PatientDetails
 from tests.unit.helpers.data.pds.utils import (create_restricted_patient,
                                                create_unrestricted_patient)
 from utils.exceptions import InvalidResourceIdException
-from utils.nhs_number_validator import validate_id
+from utils.utilities import validate_id
 
 
 def test_validate_id_with_valid_id_returns_true():
