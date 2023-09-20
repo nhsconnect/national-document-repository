@@ -9,6 +9,7 @@ from models.document import Document
 from models.zip_trace import ZipTrace
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
+from utils.exceptions import ManifestDownloadException
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -33,24 +34,22 @@ class DocumentManifestService:
         self.temp_output_dir = tempfile.mkdtemp()
 
     def create_document_manifest_presigned_url(self) -> str:
-        try:
-            self.download_documents_to_be_zipped()
-            self.upload_zip_file()
+        self.download_documents_to_be_zipped()
+        self.upload_zip_file()
 
-            shutil.rmtree(self.temp_downloads_dir)
-            shutil.rmtree(self.temp_output_dir)
+        shutil.rmtree(self.temp_downloads_dir)
+        shutil.rmtree(self.temp_output_dir)
 
-            return self.s3_service.create_download_presigned_url(
-                s3_bucket_name=self.zip_output_bucket, file_key=self.zip_file_name
-            )
-        except ClientError:
-            raise
+        return self.s3_service.create_download_presigned_url(
+            s3_bucket_name=self.zip_output_bucket, file_key=self.zip_file_name
+        )
 
     def download_documents_to_be_zipped(self):
         logger.info("Downloading documents to be zipped")
 
         file_names_to_be_zipped = {}
 
+        logger.info(f"Temp directory contents {os.listdir(self.temp_downloads_dir)}")
         for document in self.documents:
             file_name = document.file_name
 
@@ -66,9 +65,18 @@ class DocumentManifestService:
                 file_names_to_be_zipped[file_name] = 1
 
             download_path = os.path.join(self.temp_downloads_dir, document.file_name)
-            self.s3_service.download_file(
-                document.file_bucket, document.file_key, download_path
-            )
+
+            try:
+                self.s3_service.download_file(
+                    document.file_bucket, document.file_key, download_path
+                )
+            except ClientError:
+                logger.error(
+                    f"{document.file_key} may reference missing file in s3 bucket {document.file_bucket}"
+                )
+                raise ManifestDownloadException(
+                    f"Reference to {document.file_key} that doesn't exist in s3"
+                )
 
     def upload_zip_file(self):
         logger.info("Creating zip from files")

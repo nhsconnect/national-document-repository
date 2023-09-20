@@ -1,11 +1,13 @@
 import logging
 import os
 
+from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.document import Document
 from services.document_manifest_service import DocumentManifestService
 from services.dynamo_service import DynamoDBService
-from utils.exceptions import DynamoDbException, InvalidResourceIdException
+from utils.exceptions import (DynamoDbException, InvalidResourceIdException,
+                              ManifestDownloadException)
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import validate_id
 
@@ -32,21 +34,20 @@ def lambda_handler(event, context):
         logger.info("Retrieving lloyd george documents")
         lg_documents = get_lloyd_george_documents(lloyd_george_table_name, nhs_number)
 
-        if not lg_documents or not ds_documents:
+        documents = lg_documents + ds_documents
+
+        if not documents:
             return ApiGatewayResponse(
                 204, "No documents found for given NHS number", "GET"
             ).create_api_gateway_response()
 
-        documents = lg_documents + ds_documents
-
+        logger.info("Starting document manifest process")
         document_manifest_service = DocumentManifestService(
             nhs_number=nhs_number,
             documents=documents,
             zip_output_bucket=zip_output_bucket,
             zip_trace_table=zip_trace_table_name,
         )
-
-        logger.info("Starting document manifest process")
 
         response = document_manifest_service.create_document_manifest_presigned_url()
 
@@ -60,12 +61,24 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(
             400, f"An error occurred due to missing key: {str(e)}", "GET"
         ).create_api_gateway_response()
+    except ManifestDownloadException as e:
+        return ApiGatewayResponse(
+            500,
+            f"{str(e)}",
+            "GET",
+        ).create_api_gateway_response()
     except DynamoDbException as e:
         return ApiGatewayResponse(
             500,
             f"An error occurred when searching for available documents: {str(e)}",
             "GET",
         ).create_api_gateway_response()
+    except ClientError as e:
+        logger.error(str(e))
+        response = ApiGatewayResponse(
+            500, "An error occurred when creating document manifest", "POST"
+        ).create_api_gateway_response()
+        return response
 
 
 def get_lloyd_george_documents(
@@ -110,5 +123,5 @@ def query_documents(dynamo_service: DynamoDBService, nhs_number: str) -> list[Do
             ],
         )
         documents.append(document)
-
+    logger.info(documents)
     return documents
