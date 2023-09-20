@@ -15,7 +15,7 @@ class ZipTrace:
     def to_dict(self):
         zip_trace_metadata = {
             DocumentZipTraceFields.ID.value: str(self.id),
-            DocumentZipTraceFields.LOCATION.value: self.location,
+            DocumentZipTraceFields.FILE_LOCATION.value: self.location,
             DocumentZipTraceFields.CREATED.value: self.created,
         }
         return zip_trace_metadata

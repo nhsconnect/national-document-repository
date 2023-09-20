@@ -12,4 +12,4 @@ def test_returns_all_as_list():
     assert len(subject) == 8
     assert DocumentReferenceMetadataFields.FILE_NAME in subject
     assert DocumentReferenceMetadataFields.CREATED in subject
-    assert DocumentReferenceMetadataFields.LOCATION in subject
+    assert DocumentReferenceMetadataFields.FILE_LOCATION in subject

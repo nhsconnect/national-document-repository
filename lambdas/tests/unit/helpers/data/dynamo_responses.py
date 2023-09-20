@@ -123,17 +123,17 @@ MOCK_MANIFEST_QUERY_RESPONSE = {
     "Items": [
         {
             "FileName": "document.csv",
-            "Location": "s3://test-bucket/test-key-123",
+            "FileLocation": "s3://test-bucket/test-key-123",
             "VirusScannerResult": "Clean",
         },
         {
             "FileName": "results.pdf",
-            "Location": "s3://test-bucket/test-key-456",
+            "FileLocation": "s3://test-bucket/test-key-456",
             "VirusScannerResult": "Clean",
         },
         {
             "FileName": "output.csv",
-            "Location": "s3://test-bucket/test-key-789",
+            "FileLocation": "s3://test-bucket/test-key-789",
             "VirusScannerResult": "Clean",
         },
     ],

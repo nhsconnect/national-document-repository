@@ -89,7 +89,7 @@ def query_documents(dynamo_service: DynamoDBService, nhs_number: str) -> list[Do
         nhs_number,
         [
             DocumentReferenceMetadataFields.FILE_NAME,
-            DocumentReferenceMetadataFields.LOCATION,
+            DocumentReferenceMetadataFields.FILE_LOCATION,
             DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT,
         ],
     )
@@ -105,7 +105,9 @@ def query_documents(dynamo_service: DynamoDBService, nhs_number: str) -> list[Do
             virus_scanner_result=item[
                 DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT.field_name
             ],
-            file_location=item[DocumentReferenceMetadataFields.LOCATION.field_name],
+            file_location=item[
+                DocumentReferenceMetadataFields.FILE_LOCATION.field_name
+            ],
         )
         documents.append(document)
 

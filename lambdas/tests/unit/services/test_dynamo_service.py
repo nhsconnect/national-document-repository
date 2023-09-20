@@ -36,16 +36,16 @@ def test_create_expressions_correctly_creates_an_expression_of_one_field(set_env
 
 def test_create_expressions_correctly_creates_an_expression_of_multiple_fields(set_env):
     query_service = DynamoDBService("test_table")
-    expected_projection = "#nhsNumber,#location,#type"
+    expected_projection = "#nhsNumber,#fileLocation,#type"
     expected_expr_attr_names = {
         "#nhsNumber": "NhsNumber",
-        "#location": "Location",
+        "#fileLocation": "FileLocation",
         "#type": "Type",
     }
 
     fields_requested = [
         DocumentReferenceMetadataFields.NHS_NUMBER,
-        DocumentReferenceMetadataFields.LOCATION,
+        DocumentReferenceMetadataFields.FILE_LOCATION,
         DocumentReferenceMetadataFields.TYPE,
     ]
 

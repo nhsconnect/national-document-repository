@@ -35,7 +35,7 @@ class NHSDocumentReference:
             DocumentReferenceMetadataFields.ID.field_name: str(self.id),
             DocumentReferenceMetadataFields.NHS_NUMBER.field_name: self.nhs_number,
             DocumentReferenceMetadataFields.FILE_NAME.field_name: self.file_name,
-            DocumentReferenceMetadataFields.LOCATION.field_name: self.file_location,
+            DocumentReferenceMetadataFields.FILE_LOCATION.field_name: self.file_location,
             DocumentReferenceMetadataFields.CREATED.field_name: self.created,
             DocumentReferenceMetadataFields.CONTENT_TYPE.field_name: self.content_type,
             DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT.field_name: self.virus_scanner_result,

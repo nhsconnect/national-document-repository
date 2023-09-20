@@ -15,7 +15,7 @@ NHS_NUMBER = "1111111111"
 
 TEST_METADATA_FIELDS = [
     DocumentReferenceMetadataFields.FILE_NAME,
-    DocumentReferenceMetadataFields.LOCATION,
+    DocumentReferenceMetadataFields.FILE_LOCATION,
     DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT,
 ]
 

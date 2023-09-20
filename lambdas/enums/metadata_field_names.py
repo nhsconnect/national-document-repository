@@ -6,7 +6,7 @@ class DocumentReferenceMetadataFields(Enum):
     CONTENT_TYPE = "ContentType", "#contentType"
     CREATED = "Created", "#created"
     FILE_NAME = "FileName", "#fileName"
-    LOCATION = "Location", "#location"
+    FILE_LOCATION = "FileLocation", "#fileLocation"
     NHS_NUMBER = "NhsNumber", "#nhsNumber"
     TYPE = "Type", "#type"
     VIRUS_SCAN_RESULT = "VirusScannerResult", "#vscanResult"
@@ -22,7 +22,7 @@ class DocumentReferenceMetadataFields(Enum):
             DocumentReferenceMetadataFields.CONTENT_TYPE,
             DocumentReferenceMetadataFields.CREATED,
             DocumentReferenceMetadataFields.FILE_NAME,
-            DocumentReferenceMetadataFields.LOCATION,
+            DocumentReferenceMetadataFields.FILE_LOCATION,
             DocumentReferenceMetadataFields.NHS_NUMBER,
             DocumentReferenceMetadataFields.TYPE,
             DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT,
@@ -32,4 +32,4 @@ class DocumentReferenceMetadataFields(Enum):
 class DocumentZipTraceFields(Enum):
     ID = "ID"
     CREATED = "Created"
-    LOCATION = "Location"
+    FILE_LOCATION = "Location"
