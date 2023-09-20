@@ -1,0 +1,70 @@
+{
+  "Organisation": {
+    "Name": "PORTWAY LIFESTYLE CENTRE",
+    "Date": [
+      {
+        "Type": "Operational",
+        "Start": "2020-10-01"
+      }
+    ],
+    "OrgId": {
+      "root": "2.16.840.1.113883.2.1.3.2.4.18.48",
+      "assigningAuthorityName": "HSCIC",
+      "extension": "A9A5A"
+    },
+    "Status": "Active",
+    "LastChangeDate": "2020-11-24",
+    "orgRecordClass": "RC2",
+    "GeoLoc": {
+      "Location": {
+        "AddrLn1": "NEWBURY LANE",
+        "Town": "OLDBURY",
+        "PostCode": "B69 1HE",
+        "Country": "ENGLAND",
+        "UPRN": 32067663
+      }
+    },
+    "Roles": {
+      "Role": [
+        {
+          "id": "RO76",
+          "uniqueRoleId": 401397,
+          "primaryRole": true,
+          "Date": [
+            {
+              "Type": "Operational",
+              "Start": "2020-10-01"
+            }
+          ],
+          "Status": "Active"
+        }
+      ]
+    },
+    "Rels": {
+      "Rel": [
+        {
+          "Date": [
+            {
+              "Type": "Operational",
+              "Start": "2020-10-01"
+            }
+          ],
+          "Status": "Active",
+          "Target": {
+            "OrgId": {
+              "root": "2.16.840.1.113883.2.1.3.2.4.18.48",
+              "assigningAuthorityName": "HSCIC",
+              "extension": "RXK"
+            },
+            "PrimaryRoleId": {
+              "id": "RO197",
+              "uniqueRoleId": 131575
+            }
+          },
+          "id": "RE6",
+          "uniqueRelId": 719187
+        }
+      ]
+    }
+  }
+}
