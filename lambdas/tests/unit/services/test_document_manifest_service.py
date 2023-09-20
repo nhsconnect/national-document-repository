@@ -43,7 +43,7 @@ def test_create_document_manifest_presigned_url(set_env, mocker):
     )
 
     mock_s3_service = mocker.patch.object(
-        service.s3_service, "create_zip_presigned_url"
+        service.s3_service, "create_download_presigned_url"
     )
     mock_download_documents_to_be_zipped = mocker.patch.object(
         service, "download_documents_to_be_zipped"

@@ -40,7 +40,7 @@ class DocumentManifestService:
             shutil.rmtree(self.temp_downloads_dir)
             shutil.rmtree(self.temp_output_dir)
 
-            return self.s3_service.create_zip_presigned_url(
+            return self.s3_service.create_download_presigned_url(
                 s3_bucket_name=self.zip_output_bucket, file_key=self.zip_file_name
             )
         except ClientError:
@@ -96,7 +96,7 @@ class DocumentManifestService:
 
         self.dynamo_service.post_item_service(zip_trace.to_dict())
 
-        response = self.s3_service.create_zip_presigned_url(
+        response = self.s3_service.create_download_presigned_url(
             self.zip_output_bucket, self.zip_file_name
         )
 

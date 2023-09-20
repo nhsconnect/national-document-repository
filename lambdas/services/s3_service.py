@@ -22,7 +22,7 @@ class S3Service:
             ExpiresIn=self.presigned_url_expiry,
         )
 
-    def create_zip_presigned_url(self, s3_bucket_name: str, file_key: str):
+    def create_download_presigned_url(self, s3_bucket_name: str, file_key: str):
         logger.info("Generating presigned URL for manifest")
         return self.client.generate_presigned_url(
             "get_object",

@@ -72,7 +72,7 @@ def test_create_zip_presigned_url(mocker):
 
     service = S3Service()
 
-    return_value = service.create_zip_presigned_url(MOCK_BUCKET, TEST_FILE_KEY)
+    return_value = service.create_download_presigned_url(MOCK_BUCKET, TEST_FILE_KEY)
 
     assert return_value == MOCK_PRESIGNED_URL_RESPONSE
     mock_generate_presigned_url.assert_called_once()
