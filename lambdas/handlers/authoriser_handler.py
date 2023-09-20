@@ -13,10 +13,14 @@ See the License for the specific language governing permissions and limitations 
 import logging
 import os
 import re
+import time
 
 import boto3
-import botocore
+import botocore.exceptions
 import jwt
+from boto3.dynamodb.conditions import Key
+from enums.permitted_role import PermittedRole
+from utils.exceptions import AuthorisationException
 
 from utils.get_aws_region import get_aws_region
 
@@ -25,7 +29,7 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    user = "Unauthorised"
+    user_roles = []
     ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
 
     try:
@@ -35,20 +39,25 @@ def lambda_handler(event, context):
         )
         public_key = ssm_response["Parameter"]["Value"]
 
-        # For now we just assume the user authenticate with a signed token in this form:
-        # { "user_role": "Unauthorised"  or  "GP"  or  "PCSE" }
-        # The token is going to be issued by the lambda of ticket PRMDR-167
-
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]
         )
-        user = decoded["user_role"]
-        logger.info(f"decoded JWT: {decoded}")
+
+        ndr_session_id = decoded["ndr_session_id"]
+
+        current_session = find_login_session(ndr_session_id)
+        validate_login_session(current_session, ndr_session_id)
+
+        # if user has a valid session, assign their role
+        user_roles = [org["role"] for org in decoded["organisations"]]
+
+    except AuthorisationException as e:
+        logger.error(e)
     except botocore.exceptions.ClientError as e:
         logger.error(e)
     except jwt.PyJWTError as e:
         logger.error(f"error while decoding JWT: {e}")
-    except KeyError as e:
+    except (KeyError, IndexError) as e:
         logger.error(e)
 
     principal_id = ""
@@ -60,18 +69,55 @@ def lambda_handler(event, context):
     policy.region = region
     policy.stage = stage
 
-    if user == "GP":
+    # for now, allow all method for GP and DEV role, and allow only search document for PCSE
+    if PermittedRole.DEV.name in user_roles:
         policy.allowAllMethods()
-    elif user == "PCSE":
+    elif PermittedRole.GP.name in user_roles:
+        policy.allowAllMethods()
+    elif PermittedRole.PCSE.name in user_roles:
         policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
-    elif user == "SuperUser":
-        policy.allowAllMethods()
     else:
         policy.denyAllMethods()
 
     auth_response = policy.build()
 
     return auth_response
+
+
+def redact_id(session_id: str) -> str:
+    # Extract the last 4 chars of session id for logging, as it was in ARF
+    return session_id[-4:]
+
+
+def find_login_session(ndr_session_id):
+    logger.debug(
+        f"Retrieving session for session ID ending in: f{redact_id(ndr_session_id)}"
+    )
+    # TODO: switch to use the DynamoDBService from other branch once we merge with other branch
+    session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
+    temp_dynamo_resource = boto3.resource("dynamodb")
+    session_table = temp_dynamo_resource.Table(session_table_name)
+    query_response = session_table.query(
+        KeyConditionExpression=Key("NDRSessionId").eq(ndr_session_id)
+    )
+
+    try:
+        current_session = query_response["Items"][0]
+        return current_session
+    except (KeyError, IndexError) as error:
+        logger.info(error)
+        raise AuthorisationException(
+            f"Unable to find session for session ID ending in: {redact_id(ndr_session_id)}"
+        )
+
+
+def validate_login_session(current_session, ndr_session_id):
+    expiry_time = current_session["TimeToExist"]
+    time_now = time.time()
+    if expiry_time <= time_now:
+        raise AuthorisationException(
+            f"The session is already expired for session ID ending in: {redact_id(ndr_session_id)}"
+        )
 
 
 class HttpVerb:

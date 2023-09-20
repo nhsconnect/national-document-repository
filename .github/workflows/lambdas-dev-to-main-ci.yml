@@ -327,3 +327,97 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_LoginRedirectHandler
           zip_file: package_lambdas_login_redirect_handler.zip
+
+  python_deploy_authoriser_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    if: |
+      (github.ref == 'refs/heads/main') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.authoriser_changed == 'true'
+          )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environement
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Authoriser
+        run: |
+          make lambda_name=authoriser_handler zip
+
+      - name: Upload Lambda Function for AuthoriserHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_AuthoriserLambda
+          zip_file: package_lambdas_authoriser_handler.zip
+
+  python_deploy_token_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    if: |
+      (github.ref == 'refs/heads/main') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.token_changed == 'true'
+          )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environement
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for TokenRequestHandler
+        run: |
+          make lambda_name=token_handler zip
+
+      - name: Upload Lambda Function for TokenRequestHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_TokenRequestHandlerLambda
+          zip_file: package_lambdas_token_handler.zip
