@@ -118,16 +118,18 @@ def issue_auth_token(
     id_token_claim_set: IdTokenClaimSet,
     permitted_orgs_and_roles: list[dict],
 ) -> str:
-    # issue Authorisation token
     ssm_client = boto3.client("ssm")
     logger.info("starting ssm request to retrieve NDR private key")
     ssm_response = ssm_client.get_parameter(
         Name="jwt_token_private_key", WithDecryption=True
     )
     logger.info("ending ssm request")
+
     private_key = ssm_response["Parameter"]["Value"]
+
+    thirty_minutes_timespan = 60 * 30
     ndr_token_content = {
-        "exp": min(time.time() + 60 * 30, id_token_claim_set.exp),
+        "exp": min(time.time() + thirty_minutes_timespan, id_token_claim_set.exp),
         "iss": "nhs repo",
         "organisations": permitted_orgs_and_roles,
         "ndr_session_id": session_id,

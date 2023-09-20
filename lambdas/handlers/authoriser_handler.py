@@ -40,7 +40,6 @@ def lambda_handler(event, context):
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]
         )
-        logger.debug(f"decoded JWT auth token: {decoded}")
 
         ndr_session_id = decoded["ndr_session_id"]
 
@@ -83,8 +82,15 @@ def lambda_handler(event, context):
     return auth_response
 
 
+def redact_id(session_id: str) -> str:
+    # Extract the last 4 chars of session id for logging, as it was in ARF
+    return session_id[-4:]
+
+
 def find_login_session(ndr_session_id):
-    logger.debug("Retrieving session for session ID ending in: " + ndr_session_id[-4:])
+    logger.debug(
+        f"Retrieving session for session ID ending in: f{redact_id(ndr_session_id)}"
+    )
     # TODO: switch to use the DynamoDBService from other branch once we merge with other branch
     session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
     temp_dynamo_resource = boto3.resource("dynamodb")
@@ -99,7 +105,7 @@ def find_login_session(ndr_session_id):
     except (KeyError, IndexError) as error:
         logger.info(error)
         raise AuthorisationException(
-            f"Unable to find session for session ID ending in: {ndr_session_id[-4:]}"
+            f"Unable to find session for session ID ending in: {redact_id(ndr_session_id)}"
         )
 
 
@@ -108,7 +114,7 @@ def validate_login_session(current_session, ndr_session_id):
     time_now = time.time()
     if expiry_time <= time_now:
         raise AuthorisationException(
-            f"The session is already expired for session ID ending in: {ndr_session_id[-4:]}"
+            f"The session is already expired for session ID ending in: {redact_id(ndr_session_id)}"
         )
 
 
