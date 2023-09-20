@@ -32,4 +32,4 @@ class DocumentReferenceMetadataFields(Enum):
 class DocumentZipTraceFields(Enum):
     ID = "ID"
     CREATED = "Created"
-    FILE_LOCATION = "Location"
+    FILE_LOCATION = "FileLocation"
