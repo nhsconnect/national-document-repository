@@ -337,5 +337,5 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_TokenRequestHandlerLambda
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_TokenRequestHandler
           zip_file: package_lambdas_token_handler.zip

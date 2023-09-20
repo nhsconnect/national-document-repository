@@ -286,7 +286,7 @@ jobs:
 
       - name: Create release package for Authoriser lambda
         run: |
-          make lambda_name=authoriser zip
+          make lambda_name=authoriser_handler zip
 
       - name: Upload Lambda Function for AuthoriserLambda
         uses: appleboy/lambda-action@master
@@ -333,5 +333,5 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ vars.BUILD_ENV }}_TokenRequestHandlerLambda
+          function_name: ${{ vars.BUILD_ENV }}_TokenRequestHandler
           zip_file: package_lambdas_token_handler.zip
