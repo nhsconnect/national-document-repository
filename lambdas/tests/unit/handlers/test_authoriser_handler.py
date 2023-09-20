@@ -2,14 +2,11 @@ import os
 import time
 from unittest.mock import patch
 
-import boto3
 import jwt
 import pytest
 from enums.permitted_role import PermittedRole
 from handlers.authoriser_handler import lambda_handler
-from moto import mock_ssm
 
-from utils.get_aws_region import get_aws_region
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:fake_arn:fake_api_endpoint/dev"
 TEST_PUBLIC_KEY = "test_public_key"
