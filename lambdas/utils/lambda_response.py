@@ -4,7 +4,7 @@ class ApiGatewayResponse:
         self.body = body
         self.methods = methods
 
-    def create_api_gateway_response(self):
+    def create_api_gateway_response(self) -> object:
         return {
             "isBase64Encoded": False,
             "statusCode": self.status_code,

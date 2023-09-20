@@ -12,3 +12,7 @@ class PdsErrorException(Exception):
 
 class DynamoDbException(Exception):
     pass
+
+
+class ManifestDownloadException(Exception):
+    pass
