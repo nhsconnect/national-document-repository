@@ -93,11 +93,11 @@ def test_lambda_handler_returns_items_from_dynamo(mock_dynamo_table, mock_boto3_
 def test_error_raised_when_no_fields_requested(mock_dynamo_table, mock_boto3_dynamo):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
-        query_service = DynamoDBService(
+        db_service = DynamoDBService(
             "test_table",
         )
         with pytest.raises(InvalidResourceIdException):
-            query_service.query_service("test_index", "NhsNumber", "0123456789", [])
+            db_service.query_service("test_index", "NhsNumber", "0123456789", [])
 
 
 def test_error_raised_when_fields_requested_is_none(
@@ -105,9 +105,9 @@ def test_error_raised_when_fields_requested_is_none(
 ):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
-        query_service = DynamoDBService("test_table")
+        db_service = DynamoDBService("test_table")
         with pytest.raises(InvalidResourceIdException):
-            query_service.query_service("test_index", "NhsNumber", "0123456789")
+            db_service.query_service("test_index", "NhsNumber", "0123456789")
 
 
 def test_post_item_to_dynamo(mock_dynamo_table, mock_boto3_dynamo):
