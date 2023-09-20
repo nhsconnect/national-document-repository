@@ -127,9 +127,11 @@ def issue_auth_token(
 
     private_key = ssm_response["Parameter"]["Value"]
 
-    thirty_minutes_timespan = 60 * 30
+    thirty_minutes_later = time.time() + 60 * 30
+    ndr_token_expiry_time = min(thirty_minutes_later, id_token_claim_set.exp)
+
     ndr_token_content = {
-        "exp": min(time.time() + thirty_minutes_timespan, id_token_claim_set.exp),
+        "exp": ndr_token_expiry_time,
         "iss": "nhs repo",
         "organisations": permitted_orgs_and_roles,
         "ndr_session_id": session_id,
