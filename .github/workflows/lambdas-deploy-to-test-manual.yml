@@ -293,7 +293,7 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ vars.BUILD_ENV }}_AuthoriserLambda
-          zip_file: package_lambdas_authoriser.zip
+          zip_file: package_lambdas_authoriser_handler.zip
 
   python_deploy_token_lambda:
     runs-on: ubuntu-latest
