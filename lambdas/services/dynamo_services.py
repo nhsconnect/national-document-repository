@@ -4,6 +4,7 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
+from utils.get_aws_region import get_aws_region
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -13,7 +14,7 @@ class DynamoDBService:
     def __init__(self, table_name):
         try:
             self.TABLE_NAME = table_name
-            dynamodb = boto3.resource("dynamodb", region_name="eu-west-2")
+            dynamodb = boto3.resource("dynamodb", region_name=get_aws_region())
             self.table = dynamodb.Table(self.TABLE_NAME)
         except ClientError as e:
             logger.error("Unable to connect to DB")
@@ -21,10 +22,13 @@ class DynamoDBService:
             raise e
 
     def query_service(
-        self, index_name, search_key, search_condition: str, requested_fields: list = None
+        self,
+        index_name,
+        search_key,
+        search_condition: str,
+        requested_fields: list = None,
     ):
         try:
-
             if requested_fields is None or len(requested_fields) == 0:
                 raise InvalidResourceIdException
 
@@ -51,15 +55,12 @@ class DynamoDBService:
 
     def post_item_service(self, item):
         try:
-            self.table.put_item(
-                Item=item
-            )
+            self.table.put_item(Item=item)
             logger.info(f"Saving item to DynamoDB: {self.TABLE_NAME}")
         except ClientError as e:
             logger.error("Unable to get write to table")
             logger.error(e)
             raise e
-
 
     # Make the expressions
     # ExpressionAttributeNames = {"#create": "Created", "#file": "FileName", "#doc": "DocumentUploaded"}

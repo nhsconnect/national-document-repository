@@ -5,6 +5,8 @@ import time
 import boto3
 from botocore.exceptions import ClientError
 from oauthlib.oauth2 import WebApplicationClient, InsecureTransportError
+
+from utils.get_aws_region import get_aws_region
 from utils.lambda_response import ApiGatewayResponse
 from services.dynamo_services import DynamoDBService
 
@@ -64,5 +66,5 @@ def save_state_in_dynamo_db(state):
 
 def get_ssm_parameters():
     ssm_parameters_names = ["OIDC_AUTHORISE_URL", "OIDC_CLIENT_ID"]
-    ssm_client = boto3.client("ssm", region_name="eu-west-2")
+    ssm_client = boto3.client("ssm", region_name=get_aws_region())
     return ssm_client.get_parameters(Names=ssm_parameters_names)

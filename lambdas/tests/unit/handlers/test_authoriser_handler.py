@@ -7,6 +7,8 @@ import pytest
 from handlers.authoriser_handler import lambda_handler
 from moto import mock_ssm
 
+from utils.get_aws_region import get_aws_region
+
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:fake_arn:fake_api_endpoint/dev"
 TEST_PUBLIC_KEY = "test_public_key"
 TEST_PUBLIC_KEY_SSM_PARAM_NAME = "jwt_token_public_key"
@@ -27,7 +29,7 @@ def mock_ssm_public_key():
         "os.environ", {"SSM_PARAM_JWT_TOKEN_PUBLIC_KEY": TEST_PUBLIC_KEY_SSM_PARAM_NAME}
     ):
         with mock_ssm():
-            ssm = boto3.client("ssm", region_name="eu-west-2")
+            ssm = boto3.client("ssm", region_name=get_aws_region())
             ssm.put_parameter(
                 Name=TEST_PUBLIC_KEY_SSM_PARAM_NAME,
                 Value=TEST_PUBLIC_KEY,
