@@ -270,7 +270,7 @@ lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME",
                          "LLOYD_GEORGE_DYNAMODB_NAME"]
 
 @pytest.mark.parametrize('environmentVariable', lg_environment_variables)
-def test_lambda_handler_missing_environment_variables_returns_400(
+def test_lambda_handler_missing_environment_variables_type_lg_returns_400(
     monkeypatch, lg_type_event, environmentVariable, context, mocker
 ):
     setEnvironmentVariables()
@@ -289,7 +289,7 @@ def test_lambda_handler_missing_environment_variables_returns_400(
     assert expected == actual
 
 @pytest.mark.parametrize('environmentVariable', arf_environment_variables)
-def test_lambda_handler_missing_environment_variables_returns_400(
+def test_lambda_handler_missing_environment_variables_type_arf_returns_400(
     monkeypatch, arf_type_event, environmentVariable, context, mocker
 ):
     setEnvironmentVariables()
