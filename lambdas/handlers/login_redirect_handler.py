@@ -1,4 +1,3 @@
-import abc
 import logging
 import os
 import time
@@ -6,6 +5,8 @@ import time
 import boto3
 from botocore.exceptions import ClientError
 from oauthlib.oauth2 import WebApplicationClient, InsecureTransportError
+
+from utils.get_aws_region import get_aws_region
 from utils.lambda_response import ApiGatewayResponse
 from services.dynamo_services import DynamoDBService
 
@@ -20,7 +21,10 @@ def prepare_redirect_response(web_application_client_class):
     try:
         ssm_response = get_ssm_parameters()
 
-        oidc_parameters = {parameter["Name"] : parameter["Value"] for parameter in ssm_response["Parameters"]}
+        oidc_parameters = {
+            parameter["Name"]: parameter["Value"]
+            for parameter in ssm_response["Parameters"]
+        }
 
         oidc_client = web_application_client_class(
             client_id=oidc_parameters["OIDC_CLIENT_ID"],
@@ -38,22 +42,29 @@ def prepare_redirect_response(web_application_client_class):
 
     except ClientError as e:
         logger.error(f"Error getting using aws client: {e}")
-        return ApiGatewayResponse(500, "Server error", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(
+            500, "Server error", "GET"
+        ).create_api_gateway_response()
     except InsecureTransportError as e:
         logger.error(f"Error preparing auth request: {e}")
-        return ApiGatewayResponse(500, "Server error", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(
+            500, "Server error", "GET"
+        ).create_api_gateway_response()
     return ApiGatewayResponse(302, "", "GET").create_api_gateway_response(
         headers=location_header
     )
 
+
 def save_state_in_dynamo_db(state):
     dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
     dynamodb_service = DynamoDBService(dynamodb_name)
-    ttl = round(time.time()) + 60 * 10
+    ten_minutes = 60 * 10
+    ttl = round(time.time()) + ten_minutes
     item = {"State": state, "TimeToExist": ttl}
     dynamodb_service.post_item_service(item=item)
 
+
 def get_ssm_parameters():
     ssm_parameters_names = ["OIDC_AUTHORISE_URL", "OIDC_CLIENT_ID"]
-    ssm_client = boto3.client("ssm", region_name="eu-west-2")
+    ssm_client = boto3.client("ssm", region_name=get_aws_region())
     return ssm_client.get_parameters(Names=ssm_parameters_names)
