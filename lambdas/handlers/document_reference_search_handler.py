@@ -23,6 +23,7 @@ def lambda_handler(event, context):
 
     list_of_table_names = json.loads(os.environ["DYNAMODB_TABLE_LIST"])
 
+    logger.info(os.environ["DYNAMODB_TABLE_LIST"])
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
         validate_id(nhs_number)
