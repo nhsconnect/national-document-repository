@@ -4,7 +4,7 @@ import os
 
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DynamoDocumentMetadataTableFields
-from services.dynamo_query_service import DynamoQueryService
+from services.dynamo_services import DynamoDBService
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.nhs_number_validator import validate_id
@@ -31,14 +31,15 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
 
     dynamo_service_for_tables = {
-        table_name: DynamoQueryService(table_name, "NhsNumberIndex")
+        table_name: DynamoDBService(table_name)
         for table_name in list_of_table_names
     }
 
     try:
         results = []
         for dynamo_service in dynamo_service_for_tables.values():
-            response = dynamo_service(
+            response = dynamo_service.query_service(
+                "NhsNumberIndex",
                 "NhsNumber",
                 nhs_number,
                 [

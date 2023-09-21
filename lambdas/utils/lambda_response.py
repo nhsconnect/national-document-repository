@@ -4,7 +4,9 @@ class ApiGatewayResponse:
         self.body = body
         self.methods = methods
 
-    def create_api_gateway_response(self):
+    def create_api_gateway_response(self, headers=None):
+        if headers is None:
+            headers = {}
         return {
             "isBase64Encoded": False,
             "statusCode": self.status_code,
@@ -12,6 +14,7 @@ class ApiGatewayResponse:
                 "Content-Type": "application/fhir+json",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": self.methods,
+                **headers,
             },
             "body": self.body,
         }

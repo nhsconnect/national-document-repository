@@ -7,6 +7,7 @@ import pytest
 from enums.permitted_role import PermittedRole
 from handlers.authoriser_handler import lambda_handler
 
+
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:fake_arn:fake_api_endpoint/dev"
 TEST_PUBLIC_KEY = "test_public_key"
 DENY_ALL_POLICY = {

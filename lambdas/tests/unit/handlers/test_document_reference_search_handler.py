@@ -4,12 +4,12 @@ from unittest.mock import patch
 
 from botocore.exceptions import ClientError
 from handlers.document_reference_search_handler import lambda_handler
-from services.dynamo_query_service import DynamoQueryService
 from tests.unit.helpers.data.dynamo_responses import (EXPECTED_RESPONSE,
                                                       MOCK_EMPTY_RESPONSE,
                                                       MOCK_RESPONSE)
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
+from services.dynamo_services import DynamoDBService
 
 PATCH_ENV_VAR = {
     "DOCUMENT_STORE_DYNAMODB_NAME": "a_real_table",
@@ -19,7 +19,7 @@ PATCH_ENV_VAR = {
 
 def test_lambda_handler_returns_items_from_dynamo(valid_id_event, context):
     with patch.dict(os.environ, PATCH_ENV_VAR):
-        with patch.object(DynamoQueryService, "__call__", return_value=MOCK_RESPONSE):
+        with patch.object(DynamoDBService, "query_service", return_value=MOCK_RESPONSE):
             expected = ApiGatewayResponse(
                 200, json.dumps(EXPECTED_RESPONSE * 2), "GET"
             ).create_api_gateway_response()
@@ -32,8 +32,8 @@ def test_lambda_handler_returns_items_from_dynamo(valid_id_event, context):
 def test_lambda_handler_returns_items_from_doc_store_only(valid_id_event, context):
     with patch.dict(os.environ, PATCH_ENV_VAR):
         with patch.object(
-            DynamoQueryService,
-            "__call__",
+                DynamoDBService,
+            "query_service",
             side_effect=[MOCK_RESPONSE, MOCK_EMPTY_RESPONSE],
         ):
             expected = ApiGatewayResponse(
@@ -48,7 +48,7 @@ def test_lambda_handler_returns_204_empty_list_when_dynamo_returns_no_records(
 ):
     with patch.dict(os.environ, PATCH_ENV_VAR):
         with patch.object(
-            DynamoQueryService, "__call__", return_value=MOCK_EMPTY_RESPONSE
+            DynamoDBService, "query_service", return_value=MOCK_EMPTY_RESPONSE
         ):
             expected = ApiGatewayResponse(
                 204, "[]", "GET"
@@ -62,8 +62,7 @@ def test_lambda_handler_returns_500_when_dynamo_has_unexpected_response(
 ):
     with patch.dict(os.environ, PATCH_ENV_VAR):
         with patch.object(
-            DynamoQueryService,
-            "__call__",
+            DynamoDBService, "query_service",
             side_effect=DynamoDbException("Unrecognised response from DynamoDB"),
         ):
             expected = ApiGatewayResponse(
@@ -98,7 +97,7 @@ def test_lambda_handler_returns_500_when_client_error_thrown(valid_id_event, con
 
     exception = ClientError(error, "Query")
     with patch.dict(os.environ, PATCH_ENV_VAR):
-        with patch.object(DynamoQueryService, "__call__", side_effect=exception):
+        with patch.object(DynamoDBService, "query_service", side_effect=exception):
             expected = ApiGatewayResponse(
                 500, "An error occurred when searching for available documents", "GET"
             ).create_api_gateway_response()
@@ -109,7 +108,7 @@ def test_lambda_handler_returns_500_when_client_error_thrown(valid_id_event, con
 def test_lambda_handler_returns_400_when_no_fields_requested(valid_id_event, context):
     exception = InvalidResourceIdException
     with patch.dict(os.environ, PATCH_ENV_VAR):
-        with patch.object(DynamoQueryService, "__call__", side_effect=exception):
+        with patch.object(DynamoDBService, "query_service", side_effect=exception):
             expected = ApiGatewayResponse(
                 500, "No data was requested to be returned in query", "GET"
             ).create_api_gateway_response()

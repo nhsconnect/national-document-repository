@@ -8,6 +8,7 @@ import boto3
 from botocore.exceptions import ClientError
 from models.nhs_document_reference import NHSDocumentReference
 from utils.lambda_response import ApiGatewayResponse
+from services.dynamo_services import DynamoDBService
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -69,14 +70,7 @@ def create_document_reference_object(
     logger.info(f"Input document reference filename: {new_document.file_name}")
     return new_document
 
-
 def save_document_reference_in_dynamo_db(new_document):
-    try:
-        dynamodb = boto3.resource("dynamodb")
-        dynamodb_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-        logger.info(f"Saving DocumentReference to DynamoDB: {dynamodb_name}")
-        table = dynamodb.Table(dynamodb_name)
-        table.put_item(Item=new_document.to_dict())
-    except ClientError as e:
-        logger.error("Unable to connect to DB")
-        logger.error(e)
+    dynamodb_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
+    dynamodb_service = DynamoDBService(dynamodb_name)
+    dynamodb_service.post_item_service(item=new_document.to_dict())

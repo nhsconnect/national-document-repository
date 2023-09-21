@@ -22,6 +22,8 @@ from boto3.dynamodb.conditions import Key
 from enums.permitted_role import PermittedRole
 from utils.exceptions import AuthorisationException
 
+from utils.get_aws_region import get_aws_region
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -31,7 +33,7 @@ def lambda_handler(event, context):
     ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
 
     try:
-        client = boto3.client("ssm", region_name="eu-west-2")
+        client = boto3.client("ssm", region_name=get_aws_region())
         ssm_response = client.get_parameter(
             Name=ssm_public_key_parameter_name, WithDecryption=True
         )
@@ -138,7 +140,7 @@ class AuthPolicy(object):
     denyMethods = []
 
     restApiId = "<<restApiId>"
-    region = "eu-west-2"
+    region = get_aws_region()
     stage = "dev"
 
     def __init__(self, principal, awsAccountId):
