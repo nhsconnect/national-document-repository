@@ -2,6 +2,8 @@ import json
 import logging
 import os
 
+from py_dotenv import read_dotenv
+from pathlib import Path
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.dynamo_service import DynamoDBService
@@ -15,6 +17,11 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     logger.info("Starting document reference search process")
+
+    dotenv_path = os.path.join(os.path.dirname(__file__), '../.env')
+    read_dotenv(dotenv_path)
+
+    list_of_table_names = json.loads(os.environ["DYNAMODB_TABLE_LIST"])
 
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
