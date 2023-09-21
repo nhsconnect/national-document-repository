@@ -10,15 +10,6 @@ logger.setLevel(logging.INFO)
 
 
 class DynamoDBService:
-    # def __init__(self):
-    #     try:
-    #         self.table_name = table_name
-    #         dynamodb = boto3.resource("dynamodb")
-    #         self.table = dynamodb.Table(self.table_name)
-    #     except ClientError as e:
-    #         logger.error("Unable to connect to DB")
-    #         logger.error(e)
-    #         raise e
 
     def get_table(self, table_name):
         try:
