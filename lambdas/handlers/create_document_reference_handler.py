@@ -23,7 +23,6 @@ def lambda_handler(event, context):
     document_type_string = (event["queryStringParameters"]["documentType"]).upper()
     document_type = SupportedDocumentTypes.get_from_field_name(document_type_string);
     if document_type is None:
-        logger.error(e)
         response = ApiGatewayResponse(400, "An error occured processing the required document type", "POST").create_api_gateway_response()
         return response
     

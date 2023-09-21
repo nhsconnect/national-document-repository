@@ -241,6 +241,29 @@ def test_create_document_reference_arf_type_s3_ClientError_returns_500(
 
     assert actual == expected
 
+
+def test_create_document_reference_unknown_document_type_returns_400(
+    set_env, arf_type_event, context, mocker
+):
+   
+
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = None
+
+
+    expected = ApiGatewayResponse(
+        400,
+        "An error occured processing the required document type",
+        "POST",
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(arf_type_event, context)
+
+    assert actual == expected
+
+
 arf_environment_variables = ["DOCUMENT_STORE_BUCKET_NAME", 
                          "DOCUMENT_STORE_DYNAMODB_NAME"]
 lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME",
