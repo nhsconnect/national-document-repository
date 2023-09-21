@@ -113,7 +113,7 @@ def test_post_item_to_dynamo(mock_dynamo_table, mock_boto3_dynamo):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
         db_service = DynamoDBService()
-        db_service.post_item_service("test_table" {"NhsNumber": "0123456789"})
+        db_service.post_item_service("test_table",{"NhsNumber": "0123456789"})
         mock_dynamo_table.put_item.assert_called_once()
 
 
