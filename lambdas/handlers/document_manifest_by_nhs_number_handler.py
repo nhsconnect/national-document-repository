@@ -84,13 +84,13 @@ def lambda_handler(event, context):
 def get_lloyd_george_documents(
     lloyd_george_table: str, nhs_number: str
 ) -> list[Document]:
-    lg_dynamo_service = DynamoDBService(lloyd_george_table)
-    return query_documents(lg_dynamo_service, nhs_number)
+    lg_dynamo_service = DynamoDBService()
+    return query_documents(lloyd_george_table, lg_dynamo_service, nhs_number)
 
 
 def get_doc_store_documents(doc_store_table: str, nhs_number: str) -> list[Document]:
-    ds_dynamo_service = DynamoDBService(doc_store_table)
-    return query_documents(ds_dynamo_service, nhs_number)
+    ds_dynamo_service = DynamoDBService()
+    return query_documents(doc_store_table, ds_dynamo_service, nhs_number)
 
 
 def query_documents(dynamo_service: DynamoDBService, nhs_number: str) -> list[Document]:
