@@ -25,10 +25,10 @@ def lambda_handler(event, _context):
     try:
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
+        if not (auth_code and state):
+            return response_400_bad_request_for_missing_parameter()
     except (KeyError, TypeError):
-        return ApiGatewayResponse(
-            400, "Please supply an authorisation code and state", "GET"
-        ).create_api_gateway_response()
+        return response_400_bad_request_for_missing_parameter()
 
     try:
         if not have_matching_state_value_in_record(state):
@@ -139,3 +139,9 @@ def issue_auth_token(
     authorisation_token = jwt.encode(ndr_token_content, private_key, algorithm="RS256")
     logger.info(f"encoded JWT: {authorisation_token}")
     return authorisation_token
+
+
+def response_400_bad_request_for_missing_parameter():
+    return ApiGatewayResponse(
+        400, "Please supply an authorisation code and state", "GET"
+    ).create_api_gateway_response()
