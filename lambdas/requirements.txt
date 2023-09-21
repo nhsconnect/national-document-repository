@@ -20,3 +20,5 @@ types-PyYAML==6.0.12.11
 urllib3==1.26.16
 Werkzeug==2.3.6
 xmltodict==0.13.0
+pathlib==1.0.1
+py-dotenv==0.1
