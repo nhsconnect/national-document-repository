@@ -33,15 +33,13 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
 
     list_of_table_names = [document_store_table_name, lloyd_george_table_name]
-
-    dynamo_service_for_tables: dict = {
-        table_name: DynamoDBService(table_name) for table_name in list_of_table_names
-    }
+    dynamo_service = DynamoDBService()
 
     try:
         results = []
-        for dynamo_service in dynamo_service_for_tables.values():
+        for table_name in list_of_table_names:
             response = dynamo_service.query_service(
+                table_name,
                 "NhsNumberIndex",
                 "NhsNumber",
                 nhs_number,

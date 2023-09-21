@@ -46,7 +46,7 @@ def lambda_handler(event, context):
 
         body = json.loads(event["body"])
         s3_object_key = str(uuid.uuid4())
-        dynamo_service = DynamoDBService(dynamo_table)
+        dynamo_service = DynamoDBService()
         s3_service = S3Service()
 
         new_document = NHSDocumentReference(
@@ -55,7 +55,7 @@ def lambda_handler(event, context):
             data=body,
         )
 
-        dynamo_service.post_item_service(new_document.to_dict())
+        dynamo_service.post_item_service(dynamo_table, new_document.to_dict())
 
         s3_response = s3_service.create_document_presigned_url_handler(
             s3_bucket_name, s3_object_key

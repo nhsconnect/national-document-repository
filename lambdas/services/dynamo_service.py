@@ -10,24 +10,37 @@ logger.setLevel(logging.INFO)
 
 
 class DynamoDBService:
-    def __init__(self, table_name):
+    # def __init__(self):
+    #     try:
+    #         self.table_name = table_name
+    #         dynamodb = boto3.resource("dynamodb")
+    #         self.table = dynamodb.Table(self.table_name)
+    #     except ClientError as e:
+    #         logger.error("Unable to connect to DB")
+    #         logger.error(e)
+    #         raise e
+
+    def get_table(self, table_name):
         try:
-            self.table_name = table_name
             dynamodb = boto3.resource("dynamodb")
-            self.table = dynamodb.Table(self.table_name)
+            return dynamodb.Table(table_name)
         except ClientError as e:
             logger.error("Unable to connect to DB")
             logger.error(e)
             raise e
-
+        
     def query_service(
         self,
+        table_name,
         index_name,
         search_key,
         search_condition: str,
         requested_fields: list = None,
     ):
         try:
+
+            table = self.get_table(table_name)
+
             if requested_fields is None or len(requested_fields) == 0:
                 raise InvalidResourceIdException
 
@@ -35,7 +48,7 @@ class DynamoDBService:
                 requested_fields
             )
 
-            results = self.table.query(
+            results = table.query(
                 IndexName=index_name,
                 KeyConditionExpression=Key(search_key).eq(search_condition),
                 ExpressionAttributeNames=expression_attribute_names,
@@ -48,29 +61,31 @@ class DynamoDBService:
 
             return results
         except ClientError as e:
-            logger.error(f"Unable to query table: {self.table_name}")
+            logger.error(f"Unable to query table: {table_name}")
             logger.error(e)
             raise e
 
-    def post_item_service(self, item):
+    def post_item_service(self, table_name, item):
         try:
-            logger.info(f"Writing item to table: {self.table_name}")
-            self.table.put_item(Item=item)
+            table = self.get_table(table_name)
+            logger.info(f"Writing item to table: {table_name}")
+            table.put_item(Item=item)
         except ClientError as e:
-            logger.error(f"Unable to write item to table: {self.table_name}")
+            logger.error(f"Unable to write item to table: {table_name}")
             logger.error(e)
             raise e
 
-    def update_item_service(self, key, update_expression, expression_attribute_values):
+    def update_item_service(self, table_name, key, update_expression, expression_attribute_values):
         try:
-            self.table.update_item(
+            table = self.get_table(table_name)
+            table.update_item(
                 Key=key,
                 UpdateExpression=update_expression,
                 ExpressionAttributeValues=expression_attribute_values,
             )
-            logger.info(f"Updating item in table: {self.table_name}")
+            logger.info(f"Updating item in table: {table_name}")
         except ClientError as e:
-            logger.error(f"Unable to update item in table: {self.table_name}")
+            logger.error(f"Unable to update item in table: {table_name}")
             logger.error(e)
             raise e
 
