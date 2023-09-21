@@ -4,7 +4,7 @@ from jwt.exceptions import PyJWTError
 from botocore.exceptions import ClientError
 from tests.unit.helpers.ssm_responses import MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE
 
-def test_logout_handler_valid_id_returns_200(mocker, monkeypatch):
+def test_logout_handler_valid_jwt_returns_200(mocker, monkeypatch):
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"ndr_session_id":mock_session_id}
@@ -41,7 +41,7 @@ def test_logout_handler_invalid_jwt_returns_500(mocker, monkeypatch):
     mock_ssm_service.assert_called_once()
 
 
-def test_logout_handler_invalid_id_returns_500(mocker, monkeypatch):
+def test_logout_handler_boto_error_returns_500(mocker, monkeypatch):
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"ndr_session_id":mock_session_id}
