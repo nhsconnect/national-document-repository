@@ -118,15 +118,33 @@ def test_lambda_handler_respond_with_400_if_state_or_auth_code_missing(
         400, "Please supply an authorisation code and state", "GET"
     ).create_api_gateway_response()
 
-    missing_state = lambda_handler(
-        {"queryStringParameters": {"code": "some_auth_code"}}, None
-    )
-    missing_auth_code = lambda_handler(
-        {"queryStringParameters": {"state": "some_state"}}, None
-    )
-    missing_both = lambda_handler({"queryStringParameters": {}}, None)
+    missing_state = {"queryStringParameters": {"code": "some_auth_code"}}
+    missing_auth_code = {"queryStringParameters": {"state": "some_state"}}
+    missing_both = {"queryStringParameters": {}}
 
-    for actual in [missing_state, missing_auth_code, missing_both]:
+    state_is_blank_string = {
+        "queryStringParameters": {"code": "some_auth_code", "state": ""}
+    }
+    code_is_blank_string = {
+        "queryStringParameters": {"code": "", "state": "some_state"}
+    }
+    both_are_blank_string = {"queryStringParameters": {"code": "", "state": ""}}
+
+    empty_event = {}
+
+    all_test_cases = [
+        missing_state,
+        missing_auth_code,
+        missing_both,
+        state_is_blank_string,
+        code_is_blank_string,
+        both_are_blank_string,
+        empty_event,
+    ]
+
+    for test_event in all_test_cases:
+        actual = lambda_handler(test_event, None)
+
         assert actual == expected
         mock_oidc_service["fetch_token"].assert_not_called()
         mock_oidc_service["fetch_user_org_codes"].assert_not_called()
