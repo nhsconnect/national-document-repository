@@ -20,27 +20,25 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     logger.info("Starting document reference creation process")
 
-    try:
-        document_type = (event["queryStringParameters"]["documentType"]).upper()
-        if document_type in SupportedDocumentTypes.list_names():
-            logger.info("Provided document is supported")
-        else:
-            raise Exception("Provided document type is not supported")   
-    except Exception as e:
+    document_type_string = (event["queryStringParameters"]["documentType"]).upper()
+    document_type = SupportedDocumentTypes.get_from_field_name(document_type_string);
+    if document_type is None:
         logger.error(e)
         response = ApiGatewayResponse(400, "An error occured processing the required document type", "POST").create_api_gateway_response()
         return response
     
-    # We cannot get here unless a valid document type has been provided, therefore we can default to ARF
+    logger.info("Provided document is supported")
+    
     try:
-        s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
-        dynamo_table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-
-        if (document_type == SupportedDocumentTypes.LG.name):
+        
+        if (document_type == SupportedDocumentTypes.LG):
             s3_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
             dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-            
-
+        
+        if (document_type == SupportedDocumentTypes.ARF):
+            s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
+            dynamo_table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
+         
         logger.info(f"S3 bucket in use: {s3_bucket_name}")
         logger.info(f"Dynamo table in use: {dynamo_table}")
 

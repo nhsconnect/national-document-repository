@@ -6,6 +6,7 @@ import pytest
 from botocore.exceptions import ClientError
 from handlers.create_document_reference_handler import lambda_handler
 from utils.lambda_response import ApiGatewayResponse
+from enums.supported_document_types import SupportedDocumentTypes
 
 REGION_NAME = "eu-west-2"
 MOCK_BUCKET_ARF = "test_arf_s3_bucket"
@@ -66,10 +67,16 @@ def lg_type_event():
 def test_create_document_reference_valid_arf_type_returns_200(set_env, arf_type_event, context, mocker):
 
     mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
-
+    
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.ARF
+    
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
+
     mock_presigned.return_value = MOCK_PRESIGNED_POST_RESPONSE
 
     expected = ApiGatewayResponse(
@@ -86,6 +93,11 @@ def test_create_document_reference_valid_arf_type_uses_arf_s3_bucket(set_env, ar
     os.environ["DOCUMENT_STORE_BUCKET_NAME"] = MOCK_BUCKET_ARF
     mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
 
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.ARF
+
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
@@ -101,6 +113,11 @@ def test_create_document_reference_valid_arf_type_uses_arf_dynamo_table(set_env,
     os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = MOCK_DYNAMODB_ARF
     mock_dynamo_request = mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
 
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.ARF
+
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
@@ -112,10 +129,15 @@ def test_create_document_reference_valid_arf_type_uses_arf_dynamo_table(set_env,
 def test_create_document_reference_valid_lg_type_returns_200(set_env, lg_type_event, context, mocker):
 
     mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
 
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.ARF
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
+
     mock_presigned.return_value = MOCK_PRESIGNED_POST_RESPONSE
 
     expected = ApiGatewayResponse(
@@ -132,6 +154,11 @@ def test_create_document_reference_valid_lg_type_uses_lg_s3_bucket(set_env, lg_t
     os.environ["LLOYD_GEORGE_BUCKET_NAME"] = MOCK_BUCKET_LG
     mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
 
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
+
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
@@ -146,7 +173,10 @@ def test_create_document_reference_valid_lg_type_uses_lg_dynamo_table(set_env, l
     # Override the set_env instance
     os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = MOCK_DYNAMODB_LG
     mock_dynamo_request = mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
-
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
@@ -165,6 +195,11 @@ def test_create_document_reference_arf_type_dynamo_ClientError_returns_500(
         "services.dynamo_service.DynamoDBService.post_item_service"
     )
     mock_dynamo.side_effect = exception
+
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.ARF
 
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
@@ -188,6 +223,11 @@ def test_create_document_reference_arf_type_s3_ClientError_returns_500(
 
     mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
 
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.ARF
+
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
@@ -201,15 +241,21 @@ def test_create_document_reference_arf_type_s3_ClientError_returns_500(
 
     assert actual == expected
 
-environmentVariables = ["DOCUMENT_STORE_BUCKET_NAME", 
-                         "DOCUMENT_STORE_DYNAMODB_NAME", 
-                         "LLOYD_GEORGE_BUCKET_NAME",
+arf_environment_variables = ["DOCUMENT_STORE_BUCKET_NAME", 
+                         "DOCUMENT_STORE_DYNAMODB_NAME"]
+lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME",
                          "LLOYD_GEORGE_DYNAMODB_NAME"]
-@pytest.mark.parametrize('environmentVariable', environmentVariables)
+
+@pytest.mark.parametrize('environmentVariable', lg_environment_variables)
 def test_lambda_handler_missing_environment_variables_returns_400(
-    monkeypatch, lg_type_event, environmentVariable, context
+    monkeypatch, lg_type_event, environmentVariable, context, mocker
 ):
     setEnvironmentVariables()
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
+
     monkeypatch.delenv(environmentVariable)
     expected = ApiGatewayResponse(
         400,
@@ -217,4 +263,23 @@ def test_lambda_handler_missing_environment_variables_returns_400(
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
+    assert expected == actual
+
+@pytest.mark.parametrize('environmentVariable', arf_environment_variables)
+def test_lambda_handler_missing_environment_variables_returns_400(
+    monkeypatch, arf_type_event, environmentVariable, context, mocker
+):
+    setEnvironmentVariables()
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.ARF
+
+    monkeypatch.delenv(environmentVariable)
+    expected = ApiGatewayResponse(
+        400,
+        "An error occurred due to missing key: '" + environmentVariable + "'",
+        "POST",
+    ).create_api_gateway_response()
+    actual = lambda_handler(arf_type_event, context)
     assert expected == actual

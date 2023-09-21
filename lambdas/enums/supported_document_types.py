@@ -21,3 +21,12 @@ class SupportedDocumentTypes(Enum):
             SupportedDocumentTypes.ARF.name,
             SupportedDocumentTypes.LG.name
         ]
+
+    @staticmethod
+    def get_from_field_name(self, enum_value):
+        for supported_document_type in self.list():
+            if supported_document_type.name == enum_value:
+                return supported_document_type
+        return None;
+        
+        
