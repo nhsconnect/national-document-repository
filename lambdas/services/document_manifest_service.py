@@ -24,7 +24,7 @@ class DocumentManifestService:
         zip_trace_table: str,
     ):
         self.s3_service = S3Service()
-        self.dynamo_service = DynamoDBService(zip_trace_table)
+        self.dynamo_service = DynamoDBService()
         self.nhs_number = nhs_number
         self.documents = documents
         self.zip_output_bucket = zip_output_bucket
@@ -102,7 +102,7 @@ class DocumentManifestService:
             f"s3://{self.zip_output_bucket}/{self.zip_file_name}",
         )
 
-        self.dynamo_service.post_item_service(zip_trace.to_dict())
+        self.dynamo_service.post_item_service(self.zip_trace_table, zip_trace.to_dict())
 
         response = self.s3_service.create_download_presigned_url(
             self.zip_output_bucket, self.zip_file_name

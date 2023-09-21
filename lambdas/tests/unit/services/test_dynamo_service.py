@@ -20,7 +20,7 @@ def mock_dynamo_table():
 
 
 def test_create_expressions_correctly_creates_an_expression_of_one_field(set_env):
-    query_service = DynamoDBService("test_table")
+    query_service = DynamoDBService()
     expected_projection = "#vscanResult"
     expected_expr_attr_names = {"#vscanResult": "VirusScannerResult"}
 
@@ -35,7 +35,7 @@ def test_create_expressions_correctly_creates_an_expression_of_one_field(set_env
 
 
 def test_create_expressions_correctly_creates_an_expression_of_multiple_fields(set_env):
-    query_service = DynamoDBService("test_table")
+    query_service = DynamoDBService()
     expected_projection = "#nhsNumber,#fileLocation,#type"
     expected_expr_attr_names = {
         "#nhsNumber": "NhsNumber",
@@ -69,10 +69,9 @@ def test_lambda_handler_returns_items_from_dynamo(
         expected_expr_attr_names = {"#fileName": "FileName", "#created": "Created"}
 
         with patch.object(Key, "eq", return_value=search_key_obj):
-            db_service = DynamoDBService(
-                "test_table",
-            )
+            db_service = DynamoDBService()
             actual = db_service.query_service(
+                "test_table",
                 "NhsNumberIndex",
                 "NhsNumber",
                 "0123456789",
@@ -95,9 +94,7 @@ def test_lambda_handler_returns_items_from_dynamo(
 def test_error_raised_when_no_fields_requested(mock_dynamo_table, mock_boto3_dynamo):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
-        query_service = DynamoDBService(
-            "test_table",
-        )
+        query_service = DynamoDBService()
         with pytest.raises(InvalidResourceIdException):
             query_service.query_service("test_index", "NhsNumber", "0123456789", [])
 
@@ -107,16 +104,16 @@ def test_error_raised_when_fields_requested_is_none(
 ):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
-        query_service = DynamoDBService("test_table")
+        query_service = DynamoDBService()
         with pytest.raises(InvalidResourceIdException):
-            query_service.query_service("test_index", "NhsNumber", "0123456789")
+            query_service.query_service("test_table", "test_index", "NhsNumber", "0123456789")
 
 
 def test_post_item_to_dynamo(mock_dynamo_table, mock_boto3_dynamo):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
-        db_service = DynamoDBService("test_table")
-        db_service.post_item_service({"NhsNumber": "0123456789"})
+        db_service = DynamoDBService()
+        db_service.post_item_service("test_table",{"NhsNumber": "0123456789"})
         mock_dynamo_table.put_item.assert_called_once()
 
 
@@ -129,12 +126,11 @@ def test_DynamoDbException_raised_when_results_are_invalid(
         search_key_obj = Key("NhsNumber").eq("1234567890")
 
         with patch.object(Key, "eq", return_value=search_key_obj):
-            db_service = DynamoDBService(
-                "test_table",
-            )
+            db_service = DynamoDBService()
 
             with pytest.raises(DynamoDbException):
                 db_service.query_service(
+                    "test_table",
                     "NhsNumberIndex",
                     "NhsNumber",
                     "0123456789",

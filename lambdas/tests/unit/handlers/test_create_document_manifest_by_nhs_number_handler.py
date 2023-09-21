@@ -108,7 +108,7 @@ def test_lambda_handler_when_id_not_supplied_returns_400(
 
 
 def test_query_documents(set_env, mocker):
-    mock_dynamo_service = DynamoDBService(MOCK_TABLE)
+    mock_dynamo_service = DynamoDBService()
 
     query_patch = mocker.patch("services.dynamo_service.DynamoDBService.query_service")
     query_patch.return_value = MOCK_MANIFEST_QUERY_RESPONSE
