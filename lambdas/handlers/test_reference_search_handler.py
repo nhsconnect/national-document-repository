@@ -16,10 +16,10 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     
-    load_dotenv()
-    arr = []
-    for name, value in os.environ.items():
-        arr.append("[{0}, {1}]".format(name, value))
+    dotenv_path = Path('../.env')
+    load_dotenv(dotenv_path=dotenv_path)
+    list_of_table_names = json.loads(os.environ["DYNAMODB_TABLE_LIST"])
+
     return ApiGatewayResponse(
-    200, json.dumps(arr), "GET"
+    200, json.dumps(list_of_table_names), "GET"
     ).create_api_gateway_response()
