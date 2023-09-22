@@ -4,7 +4,7 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 
-from services.dynamo_services import DynamoDBService
+from services.dynamo_service import DynamoDBService
 from utils.lambda_response import ApiGatewayResponse
 import jwt
 
@@ -55,5 +55,5 @@ def decode_token(jwt_class, token, key):
 def remove_session_from_dynamo_db(session_id):
     logger.info(f"Session to be removed: {session_id}")
     dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
-    dynamodb_service = DynamoDBService(dynamodb_name)
-    dynamodb_service.delete_item_service(key={"NDRSessionId": session_id})
+    dynamodb_service = DynamoDBService()
+    dynamodb_service.delete_item_service(key={"NDRSessionId": session_id}, table_name=dynamodb_name)
