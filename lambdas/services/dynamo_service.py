@@ -70,13 +70,14 @@ class DynamoDBService:
 
     def update_item_service(self, table_name, key, update_expression, expression_attribute_values):
         try:
+            logger.info(f"Updating item in table: {table_name}")
             table = self.get_table(table_name)
             table.update_item(
                 Key=key,
                 UpdateExpression=update_expression,
                 ExpressionAttributeValues=expression_attribute_values,
             )
-            logger.info(f"Updating item in table: {table_name}")
+            logger.info(f"Updating successful")
         except ClientError as e:
             logger.error(f"Unable to update item in table: {table_name}")
             logger.error(e)

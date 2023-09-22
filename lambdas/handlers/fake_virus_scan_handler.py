@@ -1,24 +1,31 @@
 import logging
+import os
 
 import boto3
 from botocore.exceptions import ClientError
 
+from services.dynamo_service import DynamoDBService
+from utils.lambda_response import ApiGatewayResponse
+
 
 def lambda_handler(event, context):
-    table = boto3.resource('dynamodb').Table('ndr-dev_DocumentReferenceMetadata')
-    file_location = "s3://ndr-dev-document-store/9ccfb094-c029-42c2-a432-a8346e5a3ee1"
-    file_id = "9ccfb094-c029-42c2-a432-a8346e5a3ee1"
-    nhs_number = "1111111111"
+    document_store_table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
+    records = event["Records"]
+    dynamo_service = DynamoDBService()
 
-    try:
-        return table.update_item(
-            Key={'ID': "9ccfb094-c029-42c2-a432-a8346e5a3ee1"},
-            UpdateExpression="set VirusScannerResult = :r",
-            ExpressionAttributeValues={
-                ':r': 'Clean',
-            },
-            ReturnValues="UPDATED_NEW"
-        )
-    except ClientError as e:
-        logging.error(e)
-        return False
+    for record in records:
+        #bucket = record["s3"]["bucket"]["name"]
+        key = record["s3"]["object"]["key"]
+        #location = f"s3://{bucket}/{key}"
+
+        try:
+            return dynamo_service.update_item_service(
+                table_name=document_store_table_name,
+                key={'ID': key},
+                update_expression="set VirusScannerResult = :r",
+                expression_attribute_values={
+                    ':r': 'Clean',
+                },
+            )
+        except ClientError:
+            return ApiGatewayResponse(500, "Unable to mark file as clean", "UPDATE").create_api_gateway_response()
