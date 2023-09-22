@@ -33,11 +33,10 @@ def patch_env_vars():
 
 
 @pytest.fixture()
-def mock_ssm(patch_env_vars, mocker):
-    mock_ssm_client = mocker.patch("boto3.client")
-    mock_ssm_client.return_value.get_parameter.return_value = {
-        "Parameter": {"Value": TEST_PUBLIC_KEY}
-    }
+def mock_get_secret(patch_env_vars, mocker):
+    mocked_method = mocker.patch("handlers.authoriser_handler.get_secret")
+    mocked_method.return_value = TEST_PUBLIC_KEY
+    yield
 
 
 @pytest.fixture()
@@ -86,7 +85,7 @@ def mock_jwt_decode(mocker):
 
 
 def test_valid_gp_token_return_allow_policy(
-    mock_ssm, mock_session_table, mock_jwt_decode
+        mock_get_secret, mock_session_table, mock_jwt_decode
 ):
     expected_allow_policy = {
         "Statement": [
@@ -113,7 +112,7 @@ def test_valid_gp_token_return_allow_policy(
 
 
 def test_valid_pcse_token_return_allow_policy(
-    mock_ssm, mock_session_table, mock_jwt_decode
+        mock_get_secret, mock_session_table, mock_jwt_decode
 ):
     expected_allow_policy = {
         "Statement": [
@@ -140,7 +139,7 @@ def test_valid_pcse_token_return_allow_policy(
 
 
 def test_return_deny_policy_when_no_session_found(
-    mock_ssm, mock_session_table, mock_jwt_decode
+        mock_get_secret, mock_session_table, mock_jwt_decode
 ):
     mock_session_table.query.return_value = {"Count": 0, "Items": []}
 
@@ -155,7 +154,7 @@ def test_return_deny_policy_when_no_session_found(
 
 
 def test_return_deny_policy_when_user_session_is_expired(
-    mock_ssm, mock_session_table, mock_jwt_decode
+        mock_get_secret, mock_session_table, mock_jwt_decode
 ):
     one_minute_ago = time.time() - 60
     expired_session = {
@@ -181,7 +180,7 @@ def test_return_deny_policy_when_user_session_is_expired(
     assert response["policyDocument"] == DENY_ALL_POLICY
 
 
-def test_invalid_token_return_deny_policy(mocker, mock_ssm, mock_session_table):
+def test_invalid_token_return_deny_policy(mocker, mock_get_secret, mock_session_table):
     decode_mock = mocker.patch(
         "jwt.decode", side_effect=jwt.exceptions.InvalidTokenError
     )
@@ -198,7 +197,7 @@ def test_invalid_token_return_deny_policy(mocker, mock_ssm, mock_session_table):
     assert response["policyDocument"] == DENY_ALL_POLICY
 
 
-def test_invalid_signature_return_deny_policy(mocker, mock_ssm, mock_session_table):
+def test_invalid_signature_return_deny_policy(mocker, mock_get_secret, mock_session_table):
     decode_mock = mocker.patch(
         "jwt.decode", side_effect=jwt.exceptions.InvalidSignatureError
     )

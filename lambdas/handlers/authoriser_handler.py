@@ -15,7 +15,6 @@ import os
 import re
 import time
 
-import boto3
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
@@ -24,6 +23,7 @@ from services.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
 
 from utils.get_aws_region import get_aws_region
+from utils.get_secret import get_secret
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -34,11 +34,7 @@ def lambda_handler(event, context):
     ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
 
     try:
-        client = boto3.client("ssm", region_name=get_aws_region())
-        ssm_response = client.get_parameter(
-            Name=ssm_public_key_parameter_name, WithDecryption=True
-        )
-        public_key = ssm_response["Parameter"]["Value"]
+        public_key = get_secret(ssm_public_key_parameter_name)
 
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]

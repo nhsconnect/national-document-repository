@@ -17,6 +17,7 @@ def patch_env_vars():
     env_vars = {
         "AUTH_STATE_TABLE_NAME": "test_state_table",
         "AUTH_SESSION_TABLE_NAME": "test_session_table",
+        "SSM_PARAM_JWT_TOKEN_PRIVATE_KEY": "mock_private_key_secret_name"
     }
     with patch.dict(os.environ, env_vars):
         yield env_vars
@@ -28,11 +29,7 @@ def mock_aws_infras(mocker, patch_env_vars):
     mock_state_table = mocker.MagicMock()
     mock_session_table = mocker.MagicMock()
 
-    mock_ssm_client = mocker.patch("boto3.client")
-    mock_ssm_client.return_value.get_parameter.return_value = {
-        "Parameter": {"Value": "fake_private_key"}
-    }
-
+    mocker.patch("handlers.token_handler.get_secret", return_value="mock_private_key")
     mock_state_table.query.return_value = {"Count": 1, "Items": [{"id": "fake_item"}]}
 
     def mock_dynamo_table(table_name: str):

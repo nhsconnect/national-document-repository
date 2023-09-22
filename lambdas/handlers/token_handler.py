@@ -4,7 +4,6 @@ import os
 import time
 import uuid
 
-import boto3
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
@@ -14,6 +13,7 @@ from services.dynamo_service import DynamoDBService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
+from utils.get_secret import get_secret
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
@@ -117,14 +117,8 @@ def issue_auth_token(
     id_token_claim_set: IdTokenClaimSet,
     permitted_orgs_and_roles: list[dict],
 ) -> str:
-    ssm_client = boto3.client("ssm")
-    logger.info("starting ssm request to retrieve NDR private key")
-    ssm_response = ssm_client.get_parameter(
-        Name="jwt_token_private_key", WithDecryption=True
-    )
-    logger.info("ending ssm request")
-
-    private_key = ssm_response["Parameter"]["Value"]
+    private_key_secret_name = os.environ["SSM_PARAM_JWT_TOKEN_PRIVATE_KEY"]
+    private_key = get_secret(private_key_secret_name)
 
     thirty_minutes_later = time.time() + 60 * 30
     ndr_token_expiry_time = min(thirty_minutes_later, id_token_claim_set.exp)
