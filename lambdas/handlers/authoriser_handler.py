@@ -20,6 +20,7 @@ import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
 from enums.permitted_role import PermittedRole
+from services.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
 
 from utils.get_aws_region import get_aws_region
@@ -93,12 +94,11 @@ def find_login_session(ndr_session_id):
     logger.debug(
         f"Retrieving session for session ID ending in: f{redact_id(ndr_session_id)}"
     )
-    # TODO: switch to use the DynamoDBService from other branch once we merge with other branch
     session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
-    temp_dynamo_resource = boto3.resource("dynamodb")
-    session_table = temp_dynamo_resource.Table(session_table_name)
-    query_response = session_table.query(
-        KeyConditionExpression=Key("NDRSessionId").eq(ndr_session_id)
+    db_service = DynamoDBService()
+    query_response = db_service.simple_query(
+        table_name=session_table_name,
+        key_condition_expression=Key("NDRSessionId").eq(ndr_session_id)
     )
 
     try:

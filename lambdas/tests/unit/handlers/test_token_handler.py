@@ -33,7 +33,7 @@ def mock_aws_infras(mocker, patch_env_vars):
         "Parameter": {"Value": "fake_private_key"}
     }
 
-    mock_state_table.query.return_value = {"Count": 1}
+    mock_state_table.query.return_value = {"Count": 1, "Items": [{"id": "fake_item"}]}
 
     def mock_dynamo_table(table_name: str):
         if table_name == patch_env_vars["AUTH_STATE_TABLE_NAME"]:
@@ -229,7 +229,7 @@ def test_lambda_handler_respond_with_500_when_encounter_boto3_error(
         "queryStringParameters": {"code": "test_auth_code", "state": "test_state"}
     }
     mock_aws_infras["state_table"].query.side_effect = ClientError(
-        {"Error": {"code": 500, "message": "mocked error"}}, "test"
+        {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
     )
 
     expected = ApiGatewayResponse(

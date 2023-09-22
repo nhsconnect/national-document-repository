@@ -117,11 +117,26 @@ def test_post_item_to_dynamo(mock_dynamo_table, mock_boto3_dynamo):
         mock_dynamo_table.put_item.assert_called_once()
 
 
+def test_simple_query(mock_dynamo_table, mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.query.return_value = {"Items": [{"id": "fake_test_item"}], "Counts": 1}
+
+        db_service = DynamoDBService()
+        db_service.simple_query("test_table", "test_key_condition_expression")
+
+        mock_boto3_dynamo.Table.assert_called_with("test_table")
+        mock_dynamo_table.query.assert_called_with(KeyConditionExpression="test_key_condition_expression")
+
+
 def test_delete_item(mock_dynamo_table, mock_boto3_dynamo):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+
         db_service = DynamoDBService()
         db_service.delete_item_service("test_table", {"NhsNumber": "0123456789"})
+
+        mock_boto3_dynamo.Table.assert_called_with("test_table")
         mock_dynamo_table.delete_item.assert_called_with(Key={"NhsNumber": "0123456789"})
 
 

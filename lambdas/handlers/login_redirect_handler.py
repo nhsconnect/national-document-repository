@@ -17,6 +17,7 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     return prepare_redirect_response(WebApplicationClient)
 
+
 def prepare_redirect_response(web_application_client_class):
     try:
         ssm_response = get_ssm_parameters()

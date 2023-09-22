@@ -58,6 +58,20 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
+    def simple_query(self, table_name: str, key_condition_expression):
+        try:
+            table = self.get_table(table_name)
+
+            results = table.query(KeyConditionExpression=key_condition_expression)
+            if results is None or "Items" not in results:
+                logger.error(f"Unusable results in DynamoDB: {results!r}")
+                raise DynamoDbException("Unrecognised response from DynamoDB")
+            return results
+        except ClientError as e:
+            logger.error(f"Unable to query table: {table_name}")
+            logger.error(e)
+            raise e
+
     def post_item_service(self, table_name, item):
         try:
             table = self.get_table(table_name)
