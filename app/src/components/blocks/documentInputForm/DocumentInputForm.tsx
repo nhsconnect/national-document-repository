@@ -56,11 +56,11 @@ const DocumentInputForm = ({
                 hint={
                     <ul>
                         <li>
-                            {
-                                "A patient's full electronic health record including attachments must be uploaded."
-                            }
+                            {formType === DOCUMENT_TYPE.LLOYD_GEORGE
+                                ? 'If you are uploading a patient’s Lloyd George envelope you must upload the full Lloyd George envelope including the front and back of the envelope.'
+                                : "A patient's full electronic health record including attachments must be uploaded."}
                         </li>
-                        <li>{'You can select multiple files to upload at once.'}</li>
+                        <li>You can select multiple files to upload at once.</li>
                         {showHelp && (
                             <li>
                                 In the event documents cannot be uploaded, they must be printed and

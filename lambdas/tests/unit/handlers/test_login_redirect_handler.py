@@ -103,10 +103,10 @@ def test_save_to_dynamo(mocker, monkeypatch):
 
     login_redirect_handler.save_state_in_dynamo_db("test")
 
-    mock_dynamo_service.assert_called_with("test_table")
+    mock_dynamo_service.assert_called_once()
     mocked_dynamo_service_instance.post_item_service.assert_called_once()
     mocked_dynamo_service_instance.post_item_service.assert_called_with(
-        item=expected_item
+        item=expected_item, table_name="test_table"
     )
 
 
