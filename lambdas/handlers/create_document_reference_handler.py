@@ -4,11 +4,12 @@ import os
 import sys
 import uuid
 
-import boto3
 from botocore.exceptions import ClientError
 from models.nhs_document_reference import NHSDocumentReference
+from services.dynamo_service import DynamoDBService
+from services.s3_service import S3Service
+from enums.supported_document_types import SupportedDocumentTypes
 from utils.lambda_response import ApiGatewayResponse
-from services.dynamo_services import DynamoDBService
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -17,60 +18,58 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    logger.info("API Gateway event received - processing starts")
-    s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
-    logger.info(f"S3 bucket in use: {s3_bucket_name}")
-    s3_object_key = str(uuid.uuid4())
-    body = json.loads(event["body"])
+    logger.info("Starting document reference creation process")
 
-    try:
-        document_object = create_document_reference_object(
-            s3_bucket_name, s3_object_key, body
-        )
-        save_document_reference_in_dynamo_db(document_object)
-        response = create_document_presigned_url_handler(s3_bucket_name, s3_object_key)
-        response = ApiGatewayResponse(
-            200, json.dumps(response), "POST"
-        ).create_api_gateway_response()
-    except Exception as e:
-        logger.error(e)
-        response = ApiGatewayResponse(400, e, "POST").create_api_gateway_response()
+    document_type_string = (event["queryStringParameters"]["documentType"]).upper()
+    document_type = SupportedDocumentTypes.get_from_field_name(document_type_string)
+    if document_type is None:
+        response = ApiGatewayResponse(400, "An error occured processing the required document type", "POST").create_api_gateway_response()
         return response
-    return response
-
-
-def create_document_presigned_url_handler(s3_bucket_name, s3_object_key):
-    # Generate a presigned S3 POST URL
-    s3_client = boto3.client("s3", region_name="eu-west-2")
-
+    
+    logger.info("Provided document is supported")
+    
     try:
-        response = s3_client.generate_presigned_post(
-            s3_bucket_name, s3_object_key, Fields=None, Conditions=None, ExpiresIn=1800
+        
+        if document_type == SupportedDocumentTypes.LG:
+            s3_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
+            dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+        
+        if document_type == SupportedDocumentTypes.ARF:
+            s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
+            dynamo_table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
+         
+        logger.info(f"S3 bucket in use: {s3_bucket_name}")
+        logger.info(f"Dynamo table in use: {dynamo_table}")
+
+        body = json.loads(event["body"])
+        s3_object_key = str(uuid.uuid4())
+        dynamo_service = DynamoDBService()
+        s3_service = S3Service()
+
+        new_document = NHSDocumentReference(
+            file_location=f"s3://{s3_bucket_name}/{s3_object_key}",
+            reference_id=s3_object_key,
+            data=body,
         )
+
+        dynamo_service.post_item_service(dynamo_table, new_document.to_dict())
+
+        s3_response = s3_service.create_document_presigned_url_handler(
+            s3_bucket_name, s3_object_key
+        )
+
+        return ApiGatewayResponse(
+            200, json.dumps(s3_response), "POST"
+        ).create_api_gateway_response()
+    
+    except KeyError as e:
+        return ApiGatewayResponse(
+            400, f"An error occurred due to missing key: {str(e)}", "POST"
+        ).create_api_gateway_response()
     except ClientError as e:
-        logger.error(e)
-        return None
+        logger.error(str(e))
+        response = ApiGatewayResponse(
+            500, "An error occurred when creating document reference", "POST"
+        ).create_api_gateway_response()
+        return response
 
-    # The response contains the presigned URL and required fields
-    return response
-
-
-def create_document_reference_object(
-    s3_bucket_name, s3_object_key, document_request_body
-):
-    s3_file_location = "s3://" + s3_bucket_name + "/" + s3_object_key
-    logger.info(f"Input document reference location: {s3_file_location}")
-
-    new_document = NHSDocumentReference(
-        file_location=s3_file_location,
-        reference_id=s3_object_key,
-        data=document_request_body,
-    )
-
-    logger.info(f"Input document reference filename: {new_document.file_name}")
-    return new_document
-
-def save_document_reference_in_dynamo_db(new_document):
-    dynamodb_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-    dynamodb_service = DynamoDBService(dynamodb_name)
-    dynamodb_service.post_item_service(item=new_document.to_dict())

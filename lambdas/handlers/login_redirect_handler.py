@@ -8,7 +8,7 @@ from oauthlib.oauth2 import WebApplicationClient, InsecureTransportError
 
 from utils.get_aws_region import get_aws_region
 from utils.lambda_response import ApiGatewayResponse
-from services.dynamo_services import DynamoDBService
+from services.dynamo_service import DynamoDBService
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -58,11 +58,11 @@ def prepare_redirect_response(web_application_client_class):
 
 def save_state_in_dynamo_db(state):
     dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
-    dynamodb_service = DynamoDBService(dynamodb_name)
+    dynamodb_service = DynamoDBService()
     ten_minutes = 60 * 10
     ttl = round(time.time()) + ten_minutes
     item = {"State": state, "TimeToExist": ttl}
-    dynamodb_service.post_item_service(item=item)
+    dynamodb_service.post_item_service(item=item, table_name=dynamodb_name)
 
 
 def get_ssm_parameters():

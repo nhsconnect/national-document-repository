@@ -4,7 +4,7 @@ class ApiGatewayResponse:
         self.body = body
         self.methods = methods
 
-    def create_api_gateway_response(self, headers=None):
+    def create_api_gateway_response(self, headers=None) -> object:
         if headers is None:
             headers = {}
         return {

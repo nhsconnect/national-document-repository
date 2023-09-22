@@ -24,3 +24,7 @@ class OdsErrorException(Exception):
 
 class DynamoDbException(Exception):
     pass
+
+
+class ManifestDownloadException(Exception):
+    pass

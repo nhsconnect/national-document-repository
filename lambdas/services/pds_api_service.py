@@ -4,7 +4,7 @@ from models.pds_models import Patient, PatientDetails
 from requests.models import Response
 from utils.exceptions import (InvalidResourceIdException,
                               PatientNotFoundException, PdsErrorException)
-from utils.nhs_number_validator import validate_id
+from utils.utilities import validate_id
 
 
 class PdsApiService:
