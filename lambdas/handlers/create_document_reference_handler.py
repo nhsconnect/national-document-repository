@@ -21,7 +21,7 @@ def lambda_handler(event, context):
     logger.info("Starting document reference creation process")
 
     document_type_string = (event["queryStringParameters"]["documentType"]).upper()
-    document_type = SupportedDocumentTypes.get_from_field_name(document_type_string);
+    document_type = SupportedDocumentTypes.get_from_field_name(document_type_string)
     if document_type is None:
         response = ApiGatewayResponse(400, "An error occured processing the required document type", "POST").create_api_gateway_response()
         return response
@@ -30,11 +30,11 @@ def lambda_handler(event, context):
     
     try:
         
-        if (document_type == SupportedDocumentTypes.LG):
+        if document_type == SupportedDocumentTypes.LG:
             s3_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
             dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
         
-        if (document_type == SupportedDocumentTypes.ARF):
+        if document_type == SupportedDocumentTypes.ARF:
             s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
             dynamo_table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
          
