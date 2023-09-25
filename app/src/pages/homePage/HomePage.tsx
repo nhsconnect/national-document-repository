@@ -1,17 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { MouseEvent as ReactEvent } from 'react';
 import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
-import { routes } from '../../types/generic/routes';
+import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 
 type Props = {};
 
 function HomePage(props: Props) {
     const navigate = useNavigate();
+    const baseAPIUrl = useBaseAPIUrl();
+    const [loading, setLoading] = useState(false);
 
-    const navigateUpload = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
+    const handleLogin = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
         e.preventDefault();
-        navigate(routes.SELECT_ORG);
+        window.location.replace(`${baseAPIUrl}/Auth/Login`);
     };
 
     return (
@@ -43,7 +45,7 @@ function HomePage(props: Props) {
             </p>
             <h2>Before You Start</h2>
             <p>You can only use this service if you have a valid NHS smartcard.</p>
-            <ButtonLink role="button" id="start-button" onClick={navigateUpload}>
+            <ButtonLink role="button" id="start-button" onClick={handleLogin}>
                 Start now
             </ButtonLink>
 
