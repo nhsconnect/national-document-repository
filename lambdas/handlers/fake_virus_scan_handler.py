@@ -9,6 +9,7 @@ from utils.lambda_response import ApiGatewayResponse
 
 
 def lambda_handler(event, context):
+    logging.info(f"EVENT RECEIVED: {event}")
     document_store_table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
     records = event["Records"]
     dynamo_service = DynamoDBService()
