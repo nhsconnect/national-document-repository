@@ -1,6 +1,7 @@
 import logging
 
 import boto3
+from botocore.client import Config as BotoConfig
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -8,7 +9,8 @@ logger.setLevel(logging.INFO)
 
 class S3Service:
     def __init__(self):
-        self.client = boto3.client("s3", region_name="eu-west-2")
+        config = BotoConfig(retries={"max_attempts": 3, "mode": "standard"})
+        self.client = boto3.client("s3", region_name="eu-west-2", config=config)
         self.presigned_url_expiry = 1800
 
     def create_document_presigned_url_handler(

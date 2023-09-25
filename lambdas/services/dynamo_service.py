@@ -10,7 +10,6 @@ logger.setLevel(logging.INFO)
 
 
 class DynamoDBService:
-
     def __init__(self):
         self.dynamodb = boto3.resource("dynamodb")
 
@@ -21,7 +20,7 @@ class DynamoDBService:
             logger.error("Unable to connect to DB")
             logger.error(e)
             raise e
-        
+
     def query_service(
         self,
         table_name,
@@ -31,7 +30,6 @@ class DynamoDBService:
         requested_fields: list = None,
     ):
         try:
-
             table = self.get_table(table_name)
 
             if requested_fields is None or len(requested_fields) == 0:
@@ -68,7 +66,9 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
-    def update_item_service(self, table_name, key, update_expression, expression_attribute_values):
+    def update_item_service(
+        self, table_name, key, update_expression, expression_attribute_values
+    ):
         try:
             table = self.get_table(table_name)
             table.update_item(
