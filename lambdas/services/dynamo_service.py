@@ -58,6 +58,20 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
+    def simple_query(self, table_name: str, key_condition_expression):
+        try:
+            table = self.get_table(table_name)
+
+            results = table.query(KeyConditionExpression=key_condition_expression)
+            if results is None or "Items" not in results:
+                logger.error(f"Unusable results in DynamoDB: {results!r}")
+                raise DynamoDbException("Unrecognised response from DynamoDB")
+            return results
+        except ClientError as e:
+            logger.error(f"Unable to query table: {table_name}")
+            logger.error(e)
+            raise e
+
     def post_item_service(self, table_name, item):
         try:
             table = self.get_table(table_name)
@@ -79,6 +93,18 @@ class DynamoDBService:
             logger.info(f"Updating item in table: {table_name}")
         except ClientError as e:
             logger.error(f"Unable to update item in table: {table_name}")
+            logger.error(e)
+            raise e
+
+    def delete_item_service(self, table_name: str, key: dict):
+        try:
+            table = self.get_table(table_name)
+            table.delete_item(
+                Key=key
+            )
+            logger.info(f"Deleting item in table: {table_name}")
+        except ClientError as e:
+            logger.error(f"Unable to delete item in table: {table_name}")
             logger.error(e)
             raise e
 

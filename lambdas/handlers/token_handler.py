@@ -10,8 +10,7 @@ import jwt
 from boto3.dynamodb.conditions import Key
 
 from models.oidc_models import IdTokenClaimSet
-
-# from services.dynamo_services import DynamoDBService
+from services.dynamo_service import DynamoDBService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
@@ -86,21 +85,19 @@ def lambda_handler(event, _context):
 
 
 def have_matching_state_value_in_record(state: str) -> bool:
-    # TODO: after merging with other branch, refactor dynamo db service to allow query with only P-Key
-    # Right now the implementation in this branch doesn't allow us to query without other field names
     state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
-    temp_dynamo_resource = boto3.resource("dynamodb")
-    state_table = temp_dynamo_resource.Table(state_table_name)
-    query_response = state_table.query(KeyConditionExpression=Key("State").eq(state))
+
+    db_service = DynamoDBService()
+    query_response = db_service.simple_query(
+        table_name=state_table_name,
+        key_condition_expression=Key("State").eq(state)
+    )
     return "Count" in query_response and query_response["Count"] > 0
 
 
 def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
     session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
-    # TODO: switch to use the DynamoDBService from other branch once we merge
-    # session_table_dynamo_service = DynamoDBService(table_name=session_table_name)
-    temp_dynamo_resource = boto3.resource("dynamodb")
-    session_table = temp_dynamo_resource.Table(session_table_name)
+
     session_id = str(uuid.uuid4())
     session_record = {
         "NDRSessionId": session_id,
@@ -108,8 +105,10 @@ def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
         "Subject": id_token_claim_set.sub,
         "TimeToExist": id_token_claim_set.exp,
     }
-    session_table.put_item(Item=session_record)
-    # session_table_dynamo_service.post_item_service(item=session_record)
+
+    dynamodb_service = DynamoDBService()
+    dynamodb_service.post_item_service(table_name=session_table_name, item=session_record)
+
     return session_id
 
 
