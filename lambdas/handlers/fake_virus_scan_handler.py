@@ -28,7 +28,7 @@ def lambda_handler(event, context):
             )
             logging.info(f"File ID {key} in table {document_store_table_name} marked as CLEAN")
         except ClientError:
-            return ApiGatewayResponse(500, "Unable to mark file as clean", "UPDATE").create_api_gateway_response()
+            return ApiGatewayResponse(500, "Unable to mark file as clean", "PATCH").create_api_gateway_response()
 
-        return ApiGatewayResponse(200, "File marked as Clean", "UPDATE").create_api_gateway_response()
+        return ApiGatewayResponse(200, "File marked as Clean", "PATCH").create_api_gateway_response()
 
