@@ -14,12 +14,10 @@ def lambda_handler(event, context):
     dynamo_service = DynamoDBService()
 
     for record in records:
-        #bucket = record["s3"]["bucket"]["name"]
         key = record["s3"]["object"]["key"]
-        #location = f"s3://{bucket}/{key}"
 
         try:
-            return dynamo_service.update_item_service(
+            dynamo_service.update_item_service(
                 table_name=document_store_table_name,
                 key={'ID': key},
                 update_expression="set VirusScannerResult = :r",
@@ -27,5 +25,9 @@ def lambda_handler(event, context):
                     ':r': 'Clean',
                 },
             )
+            logging.info(f"File ID {key} in table {document_store_table_name} marked as CLEAN")
         except ClientError:
             return ApiGatewayResponse(500, "Unable to mark file as clean", "UPDATE").create_api_gateway_response()
+
+        return ApiGatewayResponse(200, "File marked as Clean", "UPDATE").create_api_gateway_response()
+
