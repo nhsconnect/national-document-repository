@@ -30,7 +30,7 @@ def lambda_handler(event, context):
 
         dynamo_service = DynamoDBService()
 
-        logger.info("Retrieving doc store george documents")
+        logger.info("Retrieving doc store documents")
         ds_documents = query_documents(
             dynamo_service, document_store_table_name, nhs_number
         )
@@ -107,7 +107,6 @@ def query_documents(
         logger.error(f"Unrecognised response from DynamoDB: {response}")
         raise DynamoDbException("Unrecognised response from DynamoDB")
 
-    logger.info("Creating documents from response")
     for item in response["Items"]:
         document = Document(
             nhs_number=nhs_number,
@@ -120,5 +119,4 @@ def query_documents(
             ],
         )
         documents.append(document)
-    logger.info(documents)
     return documents
