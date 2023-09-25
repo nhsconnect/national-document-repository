@@ -16,3 +16,7 @@ class DynamoDbException(Exception):
 
 class ManifestDownloadException(Exception):
     pass
+
+
+class VirusScanEventHandleError(Exception):
+    pass
