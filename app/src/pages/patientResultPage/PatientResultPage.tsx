@@ -26,7 +26,8 @@ function PatientResultPage({ role }: Props) {
     const handleVerify = () => {
         if (userIsGP) {
             // Make PDS patient search request to upload documents to patient
-            navigate(routes.UPLOAD_DOCUMENTS);
+            // navigate(routes.UPLOAD_DOCUMENTS);
+            navigate(routes.LLOYD_GEORGE);
         }
 
         // PCSE Role
