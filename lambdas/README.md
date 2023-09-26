@@ -24,6 +24,14 @@ https://github.com/pyenv-win/pyenv-win
 
 To setup the Python environment for backend development, run: `make env`
 
+### 3. Python
+
+To run any tasks associated with Python on your local machine, you must first run
+
+```bash
+make env
+```
+
 This will create a virtual environment with all production and test requirements. The virtual environment can be found
 at `.lambdas/venv`.
 
@@ -32,6 +40,14 @@ To activate the environment in Mac/Linux or UNIX based Windows terminal, run:
 
 To activate in Windows terminals, run:
 `./lambdas/venv/Scripts/activate`
+
+It is recommended to run a format before you push up any new Python code, else the pipeline may fail on a format check.
+
+```bash
+make format
+```
+
+The format command requires [Rufus](http://www.ruffus.org.uk/installation.html) to be installed on your machine.
 
 ## Local Deployment to AWS instructions
 
@@ -96,9 +112,7 @@ If successful, the lambda will return status code 200 with patient details as th
 
 ```json
 {
-  "givenName": [
-    "Jane"
-  ],
+  "givenName": ["Jane"],
   "familyName": "Smith",
   "birthDate": "2010-10-22",
   "postalCode": "LS1 6AE",
@@ -122,7 +136,7 @@ Testing in AWS on the lambda directly:
 ```json
 {
   "queryStringParameters": {
-      "patientId":"9449305552"
+    "patientId": "9449305552"
   }
 }
 ```
@@ -138,7 +152,6 @@ Hitting URL directly:
 ```
 https://{url}/SearchDocumentReferences?patientId=9449305552
 ```
-
 
 #### Possible outputs
 
@@ -231,4 +244,3 @@ or...
   "body": "An error occurred searching for available documents"
 }
 ```
-

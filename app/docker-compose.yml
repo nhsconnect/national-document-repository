@@ -5,7 +5,7 @@ services:
         container_name: ndr_ui
         image: ndr_ui_image
         build:
-            context: ./
+            context: .
         ports:
             - 8080:80
         env_file:
