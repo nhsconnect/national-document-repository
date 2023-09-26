@@ -3,20 +3,22 @@ import type { MouseEvent as ReactEvent } from 'react';
 import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
+import Spinner from '../../components/generic/spinner/Spinner';
 
 type Props = {};
 
 function HomePage(props: Props) {
     const navigate = useNavigate();
     const baseAPIUrl = useBaseAPIUrl();
-    const [loading, setLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleLogin = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
+        setIsLoading(true);
         e.preventDefault();
-        window.location.replace(`${baseAPIUrl}/Auth/Login`);
+        window.location.replace(`${baseAPIUrl}/Login`);
     };
 
-    return (
+    return !isLoading ? (
         <>
             <h1>Inactive Patient Record Administration</h1>
             <p>
@@ -64,6 +66,8 @@ function HomePage(props: Props) {
                 </div>
             )}
         </>
+    ) : (
+        <Spinner status="Logging in..." />
     );
 }
 
