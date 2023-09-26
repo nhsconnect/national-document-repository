@@ -230,7 +230,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_SearchDocumentReferencesLambda
+          function_name: ${{ vars.BUILD_ENV }}_SearchDocumentReferencesLambda
           zip_file: package_lambdas_document_reference_search_handler.zip
 
   python_deploy_document_manifest_by_nhs_number_lambda:
@@ -277,5 +277,5 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_DocumentManifestByNHSNumberLambda
+          function_name: ${{ vars.BUILD_ENV }}_DocumentManifestByNHSNumberLambda
           zip_file: package_lambdas_document_manifest_by_nhs_number_handler.zip
