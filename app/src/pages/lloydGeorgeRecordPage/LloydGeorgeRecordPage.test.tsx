@@ -3,6 +3,7 @@ import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
 import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 
+jest.mock('react-router');
 const mockPatientDetails = buildPatientDetails();
 
 describe('LloydGeorgeRecordPage', () => {
@@ -17,6 +18,12 @@ describe('LloydGeorgeRecordPage', () => {
 
         expect(screen.getByText(patientName)).toBeInTheDocument();
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
+    });
+
+    it('renders Lloyd George card', () => {
+        renderPage();
+
+        expect(screen.getByText('Lloyd George Record')).toBeInTheDocument();
     });
 });
 
