@@ -28,11 +28,17 @@ def lambda_handler(event, context):
         zip_trace_table_name = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
         # zip_trace_ttl = os.environ["DOCUMENT_ZIP_TRACE_TTL_IN_DAYS"]
 
-        logger.info("Retrieving doc store george documents")
-        ds_documents = get_doc_store_documents(document_store_table_name, nhs_number)
+        dynamo_service = DynamoDBService()
+
+        logger.info("Retrieving doc store documents")
+        ds_documents = query_documents(
+            dynamo_service, document_store_table_name, nhs_number
+        )
 
         logger.info("Retrieving lloyd george documents")
-        lg_documents = get_lloyd_george_documents(lloyd_george_table_name, nhs_number)
+        lg_documents = query_documents(
+            dynamo_service, lloyd_george_table_name, nhs_number
+        )
 
         documents = lg_documents + ds_documents
 
@@ -81,22 +87,13 @@ def lambda_handler(event, context):
         return response
 
 
-def get_lloyd_george_documents(
-    lloyd_george_table: str, nhs_number: str
+def query_documents(
+    dynamo_service: DynamoDBService, document_table: str, nhs_number: str
 ) -> list[Document]:
-    lg_dynamo_service = DynamoDBService()
-    return query_documents(lloyd_george_table, lg_dynamo_service, nhs_number)
-
-
-def get_doc_store_documents(doc_store_table: str, nhs_number: str) -> list[Document]:
-    ds_dynamo_service = DynamoDBService()
-    return query_documents(doc_store_table, ds_dynamo_service, nhs_number)
-
-
-def query_documents(dynamo_service: DynamoDBService, nhs_number: str) -> list[Document]:
     documents = []
 
     response = dynamo_service.query_service(
+        document_table,
         "NhsNumberIndex",
         "NhsNumber",
         nhs_number,
@@ -110,7 +107,6 @@ def query_documents(dynamo_service: DynamoDBService, nhs_number: str) -> list[Do
         logger.error(f"Unrecognised response from DynamoDB: {response}")
         raise DynamoDbException("Unrecognised response from DynamoDB")
 
-    logger.info("Creating documents from response")
     for item in response["Items"]:
         document = Document(
             nhs_number=nhs_number,
@@ -123,5 +119,4 @@ def query_documents(dynamo_service: DynamoDBService, nhs_number: str) -> list[Do
             ],
         )
         documents.append(document)
-    logger.info(documents)
     return documents

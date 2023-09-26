@@ -46,10 +46,8 @@ class DocumentManifestService:
 
     def download_documents_to_be_zipped(self):
         logger.info("Downloading documents to be zipped")
-
         file_names_to_be_zipped = {}
 
-        logger.info(f"Temp directory contents {os.listdir(self.temp_downloads_dir)}")
         for document in self.documents:
             file_name = document.file_name
 
