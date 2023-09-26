@@ -11,10 +11,10 @@ RUN npm run build
 
 # Host the App
 FROM nginx:1.19.0
-
-WORKDIR /usr/share/nginx
-RUN rm -rf ./html/*
-COPY --from=builder /app/build /html
-COPY --from=builder /app/docker/nginx.conf ./
+WORKDIR /usr/share/nginx/html
+RUN rm -rf ./*
+COPY --from=builder /app/build .
+WORKDIR /etc/nginx
+COPY --from=builder ./app/docker/nginx.conf .
 EXPOSE 80
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
