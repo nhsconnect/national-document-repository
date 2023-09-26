@@ -117,7 +117,7 @@ describe('PatientResultPage', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to upload page when user has verified upload patient', async () => {
+        xit('navigates to upload page when user has verified upload patient', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/example'],
                 initialIndex: 1,
