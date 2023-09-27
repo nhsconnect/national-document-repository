@@ -37,3 +37,4 @@ class S3Service:
 
     def upload_file(self, file_name: str, s3_bucket_name: str, file_key: str):
         return self.client.upload_file(file_name, s3_bucket_name, file_key)
+
