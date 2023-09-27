@@ -37,11 +37,21 @@ def lambda_handler(event, context):
                 DocumentReferenceMetadataFields.ID,
                 DocumentReferenceMetadataFields.NHS_NUMBER,
                 DocumentReferenceMetadataFields.FILE_LOCATION,
+                DocumentReferenceMetadataFields.FILE_NAME
             ],
         )
+        # [
+        # 2of2_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019]
+        # 1of2_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019]
+        # ]
+        response['Items']
+
+
     except ClientError:
         return ApiGatewayResponse(500, f"Unable to retrieve documents for patient {nhs_number}",
                                   "GET").create_api_gateway_response()
+
+
 
     # Get the patient's list of docs from the NDR LG Dynamo table
     # Download them all in order, their filenames should impose an order
@@ -51,3 +61,5 @@ def lambda_handler(event, context):
     # return pre-signed URL to download and send it to the UI using api response
 
     pass
+
+

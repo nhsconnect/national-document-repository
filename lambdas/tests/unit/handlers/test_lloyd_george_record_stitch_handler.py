@@ -1,6 +1,9 @@
 import os
 
-from handlers.lloyd_george_record_stitch_handler import lambda_handler
+from handlers.lloyd_george_record_stitch_handler import (
+    lambda_handler,
+    sort_lloyd_george_filenames,
+)
 from utils.lambda_response import ApiGatewayResponse
 
 
