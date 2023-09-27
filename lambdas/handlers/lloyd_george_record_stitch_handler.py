@@ -10,7 +10,6 @@ from utils.utilities import validate_id
 
 
 def lambda_handler(event, context):
-
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
         validate_id(nhs_number)
@@ -41,13 +40,8 @@ def lambda_handler(event, context):
             ],
         )
     except ClientError:
-        return ApiGatewayResponse(500, f"Unable to retrieve documents for user {nhs_number}", "GET")
-
-
-
-
-
-
+        return ApiGatewayResponse(500, f"Unable to retrieve documents for patient {nhs_number}",
+                                  "GET").create_api_gateway_response()
 
     # Get the patient's list of docs from the NDR LG Dynamo table
     # Download them all in order, their filenames should impose an order
