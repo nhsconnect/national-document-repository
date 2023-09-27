@@ -4,6 +4,7 @@ import { UserAuth } from '../../types/blocks/userAuth';
 
 type Props = {
     children: ReactNode;
+    sessionOverride?: Partial<Session>;
 };
 type Session = {
     auth: UserAuth | null;
@@ -13,13 +14,13 @@ type Session = {
 export type SessionContext = [Session, Dispatch<SetStateAction<Session>>, () => void];
 
 const UserSessionContext = createContext<SessionContext | null>(null);
-const SessionProvider = ({ children }: Props) => {
+const SessionProvider = ({ children, sessionOverride }: Props) => {
     const storedAuth = sessionStorage.getItem('UserAuth');
-    const auth = storedAuth ? JSON.parse(storedAuth) : null;
-    const isLoggedIn = sessionStorage.getItem('LoggedIn') === 'true';
+    const auth: UserAuth | null = storedAuth ? JSON.parse(storedAuth) : null;
     const [session, setSession] = useState<Session>({
-        isLoggedIn,
+        isLoggedIn: !!auth?.authorisation_token,
         auth,
+        ...sessionOverride,
     });
 
     const deleteSession = () => {
@@ -30,7 +31,6 @@ const SessionProvider = ({ children }: Props) => {
     };
 
     useEffect(() => {
-        sessionStorage.setItem('LoggedIn', session.isLoggedIn ? 'true' : 'false');
         sessionStorage.setItem('UserAuth', JSON.stringify(session.auth) ?? null);
     }, [session]);
 
