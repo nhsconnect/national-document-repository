@@ -20,10 +20,17 @@ describe('LloydGeorgeRecordPage', () => {
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
     });
 
-    it('renders Lloyd George card', () => {
+    it('renders LG card', () => {
         renderPage();
 
         expect(screen.getByText('Lloyd George Record')).toBeInTheDocument();
+    });
+
+    it('renders correct text in LG card if there is no LG pdf', () => {
+        renderPage();
+
+        expect(screen.getByText('Lloyd George Record')).toBeInTheDocument();
+        expect(screen.getByText('No documents are available')).toBeInTheDocument();
     });
 });
 
