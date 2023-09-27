@@ -1,5 +1,4 @@
 import logging
-from unittest.mock import patch, MagicMock
 
 from utils.order_response_by_filenames import order_response_by_filenames
 
@@ -52,18 +51,12 @@ def test_order_response_by_filenames_missing_page(caplog):
     all_pages_in_order = build_expected_output(total_page_number=15)
     expected = all_pages_in_order[0:9] + all_pages_in_order[12:]
 
-    # mocked_logger = mocker.MagicMock()
-    # mocker.patch.object(logging, "getLogger", return_value=mocked_logger)
-    mock_logger = MagicMock()
-    with patch.object(logging, "getLogger", return_value=mock_logger):
+    actual = order_response_by_filenames(dynamo_response_missing_page_10_to_12)
 
-        actual = order_response_by_filenames(dynamo_response_missing_page_10_to_12)
-
-        assert actual == expected
-        mock_logger.warning.assert_called_once()
+    assert actual == expected
 
 
-def test_bar(caplog):
+def test_warning_message_logged_when_some_pages_missing(caplog):
     dynamo_response_missing_page_10_to_12 = [
         build_dynamo_response_item(curr_page_number=i, total_page_number=15)
         for i in [6, 7, 1, 8, 3, 4, 5, 13, 9, 2, 14, 15]
