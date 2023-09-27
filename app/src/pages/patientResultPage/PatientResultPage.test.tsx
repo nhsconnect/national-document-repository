@@ -117,7 +117,7 @@ describe('PatientResultPage', () => {
     });
 
     describe('Navigation', () => {
-        xit('navigates to upload page when user has verified upload patient', async () => {
+        it('navigates to LG record page when user has verified upload patient', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/example'],
                 initialIndex: 1,
@@ -131,7 +131,7 @@ describe('PatientResultPage', () => {
             userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
 
             await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.UPLOAD_DOCUMENTS);
+                expect(history.location.pathname).toBe(routes.LLOYD_GEORGE);
             });
         });
         it('navigates to download page when user has verified download patient', async () => {
