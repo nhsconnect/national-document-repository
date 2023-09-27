@@ -1,3 +1,5 @@
+import re
+
 from utils.exceptions import InvalidResourceIdException
 
 

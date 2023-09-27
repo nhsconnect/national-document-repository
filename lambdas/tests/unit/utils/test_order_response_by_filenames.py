@@ -55,7 +55,6 @@ def test_order_response_by_filenames_missing_page(caplog):
 
     assert actual == expected
 
-
 def test_warning_message_logged_when_some_pages_missing(caplog):
     dynamo_response_missing_page_10_to_12 = [
         build_dynamo_response_item(curr_page_number=i, total_page_number=15)

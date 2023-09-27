@@ -48,5 +48,4 @@ def test_pdf_stitching_with_s3():
         s3_client = boto3.client("s3", region_name="eu-west-2")
         response = s3_client.put_object(Body=bytes_stream, Bucket="ndr-dev-lloyd-george-store", Expires=datetime(2015, 9, 27), Key="alexCool.pdf")
 
-    print(response)
     # s3_service.upload_file("AlexTest,pdf", bucket_name, "9000000009/merged_pdf.pdf")
