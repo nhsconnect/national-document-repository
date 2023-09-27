@@ -48,7 +48,7 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                                 return 'Please ensure that all files are less than 5GB in size';
                             } else if (
                                 name === 'lg-documents' &&
-                                value[i].file.type != 'application/pdf'
+                                value[i].file.type !== 'application/pdf'
                             ) {
                                 return 'One or more of the files do not match the required file type. Please check the file(s) and try again';
                             } else if (
