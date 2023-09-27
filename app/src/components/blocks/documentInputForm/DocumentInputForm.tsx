@@ -91,7 +91,7 @@ const DocumentInputForm = ({
             />
             <div role="region" aria-live="polite">
                 {documents && documents.length > 0 && (
-                    <Table caption="Selected documents" id="selected-documents-table">
+                    <Table caption="Chosen files" id="selected-documents-table">
                         <Table.Head>
                             <Table.Row>
                                 <Table.Cell>Filename</Table.Cell>

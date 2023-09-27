@@ -120,11 +120,12 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                 noValidate
                 data-testid="upload-document-form"
             >
+                <Fieldset.Legend headingLevel="h1" isPageHeading>
+                    Upload documents
+                </Fieldset.Legend>
+                <PatientSummary patientDetails={patientDetails} />
+
                 <Fieldset>
-                    <Fieldset.Legend headingLevel="h1" isPageHeading>
-                        Upload documents
-                    </Fieldset.Legend>
-                    <PatientSummary patientDetails={patientDetails} />
                     <h2>Electronic health records</h2>
                     <DocumentInputForm
                         showHelp
@@ -135,8 +136,8 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                         inputRef={arfInputRef}
                         formType={DOCUMENT_TYPE.ARF}
                     />
-                    <br />
-                    <br />
+                </Fieldset>
+                <Fieldset>
                     <h2>Lloyd George records</h2>
                     <DocumentInputForm
                         documents={lgDocuments}
