@@ -44,7 +44,6 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                 perFileValidation: (value?: Array<UploadDocument>) => {
                     if (Array.isArray(value)) {
                         for (let i = 0; i < value.length; i++) {
-                            console.log(lgRegex.exec(value[i].file.name));
                             if (value[i].file.size > FIVEGB) {
                                 return 'Please ensure that all files are less than 5GB in size';
                             } else if (
@@ -100,11 +99,13 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
             setArfDocuments(updatedDocList);
             if (arfInputRef.current) {
                 arfInputRef.current.files = toFileList(updatedDocList);
+                arfController.field.onChange(updatedDocList);
             }
         } else {
             setLgDocuments(updatedDocList);
             if (lgInputRef.current) {
                 lgInputRef.current.files = toFileList(updatedDocList);
+                lgController.field.onChange(updatedDocList);
             }
         }
 
