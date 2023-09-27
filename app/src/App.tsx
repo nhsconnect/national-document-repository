@@ -9,7 +9,7 @@ import PatientResultPage from './pages/patientResultPage/PatientResultPage';
 import Layout from './components/layout/Layout';
 import { USER_ROLE } from './types/generic/roles';
 import PatientDetailsProvider from './providers/patientProvider/PatientProvider';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
 import RoleSelectPage from './pages/roleSelectPage/RoleSelectPage';
 import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
@@ -17,6 +17,7 @@ import DocumentSearchResultsPage from './pages/documentSearchResultsPage/Documen
 import SessionProvider from './providers/sessionProvider/SessionProvider';
 import AuthGuard from './components/blocks/authGuard/AuthGuard';
 import AuthCallbackPage from './pages/authCallbackPage/AuthCallbackPage';
+import NotFoundPage from './pages/notFoundPage/NotFoundPage';
 
 function App() {
     const AuthenticatedProviders = ({ children }: { children: ReactNode }) => (
@@ -36,12 +37,27 @@ function App() {
             <Router>
                 <Layout>
                     <Routes>
+                        <Route element={<NotFoundPage />} path={routes.NOT_FOUND} />
                         <Route element={<HomePage />} path={routes.HOME} />
+
                         <Route element={<RoleSelectPage />} path={routes.SELECT_ORG} />
-                        <SessionProvider>
-                            <Route element={<AuthCallbackPage />} path={routes.AUTH_CALLBACK} />
-                        </SessionProvider>
-                        <AuthenticatedProviders>
+
+                        <Route
+                            element={
+                                <SessionProvider>
+                                    <AuthCallbackPage />
+                                </SessionProvider>
+                            }
+                            path={routes.AUTH_CALLBACK}
+                        />
+
+                        <Route
+                            element={
+                                <AuthenticatedProviders>
+                                    <Outlet />
+                                </AuthenticatedProviders>
+                            }
+                        >
                             <Route
                                 element={<PatientSearchPage role={USER_ROLE.PCSE} />}
                                 path={routes.DOWNLOAD_SEARCH}
@@ -66,7 +82,7 @@ function App() {
                                 element={<DocumentSearchResultsPage />}
                                 path={routes.DOWNLOAD_DOCUMENTS}
                             />
-                        </AuthenticatedProviders>
+                        </Route>
                     </Routes>
                 </Layout>
             </Router>

@@ -1,18 +1,29 @@
 import { useEffect } from 'react';
 import getAuthToken, { AuthTokenArgs } from '../../helpers/requests/getAuthToken';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
+import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
+import { routes } from '../../types/generic/routes';
+import { useNavigate } from 'react-router';
 
 type Props = {};
 
 const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
+    const [, setSession] = useSessionContext();
+    const navigate = useNavigate();
     useEffect(() => {
         const handleCallback = async (args: AuthTokenArgs) => {
             try {
                 const { organisations, authorisation_token } = await getAuthToken(args);
-            } catch (e) {}
-            // Set Session
-            // Navigate
+                setSession({
+                    organisations,
+                    authorisation_token,
+                });
+                navigate(routes.SELECT_ORG);
+            } catch (e) {
+                navigate(routes.HOME);
+                console.error(e);
+            }
         };
 
         const urlSearchParams = new URLSearchParams(window.location.search);

@@ -1,3 +1,4 @@
+import { endpoints } from '../../types/generic/endpoints';
 import { SearchResult } from '../../types/generic/searchResult';
 
 import axios from 'axios';
@@ -12,7 +13,7 @@ type GetDocumentSearchResultsResponse = {
 };
 
 const getDocumentSearchResults = async ({ nhsNumber, baseUrl }: Args) => {
-    const gatewayUrl = baseUrl + '/SearchDocumentReferences';
+    const gatewayUrl = baseUrl + endpoints.DOCUMENT_SEARCH;
 
     const { data }: GetDocumentSearchResultsResponse = await axios.get(gatewayUrl, {
         headers: {
