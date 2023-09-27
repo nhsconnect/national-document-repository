@@ -75,6 +75,16 @@ const DocumentInputForm = ({
                                 .
                             </li>
                         )}
+                        {formType === DOCUMENT_TYPE.LLOYD_GEORGE && (
+                            <>
+                            <li>
+                                Each Lloyd George file uploaded must match the following format: [PDFnumber]_Lloyd_George_Record_[Patient Name]_[NHS Number]_[D.O.B]. For example: 1of2_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019]
+                            </li>
+                            <li>
+                                You can only upload PDF files
+                            </li>
+                            </>
+                        )}
                     </ul>
                 }
             />
