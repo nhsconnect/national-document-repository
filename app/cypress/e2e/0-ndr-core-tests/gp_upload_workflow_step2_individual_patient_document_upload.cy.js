@@ -58,10 +58,24 @@ const testStartAgainButton = () => {
     cy.url().should('eq', baseUrl);
 };
 
-const uploadedFilePathNames = [
-    'cypress/fixtures/test_patient_record.pdf',
-    'cypress/fixtures/test_patient_record_two.pdf',
-];
+const uploadedFilePathNames = {
+    ARF: [
+        'cypress/fixtures/test_patient_record.pdf',
+        'cypress/fixtures/test_patient_record_two.pdf',
+    ],
+    LG: [
+        'cypress/fixtures/lg-files/1of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+        'cypress/fixtures/lg-files/2of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+    ],
+};
+
+const uploadedFileNames = {
+    ARF: ['test_patient_record.pdf', 'test_patient_record_two.pdf'],
+    LG: [
+        '1of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+        '2of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+    ],
+};
 
 const uploadedImagesPathNames = [
     'cypress/fixtures/test-images/test_image.jpg',
@@ -109,8 +123,8 @@ describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', 
             });
         }
 
-        selectForm(formTypes.ARF).selectFile(uploadedFilePathNames[0]);
-        selectForm(formTypes.LG).selectFile(uploadedFilePathNames[1]);
+        selectForm(formTypes.ARF).selectFile(uploadedFilePathNames.ARF[0]);
+        selectForm(formTypes.LG).selectFile(uploadedFilePathNames.LG[1]);
 
         clickUploadButton();
 
@@ -120,10 +134,8 @@ describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', 
         cy.get('#successful-uploads-dropdown').click();
 
         cy.get('#successful-uploads tbody tr').should('have.length', 2);
-        cy.get('#successful-uploads tbody tr').eq(0).should('contain', 'test_patient_record.pdf');
-        cy.get('#successful-uploads tbody tr')
-            .eq(1)
-            .should('contain', 'test_patient_record_two.pdf');
+        cy.get('#successful-uploads tbody tr').eq(0).should('contain', uploadedFileNames.ARF[0]);
+        cy.get('#successful-uploads tbody tr').eq(1).should('contain', uploadedFileNames.LG[1]);
         cy.get('#close-page-warning').should('be.visible');
 
         testStartAgainButton();
@@ -134,14 +146,14 @@ Object.values(formTypes).forEach((type) => {
     describe(`[${type}] GP Upload Workflow Step 2: Uploads docs and tests it looks OK`, () => {
         it(`(Smoke test) Single file - On Choose files button click, file selection is visible for ${type} input`, () => {
             cy.get('#selected-documents-table').should('not.exist');
-            selectForm(type).selectFile(uploadedFilePathNames[0]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][0]);
             cy.get('#selected-documents-table').should('be.visible');
             cy.get('#selected-documents-table tbody tr').should('have.length', 1);
             cy.get('#selected-documents-table tbody tr')
                 .first()
                 .get('td')
                 .first()
-                .should('have.text', 'test_patient_record.pdf');
+                .should('have.text', uploadedFileNames[type][0]);
         });
 
         it(`Single file - On Upload button click, renders Upload Summary with error box when DocumentReference returns a 500 for ${type} input`, () => {
@@ -150,7 +162,7 @@ Object.values(formTypes).forEach((type) => {
                 statusCode: 500,
             });
 
-            selectForm(type).selectFile(uploadedFilePathNames[0]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][0]);
 
             clickUploadButton();
 
@@ -161,7 +173,7 @@ Object.values(formTypes).forEach((type) => {
                 .first()
                 .get('td')
                 .first()
-                .should('contain', 'test_patient_record.pdf');
+                .should('contain', uploadedFileNames[type][0]);
             cy.get('#failed-uploads').should('contain', '1 of 1 files failed to upload');
             cy.get('#close-page-warning').should('be.visible');
 
@@ -174,7 +186,7 @@ Object.values(formTypes).forEach((type) => {
                 statusCode: 404,
             });
 
-            selectForm(type).selectFile(uploadedFilePathNames[1]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][1]);
 
             clickUploadButton();
 
@@ -185,7 +197,7 @@ Object.values(formTypes).forEach((type) => {
                 .first()
                 .get('td')
                 .first()
-                .should('contain', 'test_patient_record_two.pdf');
+                .should('contain', uploadedFileNames[type][0]);
             cy.get('#failed-uploads').should('contain', '1 of 1 files failed to upload');
             cy.get('#close-page-warning').should('be.visible');
 
@@ -220,17 +232,17 @@ Object.values(formTypes).forEach((type) => {
 
         it(`(Smoke test) Multiple files - On Choose files button click, file selection is visible for ${type} input`, () => {
             cy.get('#selected-documents-table').should('not.exist');
-            selectForm(type).selectFile(uploadedFilePathNames);
+            selectForm(type).selectFile(uploadedFilePathNames[type]);
             cy.get('#selected-documents-table').should('be.visible');
             cy.get('#selected-documents-table tbody tr').should('have.length', 2);
             cy.get('#selected-documents-table tbody tr')
                 .first()
                 .get('td')
                 .first()
-                .should('have.text', 'test_patient_record.pdf');
+                .should('have.text', uploadedFileNames[type][0]);
             cy.get('#selected-documents-table tbody tr')
                 .next()
-                .contains('td', 'test_patient_record_two.pdf');
+                .contains('td', uploadedFileNames[type][1]);
         });
 
         it(`(Smoke test) Multiple files - On Upload button click, renders Upload Summary for successful upload for ${type} input`, () => {
@@ -255,7 +267,7 @@ Object.values(formTypes).forEach((type) => {
                 });
             }
 
-            selectForm(type).selectFile(uploadedFilePathNames);
+            selectForm(type).selectFile(uploadedFilePathNames[type]);
 
             clickUploadButton();
 
@@ -267,7 +279,7 @@ Object.values(formTypes).forEach((type) => {
                 .first()
                 .get('td')
                 .first()
-                .should('contain', 'test_patient_record.pdf');
+                .should('contain', uploadedFileNames[type][0]);
             cy.get('#close-page-warning').should('be.visible');
 
             testStartAgainButton();
