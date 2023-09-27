@@ -4,7 +4,7 @@ import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import Spinner from '../../components/generic/spinner/Spinner';
-import { routes } from '../../types/generic/routes';
+import { endpoints, routes } from '../../types/generic/routes';
 
 type Props = {};
 
@@ -16,7 +16,7 @@ function HomePage(props: Props) {
     const handleLogin = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
         setIsLoading(true);
         e.preventDefault();
-        window.location.replace(`${baseAPIUrl}/Login`);
+        window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
     };
     const navigateLogin = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
         e.preventDefault();
