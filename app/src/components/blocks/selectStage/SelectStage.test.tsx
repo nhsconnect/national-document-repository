@@ -1,7 +1,11 @@
 /* eslint-disable testing-library/no-unnecessary-act */
 import { render, screen, waitFor } from '@testing-library/react';
 import SelectStage from './SelectStage';
-import { buildPatientDetails, buildTextFile } from '../../../helpers/test/testBuilders';
+import {
+    buildPatientDetails,
+    buildTextFile,
+    buildLgFile,
+} from '../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
 import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../../types/pages/UploadDocumentsPage/types';
 import { act } from 'react-dom/test-utils';
@@ -19,6 +23,10 @@ describe('<UploadDocumentsPage />', () => {
         const documentOne = buildTextFile('one', 100);
         const documentTwo = buildTextFile('two', 200);
         const documentThree = buildTextFile('three', 100);
+        const lgDocumentOne = buildLgFile(1, 100);
+        const lgDocumentTwo = buildLgFile(2, 100);
+        const arfDocuments = [documentOne, documentTwo, documentThree];
+        const lgDocuments = [lgDocumentOne, lgDocumentTwo];
 
         const setDocumentMock = jest.fn();
         setDocumentMock.mockImplementation((document) => {
@@ -101,20 +109,25 @@ describe('<UploadDocumentsPage />', () => {
             },
         );
 
-        it.each([['ARF'], ['LG']])(
+        it.each([
+            { name: 'ARF', documents: arfDocuments },
+            { name: 'LG', documents: lgDocuments },
+        ])(
             "does not upload either forms if selected file is less than 5GB for '%s' input",
             async (inputType) => {
                 renderSelectStage(setDocumentMock);
 
-                const documentBig = buildTextFile('four', 6 * Math.pow(1024, 3));
+                const documentBig =
+                    inputType.name === 'ARF'
+                        ? buildTextFile('four', 6 * Math.pow(1024, 3))
+                        : buildLgFile(4, 6 * Math.pow(1024, 3));
+                inputType.documents.push(documentBig);
 
                 act(() => {
-                    userEvent.upload(screen.getByTestId(`${inputType}-input`), [
-                        documentOne,
-                        documentTwo,
-                        documentThree,
-                        documentBig,
-                    ]);
+                    userEvent.upload(
+                        screen.getByTestId(`${inputType.name}-input`),
+                        inputType.documents,
+                    );
                 });
 
                 expect(screen.getByText(documentBig.name)).toBeInTheDocument();

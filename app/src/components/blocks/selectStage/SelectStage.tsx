@@ -28,8 +28,8 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
 
     const mergedDocuments = [...arfDocuments, ...lgDocuments];
     const hasFileInput = mergedDocuments.length;
-    const lgRegex = /[0-9]+of[0-9]+_Lloyd_George_Record_\[[A-Za-z]+\s[A-Za-z]+]_\[[0-9]{10}]_\[\d\d-\d\d-\d\d\d\d]/;
-
+    const lgRegex =
+        /[0-9]+of[0-9]+_Lloyd_George_Record_\[[A-Za-z]+\s[A-Za-z]+]_\[[0-9]{10}]_\[\d\d-\d\d-\d\d\d\d].pdf/;
 
     const FIVEGB = 5 * Math.pow(1024, 3);
     const { handleSubmit, control, formState } = useForm();
@@ -44,13 +44,18 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                 perFileValidation: (value?: Array<UploadDocument>) => {
                     if (Array.isArray(value)) {
                         for (let i = 0; i < value.length; i++) {
+                            console.log(lgRegex.exec(value[i].file.name));
                             if (value[i].file.size > FIVEGB) {
                                 return 'Please ensure that all files are less than 5GB in size';
-                            }
-                            if (name === 'lg-documents' && value[i].file.type == 'application/pdf') {
+                            } else if (
+                                name === 'lg-documents' &&
+                                value[i].file.type != 'application/pdf'
+                            ) {
                                 return 'Please ensure that all files are PDF files';
-                            }
-                            if (name === 'lg-documents' && !lgRegex.exec(value[i].file.name)) {
+                            } else if (
+                                name === 'lg-documents' &&
+                                !lgRegex.exec(value[i].file.name)
+                            ) {
                                 return 'One or more of the files do not match the required filename format. Please check the file(s) and try again';
                             }
                         }

@@ -36,6 +36,24 @@ const buildTextFile = (name: string, size?: number) => {
     return file;
 };
 
+const buildLgFile = (name: number, size?: number) => {
+    const file = new File(
+        ['test'],
+        `${name}of2000_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf`,
+        {
+            type: 'application/pdf',
+        },
+    );
+
+    if (size) {
+        Object.defineProperty(file, 'size', {
+            value: size,
+        });
+    }
+
+    return file;
+};
+
 const buildDocument = (
     file: File,
     uploadStatus: DOCUMENT_UPLOAD_STATE,
@@ -61,4 +79,4 @@ const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
     return result;
 };
 
-export { buildPatientDetails, buildTextFile, buildDocument, buildSearchResult };
+export { buildPatientDetails, buildTextFile, buildDocument, buildSearchResult, buildLgFile };
