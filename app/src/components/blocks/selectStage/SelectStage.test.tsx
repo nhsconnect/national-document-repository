@@ -66,16 +66,14 @@ describe('<UploadDocumentsPage />', () => {
             });
 
             act(() => {
-                userEvent.upload(screen.getByTestId('LG-input'), [
-                    documentOne,
-                    documentTwo,
-                    documentThree,
-                ]);
+                userEvent.upload(screen.getByTestId('LG-input'), [lgDocumentOne, lgDocumentTwo]);
             });
 
-            expect(await screen.findAllByText(documentOne.name)).toHaveLength(2);
-            expect(await screen.findAllByText(documentTwo.name)).toHaveLength(2);
-            expect(await screen.findAllByText(documentThree.name)).toHaveLength(2);
+            expect(await screen.findAllByText(documentOne.name)).toHaveLength(1);
+            expect(await screen.findAllByText(documentTwo.name)).toHaveLength(1);
+            expect(await screen.findAllByText(documentThree.name)).toHaveLength(1);
+            expect(await screen.findAllByText(lgDocumentOne.name)).toHaveLength(1);
+            expect(await screen.findAllByText(lgDocumentTwo.name)).toHaveLength(1);
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
         });
@@ -143,6 +141,59 @@ describe('<UploadDocumentsPage />', () => {
                 ).toBeInTheDocument();
             },
         );
+
+        it('does not upload LG form if selected file is not PDF', async () => {
+            renderSelectStage(setDocumentMock);
+            const lgFileWithBadType = new File(
+                ['test'],
+                `1of2000_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].txt`,
+                {
+                    type: 'text/plain',
+                },
+            );
+
+            act(() => {
+                userEvent.upload(screen.getByTestId(`LG-input`), lgFileWithBadType);
+            });
+
+            expect(
+                screen.getByText(
+                    '1of2000_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].txt',
+                ),
+            ).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByText('Upload'));
+            });
+
+            expect(
+                await screen.findByText(
+                    'One or more of the files do not match the required file type. Please check the file(s) and try again',
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it('does not upload LG form if selected file does not match naming conventions', async () => {
+            renderSelectStage(setDocumentMock);
+            const pdfFileWithBadName = new File(['test'], `test_not_up_to_naming_conventions.pdf`, {
+                type: 'application/pdf',
+            });
+            act(() => {
+                userEvent.upload(screen.getByTestId(`LG-input`), pdfFileWithBadName);
+            });
+
+            expect(screen.getByText('test_not_up_to_naming_conventions.pdf')).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByText('Upload'));
+            });
+
+            expect(
+                await screen.findByText(
+                    'One or more of the files do not match the required filename format. Please check the file(s) and try again',
+                ),
+            ).toBeInTheDocument();
+        });
 
         it.each([['ARF'], ['LG']])(
             "shows a duplicate file warning if two or more files match name/size for '%s' input",

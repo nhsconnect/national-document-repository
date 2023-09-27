@@ -50,7 +50,7 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                                 name === 'lg-documents' &&
                                 value[i].file.type != 'application/pdf'
                             ) {
-                                return 'Please ensure that all files are PDF files';
+                                return 'One or more of the files do not match the required file type. Please check the file(s) and try again';
                             } else if (
                                 name === 'lg-documents' &&
                                 !lgRegex.exec(value[i].file.name)
