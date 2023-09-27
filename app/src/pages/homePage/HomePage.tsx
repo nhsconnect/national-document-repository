@@ -4,6 +4,7 @@ import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import Spinner from '../../components/generic/spinner/Spinner';
+import { routes } from '../../types/generic/routes';
 
 type Props = {};
 
@@ -17,7 +18,10 @@ function HomePage(props: Props) {
         e.preventDefault();
         window.location.replace(`${baseAPIUrl}/Login`);
     };
-
+    const navigateLogin = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
+        e.preventDefault();
+        navigate(routes.SELECT_ORG);
+    };
     return !isLoading ? (
         <>
             <h1>Inactive Patient Record Administration</h1>
@@ -48,9 +52,11 @@ function HomePage(props: Props) {
             <h2>Before You Start</h2>
             <p>You can only use this service if you have a valid NHS smartcard.</p>
             <ButtonLink role="button" id="start-button" onClick={handleLogin}>
-                Start now
+                CIS2 Login
             </ButtonLink>
-
+            <ButtonLink role="button" id="start-button" onClick={navigateLogin}>
+                Start Now
+            </ButtonLink>
             {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
                 process.env.REACT_APP_ENVIRONMENT === 'development' ||
                 process.env.REACT_APP_ENVIRONMENT === 'test') && (
