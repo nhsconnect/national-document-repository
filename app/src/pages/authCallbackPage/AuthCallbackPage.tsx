@@ -10,6 +10,9 @@ const AuthCallbackPage = (props: Props) => {
         const urlSearchParams = new URLSearchParams(window.location.search);
         const code = urlSearchParams.get('code');
         const state = urlSearchParams.get('state');
+        console.log('CODE: ', code);
+        console.log('STATE: ', state);
+
         if (code && state) {
             void getAuthToken({ baseUrl, code, state });
         }

@@ -10,10 +10,11 @@ import Layout from './components/layout/Layout';
 import { USER_ROLE } from './types/generic/roles';
 import PatientDetailsProvider from './providers/patientProvider/PatientProvider';
 import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
-import RoleSelectPage from './pages/roleSelectPage/RoleSelectPage';
 import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
 import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
+import RoleSelectPage from './pages/roleSelectPage/RoleSelectPage';
+import AuthCallbackPage from './pages/authCallbackPage/AuthCallbackPage';
 
 function App() {
     const AuthenticatedProviders = ({ children }: { children: ReactNode }) => (
@@ -30,7 +31,7 @@ function App() {
                 <Layout>
                     <Routes>
                         <Route element={<HomePage />} path={routes.HOME} />
-                        <Route element={<RoleSelectPage />} path={routes.SELECT_ORG} />
+                        <Route element={<AuthCallbackPage />} path={routes.AUTH_CALLBACK} />
                         <Route
                             element={
                                 <AuthenticatedProviders>
@@ -38,6 +39,7 @@ function App() {
                                 </AuthenticatedProviders>
                             }
                         >
+                            <Route element={<RoleSelectPage />} path={routes.SELECT_ORG} />
                             <Route
                                 element={<PatientSearchPage role={USER_ROLE.PCSE} />}
                                 path={routes.DOWNLOAD_SEARCH}
