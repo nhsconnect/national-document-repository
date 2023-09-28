@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from io import BytesIO
-from pypdf import PdfWriter, PdfReader
+from pypdf import PdfWriter
 import boto3
 
 from services.s3_service import S3Service
@@ -9,7 +9,7 @@ from services.s3_service import S3Service
 
 def test_pdf_stitching():
     merger = PdfWriter()
-    print("FILE PATH HERE! "+os.path.abspath(__file__))
+    print("FILE PATH HERE! " + os.path.abspath(__file__))
     for file_name in ["file1.pdf", "file2.pdf", "file3.pdf"]:
         file_path = f"../../tests/unit/helpers/data/pdf/{file_name}"
         merger.append(file_path)
@@ -22,7 +22,12 @@ def test_pdf_stitching():
         bytes_stream.seek(0)
 
         s3_client = boto3.client("s3", region_name="eu-west-2")
-        response = s3_client.put_object(Body=bytes_stream, Bucket="ndr-dev-lloyd-george-store", Expires=datetime(2015, 9, 27), Key="alexCool.pdf")
+        response = s3_client.put_object(
+            Body=bytes_stream,
+            Bucket="ndr-dev-lloyd-george-store",
+            Expires=datetime(2015, 9, 27),
+            Key="alexCool.pdf",
+        )
 
     print(response)
 
@@ -33,7 +38,9 @@ def test_pdf_stitching_with_s3():
     bucket_name = "ndra-lloyd-george-store"
     temp_folder = "tests/unit/helpers/data/pdf/tmp"
 
-    for index, file_name in enumerate(["9000000009/file1.pdf", "9000000009/file2.pdf", "9000000009/file3.pdf"]):
+    for index, file_name in enumerate(
+        ["9000000009/file1.pdf", "9000000009/file2.pdf", "9000000009/file3.pdf"]
+    ):
         local_file_path = f"{temp_folder}/{index}.pdf"
         s3_service.download_file(bucket_name, file_name, local_file_path)
         merger.append(local_file_path)
@@ -46,6 +53,11 @@ def test_pdf_stitching_with_s3():
         bytes_stream.seek(0)
 
         s3_client = boto3.client("s3", region_name="eu-west-2")
-        response = s3_client.put_object(Body=bytes_stream, Bucket="ndr-dev-lloyd-george-store", Expires=datetime(2015, 9, 27), Key="alexCool.pdf")
+        response = s3_client.put_object(
+            Body=bytes_stream,
+            Bucket="ndr-dev-lloyd-george-store",
+            Expires=datetime(2015, 9, 27),
+            Key="alexCool.pdf",
+        )
 
     # s3_service.upload_file("AlexTest,pdf", bucket_name, "9000000009/merged_pdf.pdf")

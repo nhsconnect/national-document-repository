@@ -15,7 +15,8 @@ def build_dynamo_response_item(curr_page_number: int, total_page_number: int) ->
         "ID": "some_uuid",
         "NhsNumber": "1234567890",
         "FileLocation": "s3://ndr-dev-lloyd-george-store/9e9867f0-9767-402d-a4d6-c1af4575a6bf",
-        "FileName": f"{curr_page_number}of{total_page_number}_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019].pdf",
+        "FileName":
+            f"{curr_page_number}of{total_page_number}_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019].pdf",
     }
 
 
@@ -55,6 +56,7 @@ def test_order_response_by_filenames_missing_page(caplog):
 
     assert actual == expected
 
+
 def test_warning_message_logged_when_some_pages_missing(caplog):
     dynamo_response_missing_page_10_to_12 = [
         build_dynamo_response_item(curr_page_number=i, total_page_number=15)
@@ -62,5 +64,6 @@ def test_warning_message_logged_when_some_pages_missing(caplog):
     ]
     with caplog.at_level(logging.INFO):
         order_response_by_filenames(dynamo_response_missing_page_10_to_12)
-    assert caplog.records[-1].message == "Some pages of the Lloyd George document appear missing"
+
+    assert caplog.records[-1].message == "Some pages of the Lloyd George document appear missing"  # fmt: skip
     assert caplog.records[-1].levelname == "WARNING"

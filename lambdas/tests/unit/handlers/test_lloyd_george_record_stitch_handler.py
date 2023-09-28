@@ -22,7 +22,7 @@ def test_throws_error_when_no_nhs_number_supplied(missing_id_event, context):
 def test_throws_error_when_environment_variables_not_set(valid_id_event, context):
     actual = lambda_handler(valid_id_event, context)
     expected = ApiGatewayResponse(
-        400,
+        500,
         "An error occurred due to missing key: 'LLOYD_GEORGE_DYNAMODB_NAME'",
         "GET",
     ).create_api_gateway_response()
@@ -37,9 +37,9 @@ def test_throws_error_when_nhs_number_not_valid(invalid_id_event, context):
     assert actual == expected
 
 
-def test_throws_error_when_dynamo_service_fails_to_connect(valid_id_event, context):
-    os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = "lg_dynamo"
-    os.environ["LLOYD_GEORGE_BUCKET_NAME"] = "lg_bucket"
+def test_throws_error_when_dynamo_service_fails_to_connect(
+    valid_id_event, context, patch_env_vars
+):
     actual = lambda_handler(valid_id_event, context)
     expected = ApiGatewayResponse(
         500, "Unable to retrieve documents for patient 9000000009", "GET"
@@ -72,6 +72,16 @@ MOCK_LG_DYNAMODB_RESPONSE = {
 
 
 @pytest.fixture
+def patch_env_vars():
+    patched_env_vars = {
+        "LLOYD_GEORGE_DYNAMODB_NAME": "lg_dynamo",
+        "LLOYD_GEORGE_BUCKET_NAME": "lg_bucket",
+    }
+    with patch.dict(os.environ, patched_env_vars):
+        yield
+
+
+@pytest.fixture
 def mock_dynamo_db():
     with patch.object(
         DynamoDBService, "query_service", return_value=MOCK_LG_DYNAMODB_RESPONSE
@@ -90,18 +100,16 @@ def mock_s3():
 
 
 @pytest.fixture
-def mock_pypdf():
-    with patch("handlers.lloyd_george_record_stitch_handler.PdfWriter") as mock_class:
-        mocked_pdf_merger = mock_class.return_value
-        yield mocked_pdf_merger
+def mock_stitch_pdf():
+    with patch(
+        "handlers.lloyd_george_record_stitch_handler.stitch_pdf"
+    ) as mocked_stitch_pdf:
+        yield mocked_stitch_pdf
 
 
 def test_respond_200_with_presign_url(
-    valid_id_event, context, mock_dynamo_db, mock_s3, mock_pypdf
+    valid_id_event, context, mock_dynamo_db, mock_s3, mock_stitch_pdf, patch_env_vars
 ):
-    os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = "lg_dynamo"
-    os.environ["LLOYD_GEORGE_BUCKET_NAME"] = "lg_bucket"
-
     actual = lambda_handler(valid_id_event, context)
     expected = ApiGatewayResponse(
         200, MOCK_PRESIGNED_URL_RESPONSE, "GET"

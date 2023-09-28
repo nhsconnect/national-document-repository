@@ -1,6 +1,5 @@
 import logging
-from datetime import datetime
-from io import BytesIO
+from typing import Dict
 
 import boto3
 from botocore.client import Config as BotoConfig
@@ -40,10 +39,7 @@ class S3Service:
     def upload_file(self, file_name: str, s3_bucket_name: str, file_key: str):
         return self.client.upload_file(file_name, s3_bucket_name, file_key)
 
-    def put_object(self, body: BytesIO, s3_bucket_name: str, file_key: str, expires: datetime) -> dict:
-        return self.client.put_object(
-            Body=body,
-            Bucket=s3_bucket_name,
-            Key=file_key,
-            Expires=expires
+    def upload_file_with_tags(self, file_name: str, s3_bucket_name: str, file_key: str, tags: Dict[str, str]):
+        return self.client.upload_file(
+            file_name, s3_bucket_name, file_key, {"Tags": tags}
         )
