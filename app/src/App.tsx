@@ -39,7 +39,6 @@ function App() {
                 <Layout>
                     <Routes>
                         <Route element={<HomePage />} path={routes.HOME} />
-                        <Route element={<RoleSelectPage />} path={routes.SELECT_ORG} />
 
                         <Route element={<NotFoundPage />} path={routes.NOT_FOUND} />
                         <Route element={<UnauthorisedPage />} path={routes.UNAUTHORISED} />
@@ -60,6 +59,7 @@ function App() {
                                 </AuthenticatedProviders>
                             }
                         >
+                            <Route element={<RoleSelectPage />} path={routes.SELECT_ORG} />
                             <Route
                                 element={<PatientSearchPage role={USER_ROLE.PCSE} />}
                                 path={routes.DOWNLOAD_SEARCH}

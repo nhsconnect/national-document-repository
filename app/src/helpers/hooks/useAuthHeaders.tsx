@@ -3,9 +3,10 @@ import { AuthHeaders } from '../../types/blocks/authHeaders';
 
 function useAuthHeaders() {
     const [session] = useSessionContext();
+    const jwtToken = session.auth?.authorisation_token ?? '';
     const headers: AuthHeaders = {
         'Content-Type': 'application/json',
-        authorizationToken: session.auth?.authorisation_token ?? '',
+        Authorization: `Bearer ${jwtToken}`,
     };
     return headers;
 }

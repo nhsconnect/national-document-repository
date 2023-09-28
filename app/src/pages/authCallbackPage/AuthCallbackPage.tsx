@@ -10,7 +10,7 @@ type Props = {};
 
 const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
-    const [, setSession] = useSessionContext();
+    const [session, setSession] = useSessionContext();
     const navigate = useNavigate();
     useEffect(() => {
         const handleCallback = async (args: AuthTokenArgs) => {
@@ -19,6 +19,9 @@ const AuthCallbackPage = (props: Props) => {
                 setSession({
                     organisations,
                     authorisation_token,
+                });
+                setTimeout(() => {
+                    window.alert(JSON.stringify(session));
                 });
                 navigate(routes.SELECT_ORG);
             } catch (e) {
