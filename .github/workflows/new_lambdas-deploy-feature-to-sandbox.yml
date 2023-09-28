@@ -55,7 +55,7 @@ jobs:
       build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
     secrets:
-      token: ${{ secrets.AWS_ASSUME_ROLE }}
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   
 

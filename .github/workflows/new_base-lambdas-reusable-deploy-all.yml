@@ -51,7 +51,7 @@ jobs:
       lambda_handler_name: create_document_reference_handler
       lambda_aws_name: CreateDocRefLambda
     secrets:
-      token: ${{ secrets.AWS_ASSUME_ROLE }}
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   
   deploy_search_patient_details_lambda:
     name: Deploy search_patient_details_lambda
@@ -64,7 +64,7 @@ jobs:
       lambda_handler_name: search_patient_details_handler
       lambda_aws_name: SearchPatientDetailsLambda
     secrets:
-      token: ${{ secrets.AWS_ASSUME_ROLE }}
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_document_reference_search_lambda:
     name: Deploy document_reference_search_lambda
@@ -77,7 +77,7 @@ jobs:
       lambda_handler_name: document_reference_search_handler
       lambda_aws_name: SearchDocumentReferencesLambda
     secrets:
-      token: ${{ secrets.AWS_ASSUME_ROLE }}
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   
   deploy_document_manifest_by_nhs_number_lambda:
     name: Deploy document_manifest_by_nhs_number_lambda
@@ -90,5 +90,5 @@ jobs:
       lambda_handler_name: document_manifest_by_nhs_number_handler
       lambda_aws_name: DocumentManifestByNHSNumberLambda
     secrets:
-      token: ${{ secrets.AWS_ASSUME_ROLE }}
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
         
