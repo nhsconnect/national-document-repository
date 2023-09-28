@@ -24,6 +24,13 @@ on:
         required: true
         type: string
 
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+
   view_action_parameters:
     runs-on: ubuntu-latest
     steps: 
@@ -36,13 +43,7 @@ on:
           echo Sandbox: ${{ inputs.sandbox }}
           echo Lambda Handler Name: ${{ inputs.lambda_handler_name }}
           echo Lambda AWS function: ${{ inputs.lambda_aws_name }}
-
-permissions:
-  pull-requests: write
-  id-token: write # This is required for requesting the JWT
-  contents: read # This is required for actions/checkout
-
-jobs:
+          
   python_deploy_lambda:
     name: Deploy lambda ${{ inputs.lambda_handler_name }} to 
     runs-on: ubuntu-latest
