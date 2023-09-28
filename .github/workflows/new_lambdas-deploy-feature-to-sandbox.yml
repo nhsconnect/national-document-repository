@@ -35,16 +35,16 @@ jobs:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
       environment: $ENVIRONMENT
-      python-version: $PYTHON_VERSION
-      build-branch: $BUILD_BRANCH
+      python_version: $PYTHON_VERSION
+      build_branch: $BUILD_BRANCH
 
   deploy_all:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
     with:
       environment: $ENVIRONMENT
-      python-version: $PYTHON_VERSION
-      build-branch: $BUILD_BRANCH
+      python_version: $PYTHON_VERSION
+      build_branch: $BUILD_BRANCH
       sandbox: $SANDBOX
 
   
