@@ -21,8 +21,8 @@ def lambda_handler(event, context):
         validate_id(nhs_number)
 
         list_of_table_names = [
-            env.strip()
-            for env in os.environ["DYNAMODB_TABLE_LIST"].strip("[]").split(",")
+            table_name.strip()
+            for table_name in os.environ["DYNAMODB_TABLE_LIST"].strip("[]").split(",")
         ]
 
     except InvalidResourceIdException:
