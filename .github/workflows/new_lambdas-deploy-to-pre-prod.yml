@@ -16,7 +16,7 @@ env:
 
 jobs:
   run_tests:
-    uses: ./.github/workflows/lambdas-reusable-test.yml
+    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
       environment: ${{ env.ENVIRONMENT }}
       python-version: ${{ env.PYTHON_VERSION }}
@@ -54,7 +54,7 @@ jobs:
         echo New tag: ${{steps.versioning.outputs.new_tag}}
 
   deploy_all:
-    uses: ./.github/workflows/lambdas-reusable-deploy-all.yml
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests", "tag_and_release"]
     with:
       environment: ${{ env.ENVIRONMENT }}

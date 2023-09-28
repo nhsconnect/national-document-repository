@@ -4,13 +4,15 @@ on:
   workflow_call:
     inputs:
       build_branch:
-        description: "Feature branch to push to test?"
+        description: "Feature branch to use."
         required: true
         type: "string"
+        default: "PRMDR_"
       sandbox:
         description: "Which Sandbox to push to."
         required: true
         type: "string"
+        default: "ndr-"
       environment:
         description: "Which Environment settings to use."
         required: true
@@ -29,14 +31,14 @@ env:
 
 jobs:
   deploy_all_lambdas:
-    uses: ./.github/workflows/lambdas-deploy-feature-to-sandbox.yml
+    uses: ./.github/workflows/new_lambdas-deploy-feature-to-sandbox.yml
     with:
       build-branch: ${{ env.BUILD_BRANCH }}
       sandbox: ${{ env.SANDBOX }}
       environment: ${{ env.ENVIRONMENT }}
   
   deploy_all_ui:
-    uses: ./.github/workflows/ui-deploy-feature-to-sandbox.yml
+    uses: ./.github/workflows/new_ui-deploy-feature-to-sandbox.yml
     with:
       build-branch: ${{ env.BUILD_BRANCH }}
       sandbox: ${{ env.SANDBOX }}
