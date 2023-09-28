@@ -20,7 +20,10 @@ def lambda_handler(event, context):
         nhs_number = event["queryStringParameters"]["patientId"]
         validate_id(nhs_number)
 
-        list_of_table_names = json.loads(os.environ["DYNAMODB_TABLE_LIST"])
+        list_of_table_names = [
+            table_name.strip()
+            for table_name in os.environ["DYNAMODB_TABLE_LIST"].strip("[]").split(",")
+        ]
 
     except InvalidResourceIdException:
         return ApiGatewayResponse(
