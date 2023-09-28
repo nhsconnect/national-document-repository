@@ -1,0 +1,281 @@
+name: "Lambdas - Development CI Feature Branch to Main"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "lambdas/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "lambdas/**"
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  identify_changed_functions:
+    runs-on: ubuntu-latest
+    environment: development
+    outputs:
+      enums_changed: ${{steps.filter.outputs.enums}}
+      utils_changed: ${{steps.filter.outputs.utils}}
+      services_changed: ${{steps.filter.outputs.services}}
+      models_changed: ${{steps.filters.outputs.models}}
+      create_document_reference_changed: ${{steps.filter.outputs.create_document_reference}}
+      search_patient_details_changed: ${{steps.filter.outputs.search_patient_reference}}
+      search_document_reference_changed: ${{steps.filter.outputs.search_document_reference}}
+      document_manifest_by_nhs_number_changed: ${{steps.filter.outputs.document_manifest_by_nhs_number_reference}}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: filter search
+        uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            enums:
+              - 'lambdas/enums/**'
+            utils: 
+              - 'lambdas/utils/**'
+            services: 
+              - 'lambdas/services/**'
+            models:
+              - 'lambdas/models/**'
+            create_document_reference:
+              - 'lambdas/handlers/create_document_reference_handler.py'
+            search_patient_reference:
+              - 'lambdas/handlers/search_patient_details_handler.py'
+            search_document_reference:
+              - 'lambdas/handlers/document_reference_search_handler.py'
+            document_manifest_by_nhs_number_reference:
+              - 'lambdas/handlers/document_manifest_by_nhs_number_handler.py'
+
+  python_lambdas_test:
+    runs-on: ubuntu-latest
+    environment: development
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Start virtual environment
+        run: |
+          source ./lambdas/venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+
+      - name: Format Code and ruff check
+        run: |
+          make format
+
+      - name: Test with pytest
+        run: |
+          make test-unit
+
+  python_deploy_create_document_reference_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: ["python_lambdas_test", "identify_changed_functions"]
+    if: |
+      (github.ref == 'refs/heads/main') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.create_document_reference_changed == 'true'
+          )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environement
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Create Document Reference
+        run: |
+          make lambda_name=create_document_reference_handler zip
+
+      - name: Upload Lambda Function for CreateDocRefLambda
+        uses: appleboy/lambda-action@master
+        if: github.event.pull_request.merged == true
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ vars.BUILD_ENV }}_CreateDocRefLambda
+          zip_file: package_lambdas_create_document_reference_handler.zip
+
+  python_deploy_search_patient_details_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: ["python_lambdas_test", "identify_changed_functions"]
+    if: |
+      (github.ref == 'refs/heads/main') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.search_patient_details_changed == 'true'
+          )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environement
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Search Patient Details Reference
+        run: |
+          make lambda_name=search_patient_details_handler zip
+
+      - name: Upload Lambda Function for SearchPatientDetailsHandler
+        uses: appleboy/lambda-action@master
+        if: github.event.pull_request.merged == true
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ vars.BUILD_ENV }}_SearchPatientDetailsLambda
+          zip_file: package_lambdas_search_patient_details_handler.zip
+
+  python_deploy_document_reference_search_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    if: |
+      (github.ref == 'refs/heads/main') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.search_document_reference_changed == 'true'
+          )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environement
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Document Reference Search
+        run: |
+          make lambda_name=document_reference_search_handler zip
+
+      - name: Upload Lambda Function for DocumentReferenceSearchHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ vars.BUILD_ENV }}_SearchDocumentReferencesLambda
+          zip_file: package_lambdas_document_reference_search_handler.zip
+
+  python_deploy_document_manifest_by_nhs_number_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    if: |
+      (github.ref == 'refs/heads/main') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.document_manifest_by_nhs_number_changed == 'true'
+          )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environement
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Document Manifest By NHS Number
+        run: |
+          make lambda_name=document_manifest_by_nhs_number_handler zip
+
+      - name: Upload Lambda Function for DocumentReferenceSearchHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ vars.BUILD_ENV }}_DocumentManifestByNHSNumberLambda
+          zip_file: package_lambdas_document_manifest_by_nhs_number_handler.zip
