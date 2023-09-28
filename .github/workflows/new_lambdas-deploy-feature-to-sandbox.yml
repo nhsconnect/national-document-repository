@@ -31,6 +31,17 @@ env:
   SANDBOX: ${{ inputs.sandbox }}
 
 jobs:
+
+  view_action_parameters:
+    runs-on: ubuntu-latest
+    steps: 
+    
+      - name: Display client passed variables
+        run: |
+          echo Build Branch: $BUILD_BRANCH
+          echo Environment: $ENVIRONMENT
+          echo Sandbox: $SANDBOX
+
   run_tests:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:

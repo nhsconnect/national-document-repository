@@ -19,21 +19,38 @@ permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
+env:
+  PYTHON_VERSION: ${{ inputs.python_version }}
+  ENVIRONMENT: ${{ inputs.environment }}
+  BUILD_BRANCH: ${{ inputs.build_branch }}
+  SANDBOX: ${{ inputs.sandbox }}
+
 jobs:
+  view_action_parameters:
+    runs-on: ubuntu-latest
+    steps: 
+    
+      - name: Display client passed variables
+        run: |
+          echo Python Version: $PYTHON_VERSION
+          echo Build Branch: $BUILD_BRANCH
+          echo Environment: $ENVIRONMENT
+          echo Sandbox: $SANDBOX
+
   python_unit_tests:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: $ENVIRONMENT
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.build_branch }}
+          ref: $BUILD_BRANCH
 
-      - name: Set up Python ${{ inputs.python_version }}
+      - name: Set up Python $PYTHON_VERSION
         uses: actions/setup-python@v4
         with:
-          python_version: ${{ inputs.python_version }}
+          python_version: $PYTHON_VERSION
 
       - name: Make virtual environment
         run: | 
