@@ -7,12 +7,12 @@ on:
         description: "Feature branch to push to test?"
         required: true
         type: "string"
-        default: "PRMDR_"
+        default: "main"
       sandbox:
         description: "Which Sandbox to push to."
         required: true
         type: "string"
-        default: "ndr-"
+        default: "ndr"
       environment:
         description: "Which Environment settings to use."
         required: true
@@ -54,6 +54,8 @@ jobs:
       python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
+    secrets:
+      token: ${{ secrets.AWS_ASSUME_ROLE }}
 
   
 

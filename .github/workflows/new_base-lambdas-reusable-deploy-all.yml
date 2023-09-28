@@ -28,8 +28,6 @@ permissions:
 
 jobs:
 
-  environment: ${{ inputs.environment }}
-
   view_action_parameters:
     name: View Deploy all input variables
     runs-on: ubuntu-latest
