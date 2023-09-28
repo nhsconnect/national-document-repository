@@ -39,25 +39,24 @@ jobs:
       - name: Display client passed variables
         run: |
           echo Build Branch: $BUILD_BRANCH
-          echo Environment input: ${{ inputs.environment }}
           echo Environment: $ENVIRONMENT
           echo Sandbox: $SANDBOX
 
   run_tests:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
-      environment: $ENVIRONMENT
-      python_version: $PYTHON_VERSION
-      build_branch: $BUILD_BRANCH
+      environment: ${{ env.ENVIRONMENT }}
+      python_version: ${{ env.PYTHON_VERSION }}
+      build_branch: ${{ env.BUILD_BRANCH }}
 
   deploy_all:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
     with:
-      environment: $ENVIRONMENT
-      python_version: $PYTHON_VERSION
-      build_branch: $BUILD_BRANCH
-      sandbox: $SANDBOX
+      environment: ${{ env.ENVIRONMENT }}
+      python_version: ${{ env.PYTHON_VERSION }}
+      build_branch: ${{ env.BUILD_BRANCH }}
+      sandbox: ${{ env.SANDBOX }}
 
   
 
