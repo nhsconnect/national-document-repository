@@ -1,4 +1,4 @@
-name: "Lambdas - Deploy Feature Branch to Perf"
+name: "(NEW) Lambdas - Deploy Feature Branch to Perf"
 
 on:
   workflow_dispatch:

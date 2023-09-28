@@ -1,4 +1,4 @@
-name: "Lambdas - Deploy Feature Branch to Sandbox"
+name: "(NEW) Lambdas - Deploy Feature Branch to Sandbox"
 
 on:
   workflow_dispatch:
