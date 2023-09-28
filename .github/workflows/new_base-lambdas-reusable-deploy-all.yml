@@ -29,7 +29,7 @@ jobs:
     with:
       environment: ${{ inputs.ENVIRONMENT }}
       python_version: ${{ inputs.PYTHON_VERSION }}
-      build-branch: ${{ inputs.build_branch}}
+      build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: create_document_reference_handler
       lambda_aws_name: CreateDocRefLambda
@@ -39,7 +39,7 @@ jobs:
     with:
       environment: ${{ inputs.ENVIRONMENT }}
       python_version: ${{ inputs.PYTHON_VERSION }}
-      build-branch: ${{ inputs.build_branch}}
+      build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: search_patient_details_handler
       lambda_aws_name: SearchPatientDetailsLambda
@@ -49,7 +49,7 @@ jobs:
     with:
       environment: ${{ inputs.ENVIRONMENT }}
       python_version: ${{ inputs.PYTHON_VERSION }}
-      build-branch: ${{ inputs.build_branch}}
+      build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: document_reference_search_handler
       lambda_aws_name: SearchDocumentReferencesLambda
@@ -59,7 +59,7 @@ jobs:
     with:
       environment: ${{ inputs.ENVIRONMENT }}
       python_version: ${{ inputs.PYTHON_VERSION }}
-      build-branch: ${{ inputs.build_branch}}
+      build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: document_manifest_by_nhs_number_handler
       lambda_aws_name: DocumentManifestByNHSNumberLambda
