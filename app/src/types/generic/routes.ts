@@ -2,7 +2,8 @@ export enum routes {
     HOME = '/',
     SELECT_ORG = '/select-organisation',
     AUTH_CALLBACK = '/auth-callback',
-    NOT_FOUND = '*',
+    NOT_FOUND = '/*',
+    UNAUTHORISED = '/unauthorised',
 
     DOWNLOAD_SEARCH = '/search/patient',
     DOWNLOAD_VERIFY = '/search/patient/result',

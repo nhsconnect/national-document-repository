@@ -18,6 +18,7 @@ import SessionProvider from './providers/sessionProvider/SessionProvider';
 import AuthGuard from './components/blocks/authGuard/AuthGuard';
 import AuthCallbackPage from './pages/authCallbackPage/AuthCallbackPage';
 import NotFoundPage from './pages/notFoundPage/NotFoundPage';
+import UnauthorisedPage from './pages/unauthorisedPage/UnauthorisedPage';
 
 function App() {
     const AuthenticatedProviders = ({ children }: { children: ReactNode }) => (
@@ -37,10 +38,11 @@ function App() {
             <Router>
                 <Layout>
                     <Routes>
-                        <Route element={<NotFoundPage />} path={routes.NOT_FOUND} />
                         <Route element={<HomePage />} path={routes.HOME} />
-
                         <Route element={<RoleSelectPage />} path={routes.SELECT_ORG} />
+
+                        <Route element={<NotFoundPage />} path={routes.NOT_FOUND} />
+                        <Route element={<UnauthorisedPage />} path={routes.UNAUTHORISED} />
 
                         <Route
                             element={

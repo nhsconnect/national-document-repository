@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { MouseEvent as ReactEvent } from 'react';
+import type { MouseEvent } from 'react';
 import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
@@ -14,12 +14,12 @@ function HomePage(props: Props) {
     const baseAPIUrl = useBaseAPIUrl();
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleLogin = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
+    const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
         setIsLoading(true);
         e.preventDefault();
         window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
     };
-    const navigateLogin = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
+    const navigateLogin = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         navigate(routes.SELECT_ORG);
     };
