@@ -24,12 +24,6 @@ permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
-env:
-  PYTHON_VERSION: "3.11"
-  ENVIRONMENT: ${{ inputs.environment }}
-  BUILD_BRANCH: ${{ inputs.build_branch }}
-  SANDBOX: ${{ inputs.sandbox }}
-
 jobs:
 
   view_action_parameters:
@@ -38,25 +32,25 @@ jobs:
     
       - name: Display client passed variables
         run: |
-          echo Build Branch: $BUILD_BRANCH
-          echo Environment: $ENVIRONMENT
-          echo Sandbox: $SANDBOX
+          echo Build Branch: ${{ inputs.build_branch }}
+          echo Environment: ${{ inputs.environment }}
+          echo Sandbox: ${{ inputs.sandbox }}
 
   run_tests:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
-      environment: "${{ env.ENVIRONMENT}}"
-      python_version: "${{env.PYTHON_VERSION}}"
-      build_branch: "${{env.BUILD_BRANCH}}"
+      environment: ${{ inputs.environment }}
+      python_version: "3.11"
+      build_branch: ${{ inputs.build_branch }}
 
   deploy_all:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
     with:
-      environment: "${{env.ENVIRONMENT}}"
-      python_version: "${{env.PYTHON_VERSION}}"
-      build_branch: "${{env.BUILD_BRANCH}}"
-      sandbox: "${{env.SANDBOX}}"
+      environment: ${{ inputs.environment }}
+      python_version: "3.11"
+      build_branch: ${{ inputs.build_branch }}
+      sandbox: ${{ inputs.sandbox }}
 
   
 

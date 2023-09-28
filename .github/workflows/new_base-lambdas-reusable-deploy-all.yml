@@ -27,8 +27,8 @@ jobs:
   deploy_create_document_reference_lambda:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.ENVIRONMENT }}
-      python_version: ${{ inputs.PYTHON_VERSION }}
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: create_document_reference_handler
@@ -37,8 +37,8 @@ jobs:
   deploy_search_patient_details_lambda:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.ENVIRONMENT }}
-      python_version: ${{ inputs.PYTHON_VERSION }}
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: search_patient_details_handler
@@ -47,8 +47,8 @@ jobs:
   deploy_document_reference_search_lambda:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.ENVIRONMENT }}
-      python_version: ${{ inputs.PYTHON_VERSION }}
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: document_reference_search_handler
@@ -57,8 +57,8 @@ jobs:
   deploy_document_manifest_by_nhs_number_lambda:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.ENVIRONMENT }}
-      python_version: ${{ inputs.PYTHON_VERSION }}
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: document_manifest_by_nhs_number_handler
