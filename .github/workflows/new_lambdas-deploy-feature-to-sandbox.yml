@@ -39,6 +39,7 @@ jobs:
       - name: Display client passed variables
         run: |
           echo Build Branch: $BUILD_BRANCH
+          echo Environment input: ${{ inputs.environment }}
           echo Environment: $ENVIRONMENT
           echo Sandbox: $SANDBOX
 
