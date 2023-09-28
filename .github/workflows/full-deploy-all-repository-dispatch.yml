@@ -1,0 +1,44 @@
+name: 'Full - Deploy all (from Terraform Repo)'
+
+on:
+  repository_dispatch:
+    types: full-deploy-dispatch-event
+
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+
+  view_action_parameters:
+    runs-on: ubuntu-latest
+    steps: 
+    
+      - name: Display client passed variables
+        run: |
+          echo Environment Equals: ${{ github.event.client_payload.environment }}
+          echo Sandbox Equals: ${{ github.event.client_payload.sandbox }}
+
+  run_ui_deployment:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.client_payload.environment }}
+    steps:
+
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          event-type: ui-dispatch-deploy
+          client-payload: '{"environment": "${{ github.event.client_payload.environment }}", "sandbox":"${{ github.event.client_payload.sandbox }}"}'
+
+  run_lambda_deployment:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.client_payload.environment }}
+    steps:
+
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          event-type: lambda-dispatch-deploy
+          client-payload: '{"environment": "${{ github.event.client_payload.environment }}", "sandbox":"${{ github.event.client_payload.sandbox }}"}'
