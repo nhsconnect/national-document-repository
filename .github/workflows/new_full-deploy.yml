@@ -57,7 +57,7 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   
   deploy_all_ui:
-    uses: ./.github/workflows/new-ui-deploy-feature-to-sandbox.yml
+    uses: ./.github/workflows/new-ui-deploy-feature-to-sandbox-manual.yml
     with:
       build-branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
