@@ -7,7 +7,7 @@ from handlers.lloyd_george_record_stitch_handler import (
     lambda_handler,
 )
 from services.dynamo_service import DynamoDBService
-from unit.services.test_s3_service import MOCK_PRESIGNED_URL_RESPONSE
+from tests.unit.services.test_s3_service import MOCK_PRESIGNED_URL_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
 
 
