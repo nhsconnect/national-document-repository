@@ -32,6 +32,7 @@ permissions:
 jobs:
 
   view_action_parameters:
+    name: View action parameters for ${{ inputs.lambda_handler_name }}
     runs-on: ubuntu-latest
     steps: 
     
@@ -43,11 +44,12 @@ jobs:
           echo Sandbox: ${{ inputs.sandbox }}
           echo Lambda Handler Name: ${{ inputs.lambda_handler_name }}
           echo Lambda AWS function: ${{ inputs.lambda_aws_name }}
-          
+
   python_deploy_lambda:
     name: Deploy lambda ${{ inputs.lambda_handler_name }} to 
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: 
+      name: ${{ inputs.environment }}
 
     steps:
       - name: Checkout
