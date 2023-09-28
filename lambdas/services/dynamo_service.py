@@ -11,7 +11,7 @@ logger.setLevel(logging.INFO)
 
 class DynamoDBService:
     def __init__(self):
-        self.dynamodb = boto3.resource("dynamodb")
+        self.dynamodb = boto3.resource("dynamodb", region_name="eu-west-2")
 
     def get_table(self, table_name):
         try:
