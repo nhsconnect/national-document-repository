@@ -10,10 +10,11 @@ export type AuthTokenArgs = {
 
 const getAuthToken = async ({ baseUrl, code, state }: AuthTokenArgs) => {
     try {
-        const tokenResponse: UserAuth = await axios.get(`${baseUrl}${endpoints.AUTH}`, {
+        const { data } = await axios.get(`${baseUrl}${endpoints.AUTH}`, {
             params: { code, state },
         });
-        return tokenResponse;
+        const userAuth: UserAuth = data;
+        return userAuth;
     } catch (e) {
         throw e;
     }
