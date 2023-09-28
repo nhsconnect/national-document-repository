@@ -1,4 +1,4 @@
-name: "Lambdas - Deploy tagged version to Prod"
+name: "(NEW) Lambdas - Deploy tagged version to Prod"
 
 on:
   workflow_dispatch:
