@@ -8,7 +8,6 @@ from handlers.lloyd_george_record_stitch_handler import (
 )
 from services.dynamo_service import DynamoDBService
 from unit.services.test_s3_service import MOCK_PRESIGNED_URL_RESPONSE
-from unit.utils.test_order_response_by_filenames import build_dynamo_response_item
 from utils.lambda_response import ApiGatewayResponse
 
 
@@ -33,7 +32,7 @@ def test_throws_error_when_environment_variables_not_set(valid_id_event, context
 def test_throws_error_when_nhs_number_not_valid(invalid_id_event, context):
     actual = lambda_handler(invalid_id_event, context)
     expected = ApiGatewayResponse(
-        400, f"Invalid NHS number", "GET"
+        400, "Invalid NHS number", "GET"
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -43,7 +42,7 @@ def test_throws_error_when_dynamo_service_fails_to_connect(valid_id_event, conte
     os.environ["LLOYD_GEORGE_BUCKET_NAME"] = "lg_bucket"
     actual = lambda_handler(valid_id_event, context)
     expected = ApiGatewayResponse(
-        500, f"Unable to retrieve documents for patient 9000000009", "GET"
+        500, "Unable to retrieve documents for patient 9000000009", "GET"
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -72,18 +71,36 @@ MOCK_LG_DYNAMODB_RESPONSE = {
 }
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_dynamo_db():
-    with patch.object(DynamoDBService, "query_service", return_value=MOCK_LG_DYNAMODB_RESPONSE):
+    with patch.object(
+        DynamoDBService, "query_service", return_value=MOCK_LG_DYNAMODB_RESPONSE
+    ):
         yield
-def test_respond_200_with_presign_url(valid_id_event, context, mock_dynamo_db):
+
+
+@pytest.fixture
+def mock_s3():
+    with patch("handlers.lloyd_george_record_stitch_handler.S3Service") as mock_class:
+        mock_s3_service_instance = mock_class.return_value
+        mock_s3_service_instance.create_download_presigned_url.return_value = (
+            MOCK_PRESIGNED_URL_RESPONSE
+        )
+        yield mock_s3_service_instance
+
+
+@pytest.fixture
+def mock_pypdf():
+    with patch("handlers.lloyd_george_record_stitch_handler.PdfWriter") as mock_class:
+        mocked_pdf_merger = mock_class.return_value
+        yield mocked_pdf_merger
+
+
+def test_respond_200_with_presign_url(
+    valid_id_event, context, mock_dynamo_db, mock_s3, mock_pypdf
+):
     os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = "lg_dynamo"
     os.environ["LLOYD_GEORGE_BUCKET_NAME"] = "lg_bucket"
-
-    # some mocking here
-    # TODO: mock the s3service as well
-    # download_file: dont need return, just dont throw
-    # create_download_presigned_url: return mocked presign url response
 
     actual = lambda_handler(valid_id_event, context)
     expected = ApiGatewayResponse(

@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 from io import BytesIO
 
-import boto3
 from botocore.exceptions import ClientError
 from pypdf import PdfWriter
 
@@ -79,14 +78,15 @@ def lambda_handler(event, context):
                 body=bytes_stream,
                 s3_bucket_name=upload_bucket_name,
                 file_key=filename_on_bucket,
-                expires=datetime(2015, 9, 27)
+                expires=datetime(2015, 9, 27),
             )
 
             presign_url_response = s3_service.create_download_presigned_url(
-                s3_bucket_name=upload_bucket_name,
-                file_key=filename_on_bucket
+                s3_bucket_name=upload_bucket_name, file_key=filename_on_bucket
             )
-            return ApiGatewayResponse(200, presign_url_response, "GET").create_api_gateway_response()
+            return ApiGatewayResponse(
+                200, presign_url_response, "GET"
+            ).create_api_gateway_response()
 
         except ClientError as e:
             logger.error(e)
@@ -100,4 +100,3 @@ def lambda_handler(event, context):
     # Stitch them together in order
     # upload them to S3 - set a TTL on the bucket
     # return pre-signed URL to download and send it to the UI using api response
-
