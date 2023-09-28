@@ -19,9 +19,9 @@ const AuthCallbackPage = (props: Props) => {
     useEffect(() => {
         const handleCallback = async (args: AuthTokenArgs) => {
             try {
-                const { organisations, authorisation_token } = await getAuthToken(args);
+                const authResponse = await getAuthToken(args);
                 setSession({
-                    auth: { organisations, authorisation_token },
+                    auth: authResponse,
                     isLoggedIn: false,
                 });
                 navigate(routes.SELECT_ORG);

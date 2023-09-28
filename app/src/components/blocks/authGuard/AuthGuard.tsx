@@ -11,6 +11,7 @@ function AuthGuard({ children }: Props) {
     const navigate = useNavigate();
     useEffect(() => {
         if (!session.isLoggedIn) {
+            console.log('AUTHGUARD ISNT FINDING A SESSION: ', session);
             navigate(routes.UNAUTHORISED);
         }
     }, [session, navigate]);
