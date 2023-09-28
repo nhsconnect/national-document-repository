@@ -26,7 +26,6 @@ permissions:
 jobs:
   deploy_create_document_reference_lambda:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
-    needs: ["run_tests"]
     with:
       environment: ${{ inputs.ENVIRONMENT }}
       python-version: ${{ inputs.PYTHON_VERSION }}
@@ -37,7 +36,6 @@ jobs:
   
   deploy_search_patient_details_lambda:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
-    needs: ["run_tests"]
     with:
       environment: ${{ inputs.ENVIRONMENT }}
       python-version: ${{ inputs.PYTHON_VERSION }}
@@ -48,7 +46,6 @@ jobs:
 
   deploy_document_reference_search_lambda:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
-    needs: ["run_tests"]
     with:
       environment: ${{ inputs.ENVIRONMENT }}
       python-version: ${{ inputs.PYTHON_VERSION }}
@@ -59,7 +56,6 @@ jobs:
   
   deploy_document_manifest_by_nhs_number_lambda:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
-    needs: ["run_tests"]
     with:
       environment: ${{ inputs.ENVIRONMENT }}
       python-version: ${{ inputs.PYTHON_VERSION }}
