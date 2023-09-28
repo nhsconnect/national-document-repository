@@ -57,7 +57,7 @@ jobs:
   
   deploy_all_ui:
     name: Deploy UI
-    uses: ./.github/workflows/new-ui-deploy-feature-to-sandbox-manual.yml
+    uses: nhsconnect/national-document-repository/.github/workflows/new-ui-deploy-feature-to-sandbox-manual.yml
     with:
       build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
