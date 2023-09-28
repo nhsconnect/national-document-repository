@@ -35,31 +35,31 @@ on:
         required: true
         type: "string"
         default: "development"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
 
 permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
-env:
-  ENVIRONMENT: ${{ inputs.environment }}
-  BUILD_BRANCH: ${{ inputs.build_branch }}
-  SANDBOX: ${{ inputs.sandbox }}
-
 jobs:
   deploy_all_lambdas:
+    name: Deploy all Lambdas
     uses: ./.github/workflows/new_lambdas-deploy-feature-to-sandbox.yml
     with:
-      build-branch: ${{ inputs.build_branch }}
+      build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
       environment: ${{ inputs.environment }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   
   deploy_all_ui:
-    uses: ./.github/workflows/new_ui-deploy-feature-to-sandbox.yml
+    name: Deploy UI
+    uses: ./.github/workflows/new-ui-deploy-feature-to-sandbox-manual.yml
     with:
-      build-branch: ${{ inputs.build_branch }}
+      build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
       environment: ${{ inputs.environment }}
     secrets:

@@ -21,6 +21,7 @@ permissions:
 
 jobs:
   view_action_parameters:
+    name: View input params
     runs-on: ubuntu-latest
     steps: 
     
@@ -31,6 +32,7 @@ jobs:
           echo Environment: ${{ inputs.environment }}
 
   python_unit_tests:
+    name: Run Python unit tests
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 

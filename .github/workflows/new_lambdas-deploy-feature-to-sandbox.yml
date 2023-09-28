@@ -18,6 +18,26 @@ on:
         required: true
         type: "string"
         default: "development"
+  workflow_call:
+    inputs:
+      build_branch:
+        description: "Feature branch to push to test?"
+        required: true
+        type: "string"
+        default: "main"
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
+        default: "development"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
 
 permissions:
   pull-requests: write
@@ -37,7 +57,6 @@ jobs:
   deploy_all:
     name: Deploy all Lambdas to AWS
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
-    needs: ["run_tests"]
     with:
       environment: ${{ inputs.environment }}
       python_version: "3.11"
