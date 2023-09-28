@@ -6,7 +6,7 @@ function useAuthHeaders() {
     const jwtToken = session.auth?.authorisation_token ?? '';
     const headers: AuthHeaders = {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwtToken}`,
+        Authorization: jwtToken,
     };
     return headers;
 }
