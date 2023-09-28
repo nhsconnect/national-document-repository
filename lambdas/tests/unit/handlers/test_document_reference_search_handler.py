@@ -118,3 +118,12 @@ def test_lambda_handler_when_id_not_supplied_returns_400(
     ).create_api_gateway_response()
     actual = lambda_handler(missing_id_event, context)
     assert expected == actual
+
+def test_lambda_handler_when_dynamo_tables_env_variable_not_supplied_then_return_400_response(
+valid_id_event, context
+):
+    expected = ApiGatewayResponse(
+        400, "An error occurred due to missing key: 'DYNAMODB_TABLE_LIST'", "GET"
+    ).create_api_gateway_response()
+    actual = lambda_handler(valid_id_event, context)
+    assert expected == actual
