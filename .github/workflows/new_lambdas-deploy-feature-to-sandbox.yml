@@ -27,6 +27,7 @@ permissions:
 jobs:
 
   view_action_parameters:
+    name: View feature to sandbox input vars
     runs-on: ubuntu-latest
     steps: 
     
@@ -37,6 +38,7 @@ jobs:
           echo Sandbox: ${{ inputs.sandbox }}
 
   run_tests:
+    name: Run all python tests
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
       environment: ${{ inputs.environment }}
@@ -44,6 +46,7 @@ jobs:
       build_branch: ${{ inputs.build_branch }}
 
   deploy_all:
+    name: Deploy all Lambdas to AWS
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
     with:
