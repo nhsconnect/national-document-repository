@@ -1,0 +1,45 @@
+name: 'Full - Deploy all'
+
+on:
+  workflow_call:
+    inputs:
+      build_branch:
+        description: "Feature branch to use."
+        required: true
+        type: "string"
+        default: "PRMDR_"
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr-"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
+        default: "development"
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+env:
+  ENVIRONMENT: ${{ inputs.environment }}
+  BUILD_BRANCH: ${{ inputs.build_branch }}
+  SANDBOX: ${{ inputs.sandbox }}
+
+jobs:
+  deploy_all_lambdas:
+    uses: ./.github/workflows/new_lambdas-deploy-feature-to-sandbox.yml
+    with:
+      build-branch: ${{ env.BUILD_BRANCH }}
+      sandbox: ${{ env.SANDBOX }}
+      environment: ${{ env.ENVIRONMENT }}
+  
+  deploy_all_ui:
+    uses: ./.github/workflows/new_ui-deploy-feature-to-sandbox.yml
+    with:
+      build-branch: ${{ env.BUILD_BRANCH }}
+      sandbox: ${{ env.SANDBOX }}
+      environment: ${{ env.ENVIRONMENT }}

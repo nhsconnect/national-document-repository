@@ -1,0 +1,144 @@
+name: 'UI - Deploy Feature Branch to Sandbox'
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_branch:
+        description: "Feature branch to push to test?"
+        required: true
+        type: "string"
+        default: "PRMDR_"
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr-"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
+        default: "development"
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+env:
+  NODE_VERSION: 16.x
+  ENVIRONMENT: ${{ inputs.environment }}
+  BUILD_BRANCH: ${{ inputs.build_branch }}
+  SANDBOX: ${{ inputs.sandbox }}
+
+jobs:
+  react_testing_job:
+    runs-on: ubuntu-latest
+    environment: ${{ env.ENVIRONMENT }}
+    env:
+      DOC_STORE_API_ENDPOINT: 'Not configured'
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.BUILD_BRANCH }}
+
+      - name: Use Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
+          AWS_REGION: test region
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: ${{ env.ENVIRONMENT }}
+          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
+
+        run: |
+          ./react-environment-config.sh
+        working-directory: ./app
+        shell: bash
+
+      - run: make clean-install
+      - run: make test-ui
+
+  react_build_and_deploy_docker_image:
+    runs-on: ubuntu-latest
+    environment: ${{ env.ENVIRONMENT }}
+    defaults:
+      run:
+        working-directory: ./app
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.BUILD_BRANCH }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - uses: dkershner6/aws-ssm-getparameters-action@v1
+        with:
+          parameterPairs: '/ndr/${{ env.sandbox }}/api_endpoint = DOC_STORE_API_ENDPOINT'
+          withDecryption: 'true' # defaults to true
+
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: ${{ env.DOC_STORE_API_ENDPOINT }}
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: ${{ env.ENVIRONMENT }}
+          IMAGE_VERSION: 'ndr-${{ env.sandbox }}-app:${{ github.sha }}'
+        run: |
+          ./react-environment-config.sh
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ndr-${{ env.sandbox }}-app
+          IMAGE_TAG: latest
+          IMAGE_TAG_SHA: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" >> $GITHUB_OUTPUT
+
+      # Looks like the ECS does not check for image updates, as such we need to force a new task definition to run the new image
+      # We will always use the "latest" image tag so we do not need to modify the task-definition
+      - name: Download task definition
+        id: download-task
+        run: |
+          aws ecs describe-task-definition --task-definition ${{ env.sandbox }}-ndr-service-task --query taskDefinition > task-definition.json
+          echo "::set-output name=revision::$(cat task-definition.json | jq .revision)"
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ./app/task-definition.json
+          container-name: ${{ env.sandbox }}-app-container
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ./app/task-definition.json
+          service: ${{ env.sandbox }}-ecs-cluster-service
+          cluster: ${{ env.sandbox }}-app-cluster
+          wait-for-service-stability: true
+
+      - name: De-register previous revision
+        run: |
+          aws ecs deregister-task-definition \
+            --task-definition ${{ env.sandbox }}-ndr-service-task:${{ steps.download-task.outputs.revision }}

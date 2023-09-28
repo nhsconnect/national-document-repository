@@ -1,0 +1,53 @@
+name: "BASE: Lambda test runner"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      python_version:
+        required: true
+        type: string
+      build_branch:
+        required: true
+        type: string
+        default: main
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  python_unit_tests:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ input.build_branch }}
+
+      - name: Set up Python ${{ input.python_version }}
+        uses: actions/setup-python@v4
+        with:
+          python_version: ${{ input.python_version }}
+
+      - name: Make virtual environment
+        run: | 
+          make env
+      
+      - name: Start virtual environment
+        run: |
+          source ./lambdas/venv/bin/activate
+          echo PATH=$PATH >> $GITHUB_ENV
+
+      - name: Format Code and ruff check
+        run: |
+          make format
+
+      - name: Test with pytest
+        run: |
+          make test-unit

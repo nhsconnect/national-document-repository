@@ -1,0 +1,70 @@
+name: "BASE: action to deploy a single lambda"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      python_version:
+        required: true
+        type: string
+      build_branch:
+        required: true
+        type: string
+        default: main
+      sandbox:
+        required: true
+        type: string
+        default: main
+      lambda_handler_name:
+        required: true
+        type: string
+      lambda_aws_name:
+        required: true
+        type: string
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  python_deploy_lambda:
+    name: Deploy lambda ${{ inputs.lambda_handler_name }} to 
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ input.build_branch }}
+          fetch-depth: '0'
+
+      - name: Set up Python ${{ input.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ input.python-version }}
+
+      - name: Make virtual environement
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for ${{ inputs.lambda_handler_name }}
+        run: |
+          make lambda_name=${{ inputs.lambda_handler_name }} zip
+
+      - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
+          zip_file: package_lambdas_${{ inputs.lambda_handler_name }}.zip

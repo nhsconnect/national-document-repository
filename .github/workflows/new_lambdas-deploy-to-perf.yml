@@ -1,0 +1,45 @@
+name: "Lambdas - Deploy Feature Branch to Perf"
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_branch:
+        description: "Feature branch to push to test?"
+        required: true
+        type: "string"
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+env:
+  PYTHON_VERSION: "3.11"
+  ENVIRONMENT: perf
+  BUILD_BRANCH: ${{ inputs.build_branch }}
+  SANDBOX: ${{ inputs.sandbox }}
+
+jobs:
+  run_tests:
+    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+    with:
+      environment: ${{ env.ENVIRONMENT }}
+      python-version: ${{ env.PYTHON_VERSION }}
+      build-branch: ${{ env.BUILD_BRANCH }}
+
+  deploy_all:
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
+    needs: ["run_tests"]
+    with:
+      environment: ${{ env.ENVIRONMENT }}
+      python-version: ${{ env.PYTHON_VERSION }}
+      build-branch: ${{ env.BUILD_BRANCH }}
+      sandbox: ${{ env.SANDBOX }}
+
+  
+
+        
