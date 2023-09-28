@@ -50,7 +50,7 @@ jobs:
   deploy_all_lambdas:
     uses: ./.github/workflows/new_lambdas-deploy-feature-to-sandbox.yml
     with:
-      build-branch: ${{ inputs.build_branch }}
+      build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
       environment: ${{ inputs.environment }}
     secrets:
@@ -59,7 +59,7 @@ jobs:
   deploy_all_ui:
     uses: ./.github/workflows/new-ui-deploy-feature-to-sandbox-manual.yml
     with:
-      build-branch: ${{ inputs.build_branch }}
+      build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
       environment: ${{ inputs.environment }}
     secrets:
