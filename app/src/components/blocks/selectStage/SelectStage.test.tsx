@@ -23,8 +23,8 @@ describe('<UploadDocumentsPage />', () => {
         const documentOne = buildTextFile('one', 100);
         const documentTwo = buildTextFile('two', 200);
         const documentThree = buildTextFile('three', 100);
-        const lgDocumentOne = buildLgFile(1, 100);
-        const lgDocumentTwo = buildLgFile(2, 100);
+        const lgDocumentOne = buildLgFile(1, 2);
+        const lgDocumentTwo = buildLgFile(2, 2);
         const arfDocuments = [documentOne, documentTwo, documentThree];
         const lgDocuments = [lgDocumentOne, lgDocumentTwo];
 
@@ -109,16 +109,16 @@ describe('<UploadDocumentsPage />', () => {
 
         it.each([
             { name: 'ARF', documents: arfDocuments },
-            { name: 'LG', documents: lgDocuments },
+            { name: 'LG', documents: [buildLgFile(1, 2)] },
         ])(
-            "does not upload either forms if selected file is less than 5GB for '%s' input",
+            "does not upload either forms if selected file is more than 5GB for '%s' input",
             async (inputType) => {
                 renderSelectStage(setDocumentMock);
 
                 const documentBig =
                     inputType.name === 'ARF'
                         ? buildTextFile('four', 6 * Math.pow(1024, 3))
-                        : buildLgFile(4, 6 * Math.pow(1024, 3));
+                        : buildLgFile(3, 2, 6 * Math.pow(1024, 3));
                 inputType.documents.push(documentBig);
 
                 act(() => {
@@ -173,6 +173,31 @@ describe('<UploadDocumentsPage />', () => {
             ).toBeInTheDocument();
         });
 
+        it('does not upload LG form if total number of file does not match file name', async () => {
+            renderSelectStage(setDocumentMock);
+            const lgExtraFile = buildLgFile(3, 3);
+
+            act(() => {
+                userEvent.upload(screen.getByTestId(`LG-input`), lgExtraFile);
+            });
+
+            expect(
+                screen.getByText(
+                    '3of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf',
+                ),
+            ).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByText('Upload'));
+            });
+
+            expect(
+                await screen.findByText(
+                    'One or more of the files do not match the required filename format. Please check the file(s) and try again',
+                ),
+            ).toBeInTheDocument();
+        });
+
         it('does not upload LG form if selected file does not match naming conventions', async () => {
             renderSelectStage(setDocumentMock);
             const pdfFileWithBadName = new File(['test'], `test_not_up_to_naming_conventions.pdf`, {
@@ -183,6 +208,30 @@ describe('<UploadDocumentsPage />', () => {
             });
 
             expect(screen.getByText('test_not_up_to_naming_conventions.pdf')).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByText('Upload'));
+            });
+
+            expect(
+                await screen.findByText(
+                    'One or more of the files do not match the required filename format. Please check the file(s) and try again',
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it('does not upload LG form if two or more files match name/size', async () => {
+            renderSelectStage(setDocumentMock);
+
+            act(() => {
+                userEvent.upload(screen.getByTestId(`LG-input`), [lgDocumentTwo, lgDocumentTwo]);
+            });
+
+            expect(
+                screen.getAllByText(
+                    '2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf',
+                ),
+            ).toHaveLength(2);
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
@@ -221,6 +270,32 @@ describe('<UploadDocumentsPage />', () => {
                 });
 
                 expect(screen.queryByText(duplicateFileWarning)).not.toBeInTheDocument();
+            },
+        );
+
+        it.each([['ARF'], ['LG']])(
+            "does allow the user to add the same file again if they remove for '%s' input",
+            async (inputType) => {
+                renderSelectStage(setDocumentMock);
+
+                const selectFilesLabel = screen.getByTestId('ARF-input');
+
+                act(() => {
+                    userEvent.upload(selectFilesLabel, documentOne);
+                });
+
+                const removeFile = await screen.findByRole('button', {
+                    name: `Remove ${documentOne.name} from selection`,
+                });
+
+                act(() => {
+                    userEvent.click(removeFile);
+                });
+                act(() => {
+                    userEvent.upload(selectFilesLabel, documentOne);
+                });
+
+                expect(await screen.findByText(documentOne.name)).toBeInTheDocument();
             },
         );
 
