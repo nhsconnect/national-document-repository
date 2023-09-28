@@ -48,7 +48,7 @@ def lambda_handler(event, context):
         s3_service = S3Service()
 
         new_document = NHSDocumentReference(
-            file_location=f"s3://{s3_bucket_name}/{s3_object_key}",
+            bucket_name=s3_bucket_name,
             reference_id=s3_object_key,
             data=body,
         )
