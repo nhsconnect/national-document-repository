@@ -39,13 +39,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ input.build_branch }}
+          ref: ${{ inputs.build_branch }}
           fetch-depth: '0'
 
-      - name: Set up Python ${{ input.python-version }}
+      - name: Set up Python ${{ inputs.python_version }}
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ input.python-version }}
+          python-version: ${{ inputs.python_version }}
 
       - name: Make virtual environement
         run: |
