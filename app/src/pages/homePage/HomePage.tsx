@@ -6,6 +6,7 @@ import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import Spinner from '../../components/generic/spinner/Spinner';
 import { routes } from '../../types/generic/routes';
 import { endpoints } from '../../types/generic/endpoints';
+import { isLocal } from '../../helpers/utils/isLocal';
 
 type Props = {};
 
@@ -17,7 +18,11 @@ function HomePage(props: Props) {
     const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
         setIsLoading(true);
         e.preventDefault();
-        window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
+        if (isLocal) {
+            navigate(routes.AUTH_CALLBACK);
+        } else {
+            window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
+        }
     };
     const navigateLogin = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
