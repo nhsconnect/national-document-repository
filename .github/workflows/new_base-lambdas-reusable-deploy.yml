@@ -34,8 +34,7 @@ jobs:
   python_deploy_lambda:
     name: Deploy lambda ${{ inputs.lambda_handler_name }} to 
     runs-on: ubuntu-latest
-    environment: 
-      name: ${{ inputs.environment }}
+    environment: development
 
     steps:
       - name: Display passed variables
