@@ -40,7 +40,6 @@ jobs:
   run_tests:
     name: Run all python tests
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
-    environment: ${{ inputs.environment }}
     with:
       environment: ${{ inputs.environment }}
       python_version: "3.11"
@@ -49,7 +48,6 @@ jobs:
   deploy_all:
     name: Deploy all Lambdas to AWS
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
-    environment: ${{ inputs.environment }}
     needs: ["run_tests"]
     with:
       environment: ${{ inputs.environment }}

@@ -23,6 +23,9 @@ on:
       lambda_aws_name:
         required: true
         type: string
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
 
 permissions:
   pull-requests: write
@@ -34,7 +37,7 @@ jobs:
   python_deploy_lambda:
     name: Deploy lambda ${{ inputs.lambda_handler_name }} to 
     runs-on: ubuntu-latest
-    environment: development
+    environment: ${{ inputs.environment }}
 
     steps:
       - name: Display passed variables
