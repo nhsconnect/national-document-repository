@@ -3,14 +3,14 @@ import { usePatientDetailsContext } from '../../providers/patientProvider/Patien
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
-import { Card } from 'nhsuk-react-components';
+import { Card, Details } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import getLloydGeorgeRecord from '../../helpers/requests/lloydGeorgeSearchResult';
 import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
-    const [lloydGeorgeRecord, setLloydGeorgeRecord] = useState();
+    const [lloydGeorgeRecord, setLloydGeorgeRecord] = useState(false);
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
 
@@ -34,24 +34,22 @@ function LloydGeorgeRecordPage() {
         if (!patientDetails) {
             navigate(routes.HOME);
         }
-        // search function that sets LG state based on request(to be created based on documentSearchResults request)
-        // request will trigger lambda and either return pdf or null?
-        // submission state from DocumentSearchResultsPage not needed?
-        const search = async () => {
-            const nhsNumber: string = patientDetails?.nhsNumber || '';
-
-            const result = await getLloydGeorgeRecord({ nhsNumber, baseUrl });
-
-            if (result.length > 0) {
-                setLloydGeorgeRecord(result);
-            }
-        };
+        setLloydGeorgeRecord(true);
+        // const search = async () => {
+        //     const nhsNumber: string = patientDetails?.nhsNumber || '';
+        //
+        //     const result = await getLloydGeorgeRecord({ nhsNumber, baseUrl });
+        //
+        //     if (result.length > 0) {
+        //         setLloydGeorgeRecord(result);
+        //     }
+        // };
     }, [patientDetails, navigate]);
 
     return (
         <>
             <>{patientInfo}</>
-            <Card>
+            <Card style={{ marginBottom: 0 }}>
                 <Card.Content>
                     <Card.Heading>Lloyd George Record</Card.Heading>
                     <Card.Description>
@@ -61,7 +59,12 @@ function LloydGeorgeRecordPage() {
                     </Card.Description>
                 </Card.Content>
             </Card>
-            <PdfViewer fileUrl="https://researchtorevenue.files.wordpress.com/2015/04/1r41ai10801601_fong.pdf" />
+            {lloydGeorgeRecord && (
+                <Details expander>
+                    <Details.Summary>View record</Details.Summary>
+                    <PdfViewer fileUrl="https://researchtorevenue.files.wordpress.com/2015/04/1r41ai10801601_fong.pdf" />
+                </Details>
+            )}
         </>
     );
 }
