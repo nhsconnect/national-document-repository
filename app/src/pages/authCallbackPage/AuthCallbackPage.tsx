@@ -4,6 +4,7 @@ import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
 import { routes } from '../../types/generic/routes';
 import { useNavigate } from 'react-router';
+import Spinner from '../../components/generic/spinner/Spinner';
 
 type Props = {};
 
@@ -34,7 +35,7 @@ const AuthCallbackPage = (props: Props) => {
         }
     });
 
-    return <div> CALLBACK WEEEE</div>;
+    return <Spinner status="Logging in..." />;
 };
 
 export default AuthCallbackPage;

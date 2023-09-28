@@ -18,10 +18,10 @@ const UnauthorisedPage = () => {
         <>
             <h1>Unauthorised access</h1>
             <p>
-                The page you were looking for could not be accessed. If you have the permissions,
+                The page you were looking for could not be accessed. If you have the permissions,{' '}
                 <Link to="" onClick={handleLogin}>
                     logging in
-                </Link>
+                </Link>{' '}
                 may fix this.
             </p>
             <Link to={routes.HOME}>Return home</Link>
