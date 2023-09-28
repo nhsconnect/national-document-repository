@@ -59,6 +59,11 @@ def lambda_handler(event, context):
             500, f"Unable to retrieve documents for patient {nhs_number}", "GET"
         ).create_api_gateway_response()
 
+    if len(response["Items"]) == 0:
+        return ApiGatewayResponse(
+            404, f"Lloyd george record not found for patient {nhs_number}", "GET"
+        ).create_api_gateway_response()
+
     ordered_lg_records = order_response_by_filenames(response["Items"])
 
     s3_service = S3Service()
@@ -67,14 +72,15 @@ def lambda_handler(event, context):
 
     all_lg_parts = []
     for lg_part in ordered_lg_records:
+        local_file_name = f"/tmp/{lg_part['FileName']}"
         s3_service.download_file(
-            lloyd_george_bucket_name, lg_part["ID"], lg_part["FileName"]
+            lloyd_george_bucket_name, lg_part["ID"], local_file_name
         )
-        all_lg_parts.append(lg_part["FileName"])
+        all_lg_parts.append(local_file_name)
 
     stitched_lg_record_filename = stitch_pdf(all_lg_parts)
 
-    upload_bucket_name = "ndr-dev-lloyd-george-store"
+    upload_bucket_name = lloyd_george_bucket_name
     filename_on_bucket = "alexCool.pdf"
 
     try:
