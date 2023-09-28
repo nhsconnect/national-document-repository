@@ -31,12 +31,14 @@ permissions:
 
 jobs:
 
-  view_action_parameters:
-    name: View action parameters for ${{ inputs.lambda_handler_name }}
+  python_deploy_lambda:
+    name: Deploy lambda ${{ inputs.lambda_handler_name }} to 
     runs-on: ubuntu-latest
-    steps: 
-    
-      - name: Display client passed variables
+    environment: 
+      name: ${{ inputs.environment }}
+
+    steps:
+      - name: Display passed variables
         run: |
           echo Python Version: ${{ inputs.python_version }}
           echo Build Branch: ${{ inputs.build_branch }}
@@ -45,13 +47,6 @@ jobs:
           echo Lambda Handler Name: ${{ inputs.lambda_handler_name }}
           echo Lambda AWS function: ${{ inputs.lambda_aws_name }}
 
-  python_deploy_lambda:
-    name: Deploy lambda ${{ inputs.lambda_handler_name }} to 
-    runs-on: ubuntu-latest
-    environment: 
-      name: ${{ inputs.environment }}
-
-    steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
