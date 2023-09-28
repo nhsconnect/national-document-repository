@@ -1,7 +1,7 @@
 import logging
-
-from pypdf import PdfWriter, PdfReader
 from uuid import uuid4
+
+from pypdf import PdfReader, PdfWriter
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

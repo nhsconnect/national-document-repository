@@ -1,6 +1,6 @@
 import os
 
-from services.pdf_stitch_service import stitch_pdf, count_page_number
+from services.pdf_stitch_service import count_page_number, stitch_pdf
 
 
 def test_stitch_pdf():

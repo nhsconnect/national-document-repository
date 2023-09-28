@@ -10,8 +10,12 @@ logger.setLevel(logging.INFO)
 # 1of3_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019].pdf
 def order_response_by_filenames(dynamodb_response: list[dict]) -> list[dict]:
     filename_key = DocumentReferenceMetadataFields.FILE_NAME.field_name
-    sorted_response = sorted(dynamodb_response, key=lambda item: extract_page_number(item[filename_key]))
-    if len(dynamodb_response) != extract_total_pages(dynamodb_response[0][filename_key]):
+    sorted_response = sorted(
+        dynamodb_response, key=lambda item: extract_page_number(item[filename_key])
+    )
+    if len(dynamodb_response) != extract_total_pages(
+        dynamodb_response[0][filename_key]
+    ):
         logger.warning("Some pages of the Lloyd George document appear missing")
     return sorted_response
 

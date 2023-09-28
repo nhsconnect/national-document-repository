@@ -2,18 +2,13 @@ import logging
 import os
 
 from botocore.exceptions import ClientError
-from pypdf.errors import PyPdfError
-
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from pypdf.errors import PyPdfError
 from services.dynamo_service import DynamoDBService
 from services.pdf_stitch_service import stitch_pdf
 from services.s3_service import S3Service
-from utils.exceptions import (
-    InvalidResourceIdException,
-    DynamoDbException,
-    S3DownloadException,
-    S3UploadException,
-)
+from utils.exceptions import (DynamoDbException, InvalidResourceIdException,
+                              S3DownloadException, S3UploadException)
 from utils.lambda_response import ApiGatewayResponse
 from utils.order_response_by_filenames import order_response_by_filenames
 from utils.utilities import validate_id

@@ -99,6 +99,9 @@ def test_upload_file_with_tags(mocker):
 
     service.upload_file_with_tags(TEST_FILE_NAME, MOCK_BUCKET, TEST_FILE_KEY, test_tags)
 
-    mock_upload_file.assert_called_once_with(TEST_FILE_NAME, MOCK_BUCKET, TEST_FILE_KEY, {
-        "Tagging": "mock_tag=123&apple=red&banana=true"
-    })
+    mock_upload_file.assert_called_once_with(
+        TEST_FILE_NAME,
+        MOCK_BUCKET,
+        TEST_FILE_KEY,
+        {"Tagging": "mock_tag=123&apple=red&banana=true"},
+    )
