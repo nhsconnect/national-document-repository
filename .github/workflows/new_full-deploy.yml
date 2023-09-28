@@ -35,6 +35,9 @@ on:
         required: true
         type: "string"
         default: "development"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
 
 permissions:
   pull-requests: write
