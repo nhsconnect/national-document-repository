@@ -8,24 +8,18 @@ permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
-env:
-  PYTHON_VERSION: "3.11"
-  ENVIRONMENT: pre-prod
-  BUILD_BRANCH: main
-  SANDBOX: ndr-pre-prod
-
 jobs:
   run_tests:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
+      environment: pre-prod
+      python_version: "3.11"
+      build_branch: main
   
   tag_and_release:
     needs: ["run_tests"]
     runs-on: ubuntu-latest
-    environment: ${{ env.ENVIRONMENT}}
+    environment: pre-prod
     outputs:
       tag: ${{steps.versioning.outputs.tag}}
       new_tag: ${{steps.versioning.outputs.new_tag}}
@@ -57,10 +51,12 @@ jobs:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests", "tag_and_release"]
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
+      environment: pre-prod
+      python_version: "3.11"
       build-branch: ${{ needs.tag_and_release.outputs.tag }}
-      sandbox: ${{ env.SANDBOX }}
+      sandbox: ndr-pre-prod
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   
 

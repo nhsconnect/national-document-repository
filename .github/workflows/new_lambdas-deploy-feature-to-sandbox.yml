@@ -26,17 +26,6 @@ permissions:
 
 jobs:
 
-  view_action_parameters:
-    name: View feature to sandbox input vars
-    runs-on: ubuntu-latest
-    steps: 
-    
-      - name: Display client passed variables
-        run: |
-          echo Build Branch: ${{ inputs.build_branch }}
-          echo Environment: ${{ inputs.environment }}
-          echo Sandbox: ${{ inputs.sandbox }}
-
   run_tests:
     name: Run all python tests
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
