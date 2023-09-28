@@ -15,8 +15,8 @@ def build_dynamo_response_item(curr_page_number: int, total_page_number: int) ->
         "ID": "some_uuid",
         "NhsNumber": "1234567890",
         "FileLocation": "s3://ndr-dev-lloyd-george-store/9e9867f0-9767-402d-a4d6-c1af4575a6bf",
-        "FileName":
-            f"{curr_page_number}of{total_page_number}_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019].pdf",
+        "FileName": f"{curr_page_number}of{total_page_number}"
+                    f"_Lloyd_George_Record_[Joe Bloggs]_[123456789]_[25-12-2019].pdf",
     }
 
 

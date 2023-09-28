@@ -59,5 +59,6 @@ def test_pdf_stitching_with_s3():
             Expires=datetime(2015, 9, 27),
             Key="alexCool.pdf",
         )
+        print(response)
 
     # s3_service.upload_file("AlexTest,pdf", bucket_name, "9000000009/merged_pdf.pdf")
