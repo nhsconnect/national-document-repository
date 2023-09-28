@@ -90,6 +90,10 @@ def patch_env_vars():
 @pytest.fixture
 def mock_dynamo_db():
     with patch.object(DynamoDBService, "query_service") as mocked_query_service:
+        mocked_query_service.return_value = {
+            "Items": MOCK_LG_DYNAMODB_RESPONSE,
+            "Count": 3
+        }
         yield mocked_query_service
 
 
