@@ -6,6 +6,7 @@ import { routes } from '../../types/generic/routes';
 import { Card } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import getLloydGeorgeRecord from '../../helpers/requests/lloydGeorgeSearchResult';
+import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -54,10 +55,13 @@ function LloydGeorgeRecordPage() {
                 <Card.Content>
                     <Card.Heading>Lloyd George Record</Card.Heading>
                     <Card.Description>
-                        {lloydGeorgeRecord ? 'display LG' : 'No documents are available'}
+                        {lloydGeorgeRecord
+                            ? 'display LG details and pdf'
+                            : 'No documents are available'}
                     </Card.Description>
                 </Card.Content>
             </Card>
+            <PdfViewer fileUrl="https://researchtorevenue.files.wordpress.com/2015/04/1r41ai10801601_fong.pdf" />
         </>
     );
 }
