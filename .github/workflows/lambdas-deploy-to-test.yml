@@ -1,16 +1,12 @@
-name: "Lambdas - Deploy and Version Main to Pre-Prod"
+name: "Lambdas - Deploy Feature Branch to Sandbox"
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "lambdas/**"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "lambdas/**"
+  workflow_dispatch:
+    inputs:
+      build_branch:
+        description: "Feature branch to push to test?"
+        required: true
+        type: "string"
 
 permissions:
   pull-requests: write
@@ -19,9 +15,9 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.11"
-  ENVIRONMENT: development
-  BUILD_BRANCH: main
-  SANDBOX: ndr-dev
+  ENVIRONMENT: test
+  SANDBOX: ndr-test
+  BUILD_BRANCH: ${{ inputs.build_branch}}
 
 jobs:
   run_tests:
@@ -29,17 +25,15 @@ jobs:
     with:
       environment: ${{ env.ENVIRONMENT }}
       python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
+      build-branch: ${{ env.BUILD_BRANCH}}
 
-  deploy_all_lambdas:
+  deploy_all:
     uses: ./.github/workflows/lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
-    if: |
-      (github.ref == 'refs/heads/main') 
     with:
       environment: ${{ env.ENVIRONMENT }}
       python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
+      build-branch: ${{ env.BUILD_BRANCH}}
       sandbox: ${{ env.SANDBOX }}
 
   

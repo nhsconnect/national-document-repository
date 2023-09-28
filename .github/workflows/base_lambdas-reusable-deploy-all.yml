@@ -1,0 +1,71 @@
+name: "BASE: Deploy all required Lambda functions"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      python_version:
+        required: true
+        type: string
+      build_branch:
+        description: "Feature branch to push to test?"
+        required: true
+        type: "string"
+      sandbox:
+        description: "Which Sandbox to push to"
+        required: true
+        type: "string"
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  deploy_create_document_reference_lambda:
+    uses: ./.github/workflows/lambdas-reusable-deploy.yml
+    needs: ["run_tests"]
+    with:
+      environment: ${{ inputs.ENVIRONMENT }}
+      python-version: ${{ inputs.PYTHON_VERSION }}
+      build-branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: create_document_reference_handler
+      lambda_aws_name: CreateDocRefLambda
+  
+  deploy_search_patient_details_lambda:
+    uses: ./.github/workflows/lambdas-reusable-deploy.yml
+    needs: ["run_tests"]
+    with:
+      environment: ${{ inputs.ENVIRONMENT }}
+      python-version: ${{ inputs.PYTHON_VERSION }}
+      build-branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: search_patient_details_handler
+      lambda_aws_name: SearchPatientDetailsLambda
+
+  deploy_document_reference_search_lambda:
+    uses: ./.github/workflows/lambdas-reusable-deploy.yml
+    needs: ["run_tests"]
+    with:
+      environment: ${{ inputs.ENVIRONMENT }}
+      python-version: ${{ inputs.PYTHON_VERSION }}
+      build-branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: document_reference_search_handler
+      lambda_aws_name: SearchDocumentReferencesLambda
+  
+  deploy_document_manifest_by_nhs_number_lambda:
+    uses: ./.github/workflows/lambdas-reusable-deploy.yml
+    needs: ["run_tests"]
+    with:
+      environment: ${{ inputs.ENVIRONMENT }}
+      python-version: ${{ inputs.PYTHON_VERSION }}
+      build-branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: document_manifest_by_nhs_number_handler
+      lambda_aws_name: DocumentManifestByNHSNumberLambda
+
+        

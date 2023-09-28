@@ -1,18 +1,16 @@
-name: "Lambdas - Deploy Feature Branch to Sandbox"
+name: 'Full - Deploy all'
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       build_branch:
         description: "Feature branch to push to test?"
         required: true
         type: "string"
-        default: "PRMDR_"
       sandbox:
         description: "Which Sandbox to push to."
         required: true
         type: "string"
-        default: "ndr-"
       environment:
         description: "Which Environment settings to use."
         required: true
@@ -25,28 +23,21 @@ permissions:
   contents: read # This is required for actions/checkout
 
 env:
-  PYTHON_VERSION: "3.11"
   ENVIRONMENT: ${{ inputs.environment }}
   BUILD_BRANCH: ${{ inputs.build_branch }}
   SANDBOX: ${{ inputs.sandbox }}
 
 jobs:
-  run_tests:
-    uses: ./.github/workflows/lambdas-reusable-test.yml
+  deploy_all_lambdas:
+    uses: ./.github/workflows/lambdas-deploy-feature-to-sandbox.yml
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
-
-  deploy_all:
-    uses: ./.github/workflows/lambdas-reusable-deploy-all.yml
-    needs: ["run_tests"]
-    with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
       build-branch: ${{ env.BUILD_BRANCH }}
       sandbox: ${{ env.SANDBOX }}
-
+      environment: ${{ env.ENVIRONMENT }}
   
-
-        
+  deploy_all_ui:
+    uses: ./.github/workflows/ui-deploy-feature-to-sandbox.yml
+    with:
+      build-branch: ${{ env.BUILD_BRANCH }}
+      sandbox: ${{ env.SANDBOX }}
+      environment: ${{ env.ENVIRONMENT }}

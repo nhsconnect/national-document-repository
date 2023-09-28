@@ -1,16 +1,12 @@
-name: "Lambdas - Deploy and Version Main to Pre-Prod"
+name: "Lambdas - Deploy tagged version to Prod"
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "lambdas/**"
-  pull_request:
-    branches:
-      - main
-    paths:
-      - "lambdas/**"
+  workflow_dispatch:
+    inputs:
+      tag_version:
+        description: "What tagged verison do you want to push to prod?"
+        required: true
+        type: "string"
 
 permissions:
   pull-requests: write
@@ -19,9 +15,9 @@ permissions:
 
 env:
   PYTHON_VERSION: "3.11"
-  ENVIRONMENT: development
-  BUILD_BRANCH: main
-  SANDBOX: ndr-dev
+  ENVIRONMENT: prod
+  SANDBOX: ndr-prod
+  BUILD_BRANCH: ${{ inputs.tag_version }}
 
 jobs:
   run_tests:
@@ -31,17 +27,11 @@ jobs:
       python-version: ${{ env.PYTHON_VERSION }}
       build-branch: ${{ env.BUILD_BRANCH }}
 
-  deploy_all_lambdas:
+  deploy_all:
     uses: ./.github/workflows/lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
-    if: |
-      (github.ref == 'refs/heads/main') 
     with:
       environment: ${{ env.ENVIRONMENT }}
       python-version: ${{ env.PYTHON_VERSION }}
       build-branch: ${{ env.BUILD_BRANCH }}
       sandbox: ${{ env.SANDBOX }}
-
-  
-
-        
