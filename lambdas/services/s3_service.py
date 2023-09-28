@@ -41,7 +41,6 @@ class S3Service:
         return self.client.upload_file(file_name, s3_bucket_name, file_key)
 
     def upload_file_with_tags(self, file_name: str, s3_bucket_name: str, file_key: str, tags: Dict[str, str]):
-        # TODO: add a unit test for this.
         return self.client.upload_file(
             file_name, s3_bucket_name, file_key, {"Tagging": parse.urlencode(tags)}
         )
