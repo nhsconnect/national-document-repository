@@ -2,6 +2,7 @@ import os
 from unittest.mock import patch
 
 import pytest
+from botocore.exceptions import ClientError
 
 from handlers.lloyd_george_record_stitch_handler import (
     lambda_handler,
@@ -38,14 +39,19 @@ def test_throws_error_when_nhs_number_not_valid(invalid_id_event, context):
 
 
 def test_throws_error_when_dynamo_service_fails_to_connect(
-    valid_id_event, context, patch_env_vars
+    valid_id_event, context, patch_env_vars, mock_dynamo_db
 ):
+    mock_dynamo_db.side_effect = MOCK_DYNAMODB_CLIENT_ERROR
     actual = lambda_handler(valid_id_event, context)
     expected = ApiGatewayResponse(
         500, "Unable to retrieve documents for patient 9000000009", "GET"
     ).create_api_gateway_response()
     assert actual == expected
 
+
+MOCK_DYNAMODB_CLIENT_ERROR = ClientError(
+    {"Error": {"Code": "500", "Message": "test error"}}, "testing"
+)
 
 MOCK_LG_DYNAMODB_RESPONSE = {
     "Items": [
@@ -83,10 +89,8 @@ def patch_env_vars():
 
 @pytest.fixture
 def mock_dynamo_db():
-    with patch.object(
-        DynamoDBService, "query_service", return_value=MOCK_LG_DYNAMODB_RESPONSE
-    ):
-        yield
+    with patch.object(DynamoDBService, "query_service") as mocked_query_service:
+        yield mocked_query_service
 
 
 @pytest.fixture
