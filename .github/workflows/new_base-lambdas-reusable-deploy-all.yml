@@ -18,12 +18,25 @@ on:
         required: true
         type: "string"
 
+
 permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
 jobs:
+
+  view_action_parameters:
+    runs-on: ubuntu-latest
+    steps: 
+    
+      - name: Display client passed variables
+        run: |
+          echo Python Version: ${{ inputs.python_version }}
+          echo Build Branch: ${{ inputs.build_branch }}
+          echo Environment: ${{ inputs.environment }}
+          echo Sandbox: ${{ inputs.sandbox }}
+
   deploy_create_document_reference_lambda:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
     with:

@@ -24,6 +24,19 @@ on:
         required: true
         type: string
 
+  view_action_parameters:
+    runs-on: ubuntu-latest
+    steps: 
+    
+      - name: Display client passed variables
+        run: |
+          echo Python Version: ${{ inputs.python_version }}
+          echo Build Branch: ${{ inputs.build_branch }}
+          echo Environment: ${{ inputs.environment }}
+          echo Sandbox: ${{ inputs.sandbox }}
+          echo Lambda Handler Name: ${{ inputs.lambda_handler_name }}
+          echo Lambda AWS function: ${{ inputs.lambda_aws_name }}
+
 permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
