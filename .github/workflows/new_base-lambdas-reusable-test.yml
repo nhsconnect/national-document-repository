@@ -28,12 +28,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ input.build_branch }}
+          ref: ${{ inputs.build_branch }}
 
-      - name: Set up Python ${{ input.python_version }}
+      - name: Set up Python ${{ inputs.python_version }}
         uses: actions/setup-python@v4
         with:
-          python_version: ${{ input.python_version }}
+          python_version: ${{ inputs.python_version }}
 
       - name: Make virtual environment
         run: | 
