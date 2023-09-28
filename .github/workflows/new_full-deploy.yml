@@ -44,13 +44,9 @@ permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
-env:
-  ENVIRONMENT: ${{ inputs.environment }}
-  BUILD_BRANCH: ${{ inputs.build_branch }}
-  SANDBOX: ${{ inputs.sandbox }}
-
 jobs:
   deploy_all_lambdas:
+    name: Deploy all Lambdas
     uses: ./.github/workflows/new_lambdas-deploy-feature-to-sandbox.yml
     with:
       build_branch: ${{ inputs.build_branch }}
@@ -60,6 +56,7 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   
   deploy_all_ui:
+    name: Deploy UI
     uses: ./.github/workflows/new-ui-deploy-feature-to-sandbox-manual.yml
     with:
       build_branch: ${{ inputs.build_branch }}
