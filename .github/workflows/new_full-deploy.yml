@@ -1,18 +1,35 @@
 name: '(NEW) Full - Deploy all'
 
 on:
+  workflow_dispatch:
+    inputs:
+      build_branch:
+        description: "Feature branch to use."
+        required: true
+        type: "string"
+        default: "main"
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
+        default: "development"
   workflow_call:
     inputs:
       build_branch:
         description: "Feature branch to use."
         required: true
         type: "string"
-        default: "PRMDR_"
+        default: "main"
       sandbox:
         description: "Which Sandbox to push to."
         required: true
         type: "string"
-        default: "ndr-"
+        default: "ndr"
       environment:
         description: "Which Environment settings to use."
         required: true
@@ -33,13 +50,17 @@ jobs:
   deploy_all_lambdas:
     uses: ./.github/workflows/new_lambdas-deploy-feature-to-sandbox.yml
     with:
-      build-branch: ${{ env.BUILD_BRANCH }}
-      sandbox: ${{ env.SANDBOX }}
-      environment: ${{ env.ENVIRONMENT }}
+      build-branch: ${{ inputs.build_branch }}
+      sandbox: ${{ inputs.sandbox }}
+      environment: ${{ inputs.environment }}
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   
   deploy_all_ui:
     uses: ./.github/workflows/new_ui-deploy-feature-to-sandbox.yml
     with:
-      build-branch: ${{ env.BUILD_BRANCH }}
-      sandbox: ${{ env.SANDBOX }}
-      environment: ${{ env.ENVIRONMENT }}
+      build-branch: ${{ inputs.build_branch }}
+      sandbox: ${{ inputs.sandbox }}
+      environment: ${{ inputs.environment }}
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
