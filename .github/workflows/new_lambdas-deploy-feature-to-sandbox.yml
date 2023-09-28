@@ -38,6 +38,7 @@ jobs:
           echo Sandbox: ${{ inputs.sandbox }}
 
   run_tests:
+    environment: ${{ inputs.environment }}
     name: Run all python tests
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
@@ -46,6 +47,7 @@ jobs:
       build_branch: ${{ inputs.build_branch }}
 
   deploy_all:
+    environment: ${{ inputs.environment }}
     name: Deploy all Lambdas to AWS
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
