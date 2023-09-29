@@ -17,28 +17,24 @@ permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
-env:
-  PYTHON_VERSION: "3.11"
-  ENVIRONMENT: perf
-  BUILD_BRANCH: ${{ inputs.build_branch }}
-  SANDBOX: ${{ inputs.sandbox }}
-
 jobs:
   run_tests:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
+      environment: perf
+      python_version: "3.11"
+      build_branch: ${{ inputs.build_branch }}
 
   deploy_all:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
-      sandbox: ${{ env.SANDBOX }}
+      environment: perf
+      python_version: "3.11"
+      build_branch: ${{ inputs.build_branch }}
+      sandbox: ${{ inputs.sandbox }}
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   
 

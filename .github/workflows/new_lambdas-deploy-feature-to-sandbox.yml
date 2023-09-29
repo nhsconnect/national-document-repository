@@ -7,45 +7,63 @@ on:
         description: "Feature branch to push to test?"
         required: true
         type: "string"
-        default: "PRMDR_"
+        default: "main"
       sandbox:
         description: "Which Sandbox to push to."
         required: true
         type: "string"
-        default: "ndr-"
+        default: "ndr"
       environment:
         description: "Which Environment settings to use."
         required: true
         type: "string"
         default: "development"
+  workflow_call:
+    inputs:
+      build_branch:
+        description: "Feature branch to push to test?"
+        required: true
+        type: "string"
+        default: "main"
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
+        default: "development"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
 
 permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
-env:
-  PYTHON_VERSION: "3.11"
-  ENVIRONMENT: ${{ inputs.environment }}
-  BUILD_BRANCH: ${{ inputs.build_branch }}
-  SANDBOX: ${{ inputs.sandbox }}
-
 jobs:
+
   run_tests:
+    name: Run all python tests
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
+      environment: ${{ inputs.environment }}
+      python_version: "3.11"
+      build_branch: ${{ inputs.build_branch }}
 
   deploy_all:
+    name: Deploy all Lambdas to AWS
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
-    needs: ["run_tests"]
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
-      sandbox: ${{ env.SANDBOX }}
+      environment: ${{ inputs.environment }}
+      python_version: "3.11"
+      build_branch: ${{ inputs.build_branch }}
+      sandbox: ${{ inputs.sandbox }}
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   
 

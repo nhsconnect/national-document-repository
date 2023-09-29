@@ -1,4 +1,4 @@
-name: "(NEW) Lambdas - Deploy and Version Main to Pre-Prod"
+name: "(NEW) Lambdas - CI Feature to Main"
 
 on:
   push:
@@ -17,19 +17,13 @@ permissions:
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
-env:
-  PYTHON_VERSION: "3.11"
-  ENVIRONMENT: development
-  BUILD_BRANCH: main
-  SANDBOX: ndr-dev
-
 jobs:
   run_tests:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
+      environment: development
+      python_version: 3.11
+      build_branch: main
 
   deploy_all_lambdas:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
@@ -37,10 +31,12 @@ jobs:
     if: |
       (github.ref == 'refs/heads/main') 
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
-      sandbox: ${{ env.SANDBOX }}
+      environment: development
+      python_version: "3.11"
+      build_branch: main
+      sandbox: ndr-dev
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   
 

@@ -23,6 +23,9 @@ on:
       lambda_aws_name:
         required: true
         type: string
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
 
 permissions:
   pull-requests: write
@@ -30,22 +33,33 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
+
   python_deploy_lambda:
     name: Deploy lambda ${{ inputs.lambda_handler_name }} to 
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
     steps:
+      - name: Display passed variables
+        run: |
+          echo Python Version: ${{ inputs.python_version }}
+          echo Build Branch: ${{ inputs.build_branch }}
+          echo Environment: ${{ inputs.environment }}
+          echo Sandbox: ${{ inputs.sandbox }}
+          echo Lambda Handler Name: ${{ inputs.lambda_handler_name }}
+          echo Lambda AWS function: ${{ inputs.lambda_aws_name }}
+
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ input.build_branch }}
+          repository: 'nhsconnect/national-document-repository'
+          ref: ${{ inputs.build_branch }}
           fetch-depth: '0'
 
-      - name: Set up Python ${{ input.python-version }}
+      - name: Set up Python ${{ inputs.python_version }}
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ input.python-version }}
+          python-version: ${{ inputs.python_version }}
 
       - name: Make virtual environement
         run: |

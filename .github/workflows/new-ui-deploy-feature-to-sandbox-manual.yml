@@ -4,43 +4,58 @@ on:
   workflow_dispatch:
     inputs:
       build_branch:
-        description: "Feature branch to push to test?"
+        description: "Feature branch to push."
         required: true
         type: "string"
-        default: "PRMDR_"
+        default: "main"
       sandbox:
         description: "Which Sandbox to push to."
         required: true
         type: "string"
-        default: "ndr-"
+        default: "ndr"
       environment:
         description: "Which Environment settings to use."
         required: true
         type: "string"
         default: "development"
+  workflow_call:
+    inputs:
+      build_branch:
+        description: "Feature branch to push."
+        required: true
+        type: "string"
+        default: "main"
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: "string"
+        default: "ndr"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
+        default: "development"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
 
 permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
-env:
-  NODE_VERSION: 16.x
-  ENVIRONMENT: ${{ inputs.environment }}
-  BUILD_BRANCH: ${{ inputs.build_branch }}
-  SANDBOX: ${{ inputs.sandbox }}
-
 jobs:
   react_testing_job:
     runs-on: ubuntu-latest
-    environment: ${{ env.ENVIRONMENT }}
+    environment: ${{ inputs.environment }}
     env:
       DOC_STORE_API_ENDPOINT: 'Not configured'
 
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ env.BUILD_BRANCH }}
+          repository: 'nhsconnect/national-document-repository'
+          ref: ${{ inputs.build_branch }}
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v1
@@ -52,7 +67,7 @@ jobs:
           ENDPOINT_DOC_STORE_API: http://test-endpoint.com
           AWS_REGION: test region
           OIDC_PROVIDER_ID: not provided yet
-          BUILD_ENV: ${{ env.ENVIRONMENT }}
+          BUILD_ENV: ${{ inputs.environment }}
           IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
 
         run: |
@@ -65,7 +80,7 @@ jobs:
 
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest
-    environment: ${{ env.ENVIRONMENT }}
+    environment: ${{ inputs.environment }}
     defaults:
       run:
         working-directory: ./app
@@ -73,7 +88,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          ref: ${{ env.BUILD_BRANCH }}
+          repository: 'nhsconnect/national-document-repository'
+          ref: ${{ inputs.build_branch }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -88,7 +104,7 @@ jobs:
 
       - uses: dkershner6/aws-ssm-getparameters-action@v1
         with:
-          parameterPairs: '/ndr/${{ env.sandbox }}/api_endpoint = DOC_STORE_API_ENDPOINT'
+          parameterPairs: '/ndr/${{ inputs.sandbox }}/api_endpoint = DOC_STORE_API_ENDPOINT'
           withDecryption: 'true' # defaults to true
 
       - name: Configure React environment vars
@@ -96,8 +112,8 @@ jobs:
           ENDPOINT_DOC_STORE_API: ${{ env.DOC_STORE_API_ENDPOINT }}
           AWS_REGION: ${{ vars.AWS_REGION }}
           OIDC_PROVIDER_ID: not provided yet
-          BUILD_ENV: ${{ env.ENVIRONMENT }}
-          IMAGE_VERSION: 'ndr-${{ env.sandbox }}-app:${{ github.sha }}'
+          BUILD_ENV: ${{ inputs.environment }}
+          IMAGE_VERSION: 'ndr-${{ inputs.sandbox }}-app:${{ github.sha }}'
         run: |
           ./react-environment-config.sh
 
@@ -105,7 +121,7 @@ jobs:
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ndr-${{ env.sandbox }}-app
+          ECR_REPOSITORY: ndr-${{ inputs.sandbox }}-app
           IMAGE_TAG: latest
           IMAGE_TAG_SHA: ${{ github.sha }}
         run: |
@@ -119,7 +135,7 @@ jobs:
       - name: Download task definition
         id: download-task
         run: |
-          aws ecs describe-task-definition --task-definition ${{ env.sandbox }}-ndr-service-task --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-ndr-service-task --query taskDefinition > task-definition.json
           echo "::set-output name=revision::$(cat task-definition.json | jq .revision)"
 
       - name: Fill in the new image ID in the Amazon ECS task definition
@@ -127,18 +143,18 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ./app/task-definition.json
-          container-name: ${{ env.sandbox }}-app-container
+          container-name: ${{ inputs.sandbox }}-app-container
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ./app/task-definition.json
-          service: ${{ env.sandbox }}-ecs-cluster-service
-          cluster: ${{ env.sandbox }}-app-cluster
+          service: ${{ inputs.sandbox }}-ecs-cluster-service
+          cluster: ${{ inputs.sandbox }}-app-cluster
           wait-for-service-stability: true
 
       - name: De-register previous revision
         run: |
           aws ecs deregister-task-definition \
-            --task-definition ${{ env.sandbox }}-ndr-service-task:${{ steps.download-task.outputs.revision }}
+            --task-definition ${{ inputs.sandbox }}-ndr-service-task:${{ steps.download-task.outputs.revision }}

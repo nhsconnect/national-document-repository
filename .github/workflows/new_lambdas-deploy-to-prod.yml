@@ -23,15 +23,17 @@ jobs:
   run_tests:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
+      environment: prod
+      python_version: "3.11"
+      build_branch: ${{ inputs.tag_version }}
 
   deploy_all:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
     with:
-      environment: ${{ env.ENVIRONMENT }}
-      python-version: ${{ env.PYTHON_VERSION }}
-      build-branch: ${{ env.BUILD_BRANCH }}
-      sandbox: ${{ env.SANDBOX }}
+      environment: prod
+      python_version: "3.11"
+      build_branch: ${{ inputs.tag_version }}
+      sandbox: ndr-prod
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
