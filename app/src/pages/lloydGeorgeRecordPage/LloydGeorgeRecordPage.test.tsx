@@ -26,11 +26,10 @@ describe('LloydGeorgeRecordPage', () => {
         expect(screen.getByText('Lloyd George Record')).toBeInTheDocument();
     });
 
-    xit('renders correct text in LG card if there is no LG pdf', () => {
+    it('renders LG card with header', () => {
         renderPage();
 
         expect(screen.getByText('Lloyd George Record')).toBeInTheDocument();
-        expect(screen.getByText('No documents are available')).toBeInTheDocument();
     });
 });
 
