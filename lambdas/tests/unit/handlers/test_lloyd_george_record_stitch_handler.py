@@ -28,6 +28,7 @@ def test_aws_services_are_correctly_called(
 
     mock_dynamo_db.assert_called_once()
 
+    assert mock_s3.download_file.call_count == len(MOCK_LG_DYNAMODB_RESPONSE["Items"])
     for mock_record in MOCK_LG_DYNAMODB_RESPONSE["Items"]:
         s3_key = mock_record["ID"]
         local_filename = "/tmp/" + mock_record["FileName"]
@@ -157,16 +158,6 @@ MOCK_LG_DYNAMODB_RESPONSE = {
 }
 
 MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"
-
-
-# @pytest.fixture
-# def patch_env_vars():
-#     patched_env_vars = {
-#         "LLOYD_GEORGE_DYNAMODB_NAME": "lg_dynamo",
-#         "LLOYD_GEORGE_BUCKET_NAME": "lg_bucket",
-#     }
-#     with patch.dict(os.environ, patched_env_vars):
-#         yield patched_env_vars
 
 
 @pytest.fixture
