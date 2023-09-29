@@ -14,7 +14,6 @@ import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import DocumentSearchResultsOptions from '../../components/blocks/documentSearchResultsOptions/DocumentSearchResultsOptions';
 import { AxiosError } from 'axios';
 import getDocumentSearchResults from '../../helpers/requests/documentSearchResults';
-import { buildSearchResult } from '../../helpers/test/testBuilders';
 
 function DocumentSearchResultsPage() {
     const [patientDetails] = usePatientDetailsContext();
