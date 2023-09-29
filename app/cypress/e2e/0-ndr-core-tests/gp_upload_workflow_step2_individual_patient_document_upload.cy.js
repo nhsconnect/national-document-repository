@@ -58,6 +58,9 @@ const testStartAgainButton = () => {
     cy.url().should('eq', baseUrl);
 };
 
+const singleFileUsecaseIndex = 0;
+const multiFileUSecaseIndex = 1;
+
 const uploadedFilePathNames = {
     ARF: [
         'cypress/fixtures/test_patient_record.pdf',
@@ -119,8 +122,8 @@ describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', 
             });
         }
 
-        selectForm(formTypes.ARF).selectFile(uploadedFilePathNames.ARF[0]);
-        selectForm(formTypes.LG).selectFile(uploadedFilePathNames.LG[0]);
+        selectForm(formTypes.ARF).selectFile(uploadedFilePathNames.ARF[singleFileUsecaseIndex]);
+        selectForm(formTypes.LG).selectFile(uploadedFilePathNames.LG[singleFileUsecaseIndex]);
 
         clickUploadButton();
 
@@ -130,8 +133,12 @@ describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', 
         cy.get('#successful-uploads-dropdown').click();
 
         cy.get('#successful-uploads tbody tr').should('have.length', 2);
-        cy.get('#successful-uploads tbody tr').eq(0).should('contain', uploadedFileNames.ARF[0]);
-        cy.get('#successful-uploads tbody tr').eq(1).should('contain', uploadedFileNames.LG[0]);
+        cy.get('#successful-uploads tbody tr')
+            .eq(0)
+            .should('contain', uploadedFileNames.ARF[singleFileUsecaseIndex]);
+        cy.get('#successful-uploads tbody tr')
+            .eq(1)
+            .should('contain', uploadedFileNames.LG[singleFileUsecaseIndex]);
         cy.get('#close-page-warning').should('be.visible');
 
         testStartAgainButton();
@@ -142,14 +149,14 @@ Object.values(formTypes).forEach((type) => {
     describe(`[${type}] GP Upload Workflow Step 2: Uploads docs and tests it looks OK`, () => {
         it(`(Smoke test) Single file - On Choose files button click, file selection is visible for ${type} input`, () => {
             cy.get('#selected-documents-table').should('not.exist');
-            selectForm(type).selectFile(uploadedFilePathNames[type][0]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][singleFileUsecaseIndex]);
             cy.get('#selected-documents-table').should('be.visible');
             cy.get('#selected-documents-table tbody tr').should('have.length', 1);
             cy.get('#selected-documents-table tbody tr')
                 .first()
                 .get('td')
                 .first()
-                .should('contain.text', uploadedFileNames[type][0]);
+                .should('contain.text', uploadedFileNames[type][singleFileUsecaseIndex]);
         });
 
         it(`Single file - On Upload button click, renders Upload Summary with error box when DocumentReference returns a 500 for ${type} input`, () => {
@@ -158,7 +165,7 @@ Object.values(formTypes).forEach((type) => {
                 statusCode: 500,
             });
 
-            selectForm(type).selectFile(uploadedFilePathNames[type][0]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][singleFileUsecaseIndex]);
 
             clickUploadButton();
 
@@ -182,7 +189,7 @@ Object.values(formTypes).forEach((type) => {
                 statusCode: 404,
             });
 
-            selectForm(type).selectFile(uploadedFilePathNames[type][0]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][singleFileUsecaseIndex]);
 
             clickUploadButton();
 
@@ -193,7 +200,7 @@ Object.values(formTypes).forEach((type) => {
                 .first()
                 .children()
                 .first()
-                .should('contain', uploadedFileNames[type][0]);
+                .should('contain', uploadedFileNames[type][singleFileUsecaseIndex]);
             cy.get('#failed-uploads').should('contain', '1 of 1 files failed to upload');
             cy.get('#close-page-warning').should('be.visible');
 
@@ -208,7 +215,7 @@ Object.values(formTypes).forEach((type) => {
                 statusCode: 500,
             });
 
-            selectForm(type).selectFile(uploadedFilePathNames[type][0]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][singleFileUsecaseIndex]);
 
             clickUploadButton();
 
@@ -219,7 +226,7 @@ Object.values(formTypes).forEach((type) => {
                 .first()
                 .children()
                 .first()
-                .should('contain.text', uploadedFileNames[type][0]);
+                .should('contain.text', uploadedFileNames[type][singleFileUsecaseIndex]);
             cy.get('#failed-uploads').should('contain', '1 of 1 files failed to upload');
             cy.get('#close-page-warning').should('be.visible');
 
@@ -228,7 +235,7 @@ Object.values(formTypes).forEach((type) => {
 
         it(`(Smoke test) Multiple files - On Choose files button click, file selection is visible for ${type} input`, () => {
             cy.get('#selected-documents-table').should('not.exist');
-            selectForm(type).selectFile(uploadedFilePathNames[type][1]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][multiFileUSecaseIndex]);
             cy.get('#selected-documents-table').should('be.visible');
             cy.get('#selected-documents-table tbody tr').should('have.length', 2);
 
@@ -236,12 +243,12 @@ Object.values(formTypes).forEach((type) => {
                 .first()
                 .children()
                 .first()
-                .should('have.text', uploadedFileNames[type][1][0]);
+                .should('have.text', uploadedFileNames[type][multiFileUSecaseIndex][0]);
             cy.get('#selected-documents-table tbody tr')
                 .eq(1)
                 .children()
                 .first()
-                .should('have.text', uploadedFileNames[type][1][1]);
+                .should('have.text', uploadedFileNames[type][multiFileUSecaseIndex][1]);
         });
 
         it(`(Smoke test) Multiple files - On Upload button click, renders Upload Summary for successful upload for ${type} input`, () => {
@@ -266,7 +273,7 @@ Object.values(formTypes).forEach((type) => {
                 });
             }
 
-            selectForm(type).selectFile(uploadedFilePathNames[type][1]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][multiFileUSecaseIndex]);
 
             clickUploadButton();
 
@@ -278,7 +285,7 @@ Object.values(formTypes).forEach((type) => {
                 .first()
                 .children()
                 .first()
-                .should('contain', uploadedFileNames[type][1][0]);
+                .should('contain', uploadedFileNames[type][multiFileUSecaseIndex][0]);
             cy.get('#close-page-warning').should('be.visible');
 
             testStartAgainButton();
@@ -305,7 +312,7 @@ Object.values(formTypes).forEach((type) => {
                 });
             });
 
-            selectForm(type).selectFile(uploadedFilePathNames[type][1]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][multiFileUSecaseIndex]);
 
             clickUploadButton();
 
@@ -328,18 +335,19 @@ Object.values(formTypes).forEach((type) => {
                 'have.length',
                 uploadedFilePathNames[type][1].length,
             );
+
             cy.get('#failed-uploads tbody tr')
                 .first()
                 .children()
                 .first()
-                .should('contain.text', uploadedFileNames[type][1][0]);
+                .should('contain.text', uploadedFileNames[type][multiFileUSecaseIndex][0]);
+
+            const fileCount = uploadedFilePathNames[type][multiFileUSecaseIndex].length;
             cy.get('#failed-uploads').should(
                 'contain',
-                uploadedFilePathNames[type][1].length +
-                    ' of ' +
-                    uploadedFilePathNames[type][1].length +
-                    ' files failed to upload',
+                fileCount + ' of ' + fileCount + ' files failed to upload',
             );
+
             cy.get('#close-page-warning').should('be.visible');
 
             testStartAgainButton();
@@ -351,7 +359,7 @@ Object.values(formTypes).forEach((type) => {
                 statusCode: 404,
             });
 
-            selectForm(type).selectFile(uploadedFilePathNames[type][1]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][multiFileUSecaseIndex]);
 
             clickUploadButton();
 
@@ -359,20 +367,21 @@ Object.values(formTypes).forEach((type) => {
             cy.get('#failed-uploads').should('be.visible');
             cy.get('#failed-uploads tbody tr').should(
                 'have.length',
-                uploadedFilePathNames[type][1].length,
+                uploadedFilePathNames[type][multiFileUSecaseIndex].length,
             );
+
             cy.get('#failed-uploads tbody tr')
                 .first()
                 .children()
                 .first()
-                .should('contain.text', uploadedFileNames[type][1][0]);
+                .should('contain.text', uploadedFileNames[type][multiFileUSecaseIndex][0]);
+
+            const fileCount = uploadedFilePathNames[type][multiFileUSecaseIndex].length;
             cy.get('#failed-uploads').should(
                 'contain',
-                uploadedFilePathNames[type][1].length +
-                    ' of ' +
-                    uploadedFilePathNames[type][1].length +
-                    ' files failed to upload',
+                fileCount + ' of ' + fileCount + ' files failed to upload',
             );
+
             cy.get('#close-page-warning').should('be.visible');
 
             testStartAgainButton();
@@ -403,7 +412,7 @@ Object.values(formTypes).forEach((type) => {
                 });
             });
 
-            selectForm(type).selectFile(uploadedFilePathNames[type][1]);
+            selectForm(type).selectFile(uploadedFilePathNames[type][multiFileUSecaseIndex]);
 
             clickUploadButton();
 
