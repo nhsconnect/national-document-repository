@@ -23,13 +23,7 @@ describe('LloydGeorgeRecordPage', () => {
     it('renders LG card', () => {
         renderPage();
 
-        expect(screen.getByText('Lloyd George Record')).toBeInTheDocument();
-    });
-
-    it('renders LG card with header', () => {
-        renderPage();
-
-        expect(screen.getByText('Lloyd George Record')).toBeInTheDocument();
+        expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
     });
 });
 
