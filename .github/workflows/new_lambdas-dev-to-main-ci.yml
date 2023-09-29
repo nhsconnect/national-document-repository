@@ -22,8 +22,8 @@ jobs:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
       environment: development
-      python-version: 3.11
-      build-branch: main
+      python_version: 3.11
+      build_branch: main
 
   deploy_all_lambdas:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
