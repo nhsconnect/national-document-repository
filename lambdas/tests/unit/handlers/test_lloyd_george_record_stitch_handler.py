@@ -123,7 +123,7 @@ def test_respond_500_throws_error_when_fail_to_upload_lloyd_george_file(
     mock_s3.upload_file_with_tags.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(valid_id_event, context)
     expected = ApiGatewayResponse(
-        500, "Unexpected error when uploading Lloyd George record", "GET"
+        500, "Unable to return stitched pdf file due to internal error", "GET"
     ).create_api_gateway_response()
     assert actual == expected
 

@@ -1,5 +1,6 @@
 import os
 
+import pytest
 from services.pdf_stitch_service import count_page_number, stitch_pdf
 
 
@@ -16,3 +17,10 @@ def test_stitch_pdf():
     )
 
     os.remove(stitched_file)
+
+
+def test_stitch_pdf_raise_error_when_input_file_not_found():
+    test_file = "non-exist-file.pdf"
+
+    with pytest.raises(FileNotFoundError):
+        stitch_pdf([test_file])
