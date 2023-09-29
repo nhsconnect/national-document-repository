@@ -20,8 +20,10 @@ def lambda_handler(event, context):
         nhs_number = event["queryStringParameters"]["patientId"]
         validate_id(nhs_number)
 
-        document_store_table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-        lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+        list_of_table_names = [
+            table_name.strip()
+            for table_name in os.environ["DYNAMODB_TABLE_LIST"].strip("[]").split(",")
+        ]
 
     except InvalidResourceIdException:
         return ApiGatewayResponse(
@@ -32,12 +34,12 @@ def lambda_handler(event, context):
             400, f"An error occurred due to missing key: {str(e)}", "GET"
         ).create_api_gateway_response()
 
-    list_of_table_names = [document_store_table_name, lloyd_george_table_name]
     dynamo_service = DynamoDBService()
 
     try:
         results = []
         for table_name in list_of_table_names:
+            logger.info("Searching_table: " + table_name)
             response = dynamo_service.query_service(
                 table_name,
                 "NhsNumberIndex",
