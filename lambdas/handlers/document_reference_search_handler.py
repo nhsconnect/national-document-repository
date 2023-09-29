@@ -20,6 +20,8 @@ def lambda_handler(event, context):
         nhs_number = event["queryStringParameters"]["patientId"]
         validate_id(nhs_number)
 
+        logger.info(f"Found table names: {os.environ['DYNAMODB_TABLE_LIST']}")
+
         list_of_table_names = [
             table_name.strip()
             for table_name in os.environ["DYNAMODB_TABLE_LIST"].strip("[]").split(",")
@@ -39,7 +41,7 @@ def lambda_handler(event, context):
     try:
         results = []
         for table_name in list_of_table_names:
-            logger.info("Searching_table: " + table_name)
+            logger.info(f"Searching for results in {table_name}")
             response = dynamo_service.query_service(
                 table_name,
                 "NhsNumberIndex",

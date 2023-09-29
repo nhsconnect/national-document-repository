@@ -22,6 +22,11 @@
         color: $color_nhsuk-black;
         background: $color_nhsuk-yellow;
     }
+    &:disabled {
+        color: $color_nhsuk-black;
+        background: $color_nhsuk-yellow;
+        opacity: 1;
+    }
     &-spinner {
         border: nhsuk-spacing(1) solid rgba($color_nhsuk-white, 0.8);
         border-top: nhsuk-spacing(1) solid $color_nhsuk-black;
@@ -72,9 +77,7 @@
     }
     &:focus {
         background-color: #ffeb3b;
-        box-shadow:
-            0 -2px #ffeb3b,
-            0 4px #212b32;
+        box-shadow: 0 -2px #ffeb3b, 0 4px #212b32;
         color: #212b32;
         outline: 4px solid transparent;
         text-decoration: none;
