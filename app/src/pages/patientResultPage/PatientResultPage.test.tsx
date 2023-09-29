@@ -60,13 +60,15 @@ describe('PatientResultPage', () => {
                 screen.getByRole('heading', { name: 'Verify patient details' }),
             ).toBeInTheDocument();
 
-            expect(screen.getByText('Select patient status')).toBeInTheDocument();
+            expect(
+                screen.getByText('What is the current status of the patient?'),
+            ).toBeInTheDocument();
             expect(screen.getByRole('radio', { name: 'Active patient' })).toBeInTheDocument();
             expect(screen.getByRole('radio', { name: 'Inactive patient' })).toBeInTheDocument();
 
             expect(
                 screen.getByText(
-                    'Ensure these patient details match the electronic health records and attachments you are about to upload.',
+                    'Ensure these patient details match the records and attachments that you upload',
                 ),
             ).toBeInTheDocument();
         });

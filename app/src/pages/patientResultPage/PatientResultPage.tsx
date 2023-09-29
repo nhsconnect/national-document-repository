@@ -33,7 +33,7 @@ function PatientResultPage({ role }: Props) {
     const submit = (fieldValues: FieldValues) => {
         if (userIsGP) {
             if (!isPatientStatusDirty) {
-                setInputError('Select patient status');
+                setInputError('Select a patient status');
                 return;
             }
             if (fieldValues.patientStatus === 'active') {
@@ -80,12 +80,12 @@ function PatientResultPage({ role }: Props) {
 
             {patientDetails && <PatientSummary patientDetails={patientDetails} />}
 
-            <form onSubmit={handleSubmit(submit)}>
+            <form onSubmit={handleSubmit(submit)} style={{ marginTop: 60 }}>
                 {userIsGP && (
                     <>
                         <Fieldset>
-                            <Fieldset.Legend style={{ marginBottom: 10, fontWeight: '600' }}>
-                                Select patient status
+                            <Fieldset.Legend>
+                                <h2>What is the current status of the patient?</h2>
                             </Fieldset.Legend>
                             <Radios id="patient-status" error={inputError}>
                                 <Radios.Radio
@@ -108,8 +108,8 @@ function PatientResultPage({ role }: Props) {
                         </Fieldset>
 
                         <p id="gp-message">
-                            Ensure these patient details match the electronic health records and
-                            attachments you are about to upload.
+                            Ensure these patient details match the records and attachments that you
+                            upload
                         </p>
                     </>
                 )}
