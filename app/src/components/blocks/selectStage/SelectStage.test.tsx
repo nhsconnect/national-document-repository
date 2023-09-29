@@ -278,33 +278,7 @@ describe('<UploadDocumentsPage />', () => {
             async (inputType) => {
                 renderSelectStage(setDocumentMock);
 
-                const selectFilesLabel = screen.getByTestId('ARF-input');
-
-                act(() => {
-                    userEvent.upload(selectFilesLabel, documentOne);
-                });
-
-                const removeFile = await screen.findByRole('button', {
-                    name: `Remove ${documentOne.name} from selection`,
-                });
-
-                act(() => {
-                    userEvent.click(removeFile);
-                });
-                act(() => {
-                    userEvent.upload(selectFilesLabel, documentOne);
-                });
-
-                expect(await screen.findByText(documentOne.name)).toBeInTheDocument();
-            },
-        );
-
-        it.each([['ARF'], ['LG']])(
-            "does allow the user to add the same file again if they remove for '%s' input",
-            async (inputType) => {
-                renderSelectStage(setDocumentMock);
-
-                const selectFilesLabel = screen.getByTestId('ARF-input');
+                const selectFilesLabel = screen.getByTestId(`${inputType}-input`);
 
                 act(() => {
                     userEvent.upload(selectFilesLabel, documentOne);
