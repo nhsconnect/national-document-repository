@@ -14,53 +14,66 @@ function LloydGeorgeRecordPage() {
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
 
-    const dob = patientDetails?.birthDate
+    const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 
+    const nhsNumber: String =
+        patientDetails?.nhsNumber.slice(0, 3) +
+        ' ' +
+        patientDetails?.nhsNumber.slice(3, 6) +
+        ' ' +
+        patientDetails?.nhsNumber.slice(6, 10);
+
     const patientInfo = (
         <>
-            <p style={{ fontSize: '24px', marginBottom: 5, fontWeight: '600' }}>
+            <p style={{ marginBottom: 5, fontWeight: '700' }}>
                 {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
             </p>
-            <p style={{ fontSize: '20px', marginBottom: 5 }}>
-                NHS number: {patientDetails?.nhsNumber}
-            </p>
-            <p>{dob}</p>
+            <p style={{ fontSize: '16px', marginBottom: 5 }}>NHS number: {nhsNumber}</p>
+            <p style={{ fontSize: '16px' }}>Date of birth: {dob}</p>
         </>
     );
 
     useEffect(() => {
         if (!patientDetails) {
             navigate(routes.HOME);
+        } else {
+            setLloydGeorgeRecord(true);
+            // const search = async () => {
+            //     const nhsNumber: string = patientDetails?.nhsNumber || '';
+            //
+            //     const result = await getLloydGeorgeRecord({ nhsNumber, baseUrl });
+            //
+            //     if (result.length > 0) {
+            //         setLloydGeorgeRecord(result);
+            //     }
+            // };
         }
-        setLloydGeorgeRecord(true);
-        // const search = async () => {
-        //     const nhsNumber: string = patientDetails?.nhsNumber || '';
-        //
-        //     const result = await getLloydGeorgeRecord({ nhsNumber, baseUrl });
-        //
-        //     if (result.length > 0) {
-        //         setLloydGeorgeRecord(result);
-        //     }
-        // };
     }, [patientDetails, navigate]);
+
+    const pdfCardDescription = (
+        <>
+            <p style={{ marginBottom: 16 }}>Last updated: 'placeholder text'</p>
+            <p style={{ color: '#4C6272' }}>'placeholder text'</p>
+        </>
+    );
 
     return (
         <>
             <>{patientInfo}</>
             <Card style={{ marginBottom: 0 }}>
                 <Card.Content>
-                    <Card.Heading>Lloyd George Record</Card.Heading>
-                    <Card.Description>
-                        {lloydGeorgeRecord
-                            ? 'display LG details and pdf'
-                            : 'No documents are available'}
+                    <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
+                        Lloyd George record
+                    </Card.Heading>
+                    <Card.Description style={{ fontSize: '16px' }}>
+                        {lloydGeorgeRecord ? pdfCardDescription : 'No documents are available'}
                     </Card.Description>
                 </Card.Content>
             </Card>
             {lloydGeorgeRecord && (
-                <Details expander>
+                <Details expander open>
                     <Details.Summary>View record</Details.Summary>
                     <PdfViewer fileUrl="https://researchtorevenue.files.wordpress.com/2015/04/1r41ai10801601_fong.pdf" />
                 </Details>
