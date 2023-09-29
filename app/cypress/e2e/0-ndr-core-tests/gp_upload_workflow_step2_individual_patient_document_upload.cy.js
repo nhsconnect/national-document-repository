@@ -64,16 +64,23 @@ const uploadedFilePathNames = {
         'cypress/fixtures/test_patient_record_two.pdf',
     ],
     LG: [
-        'cypress/fixtures/lg-files/1of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
-        'cypress/fixtures/lg-files/2of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+        'cypress/fixtures/lg-files/1of1_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+        [
+            'cypress/fixtures/lg-files/1of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+            'cypress/fixtures/lg-files/2of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+        ],
     ],
 };
 
 const uploadedFileNames = {
     ARF: ['test_patient_record.pdf', 'test_patient_record_two.pdf'],
     LG: [
-        '1of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
-        '2of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+        '1of1_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+
+        [
+            '1of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+            '2of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+        ],
     ],
 };
 
@@ -124,7 +131,7 @@ describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', 
         }
 
         selectForm(formTypes.ARF).selectFile(uploadedFilePathNames.ARF[0]);
-        selectForm(formTypes.LG).selectFile(uploadedFilePathNames.LG[1]);
+        selectForm(formTypes.LG).selectFile(uploadedFilePathNames.LG[0]);
 
         clickUploadButton();
 
@@ -135,7 +142,7 @@ describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', 
 
         cy.get('#successful-uploads tbody tr').should('have.length', 2);
         cy.get('#successful-uploads tbody tr').eq(0).should('contain', uploadedFileNames.ARF[0]);
-        cy.get('#successful-uploads tbody tr').eq(1).should('contain', uploadedFileNames.LG[1]);
+        cy.get('#successful-uploads tbody tr').eq(1).should('contain', uploadedFileNames.LG[0]);
         cy.get('#close-page-warning').should('be.visible');
 
         testStartAgainButton();
