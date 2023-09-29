@@ -32,6 +32,7 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
         /[0-9]+of[0-9]+_Lloyd_George_Record_\[[A-Za-z]+\s[A-Za-z]+]_\[[0-9]{10}]_\[\d\d-\d\d-\d\d\d\d].pdf/;
     const lgFilesNumber = /of[0-9]+/;
     const FIVEGB = 5 * Math.pow(1024, 3);
+    console.log(FIVEGB);
     const { handleSubmit, control, formState } = useForm();
     const formConfig = (name: string) => ({
         name,
