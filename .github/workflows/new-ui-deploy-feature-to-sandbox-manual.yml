@@ -54,6 +54,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch }}
 
       - name: Use Node.js ${{ env.NODE_VERSION }}
@@ -87,6 +88,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch }}
 
       - name: Configure AWS Credentials
