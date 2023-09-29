@@ -1,5 +1,6 @@
 import logging
 import os
+import tempfile
 
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -110,10 +111,17 @@ def download_lloyd_george_files(
     lloyd_george_bucket_name: str, ordered_lg_records: list[dict], s3_service: S3Service
 ) -> list[str]:
     all_lg_parts = []
+    temp_folder = tempfile.mkdtemp()
     for lg_part in ordered_lg_records:
-        local_file_name = f"/tmp/{lg_part['FileName']}"
+        nhs_number = lg_part[DocumentReferenceMetadataFields.NHS_NUMBER.field_name]
+        file_id = lg_part[DocumentReferenceMetadataFields.ID.field_name]
+        original_file_name = lg_part[DocumentReferenceMetadataFields.FILE_NAME.field_name]  # fmt: skip
+
+        s3_file_name = f"{nhs_number}/{file_id}"
+
+        local_file_name = os.path.join(temp_folder, original_file_name)
         s3_service.download_file(
-            lloyd_george_bucket_name, lg_part["ID"], local_file_name
+            lloyd_george_bucket_name, s3_file_name, local_file_name
         )
         all_lg_parts.append(local_file_name)
     return all_lg_parts

@@ -1,3 +1,4 @@
+import tempfile
 from unittest.mock import patch
 
 import pypdf.errors
@@ -22,7 +23,13 @@ def test_respond_200_with_presign_url(
 
 
 def test_aws_services_are_correctly_called(
-    valid_id_event, context, set_env, mock_dynamo_db, mock_s3, mock_stitch_pdf
+    valid_id_event,
+    context,
+    set_env,
+    mock_dynamo_db,
+    mock_s3,
+    mock_stitch_pdf,
+    mock_tempfile,
 ):
     lambda_handler(valid_id_event, context)
 
@@ -30,9 +37,11 @@ def test_aws_services_are_correctly_called(
 
     assert mock_s3.download_file.call_count == len(MOCK_LG_DYNAMODB_RESPONSE["Items"])
     for mock_record in MOCK_LG_DYNAMODB_RESPONSE["Items"]:
-        s3_key = mock_record["ID"]
+        file_name_on_s3 = mock_record["NhsNumber"] + "/" + mock_record["ID"]
         local_filename = "/tmp/" + mock_record["FileName"]
-        mock_s3.download_file.assert_any_call(MOCK_LG_BUCKET, s3_key, local_filename)
+        mock_s3.download_file.assert_any_call(
+            MOCK_LG_BUCKET, file_name_on_s3, local_filename
+        )
 
     mock_s3.upload_file_with_tags.assert_called_with(
         file_key="Combined_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
@@ -184,3 +193,9 @@ def mock_stitch_pdf():
     ) as mocked_stitch_pdf:
         mocked_stitch_pdf.return_value = MOCK_STITCHED_FILE
         yield mocked_stitch_pdf
+
+
+@pytest.fixture
+def mock_tempfile():
+    with patch.object(tempfile, "mkdtemp", return_value="/tmp/"):
+        yield
