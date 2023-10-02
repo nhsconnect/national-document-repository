@@ -10,7 +10,7 @@ import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
-    const [lloydGeorgeRecord, setLloydGeorgeRecord] = useState(false);
+    const [lloydGeorgeUrl, setLloydGeorgeUrl] = useState('');
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
 
@@ -44,11 +44,12 @@ function LloydGeorgeRecordPage() {
                 const nhsNumber: string = patientDetails?.nhsNumber || '';
 
                 const result = await getLloydGeorgeRecord({ nhsNumber, baseUrl });
-
+                console.log(result, '<--- this result');
                 if (result.length > 0) {
-                    setLloydGeorgeRecord(result);
+                    setLloydGeorgeUrl(result);
                 }
             };
+            void search();
         }
     }, [patientDetails, navigate]);
 
@@ -68,14 +69,15 @@ function LloydGeorgeRecordPage() {
                         Lloyd George record
                     </Card.Heading>
                     <Card.Description style={{ fontSize: '16px' }}>
-                        {lloydGeorgeRecord ? pdfCardDescription : 'No documents are available'}
+                        {lloydGeorgeUrl ? pdfCardDescription : 'No documents are available'}
                     </Card.Description>
                 </Card.Content>
             </Card>
-            {lloydGeorgeRecord && (
+            {lloydGeorgeUrl && (
                 <Details expander open>
                     <Details.Summary>View record</Details.Summary>
-                    <PdfViewer fileUrl="https://researchtorevenue.files.wordpress.com/2015/04/1r41ai10801601_fong.pdf" />
+                    {/*<PdfViewer fileUrl="https://researchtorevenue.files.wordpress.com/2015/04/1r41ai10801601_fong.pdf" />*/}
+                    <PdfViewer fileUrl={lloydGeorgeUrl} />
                 </Details>
             )}
         </>
