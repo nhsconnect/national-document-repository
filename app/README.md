@@ -1,39 +1,78 @@
 ## National Document Repository User Interface
 
 ### Intro
- 
-The National Document Repository user interface (UI) has been developed with React. This is a developer's guide to run the UI and tools locally. 
+
+The National Document Repository user interface (UI) has been developed with React. This is a developer's guide to run the UI and tools locally.
+
+## Table Of Contents
+
+1. [Setup](#setup)
+2. [Running Locally](#running-locally)
+3. [Testing](#testing)
+4. [Accessibility](#accessibility)
+5. [Design](#design)
 
 ### Requirements
 
-- Node: Version 16.0 or greater.
-- NPM: this should come installed with Node but if not version 8.3.1 or greater is recommended.
-- Browser: Of your choice, Chrome tends to have better development tools. 
+-   Node: Version 18.0
+-   NPM: this should come installed with Node but if not version 8.3.1 or greater is recommended.
+-   Browser: Of your choice, although Chrome has better development tools.
 
-### Running the app
+## Setup
+
+### 1. Set Env Variables
+
+Create a `.env` file by duplicating [.env.example](.env_example) and adding any missing values. This file is sourced to
+your shell env so make sure it doesn't have any extra whitespace, comments etc.
+The `local` environment variable will allow your local app to bypass auth and mock most lambda requests.
+
+### 2. Local
 
 To run the UI, the team has created a Makefile in the route directory, on your first run you will need to install the required node packages for the app through a command line interface (CLI)..
 
-    make install  
+```bash
+make install
+```
 
 Once the packages have been installed, you can then run the app through the following command
 
-	make start
+```bash
+make start
+```
 
-Once everything is up and running you should see a prompt in the CLI that the app is running on http://localhost:3000. You should now be able to visit the site in a browser of your choice. 
+Once everything is up and running you should see a prompt in the CLI that the app is running on http://localhost:3000. You should now be able to visit the site in a browser of your choice.
 
-### Testing
+## Testing
 
-There are two test paths through the app. 
-The first is unit testing. To run the unit tests within the project, you can run the following command via the CLI on the route directory…
+### 1. UI Tests
 
-	make test
+You can run the unit tests for the app [Jest](https://jestjs.io/) by running
 
-You will see the output from the tests in the CLI.
+```bash
+make test-ui
+```
 
-The second is E2E / component testing through Cypress. Firstly you must have the app running through the “running the app steps”. Secondly you will want a second CLI terminal to be apple to run the following command…
+These tests are run against each \*.test.tsx file, which should generally be written per component when extending the app.
+The applications unit tests will also run automatically every-time a push is made via git.
 
-	make cypress-open
+### 2. E2E Tests
 
-This will open the cypress testing UI. At the time of writing, we would recommend following the UI through the E2E selection options to view and run the E2E tests if this is your first time using Cypress.  
+There are also Cypress end-to-end tests written against each user journey and it's functionality. You can run these by running
 
+```bash
+make cypress-open
+```
+
+This will open a new Chromium window with the options to either run the E2E tests or Component tests
+
+## Accessibility
+
+-   [WAVE Chrome extension](https://chrome.google.com/webstore/detail/wave-evaluation-tool/jbbplnpkjmmeebjpijfedlgcdilocofh)
+-   Use a screen reader
+-   Use keyboard navigation
+-   Use NHS components rather than custom styling
+
+## Design
+
+The UI follows the guidelines specified in the [NHS Service Manual](https://service-manual.nhs.uk/). To help achieve
+this, we utilise the UI components provided by the [nhsuk-frontend](https://github.com/nhsuk/nhsuk-frontend) package.
