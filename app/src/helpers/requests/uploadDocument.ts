@@ -25,7 +25,11 @@ const uploadDocument = async ({
 }: Args) => {
     const docDetails = (document: UploadDocument) => {
         setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
-        return { fileName: document.file.name, contentType: document.file.type };
+        return {
+            fileName: document.file.name,
+            contentType: document.file.type,
+            docType: document.docType,
+        };
     };
     const requestBody = {
         resourceType: 'DocumentReference',

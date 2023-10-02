@@ -4,11 +4,11 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 
 
 class NHSDocumentReference:
-    def __init__(self, reference_id, s3_bucket_name, data) -> None:
+    def __init__(self, nhs_number, content_type, file_name, reference_id, s3_bucket_name) -> None:
         self.id = reference_id
-        self.nhs_number = data["subject"]["identifier"]["value"]
-        self.content_type = data["content"][0]["attachment"]["contentType"]
-        self.file_name = data["description"]
+        self.nhs_number = nhs_number
+        self.content_type = content_type
+        self.file_name = file_name
         self.created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         self.s3_bucket_name = s3_bucket_name
         self.deleted = None
