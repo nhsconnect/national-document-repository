@@ -39,16 +39,16 @@ function LloydGeorgeRecordPage() {
         if (!patientDetails) {
             navigate(routes.HOME);
         } else {
-            setLloydGeorgeRecord(true);
-            // const search = async () => {
-            //     const nhsNumber: string = patientDetails?.nhsNumber || '';
-            //
-            //     const result = await getLloydGeorgeRecord({ nhsNumber, baseUrl });
-            //
-            //     if (result.length > 0) {
-            //         setLloydGeorgeRecord(result);
-            //     }
-            // };
+            // setLloydGeorgeRecord(true);
+            const search = async () => {
+                const nhsNumber: string = patientDetails?.nhsNumber || '';
+
+                const result = await getLloydGeorgeRecord({ nhsNumber, baseUrl });
+
+                if (result.length > 0) {
+                    setLloydGeorgeRecord(result);
+                }
+            };
         }
     }, [patientDetails, navigate]);
 
