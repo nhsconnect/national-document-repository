@@ -15,7 +15,6 @@ function RoleSelectPage() {
     const { isDirty: isOrganisationDirty } = getFieldState('organisation', formState);
 
     useEffect(() => {
-        console.log(session);
         if (!session.auth?.authorisation_token) {
             navigate(routes.UNAUTHORISED);
         }

@@ -15,7 +15,7 @@ import UnauthorisedPage from './pages/unauthorisedPage/UnauthorisedPage';
 import AuthGuard from './components/blocks/authGuard/AuthGuard';
 import { USER_ROLE } from './types/generic/roles';
 import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
-import LogoutPage from './pages/auth/logoutPage/LogoutPage';
+import LogoutPage from './pages/logoutPage/LogoutPage';
 import PatientGuard from './components/blocks/patientGuard/PatientGuard';
 import PatientResultPage from './pages/patientResultPage/PatientResultPage';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
