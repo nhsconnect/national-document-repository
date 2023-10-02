@@ -1,7 +1,9 @@
+import json
 import logging
 import os
 import tempfile
 from urllib import parse
+from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -65,15 +67,22 @@ def lambda_handler(event, context):
         filename_for_stitched_file = make_filename_for_stitched_file(response["Items"])
         stitched_lg_record = stitch_pdf(all_lg_parts)
 
-        presign_url_response = upload_stitched_lg_record(
+        number_of_files = len(response["Items"])
+        last_updated = get_most_recent_created_date(response["Items"])
+        presign_url = upload_stitched_lg_record_and_retrieve_presign_url(
             stitched_lg_record=stitched_lg_record,
             filename_on_bucket=filename_for_stitched_file,
             upload_bucket_name=lloyd_george_bucket_name,
             s3_service=s3_service,
         )
-        return ApiGatewayResponse(
-            200, presign_url_response, "GET"
-        ).create_api_gateway_response()
+        response = json.dumps(
+            {
+                "number_of_files": number_of_files,
+                "last_updated": last_updated,
+                "presign_url": presign_url,
+            }
+        )
+        return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
     except (ClientError, PyPdfError, FileNotFoundError) as e:
         logger.error(e)
         return ApiGatewayResponse(
@@ -95,8 +104,10 @@ def get_lloyd_george_records_for_patient(
             nhs_number,
             [
                 DocumentReferenceMetadataFields.ID,
+                DocumentReferenceMetadataFields.FILE_LOCATION,
                 DocumentReferenceMetadataFields.NHS_NUMBER,
                 DocumentReferenceMetadataFields.FILE_NAME,
+                DocumentReferenceMetadataFields.CREATED,
             ],
         )
         if response is None or ("Items" not in response):
@@ -114,11 +125,12 @@ def download_lloyd_george_files(
     all_lg_parts = []
     temp_folder = tempfile.mkdtemp()
     for lg_part in ordered_lg_records:
-        nhs_number = lg_part[DocumentReferenceMetadataFields.NHS_NUMBER.field_name]
-        file_id = lg_part[DocumentReferenceMetadataFields.ID.field_name]
+        file_location_on_s3 = lg_part[
+            DocumentReferenceMetadataFields.FILE_LOCATION.field_name
+        ]
         original_file_name = lg_part[DocumentReferenceMetadataFields.FILE_NAME.field_name]  # fmt: skip
 
-        s3_file_name = f"{nhs_number}/{file_id}"
+        s3_file_name = urlparse(file_location_on_s3).path.lstrip("/")
 
         local_file_name = os.path.join(temp_folder, original_file_name)
         s3_service.download_file(
@@ -139,7 +151,12 @@ def make_filename_for_stitched_file(dynamo_response: list[dict]) -> str:
     return "Combined" + base_filename[end_of_total_page_numbers:]
 
 
-def upload_stitched_lg_record(
+def get_most_recent_created_date(dynamo_response: list[dict]) -> str:
+    created_date_key = DocumentReferenceMetadataFields.CREATED.field_name
+    return max(lg_part[created_date_key] for lg_part in dynamo_response)
+
+
+def upload_stitched_lg_record_and_retrieve_presign_url(
     stitched_lg_record: str,
     filename_on_bucket: str,
     upload_bucket_name: str,

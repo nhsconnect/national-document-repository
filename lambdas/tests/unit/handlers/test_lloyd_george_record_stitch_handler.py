@@ -1,3 +1,4 @@
+import json
 import tempfile
 from unittest.mock import patch
 
@@ -15,8 +16,14 @@ def test_respond_200_with_presign_url(
     valid_id_event, context, set_env, mock_dynamo_db, mock_s3, mock_stitch_pdf
 ):
     actual = lambda_handler(valid_id_event, context)
+
+    expected_response_object = {
+        "number_of_files": 3,
+        "last_updated": "2023-10-02T09:46:17.231923Z",
+        "presign_url": MOCK_PRESIGNED_URL_RESPONSE,
+    }
     expected = ApiGatewayResponse(
-        200, MOCK_PRESIGNED_URL_RESPONSE, "GET"
+        200, json.dumps(expected_response_object), "GET"
     ).create_api_gateway_response()
 
     assert actual == expected
@@ -152,20 +159,23 @@ MOCK_LG_DYNAMODB_RESPONSE = {
         {
             "ID": "uuid_for_page_3",
             "NhsNumber": "1234567890",
-            "FileLocation": "s3://ndr-dev-lloyd-george-store/9e9867f0-9767-402d-a4d6-c1af4575a6bf",
+            "FileLocation": f"s3://{MOCK_LG_BUCKET}/1234567890/uuid_for_page_3",
             "FileName": "3of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
+            "Created": "2023-10-02T09:46:17.231923Z",
         },
         {
             "ID": "uuid_for_page_1",
             "NhsNumber": "1234567890",
-            "FileLocation": "s3://ndr-dev-lloyd-george-store/9e9867f0-9767-402d-a4d6-c1af4575a6bf",
+            "FileLocation": f"s3://{MOCK_LG_BUCKET}/1234567890/uuid_for_page_1",
             "FileName": "1of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
+            "Created": "2023-10-02T09:46:17.231921Z",
         },
         {
             "ID": "uuid_for_page_2",
             "NhsNumber": "1234567890",
-            "FileLocation": "s3://ndr-dev-lloyd-george-store/9e9867f0-9767-402d-a4d6-c1af4575a6bf",
+            "FileLocation": f"s3://{MOCK_LG_BUCKET}/1234567890/uuid_for_page_2",
             "FileName": "2of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
+            "Created": "2023-10-02T09:46:17.231922Z",
         },
     ]
 }
