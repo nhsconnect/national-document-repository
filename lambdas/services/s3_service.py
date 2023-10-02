@@ -1,6 +1,5 @@
 import logging
-from typing import Dict
-from urllib import parse
+from typing import Any, Mapping
 
 import boto3
 from botocore.client import Config as BotoConfig
@@ -42,9 +41,11 @@ class S3Service:
     def upload_file(self, file_name: str, s3_bucket_name: str, file_key: str):
         return self.client.upload_file(file_name, s3_bucket_name, file_key)
 
-    def upload_file_with_tags(
-        self, file_name: str, s3_bucket_name: str, file_key: str, tags: Dict[str, str]
+    def upload_file_with_extra_args(
+        self,
+        file_name: str,
+        s3_bucket_name: str,
+        file_key: str,
+        extra_args: Mapping[str, Any],
     ):
-        return self.client.upload_file(
-            file_name, s3_bucket_name, file_key, {"Tagging": parse.urlencode(tags)}
-        )
+        return self.client.upload_file(file_name, s3_bucket_name, file_key, extra_args)

@@ -90,18 +90,17 @@ def test_upload_file(mocker):
     mock_upload_file.assert_called_once_with(TEST_FILE_NAME, MOCK_BUCKET, TEST_FILE_KEY)
 
 
-def test_upload_file_with_tags(mocker):
+def test_upload_file_with_extra_args(mocker):
     mocker.patch("boto3.client")
     service = S3Service()
     mock_upload_file = mocker.patch.object(service.client, "upload_file")
 
-    test_tags = {"mock_tag": 123, "apple": "red", "banana": "true"}
+    test_extra_args = {"mock_tag": 123, "apple": "red", "banana": "true"}
 
-    service.upload_file_with_tags(TEST_FILE_NAME, MOCK_BUCKET, TEST_FILE_KEY, test_tags)
+    service.upload_file_with_extra_args(
+        TEST_FILE_NAME, MOCK_BUCKET, TEST_FILE_KEY, test_extra_args
+    )
 
     mock_upload_file.assert_called_once_with(
-        TEST_FILE_NAME,
-        MOCK_BUCKET,
-        TEST_FILE_KEY,
-        {"Tagging": "mock_tag=123&apple=red&banana=true"},
+        TEST_FILE_NAME, MOCK_BUCKET, TEST_FILE_KEY, test_extra_args
     )

@@ -1,6 +1,7 @@
 import logging
 import os
 import tempfile
+from urllib import parse
 
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -147,11 +148,16 @@ def upload_stitched_lg_record(
     lifecycle_policy_tag = os.environ.get(
         "STITCHED_FILE_LIFECYCLE_POLICY_TAG", "auto_delete"
     )
-    s3_service.upload_file_with_tags(
+    extra_args = {
+        "Tagging": parse.urlencode({lifecycle_policy_tag: "true"}),
+        "ContentDisposition": "inline",
+        "ContentType": "application/pdf",
+    }
+    s3_service.upload_file_with_extra_args(
         file_name=stitched_lg_record,
         s3_bucket_name=upload_bucket_name,
         file_key=filename_on_bucket,
-        tags={lifecycle_policy_tag: "true"},
+        extra_args=extra_args,
     )
     presign_url_response = s3_service.create_download_presigned_url(
         s3_bucket_name=upload_bucket_name, file_key=filename_on_bucket

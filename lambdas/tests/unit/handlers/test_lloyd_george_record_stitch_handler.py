@@ -43,11 +43,15 @@ def test_aws_services_are_correctly_called(
             MOCK_LG_BUCKET, file_name_on_s3, local_filename
         )
 
-    mock_s3.upload_file_with_tags.assert_called_with(
+    mock_s3.upload_file_with_extra_args.assert_called_with(
         file_key="Combined_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
         file_name=MOCK_STITCHED_FILE,
         s3_bucket_name=MOCK_LG_BUCKET,
-        tags={"auto_delete": "true"},
+        extra_args={
+            "Tagging": "auto_delete=true",
+            "ContentDisposition": "inline",
+            "ContentType": "application/pdf",
+        },
     )
 
 
@@ -129,7 +133,7 @@ def test_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
 def test_respond_500_throws_error_when_fail_to_upload_lloyd_george_file(
     valid_id_event, context, set_env, mock_dynamo_db, mock_s3, mock_stitch_pdf
 ):
-    mock_s3.upload_file_with_tags.side_effect = MOCK_CLIENT_ERROR
+    mock_s3.upload_file_with_extra_args.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(valid_id_event, context)
     expected = ApiGatewayResponse(
         500, "Unable to return stitched pdf file due to internal error", "GET"
