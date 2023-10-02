@@ -15,6 +15,8 @@ import UnauthorisedPage from './pages/unauthorisedPage/UnauthorisedPage';
 import AuthGuard from './components/blocks/authGuard/AuthGuard';
 import { USER_ROLE } from './types/generic/roles';
 import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
+import LogoutPage from './pages/auth/logoutPage/LogoutPage';
+import PatientGuard from './components/blocks/patientGuard/PatientGuard';
 import PatientResultPage from './pages/patientResultPage/PatientResultPage';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
 import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
@@ -31,7 +33,6 @@ function App() {
 
                                 <Route element={<NotFoundPage />} path={routes.NOT_FOUND} />
                                 <Route element={<UnauthorisedPage />} path={routes.UNAUTHORISED} />
-
                                 <Route element={<AuthCallbackPage />} path={routes.AUTH_CALLBACK} />
                                 <Route element={<RoleSelectPage />} path={routes.SELECT_ORG} />
 
@@ -50,22 +51,32 @@ function App() {
                                         element={<PatientSearchPage role={USER_ROLE.GP} />}
                                         path={routes.UPLOAD_SEARCH}
                                     />
+
+                                    <Route element={<LogoutPage />} path={routes.LOGOUT} />
                                     <Route
-                                        element={<PatientResultPage role={USER_ROLE.PCSE} />}
-                                        path={routes.DOWNLOAD_VERIFY}
-                                    />
-                                    <Route
-                                        element={<PatientResultPage role={USER_ROLE.GP} />}
-                                        path={routes.UPLOAD_VERIFY}
-                                    />
-                                    <Route
-                                        element={<UploadDocumentsPage />}
-                                        path={routes.UPLOAD_DOCUMENTS}
-                                    />
-                                    <Route
-                                        element={<DocumentSearchResultsPage />}
-                                        path={routes.DOWNLOAD_DOCUMENTS}
-                                    />
+                                        element={
+                                            <PatientGuard>
+                                                <Outlet />
+                                            </PatientGuard>
+                                        }
+                                    >
+                                        <Route
+                                            element={<PatientResultPage role={USER_ROLE.PCSE} />}
+                                            path={routes.DOWNLOAD_VERIFY}
+                                        />
+                                        <Route
+                                            element={<PatientResultPage role={USER_ROLE.GP} />}
+                                            path={routes.UPLOAD_VERIFY}
+                                        />
+                                        <Route
+                                            element={<UploadDocumentsPage />}
+                                            path={routes.UPLOAD_DOCUMENTS}
+                                        />
+                                        <Route
+                                            element={<DocumentSearchResultsPage />}
+                                            path={routes.DOWNLOAD_DOCUMENTS}
+                                        />
+                                    </Route>
                                 </Route>
                             </Routes>
                         </Layout>

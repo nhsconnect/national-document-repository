@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { USER_ROLE } from '../../types/generic/roles';
 import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
@@ -16,12 +16,6 @@ function PatientResultPage({ role }: Props) {
     const userIsGP = role === USER_ROLE.GP;
     const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!patientDetails) {
-            navigate(routes.HOME);
-        }
-    }, [patientDetails, navigate]);
 
     const handleVerify = () => {
         if (userIsGP) {

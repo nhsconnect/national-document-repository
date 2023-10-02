@@ -26,10 +26,6 @@ function DocumentSearchResultsPage() {
     const baseHeaders = useBaseAPIHeaders();
 
     useEffect(() => {
-        if (!patientDetails?.nhsNumber) {
-            navigate(routes.HOME);
-        }
-
         const search = async () => {
             setSubmissionState(SUBMISSION_STATE.PENDING);
             setSearchResults([]);
@@ -54,7 +50,7 @@ function DocumentSearchResultsPage() {
         };
 
         void search();
-    }, [patientDetails, setSearchResults, setSubmissionState, navigate, baseUrl]);
+    }, [patientDetails, baseHeaders, setSearchResults, setSubmissionState, navigate, baseUrl]);
 
     const downloadAll = async () => {
         setDownloadState(SUBMISSION_STATE.PENDING);
