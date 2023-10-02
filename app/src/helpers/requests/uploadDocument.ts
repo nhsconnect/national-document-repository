@@ -9,7 +9,7 @@ import axios, { AxiosError } from 'axios';
 
 type Args = {
     setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
-    document: UploadDocument;
+    documents: UploadDocument[];
     nhsNumber: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
@@ -19,11 +19,14 @@ type Args = {
 const uploadDocument = async ({
     nhsNumber,
     setDocumentState,
-    document,
+    documents,
     baseUrl,
     baseHeaders,
 }: Args) => {
-    const rawDoc = document.file;
+    const docDetails = (document: UploadDocument) => {
+        setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
+        return { fileName: document.file.name, contentType: document.file.type };
+    };
     const requestBody = {
         resourceType: 'DocumentReference',
         subject: {
@@ -42,16 +45,12 @@ const uploadDocument = async ({
         },
         content: [
             {
-                attachment: {
-                    contentType: rawDoc.type,
-                },
+                attachment: documents.map(docDetails),
             },
         ],
-        description: rawDoc.name,
         created: new Date(Date.now()).toISOString(),
     };
 
-    setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_UPLOAD;
 
     try {
@@ -61,9 +60,6 @@ const uploadDocument = async ({
             {
                 headers: {
                     ...baseHeaders,
-                },
-                params: {
-                    documentType: document.docType,
                 },
             },
         );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -43,7 +43,7 @@ function UploadDocumentsPage(props: Props) {
                         nhsNumber: patientDetails.nhsNumber,
                         docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                         setDocumentState,
-                        document,
+                        documents,
                         baseUrl,
                         baseHeaders,
                     }),
