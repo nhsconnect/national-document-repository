@@ -1,4 +1,4 @@
 export type AuthHeaders = {
     'Content-Type': string;
-    Authorization: string;
+    [key: string]: string;
 };

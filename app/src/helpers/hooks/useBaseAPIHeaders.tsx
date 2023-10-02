@@ -1,14 +1,14 @@
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 
-function useAuthHeaders() {
+function useBaseAPIHeaders(authHeaderName = 'Authorization') {
     const [session] = useSessionContext();
     const jwtToken = session.auth?.authorisation_token ?? '';
     const headers: AuthHeaders = {
         'Content-Type': 'application/json',
-        Authorization: jwtToken,
+        [authHeaderName]: jwtToken,
     };
     return headers;
 }
 
-export default useAuthHeaders;
+export default useBaseAPIHeaders;

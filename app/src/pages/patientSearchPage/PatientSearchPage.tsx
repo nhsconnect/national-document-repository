@@ -17,7 +17,7 @@ import { AxiosError } from 'axios';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { isMock } from '../../helpers/utils/isLocal';
-import useAuthHeaders from '../../helpers/hooks/useAuthHeaders';
+import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 type Props = {
     role: USER_ROLE;
@@ -45,7 +45,7 @@ function PatientSearchPage({ role }: Props) {
     const userIsGP = role === USER_ROLE.GP;
     const isError = (statusCode && statusCode >= 500) || !inputError;
     const baseUrl = useBaseAPIUrl();
-    const authHeaders = useAuthHeaders();
+    const baseHeaders = useBaseAPIHeaders();
     const handleSuccess = (patientDetails: PatientDetails) => {
         setPatientDetails(patientDetails);
         setSubmissionState(SEARCH_STATES.SUCCEEDED);
@@ -72,7 +72,7 @@ function PatientSearchPage({ role }: Props) {
             const patientDetails = await getPatientDetails({
                 nhsNumber,
                 baseUrl,
-                authHeaders,
+                baseHeaders,
             });
             handleSuccess(patientDetails);
         } catch (e) {
