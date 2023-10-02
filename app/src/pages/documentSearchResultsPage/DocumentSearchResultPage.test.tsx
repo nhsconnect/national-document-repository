@@ -9,6 +9,7 @@ import { createMemoryHistory } from 'history';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import axios from 'axios';
 
+jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('axios');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -32,12 +33,12 @@ describe('<DocumentSearchResultsPage />', () => {
             expect(
                 screen.getByRole('heading', {
                     name: 'Download electronic health records and attachments',
-                })
+                }),
             ).toBeInTheDocument();
 
             await waitFor(() => {
                 expect(
-                    screen.queryByRole('progressbar', { name: 'Loading...' })
+                    screen.queryByRole('progressbar', { name: 'Loading...' }),
                 ).not.toBeInTheDocument();
             });
 
@@ -69,15 +70,15 @@ describe('<DocumentSearchResultsPage />', () => {
 
             await waitFor(() => {
                 expect(
-                    screen.getByText('There are no documents available for this patient.')
+                    screen.getByText('There are no documents available for this patient.'),
                 ).toBeInTheDocument();
             });
 
             expect(
-                screen.queryByRole('button', { name: 'Download All Documents' })
+                screen.queryByRole('button', { name: 'Download All Documents' }),
             ).not.toBeInTheDocument();
             expect(
-                screen.queryByRole('button', { name: 'Delete All Documents' })
+                screen.queryByRole('button', { name: 'Delete All Documents' }),
             ).not.toBeInTheDocument();
         });
 
@@ -94,10 +95,10 @@ describe('<DocumentSearchResultsPage />', () => {
 
             expect(await screen.findByRole('alert')).toBeInTheDocument();
             expect(
-                screen.queryByRole('button', { name: 'Download All Documents' })
+                screen.queryByRole('button', { name: 'Download All Documents' }),
             ).not.toBeInTheDocument();
             expect(
-                screen.queryByRole('button', { name: 'Delete All Documents' })
+                screen.queryByRole('button', { name: 'Delete All Documents' }),
             ).not.toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
         });
@@ -111,7 +112,7 @@ describe('<DocumentSearchResultsPage />', () => {
             });
 
             mockedAxios.get.mockImplementation(() =>
-                Promise.resolve({ data: [buildSearchResult()] })
+                Promise.resolve({ data: [buildSearchResult()] }),
             );
 
             renderSearchResultsPage({}, history);
@@ -137,7 +138,7 @@ const renderSearchResultsPage = (
     history = createMemoryHistory({
         initialEntries: [homeRoute],
         initialIndex: 1,
-    })
+    }),
 ) => {
     const patient: PatientDetails = {
         ...buildPatientDetails(),
@@ -149,6 +150,6 @@ const renderSearchResultsPage = (
             <PatientDetailsProvider patientDetails={patient}>
                 <DocumentSearchResultsPage />
             </PatientDetailsProvider>
-        </ReactRouter.Router>
+        </ReactRouter.Router>,
     );
 };

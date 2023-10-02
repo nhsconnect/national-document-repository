@@ -14,6 +14,7 @@ import getDocumentSearchResults from '../../helpers/requests/documentSearchResul
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
 
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
+import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 function DocumentSearchResultsPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -22,6 +23,7 @@ function DocumentSearchResultsPage() {
     const [downloadState, setDownloadState] = useState(SUBMISSION_STATE.INITIAL);
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
+    const baseHeaders = useBaseAPIHeaders();
 
     useEffect(() => {
         if (!patientDetails?.nhsNumber) {
@@ -38,6 +40,7 @@ function DocumentSearchResultsPage() {
                 const results = await getDocumentSearchResults({
                     nhsNumber,
                     baseUrl,
+                    baseHeaders,
                 });
 
                 if (results && results.length > 0) {

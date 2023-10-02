@@ -13,12 +13,14 @@ import CompleteStage from '../../components/blocks/completeStage/CompleteStage';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
+import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 type Props = {};
 function UploadDocumentsPage(props: Props) {
     const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const baseUrl = useBaseAPIUrl();
+    const baseHeaders = useBaseAPIHeaders();
     const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
 
@@ -52,6 +54,7 @@ function UploadDocumentsPage(props: Props) {
                         setDocumentState,
                         document,
                         baseUrl,
+                        baseHeaders,
                     }),
                 ),
             );
