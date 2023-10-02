@@ -122,7 +122,7 @@ const DocumentInputForm = ({
                         </Table.Body>
                     </Table>
                 )}
-                {hasDuplicateFiles && (
+                {hasDuplicateFiles && formType === DOCUMENT_TYPE.ARF && (
                     <WarningCallout>
                         <WarningCallout.Label>Possible duplicate file</WarningCallout.Label>
                         <p>There are two or more documents with the same name.</p>

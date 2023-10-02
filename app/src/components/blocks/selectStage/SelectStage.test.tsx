@@ -146,7 +146,7 @@ describe('<UploadDocumentsPage />', () => {
             renderSelectStage(setDocumentMock);
             const lgFileWithBadType = new File(
                 ['test'],
-                `1of2000_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].txt`,
+                `1of2000_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf`,
                 {
                     type: 'text/plain',
                 },
@@ -158,7 +158,7 @@ describe('<UploadDocumentsPage />', () => {
 
             expect(
                 screen.getByText(
-                    '1of2000_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].txt',
+                    '1of2000_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf',
                 ),
             ).toBeInTheDocument();
 
@@ -222,7 +222,7 @@ describe('<UploadDocumentsPage />', () => {
 
         it('does not upload LG form if two or more files match name/size', async () => {
             renderSelectStage(setDocumentMock);
-
+            const duplicateFileWarning = 'There are two or more documents with the same name.';
             act(() => {
                 userEvent.upload(screen.getByTestId(`LG-input`), [lgDocumentTwo, lgDocumentTwo]);
             });
@@ -242,10 +242,11 @@ describe('<UploadDocumentsPage />', () => {
                     'One or more of the files do not match the required filename format. Please check the file(s) and try again',
                 ),
             ).toBeInTheDocument();
+            expect(screen.queryByText(duplicateFileWarning)).not.toBeInTheDocument();
         });
 
-        it.each([['ARF'], ['LG']])(
-            "shows a duplicate file warning if two or more files match name/size for '%s' input",
+        it.each([['ARF']])(
+            'shows a duplicate file warning if two or more files match name/size for ARF input only',
             async (inputType) => {
                 const duplicateFileWarning = 'There are two or more documents with the same name.';
 
