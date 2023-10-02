@@ -163,7 +163,7 @@ def upload_stitched_lg_record_and_retrieve_presign_url(
     s3_service: S3Service,
 ):
     lifecycle_policy_tag = os.environ.get(
-        "STITCHED_FILE_LIFECYCLE_POLICY_TAG", "auto_delete"
+        "STITCHED_FILE_LIFECYCLE_POLICY_TAG", "autodelete"
     )
     extra_args = {
         "Tagging": parse.urlencode({lifecycle_policy_tag: "true"}),
