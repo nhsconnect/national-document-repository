@@ -56,7 +56,7 @@ def lambda_handler(event, context):
         dynamo_service.post_item_service(dynamo_table, new_document.to_dict())
 
         s3_response = s3_service.create_document_presigned_url_handler(
-            new_document.s3_bucket_name, new_document.nhs_number + '/' + new_document.id
+            new_document.s3_bucket_name, new_document.nhs_number + "/" + new_document.id
         )
 
         return ApiGatewayResponse(
