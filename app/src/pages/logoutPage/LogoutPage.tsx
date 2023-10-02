@@ -9,6 +9,7 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { AxiosError } from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import logout, { Args } from '../../helpers/requests/logout';
 
 type Props = {};
 
@@ -19,25 +20,31 @@ const AuthCallbackPage = (props: Props) => {
     const baseHeaders = useBaseAPIHeaders('authorizationToken');
 
     useEffect(() => {
-        const handleCallback = async (args: AuthTokenArgs) => {
+        const args: Args = { baseUrl, baseHeaders };
+
+        const handleCallback = async (args: Args) => {
             try {
-                const authResponse = await getAuthToken(args);
-                //call invokeLogout method with baseurl and baseheader args
-                //add new request
+                await logout(args);
                 setSession({
-                    auth: authResponse,
+                    auth: null,
                     isLoggedIn: false,
                 });
                 navigate(routes.HOME);
             } catch (e) {
-                navigate(-1);
+                const error = e as AxiosError;
+                if (isMock(error)) {
+                    setSession({
+                        auth: null,
+                        isLoggedIn: false,
+                    });
+                    navigate(routes.HOME);
+                } else {
+                    navigate(-1);
+                }
             }
         };
 
-        const urlSearchParams = new URLSearchParams(window.location.search);
-        const code = urlSearchParams.get('code') ?? '';
-        const state = urlSearchParams.get('state') ?? '';
-        handleCallback({ baseUrl, code, state });
+        handleCallback({ baseUrl, baseHeaders });
     }, [baseUrl, setSession, navigate]);
 
     return <Spinner status="Logging out..." />;
