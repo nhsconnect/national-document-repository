@@ -10,7 +10,7 @@ type Args = {
 // };
 
 const getLloydGeorgeRecord = async ({ nhsNumber, baseUrl }: Args) => {
-    const gatewayUrl = baseUrl + '/SearchDocumentReferences';
+    const gatewayUrl = baseUrl + '/LloydGeorgeStitch';
 
     const { data } = await axios.get(gatewayUrl, {
         headers: {
