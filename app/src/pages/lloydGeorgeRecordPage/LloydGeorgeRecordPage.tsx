@@ -7,9 +7,14 @@ import { Card, Details } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import getLloydGeorgeRecord from '../../helpers/requests/lloydGeorgeSearchResult';
 import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
+import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
+import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
+    const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
+    const [numberOfFiles, setNumberOfFiles] = useState(0);
+    const [lastUpdated, setLastUpdated] = useState('');
     const [lloydGeorgeUrl, setLloydGeorgeUrl] = useState('');
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
@@ -41,24 +46,56 @@ function LloydGeorgeRecordPage() {
         } else {
             // setLloydGeorgeRecord(true);
             const search = async () => {
+                setDownloadStage(DOWNLOAD_STAGE.PENDING);
                 const nhsNumber: string = patientDetails?.nhsNumber || '';
-
-                const result = await getLloydGeorgeRecord({ nhsNumber, baseUrl });
-                console.log(result, '<--- this result');
-                if (result.length > 0) {
-                    setLloydGeorgeUrl(result);
+                try {
+                    const { number_of_files, last_updated, presign_url } =
+                        await getLloydGeorgeRecord({
+                            nhsNumber,
+                            baseUrl,
+                        });
+                    // TODO: validate the return values from getLloydGeorgeRecord
+                    if (presign_url?.startsWith('https://')) {
+                        setNumberOfFiles(number_of_files);
+                        setLastUpdated(getFormattedDatetime(new Date(last_updated)));
+                        setLloydGeorgeUrl(presign_url);
+                        setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
+                    }
+                    setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
+                } catch (e) {
+                    setDownloadStage(DOWNLOAD_STAGE.FAILED);
                 }
             };
             void search();
         }
-    }, [patientDetails, navigate]);
+    }, [
+        patientDetails,
+        baseUrl,
+        navigate,
+        setDownloadStage,
+        setLloydGeorgeUrl,
+        setLastUpdated,
+        setNumberOfFiles,
+    ]);
 
     const pdfCardDescription = (
+        // TODO: Check whether File size refer to the stitched file or the original files?
         <>
-            <p style={{ marginBottom: 16 }}>Last updated: 'placeholder text'</p>
-            <p style={{ color: '#4C6272' }}>'placeholder text'</p>
+            <p style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</p>
+            <p style={{ color: '#4C6272' }}>
+                {numberOfFiles} files | File size: (placeholder) | File format: PDF
+            </p>
         </>
     );
+    const displayPdfCardDescription = () => {
+        if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
+            return pdfCardDescription;
+        } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
+            return <>No documents are available</>;
+        } else {
+            return <>Loading...</>;
+        }
+    };
 
     return (
         <>
@@ -69,14 +106,13 @@ function LloydGeorgeRecordPage() {
                         Lloyd George record
                     </Card.Heading>
                     <Card.Description style={{ fontSize: '16px' }}>
-                        {lloydGeorgeUrl ? pdfCardDescription : 'No documents are available'}
+                        {displayPdfCardDescription()}
                     </Card.Description>
                 </Card.Content>
             </Card>
-            {lloydGeorgeUrl && (
+            {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
                 <Details expander open>
                     <Details.Summary>View record</Details.Summary>
-                    {/*<PdfViewer fileUrl="https://researchtorevenue.files.wordpress.com/2015/04/1r41ai10801601_fong.pdf" />*/}
                     <PdfViewer fileUrl={lloydGeorgeUrl} />
                 </Details>
             )}

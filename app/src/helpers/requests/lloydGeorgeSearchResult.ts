@@ -5,11 +5,16 @@ type Args = {
     baseUrl: string;
 };
 
-// type GetDocumentSearchResultsResponse = {
-//     data: Array<SearchResult>;
-// };
+type LloydGeorgeStitchResult = {
+    number_of_files: number;
+    last_updated: string;
+    presign_url: string;
+};
 
-const getLloydGeorgeRecord = async ({ nhsNumber, baseUrl }: Args) => {
+async function getLloydGeorgeRecord({
+    nhsNumber,
+    baseUrl,
+}: Args): Promise<LloydGeorgeStitchResult> {
     const gatewayUrl = baseUrl + '/LloydGeorgeStitch';
 
     const { data } = await axios.get(gatewayUrl, {
@@ -21,6 +26,6 @@ const getLloydGeorgeRecord = async ({ nhsNumber, baseUrl }: Args) => {
         },
     });
     return data;
-};
+}
 
 export default getLloydGeorgeRecord;
