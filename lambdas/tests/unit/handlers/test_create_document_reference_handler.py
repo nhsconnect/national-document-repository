@@ -300,7 +300,7 @@ def test_create_document_reference_unknown_document_type_returns_400(
 
     expected = ApiGatewayResponse(
         400,
-        "An error occured processing the required document type",
+        "An error occurred processing the required document type",
         "POST",
     ).create_api_gateway_response()
 
@@ -327,8 +327,10 @@ def test_lambda_handler_missing_environment_variables_type_lg_returns_400(
 
     monkeypatch.delenv(environmentVariable)
     expected = ApiGatewayResponse(
-        400,
-        "An error occurred due to missing key: '" + environmentVariable + "'",
+        500,
+        "An error occurred due to missing environment variables: '"
+        + environmentVariable
+        + "'",
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
@@ -348,8 +350,10 @@ def test_lambda_handler_missing_environment_variables_type_arf_returns_400(
 
     monkeypatch.delenv(environmentVariable)
     expected = ApiGatewayResponse(
-        400,
-        "An error occurred due to missing key: '" + environmentVariable + "'",
+        500,
+        "An error occurred due to missing environment variables: '"
+        + environmentVariable
+        + "'",
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)
