@@ -6,21 +6,23 @@ type Props = {
     children: ReactNode;
     sessionOverride?: Partial<Session>;
 };
-type Session = {
+export type Session = {
     auth: UserAuth | null;
     isLoggedIn: boolean;
 };
 
 export type SessionContext = [Session, Dispatch<SetStateAction<Session>>];
 
+const emptyAuth = { auth: null, isLoggedIn: false };
+
 const UserSessionContext = createContext<SessionContext | null>(null);
-const SessionProvider = ({ children, sessionOverride }: Props) => {
+const SessionProvider = ({ children }: Props) => {
     const storedAuth = sessionStorage.getItem('UserSession');
-    const auth: Session = storedAuth ? JSON.parse(storedAuth) : null;
+    const auth: Session = storedAuth ? JSON.parse(storedAuth) : emptyAuth;
     const [session, setSession] = useState<Session>(auth);
 
     useEffect(() => {
-        sessionStorage.setItem('UserSession', JSON.stringify(session) ?? null);
+        sessionStorage.setItem('UserSession', JSON.stringify(session) ?? emptyAuth);
     }, [session]);
 
     return (
