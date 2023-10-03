@@ -67,34 +67,40 @@ const uploadDocument = async ({
                 },
             },
         );
-        const formData = new FormData();
-        Object.keys(gatewayResponse.fields).forEach((key) => {
-            formData.append(key, gatewayResponse.fields[key]);
-        });
-        formData.append('file', document.file);
-        const s3url = gatewayResponse.url;
+        documents.map(async (document) => {
+            const formData = new FormData();
+            Object.keys(gatewayResponse.fields).forEach((key) => {
+                formData.append(key, gatewayResponse.fields[key]);
+            });
+            formData.append('file', document.file);
+            const s3url = gatewayResponse.url;
 
-        const s3Response = await axios.post(s3url, formData, {
-            onUploadProgress: (progress) => {
-                const { loaded, total } = progress;
-                if (total) {
-                    setDocumentState(
-                        document.id,
-                        DOCUMENT_UPLOAD_STATE.UPLOADING,
-                        (loaded / total) * 100,
-                    );
-                }
-            },
-        });
+            const s3Response = await axios.post(s3url, formData, {
+                onUploadProgress: (progress) => {
+                    const { loaded, total } = progress;
+                    if (total) {
+                        setDocumentState(
+                            document.id,
+                            DOCUMENT_UPLOAD_STATE.UPLOADING,
+                            (loaded / total) * 100,
+                        );
+                    }
+                },
+            });
 
-        if (s3Response.status === 204)
-            setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+            if (s3Response.status === 204)
+                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+        });
     } catch (e) {
         const error = e as AxiosError;
         if (error.response?.status === 403) {
-            setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
+            documents.map((document) => {
+                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
+            });
         } else {
-            setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
+            documents.map((document) => {
+                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
+            });
         }
     }
 };
