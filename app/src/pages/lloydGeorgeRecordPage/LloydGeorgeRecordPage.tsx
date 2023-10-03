@@ -9,11 +9,13 @@ import getLloydGeorgeRecord from '../../helpers/requests/lloydGeorgeSearchResult
 import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
+import formatFileSize from '../../helpers/utils/formatFileSize';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
     const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
     const [numberOfFiles, setNumberOfFiles] = useState(0);
+    const [totalFileSizeInByte, setTotalFileSizeInByte] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
     const [lloydGeorgeUrl, setLloydGeorgeUrl] = useState('');
     const navigate = useNavigate();
@@ -44,7 +46,6 @@ function LloydGeorgeRecordPage() {
         if (!patientDetails) {
             navigate(routes.HOME);
         } else {
-            // setLloydGeorgeRecord(true);
             const search = async () => {
                 setDownloadStage(DOWNLOAD_STAGE.PENDING);
                 const nhsNumber: string = patientDetails?.nhsNumber || '';
@@ -60,6 +61,7 @@ function LloydGeorgeRecordPage() {
                         setLastUpdated(getFormattedDatetime(new Date(last_updated)));
                         setLloydGeorgeUrl(presign_url);
                         setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
+                        setTotalFileSizeInByte(totalFileSizeInByte);
                     }
                     setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
                 } catch (e) {
@@ -79,11 +81,11 @@ function LloydGeorgeRecordPage() {
     ]);
 
     const pdfCardDescription = (
-        // TODO: Check whether File size refer to the stitched file or the original files?
         <>
             <p style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</p>
             <p style={{ color: '#4C6272' }}>
-                {numberOfFiles} files | File size: (placeholder) | File format: PDF
+                {numberOfFiles} files | File size: {formatFileSize(totalFileSizeInByte)} | File
+                format: PDF
             </p>
         </>
     );
