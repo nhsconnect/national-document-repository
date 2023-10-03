@@ -3,11 +3,19 @@ import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
 import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
+import axios from 'axios';
 
+jest.mock('axios');
 jest.mock('react-router');
+
+const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockPatientDetails = buildPatientDetails();
 
 describe('LloydGeorgeRecordPage', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+    });
+
     afterEach(() => {
         jest.clearAllMocks();
     });
