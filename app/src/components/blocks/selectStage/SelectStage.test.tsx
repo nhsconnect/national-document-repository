@@ -26,7 +26,6 @@ describe('<UploadDocumentsPage />', () => {
         const lgDocumentOne = buildLgFile(1, 2);
         const lgDocumentTwo = buildLgFile(2, 2);
         const arfDocuments = [documentOne, documentTwo, documentThree];
-        const lgDocuments = [lgDocumentOne, lgDocumentTwo];
 
         const setDocumentMock = jest.fn();
         setDocumentMock.mockImplementation((document) => {
@@ -239,7 +238,7 @@ describe('<UploadDocumentsPage />', () => {
 
             expect(
                 await screen.findByText(
-                    'One or more of the files do not match the required filename format. Please check the file(s) and try again',
+                    'There are documents chosen that have the same name, a record with duplicate file names can not be uploaded because it does not match the required file format. Please check the files(s) and try again.',
                 ),
             ).toBeInTheDocument();
             expect(screen.queryByText(duplicateFileWarning)).not.toBeInTheDocument();

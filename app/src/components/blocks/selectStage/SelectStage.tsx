@@ -56,8 +56,13 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                                 if (
                                     !lgRegex.exec(currentFile.name) ||
                                     (!!expectedNumberOfFiles &&
-                                        value.length !==
-                                            parseInt(expectedNumberOfFiles[0].slice(2)))
+                                        (value.length !==
+                                            parseInt(expectedNumberOfFiles[0].slice(2)) ||
+                                            parseInt(currentFile.name.split(lgFilesNumber)[0]) >
+                                                parseInt(expectedNumberOfFiles[0].slice(2)))) ||
+                                    currentFile.name.split(lgFilesNumber)[1] !==
+                                        value[0].file.name.split(lgFilesNumber)[1] ||
+                                    currentFile.name.split(lgFilesNumber)[0] === '0'
                                 ) {
                                     return 'One or more of the files do not match the required filename format. Please check the file(s) and try again';
                                 }
@@ -77,7 +82,7 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                             );
                         })
                     ) {
-                        return 'One or more of the files do not match the required filename format. Please check the file(s) and try again';
+                        return 'There are documents chosen that have the same name, a record with duplicate file names can not be uploaded because it does not match the required file format. Please check the files(s) and try again.';
                     }
                 },
             },
