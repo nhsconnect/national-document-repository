@@ -4,7 +4,8 @@ export enum endpoints {
     AUTH = '/Auth/TokenRequest',
 
     PATIENT_SEARCH = '/SearchPatient',
-    DOCUMENT_SEARCH = '/DocumentReference',
+
+    DOCUMENT_SEARCH = '/SearchDocumentReferences',
     DOCUMENT_UPLOAD = '/DocumentReference',
     DOCUMENT_PRESIGN = '/DocumentManifest',
 }
