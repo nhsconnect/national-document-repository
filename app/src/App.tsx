@@ -14,6 +14,7 @@ import RoleSelectPage from './pages/roleSelectPage/RoleSelectPage';
 import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
 import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
+import LloydGeorgeRecordPage from './pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 
 function App() {
     const AuthenticatedProviders = ({ children }: { children: ReactNode }) => (
@@ -54,6 +55,7 @@ function App() {
                                 element={<PatientResultPage role={USER_ROLE.GP} />}
                                 path={routes.UPLOAD_VERIFY}
                             />
+                            <Route element={<LloydGeorgeRecordPage />} path={routes.LLOYD_GEORGE} />
                             <Route
                                 element={<UploadDocumentsPage />}
                                 path={routes.UPLOAD_DOCUMENTS}
