@@ -30,7 +30,7 @@ def test_respond_200_with_presign_url(
 
 
 def test_aws_services_are_correctly_called(
-    valid_id_event,
+    joe_bloggs_event,
     context,
     set_env,
     mock_dynamo_db,
@@ -38,7 +38,7 @@ def test_aws_services_are_correctly_called(
     mock_stitch_pdf,
     mock_tempfile,
 ):
-    lambda_handler(valid_id_event, context)
+    lambda_handler(joe_bloggs_event, context)
 
     mock_dynamo_db.assert_called_once()
 
@@ -51,7 +51,7 @@ def test_aws_services_are_correctly_called(
         )
 
     mock_s3.upload_file_with_extra_args.assert_called_with(
-        file_key="Combined_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
+        file_key="1234567890/Combined_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
         file_name=MOCK_STITCHED_FILE,
         s3_bucket_name=MOCK_LG_BUCKET,
         extra_args={
@@ -73,9 +73,9 @@ def test_respond_400_throws_error_when_no_nhs_number_supplied(
 
 
 def test_respond_500_throws_error_when_environment_variables_not_set(
-    valid_id_event, context
+    joe_bloggs_event, context
 ):
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
         500,
         "An error occurred due to missing key: 'LLOYD_GEORGE_DYNAMODB_NAME'",
@@ -93,23 +93,23 @@ def test_respond_400_throws_error_when_nhs_number_not_valid(invalid_id_event, co
 
 
 def test_respond_500_throws_error_when_dynamo_service_fails_to_connect(
-    valid_id_event, context, set_env, mock_dynamo_db
+    joe_bloggs_event, context, set_env, mock_dynamo_db
 ):
     mock_dynamo_db.side_effect = MOCK_CLIENT_ERROR
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
-        500, "Unable to retrieve documents for patient 9000000009", "GET"
+        500, "Unable to retrieve documents for patient 1234567890", "GET"
     ).create_api_gateway_response()
     assert actual == expected
 
 
 def test_respond_500_throws_error_when_fail_to_download_lloyd_george_file(
-    valid_id_event, context, set_env, mock_dynamo_db, mock_s3
+    joe_bloggs_event, context, set_env, mock_dynamo_db, mock_s3
 ):
     mock_s3.download_file.side_effect = MOCK_CLIENT_ERROR
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
-        500, "Unable to retrieve documents for patient 9000000009", "GET"
+        500, "Unable to retrieve documents for patient 1234567890", "GET"
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -138,10 +138,10 @@ def test_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
 
 
 def test_respond_500_throws_error_when_fail_to_upload_lloyd_george_file(
-    valid_id_event, context, set_env, mock_dynamo_db, mock_s3, mock_stitch_pdf
+    joe_bloggs_event, context, set_env, mock_dynamo_db, mock_s3, mock_stitch_pdf
 ):
     mock_s3.upload_file_with_extra_args.side_effect = MOCK_CLIENT_ERROR
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
         500, "Unable to return stitched pdf file due to internal error", "GET"
     ).create_api_gateway_response()
@@ -213,3 +213,10 @@ def mock_stitch_pdf():
 def mock_tempfile():
     with patch.object(tempfile, "mkdtemp", return_value="/tmp/"):
         yield
+
+@pytest.fixture
+def joe_bloggs_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"patientId": "1234567890"},
+    }
+    return api_gateway_proxy_event

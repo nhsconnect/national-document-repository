@@ -71,7 +71,7 @@ def lambda_handler(event, context):
         last_updated = get_most_recent_created_date(response["Items"])
         presign_url = upload_stitched_lg_record_and_retrieve_presign_url(
             stitched_lg_record=stitched_lg_record,
-            filename_on_bucket=filename_for_stitched_file,
+            filename_on_bucket=f"{nhs_number}/{filename_for_stitched_file}",
             upload_bucket_name=lloyd_george_bucket_name,
             s3_service=s3_service,
         )
