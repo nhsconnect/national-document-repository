@@ -84,7 +84,8 @@ const uploadDocument = async ({ nhsNumber, setDocumentState, document, baseUrl }
         if (s3Response.status === 204)
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
     } catch (e) {
-        console.log("Error Response")        
+        console.log("Error Response")       
+        console.log(e) 
         const error = e as AxiosError;
         console.log(error)
         if (error.response?.status === 403) {
