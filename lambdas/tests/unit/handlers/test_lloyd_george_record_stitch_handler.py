@@ -223,6 +223,7 @@ def mock_tempfile():
     with patch.object(tempfile, "mkdtemp", return_value="/tmp/"):
         yield
 
+
 @pytest.fixture
 def joe_bloggs_event():
     api_gateway_proxy_event = {

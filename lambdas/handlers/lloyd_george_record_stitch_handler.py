@@ -11,28 +11,19 @@ from pypdf.errors import PyPdfError
 from services.dynamo_service import DynamoDBService
 from services.pdf_stitch_service import stitch_pdf
 from services.s3_service import S3Service
-from utils.exceptions import DynamoDbException, InvalidResourceIdException
+from utils.decorators.validate_patient_id import (
+    extract_nhs_number_from_event, validate_patient_id)
+from utils.exceptions import DynamoDbException
 from utils.lambda_response import ApiGatewayResponse
 from utils.order_response_by_filenames import order_response_by_filenames
-from utils.utilities import validate_id
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+@validate_patient_id
 def lambda_handler(event, context):
-    try:
-        nhs_number = event["queryStringParameters"]["patientId"]
-        validate_id(nhs_number)
-    except InvalidResourceIdException:
-        return ApiGatewayResponse(
-            400, "Invalid NHS number", "GET"
-        ).create_api_gateway_response()
-    except KeyError as e:
-        return ApiGatewayResponse(
-            400, f"An error occurred due to missing key: {str(e)}", "GET"
-        ).create_api_gateway_response()
-
+    nhs_number = extract_nhs_number_from_event(event)
     try:
         lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
         lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
