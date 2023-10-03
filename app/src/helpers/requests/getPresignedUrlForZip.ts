@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { endpoints } from '../../types/generic/endpoints';
 
 type Args = {
     nhsNumber: string;
@@ -10,7 +11,7 @@ type GetPresignedUrl = {
 };
 
 const getPresignedUrlForZip = async ({ nhsNumber, baseUrl }: Args) => {
-    const gatewayUrl = baseUrl + '/DocumentManifestByNHSNumber';
+    const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
 
     const { data }: GetPresignedUrl = await axios.get(gatewayUrl, {
         headers: {

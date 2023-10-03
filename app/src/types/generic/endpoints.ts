@@ -6,4 +6,5 @@ export enum endpoints {
     PATIENT_SEARCH = '/SearchPatient',
     DOCUMENT_SEARCH = '/DocumentReference',
     DOCUMENT_UPLOAD = '/DocumentReference',
+    DOCUMENT_PRESIGN = '/DocumentManifest',
 }
