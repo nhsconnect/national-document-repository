@@ -7,7 +7,7 @@ type Args = {
 
 type LloydGeorgeStitchResult = {
     number_of_files: number;
-    totalFileSizeInByte: number;
+    total_file_size_in_byte: number;
     last_updated: string;
     presign_url: string;
 };

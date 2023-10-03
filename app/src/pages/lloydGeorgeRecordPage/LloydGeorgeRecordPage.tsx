@@ -50,7 +50,7 @@ function LloydGeorgeRecordPage() {
                 setDownloadStage(DOWNLOAD_STAGE.PENDING);
                 const nhsNumber: string = patientDetails?.nhsNumber || '';
                 try {
-                    const { number_of_files, totalFileSizeInByte, last_updated, presign_url } =
+                    const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
                         await getLloydGeorgeRecord({
                             nhsNumber,
                             baseUrl,
@@ -61,7 +61,7 @@ function LloydGeorgeRecordPage() {
                         setLastUpdated(getFormattedDatetime(new Date(last_updated)));
                         setLloydGeorgeUrl(presign_url);
                         setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
-                        setTotalFileSizeInByte(totalFileSizeInByte);
+                        setTotalFileSizeInByte(total_file_size_in_byte);
                     }
                     setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
                 } catch (e) {
@@ -78,6 +78,7 @@ function LloydGeorgeRecordPage() {
         setLloydGeorgeUrl,
         setLastUpdated,
         setNumberOfFiles,
+        setTotalFileSizeInByte,
     ]);
 
     const pdfCardDescription = (
