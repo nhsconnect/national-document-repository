@@ -1,7 +1,8 @@
 export enum endpoints {
-    LOGIN = '/Login',
-    LOGOUT = '/Logout',
-    AUTH = '/TokenRequest',
+    LOGIN = '/Auth/Login',
+    LOGOUT = '/Auth/Logout',
+    AUTH = '/Auth/TokenRequest',
+
     PATIENT_SEARCH = '/SearchPatient',
     DOCUMENT_SEARCH = '/DocumentReference',
     DOCUMENT_UPLOAD = '/DocumentReference',
