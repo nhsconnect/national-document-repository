@@ -22,6 +22,11 @@
         color: $color_nhsuk-black;
         background: $color_nhsuk-yellow;
     }
+    &:disabled {
+        color: $color_nhsuk-black;
+        background: $color_nhsuk-yellow;
+        opacity: 1;
+    }
     &-spinner {
         border: nhsuk-spacing(1) solid rgba($color_nhsuk-white, 0.8);
         border-top: nhsuk-spacing(1) solid $color_nhsuk-black;
