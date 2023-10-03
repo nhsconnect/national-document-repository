@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
 import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
+import { getFormattedDate } from '../../helpers/utils/formatDate';
 
 jest.mock('react-router');
 const mockPatientDetails = buildPatientDetails();
@@ -13,10 +14,12 @@ describe('LloydGeorgeRecordPage', () => {
 
     it('renders patient details', () => {
         const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
+        const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
 
         renderPage();
 
         expect(screen.getByText(patientName)).toBeInTheDocument();
+        expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
     });
 
