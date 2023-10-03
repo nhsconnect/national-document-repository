@@ -11,6 +11,7 @@ from pypdf.errors import PyPdfError
 from services.dynamo_service import DynamoDBService
 from services.pdf_stitch_service import stitch_pdf
 from services.s3_service import S3Service
+from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event, validate_patient_id)
 from utils.exceptions import DynamoDbException
@@ -22,16 +23,13 @@ logger.setLevel(logging.INFO)
 
 
 @validate_patient_id
+@ensure_environment_variables(
+    names=["LLOYD_GEORGE_DYNAMODB_NAME", "LLOYD_GEORGE_BUCKET_NAME"]
+)
 def lambda_handler(event, context):
     nhs_number = extract_nhs_number_from_event(event)
-    try:
-        lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-        lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
-    except KeyError as e:
-        logger.info(f"missing env var: {str(e)}")
-        return ApiGatewayResponse(
-            500, f"An error occurred due to missing key: {str(e)}", "GET"
-        ).create_api_gateway_response()
+    lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+    lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
 
     try:
         response = get_lloyd_george_records_for_patient(
