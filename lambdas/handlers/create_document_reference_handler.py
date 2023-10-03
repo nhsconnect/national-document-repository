@@ -27,7 +27,7 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
         return response
     nhs_number = body["subject"]["identifier"]["value"]
-    for document in body["content"]["attachment"]:
+    for document in body["content"][0]["attachment"]:
         document_type = SupportedDocumentTypes.get_from_field_name(document["docType"])
         if document_type is None:
             response = ApiGatewayResponse(

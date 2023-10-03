@@ -68,12 +68,13 @@ const uploadDocument = async ({
             },
         );
         documents.map(async (document) => {
+            const docGatewayResponse = gatewayResponse[document.file.name];
             const formData = new FormData();
-            Object.keys(gatewayResponse.fields).forEach((key) => {
-                formData.append(key, gatewayResponse.fields[key]);
+            Object.keys(docGatewayResponse.fields).forEach((key) => {
+                formData.append(key, docGatewayResponse.fields[key]);
             });
             formData.append('file', document.file);
-            const s3url = gatewayResponse.url;
+            const s3url = docGatewayResponse.url;
 
             const s3Response = await axios.post(s3url, formData, {
                 onUploadProgress: (progress) => {
