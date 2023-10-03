@@ -55,7 +55,7 @@ def test_aws_services_are_correctly_called(
         file_name=MOCK_STITCHED_FILE,
         s3_bucket_name=MOCK_LG_BUCKET,
         extra_args={
-            "Tagging": "auto_delete=true",
+            "Tagging": "autodelete=true",
             "ContentDisposition": "inline",
             "ContentType": "application/pdf",
         },
