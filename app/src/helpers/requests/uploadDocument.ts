@@ -78,10 +78,15 @@ const uploadDocument = async ({ nhsNumber, setDocumentState, document, baseUrl }
             },
         });
 
+        console.log("Success Response")
+        console.log(s3Response)
+
         if (s3Response.status === 204)
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
     } catch (e) {
+        console.log("Error Response")        
         const error = e as AxiosError;
+        console.log(error)
         if (error.response?.status === 403) {
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
         } else {
