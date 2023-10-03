@@ -50,7 +50,7 @@ function LloydGeorgeRecordPage() {
                 setDownloadStage(DOWNLOAD_STAGE.PENDING);
                 const nhsNumber: string = patientDetails?.nhsNumber || '';
                 try {
-                    const { number_of_files, last_updated, presign_url } =
+                    const { number_of_files, totalFileSizeInByte, last_updated, presign_url } =
                         await getLloydGeorgeRecord({
                             nhsNumber,
                             baseUrl,
