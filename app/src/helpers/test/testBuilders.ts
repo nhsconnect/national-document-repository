@@ -6,6 +6,7 @@ import {
 } from '../../types/pages/UploadDocumentsPage/types';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import { SearchResult } from '../../types/generic/searchResult';
+import { LloydGeorgeStitchResult } from '../requests/lloydGeorgeSearchResult';
 
 const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) => {
     const patient: PatientDetails = {
@@ -61,4 +62,20 @@ const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
     return result;
 };
 
-export { buildPatientDetails, buildTextFile, buildDocument, buildSearchResult };
+const buildLgSearchResult = () => {
+    const result: LloydGeorgeStitchResult = {
+        number_of_files: 7,
+        total_file_size_in_byte: 7,
+        last_updated: '2023-10-03T09:11:54.618694Z',
+        presign_url: 'https://test-url',
+    };
+    return result;
+};
+
+export {
+    buildPatientDetails,
+    buildTextFile,
+    buildDocument,
+    buildSearchResult,
+    buildLgSearchResult,
+};
