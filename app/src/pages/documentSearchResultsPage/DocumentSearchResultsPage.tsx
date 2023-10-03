@@ -2,42 +2,48 @@ import React, { useEffect, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { SearchResult } from '../../types/generic/searchResult';
-import DocumentSearchResults from '../../components/blocks/documentSearch/DocumentSearchResults';
+import DocumentSearchResults from '../../components/blocks/documentSearchResults/DocumentSearchResults';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';
 import ProgressBar from '../../components/generic/progressBar/ProgressBar';
-import SpinnerButton from '../../components/generic/spinnerButton/SpinnerButton';
-import { Button } from 'nhsuk-react-components';
-import getDocumentSearchResults from '../../helpers/requests/documentSearchResults';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
 
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
+import DocumentSearchResultsOptions from '../../components/blocks/documentSearchResultsOptions/DocumentSearchResultsOptions';
+import { AxiosError } from 'axios';
+import getDocumentSearchResults from '../../helpers/requests/documentSearchResults';
 
 function DocumentSearchResultsPage() {
     const [patientDetails] = usePatientDetailsContext();
     const [searchResults, setSearchResults] = useState(Array<SearchResult>);
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.INITIAL);
     const [downloadState, setDownloadState] = useState(SUBMISSION_STATE.INITIAL);
+    const [nhsNumber, setNhsNumber] = useState(String);
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
+
+    const handleUpdateDownloadState = (newState: SUBMISSION_STATE) => {
+        setDownloadState(newState);
+    };
 
     useEffect(() => {
         if (!patientDetails?.nhsNumber) {
             navigate(routes.HOME);
         }
 
+        const patientNhsNumber: string = patientDetails?.nhsNumber || '';
+        setNhsNumber(patientNhsNumber);
+
         const search = async () => {
             setSubmissionState(SUBMISSION_STATE.PENDING);
             setSearchResults([]);
 
-            const nhsNumber: string = patientDetails?.nhsNumber || '';
-
             try {
                 const results = await getDocumentSearchResults({
-                    nhsNumber,
-                    baseUrl,
+                    nhsNumber: patientNhsNumber,
+                    baseUrl: baseUrl,
                 });
 
                 if (results && results.length > 0) {
@@ -46,22 +52,16 @@ function DocumentSearchResultsPage() {
 
                 setSubmissionState(SUBMISSION_STATE.SUCCEEDED);
             } catch (e) {
+                const error = e as AxiosError;
+                if (error.response?.status === 403) {
+                    navigate(routes.HOME);
+                }
                 setSubmissionState(SUBMISSION_STATE.FAILED);
             }
         };
 
         void search();
     }, [patientDetails, setSearchResults, setSubmissionState, navigate, baseUrl]);
-
-    const downloadAll = async () => {
-        setDownloadState(SUBMISSION_STATE.PENDING);
-
-        // Simulate delay for API call
-        // Temporary, to be replaced with real changes from PRMDR-110
-        setTimeout(() => {
-            setDownloadState(SUBMISSION_STATE.SUCCEEDED);
-        }, 2000);
-    };
 
     return (
         <>
@@ -81,35 +81,11 @@ function DocumentSearchResultsPage() {
                     {searchResults.length > 0 && (
                         <>
                             <DocumentSearchResults searchResults={searchResults} />
-                            <p>
-                                Only permanently delete all documents for this patient if you have a
-                                valid reason to. For example, if the retention period of these
-                                documents has been reached.
-                            </p>
-                            <div style={{ display: 'flex' }}>
-                                {downloadState === SUBMISSION_STATE.PENDING ? (
-                                    <SpinnerButton status="Downloading documents" />
-                                ) : (
-                                    <Button type="button" onClick={downloadAll}>
-                                        Download All Documents
-                                    </Button>
-                                )}
-                                <Link
-                                    className="nhsuk-button nhsuk-button--secondary"
-                                    style={{ marginLeft: 72 }}
-                                    to={routes.DELETE_DOCUMENTS}
-                                    role="button"
-                                >
-                                    Delete All Documents
-                                </Link>
-                            </div>
-                            {downloadState === SUBMISSION_STATE.SUCCEEDED && (
-                                <p>
-                                    <strong>
-                                        All documents have been successfully downloaded.
-                                    </strong>
-                                </p>
-                            )}
+                            <DocumentSearchResultsOptions
+                                nhsNumber={nhsNumber}
+                                downloadState={downloadState}
+                                updateDownloadState={handleUpdateDownloadState}
+                            />
                         </>
                     )}
 

@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 REGION_NAME = "eu-west-2"
@@ -28,7 +30,7 @@ def set_env(monkeypatch):
     monkeypatch.setenv("LLOYD_GEORGE_BUCKET_NAME", MOCK_LG_BUCKET)
     monkeypatch.setenv("LLOYD_GEORGE_DYNAMODB_NAME", MOCK_LG_TABLE_NAME)
     monkeypatch.setenv(
-        "DYNAMODB_TABLE_LIST", f"[{MOCK_ARF_TABLE_NAME}, {MOCK_LG_TABLE_NAME}]"
+        "DYNAMODB_TABLE_LIST", json.dumps([MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME])
     )
     monkeypatch.setenv("ZIPPED_STORE_BUCKET_NAME", MOCK_ZIP_OUTPUT_BUCKET)
     monkeypatch.setenv("ZIPPED_STORE_DYNAMODB_NAME", MOCK_ZIP_TRACE_TABLE)

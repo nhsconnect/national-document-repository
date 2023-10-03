@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -19,19 +20,23 @@ def lambda_handler(event, context):
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
         validate_id(nhs_number)
-
-        list_of_table_names = [
-            table_name.strip()
-            for table_name in os.environ["DYNAMODB_TABLE_LIST"].strip("[]").split(",")
-        ]
-
-    except InvalidResourceIdException:
+        list_of_table_names = json.loads(os.environ["DYNAMODB_TABLE_LIST"])
+    except InvalidResourceIdException as e:
+        logger.error(str(e))
         return ApiGatewayResponse(
             400, "Invalid NHS number", "GET"
         ).create_api_gateway_response()
     except KeyError as e:
+        logger.error(str(e))
         return ApiGatewayResponse(
             400, f"An error occurred due to missing key: {str(e)}", "GET"
+        ).create_api_gateway_response()
+    except JSONDecodeError as e:
+        logger.error(str(e))
+        return ApiGatewayResponse(
+            500,
+            "An error occurred when parsing `DYNAMODB_TABLE_LIST` env variables",
+            "GET",
         ).create_api_gateway_response()
 
     dynamo_service = DynamoDBService()
@@ -39,7 +44,7 @@ def lambda_handler(event, context):
     try:
         results = []
         for table_name in list_of_table_names:
-            logger.info("Searching_table: " + table_name)
+            logger.info(f"Searching for results in {table_name}")
             response = dynamo_service.query_service(
                 table_name,
                 "NhsNumberIndex",
