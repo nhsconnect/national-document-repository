@@ -69,6 +69,7 @@ def lambda_handler(event, context):
 
         number_of_files = len(response["Items"])
         last_updated = get_most_recent_created_date(response["Items"])
+        total_file_size = get_total_file_size(all_lg_parts)
         presign_url = upload_stitched_lg_record_and_retrieve_presign_url(
             stitched_lg_record=stitched_lg_record,
             filename_on_bucket=f"{nhs_number}/{filename_for_stitched_file}",
@@ -80,6 +81,7 @@ def lambda_handler(event, context):
                 "number_of_files": number_of_files,
                 "last_updated": last_updated,
                 "presign_url": presign_url,
+                "total_file_size_in_byte": total_file_size,
             }
         )
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
@@ -154,6 +156,11 @@ def make_filename_for_stitched_file(dynamo_response: list[dict]) -> str:
 def get_most_recent_created_date(dynamo_response: list[dict]) -> str:
     created_date_key = DocumentReferenceMetadataFields.CREATED.field_name
     return max(lg_part[created_date_key] for lg_part in dynamo_response)
+
+
+def get_total_file_size(filepaths: list[str]) -> int:
+    # Return the sum of a list of files (unit: byte)
+    return sum(os.path.getsize(filepath) for filepath in filepaths)
 
 
 def upload_stitched_lg_record_and_retrieve_presign_url(

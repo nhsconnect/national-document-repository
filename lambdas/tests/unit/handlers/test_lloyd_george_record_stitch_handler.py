@@ -13,7 +13,13 @@ from utils.lambda_response import ApiGatewayResponse
 
 
 def test_respond_200_with_presign_url(
-    valid_id_event, context, set_env, mock_dynamo_db, mock_s3, mock_stitch_pdf
+    valid_id_event,
+    context,
+    set_env,
+    mock_dynamo_db,
+    mock_s3,
+    mock_stitch_pdf,
+    mock_get_total_file_size,
 ):
     actual = lambda_handler(valid_id_event, context)
 
@@ -21,6 +27,7 @@ def test_respond_200_with_presign_url(
         "number_of_files": 3,
         "last_updated": "2023-10-02T09:46:17.231923Z",
         "presign_url": MOCK_PRESIGNED_URL_RESPONSE,
+        "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
     }
     expected = ApiGatewayResponse(
         200, json.dumps(expected_response_object), "GET"
@@ -37,6 +44,7 @@ def test_aws_services_are_correctly_called(
     mock_s3,
     mock_stitch_pdf,
     mock_tempfile,
+    mock_get_total_file_size,
 ):
     lambda_handler(joe_bloggs_event, context)
 
@@ -181,6 +189,7 @@ MOCK_LG_DYNAMODB_RESPONSE = {
 }
 
 MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"
+MOCK_TOTAL_FILE_SIZE = 1024 * 256
 
 
 @pytest.fixture
@@ -220,3 +229,12 @@ def joe_bloggs_event():
         "queryStringParameters": {"patientId": "1234567890"},
     }
     return api_gateway_proxy_event
+
+
+@pytest.fixture
+def mock_get_total_file_size():
+    with patch(
+        "handlers.lloyd_george_record_stitch_handler.get_total_file_size"
+    ) as patched:
+        patched.return_value = MOCK_TOTAL_FILE_SIZE
+        yield patched
