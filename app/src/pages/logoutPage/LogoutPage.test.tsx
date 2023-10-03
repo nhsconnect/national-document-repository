@@ -1,38 +1,117 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import LogoutPage from './LogoutPage';
-import { useNavigate } from 'react-router';
-import logout from '../../helpers/requests/logout';
+import { createMemoryHistory } from 'history';
+import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
+import { buildUserAuth } from '../../helpers/test/testBuilders';
+import * as ReactRouter from 'react-router';
+import axios from 'axios';
 import { routes } from '../../types/generic/routes';
-const mockNavigate = useNavigate as jest.Mock<typeof useNavigate>;
+jest.mock('axios');
+const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-jest.mock('../../providers/sessionProvider/SessionProvider', () => ({
-    useSessionContext: jest.fn(),
-}));
+describe('logoutPage', () => {
+    const currentPage = '/example';
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+    });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
 
-// describe('logoutPage', () => {
-//     it('Displays a spinner', () => {
-//         render(<LogoutPage />);
+    it('returns a loading state until logout redirect', () => {
+        renderLogoutPage();
+        const status = 'Logging out...';
+        expect(screen.getByRole('Spinner', { name: status })).toBeInTheDocument();
+    });
 
-//         expect(screen.getByRole('Spinner').toBeInTheDocument());
-//     });
-//     it('Makes a call to the logout endpoint', async () => {
-//         await render(<LogoutPage />);
-//         expect(logout).toHaveBeenCalled();
-//         expect(screen.getByRole('Spinner').toBeInTheDocument());
-//     });
-//     it('Clears the local session and forwards the user to the start page when a 200 response is recieved', async () => {
-//         const mockNavigate = jest.fn();
-//         const mockUseNavigate = jest.fn();
-//         useSessionContext.mockReturnValue([{}, setSessionMock]);
-//         mockNavigate.mockImplementation(() => mockUseNavigate);
+    it('navigates to the home page when logout is successful', async () => {
+        const history = createMemoryHistory({
+            initialEntries: [currentPage],
+            initialIndex: 0,
+        });
+        const func = jest.fn();
+        const successResponse = {
+            response: {
+                status: 200,
+            },
+        };
 
-//         await render(<LogoutPage />);
+        mockedAxios.get.mockImplementation(() => Promise.resolve(successResponse));
+        renderLogoutPage(history);
+        expect(history.location.pathname).toBe(currentPage);
 
-//         expect(setSessionMock).toHaveBeenCalledWith({
-//             auth: null,
-//             isLoggedIn: false,
-//         });
+        await waitFor(() => {
+            expect(history.location.pathname).toBe(routes.HOME);
+        });
+    });
 
-//         expect(useNavigate).toHaveBeenCalledWith(routes.HOME);
-//     });
-// });
+    it('navigates to the previous page when logout fails', async () => {
+        const previousPage = '/previous';
+        const history = createMemoryHistory({
+            initialEntries: [previousPage, currentPage],
+            initialIndex: 1,
+        });
+        const errorResponse = {
+            response: {
+                status: 500,
+            },
+        };
+
+        mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+        renderLogoutPage(history);
+        expect(history.location.pathname).toBe(currentPage);
+
+        await waitFor(() => {
+            expect(history.location.pathname).toBe(previousPage);
+        });
+    });
+
+    it('clears the session from session provider', async () => {
+        const history = createMemoryHistory({
+            initialEntries: [currentPage],
+            initialIndex: 0,
+        });
+        const mockSetSession = jest.fn();
+        Storage.prototype.setItem = jest.fn();
+        const successResponse = {
+            response: {
+                status: 200,
+            },
+        };
+        const auth: Session = {
+            auth: buildUserAuth(),
+            isLoggedIn: true,
+        };
+        mockedAxios.get.mockImplementation(() => Promise.resolve(successResponse));
+        renderLogoutPage(history, auth, mockSetSession);
+
+        await waitFor(() => {
+            expect(mockSetSession).toHaveBeenCalledWith({
+                auth: null,
+                isLoggedIn: false,
+            });
+        });
+    });
+});
+
+const renderLogoutPage = (
+    history = createMemoryHistory({
+        initialEntries: ['/'],
+        initialIndex: 0,
+    }),
+    authOverride?: Partial<Session>,
+    setSessionOverride = jest.fn(),
+) => {
+    const auth: Session = {
+        auth: buildUserAuth(),
+        isLoggedIn: true,
+        ...authOverride,
+    };
+    render(
+        <ReactRouter.Router navigator={history} location={'/'}>
+            <SessionProvider sessionOverride={auth} setSessionOverride={setSessionOverride}>
+                <LogoutPage />
+            </SessionProvider>
+        </ReactRouter.Router>,
+    );
+};

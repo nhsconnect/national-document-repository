@@ -9,11 +9,9 @@ import { AxiosError } from 'axios';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import logout, { Args } from '../../helpers/requests/logout';
 
-type Props = {};
-
-const AuthCallbackPage = (props: Props) => {
+const LogoutPage = () => {
     const baseUrl = useBaseAPIUrl();
-    const [session, setSession] = useSessionContext();
+    const [, setSession] = useSessionContext();
     const navigate = useNavigate();
     const baseHeaders = useBaseAPIHeaders('authorizationToken');
 
@@ -48,4 +46,4 @@ const AuthCallbackPage = (props: Props) => {
     return <Spinner status="Logging out..." />;
 };
 
-export default AuthCallbackPage;
+export default LogoutPage;
