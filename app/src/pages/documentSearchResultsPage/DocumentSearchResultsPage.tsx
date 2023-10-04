@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { SearchResult } from '../../types/generic/searchResult';
@@ -29,7 +29,7 @@ function DocumentSearchResultsPage() {
     const handleUpdateDownloadState = (newState: SUBMISSION_STATE) => {
         setDownloadState(newState);
     };
-
+    const mounted = useRef(false);
     useEffect(() => {
         const search = async () => {
             setSubmissionState(SUBMISSION_STATE.PENDING);
@@ -50,8 +50,9 @@ function DocumentSearchResultsPage() {
                 }
                 setSubmissionState(SUBMISSION_STATE.FAILED);
             }
+            mounted.current = true;
         };
-        if (searchResults && searchResults.length > 0 && nhsNumber) {
+        if (!mounted.current) {
             void search();
         }
     }, [
