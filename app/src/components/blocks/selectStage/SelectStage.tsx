@@ -56,7 +56,7 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                                 const doesPassRegex = lgRegex.exec(currentFile.name);
                                 const doFilesTotalMatch =
                                     expectedNumberOfFiles &&
-                                    value.length == parseInt(expectedNumberOfFiles[0].slice(2));
+                                    value.length === parseInt(expectedNumberOfFiles[0].slice(2));
                                 const isFileNumberBiggerThanTotal =
                                     expectedNumberOfFiles &&
                                     parseInt(currentFile.name.split(lgFilesNumber)[0]) >
@@ -64,7 +64,7 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                                 const isFileNumberZero =
                                     currentFile.name.split(lgFilesNumber)[0] === '0';
                                 const doesFileNameMatchEachOther =
-                                    currentFile.name.split(lgFilesNumber)[1] ==
+                                    currentFile.name.split(lgFilesNumber)[1] ===
                                     value[0].file.name.split(lgFilesNumber)[1];
                                 if (
                                     !doesPassRegex ||
