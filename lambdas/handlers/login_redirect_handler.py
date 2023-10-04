@@ -4,11 +4,10 @@ import time
 
 import boto3
 from botocore.exceptions import ClientError
-from oauthlib.oauth2 import WebApplicationClient, InsecureTransportError
-
+from oauthlib.oauth2 import InsecureTransportError, WebApplicationClient
+from services.dynamo_service import DynamoDBService
 from utils.get_aws_region import get_aws_region
 from utils.lambda_response import ApiGatewayResponse
-from services.dynamo_service import DynamoDBService
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

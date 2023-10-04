@@ -8,7 +8,6 @@ import boto3
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
-
 from models.oidc_models import IdTokenClaimSet
 from services.dynamo_service import DynamoDBService
 from services.ods_api_service import OdsApiService
@@ -89,8 +88,7 @@ def have_matching_state_value_in_record(state: str) -> bool:
 
     db_service = DynamoDBService()
     query_response = db_service.simple_query(
-        table_name=state_table_name,
-        key_condition_expression=Key("State").eq(state)
+        table_name=state_table_name, key_condition_expression=Key("State").eq(state)
     )
     return "Count" in query_response and query_response["Count"] > 0
 
@@ -107,7 +105,9 @@ def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
     }
 
     dynamodb_service = DynamoDBService()
-    dynamodb_service.post_item_service(table_name=session_table_name, item=session_record)
+    dynamodb_service.post_item_service(
+        table_name=session_table_name, item=session_record
+    )
 
     return session_id
 

@@ -1,10 +1,9 @@
-from handlers.logout_handler import lambda_handler
-from utils.lambda_response import ApiGatewayResponse
-from jwt.exceptions import PyJWTError
 from botocore.exceptions import ClientError
-from tests.unit.helpers.ssm_responses import (
-    MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE,
-)
+from handlers.logout_handler import lambda_handler
+from jwt.exceptions import PyJWTError
+from tests.unit.helpers.ssm_responses import \
+    MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE
+from utils.lambda_response import ApiGatewayResponse
 
 
 def test_logout_handler_valid_jwt_returns_200(mocker, monkeypatch):

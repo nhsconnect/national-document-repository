@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class SupportedDocumentTypes(Enum):
     ARF = "ARF", "#arf"
     LG = "LG", "#lg"
@@ -10,17 +11,11 @@ class SupportedDocumentTypes(Enum):
 
     @staticmethod
     def list():
-        return [
-            SupportedDocumentTypes.ARF,
-            SupportedDocumentTypes.LG
-        ]
+        return [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG]
 
     @staticmethod
     def list_names():
-        return [
-            SupportedDocumentTypes.ARF.name,
-            SupportedDocumentTypes.LG.name
-        ]
+        return [SupportedDocumentTypes.ARF.name, SupportedDocumentTypes.LG.name]
 
     @staticmethod
     def get_from_field_name(enum_value):
@@ -28,5 +23,3 @@ class SupportedDocumentTypes(Enum):
             if supported_document_type.name == enum_value:
                 return supported_document_type
         return None
-        
-        
