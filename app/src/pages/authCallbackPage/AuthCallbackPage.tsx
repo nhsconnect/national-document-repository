@@ -13,7 +13,7 @@ type Props = {};
 
 const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
-    const [session, setSession] = useSessionContext();
+    const [, setSession] = useSessionContext();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -35,7 +35,6 @@ const AuthCallbackPage = (props: Props) => {
                     navigate(routes.SELECT_ORG);
                 } else {
                     navigate(routes.HOME);
-                    console.error(e);
                 }
             }
         };

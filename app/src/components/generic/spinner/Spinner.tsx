@@ -6,7 +6,7 @@ type Props = {
 
 const Spinner = ({ status }: Props) => {
     return (
-        <div className="nhsuk-loader" role="Spinner" aria-label={status}>
+        <div className="nhsuk-loader" aria-label={status}>
             <span className="nhsuk-loader__text" role="status">
                 {status}
             </span>

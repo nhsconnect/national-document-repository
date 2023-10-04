@@ -21,7 +21,7 @@ describe('logoutPage', () => {
     it('returns a loading state until logout redirect', () => {
         renderLogoutPage();
         const status = 'Logging out...';
-        expect(screen.getByRole('Spinner', { name: status })).toBeInTheDocument();
+        expect(screen.getByText(status)).toBeInTheDocument();
     });
 
     it('navigates to the home page when logout is successful', async () => {
