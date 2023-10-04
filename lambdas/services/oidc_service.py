@@ -28,8 +28,6 @@ class OidcService:
     def __init__(self):
         oidc_parameters = self.fetch_oidc_parameters()
 
-        # logger.info(f"Initialising OIDC service with parameter: {oidc_parameters}")
-
         self._client_id = oidc_parameters["OIDC_CLIENT_ID"]
         self._client_secret = oidc_parameters["OIDC_CLIENT_SECRET"]
         self._oidc_issuer_url = oidc_parameters["OIDC_ISSUER_URL"]
