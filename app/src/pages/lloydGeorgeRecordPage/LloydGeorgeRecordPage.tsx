@@ -55,7 +55,6 @@ function LloydGeorgeRecordPage() {
                             nhsNumber,
                             baseUrl,
                         });
-                    // TODO: validate the return values from getLloydGeorgeRecord
                     if (presign_url?.startsWith('https://')) {
                         setNumberOfFiles(number_of_files);
                         setLastUpdated(getFormattedDatetime(new Date(last_updated)));

@@ -31,23 +31,30 @@ describe('LloydGeorgeRecordPage', () => {
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
     });
 
-    // it('renders LG card with no docs available text if there is no LG record', async () => {
-    //       const errorResponse = {
-    //             response: {
-    //                 status: 404,
-    //                 message: '404 no docs found',
-    //             },
-    //         };
-    //       mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
-    //
-    //     renderPage();
-    //
-    //      await waitFor(() => {
-    //          expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
-    //          expect(screen.getByText('No documents are available')).toBeInTheDocument();
-    //          expect(screen.queryByText('View record')).not.toBeInTheDocument();
-    //      });
-    // });
+    it('LG card with title', async () => {
+        renderPage();
+
+        expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+    });
+
+    it('renders LG card with no docs available text if there is no LG record', async () => {
+        const errorResponse = {
+            response: {
+                status: 404,
+                message: '404 no docs found',
+            },
+        };
+
+        mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+        renderPage();
+
+        await waitFor(() => {
+            expect(screen.getByText('No documents are available')).toBeInTheDocument();
+        });
+
+        expect(screen.queryByText('View record')).not.toBeInTheDocument();
+    });
 
     it('displays Loading... until the pdf is rendered', async () => {
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
