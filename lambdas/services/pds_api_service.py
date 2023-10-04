@@ -2,8 +2,11 @@ import json
 
 from models.pds_models import Patient, PatientDetails
 from requests.models import Response
-from utils.exceptions import (InvalidResourceIdException,
-                              PatientNotFoundException, PdsErrorException)
+from utils.exceptions import (
+    InvalidResourceIdException,
+    PatientNotFoundException,
+    PdsErrorException,
+)
 from utils.utilities import validate_id
 
 

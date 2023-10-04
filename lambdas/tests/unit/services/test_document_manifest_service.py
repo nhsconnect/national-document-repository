@@ -1,9 +1,14 @@
 from models.document import Document
 from services.document_manifest_service import DocumentManifestService
-from tests.unit.conftest import (MOCK_BUCKET, MOCK_ZIP_OUTPUT_BUCKET,
-                                 MOCK_ZIP_TRACE_TABLE, TEST_DOCUMENT_LOCATION,
-                                 TEST_FILE_NAME, TEST_NHS_NUMBER,
-                                 TEST_VIRUS_SCANNER_RESULT)
+from tests.unit.conftest import (
+    MOCK_BUCKET,
+    MOCK_ZIP_OUTPUT_BUCKET,
+    MOCK_ZIP_TRACE_TABLE,
+    TEST_DOCUMENT_LOCATION,
+    TEST_FILE_NAME,
+    TEST_NHS_NUMBER,
+    TEST_VIRUS_SCANNER_RESULT,
+)
 
 MOCK_DOCUMENTS = [
     Document(

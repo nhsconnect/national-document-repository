@@ -3,8 +3,11 @@ from models.pds_models import PatientDetails
 from requests.models import Response
 from services.pds_api_service import PdsApiService
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
-from utils.exceptions import (InvalidResourceIdException,
-                              PatientNotFoundException, PdsErrorException)
+from utils.exceptions import (
+    InvalidResourceIdException,
+    PatientNotFoundException,
+    PdsErrorException,
+)
 
 pds_service = PdsApiService()
 

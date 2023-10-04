@@ -1,10 +1,19 @@
 from datetime import datetime, timezone
-
+from models.config import conf
+from pydantic import BaseModel, ValidationError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 
 
+class UploadRequestDocument(BaseModel):
+    fileName: str
+    contentType: str
+    docType: str
+
+
 class NHSDocumentReference:
-    def __init__(self, nhs_number, content_type, file_name, reference_id, s3_bucket_name) -> None:
+    def __init__(
+            self, nhs_number, content_type, file_name, reference_id, s3_bucket_name
+    ) -> None:
         self.id = reference_id
         self.nhs_number = nhs_number
         self.content_type = content_type
@@ -45,13 +54,13 @@ class NHSDocumentReference:
 
     def __eq__(self, other):
         return (
-            self.id == other.id
-            and self.nhs_number == other.nhs_number
-            and self.content_type == other.content_type
-            and self.file_name == other.file_name
-            and self.created == other.created
-            and self.deleted == other.deleted
-            and self.uploaded == other.uploaded
-            and self.virus_scanner_result == other.virus_scan_result
-            and self.file_location == other.file_location
+                self.id == other.id
+                and self.nhs_number == other.nhs_number
+                and self.content_type == other.content_type
+                and self.file_name == other.file_name
+                and self.created == other.created
+                and self.deleted == other.deleted
+                and self.uploaded == other.uploaded
+                and self.virus_scanner_result == other.virus_scan_result
+                and self.file_location == other.file_location
         )

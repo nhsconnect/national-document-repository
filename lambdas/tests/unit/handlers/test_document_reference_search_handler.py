@@ -2,9 +2,11 @@ import json
 
 from botocore.exceptions import ClientError
 from handlers.document_reference_search_handler import lambda_handler
-from tests.unit.helpers.data.dynamo_responses import (EXPECTED_RESPONSE,
-                                                      MOCK_EMPTY_RESPONSE,
-                                                      MOCK_RESPONSE)
+from tests.unit.helpers.data.dynamo_responses import (
+    EXPECTED_RESPONSE,
+    MOCK_EMPTY_RESPONSE,
+    MOCK_RESPONSE,
+)
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 
