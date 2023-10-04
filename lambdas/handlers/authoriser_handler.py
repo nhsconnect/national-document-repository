@@ -22,7 +22,6 @@ from boto3.dynamodb.conditions import Key
 from enums.permitted_role import PermittedRole
 from services.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
-
 from utils.get_aws_region import get_aws_region
 
 logger = logging.getLogger()
@@ -54,12 +53,14 @@ def lambda_handler(event, context):
 
     except AuthorisationException as e:
         logger.error(e)
-    except botocore.exceptions.ClientError as e:
-        logger.error(e)
+        logger.error("failed to authenticate user")
+        return deny_all_response(event)
     except jwt.PyJWTError as e:
         logger.error(f"error while decoding JWT: {e}")
-    except (KeyError, IndexError) as e:
+        return deny_all_response(event)
+    except (botocore.exceptions.ClientError, KeyError, IndexError) as e:
         logger.error(e)
+        return deny_all_response(event)
 
     principal_id = ""
     _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
@@ -85,6 +86,21 @@ def lambda_handler(event, context):
     return auth_response
 
 
+def deny_all_response(event):
+    _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
+    api_id, stage, http_verb, resource_name = api_gateway_arn.split("/")
+
+    policy = AuthPolicy("", aws_account_id)
+    policy.restApiId = api_id
+    policy.region = region
+    policy.stage = stage
+    policy.denyAllMethods()
+
+    auth_response = policy.build()
+
+    return auth_response
+
+
 def redact_id(session_id: str) -> str:
     # Extract the last 4 chars of session id for logging, as it was in ARF
     return session_id[-4:]
@@ -98,7 +114,7 @@ def find_login_session(ndr_session_id):
     db_service = DynamoDBService()
     query_response = db_service.simple_query(
         table_name=session_table_name,
-        key_condition_expression=Key("NDRSessionId").eq(ndr_session_id)
+        key_condition_expression=Key("NDRSessionId").eq(ndr_session_id),
     )
 
     try:
