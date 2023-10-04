@@ -53,16 +53,25 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
                                     return 'One or more of the files do not match the required file type. Please check the file(s) and try again';
                                 }
                                 const expectedNumberOfFiles = currentFile.name.match(lgFilesNumber);
+                                const doesPassRegex = lgRegex.exec(currentFile.name);
+                                const doFilesTotalMatch =
+                                    expectedNumberOfFiles &&
+                                    value.length == parseInt(expectedNumberOfFiles[0].slice(2));
+                                const isFileNumberBiggerThanTotal =
+                                    expectedNumberOfFiles &&
+                                    parseInt(currentFile.name.split(lgFilesNumber)[0]) >
+                                        parseInt(expectedNumberOfFiles[0].slice(2));
+                                const isFileNumberZero =
+                                    currentFile.name.split(lgFilesNumber)[0] === '0';
+                                const doesFileNameMatchEachOther =
+                                    currentFile.name.split(lgFilesNumber)[1] ==
+                                    value[0].file.name.split(lgFilesNumber)[1];
                                 if (
-                                    !lgRegex.exec(currentFile.name) ||
-                                    (!!expectedNumberOfFiles &&
-                                        (value.length !==
-                                            parseInt(expectedNumberOfFiles[0].slice(2)) ||
-                                            parseInt(currentFile.name.split(lgFilesNumber)[0]) >
-                                                parseInt(expectedNumberOfFiles[0].slice(2)))) ||
-                                    currentFile.name.split(lgFilesNumber)[1] !==
-                                        value[0].file.name.split(lgFilesNumber)[1] ||
-                                    currentFile.name.split(lgFilesNumber)[0] === '0'
+                                    !doesPassRegex ||
+                                    !doFilesTotalMatch ||
+                                    isFileNumberBiggerThanTotal ||
+                                    isFileNumberZero ||
+                                    !doesFileNameMatchEachOther
                                 ) {
                                     return 'One or more of the files do not match the required filename format. Please check the file(s) and try again';
                                 }
