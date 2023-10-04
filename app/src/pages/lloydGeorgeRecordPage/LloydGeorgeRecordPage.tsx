@@ -70,16 +70,7 @@ function LloydGeorgeRecordPage() {
             };
             void search();
         }
-    }, [
-        patientDetails,
-        baseUrl,
-        navigate,
-        setDownloadStage,
-        setLloydGeorgeUrl,
-        setLastUpdated,
-        setNumberOfFiles,
-        setTotalFileSizeInByte,
-    ]);
+    }, [patientDetails, baseUrl, navigate]);
 
     const pdfCardDescription = (
         <>
