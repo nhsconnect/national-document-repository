@@ -14,7 +14,7 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    token = event["headers"]["authorizationToken"]
+    token = event["headers"]["X-Auth"]
     return logout_handler(token)
 
 
