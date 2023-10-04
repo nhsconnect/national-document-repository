@@ -44,6 +44,7 @@ const navigateToUploadPage = () => {
 
     cy.get('#search-submit').click();
     cy.wait('@search');
+    cy.get('#inactive-radio-button').click();
     cy.get('#verify-submit').click();
 };
 
