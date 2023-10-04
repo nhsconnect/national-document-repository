@@ -2,110 +2,98 @@ from tests.unit.conftest import TEST_NHS_NUMBER
 
 MOCK_EVENT_BODY = {
     "resourceType": "DocumentReference",
-    "subject": {
-        "identifier": {
-            "value": TEST_NHS_NUMBER
-        }
-    },
+    "subject": {"identifier": {"value": TEST_NHS_NUMBER}},
     "content": [
         {
             "attachment": [
                 {
                     "fileName": "test1.txt",
                     "contentType": "text/plain",
-                    "docType": "ARF"
+                    "docType": "ARF",
                 },
                 {
                     "fileName": "test2.txt",
                     "contentType": "text/plain",
-                    "docType": "ARF"
+                    "docType": "ARF",
                 },
                 {
                     "fileName": "test3.txt",
                     "contentType": "text/plain",
-                    "docType": "ARF"
+                    "docType": "ARF",
                 },
                 {
-                    "fileName": "1of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
+                    "fileName": f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
-                    "docType": "LG"
+                    "docType": "LG",
                 },
                 {
-                    "fileName": "2of3_Lloyd_George_Record_[Joe Test]_[1254563891]_[25-12-2019].pdf",
+                    "fileName": f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
-                    "docType": "LG"
+                    "docType": "LG",
                 },
                 {
-                    "fileName": "3of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
+                    "fileName": f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
-                    "docType": "LG"
+                    "docType": "LG",
                 },
             ]
         }
     ],
-    "created": "2023-10-02T15:55:30.650Z"
+    "created": "2023-10-02T15:55:30.650Z",
 }
 
 LG_MOCK_EVENT_BODY = {
     "resourceType": "DocumentReference",
-    "subject": {
-        "identifier": {
-            "value": TEST_NHS_NUMBER
-        }
-    },
+    "subject": {"identifier": {"value": TEST_NHS_NUMBER}},
     "content": [
         {
             "attachment": [
                 {
-                    "fileName": "1of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
+                    "fileName": f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
-                    "docType": "LG"
+                    "docType": "LG",
                 },
                 {
-                    "fileName": "2of3_Lloyd_George_Record_[Joe Test]_[1254563891]_[25-12-2019].pdf",
+                    "fileName": f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
-                    "docType": "LG"
+                    "docType": "LG",
                 },
                 {
-                    "fileName": "3of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
+                    "fileName": f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
-                    "docType": "LG"
+                    "docType": "LG",
                 },
             ]
         }
     ],
-    "created": "2023-10-02T15:55:30.650Z"
+    "created": "2023-10-02T15:55:30.650Z",
 }
 
 ARF_MOCK_EVENT_BODY = {
     "resourceType": "DocumentReference",
-    "subject": {
-        "identifier": {
-            "value": TEST_NHS_NUMBER
-        }
-    },
+    "subject": {"identifier": {"value": TEST_NHS_NUMBER}},
     "content": [
         {
             "attachment": [
                 {
                     "fileName": "test1.txt",
                     "contentType": "text/plain",
-                    "docType": "ARF"
+                    "docType": "ARF",
                 },
                 {
                     "fileName": "test2.txt",
                     "contentType": "text/plain",
-                    "docType": "ARF"
+                    "docType": "ARF",
                 },
                 {
                     "fileName": "test3.txt",
                     "contentType": "text/plain",
-                    "docType": "ARF"
+                    "docType": "ARF",
                 },
             ]
         }
     ],
-    "created": "2023-10-02T15:55:30.650Z"
+    "created": "2023-10-02T15:55:30.650Z",
 }
 
 MOCK_PRESIGNED_POST_RESPONSE = {
@@ -125,19 +113,19 @@ LG_AND_ARF_MOCK_RESPONSE = {
     "test1.txt": MOCK_PRESIGNED_POST_RESPONSE,
     "test2.txt": MOCK_PRESIGNED_POST_RESPONSE,
     "test3.txt": MOCK_PRESIGNED_POST_RESPONSE,
-    "1of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
-    "2of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
-    "3of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE
+    f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
+    f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
+    f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
 }
 
 ARF_MOCK_RESPONSE = {
     "test1.txt": MOCK_PRESIGNED_POST_RESPONSE,
     "test2.txt": MOCK_PRESIGNED_POST_RESPONSE,
-    "test3.txt": MOCK_PRESIGNED_POST_RESPONSE
+    "test3.txt": MOCK_PRESIGNED_POST_RESPONSE,
 }
 
 LG_MOCK_RESPONSE = {
-    "1of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
-    "2of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
-    "3of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE
+    f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
+    f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
+    f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
 }

@@ -1,11 +1,10 @@
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from handlers.document_manifest_by_nhs_number_handler import (
-    lambda_handler,
-    query_documents,
-)
+from handlers.document_manifest_by_nhs_number_handler import (lambda_handler,
+                                                              query_documents)
 from services.dynamo_service import DynamoDBService
 from tests.unit.conftest import MOCK_TABLE_NAME, TEST_NHS_NUMBER
-from tests.unit.helpers.data.dynamo_responses import MOCK_MANIFEST_QUERY_RESPONSE
+from tests.unit.helpers.data.dynamo_responses import \
+    MOCK_MANIFEST_QUERY_RESPONSE
 from tests.unit.helpers.data.test_documents import TEST_DS_DOCS, TEST_LG_DOCS
 from utils.lambda_response import ApiGatewayResponse
 

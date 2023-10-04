@@ -6,11 +6,8 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.document import Document
 from services.document_manifest_service import DocumentManifestService
 from services.dynamo_service import DynamoDBService
-from utils.exceptions import (
-    DynamoDbException,
-    InvalidResourceIdException,
-    ManifestDownloadException,
-)
+from utils.exceptions import (DynamoDbException, InvalidResourceIdException,
+                              ManifestDownloadException)
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import validate_id
 

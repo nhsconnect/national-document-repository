@@ -5,10 +5,11 @@ import sys
 import uuid
 from json import JSONDecodeError
 
-from pydantic import ValidationError
 from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
-from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
+from models.nhs_document_reference import (NHSDocumentReference,
+                                           UploadRequestDocument)
+from pydantic import ValidationError
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.exceptions import InvalidResourceIdException
@@ -48,7 +49,8 @@ def lambda_handler(event, context):
             ).create_api_gateway_response()
 
         upload_request_documents: list[UploadRequestDocument] = [
-            UploadRequestDocument.model_validate(doc) for doc in body["content"][0]["attachment"]
+            UploadRequestDocument.model_validate(doc)
+            for doc in body["content"][0]["attachment"]
         ]
 
         logger.info("Processed upload documents from request")
@@ -126,7 +128,9 @@ def lambda_handler(event, context):
         except ClientError as e:
             logger.error(str(e))
             response = ApiGatewayResponse(
-                500, "An error occurred when creating pre-signed url for document reference", "POST"
+                500,
+                "An error occurred when creating pre-signed url for document reference",
+                "POST",
             ).create_api_gateway_response()
             return response
 
@@ -135,15 +139,17 @@ def lambda_handler(event, context):
         if arf_documents:
             logger.info("Writing ARF document references")
             # TODO - Replace with dynamo batch writing
-            for document in arf_documents: dynamo_service.post_item_service(arf_dynamo_table, document.to_dict())
+            for document in arf_documents:
+                dynamo_service.post_item_service(arf_dynamo_table, document.to_dict())
         if lg_documents:
             logger.info("Writing LG document references")
             # TODO - Replace with dynamo batch writing
-            for document in lg_documents: dynamo_service.post_item_service(lg_dynamo_table, document.to_dict())
+            for document in lg_documents:
+                dynamo_service.post_item_service(lg_dynamo_table, document.to_dict())
     except ClientError as e:
         logger.error(str(e))
         response = ApiGatewayResponse(
-            500, f"An error occurred when writing document references: {str(e)}", "POST"
+            500, "An error occurred when creating document reference", "POST"
         ).create_api_gateway_response()
         return response
 

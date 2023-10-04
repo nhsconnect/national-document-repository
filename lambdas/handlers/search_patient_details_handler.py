@@ -3,11 +3,8 @@ from json import JSONDecodeError
 
 from pydantic import ValidationError
 from services.pds_api_service import PdsApiService
-from utils.exceptions import (
-    InvalidResourceIdException,
-    PatientNotFoundException,
-    PdsErrorException,
-)
+from utils.exceptions import (InvalidResourceIdException,
+                              PatientNotFoundException, PdsErrorException)
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
