@@ -37,7 +37,7 @@ def logout_handler(token):
     except (jwt.PyJWTError, KeyError) as e:
         logger.error(f"error while decoding JWT: {e}")
         return ApiGatewayResponse(
-            400, "Invalid authorizationToken", "GET"
+            400, "Invalid X-Auth header", "GET"
         ).create_api_gateway_response()
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 
