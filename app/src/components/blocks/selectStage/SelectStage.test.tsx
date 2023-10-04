@@ -155,11 +155,7 @@ describe('<UploadDocumentsPage />', () => {
                 userEvent.upload(screen.getByTestId(`LG-input`), lgFileWithBadType);
             });
 
-            expect(
-                screen.getByText(
-                    '1of2000_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf',
-                ),
-            ).toBeInTheDocument();
+            expect(screen.getByText(lgFileWithBadType.name)).toBeInTheDocument();
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
@@ -180,11 +176,7 @@ describe('<UploadDocumentsPage />', () => {
                 userEvent.upload(screen.getByTestId(`LG-input`), lgExtraFile);
             });
 
-            expect(
-                screen.getByText(
-                    '3of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf',
-                ),
-            ).toBeInTheDocument();
+            expect(screen.getByText(lgExtraFile.name)).toBeInTheDocument();
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
@@ -206,7 +198,61 @@ describe('<UploadDocumentsPage />', () => {
                 userEvent.upload(screen.getByTestId(`LG-input`), pdfFileWithBadName);
             });
 
-            expect(screen.getByText('test_not_up_to_naming_conventions.pdf')).toBeInTheDocument();
+            expect(screen.getByText(pdfFileWithBadName.name)).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByText('Upload'));
+            });
+
+            expect(
+                await screen.findByText(
+                    'One or more of the files do not match the required filename format. Please check the file(s) and try again',
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it('does not upload LG form if selected file number is bigger than number of total files', async () => {
+            renderSelectStage(setDocumentMock);
+            const pdfFileWithBadNumber = buildLgFile(2, 1);
+            act(() => {
+                userEvent.upload(screen.getByTestId(`LG-input`), pdfFileWithBadNumber);
+            });
+
+            expect(screen.getByText(pdfFileWithBadNumber.name)).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByText('Upload'));
+            });
+
+            expect(
+                await screen.findByText(
+                    'One or more of the files do not match the required filename format. Please check the file(s) and try again',
+                ),
+            ).toBeInTheDocument();
+        });
+
+        it('does not upload LG form if files do not match each other', async () => {
+            renderSelectStage(setDocumentMock);
+            const joeBloggsFile = new File(
+                ['test'],
+                `1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf`,
+                {
+                    type: 'application/pdf',
+                },
+            );
+            const johnSmithFile = new File(
+                ['test'],
+                `2of2_Lloyd_George_Record_[John Smith]_[9876543210]_[25-12-2019].pdf`,
+                {
+                    type: 'application/pdf',
+                },
+            );
+            act(() => {
+                userEvent.upload(screen.getByTestId(`LG-input`), [joeBloggsFile, johnSmithFile]);
+            });
+
+            expect(screen.getByText(joeBloggsFile.name)).toBeInTheDocument();
+            expect(screen.getByText(johnSmithFile.name)).toBeInTheDocument();
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
@@ -226,11 +272,7 @@ describe('<UploadDocumentsPage />', () => {
                 userEvent.upload(screen.getByTestId(`LG-input`), [lgDocumentTwo, lgDocumentTwo]);
             });
 
-            expect(
-                screen.getAllByText(
-                    '2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf',
-                ),
-            ).toHaveLength(2);
+            expect(screen.getAllByText(lgDocumentTwo.name)).toHaveLength(2);
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
