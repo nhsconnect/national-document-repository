@@ -13,7 +13,7 @@ const LogoutPage = () => {
     const baseUrl = useBaseAPIUrl();
     const [, setSession] = useSessionContext();
     const navigate = useNavigate();
-    const baseHeaders = useBaseAPIHeaders('authorizationToken');
+    const baseHeaders = useBaseAPIHeaders('X-Auth');
 
     useEffect(() => {
         const args: Args = { baseUrl, baseHeaders };
