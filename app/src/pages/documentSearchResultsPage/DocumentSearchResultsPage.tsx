@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { SearchResult } from '../../types/generic/searchResult';
@@ -22,6 +22,7 @@ function DocumentSearchResultsPage() {
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.INITIAL);
     const [downloadState, setDownloadState] = useState(SUBMISSION_STATE.INITIAL);
     const [nhsNumber, setNhsNumber] = useState(String);
+    const patientMemo = useMemo(() => patientDetails, [patientDetails]);
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
@@ -30,7 +31,7 @@ function DocumentSearchResultsPage() {
     };
 
     useEffect(() => {
-        const patientNhsNumber: string = patientDetails?.nhsNumber || '';
+        const patientNhsNumber: string = patientMemo?.nhsNumber || '';
         setNhsNumber(patientNhsNumber);
 
         const search = async () => {
@@ -59,7 +60,7 @@ function DocumentSearchResultsPage() {
         };
 
         void search();
-    }, [patientDetails, setSearchResults, setSubmissionState, navigate, baseUrl, baseHeaders]);
+    }, [patientMemo, setSearchResults, setSubmissionState, navigate, baseUrl, baseHeaders]);
 
     return (
         <>
