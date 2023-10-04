@@ -41,7 +41,7 @@ def test_logout_handler_invalid_jwt_returns_400(mocker, monkeypatch):
     )
 
     expected = ApiGatewayResponse(
-        400, "Invalid X-Auth header", "GET"
+        400, "Invalid x-auth header", "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), None)
@@ -64,7 +64,7 @@ def test_logout_handler_jwt_without_ndr_session_id_returns_400(mocker, monkeypat
     )
 
     expected = ApiGatewayResponse(
-        400, "Invalid X-Auth header", "GET"
+        400, "Invalid x-auth header", "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), None)
@@ -104,4 +104,4 @@ def test_logout_handler_boto_error_returns_500(mocker, monkeypatch):
 
 
 def build_event_from_token(token: str) -> dict:
-    return {"headers": {"X-Auth": token}}
+    return {"headers": {"x-auth": token}}
