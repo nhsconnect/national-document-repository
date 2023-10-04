@@ -11,10 +11,10 @@ import ProgressBar from '../../components/generic/progressBar/ProgressBar';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
 
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
-import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import DocumentSearchResultsOptions from '../../components/blocks/documentSearchResultsOptions/DocumentSearchResultsOptions';
 import { AxiosError } from 'axios';
 import getDocumentSearchResults from '../../helpers/requests/documentSearchResults';
+import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 function DocumentSearchResultsPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -25,7 +25,6 @@ function DocumentSearchResultsPage() {
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-
     const handleUpdateDownloadState = (newState: SUBMISSION_STATE) => {
         setDownloadState(newState);
     };
@@ -60,7 +59,7 @@ function DocumentSearchResultsPage() {
         };
 
         void search();
-    }, [patientDetails, baseHeaders, setSearchResults, setSubmissionState, navigate, baseUrl]);
+    }, [patientDetails, setSearchResults, setSubmissionState, navigate, baseUrl, baseHeaders]);
 
     return (
         <>
