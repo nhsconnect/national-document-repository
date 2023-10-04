@@ -18,6 +18,7 @@ const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
             },
         ],
         authorisation_token: '111xxx222',
+        ...userAuthOverride,
     };
     return auth;
 };
