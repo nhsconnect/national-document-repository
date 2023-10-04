@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { SearchResult } from '../../types/generic/searchResult';
@@ -18,11 +18,11 @@ import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 function DocumentSearchResultsPage() {
     const [patientDetails] = usePatientDetailsContext();
-    const [searchResults, setSearchResults] = useState(Array<SearchResult>);
+
+    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.INITIAL);
     const [downloadState, setDownloadState] = useState(SUBMISSION_STATE.INITIAL);
-    const [nhsNumber, setNhsNumber] = useState(String);
-    const patientMemo = useMemo(() => patientDetails, [patientDetails]);
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
@@ -31,23 +31,16 @@ function DocumentSearchResultsPage() {
     };
 
     useEffect(() => {
-        const patientNhsNumber: string = patientMemo?.nhsNumber || '';
-        setNhsNumber(patientNhsNumber);
-
         const search = async () => {
             setSubmissionState(SUBMISSION_STATE.PENDING);
-            setSearchResults([]);
 
             try {
                 const results = await getDocumentSearchResults({
-                    nhsNumber: patientNhsNumber,
+                    nhsNumber,
                     baseUrl,
                     baseHeaders,
                 });
-
-                if (results && results.length > 0) {
-                    setSearchResults(results);
-                }
+                setSearchResults(results);
 
                 setSubmissionState(SUBMISSION_STATE.SUCCEEDED);
             } catch (e) {
@@ -58,9 +51,19 @@ function DocumentSearchResultsPage() {
                 setSubmissionState(SUBMISSION_STATE.FAILED);
             }
         };
-
-        void search();
-    }, [patientMemo, setSearchResults, setSubmissionState, navigate, baseUrl, baseHeaders]);
+        if (searchResults && searchResults.length > 0 && nhsNumber) {
+            void search();
+        }
+    }, [
+        patientDetails,
+        searchResults,
+        nhsNumber,
+        setSearchResults,
+        setSubmissionState,
+        navigate,
+        baseUrl,
+        baseHeaders,
+    ]);
 
     return (
         <>
