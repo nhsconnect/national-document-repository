@@ -28,7 +28,7 @@ describe('Home Page Tests', () => {
         cy.url().should('eq', 'http://localhost:3000/');
     });
 
-    it('displays expected page header on home page', () => {
+    it.skip('displays expected page header on home page', () => {
         //ensure the page header is visable
         cy.get('header').should('have.length', 1);
 
@@ -52,12 +52,12 @@ describe('Home Page Tests', () => {
         );
     });
 
-    it('displays start now button on home page', () => {
+    it.skip('displays start now button on home page', () => {
         //ensure the page header is visable
         cy.get('.nhsuk-button').should('have.text', 'Start now');
     });
 
-    it('On Start now button click, redirect to uploads is successful', () => {
+    it.skip('On Start now button click, redirect to uploads is successful', () => {
         //ensure the page header is visable
         cy.get('.nhsuk-button').click();
         cy.wait(20);

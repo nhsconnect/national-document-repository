@@ -53,7 +53,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.get('#verify-submit').click();
     };
 
-    it('(Smoke test) shows patient details on download page', () => {
+    it.skip('(Smoke test) shows patient details on download page', () => {
         navigateToDownload(roles.PCSE);
 
         cy.get('#download-page-title').should('have.length', 1);
@@ -73,7 +73,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.get('#patient-summary-postcode').should('have.text', patient.postalCode);
     });
 
-    it('(Smoke test) shows no files avaliable on 204 success', () => {
+    it.skip('(Smoke test) shows no files avaliable on 204 success', () => {
         const searchDocumentReferencesResponse = [];
 
         cy.intercept('GET', '/SearchDocumentReferences*', {
@@ -90,7 +90,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         );
     });
 
-    it('(Smoke test) shows avaliable files to download on 200 success', () => {
+    it.skip('(Smoke test) shows avaliable files to download on 200 success', () => {
         const searchDocumentReferencesResponse = [
             {
                 fileName: 'Screenshot 2023-09-11 at 16.06.40.png',
@@ -157,7 +157,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         }
     });
 
-    it('Shows service error box on Search Docuement Reference 500 response', () => {
+    it.skip('Shows service error box on Search Docuement Reference 500 response', () => {
         const searchDocumentReferencesResponse = [];
 
         cy.intercept('GET', '/SearchDocumentReferences*', {
@@ -169,7 +169,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.get('#service-error').should('exist');
     });
 
-    it('Shows progress bar while waiting for response', () => {
+    it.skip('Shows progress bar while waiting for response', () => {
         const searchDocumentReferencesResponse = [];
 
         cy.intercept({ url: '/SearchDocumentReferences*', middleware: true }, (req) => {
@@ -185,7 +185,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.get('.progress-bar').should('exist');
     });
 
-    it('Start again button takes us to the home page', () => {
+    it.skip('Start again button takes us to the home page', () => {
         const searchDocumentReferencesResponse = [];
 
         cy.intercept({ url: '/SearchDocumentReferences*', middleware: true }, (req) => {

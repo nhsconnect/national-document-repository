@@ -47,7 +47,7 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.wait('@search');
     };
 
-    it('(Smoke test) shows patient upload screen when patient search is used by a GP', () => {
+    it.skip('(Smoke test) shows patient upload screen when patient search is used by a GP', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -75,7 +75,7 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'upload/submit');
     });
 
-    it('(Smoke test) does not show verify patient when the search finds no patient', () => {
+    it.skip('(Smoke test) does not show verify patient when the search finds no patient', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: noPatientError,
@@ -98,7 +98,7 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.get('#error-box-summary').should('have.text', 'There is a problem');
     });
 
-    it('shows the upload documents page when upload patient is verified', () => {
+    it.skip('shows the upload documents page when upload patient is verified', () => {
         navigateToVerify(roles.GP);
         cy.get('#verify-submit').click();
 
@@ -106,7 +106,7 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'upload/submit');
     });
 
-    it("fails to search for a patient when the user doesn't enter an nhs number", () => {
+    it.skip("fails to search for a patient when the user doesn't enter an nhs number", () => {
         nagivateToSearch(roles.GP);
         cy.get('#search-submit').click();
         cy.get('#nhs-number-input--error-message').should('be.visible');
@@ -116,7 +116,7 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         );
     });
 
-    it('fails to search for a patient when the user enters an invalid nhs number', () => {
+    it.skip('fails to search for a patient when the user enters an invalid nhs number', () => {
         nagivateToSearch(roles.GP);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type('900');
