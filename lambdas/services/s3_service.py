@@ -11,7 +11,7 @@ logger.setLevel(logging.INFO)
 class S3Service:
     def __init__(self):
         config = BotoConfig(retries={"max_attempts": 3, "mode": "standard"})
-        self.client = boto3.client("s3", region_name="eu-west-2", config=config)
+        self.client = boto3.client("s3", config=config)
         self.presigned_url_expiry = 1800
 
     # S3 Location should be a minimum of a s3_object_key but can also be a directory location in the form of
