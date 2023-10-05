@@ -94,11 +94,11 @@ const uploadDocument = async ({
     } catch (e) {
         const error = e as AxiosError;
         if (error.response?.status === 403) {
-            documents.map((document) => {
+            documents.forEach((document) => {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
             });
         } else {
-            documents.map((document) => {
+            documents.forEach((document) => {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
             });
         }
