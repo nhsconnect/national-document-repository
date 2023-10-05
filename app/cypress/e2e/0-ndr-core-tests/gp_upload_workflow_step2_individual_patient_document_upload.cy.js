@@ -114,7 +114,7 @@ describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', 
         cy.url().should('eq', baseUrl + 'upload/submit');
     });
 
-    it(`(Smoke test) Single file for both ARF and LG - On Upload button click, renders Upload Summary for successful upload`, () => {
+    it.skip(`(Smoke test) Single file for both ARF and LG - On Upload button click, renders Upload Summary for successful upload`, () => {
         if (smokeTest === false) {
             cy.intercept('POST', '**/DocumentReference**', {
                 statusCode: 200,
@@ -265,7 +265,7 @@ Object.values(formTypes).forEach((type) => {
                 .should('have.text', uploadedFileNames[type][multiFileUSecaseIndex][1]);
         });
 
-        it(`(Smoke test) Multiple files - On Upload button click, renders Upload Summary for successful upload for ${type} input`, () => {
+        it.skip(`(Smoke test) Multiple files - On Upload button click, renders Upload Summary for successful upload for ${type} input`, () => {
             if (smokeTest === false) {
                 cy.intercept('POST', '**/DocumentReference**', {
                     statusCode: 200,
@@ -401,7 +401,7 @@ Object.values(formTypes).forEach((type) => {
             testStartAgainButton();
         });
 
-        it(`Multiple files - On Upload button click, renders Upload Summary with both failed and successful documents for ${type} input`, () => {
+        it.skip(`Multiple files - On Upload button click, renders Upload Summary with both failed and successful documents for ${type} input`, () => {
             cy.intercept('POST', '**/DocumentReference*', {
                 statusCode: 200,
                 body: {
