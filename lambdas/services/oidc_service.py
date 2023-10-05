@@ -34,7 +34,6 @@ class OidcService:
         self._oidc_userinfo_url = oidc_parameters["OIDC_USER_INFO_URL"]
         self._oidc_callback_uri = oidc_parameters["OIDC_CALLBACK_URL"]
         self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
-        self.scope = "openid profile nationalrbacaccess associatedorgs"
 
         self.oidc_client = WebApplicationClient(client_id=self._client_id)
 
