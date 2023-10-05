@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import { useNavigate } from 'react-router';
-import { routes } from '../../types/generic/routes';
 import { Card, Details } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
@@ -75,6 +74,7 @@ function LloydGeorgeRecordPage() {
     }, [
         patientDetails,
         baseUrl,
+        baseHeaders,
         navigate,
         setDownloadStage,
         setLloydGeorgeUrl,
