@@ -46,7 +46,7 @@ env:
 zip:
 	rm -rf ./lambdas/package_$(lambda_name) || true 
 	mkdir ./lambdas/package_$(lambda_name)
-	./lambdas/venv/bin/pip3 install --cache-dir .pip_cache -r lambdas/requirements.txt -t ./lambdas/package_$(lambda_name)
+	./lambdas/venv/bin/pip3 install --platform manylinux2014_x86_64 --only-binary=:all: --implementation cp  -r lambdas/requirements.txt -t ./lambdas/package_$(lambda_name)
 	mkdir ./lambdas/package_$(lambda_name)/handlers
 	cp -r lambdas/handlers/$(lambda_name).py lambdas/package_$(lambda_name)/handlers
 	cp -r lambdas/utils lambdas/package_$(lambda_name)
