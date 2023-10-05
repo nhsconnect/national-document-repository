@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { SearchResult } from '../../types/generic/searchResult';
@@ -14,41 +14,33 @@ import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import DocumentSearchResultsOptions from '../../components/blocks/documentSearchResultsOptions/DocumentSearchResultsOptions';
 import { AxiosError } from 'axios';
 import getDocumentSearchResults from '../../helpers/requests/documentSearchResults';
+import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 function DocumentSearchResultsPage() {
     const [patientDetails] = usePatientDetailsContext();
-    const [searchResults, setSearchResults] = useState(Array<SearchResult>);
+
+    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.INITIAL);
     const [downloadState, setDownloadState] = useState(SUBMISSION_STATE.INITIAL);
-    const [nhsNumber, setNhsNumber] = useState(String);
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
-
+    const baseHeaders = useBaseAPIHeaders();
     const handleUpdateDownloadState = (newState: SUBMISSION_STATE) => {
         setDownloadState(newState);
     };
-
+    const mounted = useRef(false);
     useEffect(() => {
-        if (!patientDetails?.nhsNumber) {
-            navigate(routes.HOME);
-        }
-
-        const patientNhsNumber: string = patientDetails?.nhsNumber || '';
-        setNhsNumber(patientNhsNumber);
-
         const search = async () => {
             setSubmissionState(SUBMISSION_STATE.PENDING);
-            setSearchResults([]);
 
             try {
                 const results = await getDocumentSearchResults({
-                    nhsNumber: patientNhsNumber,
-                    baseUrl: baseUrl,
+                    nhsNumber,
+                    baseUrl,
+                    baseHeaders,
                 });
-
-                if (results && results.length > 0) {
-                    setSearchResults(results);
-                }
+                setSearchResults(results);
 
                 setSubmissionState(SUBMISSION_STATE.SUCCEEDED);
             } catch (e) {
@@ -58,10 +50,21 @@ function DocumentSearchResultsPage() {
                 }
                 setSubmissionState(SUBMISSION_STATE.FAILED);
             }
+            mounted.current = true;
         };
-
-        void search();
-    }, [patientDetails, setSearchResults, setSubmissionState, navigate, baseUrl]);
+        if (!mounted.current) {
+            void search();
+        }
+    }, [
+        patientDetails,
+        searchResults,
+        nhsNumber,
+        setSearchResults,
+        setSubmissionState,
+        navigate,
+        baseUrl,
+        baseHeaders,
+    ]);
 
     return (
         <>

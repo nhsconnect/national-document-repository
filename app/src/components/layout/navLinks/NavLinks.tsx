@@ -2,20 +2,29 @@ import React from 'react';
 import type { MouseEvent as ReactEvent } from 'react';
 import { Header } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
+import { routes } from '../../../types/generic/routes';
+import { useSessionContext } from '../../../providers/sessionProvider/SessionProvider';
 
 const NavLinks = () => {
-    const isLoggedIn = true;
     const navigate = useNavigate();
+    const [session] = useSessionContext();
 
-    const navigateRoot = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
+    const nav = (e: ReactEvent<HTMLAnchorElement, MouseEvent>, link: string) => {
         e.preventDefault();
-        navigate('/');
+        navigate(link);
     };
 
-    return isLoggedIn ? (
+    return session.isLoggedIn ? (
         <Header.Nav>
-            <Header.NavItem role="link" onClick={navigateRoot}>
+            <Header.NavItem role="link" className="clickable" onClick={(e) => nav(e, routes.HOME)}>
                 Home
+            </Header.NavItem>
+            <Header.NavItem
+                role="link"
+                className="clickable"
+                onClick={(e) => nav(e, routes.LOGOUT)}
+            >
+                Log Out
             </Header.NavItem>
         </Header.Nav>
     ) : null;

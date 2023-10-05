@@ -18,20 +18,14 @@ function PatientResultPage({ role }: Props) {
     const userIsGP = role === USER_ROLE.GP;
     const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
-
     const [inputError, setInputError] = useState('');
     const { register, handleSubmit, formState, getFieldState } = useForm();
     const { ref: patientStatusRef, ...radioProps } = register('patientStatus');
     const { isDirty: isPatientStatusDirty } = getFieldState('patientStatus', formState);
 
-    useEffect(() => {
-        if (!patientDetails) {
-            navigate(routes.HOME);
-        }
-    }, [patientDetails, navigate]);
-
     const submit = (fieldValues: FieldValues) => {
         if (userIsGP) {
+            // Make PDS patient search request to upload documents to patient
             if (!isPatientStatusDirty) {
                 setInputError('Select a patient status');
                 return;
