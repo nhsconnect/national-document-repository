@@ -54,7 +54,7 @@ function HomePage(props: Props) {
             <h2>Before You Start</h2>
             <p>You can only use this service if you have a valid NHS smartcard.</p>
             <ButtonLink role="button" id="start-button" onClick={handleLogin}>
-                Start Now
+                Start now
             </ButtonLink>
             {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
                 process.env.REACT_APP_ENVIRONMENT === 'development' ||
