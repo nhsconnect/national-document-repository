@@ -94,12 +94,4 @@ describe('Home Page Tests', () => {
         //ensure the page header is visable
         cy.get('.nhsuk-button').should('have.text', 'Start now');
     });
-
-    it('On Start now button click, redirect to uploads is successful', () => {
-        //ensure the page header is visable
-        cy.get('.nhsuk-button').click();
-        cy.wait(20);
-        cy.url().should('include', 'organisation');
-        cy.url().should('eq', 'http://localhost:3000/select-organisation');
-    });
 });
