@@ -24,10 +24,6 @@ function HomePage(props: Props) {
             window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
         }
     };
-    const navigateLogin = (e: MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-        navigate(routes.SELECT_ORG);
-    };
     return !isLoading ? (
         <>
             <h1>Inactive Patient Record Administration</h1>
@@ -58,9 +54,6 @@ function HomePage(props: Props) {
             <h2>Before You Start</h2>
             <p>You can only use this service if you have a valid NHS smartcard.</p>
             <ButtonLink role="button" id="start-button" onClick={handleLogin}>
-                CIS2 Login
-            </ButtonLink>
-            <ButtonLink role="button" id="start-button" onClick={navigateLogin}>
                 Start Now
             </ButtonLink>
             {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
