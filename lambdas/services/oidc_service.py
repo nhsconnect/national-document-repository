@@ -9,7 +9,6 @@ from models.oidc_models import AccessToken, IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
 from requests import Response
 from utils.exceptions import AuthorisationException
-from utils.get_aws_region import get_aws_region
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -128,7 +127,7 @@ class OidcService:
             "OIDC_JWKS_URL",
         ]
 
-        ssm_client = boto3.client("ssm", region_name=get_aws_region())
+        ssm_client = boto3.client("ssm")
         ssm_response = ssm_client.get_parameters(
             Names=parameters_names, WithDecryption=True
         )

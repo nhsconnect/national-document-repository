@@ -22,7 +22,6 @@ from enums.permitted_role import PermittedRole
 from models.auth_policy import AuthPolicy, HttpVerb
 from services.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
-from utils.get_aws_region import get_aws_region
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -33,7 +32,7 @@ def lambda_handler(event, context):
         user_roles = []
         ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
 
-        client = boto3.client("ssm", region_name=get_aws_region())
+        client = boto3.client("ssm")
         ssm_response = client.get_parameter(
             Name=ssm_public_key_parameter_name, WithDecryption=True
         )

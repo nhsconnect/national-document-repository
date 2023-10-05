@@ -9,10 +9,8 @@ or in the "license" file accompanying this file.
 This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and limitations under the License.
 """
+import os
 import re
-
-from utils.get_aws_region import get_aws_region
-
 
 class HttpVerb:
     GET = "GET"
@@ -34,7 +32,7 @@ class AuthPolicy(object):
     denyMethods = []
 
     restApiId = "<<restApiId>"
-    region = get_aws_region()
+    region = os.getenv("AWS_DEFAULT_REGION", "eu-west-2")
     stage = "dev"
 
     def __init__(self, principal, awsAccountId):
