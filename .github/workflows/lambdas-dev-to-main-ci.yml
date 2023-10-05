@@ -338,7 +338,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_LoginRedirectHandler
+          function_name: ${{ vars.BUILD_ENV }_LoginRedirectHandler
           zip_file: package_lambdas_login_redirect_handler.zip
 
   python_deploy_authoriser_lambda:
@@ -385,7 +385,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_AuthoriserLambda
+          function_name: ${{ vars.BUILD_ENV }_AuthoriserLambda
           zip_file: package_lambdas_authoriser_handler.zip
 
   python_deploy_token_lambda:
@@ -432,7 +432,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_TokenRequestHandlerLambda
+          function_name: ${{ vars.BUILD_ENV }_TokenRequestHandlerLambda
           zip_file: package_lambdas_token_handler.zip
 
   python_deploy_logout_handler_lambda:
@@ -479,5 +479,5 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_LogoutHandler
+          function_name: ${{ vars.BUILD_ENV }_LogoutHandler
           zip_file: package_lambdas_logout_handler.zip
