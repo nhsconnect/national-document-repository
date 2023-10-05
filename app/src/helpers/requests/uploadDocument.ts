@@ -6,8 +6,9 @@ import {
     UploadDocument,
 } from '../../types/pages/UploadDocumentsPage/types';
 import axios, { AxiosError } from 'axios';
+import { S3Upload, S3UploadFields, UploadResult } from '../../types/generic/uploadResult';
 
-type Args = {
+type UploadDocumentsArgs = {
     setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
     documents: UploadDocument[];
     nhsNumber: string;
@@ -16,13 +17,23 @@ type Args = {
     docType: DOCUMENT_TYPE;
 };
 
+type UploadDocumentsToS3Args = {
+    setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
+    documents: UploadDocument[];
+    data: UploadResult;
+};
+
+type gatewayResponse = {
+    data: UploadResult;
+};
+
 const uploadDocument = async ({
     nhsNumber,
     setDocumentState,
     documents,
     baseUrl,
     baseHeaders,
-}: Args) => {
+}: UploadDocumentsArgs) => {
     const docDetails = (document: UploadDocument) => {
         setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
         return {
@@ -58,7 +69,7 @@ const uploadDocument = async ({
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_UPLOAD;
 
     try {
-        const { data: gatewayResponse } = await axios.post(
+        const { data }: gatewayResponse = await axios.post(
             gatewayUrl,
             JSON.stringify(requestBody),
             {
@@ -67,11 +78,35 @@ const uploadDocument = async ({
                 },
             },
         );
-        documents.map(async (document) => {
-            const docGatewayResponse = gatewayResponse[document.file.name];
+        await uploadDocumentsToS3({ setDocumentState, documents, data });
+    } catch (e) {
+        const error = e as AxiosError;
+        if (error.response?.status === 403) {
+            documents.forEach((document) => {
+                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
+            });
+            return;
+        } else {
+            documents.forEach((document) => {
+                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
+            });
+            return;
+        }
+    }
+};
+
+const uploadDocumentsToS3 = async ({
+    setDocumentState,
+    documents,
+    data,
+}: UploadDocumentsToS3Args) => {
+    for (const document of documents) {
+        try {
+            const docGatewayResponse: S3Upload = data[document.file.name];
             const formData = new FormData();
-            Object.keys(docGatewayResponse.fields).forEach((key) => {
-                formData.append(key, docGatewayResponse.fields[key]);
+            const docFields: S3UploadFields = docGatewayResponse.fields;
+            Object.keys(docFields).forEach((key) => {
+                formData.append(key, docFields.key);
             });
             formData.append('file', document.file);
             const s3url = docGatewayResponse.url;
@@ -90,17 +125,13 @@ const uploadDocument = async ({
 
             if (s3Response.status === 204)
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
-        });
-    } catch (e) {
-        const error = e as AxiosError;
-        if (error.response?.status === 403) {
-            documents.forEach((document) => {
+        } catch (e) {
+            const error = e as AxiosError;
+            if (error.response?.status === 403) {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
-            });
-        } else {
-            documents.forEach((document) => {
+            } else {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
-            });
+            }
         }
     }
 };
