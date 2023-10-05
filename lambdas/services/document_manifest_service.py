@@ -46,10 +46,8 @@ class DocumentManifestService:
 
     def download_documents_to_be_zipped(self):
         logger.info("Downloading documents to be zipped")
-
         file_names_to_be_zipped = {}
 
-        logger.info(f"Temp directory contents {os.listdir(self.temp_downloads_dir)}")
         for document in self.documents:
             file_name = document.file_name
 
@@ -97,15 +95,10 @@ class DocumentManifestService:
             file_key=f"{self.zip_file_name}",
         )
 
+        logger.info("Writing zip trace to db")
         zip_trace = ZipTrace(
             self.zip_file_name,
             f"s3://{self.zip_output_bucket}/{self.zip_file_name}",
         )
 
         self.dynamo_service.post_item_service(self.zip_trace_table, zip_trace.to_dict())
-
-        response = self.s3_service.create_download_presigned_url(
-            self.zip_output_bucket, self.zip_file_name
-        )
-
-        return response

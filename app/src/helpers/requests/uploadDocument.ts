@@ -1,3 +1,5 @@
+import { AuthHeaders } from '../../types/blocks/authHeaders';
+import { endpoints } from '../../types/generic/endpoints';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -10,10 +12,17 @@ type Args = {
     document: UploadDocument;
     nhsNumber: string;
     baseUrl: string;
+    baseHeaders: AuthHeaders;
     docType: DOCUMENT_TYPE;
 };
 
-const uploadDocument = async ({ nhsNumber, setDocumentState, document, baseUrl }: Args) => {
+const uploadDocument = async ({
+    nhsNumber,
+    setDocumentState,
+    document,
+    baseUrl,
+    baseHeaders,
+}: Args) => {
     const rawDoc = document.file;
     const requestBody = {
         resourceType: 'DocumentReference',
@@ -43,7 +52,7 @@ const uploadDocument = async ({ nhsNumber, setDocumentState, document, baseUrl }
     };
 
     setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
-    const gatewayUrl = baseUrl + '/DocumentReference';
+    const gatewayUrl = baseUrl + endpoints.DOCUMENT_UPLOAD;
 
     try {
         const { data: gatewayResponse } = await axios.post(
@@ -51,7 +60,7 @@ const uploadDocument = async ({ nhsNumber, setDocumentState, document, baseUrl }
             JSON.stringify(requestBody),
             {
                 headers: {
-                    'Content-Type': 'application/json',
+                    ...baseHeaders,
                 },
                 params: {
                     documentType: document.docType,

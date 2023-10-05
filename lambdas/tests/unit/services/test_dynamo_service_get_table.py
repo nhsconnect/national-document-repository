@@ -4,6 +4,7 @@ import boto3
 import pytest
 from botocore.exceptions import ClientError
 from services.dynamo_service import DynamoDBService
+from tests.unit.conftest import MOCK_TABLE_NAME
 from tests.unit.helpers.data.dynamo_responses import MOCK_RESPONSE
 
 
@@ -26,7 +27,7 @@ def test_when_table_exists_then_table_is_returned_successfully(
 
         db_service = DynamoDBService()
         actual = db_service.get_table(
-            "test_table",
+            MOCK_TABLE_NAME,
         )
 
         assert mock_dynamo_table == actual
@@ -42,7 +43,7 @@ def test_when_table_does_not_exists_then_exception_is_raised(
 
         db_service = DynamoDBService()
         actual = db_service.get_table(
-            "test_table",
+            MOCK_TABLE_NAME,
         )
 
         assert expected_response == actual

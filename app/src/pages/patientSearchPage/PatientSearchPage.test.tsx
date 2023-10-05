@@ -9,6 +9,7 @@ import userEvent from '@testing-library/user-event';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import axios from 'axios';
 import { routes } from '../../types/generic/routes';
+jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 

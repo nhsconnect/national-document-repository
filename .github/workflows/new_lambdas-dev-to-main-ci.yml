@@ -1,0 +1,43 @@
+name: "(NEW) Lambdas - CI Feature to Main"
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "lambdas/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "lambdas/**"
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  run_tests:
+    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+    with:
+      environment: development
+      python_version: 3.11
+      build_branch: main
+
+  deploy_all_lambdas:
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
+    needs: ["run_tests"]
+    if: |
+      (github.ref == 'refs/heads/main') 
+    with:
+      environment: development
+      python_version: "3.11"
+      build_branch: main
+      sandbox: ndr-dev
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  
+
+        

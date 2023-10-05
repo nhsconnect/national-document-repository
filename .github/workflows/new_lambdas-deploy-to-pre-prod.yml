@@ -1,0 +1,63 @@
+name: "(NEW) Lambdas - Deploy and Version Main to Pre-Prod"
+
+on:
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  run_tests:
+    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+    with:
+      environment: pre-prod
+      python_version: "3.11"
+      build_branch: main
+  
+  tag_and_release:
+    needs: ["run_tests"]
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    outputs:
+      tag: ${{steps.versioning.outputs.tag}}
+      new_tag: ${{steps.versioning.outputs.new_tag}}
+    defaults:
+      run:
+        working-directory: ./lambdas
+    permissions: write-all
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ env.BUILD_BRANCH }}
+        fetch-depth: '0'
+
+    - name: Bump version and push tag
+      id: versioning
+      uses: anothrNick/github-tag-action@1.64.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: false
+        DEFAULT_BUMP: patch
+    
+    - name: View outputs
+      run: |
+        echo Current tag: ${{steps.versioning.outputs.tag}} 
+        echo New tag: ${{steps.versioning.outputs.new_tag}}
+
+  deploy_all:
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
+    needs: ["run_tests", "tag_and_release"]
+    with:
+      environment: pre-prod
+      python_version: "3.11"
+      build-branch: ${{ needs.tag_and_release.outputs.tag }}
+      sandbox: ndr-pre-prod
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  
+
+        

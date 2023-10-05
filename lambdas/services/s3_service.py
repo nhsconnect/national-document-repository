@@ -1,6 +1,7 @@
 import logging
 
 import boto3
+from botocore.client import Config as BotoConfig
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -8,15 +9,18 @@ logger.setLevel(logging.INFO)
 
 class S3Service:
     def __init__(self):
-        self.client = boto3.client("s3", region_name="eu-west-2")
+        config = BotoConfig(retries={"max_attempts": 3, "mode": "standard"})
+        self.client = boto3.client("s3", region_name="eu-west-2", config=config)
         self.presigned_url_expiry = 1800
 
+    # S3 Location should be a minimum of a s3_object_key but can also be a directory location in the form of
+    # {{directory}}/{{s3_object_key}}
     def create_document_presigned_url_handler(
-        self, s3_bucket_name: str, s3_object_key: str
+        self, s3_bucket_name: str, s3_object_location: str
     ):
         return self.client.generate_presigned_post(
             s3_bucket_name,
-            s3_object_key,
+            s3_object_location,
             Fields=None,
             Conditions=None,
             ExpiresIn=self.presigned_url_expiry,

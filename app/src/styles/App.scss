@@ -22,6 +22,11 @@
         color: $color_nhsuk-black;
         background: $color_nhsuk-yellow;
     }
+    &:disabled {
+        color: $color_nhsuk-black;
+        background: $color_nhsuk-yellow;
+        opacity: 1;
+    }
     &-spinner {
         border: nhsuk-spacing(1) solid rgba($color_nhsuk-white, 0.8);
         border-top: nhsuk-spacing(1) solid $color_nhsuk-black;
@@ -33,6 +38,18 @@
         height: 20px;
         border-radius: 50%;
     }
+}
+
+.spinner-blue {
+    animation: spin 2s linear infinite;
+    border: nhsuk-spacing(3) solid $color_nhsuk-grey-4;
+    border-top: nhsuk-spacing(3) solid tint($color_nhsuk-blue, 15%);
+    display: inline-block;
+    box-sizing: border-box;
+    margin: auto;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
 }
 
 .nhsuk-loader {

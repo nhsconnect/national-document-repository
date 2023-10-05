@@ -75,12 +75,23 @@ const DocumentInputForm = ({
                                 .
                             </li>
                         )}
+                        {formType === DOCUMENT_TYPE.LLOYD_GEORGE && (
+                            <>
+                                <li>
+                                    Each Lloyd George file uploaded must match the following format:
+                                    [PDFnumber]_Lloyd_George_Record_[Patient Name]_[NHS
+                                    Number]_[D.O.B]. For example: 1of2_Lloyd_George_Record_[Joe
+                                    Bloggs]_[123456789]_[25-12-2019]
+                                </li>
+                                <li>You can only upload PDF files</li>
+                            </>
+                        )}
                     </ul>
                 }
             />
             <div role="region" aria-live="polite">
                 {documents && documents.length > 0 && (
-                    <Table caption="Selected documents" id="selected-documents-table">
+                    <Table caption="Chosen files" id="selected-documents-table">
                         <Table.Head>
                             <Table.Row>
                                 <Table.Cell>Filename</Table.Cell>
@@ -111,7 +122,7 @@ const DocumentInputForm = ({
                         </Table.Body>
                     </Table>
                 )}
-                {hasDuplicateFiles && (
+                {hasDuplicateFiles && formType === DOCUMENT_TYPE.ARF && (
                     <WarningCallout>
                         <WarningCallout.Label>Possible duplicate file</WarningCallout.Label>
                         <p>There are two or more documents with the same name.</p>

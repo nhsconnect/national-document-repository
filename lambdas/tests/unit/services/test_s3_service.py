@@ -1,6 +1,6 @@
-import os
-
 from services.s3_service import S3Service
+from tests.unit.conftest import (MOCK_BUCKET, TEST_FILE_KEY, TEST_FILE_NAME,
+                                 TEST_OBJECT_KEY)
 
 MOCK_PRESIGNED_POST_RESPONSE = {
     "url": "https://ndr-dev-document-store.s3.amazonaws.com/",
@@ -28,13 +28,6 @@ MOCK_PRESIGNED_URL_RESPONSE = {
     },
 }
 
-REGION_NAME = "eu-west-2"
-MOCK_BUCKET = "test_s3_bucket"
-MOCK_DYNAMODB = "test_dynamoDB_table"
-TEST_OBJECT_KEY = "1234-4567-8912-HSDF-TEST"
-TEST_FILE_KEY = "test_file_key"
-TEST_FILE_NAME = "test_file_name"
-TEST_DOCUMENT_LOCATION = f"s3://{MOCK_BUCKET}/{TEST_OBJECT_KEY}"
 TEST_DOWNLOAD_PATH = "test_path"
 MOCK_EVENT_BODY = {
     "resourceType": "DocumentReference",
@@ -43,10 +36,8 @@ MOCK_EVENT_BODY = {
     "description": "test_filename.pdf",
 }
 
-os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = MOCK_DYNAMODB
 
-
-def test_create_document_presigned_url(mocker):
+def test_create_document_presigned_url(set_env, mocker):
     mock_generate_presigned_post = mocker.patch(
         "botocore.signers.generate_presigned_post"
     )
@@ -63,7 +54,7 @@ def test_create_document_presigned_url(mocker):
     mock_generate_presigned_post.assert_called_once()
 
 
-def test_create_zip_presigned_url(mocker):
+def test_create_zip_presigned_url(set_env, mocker):
     mock_generate_presigned_url = mocker.patch(
         "botocore.signers.generate_presigned_url"
     )

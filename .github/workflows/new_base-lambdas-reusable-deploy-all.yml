@@ -1,0 +1,94 @@
+name: "BASE: Deploy all required Lambda functions"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      python_version:
+        required: true
+        type: string
+      build_branch:
+        description: "Feature branch to push to test?"
+        required: true
+        type: "string"
+      sandbox:
+        description: "Which Sandbox to push to"
+        required: true
+        type: "string"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+
+  view_action_parameters:
+    name: View Deploy all input variables
+    runs-on: ubuntu-latest
+    steps: 
+    
+      - name: Display client passed variables
+        run: |
+          echo Python Version: ${{ inputs.python_version }}
+          echo Build Branch: ${{ inputs.build_branch }}
+          echo Environment: ${{ inputs.environment }}
+          echo Sandbox: ${{ inputs.sandbox }}
+
+  deploy_create_document_reference_lambda:
+    name: Deploy create_document_reference_lambda
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: create_document_reference_handler
+      lambda_aws_name: CreateDocRefLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+  
+  deploy_search_patient_details_lambda:
+    name: Deploy search_patient_details_lambda
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: search_patient_details_handler
+      lambda_aws_name: SearchPatientDetailsLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_document_reference_search_lambda:
+    name: Deploy document_reference_search_lambda
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: document_reference_search_handler
+      lambda_aws_name: SearchDocumentReferencesLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+  
+  deploy_document_manifest_by_nhs_number_lambda:
+    name: Deploy document_manifest_by_nhs_number_lambda
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: document_manifest_by_nhs_number_handler
+      lambda_aws_name: DocumentManifestByNHSNumberLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+        

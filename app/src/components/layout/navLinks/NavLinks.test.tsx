@@ -1,6 +1,9 @@
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
 import NavLinks from './NavLinks';
+import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
+import { buildUserAuth } from '../../../helpers/test/testBuilders';
+import * as ReactRouter from 'react-router';
+import { createMemoryHistory } from 'history';
 
 describe('NavLinks', () => {
     const oldWindowLocation = window.location;
@@ -17,10 +20,21 @@ describe('NavLinks', () => {
     });
 });
 
-const renderNavWithRouter = () => {
+const renderNavWithRouter = (authOverride?: Partial<Session>) => {
+    const auth: Session = {
+        auth: buildUserAuth(),
+        isLoggedIn: true,
+        ...authOverride,
+    };
+    const history = createMemoryHistory({
+        initialEntries: ['/'],
+        initialIndex: 1,
+    });
     render(
-        <MemoryRouter>
-            <NavLinks />
-        </MemoryRouter>,
+        <ReactRouter.Router navigator={history} location={'/'}>
+            <SessionProvider sessionOverride={auth}>
+                <NavLinks />
+            </SessionProvider>
+        </ReactRouter.Router>,
     );
 };
