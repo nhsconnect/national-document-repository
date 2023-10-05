@@ -16,6 +16,8 @@ import BackButton from '../../components/generic/backButton/BackButton';
 import { AxiosError } from 'axios';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
+import { isMock } from '../../helpers/utils/isLocal';
+import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 type Props = {
     role: USER_ROLE;
@@ -43,10 +45,7 @@ function PatientSearchPage({ role }: Props) {
     const userIsGP = role === USER_ROLE.GP;
     const isError = (statusCode && statusCode >= 500) || !inputError;
     const baseUrl = useBaseAPIUrl();
-
-    const isLocal =
-        !process.env.REACT_APP_ENVIRONMENT || process.env.REACT_APP_ENVIRONMENT === 'local';
-
+    const baseHeaders = useBaseAPIHeaders();
     const handleSuccess = (patientDetails: PatientDetails) => {
         setPatientDetails(patientDetails);
         setSubmissionState(SEARCH_STATES.SUCCEEDED);
@@ -73,11 +72,12 @@ function PatientSearchPage({ role }: Props) {
             const patientDetails = await getPatientDetails({
                 nhsNumber,
                 baseUrl,
+                baseHeaders,
             });
             handleSuccess(patientDetails);
         } catch (e) {
             const error = e as AxiosError;
-            if (isLocal && error.code === 'ERR_NETWORK') {
+            if (isMock(error)) {
                 handleSuccess(buildPatientDetails());
                 return;
             }
