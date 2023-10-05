@@ -31,11 +31,9 @@ def lambda_handler(event, context):
         dynamo_service = DynamoDBService()
 
         logger.info("Retrieving lloyd george documents")
-        lg_documents = query_documents(
+        documents = query_documents(
             dynamo_service, lloyd_george_table_name, nhs_number
         )
-
-        documents = lg_documents + ds_documents
 
         if not documents:
             return ApiGatewayResponse(
