@@ -48,7 +48,6 @@ def lambda_handler(event, context):
         current_session = find_login_session(ndr_session_id)
         validate_login_session(current_session, ndr_session_id)
 
-        # if user has a valid session, assign their role
         user_roles = [org["role"] for org in decoded["organisations"]]
 
     except AuthorisationException as e:

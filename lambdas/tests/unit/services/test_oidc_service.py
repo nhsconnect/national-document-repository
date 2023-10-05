@@ -163,7 +163,6 @@ def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_inva
         oidc_service.fetch_user_org_codes(mock_token)
 
 
-# Below are tests around the validate_and_decode_token method. Involve mocking the CIS2 signing key pairs
 @pytest.fixture(name="mock_id_tokens", scope="session")
 def mock_cis2_public_key_and_id_tokens():
     mock_cis2_private_key = rsa.generate_private_key(

@@ -30,7 +30,7 @@ def prepare_redirect_response(web_application_client_class):
             client_id=oidc_parameters["OIDC_CLIENT_ID"],
         )
 
-        url, headers, body = oidc_client.prepare_authorization_request(
+        url, _headers, _body = oidc_client.prepare_authorization_request(
             authorization_url=oidc_parameters["OIDC_AUTHORISE_URL"],
             redirect_url=os.environ["OIDC_CALLBACK_URL"],
             scope=["openid", "profile", "nationalrbacaccess", "associatedorgs"],
