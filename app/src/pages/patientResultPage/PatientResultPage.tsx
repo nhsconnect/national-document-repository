@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { USER_ROLE } from '../../types/generic/roles';
 import { Button, Fieldset, Radios, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
