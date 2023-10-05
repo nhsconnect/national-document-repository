@@ -43,7 +43,7 @@ function UploadDocumentsPage(props: Props) {
                         nhsNumber: patientDetails.nhsNumber,
                         docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                         setDocumentState,
-                        document,
+                        documents,
                         baseUrl,
                         baseHeaders,
                     }),

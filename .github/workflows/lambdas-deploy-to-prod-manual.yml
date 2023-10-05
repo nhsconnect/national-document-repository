@@ -216,6 +216,171 @@ jobs:
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_DocumentManifestByNHSNumberLambda
           zip_file: package_lambdas_document_manifest_by_nhs_number_handler.zip
 
+  python_deploy_login_redirect_lambda:
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: [ "python_lambdas_test" ]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.tagVersion}}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Login Redirect Handler
+        run: |
+          make lambda_name=login_redirect_handler zip
+
+      - name: Upload Lambda Function for LoginRedirectHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_LoginRedirectHandler
+          zip_file: package_lambdas_login_redirect_handler.zip
+
+
+  python_deploy_authoriser_lambda:
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: [ "python_lambdas_test" ]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.tagVersion}}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Authoriser
+        run: |
+          make lambda_name=authoriser_handler zip
+
+      - name: Upload Lambda Function for AuthoriserLambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_AuthoriserLambda
+          zip_file: package_lambdas_authoriser_handler.zip
+
+  python_deploy_token_lambda:
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: [ "python_lambdas_test" ]
+    strategy:
+      matrix:
+        python-version: [ "3.11" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.tagVersion}}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for TokenRequestHandler
+        run: |
+          make lambda_name=token_handler zip
+
+      - name: Upload Lambda Function for TokenRequestHandlerLambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_TokenRequestHandler
+          zip_file: package_lambdas_token_handler.zip
+
+  python_deploy_logout_handler_lambda:
+    runs-on: ubuntu-latest
+    environment: prod
+    needs: [ "python_lambdas_test" ]
+    strategy:
+      matrix:
+        python-version: [ "3.11" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.tagVersion}}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for LogoutHandler lambda
+        run: |
+          make lambda_name=logout_handler zip
+
+      - name: Upload Lambda Function for LogoutHandler
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_LogoutHandler
+          zip_file: package_lambdas_logout_handler.zip
+
   python_deploy_lloyd_george_record_stitch_lambda:
     runs-on: ubuntu-latest
     environment: prod

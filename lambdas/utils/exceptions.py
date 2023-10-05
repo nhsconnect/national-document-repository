@@ -10,6 +10,18 @@ class PdsErrorException(Exception):
     pass
 
 
+class AuthorisationException(Exception):
+    pass
+
+
+class OrganisationNotFoundException(Exception):
+    pass
+
+
+class OdsErrorException(Exception):
+    pass
+
+
 class DynamoDbException(Exception):
     pass
 
