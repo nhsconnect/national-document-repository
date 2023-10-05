@@ -144,7 +144,7 @@ def test_delete_item(mock_dynamo_table, mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
 
         db_service = DynamoDBService()
-        db_service.delete_item_service("test_table", {"NhsNumber": "0123456789"})
+        db_service.delete_item("test_table", {"NhsNumber": "0123456789"})
 
         mock_boto3_dynamo.Table.assert_called_with("test_table")
         mock_dynamo_table.delete_item.assert_called_with(

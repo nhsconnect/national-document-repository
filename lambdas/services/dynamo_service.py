@@ -109,7 +109,7 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
-    def delete_item_service(self, table_name: str, key: dict):
+    def delete_item(self, table_name: str, key: dict):
         try:
             table = self.get_table(table_name)
             table.delete_item(Key=key)

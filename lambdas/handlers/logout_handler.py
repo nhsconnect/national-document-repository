@@ -54,6 +54,6 @@ def remove_session_from_dynamo_db(session_id):
     logger.info(f"Session to be removed: {session_id}")
     dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
     dynamodb_service = DynamoDBService()
-    dynamodb_service.delete_item_service(
+    dynamodb_service.delete_item(
         key={"NDRSessionId": session_id}, table_name=dynamodb_name
     )
