@@ -7,7 +7,7 @@ import {
 import { PatientDetails } from '../../types/generic/patientDetails';
 import { SearchResult } from '../../types/generic/searchResult';
 import { UserAuth } from '../../types/blocks/userAuth';
-import { LloydGeorgeStitchResult } from '../requests/lloydGeorgeSearchResult';
+import { LloydGeorgeStitchResult } from '../requests/getLloydGeorgeRecord';
 
 const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
     const auth: UserAuth = {

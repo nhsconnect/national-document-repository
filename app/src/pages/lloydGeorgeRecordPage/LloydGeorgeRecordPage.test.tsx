@@ -1,9 +1,14 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
 import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
-import { buildPatientDetails, buildLgSearchResult } from '../../helpers/test/testBuilders';
+import {
+    buildPatientDetails,
+    buildLgSearchResult,
+    buildUserAuth,
+} from '../../helpers/test/testBuilders';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import axios from 'axios';
+import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
 
 jest.mock('axios');
 jest.mock('react-router');
@@ -83,9 +88,16 @@ describe('LloydGeorgeRecordPage', () => {
 });
 
 const renderPage = () => {
+    const auth: Session = {
+        auth: buildUserAuth(),
+        isLoggedIn: true,
+    };
     render(
-        <PatientDetailsProvider patientDetails={mockPatientDetails}>
-            <LloydGeorgeRecordPage />
-        </PatientDetailsProvider>,
+        <SessionProvider sessionOverride={auth}>
+            <PatientDetailsProvider patientDetails={mockPatientDetails}>
+                <LloydGeorgeRecordPage />
+            </PatientDetailsProvider>
+            ,
+        </SessionProvider>,
     );
 };

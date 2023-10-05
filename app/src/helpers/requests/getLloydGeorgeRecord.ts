@@ -1,8 +1,10 @@
 import axios from 'axios';
+import { AuthHeaders } from '../../types/blocks/authHeaders';
 
 type Args = {
     nhsNumber: string;
     baseUrl: string;
+    baseHeaders: AuthHeaders;
 };
 
 export type LloydGeorgeStitchResult = {
@@ -15,12 +17,13 @@ export type LloydGeorgeStitchResult = {
 async function getLloydGeorgeRecord({
     nhsNumber,
     baseUrl,
+    baseHeaders,
 }: Args): Promise<LloydGeorgeStitchResult> {
     const gatewayUrl = baseUrl + '/LloydGeorgeStitch';
 
     const { data } = await axios.get(gatewayUrl, {
         headers: {
-            'Content-Type': 'application/json',
+            ...baseHeaders,
         },
         params: {
             patientId: nhsNumber,

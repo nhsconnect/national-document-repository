@@ -11,7 +11,7 @@ export enum routes {
     DOWNLOAD_DOCUMENTS = '/search/results',
     DELETE_DOCUMENTS = '/search/results/delete',
 
-    LLOYD_GEORGE = '/lloyd-george-record',
+    LLOYD_GEORGE = '/search/patient/lloyd-george-record',
 
     UPLOAD_SEARCH = '/search/upload',
     UPLOAD_VERIFY = '/search/upload/result',

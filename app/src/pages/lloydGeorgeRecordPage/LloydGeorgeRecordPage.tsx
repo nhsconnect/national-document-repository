@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import { Card, Details } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
-import getLloydGeorgeRecord from '../../helpers/requests/lloydGeorgeSearchResult';
+import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import formatFileSize from '../../helpers/utils/formatFileSize';
+import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -20,6 +21,8 @@ function LloydGeorgeRecordPage() {
     const [lloydGeorgeUrl, setLloydGeorgeUrl] = useState('');
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
+    const baseHeaders = useBaseAPIHeaders();
+    const mounted = useRef(false);
 
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
@@ -43,33 +46,42 @@ function LloydGeorgeRecordPage() {
     );
 
     useEffect(() => {
-        if (!patientDetails) {
-            navigate(routes.HOME);
-        } else {
-            const search = async () => {
-                setDownloadStage(DOWNLOAD_STAGE.PENDING);
-                const nhsNumber: string = patientDetails?.nhsNumber || '';
-                try {
-                    const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
-                        await getLloydGeorgeRecord({
-                            nhsNumber,
-                            baseUrl,
-                        });
-                    if (presign_url?.startsWith('https://')) {
-                        setNumberOfFiles(number_of_files);
-                        setLastUpdated(getFormattedDatetime(new Date(last_updated)));
-                        setLloydGeorgeUrl(presign_url);
-                        setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
-                        setTotalFileSizeInByte(total_file_size_in_byte);
-                    }
+        const search = async () => {
+            setDownloadStage(DOWNLOAD_STAGE.PENDING);
+            const nhsNumber: string = patientDetails?.nhsNumber || '';
+            try {
+                const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
+                    await getLloydGeorgeRecord({
+                        nhsNumber,
+                        baseUrl,
+                        baseHeaders,
+                    });
+                if (presign_url?.startsWith('https://')) {
+                    setNumberOfFiles(number_of_files);
+                    setLastUpdated(getFormattedDatetime(new Date(last_updated)));
+                    setLloydGeorgeUrl(presign_url);
                     setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
-                } catch (e) {
-                    setDownloadStage(DOWNLOAD_STAGE.FAILED);
+                    setTotalFileSizeInByte(total_file_size_in_byte);
                 }
-            };
+                setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
+            } catch (e) {
+                setDownloadStage(DOWNLOAD_STAGE.FAILED);
+            }
+            mounted.current = true;
+        };
+        if (!mounted.current) {
             void search();
         }
-    }, [patientDetails, baseUrl, navigate]);
+    }, [
+        patientDetails,
+        baseUrl,
+        navigate,
+        setDownloadStage,
+        setLloydGeorgeUrl,
+        setLastUpdated,
+        setNumberOfFiles,
+        setTotalFileSizeInByte,
+    ]);
 
     const pdfCardDescription = (
         <>
