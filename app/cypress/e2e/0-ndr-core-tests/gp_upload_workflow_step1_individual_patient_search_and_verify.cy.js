@@ -47,7 +47,7 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.wait('@search');
     };
 
-    it.skip('(Smoke test) shows patient upload screen when patient search is used by a GP', () => {
+    it.skip('(Smoke test) shows patient upload screen when patient search is used by a GP and Inactive patient radio button is selected', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -67,8 +67,9 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.get('#gp-message').should('be.visible');
         cy.get('#gp-message').should(
             'have.text',
-            'Ensure these patient details match the electronic health records and attachments you are about to upload.',
+            'Ensure these patient details match the records and attachments that you upload',
         );
+        cy.get('#inactive-radio-button').click();
         cy.get('#verify-submit').click();
 
         cy.url().should('include', 'submit');
@@ -98,8 +99,9 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.get('#error-box-summary').should('have.text', 'There is a problem');
     });
 
-    it.skip('shows the upload documents page when upload patient is verified', () => {
+    it.skip('shows the upload documents page when upload patient is verified and Inactive patient radio button selected', () => {
         navigateToVerify(roles.GP);
+        cy.get('#inactive-radio-button').click();
         cy.get('#verify-submit').click();
 
         cy.url().should('include', 'submit');
