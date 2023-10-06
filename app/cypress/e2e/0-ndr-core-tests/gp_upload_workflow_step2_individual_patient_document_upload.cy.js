@@ -1,6 +1,9 @@
 // env vars
 const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
+beforeEach(() => {
+    cy.visit(baseUrl);
+});
 
 const roles = Object.freeze({
     GP: 'gp',
@@ -25,18 +28,28 @@ const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
 const serverError = 500;
 const successNoContent = 204;
 
-beforeEach(() => {
-    cy.visit(baseUrl);
-});
-
 const selectForm = (formType) => cy.get(`#${formType}-documents-input`);
 
 const navigateToUploadPage = () => {
+    cy.visit(baseUrl + 'auth-callback');
+    cy.intercept('GET', '/Auth/TokenRequest*', {
+        statusCode: 200,
+        body: {
+            organisations: [
+                {
+                    org_name: 'PORTWAY LIFESTYLE CENTRE',
+                    ods_code: 'A470',
+                    role: 'DEV',
+                },
+            ],
+            authorisation_token: '111xxx222',
+        },
+    }).as('auth');
     cy.intercept('GET', '/SearchPatient*', {
         statusCode: 200,
         body: patient,
     }).as('search');
-    cy.get('#start-button').click();
+    cy.wait('@auth');
     cy.get(`#${roles.GP}-radio-button`).click();
     cy.get('#role-submit-button').click();
     cy.get('#nhs-number-input').click();
@@ -44,6 +57,7 @@ const navigateToUploadPage = () => {
 
     cy.get('#search-submit').click();
     cy.wait('@search');
+
     cy.get('#inactive-radio-button').click();
     cy.get('#verify-submit').click();
 };
@@ -96,7 +110,7 @@ beforeEach(() => {
 });
 
 describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => {
-    it.skip('(Smoke test) On Start now button click, redirect to uploads is successful', () => {
+    it('(Smoke test) On Start now button click, redirect to uploads is successful', () => {
         cy.url().should('include', 'upload');
         cy.url().should('eq', baseUrl + 'upload/submit');
     });
@@ -148,7 +162,7 @@ describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', 
 
 Object.values(formTypes).forEach((type) => {
     describe(`[${type}] GP Upload Workflow Step 2: Uploads docs and tests it looks OK`, () => {
-        it.skip(`(Smoke test) Single file - On Choose files button click, file selection is visible for ${type} input`, () => {
+        it(`(Smoke test) Single file - On Choose files button click, file selection is visible for ${type} input`, () => {
             cy.get('#selected-documents-table').should('not.exist');
             selectForm(type).selectFile(uploadedFilePathNames[type][singleFileUsecaseIndex]);
             cy.get('#selected-documents-table').should('be.visible');
@@ -160,7 +174,7 @@ Object.values(formTypes).forEach((type) => {
                 .should('contain.text', uploadedFileNames[type][singleFileUsecaseIndex]);
         });
 
-        it.skip(`Single file - On Upload button click, renders Upload Summary with error box when DocumentReference returns a 500 for ${type} input`, () => {
+        it(`Single file - On Upload button click, renders Upload Summary with error box when DocumentReference returns a 500 for ${type} input`, () => {
             // intercept this response and return an error
             cy.intercept('POST', '*/DocumentReference*', {
                 statusCode: 500,
@@ -184,7 +198,7 @@ Object.values(formTypes).forEach((type) => {
             testStartAgainButton();
         });
 
-        it.skip(`Single file - On Upload button click, renders Upload Summary with error box when DocumentReference returns a 404 for ${type} input`, () => {
+        it(`Single file - On Upload button click, renders Upload Summary with error box when DocumentReference returns a 404 for ${type} input`, () => {
             // intercept this response and return an error
             cy.intercept('POST', '*/DocumentReference*', {
                 statusCode: 404,
@@ -210,7 +224,7 @@ Object.values(formTypes).forEach((type) => {
 
         // once authorisation functionality has been added we can include a test like below for s3 bucket POST failure with 403 status
 
-        it.skip(`Single file - On Upload button click, renders Upload Summary with error box when the s3 bucket POST request fails for ${type} input`, () => {
+        it(`Single file - On Upload button click, renders Upload Summary with error box when the s3 bucket POST request fails for ${type} input`, () => {
             // intercept this response and return an error
             cy.intercept('POST', bucketUrlIdentifer, {
                 statusCode: 500,
@@ -234,7 +248,7 @@ Object.values(formTypes).forEach((type) => {
             testStartAgainButton();
         });
 
-        it.skip(`(Smoke test) Multiple files - On Choose files button click, file selection is visible for ${type} input`, () => {
+        it(`(Smoke test) Multiple files - On Choose files button click, file selection is visible for ${type} input`, () => {
             cy.get('#selected-documents-table').should('not.exist');
             selectForm(type).selectFile(uploadedFilePathNames[type][multiFileUSecaseIndex]);
             cy.get('#selected-documents-table').should('be.visible');
@@ -292,7 +306,7 @@ Object.values(formTypes).forEach((type) => {
             testStartAgainButton();
         });
 
-        it.skip(`(Smoke test) Multiple files - On Upload button click, renders Uploading Stage for ${type} input`, () => {
+        it(`(Smoke test) Multiple files - On Upload button click, renders Uploading Stage for ${type} input`, () => {
             cy.intercept('POST', '**/DocumentReference*', (req) => {
                 req.reply({
                     statusCode: 200,
@@ -320,7 +334,7 @@ Object.values(formTypes).forEach((type) => {
             cy.get('#upload-stage-warning').should('be.visible');
         });
 
-        it.skip(`Multiple files - On Upload button click, renders Upload Summary with error box when DocumentReference returns a 500 for ${type} input`, () => {
+        it(`Multiple files - On Upload button click, renders Upload Summary with error box when DocumentReference returns a 500 for ${type} input`, () => {
             // intercept this response and return an error
             cy.intercept('POST', '*/DocumentReference*', {
                 statusCode: 500,
@@ -354,7 +368,7 @@ Object.values(formTypes).forEach((type) => {
             testStartAgainButton();
         });
 
-        it.skip(`Multiple files - On Upload button click, renders Upload Summary with error box when DocumentReference returns a 404 for ${type} input`, () => {
+        it(`Multiple files - On Upload button click, renders Upload Summary with error box when DocumentReference returns a 404 for ${type} input`, () => {
             // intercept this response and return an error
             cy.intercept('POST', '*/DocumentReference*', {
                 statusCode: 404,
