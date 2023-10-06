@@ -4,14 +4,14 @@ import os
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
-from lambdas.utils.decorators import (validate_patient_id, ensure_environment_variables)
+from lambdas.utils.decorators.validate_patient_id import validate_patient_id
+from lambdas.utils.decorators.ensure_env_var import ensure_environment_variables
 from models.document import Document
 from services.document_manifest_service import DocumentManifestService
 from services.dynamo_service import DynamoDBService
-from utils.exceptions import (DynamoDbException, InvalidResourceIdException,
+from utils.exceptions import (DynamoDbException,
                               ManifestDownloadException)
 from utils.lambda_response import ApiGatewayResponse
-from utils.utilities import validate_id
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
