@@ -24,37 +24,62 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         cy.visit(baseUrl);
     });
 
-    const nagivateToSearch = (role) => {
-        cy.get('#start-button').click();
+    const navigateToSearch = (role) => {
+        cy.visit(baseUrl + 'auth-callback');
+        cy.intercept('GET', '/Auth/TokenRequest*', {
+            statusCode: 200,
+            body: {
+                organisations: [
+                    {
+                        org_name: 'PORTWAY LIFESTYLE CENTRE',
+                        ods_code: 'A470',
+                        role: 'DEV',
+                    },
+                ],
+                authorisation_token: '111xxx222',
+            },
+        }).as('auth');
+        cy.wait('@auth');
         cy.get(`#${role}-radio-button`).click();
         cy.get('#role-submit-button').click();
-
-        cy.wait(20);
     };
 
     const navigateToVerify = (role) => {
+        cy.visit(baseUrl + 'auth-callback');
+        cy.intercept('GET', '/Auth/TokenRequest*', {
+            statusCode: 200,
+            body: {
+                organisations: [
+                    {
+                        org_name: 'PORTWAY LIFESTYLE CENTRE',
+                        ods_code: 'A470',
+                        role: 'DEV',
+                    },
+                ],
+                authorisation_token: '111xxx222',
+            },
+        }).as('auth');
         cy.intercept('GET', '/SearchPatient*', {
             statusCode: 200,
             body: patient,
         }).as('search');
-        cy.get('#start-button').click();
+        cy.wait('@auth');
         cy.get(`#${role}-radio-button`).click();
         cy.get('#role-submit-button').click();
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
-
         cy.get('#search-submit').click();
         cy.wait('@search');
     };
 
-    it.skip('(Smoke test) shows patient download screen when patient search is used by PCSE', () => {
+    it('(Smoke test) shows patient download screen when patient search is used by PCSE', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
                 body: patient,
             }).as('search');
         }
-        nagivateToSearch(roles.PCSE);
+        navigateToSearch(roles.PCSE);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 
@@ -71,7 +96,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/results');
     });
 
-    it.skip('shows the download documents page when download patient is verified', () => {
+    it('shows the download documents page when download patient is verified', () => {
         navigateToVerify(roles.PCSE);
         cy.get('#verify-submit').click();
 
@@ -79,7 +104,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/results');
     });
 
-    it.skip('(Smoke test) searches for a patient when the user enters an nhs number', () => {
+    it('(Smoke test) searches for a patient when the user enters an nhs number', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -87,7 +112,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
             }).as('search');
         }
 
-        nagivateToSearch(roles.PCSE);
+        navigateToSearch(roles.PCSE);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 
@@ -98,7 +123,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/patient/result');
     });
 
-    it.skip('(Smoke test) searches for a patient when the user enters an nhs number with spaces', () => {
+    it('(Smoke test) searches for a patient when the user enters an nhs number with spaces', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -108,7 +133,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
             }).as('search');
         }
 
-        nagivateToSearch(roles.PCSE);
+        navigateToSearch(roles.PCSE);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 
@@ -119,7 +144,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/patient/result');
     });
 
-    it.skip('(Smoke test) searches for a patient when the user enters an nhs number with dashed', () => {
+    it('(Smoke test) searches for a patient when the user enters an nhs number with dashed', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -129,7 +154,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
             }).as('search');
         }
 
-        nagivateToSearch(roles.PCSE);
+        navigateToSearch(roles.PCSE);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 

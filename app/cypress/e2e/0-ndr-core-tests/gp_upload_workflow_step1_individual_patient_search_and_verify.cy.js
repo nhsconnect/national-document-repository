@@ -24,30 +24,57 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.visit(baseUrl);
     });
 
-    const nagivateToSearch = (role) => {
-        cy.get('#start-button').click();
+    const navigateToSearch = (role) => {
+        cy.visit(baseUrl + 'auth-callback');
+        cy.intercept('GET', '/Auth/TokenRequest*', {
+            statusCode: 200,
+            body: {
+                organisations: [
+                    {
+                        org_name: 'PORTWAY LIFESTYLE CENTRE',
+                        ods_code: 'A470',
+                        role: 'DEV',
+                    },
+                ],
+                authorisation_token: '111xxx222',
+            },
+        }).as('auth');
+        cy.wait('@auth');
         cy.get(`#${role}-radio-button`).click();
         cy.get('#role-submit-button').click();
-
-        cy.wait(20);
     };
 
     const navigateToVerify = (role) => {
+        cy.visit(baseUrl + 'auth-callback');
+        cy.intercept('GET', '/Auth/TokenRequest*', {
+            statusCode: 200,
+            body: {
+                organisations: [
+                    {
+                        org_name: 'PORTWAY LIFESTYLE CENTRE',
+                        ods_code: 'A470',
+                        role: 'DEV',
+                    },
+                ],
+                authorisation_token: '111xxx222',
+            },
+        }).as('auth');
         cy.intercept('GET', '/SearchPatient*', {
             statusCode: 200,
             body: patient,
         }).as('search');
-        cy.get('#start-button').click();
+        cy.wait('@auth');
         cy.get(`#${role}-radio-button`).click();
         cy.get('#role-submit-button').click();
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
-
         cy.get('#search-submit').click();
         cy.wait('@search');
     };
 
-    it.skip('(Smoke test) shows patient upload screen when patient search is used by a GP', () => {
+    it('(Smoke test) shows patient upload screen when patient search is used by a GP', () => {
+        navigateToSearch(roles.GP);
+
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -55,7 +82,6 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
             }).as('search');
         }
 
-        nagivateToSearch(roles.GP);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 
@@ -75,14 +101,14 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'upload/submit');
     });
 
-    it.skip('(Smoke test) does not show verify patient when the search finds no patient', () => {
+    it('(Smoke test) does not show verify patient when the search finds no patient', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: noPatientError,
             }).as('search');
         }
 
-        nagivateToSearch(roles.GP);
+        navigateToSearch(roles.GP);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testNotFoundPatient);
 
@@ -98,7 +124,7 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.get('#error-box-summary').should('have.text', 'There is a problem');
     });
 
-    it.skip('shows the upload documents page when upload patient is verified', () => {
+    it('shows the upload documents page when upload patient is verified', () => {
         navigateToVerify(roles.GP);
         cy.get('#verify-submit').click();
 
@@ -106,8 +132,8 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'upload/submit');
     });
 
-    it.skip("fails to search for a patient when the user doesn't enter an nhs number", () => {
-        nagivateToSearch(roles.GP);
+    it("fails to search for a patient when the user doesn't enter an nhs number", () => {
+        navigateToSearch(roles.GP);
         cy.get('#search-submit').click();
         cy.get('#nhs-number-input--error-message').should('be.visible');
         cy.get('#nhs-number-input--error-message').should(
@@ -116,8 +142,8 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         );
     });
 
-    it.skip('fails to search for a patient when the user enters an invalid nhs number', () => {
-        nagivateToSearch(roles.GP);
+    it('fails to search for a patient when the user enters an invalid nhs number', () => {
+        navigateToSearch(roles.GP);
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type('900');
         cy.get('#search-submit').click();
