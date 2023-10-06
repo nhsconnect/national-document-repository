@@ -8,6 +8,7 @@ import * as ReactRouter from 'react-router';
 import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
+import { act } from 'react-dom/test-utils';
 
 describe('PatientResultPage', () => {
     afterEach(() => {
@@ -58,9 +59,16 @@ describe('PatientResultPage', () => {
             expect(
                 screen.getByRole('heading', { name: 'Verify patient details' }),
             ).toBeInTheDocument();
+
+            expect(
+                screen.getByText('What is the current status of the patient?'),
+            ).toBeInTheDocument();
+            expect(screen.getByRole('radio', { name: 'Active patient' })).toBeInTheDocument();
+            expect(screen.getByRole('radio', { name: 'Inactive patient' })).toBeInTheDocument();
+
             expect(
                 screen.getByText(
-                    'Ensure these patient details match the electronic health records and attachments you are about to upload.',
+                    'Ensure these patient details match the records and attachments that you upload',
                 ),
             ).toBeInTheDocument();
         });
@@ -74,6 +82,13 @@ describe('PatientResultPage', () => {
             expect(
                 screen.getByRole('heading', { name: 'Verify patient details' }),
             ).toBeInTheDocument();
+
+            expect(screen.queryByText('Select patient status')).not.toBeInTheDocument();
+            expect(screen.queryByRole('radio', { name: 'Active patient' })).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole('radio', { name: 'Inactive patient' }),
+            ).not.toBeInTheDocument();
+
             expect(
                 screen.queryByText(
                     'Ensure these patient details match the electronic health records and attachments you are about to upload.',
@@ -117,7 +132,7 @@ describe('PatientResultPage', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to upload page when user has verified upload patient', async () => {
+        it('navigates to LG record page when GP user selects Active patient and submits', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/example'],
                 initialIndex: 1,
@@ -128,12 +143,33 @@ describe('PatientResultPage', () => {
             renderPatientResultPage({}, uploadRole, history);
             expect(history.location.pathname).toBe('/example');
 
+            userEvent.click(screen.getByRole('radio', { name: 'Active patient' }));
+            userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
+
+            await waitFor(() => {
+                expect(history.location.pathname).toBe(routes.LLOYD_GEORGE);
+            });
+        });
+
+        it('navigates to Upload docs page when GP user selects Inactive patient and submits', async () => {
+            const history = createMemoryHistory({
+                initialEntries: ['/example'],
+                initialIndex: 1,
+            });
+
+            const uploadRole = USER_ROLE.GP;
+
+            renderPatientResultPage({}, uploadRole, history);
+            expect(history.location.pathname).toBe('/example');
+
+            userEvent.click(screen.getByRole('radio', { name: 'Inactive patient' }));
             userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
 
             await waitFor(() => {
                 expect(history.location.pathname).toBe(routes.UPLOAD_DOCUMENTS);
             });
         });
+
         it('navigates to download page when user has verified download patient', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/example'],
