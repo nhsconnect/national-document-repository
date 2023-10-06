@@ -1,5 +1,5 @@
 class ApiGatewayResponse:
-    def __init__(self, status_code, body, methods) -> None:
+    def __init__(self, status_code: object, body: object, methods: object) -> None:
         self.status_code = status_code
         self.body = body
         self.methods = methods

@@ -124,6 +124,7 @@ def test_download_documents_to_be_zipped_creates_download_path(set_env, mocker):
         MOCK_BUCKET, document_file_key, expected_download_path
     )
 
+
 def is_windows():
     if os.name == "nt":
         return True

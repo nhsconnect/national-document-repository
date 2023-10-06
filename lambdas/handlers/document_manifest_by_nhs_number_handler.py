@@ -2,13 +2,12 @@ import logging
 import os
 
 from botocore.exceptions import ClientError
-from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from lambdas.utils.decorators.validate_patient_id import validate_patient_id
 from lambdas.utils.decorators.ensure_env_var import ensure_environment_variables
-from models.document import Document
+from services.LloydGeorgeManifestDynamoService import ManifestDynamoService
 from services.document_manifest_service import DocumentManifestService
-from services.dynamo_service import DynamoDBService
+from utils.decorators.validate_document_type import validate_document_type
 from utils.exceptions import (DynamoDbException,
                               ManifestDownloadException)
 from utils.lambda_response import ApiGatewayResponse
@@ -16,9 +15,15 @@ from utils.lambda_response import ApiGatewayResponse
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 @validate_patient_id
+@validate_document_type
 @ensure_environment_variables(
-    names=["DOCUMENT_STORE_DYNAMODB_NAME", "LLOYD_GEORGE_DYNAMODB_NAME", "ZIPPED_STORE_BUCKET_NAME", "ZIPPED_STORE_DYNAMODB_NAME"]
+    names=["DOCUMENT_STORE_DYNAMODB_NAME",
+           "LLOYD_GEORGE_DYNAMODB_NAME",
+           "ZIPPED_STORE_BUCKET_NAME",
+           "ZIPPED_STORE_DYNAMODB_NAME"
+           ]
 )
 def lambda_handler(event, context):
     logger.info("Starting document manifest process")
@@ -27,26 +32,24 @@ def lambda_handler(event, context):
         nhs_number = event["queryStringParameters"]["patientId"]
         doc_type = event["queryStringParameters"]["docType"]
 
-        document_store_table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-        lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
         zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
         zip_trace_table_name = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
         # zip_trace_ttl = os.environ["DOCUMENT_ZIP_TRACE_TTL_IN_DAYS"]
 
-        dynamo_service = DynamoDBService()
+        dynamo_service = ManifestDynamoService()
         ds_documents = []
         lg_documents = []
 
         if SupportedDocumentTypes.ARF.name in doc_type:
             logger.info("Retrieving doc store documents")
-            ds_documents = query_documents(
-                dynamo_service, document_store_table_name, nhs_number
+            ds_documents = dynamo_service.discover_uploaded_documents(
+                nhs_number, SupportedDocumentTypes.ARF
             )
 
         if SupportedDocumentTypes.LG.name in doc_type:
             logger.info("Retrieving lloyd george documents")
-            lg_documents = query_documents(
-                dynamo_service, lloyd_george_table_name, nhs_number
+            lg_documents = dynamo_service.discover_uploaded_documents(
+                nhs_number, SupportedDocumentTypes.LG
             )
 
         documents = lg_documents + ds_documents
@@ -86,38 +89,3 @@ def lambda_handler(event, context):
             500, "An error occurred when creating document manifest", "POST"
         ).create_api_gateway_response()
         return response
-
-
-def query_documents(
-    dynamo_service: DynamoDBService, document_table: str, nhs_number: str
-) -> list[Document]:
-    documents = []
-
-    response = dynamo_service.query_service(
-        document_table,
-        "NhsNumberIndex",
-        "NhsNumber",
-        nhs_number,
-        [
-            DocumentReferenceMetadataFields.FILE_NAME,
-            DocumentReferenceMetadataFields.FILE_LOCATION,
-            DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT,
-        ],
-    )
-    if response is None or ("Items" not in response):
-        logger.error(f"Unrecognised response from DynamoDB: {response}")
-        raise DynamoDbException("Unrecognised response from DynamoDB")
-
-    for item in response["Items"]:
-        document = Document(
-            nhs_number=nhs_number,
-            file_name=item[DocumentReferenceMetadataFields.FILE_NAME.field_name],
-            virus_scanner_result=item[
-                DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT.field_name
-            ],
-            file_location=item[
-                DocumentReferenceMetadataFields.FILE_LOCATION.field_name
-            ],
-        )
-        documents.append(document)
-    return documents

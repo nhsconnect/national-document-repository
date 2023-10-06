@@ -1,7 +1,7 @@
-
 import logging
 import os
 
+from enums.supported_document_types import SupportedDocumentTypes
 from services.dynamo_service import DynamoDBService
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.document import Document
@@ -10,14 +10,17 @@ from utils.exceptions import DynamoDbException
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-class LloydGeorgeManifestDynamoService(DynamoDBService):
 
-    def query_lloyd_george_documents(
-        nhs_number: str
+class ManifestDynamoService(DynamoDBService):
+
+    def discover_uploaded_documents(
+            self, nhs_number: str, doc_type: SupportedDocumentTypes
     ) -> list[Document]:
         documents = []
-
-        document_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+        if doc_type == SupportedDocumentTypes.ARF:
+            document_table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
+        elif doc_type == SupportedDocumentTypes.LG:
+            document_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
         response = self.query_service(
             document_table,
             "NhsNumberIndex",
