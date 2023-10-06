@@ -57,3 +57,8 @@ beforeEach(() => {
 it('Navigates to Lloyd George record page successfully', () => {
     cy.url().should('eq', baseUrl + 'search/patient/lloyd-george-record');
 });
+
+it('Displays patient info and Lloyd George record card on page', () => {
+    cy.get('#patient-info').should('be.visible');
+    cy.get('#lloyd-george-record-card').should('be.visible');
+});

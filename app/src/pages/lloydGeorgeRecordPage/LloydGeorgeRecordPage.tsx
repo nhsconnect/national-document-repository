@@ -36,13 +36,13 @@ function LloydGeorgeRecordPage() {
         patientDetails?.nhsNumber.slice(6, 10);
 
     const patientInfo = (
-        <>
+        <div id="patient-info">
             <p style={{ marginBottom: 5, fontWeight: '700' }}>
                 {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
             </p>
             <p style={{ fontSize: '16px', marginBottom: 5 }}>NHS number: {nhsNumber}</p>
             <p style={{ fontSize: '16px' }}>Date of birth: {dob}</p>
-        </>
+        </div>
     );
 
     useEffect(() => {
