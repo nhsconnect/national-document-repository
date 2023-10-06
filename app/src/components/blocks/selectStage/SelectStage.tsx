@@ -38,9 +38,6 @@ function SelectStage({ uploadDocuments, setDocuments, patientDetails }: Props) {
         control,
         rules: {
             validate: {
-                isFile: () => {
-                    return !!hasFileInput || 'Please select a file';
-                },
                 perFileValidation: (value?: Array<UploadDocument>) => {
                     if (Array.isArray(value)) {
                         for (let i = 0; i < value.length; i++) {
