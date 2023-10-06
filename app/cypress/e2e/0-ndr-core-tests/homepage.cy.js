@@ -28,7 +28,29 @@ describe('Home Page Tests', () => {
         cy.url().should('eq', 'http://localhost:3000/');
     });
 
-    it.skip('displays expected page header on home page', () => {
+    const logIn = () => {
+        cy.visit(baseUrl + 'auth-callback');
+        cy.intercept('GET', '/Auth/TokenRequest*', {
+            statusCode: 200,
+            body: {
+                organisations: [
+                    {
+                        org_name: 'PORTWAY LIFESTYLE CENTRE',
+                        ods_code: 'A470',
+                        role: 'DEV',
+                    },
+                ],
+                authorisation_token: '111xxx222',
+            },
+        }).as('auth');
+        cy.wait('@auth');
+        cy.get(`#gp-radio-button`).click();
+        cy.get('#role-submit-button').click();
+        cy.visit(baseUrl);
+    };
+
+    it('displays expected page header on home page when logged in', () => {
+        logIn();
         //ensure the page header is visable
         cy.get('header').should('have.length', 1);
 
@@ -44,6 +66,22 @@ describe('Home Page Tests', () => {
         cy.get('.nhsuk-header__navigation-list').should('have.length', 1);
     });
 
+    it('displays no page header on home page when logged out', () => {
+        //ensure the page header is visable
+        cy.get('header').should('have.length', 1);
+
+        cy.get('.nhsuk-logo__background').should('have.length', 1);
+        cy.get('.nhsuk-header__transactional-service-name').should('have.length', 1);
+        cy.get('.nhsuk-header__transactional-service-name').children().should('have.length', 1);
+        cy.get('.nhsuk-header__transactional-service-name--link').should(
+            'have.text',
+            'Inactive Patient Record Administration',
+        );
+
+        cy.get('.nhsuk-header__navigation').should('have.length', 0);
+        cy.get('.nhsuk-header__navigation-list').should('have.length', 0);
+    });
+
     it('displays correct page title on home page', () => {
         //ensure the page header is visable
         cy.get('.app-homepage-content h1').should(
@@ -52,16 +90,8 @@ describe('Home Page Tests', () => {
         );
     });
 
-    it.skip('displays start now button on home page', () => {
+    it('displays start now button on home page', () => {
         //ensure the page header is visable
         cy.get('.nhsuk-button').should('have.text', 'Start now');
-    });
-
-    it.skip('On Start now button click, redirect to uploads is successful', () => {
-        //ensure the page header is visable
-        cy.get('.nhsuk-button').click();
-        cy.wait(20);
-        cy.url().should('include', 'organisation');
-        cy.url().should('eq', 'http://localhost:3000/select-organisation');
     });
 });
