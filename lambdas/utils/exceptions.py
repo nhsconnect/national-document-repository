@@ -28,3 +28,15 @@ class DynamoDbException(Exception):
 
 class ManifestDownloadException(Exception):
     pass
+
+
+class MissingEnvVarException(Exception):
+    pass
+
+
+class InvalidParamException(Exception):
+    pass
+
+
+class FileProcessingException(Exception):
+    pass

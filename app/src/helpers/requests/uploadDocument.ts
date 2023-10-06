@@ -105,8 +105,8 @@ const uploadDocumentsToS3 = async ({
             const docGatewayResponse: S3Upload = data[document.file.name];
             const formData = new FormData();
             const docFields: S3UploadFields = docGatewayResponse.fields;
-            Object.keys(docFields).forEach((key) => {
-                formData.append(key, docFields.key);
+            Object.entries(docFields).forEach(([key, value]) => {
+                formData.append(key, value);
             });
             formData.append('file', document.file);
             const s3url = docGatewayResponse.url;

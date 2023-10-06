@@ -14,6 +14,7 @@ import { usePatientDetailsContext } from '../../providers/patientProvider/Patien
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 type Props = {};
+
 function UploadDocumentsPage(props: Props) {
     const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
@@ -37,18 +38,14 @@ function UploadDocumentsPage(props: Props) {
     const uploadDocuments = async () => {
         if (patientDetails) {
             setStage(UPLOAD_STAGE.Uploading);
-            await Promise.all(
-                documents.map((document) =>
-                    uploadDocument({
-                        nhsNumber: patientDetails.nhsNumber,
-                        docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-                        setDocumentState,
-                        documents,
-                        baseUrl,
-                        baseHeaders,
-                    }),
-                ),
-            );
+            await uploadDocument({
+                nhsNumber: patientDetails.nhsNumber,
+                docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                setDocumentState,
+                documents,
+                baseUrl,
+                baseHeaders,
+            });
             setStage(UPLOAD_STAGE.Complete);
         }
     };

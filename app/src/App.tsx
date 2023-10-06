@@ -20,6 +20,7 @@ import PatientGuard from './components/blocks/patientGuard/PatientGuard';
 import PatientResultPage from './pages/patientResultPage/PatientResultPage';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
 import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
+import LloydGeorgeRecordPage from './pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 
 function App() {
     return (
@@ -67,6 +68,10 @@ function App() {
                                         <Route
                                             element={<PatientResultPage role={USER_ROLE.GP} />}
                                             path={routes.UPLOAD_VERIFY}
+                                        />
+                                        <Route
+                                            element={<LloydGeorgeRecordPage />}
+                                            path={routes.LLOYD_GEORGE}
                                         />
                                         <Route
                                             element={<UploadDocumentsPage />}
