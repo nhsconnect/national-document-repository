@@ -3,6 +3,8 @@ import os
 
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from enums.supported_document_types import SupportedDocumentTypes
+from lambdas.utils.decorators import (validate_patient_id, ensure_environment_variables)
 from models.document import Document
 from services.document_manifest_service import DocumentManifestService
 from services.dynamo_service import DynamoDBService
@@ -14,13 +16,16 @@ from utils.utilities import validate_id
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
+@validate_patient_id
+@ensure_environment_variables(
+    names=["DOCUMENT_STORE_DYNAMODB_NAME", "LLOYD_GEORGE_DYNAMODB_NAME", "ZIPPED_STORE_BUCKET_NAME", "ZIPPED_STORE_DYNAMODB_NAME"]
+)
 def lambda_handler(event, context):
     logger.info("Starting document manifest process")
 
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
-        validate_id(nhs_number)
+        doc_type = event["queryStringParameters"]["docType"]
 
         document_store_table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
         lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
@@ -29,22 +34,26 @@ def lambda_handler(event, context):
         # zip_trace_ttl = os.environ["DOCUMENT_ZIP_TRACE_TTL_IN_DAYS"]
 
         dynamo_service = DynamoDBService()
+        ds_documents = []
+        lg_documents = []
 
-        logger.info("Retrieving doc store documents")
-        ds_documents = query_documents(
-            dynamo_service, document_store_table_name, nhs_number
-        )
+        if SupportedDocumentTypes.ARF.name in doc_type:
+            logger.info("Retrieving doc store documents")
+            ds_documents = query_documents(
+                dynamo_service, document_store_table_name, nhs_number
+            )
 
-        logger.info("Retrieving lloyd george documents")
-        lg_documents = query_documents(
-            dynamo_service, lloyd_george_table_name, nhs_number
-        )
+        if SupportedDocumentTypes.LG.name in doc_type:
+            logger.info("Retrieving lloyd george documents")
+            lg_documents = query_documents(
+                dynamo_service, lloyd_george_table_name, nhs_number
+            )
 
         documents = lg_documents + ds_documents
 
         if not documents:
             return ApiGatewayResponse(
-                204, "No documents found for given NHS number", "GET"
+                204, "No documents found for given NHS number and document type", "GET"
             ).create_api_gateway_response()
 
         logger.info("Starting document manifest process")
@@ -59,14 +68,6 @@ def lambda_handler(event, context):
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
 
-    except InvalidResourceIdException:
-        return ApiGatewayResponse(
-            400, "Invalid NHS number", "GET"
-        ).create_api_gateway_response()
-    except KeyError as e:
-        return ApiGatewayResponse(
-            400, f"An error occurred due to missing key: {str(e)}", "GET"
-        ).create_api_gateway_response()
     except ManifestDownloadException as e:
         return ApiGatewayResponse(
             500,
