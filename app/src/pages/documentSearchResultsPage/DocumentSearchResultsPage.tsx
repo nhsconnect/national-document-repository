@@ -40,7 +40,7 @@ function DocumentSearchResultsPage() {
                     baseUrl,
                     baseHeaders,
                 });
-                setSearchResults(results);
+                setSearchResults(results ?? []);
 
                 setSubmissionState(SUBMISSION_STATE.SUCCEEDED);
             } catch (e) {
@@ -81,7 +81,7 @@ function DocumentSearchResultsPage() {
 
             {submissionState === SUBMISSION_STATE.SUCCEEDED && (
                 <>
-                    {searchResults.length > 0 && (
+                    {searchResults.length ? (
                         <>
                             <DocumentSearchResults searchResults={searchResults} />
                             <DocumentSearchResultsOptions
@@ -90,9 +90,7 @@ function DocumentSearchResultsPage() {
                                 updateDownloadState={handleUpdateDownloadState}
                             />
                         </>
-                    )}
-
-                    {searchResults.length === 0 && (
+                    ) : (
                         <p>
                             <strong id="no-files-message">
                                 There are no documents available for this patient.

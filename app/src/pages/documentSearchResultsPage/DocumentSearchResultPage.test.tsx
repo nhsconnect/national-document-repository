@@ -3,18 +3,23 @@ import PatientDetailsProvider from '../../providers/patientProvider/PatientProvi
 import DocumentSearchResultsPage from './DocumentSearchResultsPage';
 import userEvent from '@testing-library/user-event';
 import * as ReactRouter from 'react-router';
-import { buildPatientDetails, buildSearchResult } from '../../helpers/test/testBuilders';
+import {
+    buildPatientDetails,
+    buildSearchResult,
+    buildUserAuth,
+} from '../../helpers/test/testBuilders';
 import { routes } from '../../types/generic/routes';
 import { createMemoryHistory } from 'history';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import axios from 'axios';
+import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
 
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('axios');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe.skip('<DocumentSearchResultsPage />', () => {
+describe('<DocumentSearchResultsPage />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
     });
@@ -144,12 +149,17 @@ const renderSearchResultsPage = (
         ...buildPatientDetails(),
         ...patientOverride,
     };
-
+    const auth: Session = {
+        auth: buildUserAuth(),
+        isLoggedIn: true,
+    };
     render(
         <ReactRouter.Router navigator={history} location={homeRoute}>
-            <PatientDetailsProvider patientDetails={patient}>
-                <DocumentSearchResultsPage />
-            </PatientDetailsProvider>
+            <SessionProvider sessionOverride={auth}>
+                <PatientDetailsProvider patientDetails={patient}>
+                    <DocumentSearchResultsPage />
+                </PatientDetailsProvider>
+            </SessionProvider>
         </ReactRouter.Router>,
     );
 };
