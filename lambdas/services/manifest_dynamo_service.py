@@ -21,6 +21,8 @@ class ManifestDynamoService(DynamoDBService):
             document_table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
         elif doc_type == SupportedDocumentTypes.LG:
             document_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+        else:
+            return documents
         response = self.query_service(
             document_table,
             "NhsNumberIndex",
@@ -32,9 +34,6 @@ class ManifestDynamoService(DynamoDBService):
                 DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT,
             ],
         )
-        if response is None or ("Items" not in response):
-            logger.error(f"Unrecognised response from DynamoDB: {response}")
-            raise DynamoDbException("Unrecognised response from DynamoDB")
 
         for item in response["Items"]:
             document = Document(

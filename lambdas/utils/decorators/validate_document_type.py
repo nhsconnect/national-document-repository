@@ -1,7 +1,6 @@
 from typing import Callable
 
 from enums.supported_document_types import SupportedDocumentTypes
-from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 
 
