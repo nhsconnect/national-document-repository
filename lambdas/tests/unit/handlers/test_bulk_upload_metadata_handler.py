@@ -83,10 +83,18 @@ def test_handler_log_error_when_failed_to_send_message_to_sqs(
     set_env, mock_s3_service, mock_sqs_service, mock_tempfile, caplog
 ):
     mock_sqs_service.send_message_with_nhs_number_attr.side_effect = ClientError(
-        {"Error": {"Code": "500", "Message": "Queue not exist"}},
-        "sqs_send_message",
+        {
+            "Error": {
+                "Code": "AWS.SimpleQueueService.NonExistentQueue",
+                "Message": "The specified queue does not exist",
+            }
+        },
+        "SendMessage",
     )
-    expected_err_msg = "An error occurred (500) when calling the sqs_send_message operation: Queue not exist"
+    expected_err_msg = (
+        "An error occurred (AWS.SimpleQueueService.NonExistentQueue) when calling the SendMessage operation:"
+        " The specified queue does not exist"
+    )
 
     lambda_handler(None, None)
 
