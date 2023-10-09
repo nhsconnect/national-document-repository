@@ -1,7 +1,8 @@
-import csv
-import json
 from typing import Optional
+
 from pydantic import BaseModel
+
+METADATA_FILENAME = "metadata.csv"
 
 
 class MetadataFile(BaseModel):
@@ -19,4 +20,3 @@ class MetadataFile(BaseModel):
 class StagingMetadata(BaseModel):
     nhs_number: int
     files: list[MetadataFile]
-
