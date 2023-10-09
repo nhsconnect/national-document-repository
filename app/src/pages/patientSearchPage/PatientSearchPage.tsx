@@ -140,7 +140,11 @@ function PatientSearchPage({ role }: Props) {
                     />
                 </Fieldset>
                 {submissionState === SEARCH_STATES.SEARCHING ? (
-                    <SpinnerButton status="Searching..." disabled={true} />
+                    <SpinnerButton
+                        id="patient-search-spinner"
+                        status="Searching..."
+                        disabled={true}
+                    />
                 ) : (
                     <Button type="submit" id="search-submit">
                         Search
