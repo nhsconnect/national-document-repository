@@ -6,8 +6,12 @@ from typing import Iterable
 
 import pydantic
 from botocore.exceptions import ClientError
-from models.staging_metadata import (METADATA_FILENAME, MetadataFile,
-                                     StagingMetadata)
+from models.staging_metadata import (
+    METADATA_FILENAME,
+    MetadataFile,
+    StagingMetadata,
+    NHS_NUMBER_FIELD_NAME,
+)
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 
@@ -56,12 +60,11 @@ def download_metadata_from_s3(staging_bucket_name: str, metadata_filename: str):
 
 def csv_to_staging_metadata(csv_file_path: str) -> list[StagingMetadata]:
     patients = {}
-    nhs_number_field_key = "nhs_number"  # TODO: refer this from model definition
     with open(csv_file_path, mode="r") as csv_file_handler:
         csv_reader: Iterable[dict] = csv.DictReader(csv_file_handler)
         for row in csv_reader:
             file_metadata = MetadataFile.model_validate(row)
-            nhs_number = row[nhs_number_field_key]
+            nhs_number = row[NHS_NUMBER_FIELD_NAME]
             if nhs_number not in patients:
                 patients[nhs_number] = [file_metadata]
             else:
@@ -82,6 +85,6 @@ def send_metadata_to_sqs(
         nhs_number = staging_metadata.nhs_number
         sqs_service.send_message_with_nhs_number_attr(
             queue_url=metadata_queue_url,
-            message_body=staging_metadata.model_dump_json(),
+            message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=str(nhs_number),
         )

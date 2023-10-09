@@ -1,15 +1,24 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 METADATA_FILENAME = "metadata.csv"
+NHS_NUMBER_FIELD_NAME = "NHS-NO"
+
+
+def to_upper_case_with_hyphen(field_name: str) -> str:
+    return field_name.upper().replace("_", "-")
 
 
 class MetadataFile(BaseModel):
-    file_path: str
-    page_count: str
+    model_config = ConfigDict(
+        alias_generator=to_upper_case_with_hyphen, populate_by_name=True
+    )
+
+    file_path: str = Field(alias="FILEPATH")
+    page_count: str = Field(alias="PAGE COUNT")
     gp_practice_code: str
-    nhs_number: str = Field(exclude=True)
+    nhs_number: str = Field(exclude=True, alias=NHS_NUMBER_FIELD_NAME)
     section: str
     sub_section: Optional[str]
     scan_date: str
@@ -19,5 +28,7 @@ class MetadataFile(BaseModel):
 
 
 class StagingMetadata(BaseModel):
-    nhs_number: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    nhs_number: str = Field(alias=NHS_NUMBER_FIELD_NAME)
     files: list[MetadataFile]
