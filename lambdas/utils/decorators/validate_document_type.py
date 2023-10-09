@@ -15,17 +15,18 @@ def validate_document_type(lambda_func: Callable):
     def lambda_handler(event, context):
         ...
     """
+
     def interceptor(event, context):
         try:
             doc_type = event["queryStringParameters"]["docType"]
-            if SupportedDocumentTypes.get_from_field_name(doc_type) is None:
+            if doc_type is None:
                 return ApiGatewayResponse(
-                    400, "docType is invalid", "GET"
+                    400, "docType not supplied", "GET"
                 ).create_api_gateway_response()
-        except InvalidResourceIdException:
-            return ApiGatewayResponse(
-                400, "Invalid document type requested", "GET"
-            ).create_api_gateway_response()
+            if not doc_type_is_valid(doc_type):
+                return ApiGatewayResponse(
+                    400, "Invalid document type requested", "GET"
+                ).create_api_gateway_response()
         except KeyError as e:
             return ApiGatewayResponse(
                 400, f"An error occurred due to missing key: {str(e)}", "GET"
@@ -35,3 +36,8 @@ def validate_document_type(lambda_func: Callable):
         return lambda_func(event, context)
 
     return interceptor
+
+
+def doc_type_is_valid(doc_type: SupportedDocumentTypes) -> bool:
+    return SupportedDocumentTypes.ARF.name in doc_type or \
+        SupportedDocumentTypes.LG.name in doc_type
