@@ -5,10 +5,8 @@ import pytest
 
 from unittest.mock import MagicMock, patch
 
-from pytest_mock import mocker
-
 from enums.supported_document_types import SupportedDocumentTypes
-from helpers.data.dynamo_responses import MOCK_EMPTY_RESPONSE, MOCK_RESPONSE, MOCK_MANIFEST_QUERY_RESPONSE
+from helpers.data.dynamo_responses import MOCK_EMPTY_RESPONSE, MOCK_MANIFEST_QUERY_RESPONSE
 from lambdas.services.manifest_dynamo_service import ManifestDynamoService
 from models.document import Document
 
@@ -78,5 +76,3 @@ def test_nothing_returned_when_invalid_doctype_supplied(nhs_number):
         result = ManifestDynamoService().discover_uploaded_documents(nhs_number, None)
 
         assert len(result) == 0
-
-# def retrieves_all_documents_for_an_nhs_number():
