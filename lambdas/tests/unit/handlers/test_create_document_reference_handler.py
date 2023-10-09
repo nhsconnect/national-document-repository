@@ -10,7 +10,7 @@ from tests.unit.conftest import (MOCK_ARF_BUCKET, MOCK_ARF_TABLE_NAME,
                                  TEST_NHS_NUMBER, TEST_OBJECT_KEY)
 from tests.unit.helpers.data.create_document_reference import (
     ARF_MOCK_EVENT_BODY, ARF_MOCK_RESPONSE, LG_AND_ARF_MOCK_RESPONSE,
-    LG_MOCK_EVENT_BODY, LG_MOCK_RESPONSE, MOCK_EVENT_BODY)
+    LG_MOCK_EVENT_BODY, LG_MOCK_RESPONSE, MOCK_EVENT_BODY, LG_MOCK_BAD_EVENT_BODY)
 from tests.unit.services.test_s3_service import MOCK_PRESIGNED_POST_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
 
@@ -265,6 +265,15 @@ def test_create_document_reference_arf_type_s3_ClientError_returns_500(
     actual = lambda_handler(arf_type_event, context)
     assert actual == expected
 
+
+def test_invalid_file_type_for_lg_return_400(set_env, context):
+    expected = ApiGatewayResponse(
+        400,
+        "Failed to parse document upload request data",
+        "GET",
+    ).create_api_gateway_response()
+    actual = lambda_handler({"body": json.dumps(LG_MOCK_BAD_EVENT_BODY)}, context)
+    assert actual == expected
 
 def test_create_document_reference_unknown_document_type_returns_400(
     set_env, arf_type_event, context, mocker

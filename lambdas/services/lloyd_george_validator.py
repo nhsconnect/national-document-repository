@@ -1,4 +1,4 @@
-class LGFileTypeException(Exception):
+class LGFileTypeException(ValueError):
     """One or more of the files do not match the required file type."""
     pass
 

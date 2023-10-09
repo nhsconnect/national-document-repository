@@ -62,7 +62,7 @@ def lambda_handler(event, context):
     except ValidationError as e:
         logger.error(e)
         return ApiGatewayResponse(
-            400, f"Failed to parse document upload request data: {str(e)}", "GET"
+            400, f"Failed to parse document upload request data", "GET"
         ).create_api_gateway_response()
     except JSONDecodeError as e:
         logger.error(e)

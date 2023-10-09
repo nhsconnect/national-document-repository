@@ -1,6 +1,6 @@
 import pytest
 
-from lambdas.services.lloyd_george_validator import validate_lg_file_type, LGFileTypeException
+from services.lloyd_george_validator import validate_lg_file_type, LGFileTypeException
 
 def test_catching_error_when_file_type_not_pdf():
     with pytest.raises(LGFileTypeException):
