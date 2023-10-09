@@ -1,4 +1,3 @@
-import json
 import os
 
 from models.staging_metadata import MetadataFile, StagingMetadata
@@ -57,5 +56,9 @@ def readfile(filename: str) -> str:
     return file_content
 
 
-EXPECTED_SQS_MSG_FOR_PATIENT_1234567890 = readfile("expect_sqs_msg_for_patient_1234567890.json")
-EXPECTED_SQS_MSG_FOR_PATIENT_1234567891 = readfile("expect_sqs_msg_for_patient_1234567891.json")
+EXPECTED_SQS_MSG_FOR_PATIENT_1234567890 = readfile(
+    "expect_sqs_msg_for_patient_1234567890.json"
+)
+EXPECTED_SQS_MSG_FOR_PATIENT_1234567891 = readfile(
+    "expect_sqs_msg_for_patient_1234567891.json"
+)
