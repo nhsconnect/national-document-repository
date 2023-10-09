@@ -5,7 +5,7 @@ describe('SpinnerButton', () => {
     it('displays status text for the spinner button', () => {
         const status = 'Loading...';
 
-        render(<SpinnerButton status={status} />);
+        render(<SpinnerButton id="test-spinner-button" status={status} />);
 
         expect(screen.getByRole('SpinnerButton', { name: 'SpinnerButton' })).toBeInTheDocument();
         expect(screen.getByRole('status')).toBeInTheDocument();

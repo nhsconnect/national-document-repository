@@ -10,8 +10,6 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         PCSE: 'pcse',
     });
 
-    const noPatientError = 400;
-    const testNotFoundPatient = '1000000001';
     const testPatient = '9000000009';
     const patient = {
         birthDate: new Date('1970-01-01'),
@@ -22,6 +20,19 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         superseded: false,
         restricted: false,
     };
+
+    const searchDocumentReferencesResponse = [
+        {
+            fileName: 'Screenshot 2023-09-11 at 16.06.40.png',
+            virusScannerResult: 'Not Scanned',
+            created: new Date('2023-09-12T10:41:41.747836Z'),
+        },
+        {
+            fileName: 'Screenshot 2023-09-08 at 14.53.47.png',
+            virusScannerResult: 'Not Scanned',
+            created: new Date('2023-09-12T10:41:41.749341Z'),
+        },
+    ];
 
     beforeEach(() => {
         cy.visit(baseUrl);
@@ -75,7 +86,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
                 day: '2-digit',
                 month: 'long',
                 year: 'numeric',
-            }),
+            })
         );
         cy.get('#patient-summary-postcode').should('have.text', patient.postalCode);
     });
@@ -93,24 +104,11 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.get('#no-files-message').should('have.length', 1);
         cy.get('#no-files-message').should(
             'have.text',
-            'There are no documents available for this patient.',
+            'There are no documents available for this patient.'
         );
     });
 
     it('(Smoke test) shows avaliable files to download on 200 success', () => {
-        const searchDocumentReferencesResponse = [
-            {
-                fileName: 'Screenshot 2023-09-11 at 16.06.40.png',
-                virusScannerResult: 'Not Scanned',
-                created: new Date('2023-09-12T10:41:41.747836Z'),
-            },
-            {
-                fileName: 'Screenshot 2023-09-08 at 14.53.47.png',
-                virusScannerResult: 'Not Scanned',
-                created: new Date('2023-09-12T10:41:41.749341Z'),
-            },
-        ];
-
         if (!smokeTest) {
             cy.intercept('GET', '/SearchDocumentReferences*', {
                 statusCode: 200,
@@ -125,11 +123,11 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.get('.available-files-row').should('have.length', 2);
         cy.get('#available-files-row-0-filename').should(
             'have.text',
-            searchDocumentReferencesResponse[1].fileName,
+            searchDocumentReferencesResponse[1].fileName
         );
         cy.get('#available-files-row-1-filename').should(
             'have.text',
-            searchDocumentReferencesResponse[0].fileName,
+            searchDocumentReferencesResponse[0].fileName
         );
 
         cy.get('#available-files-row-0-created-date').should('exist');
@@ -148,7 +146,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
                     hour: 'numeric',
                     minute: 'numeric',
                     second: 'numeric',
-                }),
+                })
             );
             cy.get('#available-files-row-1-created-date').should(
                 'have.text',
@@ -159,14 +157,67 @@ describe('PCSE Download Workflow: Access and download found files', () => {
                     hour: 'numeric',
                     minute: 'numeric',
                     second: 'numeric',
-                }),
+                })
             );
         }
     });
 
-    it('Shows service error box on Search Docuement Reference 500 response', () => {
-        const searchDocumentReferencesResponse = [];
+    it('Shows spinner button while waiting for Download Document Manifest response', () => {
+        if (!smokeTest) {
+            cy.intercept('GET', '/SearchDocumentReferences*', {
+                statusCode: 200,
+                body: searchDocumentReferencesResponse,
+            }).as('search');
+        }
 
+        navigateToDownload(roles.PCSE);
+
+        const documentManifestResponse = 'test-s3-url';
+
+        cy.get('#download-documents').click();
+
+        cy.intercept({ url: '/DocumentManifest*', middleware: true }, (req) => {
+            req.reply({
+                statusCode: 200,
+                body: documentManifestResponse,
+                delay: 1500,
+            });
+        }).as('search');
+
+        cy.get('#download-spinner').should('exist');
+    });
+
+    it('Downloads file from the correct s3 url during Download Document Manifest', () => {
+        if (!smokeTest) {
+            cy.intercept('GET', '/SearchDocumentReferences*', {
+                statusCode: 200,
+                body: searchDocumentReferencesResponse,
+            }).as('search');
+        }
+
+        navigateToDownload(roles.PCSE);
+
+        const documentManifestResponse = 'test-s3-url';
+
+        cy.get('#download-link').invoke('attr', 'href').should('eq', '');
+        cy.get('#download-link').invoke('attr', 'download').should('eq', '');
+
+        cy.get('#download-documents').click();
+
+        cy.intercept({ url: '/DocumentManifest*', middleware: true }, (req) => {
+            req.reply({
+                statusCode: 200,
+                body: documentManifestResponse,
+            });
+        }).as('search');
+
+        cy.get('#download-link').invoke('attr', 'href').should('eq', 'test-s3-url');
+        cy.get('#download-link')
+            .invoke('attr', 'download')
+            .should('eq', `patient-record-${testPatient}`);
+    });
+
+    it('Shows service error box on Search Document Reference 500 response', () => {
         cy.intercept('GET', '/SearchDocumentReferences*', {
             statusCode: 500,
         }).as('search');
@@ -176,7 +227,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.get('#service-error').should('exist');
     });
 
-    it('Shows progress bar while waiting for response', () => {
+    it('Shows progress bar while waiting for Search Document Reference response', () => {
         const searchDocumentReferencesResponse = [];
 
         cy.intercept({ url: '/SearchDocumentReferences*', middleware: true }, (req) => {
