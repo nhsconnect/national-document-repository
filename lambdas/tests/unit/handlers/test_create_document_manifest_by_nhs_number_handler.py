@@ -30,6 +30,22 @@ def test_lambda_handler_returns_204_when_no_documents_returned_from_dynamo_respo
 
     assert expected == actual
 
+def test_lambda_handler_returns_204_when_doc_type_invalid_response(
+        mocker, set_env, invalid_doc_id_event, context
+):
+    mock_document_query = mocker.patch(
+        "handlers.document_manifest_by_nhs_number_handler.query_documents"
+    )
+    mock_document_query.return_value = []
+
+    expected = ApiGatewayResponse(
+        204, "No documents found for given NHS number", "GET"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(invalid_doc_id_event, context)
+
+    assert expected == actual
+
 
 def test_lambda_handler_valid_parameters_returns_200(
         mocker, set_env, valid_id_event, context
@@ -94,3 +110,7 @@ def test_lambda_handler_returns_400_when_doc_type_not_supplied(
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_event, context)
     assert expected == actual
+
+#only gets LG docs
+#only gets ARF docs
+#gets all docs

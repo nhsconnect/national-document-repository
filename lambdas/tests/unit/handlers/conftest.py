@@ -2,11 +2,14 @@ from dataclasses import dataclass
 
 import pytest
 
+from lambdas.enums.supported_document_types import SupportedDocumentTypes
+
 
 @pytest.fixture
 def valid_id_event():
     api_gateway_proxy_event = {
-        "queryStringParameters": {"patientId": "9000000009"},
+        "queryStringParameters": {"patientId": "9000000009",
+                                  "docType": SupportedDocumentTypes.list_names()},
     }
     return api_gateway_proxy_event
 

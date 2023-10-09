@@ -32,6 +32,8 @@ def lambda_handler(event, context):
         nhs_number = event["queryStringParameters"]["patientId"]
         doc_type = event["queryStringParameters"]["docType"]
 
+        print(doc_type.type)
+
         zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
         zip_trace_table_name = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
         # zip_trace_ttl = os.environ["DOCUMENT_ZIP_TRACE_TTL_IN_DAYS"]
