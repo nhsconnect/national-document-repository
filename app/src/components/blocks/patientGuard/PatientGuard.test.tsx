@@ -1,49 +1,42 @@
 import { render, waitFor } from '@testing-library/react';
-import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
 import * as ReactRouter from 'react-router';
 import { History, createMemoryHistory } from 'history';
-import { buildUserAuth } from '../../../helpers/test/testBuilders';
-import AuthGuard from './AuthGuard';
 import { routes } from '../../../types/generic/routes';
+import PatientGuard from './PatientGuard';
+import { PatientDetails } from '../../../types/generic/patientDetails';
+import PatientDetailsProvider from '../../../providers/patientProvider/PatientProvider';
+import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 
 const guardPage = '/profile';
 describe('AuthGuard', () => {
     beforeEach(() => {
-        sessionStorage.setItem('UserSession', '');
-
         process.env.REACT_APP_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
         jest.clearAllMocks();
     });
-    it('navigates user to unauthorised when user is not logged in', async () => {
-        const auth: Session = {
-            auth: null,
-            isLoggedIn: false,
-        };
+    it('navigates user to unauthorised when no patient is searched', async () => {
+        const patientDetails = null;
         const history = createMemoryHistory({
             initialEntries: [guardPage],
             initialIndex: 0,
         });
         expect(history.location.pathname).toBe(guardPage);
-        renderAuthGuard(auth, history);
+        renderAuthGuard(patientDetails, history);
 
         await waitFor(async () => {
             expect(history.location.pathname).toBe(routes.UNAUTHORISED);
         });
     });
 
-    it('navigates user to correct page when user is logged in', async () => {
-        const auth: Session = {
-            auth: buildUserAuth(),
-            isLoggedIn: true,
-        };
+    it('navigates user to correct page when patient is searched', async () => {
+        const patientDetails = buildPatientDetails();
         const history = createMemoryHistory({
             initialEntries: [guardPage],
             initialIndex: 0,
         });
         expect(history.location.pathname).toBe(guardPage);
-        renderAuthGuard(auth, history);
+        renderAuthGuard(patientDetails, history);
 
         await waitFor(async () => {
             expect(history.location.pathname).toBe(guardPage);
@@ -51,15 +44,16 @@ describe('AuthGuard', () => {
     });
 });
 
-const renderAuthGuard = (session: Session, history: History) => {
-    render(
-        <SessionProvider sessionOverride={session}>
+const renderAuthGuard = (patient: PatientDetails | null, history: History) => {
+    return render(
+        <PatientDetailsProvider patientDetails={patient}>
             <ReactRouter.Router navigator={history} location={history.location}>
-                <AuthGuard>
-                    <div>User is logged in</div>
-                </AuthGuard>
+                <PatientGuard>
+                    <div>patient number: {patient?.nhsNumber}</div>
+                    <div>patient postcode: {patient?.postalCode}</div>
+                </PatientGuard>
             </ReactRouter.Router>
             ,
-        </SessionProvider>,
+        </PatientDetailsProvider>,
     );
 };
