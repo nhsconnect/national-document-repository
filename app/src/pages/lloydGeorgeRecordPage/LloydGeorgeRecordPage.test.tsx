@@ -28,18 +28,22 @@ describe('LloydGeorgeRecordPage', () => {
     it('renders patient details', async () => {
         const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
+        mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
         renderPage();
 
-        expect(screen.getByText(patientName)).toBeInTheDocument();
+        await waitFor(async () => {
+            expect(screen.getByText(patientName)).toBeInTheDocument();
+        });
         expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
     });
 
     it('LG card with title', async () => {
         renderPage();
-
-        expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        await waitFor(async () => {
+            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        });
     });
 
     it('renders LG card with no docs available text if there is no LG record', async () => {
@@ -54,7 +58,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         renderPage();
 
-        await waitFor(() => {
+        await waitFor(async () => {
             expect(screen.getByText('No documents are available')).toBeInTheDocument();
         });
 
@@ -66,7 +70,9 @@ describe('LloydGeorgeRecordPage', () => {
 
         renderPage();
 
-        expect(screen.getByText('Loading...')).toBeInTheDocument();
+        await waitFor(async () => {
+            expect(screen.getByText('Loading...')).toBeInTheDocument();
+        });
     });
 
     it('renders LG card with file info when LG record is returned by search', async () => {
@@ -97,7 +103,6 @@ const renderPage = () => {
             <PatientDetailsProvider patientDetails={mockPatientDetails}>
                 <LloydGeorgeRecordPage />
             </PatientDetailsProvider>
-            ,
         </SessionProvider>,
     );
 };
