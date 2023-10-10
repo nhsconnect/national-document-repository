@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import { useNavigate } from 'react-router';
-import { BackLink, Card, Details } from 'nhsuk-react-components';
+import { BackLink, Button, Card, Details } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
@@ -108,7 +108,6 @@ function LloydGeorgeRecordPage() {
             {fullScreen && (
                 <BackLink
                     href="#"
-                    className="nhsuk-breadcrumb__link"
                     onClick={() => {
                         setFullScreen(false);
                     }}
@@ -136,6 +135,7 @@ function LloydGeorgeRecordPage() {
                                     View record
                                 </Details.Summary>
                                 <a
+                                    href="#"
                                     onClick={() => {
                                         setFullScreen(true);
                                     }}
