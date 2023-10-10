@@ -16,6 +16,4 @@ describe('AuthErrorPage', () => {
         );
         expect(screen.getByText('You have been logged out')).toBeInTheDocument();
     });
-
-    //TODO: spinner test when log in clicked
 });

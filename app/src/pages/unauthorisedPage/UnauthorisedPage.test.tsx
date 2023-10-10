@@ -16,6 +16,4 @@ describe('UnauthorisedPage', () => {
         );
         expect(screen.getByText('Unauthorised access')).toBeInTheDocument();
     });
-
-    //TODO: spinner test when log in clicked
 });
