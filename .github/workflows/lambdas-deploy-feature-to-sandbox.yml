@@ -440,7 +440,7 @@ jobs:
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Read metadata from staging bucket Lambda
+      - name: Create release package for Bulk Upload Metadata Lambda
         run: |
           make lambda_name=bulk_upload_metadata_handler zip
 
