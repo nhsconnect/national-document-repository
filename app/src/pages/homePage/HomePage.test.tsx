@@ -60,4 +60,6 @@ describe('StartPage', () => {
         expect(screen.getByRole('heading', { name: 'Before You Start' })).toBeInTheDocument();
         expect(screen.getByText(/valid NHS smartcard/)).toBeInTheDocument();
     });
+
+    //TODO: spinner test when log in clicked
 });

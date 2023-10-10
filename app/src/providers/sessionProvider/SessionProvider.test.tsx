@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import SessionProvider, { useSessionContext } from './SessionProvider';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
@@ -22,11 +22,12 @@ describe('SessionProvider', () => {
         renderSessionProvider();
         expect(screen.getByText('isLoggedIn - false')).toBeInTheDocument();
         expect(screen.getByText('authCode - undefined')).toBeInTheDocument();
-
-        userEvent.click(screen.getByText('Log in'));
-        await waitFor(async () => {
-            expect(screen.getByText('isLoggedIn - true')).toBeInTheDocument();
+        act(() => {
+            userEvent.click(screen.getByText('Log in'));
         });
+
+        expect(screen.getByText('isLoggedIn - true')).toBeInTheDocument();
+
         expect(
             screen.getByText(`authCode - ${loggedIn.auth.authorisation_token}`),
         ).toBeInTheDocument();
@@ -34,19 +35,20 @@ describe('SessionProvider', () => {
 
     it('is able to delete auth data when user has logged out', async () => {
         renderSessionProvider();
-
-        userEvent.click(screen.getByText('Log in'));
-        await waitFor(async () => {
-            expect(screen.getByText('isLoggedIn - true')).toBeInTheDocument();
+        act(() => {
+            userEvent.click(screen.getByText('Log in'));
         });
+        expect(screen.getByText('isLoggedIn - true')).toBeInTheDocument();
+
         expect(
             screen.getByText(`authCode - ${loggedIn.auth.authorisation_token}`),
         ).toBeInTheDocument();
 
-        userEvent.click(screen.getByText('Log out'));
-        await waitFor(async () => {
-            expect(screen.getByText('isLoggedIn - false')).toBeInTheDocument();
+        act(() => {
+            userEvent.click(screen.getByText('Log out'));
         });
+        expect(screen.getByText('isLoggedIn - false')).toBeInTheDocument();
+
         expect(screen.getByText('authCode - undefined')).toBeInTheDocument();
     });
 });

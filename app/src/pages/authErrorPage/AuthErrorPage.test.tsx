@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import * as ReactRouter from 'react-router';
-import UnauthorisedPage from './UnauthorisedPage';
 import { createMemoryHistory } from 'history';
+import AuthErrorPage from './AuthErrorPage';
 
-describe('UnauthorisedPage', () => {
+describe('AuthErrorPage', () => {
     it('renders unauthorised message', () => {
         const history = createMemoryHistory({
             initialEntries: ['/'],
@@ -11,10 +11,10 @@ describe('UnauthorisedPage', () => {
         });
         render(
             <ReactRouter.Router navigator={history} location={history.location}>
-                <UnauthorisedPage />
+                <AuthErrorPage />
             </ReactRouter.Router>,
         );
-        expect(screen.getByText('Unauthorised access')).toBeInTheDocument();
+        expect(screen.getByText('You have been logged out')).toBeInTheDocument();
     });
 
     //TODO: spinner test when log in clicked
