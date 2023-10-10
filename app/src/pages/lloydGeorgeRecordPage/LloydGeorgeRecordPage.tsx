@@ -132,16 +132,16 @@ function LloydGeorgeRecordPage() {
                     {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
                         <>
                             <Details expander open>
-                                <Details.Summary>
-                                    <span>View record</span>
-                                    <a
-                                        onClick={() => {
-                                            setFullScreen(true);
-                                        }}
-                                    >
-                                        View in full screen
-                                    </a>
+                                <Details.Summary style={{ width: '75%', display: 'inline' }}>
+                                    View record
                                 </Details.Summary>
+                                <a
+                                    onClick={() => {
+                                        setFullScreen(true);
+                                    }}
+                                >
+                                    View in full screen
+                                </a>
                                 <PdfViewer fileUrl={lloydGeorgeUrl} />
                             </Details>
                         </>
