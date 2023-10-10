@@ -3,7 +3,7 @@ from unittest.mock import call
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from handlers.document_manifest_by_nhs_number_handler import lambda_handler
-from tests.unit.helpers.data.test_documents import TEST_DS_DOCS, TEST_LG_DOCS
+from tests.unit.helpers.data.test_documents import TEST_ARF_DOCS, TEST_LG_DOCS
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_METADATA_FIELDS = [
@@ -49,7 +49,7 @@ def test_lambda_handler_returns_400_when_doc_type_invalid_response(
 
 def manifest_service_side_effect(nhs_number, doc_type):
     if doc_type == SupportedDocumentTypes.ARF:
-        return [TEST_DS_DOCS]
+        return [TEST_ARF_DOCS]
     if doc_type == SupportedDocumentTypes.LG:
         return [TEST_LG_DOCS]
     return None

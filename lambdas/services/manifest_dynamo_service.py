@@ -14,17 +14,22 @@ logger.setLevel(logging.INFO)
 class ManifestDynamoService(DynamoDBService):
 
     def discover_uploaded_documents(
-            self, nhs_number: str, doc_type: SupportedDocumentTypes
+            self, nhs_number: str, doc_types: str
     ) -> list[Document]:
+        arf_documents = []
+        lg_documents = []
+
+        if SupportedDocumentTypes.ARF.name in doc_types:
+            arf_documents = self.fetch_documents_from_table(nhs_number, os.environ["DOCUMENT_STORE_DYNAMODB_NAME"])
+        if SupportedDocumentTypes.LG.name in doc_types:
+            lg_documents = self.fetch_documents_from_table(nhs_number, os.environ["LLOYD_GEORGE_DYNAMODB_NAME"])
+
+        return arf_documents + lg_documents
+
+    def fetch_documents_from_table(self, nhs_number: str, table: str) -> list[Document]:
         documents = []
-        if doc_type == SupportedDocumentTypes.ARF:
-            document_table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-        elif doc_type == SupportedDocumentTypes.LG:
-            document_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-        else:
-            return documents
         response = self.query_service(
-            document_table,
+            table,
             "NhsNumberIndex",
             "NhsNumber",
             nhs_number,

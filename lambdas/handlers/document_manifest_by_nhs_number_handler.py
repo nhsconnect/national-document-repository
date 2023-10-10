@@ -37,22 +37,7 @@ def lambda_handler(event, context):
         # zip_trace_ttl = os.environ["DOCUMENT_ZIP_TRACE_TTL_IN_DAYS"]
 
         dynamo_service = ManifestDynamoService()
-        ds_documents = []
-        lg_documents = []
-
-        if SupportedDocumentTypes.ARF.name in doc_type:
-            logger.info("Retrieving doc store documents")
-            ds_documents = dynamo_service.discover_uploaded_documents(
-                nhs_number, SupportedDocumentTypes.ARF
-            )
-
-        if SupportedDocumentTypes.LG.name in doc_type:
-            logger.info("Retrieving lloyd george documents")
-            lg_documents = dynamo_service.discover_uploaded_documents(
-                nhs_number, SupportedDocumentTypes.LG
-            )
-
-        documents = lg_documents + ds_documents
+        documents = dynamo_service.discover_uploaded_documents(nhs_number, doc_type)
 
         if not documents:
             return ApiGatewayResponse(
