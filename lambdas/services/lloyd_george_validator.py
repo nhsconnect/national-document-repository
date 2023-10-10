@@ -20,7 +20,7 @@ def validate_lg_file_type(file_type: str):
         raise LGFileTypeException
 
 def validate_file_name(name: str):
-    lg_regex = r'[0-9]+of[0-9]+_Lloyd_George_Record_\[[A-Za-z]+\s[A-Za-z]+]_\[[0-9]{10}]_\[\d\d-\d\d-\d\d\d\d].pdf'
+    lg_regex = r'[0-9]+of[0-9]+_Lloyd_George_Record_\[[A-Za-z ]+]_\[[0-9]{10}]_\[\d\d-\d\d-\d\d\d\d].pdf'
     if not re.fullmatch(lg_regex, name):
         raise LGFileNameException
 
