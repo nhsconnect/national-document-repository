@@ -134,15 +134,13 @@ function LloydGeorgeRecordPage() {
                             <Details expander open>
                                 <Details.Summary>
                                     <span>View record</span>
-                                    <span>
-                                        <a
-                                            onClick={() => {
-                                                setFullScreen(true);
-                                            }}
-                                        >
-                                            View in full screen
-                                        </a>
-                                    </span>
+                                    <a
+                                        onClick={() => {
+                                            setFullScreen(true);
+                                        }}
+                                    >
+                                        View in full screen
+                                    </a>
                                 </Details.Summary>
                                 <PdfViewer fileUrl={lloydGeorgeUrl} />
                             </Details>
