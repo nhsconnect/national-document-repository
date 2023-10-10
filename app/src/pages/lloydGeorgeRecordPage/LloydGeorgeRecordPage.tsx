@@ -4,12 +4,12 @@ import { getFormattedDate } from '../../helpers/utils/formatDate';
 import { useNavigate } from 'react-router';
 import { BackLink, Card, Details } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
-import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
-import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import formatFileSize from '../../helpers/utils/formatFileSize';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
+import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -107,6 +107,8 @@ function LloydGeorgeRecordPage() {
         <>
             {fullScreen && (
                 <BackLink
+                    href="#"
+                    className="nhsuk-breadcrumb__link"
                     onClick={() => {
                         setFullScreen(false);
                     }}
@@ -130,16 +132,20 @@ function LloydGeorgeRecordPage() {
                     {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
                         <>
                             <Details expander open>
-                                <Details.Summary>View record</Details.Summary>
+                                <Details.Summary>
+                                    <span>View record</span>
+                                    <span>
+                                        <a
+                                            onClick={() => {
+                                                setFullScreen(true);
+                                            }}
+                                        >
+                                            View in full screen
+                                        </a>
+                                    </span>
+                                </Details.Summary>
                                 <PdfViewer fileUrl={lloydGeorgeUrl} />
                             </Details>
-                            <a
-                                onClick={() => {
-                                    setFullScreen(true);
-                                }}
-                            >
-                                View full screen
-                            </a>
                         </>
                     )}
                 </>
