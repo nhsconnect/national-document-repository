@@ -16,6 +16,8 @@ from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import validate_id
 
+from services.lloyd_george_validator import validate_lg_files, LGInvalidFilesException, LGFileTypeException, LGFileNameException
+
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
 logger = logging.getLogger()
@@ -119,6 +121,7 @@ def lambda_handler(event, context):
             return response
 
         try:
+
             s3_response = s3_service.create_document_presigned_url_handler(
                 document_reference.s3_bucket_name,
                 document_reference.nhs_number + "/" + document_reference.id,
@@ -135,6 +138,7 @@ def lambda_handler(event, context):
             return response
 
     try:
+        validate_lg_files(lg_documents)
         dynamo_service = DynamoDBService()
         if arf_documents:
             logger.info("Writing ARF document references")
@@ -150,6 +154,12 @@ def lambda_handler(event, context):
         logger.error(str(e))
         response = ApiGatewayResponse(
             500, "An error occurred when creating document reference", "POST"
+        ).create_api_gateway_response()
+        return response
+    except (LGInvalidFilesException, LGFileTypeException, LGFileNameException) as e:
+        logger.error(e)
+        response = ApiGatewayResponse(
+            400, "One or more if the files is not valid", "POST"
         ).create_api_gateway_response()
         return response
 
