@@ -267,7 +267,18 @@ def test_create_document_reference_arf_type_s3_ClientError_returns_500(
     assert actual == expected
 
 @pytest.mark.parametrize("event_body", [LG_MOCK_BAD_FILE_TYPE_EVENT_BODY, LG_MOCK_MISSING_FILES_EVENT_BODY, LG_MOCK_BAD_FILE_NAME_EVENT_BODY, LG_MOCK_DUPLICATE_FILES_EVENT_BODY])
-def test_invalid_file_type_for_lg_return_400(set_env, context, event_body):
+def test_invalid_file_type_for_lg_return_400(set_env, context, mocker, event_body):
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
+    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mock_presigned = mocker.patch(
+        "services.s3_service.S3Service.create_document_presigned_url_handler"
+    )
+    mock_presigned.return_value = MOCK_PRESIGNED_POST_RESPONSE
+
+
     expected = ApiGatewayResponse(
         400,
         "One or more if the files is not valid",
