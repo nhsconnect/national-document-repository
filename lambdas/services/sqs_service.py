@@ -18,7 +18,7 @@ class SQSService:
         self.client.send_message(
             QueueUrl=queue_url,
             MessageAttributes={
-                "NhsNumber": {"DataType": "String", "StringValue": str(nhs_number)},
+                "NhsNumber": {"DataType": "String", "StringValue": nhs_number},
             },
             MessageBody=message_body,
         )
