@@ -8,8 +8,8 @@ import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import formatFileSize from '../../helpers/utils/formatFileSize';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
+import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -134,14 +134,14 @@ function LloydGeorgeRecordPage() {
                                 <Details.Summary style={{ width: '75%', display: 'inline' }}>
                                     View record
                                 </Details.Summary>
-                                <a
-                                    href="#"
+                                <button
+                                    className="link-button"
                                     onClick={() => {
                                         setFullScreen(true);
                                     }}
                                 >
                                     View in full screen
-                                </a>
+                                </button>
                                 <PdfViewer fileUrl={lloydGeorgeUrl} />
                             </Details>
                         </>
