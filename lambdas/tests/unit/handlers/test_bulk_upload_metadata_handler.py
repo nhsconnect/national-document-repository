@@ -8,6 +8,7 @@ from handlers.bulk_upload_metadata_handler import (csv_to_staging_metadata,
                                                    lambda_handler,
                                                    send_metadata_to_sqs)
 from models.staging_metadata import METADATA_FILENAME
+from pydantic import ValidationError
 from tests.unit.conftest import (MOCK_LG_METADATA_SQS_QUEUE,
                                  MOCK_LG_STAGING_STORE_BUCKET)
 from tests.unit.helpers.data.staging_metadata.expected_data import (
@@ -117,10 +118,30 @@ def test_download_metadata_from_s3(mock_s3_service, mock_tempfile):
     assert actual == expected
 
 
+def test_download_metadata_from_s3_raise_error_when_failed_to_download(
+    mock_s3_service, mock_tempfile
+):
+    mock_s3_service.download_file.side_effect = ClientError(
+        {"Error": {"Code": "500", "Message": "file not exist in bucket"}},
+        "s3_get_object",
+    )
+
+    with pytest.raises(ClientError):
+        download_metadata_from_s3(
+            staging_bucket_name=MOCK_LG_STAGING_STORE_BUCKET,
+            metadata_filename=METADATA_FILENAME,
+        )
+
+
 def test_csv_to_staging_metadata():
     actual = csv_to_staging_metadata(MOCK_METADATA_CSV)
     expected = EXPECTED_PARSED_METADATA
     assert actual == expected
+
+
+def test_csv_to_staging_metadata_raise_error_when_metadata_invalid():
+    with pytest.raises(ValidationError):
+        csv_to_staging_metadata(MOCK_INVALID_METADATA_CSV)
 
 
 def test_send_metadata_to_sqs(mock_sqs_service):
@@ -142,6 +163,21 @@ def test_send_metadata_to_sqs(mock_sqs_service):
         ),
     ]
     mock_sqs_service.send_message_with_nhs_number_attr.assert_has_calls(expected_calls)
+
+
+def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(mock_sqs_service):
+    mock_sqs_service.send_message_with_nhs_number_attr.side_effect = ClientError(
+        {
+            "Error": {
+                "Code": "AWS.SimpleQueueService.NonExistentQueue",
+                "Message": "The specified queue does not exist",
+            }
+        },
+        "SendMessage",
+    )
+
+    with pytest.raises(ClientError):
+        send_metadata_to_sqs(EXPECTED_PARSED_METADATA, MOCK_LG_METADATA_SQS_QUEUE)
 
 
 @pytest.fixture
