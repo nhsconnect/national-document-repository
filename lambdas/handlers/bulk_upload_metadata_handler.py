@@ -16,21 +16,24 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(_event, _context):
-    # This lambda is supposed to be trigger manually / by S3 upload, and the output is sent to sqs queue,
-    # so we don't return any response
     try:
         logger.info("Starting metadata reading process")
 
         staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
         metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
 
+        logger.info("Fetching metadata.csv from bucket")
         metadata_file = download_metadata_from_s3(
             staging_bucket_name, METADATA_FILENAME
         )
 
+        logger.info("Parsing bulk upload metadata")
         staging_metadata_list = csv_to_staging_metadata(metadata_file)
 
+        logger.info("Finished parsing metadata")
         send_metadata_to_sqs(staging_metadata_list, metadata_queue_url)
+
+        logger.info("Sent bulk upload metadata to sqs queue")
     except pydantic.ValidationError as e:
         logger.info("Failed to parse metadata.csv")
         logger.error(str(e))
@@ -44,7 +47,7 @@ def lambda_handler(_event, _context):
 def download_metadata_from_s3(staging_bucket_name: str, metadata_filename: str):
     s3_service = S3Service()
     temp_dir = tempfile.mkdtemp()
-    logger.info("Fetching metadata.csv from bucket")
+
     local_file_path = os.path.join(temp_dir, metadata_filename)
     s3_service.download_file(
         s3_bucket_name=staging_bucket_name,
@@ -79,8 +82,10 @@ def send_metadata_to_sqs(
 
     for staging_metadata in staging_metadata_list:
         nhs_number = staging_metadata.nhs_number
+        logger.info(f"Sending metadata for patientId: {nhs_number}")
+
         sqs_service.send_message_with_nhs_number_attr(
             queue_url=metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
-            nhs_number=str(nhs_number),
+            nhs_number=nhs_number,
         )
