@@ -47,12 +47,12 @@ def test_lambda_handler_returns_400_when_doc_type_invalid_response(
     assert expected == actual
 
 
-def manifest_service_side_effect(nhs_number, doc_type):
-    if doc_type == SupportedDocumentTypes.ARF:
+def manifest_service_side_effect(nhs_number, doc_types):
+    if SupportedDocumentTypes.ARF.name in doc_types:
         return [TEST_ARF_DOCS]
-    if doc_type == SupportedDocumentTypes.LG:
+    if SupportedDocumentTypes.LG.name in doc_types:
         return [TEST_LG_DOCS]
-    return None
+    return []
 
 
 def test_lambda_handler_valid_parameters_arf_doc_type_request_returns_200(
@@ -75,7 +75,7 @@ def test_lambda_handler_valid_parameters_arf_doc_type_request_returns_200(
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)
-    mock_dynamo.assert_called_once_with("9000000009", SupportedDocumentTypes.ARF)
+    mock_dynamo.assert_called_once_with("9000000009", "ARF")
     assert expected == actual
 
 
@@ -99,7 +99,7 @@ def test_lambda_handler_valid_parameters_lg_doc_type_request_returns_200(
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_lg_doctype_event, context)
-    mock_dynamo.assert_called_once_with("9000000009", SupportedDocumentTypes.LG)
+    mock_dynamo.assert_called_once_with("9000000009", "LG")
     assert expected == actual
 
 
@@ -124,8 +124,7 @@ def test_lambda_handler_valid_parameters_both_doc_type_request_returns_200(
 
     actual = lambda_handler(valid_id_and_both_doctype_event, context)
     mock_dynamo.assert_has_calls([
-        call("9000000009", SupportedDocumentTypes.ARF),
-        call("9000000009", SupportedDocumentTypes.LG)
+        call("9000000009", "LG,ARF"),
     ])
     assert expected == actual
 
