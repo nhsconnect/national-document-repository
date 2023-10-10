@@ -27,7 +27,7 @@ def test_lambda_handler_returns_204_when_no_documents_returned_from_dynamo_respo
     assert expected == actual
 
 
-def test_lambda_handler_returns_204_when_doc_type_invalid_response(
+def test_lambda_handler_returns_400_when_doc_type_invalid_response(
         mocker, set_env, valid_id_and_invalid_doctype_event, context
 ):
     mock_document_query = mocker.patch(
@@ -36,7 +36,7 @@ def test_lambda_handler_returns_204_when_doc_type_invalid_response(
     mock_document_query.return_value = []
 
     expected = ApiGatewayResponse(
-        204, "No documents found for given NHS number and document type", "GET"
+        400, "Invalid document type requested", "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_invalid_doctype_event, context)
@@ -68,12 +68,12 @@ def test_lambda_handler_valid_parameters_returns_200(
     assert expected == actual
 
 
-def test_lambda_handler_missing_environment_variables_returns_400(
+def test_lambda_handler_missing_environment_variables_returns_500(
         set_env, monkeypatch, valid_id_and_both_doctype_event, context
 ):
     monkeypatch.delenv("DOCUMENT_STORE_DYNAMODB_NAME")
     expected = ApiGatewayResponse(
-        400,
+        500,
         "An error occurred due to missing key: 'DOCUMENT_STORE_DYNAMODB_NAME'",
         "GET",
     ).create_api_gateway_response()
