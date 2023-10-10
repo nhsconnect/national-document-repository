@@ -1,6 +1,6 @@
 import { createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router';
-import { buildPatientDetails } from '../../../helpers/test/testBuilders';
+import { buildPatientDetails, buildUserAuth } from '../../../helpers/test/testBuilders';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
@@ -9,6 +9,7 @@ import DocumentSearchResultsOptions from './DocumentSearchResultsOptions';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import { routes } from '../../../types/generic/routes';
+import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
 jest.mock('axios');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -28,20 +29,19 @@ describe('DocumentSearchResultsOptions', () => {
 
             expect(
                 screen.getByText(
-                    'Only permanently delete all documents for this patient if you have a valid reason to. For example, if the retention period of these documents has been reached.',
-                ),
+                    'Only permanently delete all documents for this patient if you have a valid reason to. For example, if the retention period of these documents has been reached.'
+                )
             ).toBeInTheDocument();
 
             expect(
-                screen.getByRole('button', { name: 'Download All Documents' }),
+                screen.getByRole('button', { name: 'Download All Documents' })
             ).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Delete All Documents' }),
+                screen.getByRole('button', { name: 'Delete All Documents' })
             ).toBeInTheDocument();
         });
 
-        it.skip('calls parent callback function to pass successful state after a successful response from api', async () => {
-            // Currently errors, needs to be revisited
+        it('calls parent callback function to pass successful state after a successful response from api', async () => {
             mockedAxios.get.mockResolvedValue(async () => {
                 return Promise.resolve({ data: 'test-presigned-url' });
             });
@@ -56,7 +56,7 @@ describe('DocumentSearchResultsOptions', () => {
         it('renders success message when the download state is successful', async () => {
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.SUCCEEDED);
             expect(
-                screen.getByText('All documents have been successfully downloaded.'),
+                screen.getByText('All documents have been successfully downloaded.')
             ).toBeInTheDocument();
         });
 
@@ -74,10 +74,10 @@ describe('DocumentSearchResultsOptions', () => {
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
             expect(
-                screen.getByRole('button', { name: 'Download All Documents' }),
+                screen.getByRole('button', { name: 'Download All Documents' })
             ).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Delete All Documents' }),
+                screen.getByRole('button', { name: 'Delete All Documents' })
             ).toBeInTheDocument();
 
             userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
@@ -93,7 +93,7 @@ describe('DocumentSearchResultsOptions', () => {
             });
 
             expect(
-                screen.queryByRole('button', { name: 'Download All Documents' }),
+                screen.queryByRole('button', { name: 'Download All Documents' })
             ).not.toBeInTheDocument();
         });
 
@@ -168,8 +168,12 @@ const renderDocumentSearchResultsOptions = (
     history = createMemoryHistory({
         initialEntries: [homeRoute],
         initialIndex: 1,
-    }),
+    })
 ) => {
+    const auth: Session = {
+        auth: buildUserAuth(),
+        isLoggedIn: true,
+    };
     const patient: PatientDetails = {
         ...buildPatientDetails(),
         ...patientOverride,
@@ -177,13 +181,15 @@ const renderDocumentSearchResultsOptions = (
 
     render(
         <ReactRouter.Router navigator={history} location={homeRoute}>
-            <PatientDetailsProvider patientDetails={patient}>
-                <DocumentSearchResultsOptions
-                    nhsNumber={patient.nhsNumber}
-                    downloadState={downloadState}
-                    updateDownloadState={updateDownloadState}
-                />
-            </PatientDetailsProvider>
-        </ReactRouter.Router>,
+            <SessionProvider sessionOverride={auth}>
+                <PatientDetailsProvider patientDetails={patient}>
+                    <DocumentSearchResultsOptions
+                        nhsNumber={patient.nhsNumber}
+                        downloadState={downloadState}
+                        updateDownloadState={updateDownloadState}
+                    />
+                </PatientDetailsProvider>
+            </SessionProvider>
+        </ReactRouter.Router>
     );
 };
