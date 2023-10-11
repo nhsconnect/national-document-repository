@@ -49,3 +49,17 @@ class S3Service:
         extra_args: Mapping[str, Any],
     ):
         return self.client.upload_file(file_name, s3_bucket_name, file_key, extra_args)
+
+    def copy_across_bucket(
+        self,
+        source_bucket: str,
+        source_file_key: str,
+        dest_bucket: str,
+        dest_file_key: str,
+    ):
+        # TODO: add unit test for this new method
+        return self.client.copy_object(
+            Bucket=dest_bucket,
+            Key=dest_file_key,
+            CopySource={"Bucket": source_bucket, "Key": source_file_key},
+        )

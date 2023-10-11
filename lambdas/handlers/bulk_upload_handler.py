@@ -1,21 +1,19 @@
 import logging
 
-from models.staging_metadata import StagingMetadata
+from services.bulk_upload_service import BulkUploadService
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-def lambda_handler(event, context):
+def lambda_handler(event, _context):
+    bulk_upload_service = BulkUploadService()
     for message in event["Records"]:
-        handle_sqs_message(message)
+        try:
+            bulk_upload_service.handle_sqs_message(message)
+        except RuntimeError:
+            send_to_invalid_queue(message)
 
 
-def handle_sqs_message(message: dict):
-    if message["eventSource"] != "aws:sqs":
-        logger.info("Rejecting event as not coming from sqs")
-        return
-
-    staging_metadata_json = message["body"]
-    staging_metadata = StagingMetadata.model_validate_json(staging_metadata_json)
-    print(f"Got data for patient: {staging_metadata.nhs_number}")
+def send_to_invalid_queue(message):
+    logger.log(f"send message to invalid queue: {message}")
