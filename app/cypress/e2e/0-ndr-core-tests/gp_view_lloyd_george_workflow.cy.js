@@ -1,64 +1,98 @@
-// env vars
+import viewLloydGeorgePayload from '../../fixtures/view_lloyd_george.json';
+import searchPatientPayload from '../../fixtures/search_patient.json';
 const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
-const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 
-const roles = Object.freeze({
-    GP: 'gp',
-});
+describe('GP View Lloyd George Workflow', () => {
+    beforeEach(() => {
+        // Arrange
+        navigateToLgPage();
+    });
 
-const testPatient = '9000000009';
-const patient = {
-    birthDate: '1970-01-01',
-    familyName: 'Default Surname',
-    givenName: ['Default Given Name'],
-    nhsNumber: testPatient,
-    postalCode: 'AA1 1AA',
-    superseded: false,
-    restricted: false,
-};
+    it('allows a GP user to view the Lloyd George document of an active patient', () => {
+        // Act
+        cy.intercept('GET', '/LloydGeorgeStitch*', {
+            statusCode: 200,
+            body: viewLloydGeorgePayload,
+        });
+        cy.get('#verify-submit').click();
 
-const navigateToLgPage = () => {
-    cy.visit(baseUrl + 'auth-callback');
-    cy.intercept('GET', '/Auth/TokenRequest*', {
-        statusCode: 200,
-        body: {
-            organisations: [
-                {
-                    org_name: 'PORTWAY LIFESTYLE CENTRE',
-                    ods_code: 'A470',
-                    role: 'DEV',
-                },
-            ],
-            authorisation_token: '111xxx222',
-        },
-    }).as('auth');
-    cy.intercept('GET', '/SearchPatient*', {
-        statusCode: 200,
-        body: patient,
-    }).as('search');
-    cy.wait('@auth');
-    cy.get(`#${roles.GP}-radio-button`).click();
-    cy.get('#role-submit-button').click();
-    cy.get('#nhs-number-input').click();
-    cy.get('#nhs-number-input').type(testPatient);
+        // Assert
+        assertPatientInfo();
 
-    cy.get('#search-submit').click();
-    cy.wait('@search');
+        cy.getCy('pdf-card-heading').should('have.text', 'Lloyd George record');
 
-    cy.get('#active-radio-button').click();
-    cy.get('#verify-submit').click();
-};
+        cy.getCy('pdf-card-description')
+            .should('include.text', 'Last updated: 09 October 2023 at 16:41:38')
+            .should('include.text', '12 files | File size: 502 KB | File format: PDF');
+        cy.getCy('pdf-viewer').should('be.visible');
+    });
 
-beforeEach(() => {
-    cy.visit(baseUrl);
-    navigateToLgPage();
-});
+    it('displays an empty Lloyd George card when no Lloyd George record exists for the patient', () => {
+        // Act
+        cy.intercept('GET', '/LloydGeorgeStitch*', {
+            statusCode: 404,
+        });
+        cy.get('#verify-submit').click();
 
-it('Navigates to Lloyd George record page successfully', () => {
-    cy.url().should('eq', baseUrl + 'search/patient/lloyd-george-record');
-});
+        // Assert
+        assertPatientInfo();
+        assertEmptyLloydGeorgeCard();
+    });
 
-it('Displays patient info and Lloyd George record card on page', () => {
-    cy.get('#patient-info').should('be.visible');
-    cy.get('#lloyd-george-record-card').should('be.visible');
+    it('displays an empty Lloyd George card when the backend API call fails', () => {
+        // Act
+        cy.intercept('GET', '/LloydGeorgeStitch*', {
+            statusCode: 500,
+        });
+        cy.get('#verify-submit').click();
+
+        //Assert
+        assertPatientInfo();
+        assertEmptyLloydGeorgeCard();
+    });
+
+    const navigateToLgPage = () => {
+        // login and navigate to search
+        cy.intercept('GET', '/Auth/TokenRequest*', {
+            statusCode: 200,
+            body: {
+                organisations: [
+                    {
+                        org_name: 'PORTWAY LIFESTYLE CENTRE',
+                        ods_code: 'A470',
+                        role: 'DEV',
+                    },
+                ],
+                authorisation_token: '111xxx222',
+            },
+        }).as('auth');
+        cy.visit(baseUrl + 'auth-callback');
+        cy.wait('@auth');
+
+        cy.get(`#gp-radio-button`).click();
+        cy.get('#role-submit-button').click();
+
+        // search patient
+        cy.intercept('GET', '/SearchPatient*', {
+            statusCode: 200,
+            body: searchPatientPayload,
+        }).as('search');
+        cy.get('#nhs-number-input').type(searchPatientPayload.nhsNumber);
+        cy.get('#search-submit').click();
+        cy.wait('@search');
+
+        // verify patient is active
+        cy.get('#active-radio-button').click();
+    };
+
+    const assertPatientInfo = () => {
+        cy.getCy('patient-name').should('have.text', 'Default Given Name Default Surname');
+        cy.getCy('patient-nhs-number').should('have.text', `NHS number: 900 000 0009`);
+        cy.getCy('patient-dob').should('have.text', `Date of birth: 01 January 1970`);
+    };
+
+    const assertEmptyLloydGeorgeCard = () => {
+        cy.getCy('pdf-card-heading').should('have.text', 'Lloyd George record');
+        cy.getCy('pdf-card-description').should('have.text', 'No documents are available');
+    };
 });

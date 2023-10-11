@@ -1,3 +1,4 @@
+/// <reference types="cypress" />
 // ***********************************************************
 // This example support/e2e.ts is processed and
 // loaded automatically before your test files.
@@ -14,7 +15,19 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands'
+import './commands';
+
+Cypress.Commands.add('getCy', (selector, ...args) => {
+    return cy.get(`[data-cy=${selector}]`, ...args);
+});
+
+declare global {
+    namespace Cypress {
+        interface Chainable {
+            getCy(value: string): Chainable<Subject>;
+        }
+    }
+}
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')

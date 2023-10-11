@@ -37,11 +37,15 @@ function LloydGeorgeRecordPage() {
 
     const patientInfo = (
         <div id="patient-info">
-            <p style={{ marginBottom: 5, fontWeight: '700' }}>
+            <p style={{ marginBottom: 5, fontWeight: '700' }} data-cy="patient-name">
                 {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
             </p>
-            <p style={{ fontSize: '16px', marginBottom: 5 }}>NHS number: {nhsNumber}</p>
-            <p style={{ fontSize: '16px' }}>Date of birth: {dob}</p>
+            <p style={{ fontSize: '16px', marginBottom: 5 }} data-cy="patient-nhs-number">
+                NHS number: {nhsNumber}
+            </p>
+            <p style={{ fontSize: '16px' }} data-cy="patient-dob">
+                Date of birth: {dob}
+            </p>
         </div>
     );
 
@@ -120,10 +124,16 @@ function LloydGeorgeRecordPage() {
                 <>
                     <Card style={{ marginBottom: 0 }}>
                         <Card.Content>
-                            <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
+                            <Card.Heading
+                                style={{ fontWeight: '700', fontSize: '24px' }}
+                                data-cy="pdf-card-heading"
+                            >
                                 Lloyd George record
                             </Card.Heading>
-                            <Card.Description style={{ fontSize: '16px' }}>
+                            <Card.Description
+                                style={{ fontSize: '16px' }}
+                                data-cy="pdf-card-description"
+                            >
                                 {displayPdfCardDescription()}
                             </Card.Description>
                         </Card.Content>
@@ -135,7 +145,10 @@ function LloydGeorgeRecordPage() {
                                 open
                                 style={{ position: 'relative', borderTop: 'none' }}
                             >
-                                <Details.Summary style={{ display: 'inline-block' }}>
+                                <Details.Summary
+                                    style={{ display: 'inline-block' }}
+                                    data-cy="view-record-btn"
+                                >
                                     View record
                                 </Details.Summary>
                                 <button
