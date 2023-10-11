@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import { useNavigate } from 'react-router';
-import { Card, Details } from 'nhsuk-react-components';
+import { Card, Details, Select } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
@@ -10,6 +10,8 @@ import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import formatFileSize from '../../helpers/utils/formatFileSize';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import { useOnClickOutside } from 'usehooks-ts';
+import { ReactComponent as Chevron } from '../../styles/down-chevron.svg';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -22,6 +24,9 @@ function LloydGeorgeRecordPage() {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
+    const actionsRef = useRef(null);
+
+    useOnClickOutside(actionsRef, () => setSelectExpanded(false));
 
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
@@ -82,7 +87,7 @@ function LloydGeorgeRecordPage() {
         setNumberOfFiles,
         setTotalFileSizeInByte,
     ]);
-
+    const [selectExpanded, setSelectExpanded] = useState(false);
     const pdfCardDescription = (
         <>
             <span style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</span>
@@ -102,8 +107,32 @@ function LloydGeorgeRecordPage() {
         }
     };
 
+    const handleMoreActions = () => {
+        setSelectExpanded(!selectExpanded);
+    };
+
     return (
+        //nhsuk-select--error
         <>
+            <Select className="lg-test" label="More actions">
+                <Select.Option>Select an action...</Select.Option>
+            </Select>
+            <div
+                className={`nhsuk-select lg-actions-select ${
+                    selectExpanded ? 'lg-actions-select--selected' : ''
+                }`}
+                ref={actionsRef}
+                onClick={handleMoreActions}
+                style={{ background: '#fff' }}
+            >
+                <div
+                    className={`lg-actions-select_border ${
+                        selectExpanded ? 'lg-actions-select_border--selected' : ''
+                    }`}
+                />
+                <span className="lg-actions-select_placeholder">Select an action...</span>
+                <Chevron className="lg-actions-select_icon" />
+            </div>
             <>{patientInfo}</>
             <Card style={{ marginBottom: 0 }}>
                 <Card.Content>
