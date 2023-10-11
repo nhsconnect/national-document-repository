@@ -16,7 +16,7 @@ from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import validate_id
 
-from services.lloyd_george_validator import validate_lg_files, LGInvalidFilesException, LGFileTypeException, LGFileNameException
+from services.lloyd_george_validator import validate_lg_files, LGInvalidFilesException
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -156,7 +156,7 @@ def lambda_handler(event, context):
             500, "An error occurred when creating document reference", "POST"
         ).create_api_gateway_response()
         return response
-    except (LGInvalidFilesException, LGFileTypeException, LGFileNameException) as e:
+    except LGInvalidFilesException as e:
         logger.error(e)
         response = ApiGatewayResponse(
             400, "One or more if the files is not valid", "POST"
