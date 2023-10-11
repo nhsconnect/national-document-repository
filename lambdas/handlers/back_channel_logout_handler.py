@@ -30,12 +30,12 @@ def logout_handler(token):
     except ClientError as e:
         logger.error(f"Error logging out user: {e}")
         return ApiGatewayResponse(
-            400, "Internal error logging user out", "GET"
+            400, """{ "error":"Internal error logging user out"}""", "GET"
         ).create_api_gateway_response()
     except (jwt.PyJWTError, KeyError) as e:
         logger.error(f"error while decoding JWT: {e}")
         return ApiGatewayResponse(
-            400, "Invalid x-auth header", "GET"
+            400, """{ "error":"Invalid x-auth header"}""", "GET"
         ).create_api_gateway_response()
     
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
