@@ -37,6 +37,9 @@ def validate_document_type(lambda_func: Callable):
     return interceptor
 
 
-def doc_type_is_valid(doc_type: SupportedDocumentTypes) -> bool:
-    return SupportedDocumentTypes.ARF.name in doc_type or \
-        SupportedDocumentTypes.LG.name in doc_type
+def doc_type_is_valid(doc_types: str) -> bool:
+    doc_types_requested = doc_types.split(",")
+    for doc_type_requested in doc_types_requested:
+        if SupportedDocumentTypes.get_from_field_name(doc_type_requested) is None:
+            return False
+    return True

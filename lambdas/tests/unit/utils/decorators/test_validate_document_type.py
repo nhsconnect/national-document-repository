@@ -59,6 +59,16 @@ def test_returns_400_response_when_invalid_doctype_supplied(valid_id_and_invalid
     assert actual == expected
 
 
+def test_returns_400_response_when_nonsense_doctype_supplied(valid_id_and_nonsense_doctype_event, context):
+    expected = ApiGatewayResponse(
+        400, "Invalid document type requested", "GET"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(valid_id_and_nonsense_doctype_event, context)
+
+    assert actual == expected
+
+
 def test_returns_400_response_when_empty_doctype_supplied(valid_id_and_empty_doctype_event, context):
     expected = ApiGatewayResponse(
         400, "Invalid document type requested", "GET"

@@ -73,6 +73,14 @@ def valid_id_and_invalid_doctype_event():
 
 
 @pytest.fixture
+def valid_id_and_nonsense_doctype_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"patientId": "9000000009", "docType": "sdfjfvsjhfvsukjARFfjdhtgdkjughLG"},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
 def valid_id_and_empty_doctype_event():
     api_gateway_proxy_event = {
         "queryStringParameters": {"patientId": "9000000009", "docType": ""},
