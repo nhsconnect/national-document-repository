@@ -118,7 +118,7 @@ function LloydGeorgeRecordPage() {
             <>{patientInfo}</>
             {!fullScreen ? (
                 <>
-                    <Card style={{ marginBottom: 0 }}>
+                    <Card style={{ marginBottom: 0, borderBottom: 0 }}>
                         <Card.Content>
                             <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
                                 Lloyd George record
@@ -129,12 +129,28 @@ function LloydGeorgeRecordPage() {
                         </Card.Content>
                     </Card>
                     {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
-                        <>
-                            <Details expander open>
-                                <Details.Summary style={{ width: '75%', display: 'inline' }}>
+                        <Card
+                            style={{
+                                borderBottom: 'none',
+                                borderLeft: 'none',
+                                borderRight: 'none',
+                            }}
+                        >
+                            <Details
+                                expander
+                                open
+                                style={{ position: 'relative', borderTop: 'none' }}
+                            >
+                                <Details.Summary style={{ display: 'inline-block' }}>
                                     View record
                                 </Details.Summary>
                                 <button
+                                    style={{
+                                        display: 'inline-block',
+                                        position: 'absolute',
+                                        right: '28px',
+                                        top: '30px',
+                                    }}
                                     className="link-button"
                                     onClick={() => {
                                         setFullScreen(true);
@@ -144,7 +160,7 @@ function LloydGeorgeRecordPage() {
                                 </button>
                                 <PdfViewer fileUrl={lloydGeorgeUrl} />
                             </Details>
-                        </>
+                        </Card>
                     )}
                 </>
             ) : (

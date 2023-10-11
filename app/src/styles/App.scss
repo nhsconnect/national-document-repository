@@ -115,7 +115,8 @@
     font-size: 24px;
 }
 
-.nhsuk-details__summary-text {
-    display: flex !important;
-    justify-content: space-between;
+@-moz-document url-prefix() {
+    #pdf-viewer {
+        margin-top: 6px;
+    }
 }
