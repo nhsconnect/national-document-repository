@@ -16,7 +16,7 @@ class PdsApiService:
     def fetch_patient_details(self, nhs_number: str) -> PatientDetails:
         validate_id(nhs_number)
 
-        response = self.fake_pds_request(nhs_number)
+        response = self.pds_request(nhs_number)
 
         return self.handle_response(response, nhs_number)
 
@@ -37,18 +37,17 @@ class PdsApiService:
         raise PdsErrorException("Error when requesting patient from PDS")
 
     def pds_request(self, nshNumber: str) -> Response:
-        kid = self.get_ssm_parameter("/prs/dev/user-input/pds-fhir-kid")
-        key = self.get_ssm_parameter("/prs/dev/user-input/pds-fhir-private-key")
         endpoint = self.get_ssm_parameter("/prs/dev/user-input/pds-fhir-endpoint")
-        payload = {
-            "iss": key,
-            "sub": key,
-            "aud": endpoint,
-            "jti": str(uuid.uuid4()),
-            "exp": int(time()) + 300
-        }
-        token = self.encode_token(payload, key=key, additional_headers={"kid": kid})
+        access_token = self.get_ssm_parameter("/prs/dev/pds-fhir-access-token")
+        authorization_header = {"Authorization" : f"Bearer {access_token}"}
+        url_endpoint = endpoint + 'Patient/' + nshNumber
+        pds_response = requests.get(url=url_endpoint, headers=authorization_header)
 
+        if pds_response.status_code == 401:
+            access_token = self.get_new_access_token(endpoint)
+            authorization_header = {"Authorization" : f"Bearer {access_token}"}
+            pds_response = requests.get(url=url_endpoint, headers=authorization_header)
+        return pds_response
 
 
     def fake_pds_request(self, nhsNumber: str) -> Response:
@@ -81,15 +80,25 @@ class PdsApiService:
 
         return response
 
-    def get_ssm_parameter(self, key):
+    def get_ssm_parameter(self, parameter_key):
         client = boto3.client("ssm", region_name="eu-west-2")
-        ssm_response = client.get_parameter(Name=key, WithDecryption=True)
+        ssm_response = client.get_parameter(Name=parameter_key, WithDecryption=True)
         return ssm_response["Parameter"]["Value"]
 
     def encode_token(self, token_content, key, additional_headers ):
         return jwt.encode(token_content, key, algorithm="RS512", headers=additional_headers)
 
-    def get_access_token(self, endpoint, token):
+    def get_new_access_token(self, endpoint):
+        kid = self.get_ssm_parameter("/prs/dev/user-input/pds-fhir-kid")
+        key = self.get_ssm_parameter("/prs/dev/user-input/pds-fhir-private-key")
+        payload = {
+        "iss": key,
+        "sub": key,
+        "aud": endpoint,
+        "jti": str(uuid.uuid4()),
+        "exp": int(time()) + 300
+        }
+        token = self.encode_token(payload, key=key, additional_headers={"kid": kid})
         access_token_headers = {
             "content-type": "application/x-www-form-urlencoded"
         }
@@ -100,6 +109,13 @@ class PdsApiService:
         }
         response = requests.post(url=endpoint, headers=access_token_headers, data=json.dumps(access_token_data))
         response.raise_for_status()
-        return response.json()['access_token']
+        access_token = response.json()['access_token']
+        self.update_access_token_ssm(access_token)
+        return access_token
+
+    def update_access_token_ssm(self, parameter_value):
+        parameter_key = "/prs/dev/pds-fhir-access-token"
+        client = boto3.client("ssm", region_name="eu-west-2")
+        client.put_parameter(Name=parameter_key, Value=parameter_value, Type='SecureString', Overwrite=True)
 
 
