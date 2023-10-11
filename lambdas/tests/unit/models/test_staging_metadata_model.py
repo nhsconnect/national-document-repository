@@ -1,7 +1,7 @@
 import json
 
 from models.staging_metadata import StagingMetadata
-from unit.helpers.data.staging_metadata.expected_data import (
+from tests.unit.helpers.data.staging_metadata.expected_data import (
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567891, patient_1, patient_2)
 

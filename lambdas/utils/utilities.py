@@ -1,4 +1,5 @@
 import re
+import uuid
 
 from utils.exceptions import InvalidResourceIdException
 
@@ -17,3 +18,7 @@ def decapitalise_keys(values):
     for key, value in values.items():
         data[key[0].lower() + key[1:]] = value
     return data
+
+
+def create_reference_id() -> str:
+    return str(uuid.uuid4())

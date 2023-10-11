@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import sys
-import uuid
 from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
@@ -14,7 +13,7 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
-from utils.utilities import validate_id
+from utils.utilities import create_reference_id, validate_id
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -90,7 +89,7 @@ def lambda_handler(event, context):
 
         logger.info("Provided document is supported")
 
-        s3_object_key = str(uuid.uuid4())
+        s3_object_key = create_reference_id()
 
         document_reference: NHSDocumentReference
 
