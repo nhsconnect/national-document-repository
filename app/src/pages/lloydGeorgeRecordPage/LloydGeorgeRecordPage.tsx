@@ -2,14 +2,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import { useNavigate } from 'react-router';
-import { Card, Details } from 'nhsuk-react-components';
+import { BackLink, Card, Details } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
-import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
-import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import formatFileSize from '../../helpers/utils/formatFileSize';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
+import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -18,6 +18,7 @@ function LloydGeorgeRecordPage() {
     const [totalFileSizeInByte, setTotalFileSizeInByte] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
     const [lloydGeorgeUrl, setLloydGeorgeUrl] = useState('');
+    const [fullScreen, setFullScreen] = useState(false);
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
@@ -104,22 +105,60 @@ function LloydGeorgeRecordPage() {
 
     return (
         <>
+            {fullScreen && (
+                <BackLink
+                    href="#"
+                    onClick={() => {
+                        setFullScreen(false);
+                    }}
+                >
+                    Go back
+                </BackLink>
+            )}
             <>{patientInfo}</>
-            <Card style={{ marginBottom: 0 }}>
-                <Card.Content>
-                    <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
-                        Lloyd George record
-                    </Card.Heading>
-                    <Card.Description style={{ fontSize: '16px' }}>
-                        {displayPdfCardDescription()}
-                    </Card.Description>
-                </Card.Content>
-            </Card>
-            {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
-                <Details expander open>
-                    <Details.Summary>View record</Details.Summary>
-                    <PdfViewer fileUrl={lloydGeorgeUrl} />
-                </Details>
+            {!fullScreen ? (
+                <>
+                    <Card style={{ marginBottom: 0 }}>
+                        <Card.Content>
+                            <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
+                                Lloyd George record
+                            </Card.Heading>
+                            <Card.Description style={{ fontSize: '16px' }}>
+                                {displayPdfCardDescription()}
+                            </Card.Description>
+                        </Card.Content>
+                    </Card>
+                    {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
+                        <>
+                            <Details
+                                expander
+                                open
+                                style={{ position: 'relative', borderTop: 'none' }}
+                            >
+                                <Details.Summary style={{ display: 'inline-block' }}>
+                                    View record
+                                </Details.Summary>
+                                <button
+                                    style={{
+                                        display: 'inline-block',
+                                        position: 'absolute',
+                                        right: '28px',
+                                        top: '30px',
+                                    }}
+                                    className="link-button"
+                                    onClick={() => {
+                                        setFullScreen(true);
+                                    }}
+                                >
+                                    View in full screen
+                                </button>
+                                <PdfViewer fileUrl={lloydGeorgeUrl} />
+                            </Details>
+                        </>
+                    )}
+                </>
+            ) : (
+                <PdfViewer fileUrl={lloydGeorgeUrl} />
             )}
         </>
     );
