@@ -4,6 +4,8 @@ export enum routes {
     AUTH_CALLBACK = '/auth-callback',
     NOT_FOUND = '/*',
     UNAUTHORISED = '/unauthorised',
+    AUTH_ERROR = '/auth-error',
+
     LOGOUT = '/logout',
 
     DOWNLOAD_SEARCH = '/search/patient',

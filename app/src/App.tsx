@@ -21,6 +21,7 @@ import PatientResultPage from './pages/patientResultPage/PatientResultPage';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
 import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
 import LloydGeorgeRecordPage from './pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import AuthErrorPage from './pages/authErrorPage/AuthErrorPage';
 
 function App() {
     return (
@@ -34,6 +35,8 @@ function App() {
 
                                 <Route element={<NotFoundPage />} path={routes.NOT_FOUND} />
                                 <Route element={<UnauthorisedPage />} path={routes.UNAUTHORISED} />
+                                <Route element={<AuthErrorPage />} path={routes.AUTH_ERROR} />
+
                                 <Route element={<AuthCallbackPage />} path={routes.AUTH_CALLBACK} />
                                 <Route element={<RoleSelectPage />} path={routes.SELECT_ORG} />
 

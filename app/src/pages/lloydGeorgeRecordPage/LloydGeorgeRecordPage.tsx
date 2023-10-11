@@ -85,20 +85,20 @@ function LloydGeorgeRecordPage() {
 
     const pdfCardDescription = (
         <>
-            <p style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</p>
-            <p style={{ color: '#4C6272' }}>
+            <span style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</span>
+            <span style={{ color: '#4C6272' }}>
                 {numberOfFiles} files | File size: {formatFileSize(totalFileSizeInByte)} | File
                 format: PDF
-            </p>
+            </span>
         </>
     );
     const displayPdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
             return pdfCardDescription;
         } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
-            return <>No documents are available</>;
+            return 'No documents are available';
         } else {
-            return <>Loading...</>;
+            return 'Loading...';
         }
     };
 

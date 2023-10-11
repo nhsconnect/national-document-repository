@@ -41,6 +41,7 @@
                 "ignoreComments": true
             }
         ],
+        "testing-library/no-unnecessary-act": "off",
         "no-plusplus": [
             "error",
             {
