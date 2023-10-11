@@ -118,7 +118,7 @@ function LloydGeorgeRecordPage() {
             <>{patientInfo}</>
             {!fullScreen ? (
                 <>
-                    <Card style={{ marginBottom: 0, borderBottom: 0 }}>
+                    <Card style={{ marginBottom: 0 }}>
                         <Card.Content>
                             <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
                                 Lloyd George record
@@ -129,13 +129,7 @@ function LloydGeorgeRecordPage() {
                         </Card.Content>
                     </Card>
                     {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
-                        <Card
-                            style={{
-                                borderBottom: 'none',
-                                borderLeft: 'none',
-                                borderRight: 'none',
-                            }}
-                        >
+                        <>
                             <Details
                                 expander
                                 open
@@ -160,7 +154,7 @@ function LloydGeorgeRecordPage() {
                                 </button>
                                 <PdfViewer fileUrl={lloydGeorgeUrl} />
                             </Details>
-                        </Card>
+                        </>
                     )}
                 </>
             ) : (
