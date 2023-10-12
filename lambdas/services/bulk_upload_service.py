@@ -5,6 +5,8 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
 from services.dynamo_service import DynamoDBService
+from services.lloyd_george_validator import (LGInvalidFilesException,
+                                             validate_lg_file_names)
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.utilities import create_reference_id
@@ -38,15 +40,18 @@ class BulkUploadService:
 
         staging_metadata_json = message["body"]
         staging_metadata = StagingMetadata.model_validate_json(staging_metadata_json)
-        lg_filenames = [
+        file_names = [
             os.path.basename(metadata.file_path) for metadata in staging_metadata.files
         ]
 
-        logger.debug("Validating filenames for Lloyd George record")
-
-        # TODO: Dummy LG validation as a placeholder. To be replaced with the actual one from PRMDR-242
-        if not all(filename.endswith(".pdf") for filename in lg_filenames):
-            raise RuntimeError("Invalid LG filename")
+        try:
+            validate_lg_file_names(file_names)
+        except LGInvalidFilesException as e:
+            logger.info(
+                f"Detected invalid file name related to patient number: {staging_metadata.nhs_number}"
+            )
+            logger.info("Will stop processing Lloyd George record for this patient")
+            raise e
 
         self.init_transaction()
         try:
