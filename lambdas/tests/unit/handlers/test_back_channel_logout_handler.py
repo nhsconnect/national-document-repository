@@ -1,20 +1,28 @@
 from botocore.exceptions import ClientError
+import pytest
 from handlers.back_channel_logout_handler import lambda_handler
-from jwt.exceptions import PyJWTError
+from lambdas.services.oidc_service import OidcService
+from lambdas.utils.exceptions import AuthorisationException
 from tests.unit.helpers.ssm_responses import \
     MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
 
+@pytest.fixture
+def mock_oidc_service(mocker):
+    mocker.patch.object(
+        OidcService, 
+        "__init__", 
+        return_value = None)
+    mock_oidc_service = mocker.patch.object(
+        OidcService, 
+        "validate_and_decode_token")
+    yield mock_oidc_service
 
-def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(mocker, monkeypatch):
+def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(mocker, mock_oidc_service):
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"sid": mock_session_id}
-    mock_token_validator = mocker.patch("jwt.decode", return_value=mock_decoded_token)
-    mock_ssm_service = mocker.patch(
-        "handlers.back_channel_logout_handler.get_ssm_parameter", 
-        return_value=MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE,
-    )
+    mock_oidc_service.return_value = mock_decoded_token
     mock_dynamo_service = mocker.patch(
         "handlers.back_channel_logout_handler.remove_session_from_dynamo_db"
     )
@@ -24,47 +32,51 @@ def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(moc
     actual = lambda_handler(build_event_from_token(mock_token), None)
 
     assert expected == actual
-    mock_token_validator.asset_called_with(mock_token)
+    mock_oidc_service.asset_called_with(mock_token)
     mock_dynamo_service.assert_called_with(mock_session_id)
-    mock_ssm_service.assert_called_once_with("SSM_PARAM_CIS2_BCL_PUBLIC_KEY")
 
 
-def test_back_channel_logout_handler_jwt_without_session_id_returns_400(mocker):
+def test_back_channel_logout_handler_jwt_without_session_id_returns_400(mock_oidc_service):
     mock_token = "mock_token"
-    mock_token_validator = mocker.patch(
-        "jwt.decode",
-        return_value={"token_decode_correctly": "but_no_session_id_in_content"},
-    )
-    mock_ssm_service = mocker.patch(
-        "handlers.back_channel_logout_handler.get_ssm_parameter",
-        return_value=MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE,
-    )
+    mock_session_id = "mock_session_id"
+    mock_decoded_token = {"not_an_sid": mock_session_id}
+    mock_oidc_service.return_value = mock_decoded_token
 
     expected = ApiGatewayResponse(
-        400,  """{ "error":"Invalid x-auth header"}""", "GET"
+        400,  """{ "error":"No sid field in decoded token"}""", "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), None)
 
     assert expected == actual
-    mock_token_validator.asset_called_with(mock_token)
-    mock_ssm_service.assert_called_once()
+    mock_oidc_service.asset_called_with(mock_token)
 
 
-def test_back_channel_logout_handler_boto_error_returns_400(mocker):
+def test_back_channel_logout_handler_invalid_jwt_returns_400(mock_oidc_service):
+    mock_token = "mock_token"
+    mock_session_id = "mock_session_id"
+    mock_oidc_service.side_effect=AuthorisationException
+
+    expected = ApiGatewayResponse(
+        400,  """{ "error":"JWT was invalid"}""", "GET"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(build_event_from_token(mock_token), None)
+
+    assert expected == actual
+    mock_oidc_service.asset_called_with(mock_token)
+
+
+def test_back_channel_logout_handler_boto_error_returns_400(mocker, mock_oidc_service):
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"sid": mock_session_id}
-    mock_token_validator = mocker.patch("jwt.decode", return_value=mock_decoded_token)
+    mock_oidc_service.return_value = mock_decoded_token
     mock_dynamo_service = mocker.patch(
         "handlers.back_channel_logout_handler.remove_session_from_dynamo_db",
         side_effect=ClientError(
             {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
         ),
-    )
-    mock_ssm_service = mocker.patch(
-        "handlers.back_channel_logout_handler.get_ssm_parameter",
-        return_value=MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE,
     )
 
     expected = ApiGatewayResponse(
@@ -74,10 +86,9 @@ def test_back_channel_logout_handler_boto_error_returns_400(mocker):
     actual = lambda_handler(build_event_from_token(mock_token), None)
 
     assert expected == actual
-    mock_token_validator.asset_called_with(mock_token)
+    mock_oidc_service.asset_called_with(mock_token)
     mock_dynamo_service.assert_called_with(mock_session_id)
-    mock_ssm_service.assert_called_once()
 
 
 def build_event_from_token(token: str) -> dict:
-    return {"headers": {"x-auth": token}}
+    return {"body": {"logout_token": token}}

@@ -2,8 +2,9 @@ import logging
 import os
 import jwt
 from botocore.exceptions import ClientError
+from lambdas.services.oidc_service import OidcService
+from lambdas.utils.exceptions import AuthorisationException
 from services.dynamo_service import DynamoDBService
-from services.ssm_service import get_ssm_parameter
 from utils.lambda_response import ApiGatewayResponse
 
 
@@ -12,17 +13,15 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    token = event["headers"]["x-auth"]
+    token = event["body"]["logout_token"]
     return logout_handler(token)
 
 
 def logout_handler(token):
     try:
-        ssm_response = get_ssm_parameter("SSM_PARAM_CIS2_BCL_PUBLIC_KEY")
-        public_key = ssm_response["Parameter"]["Value"]
-        
         logger.info("decoding token")
-        decoded_token = jwt.decode(token, public_key, algorithms=["RS256"])
+        oidc_service = OidcService()
+        decoded_token = oidc_service.validate_and_decode_token(token)
         session_id = decoded_token["sid"]
         remove_session_from_dynamo_db(session_id)
 
@@ -31,15 +30,20 @@ def logout_handler(token):
         return ApiGatewayResponse(
             400, """{ "error":"Internal error logging user out"}""", "GET"
         ).create_api_gateway_response()
-    except (jwt.PyJWTError, KeyError) as e:
+    except AuthorisationException as e:
         logger.error(f"error while decoding JWT: {e}")
         return ApiGatewayResponse(
-            400, """{ "error":"Invalid x-auth header"}""", "GET"
+            400, """{ "error":"JWT was invalid"}""", "GET"
+        ).create_api_gateway_response()
+    except KeyError as e:
+        logger.error(f"No field 'sid' in decoded token: {e}")
+        return ApiGatewayResponse(
+            400, """{ "error":"No sid field in decoded token"}""", "GET"
         ).create_api_gateway_response()
     
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 
-def remove_session_from_dynamo_db(session_id):#move to parent class
+def remove_session_from_dynamo_db(session_id):
     logger.info(f"Session to be removed: {session_id}")
     dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
     dynamodb_service = DynamoDBService()

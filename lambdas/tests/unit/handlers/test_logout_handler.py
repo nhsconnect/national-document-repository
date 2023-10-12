@@ -6,10 +6,11 @@ from tests.unit.helpers.ssm_responses import \
 from utils.lambda_response import ApiGatewayResponse
 
 
-def test_logout_handler_valid_jwt_returns_200(mocker):
+def test_logout_handler_valid_jwt_returns_200(mocker, monkeypatch):
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"ndr_session_id": mock_session_id}
+    monkeypatch.setenv("SSM_PARAM_JWT_TOKEN_PUBLIC_KEY", "mock_public_key")
     mock_token_validator = mocker.patch("jwt.decode", return_value=mock_decoded_token)
     mock_dynamo_service = mocker.patch(
         "handlers.logout_handler.remove_session_from_dynamo_db"
@@ -29,8 +30,9 @@ def test_logout_handler_valid_jwt_returns_200(mocker):
     mock_ssm_service.assert_called_once()
 
 
-def test_logout_handler_invalid_jwt_returns_400(mocker):
+def test_logout_handler_invalid_jwt_returns_400(mocker, monkeypatch):
     mock_token = "mock_token"
+    monkeypatch.setenv("SSM_PARAM_JWT_TOKEN_PUBLIC_KEY", "mock_public_key")
     mock_token_validator = mocker.patch("jwt.decode", side_effect=PyJWTError())
     mock_ssm_service = mocker.patch(
         "handlers.logout_handler.get_ssm_parameter",
@@ -48,8 +50,9 @@ def test_logout_handler_invalid_jwt_returns_400(mocker):
     mock_ssm_service.assert_called_once()
 
 
-def test_logout_handler_jwt_without_ndr_session_id_returns_400(mocker):
+def test_logout_handler_jwt_without_ndr_session_id_returns_400(mocker, monkeypatch):
     mock_token = "mock_token"
+    monkeypatch.setenv("SSM_PARAM_JWT_TOKEN_PUBLIC_KEY", "mock_public_key")
     mock_token_validator = mocker.patch(
         "jwt.decode",
         return_value={"token_decode_correctly": "but_no_ndr_session_id_in_content"},
@@ -70,10 +73,11 @@ def test_logout_handler_jwt_without_ndr_session_id_returns_400(mocker):
     mock_ssm_service.assert_called_once()
 
 
-def test_logout_handler_boto_error_returns_500(mocker):
+def test_logout_handler_boto_error_returns_500(mocker, monkeypatch):
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"ndr_session_id": mock_session_id}
+    monkeypatch.setenv("SSM_PARAM_JWT_TOKEN_PUBLIC_KEY", "mock_public_key")
     mock_token_validator = mocker.patch("jwt.decode", return_value=mock_decoded_token)
     mock_dynamo_service = mocker.patch(
         "handlers.logout_handler.remove_session_from_dynamo_db",
