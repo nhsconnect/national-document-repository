@@ -29,11 +29,7 @@ function LloydGeorgeRecordPage() {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
 
     useOnClickOutside(actionsRef, (e) => {
-        const el = e?.target as HTMLElement;
-        const isOutside = !Array.from(el.classList).includes('lg-actions');
-        if (isOutside) {
-            setShowActionsMenu(false);
-        }
+        setShowActionsMenu(false);
     });
 
     const dob: String = patientDetails?.birthDate
@@ -118,6 +114,15 @@ function LloydGeorgeRecordPage() {
         setShowActionsMenu(!showActionsMenu);
     };
 
+    const downloadAllHandler = () => {};
+
+    const actionLinks = [
+        { label: 'See all files', handler: () => null },
+        { label: 'Download all files', handler: downloadAllHandler },
+        { label: 'Delete a selection of files', handler: () => null },
+        { label: 'Delete file', handler: () => null },
+    ];
+
     return (
         //nhsuk-select--error
         <>
@@ -126,7 +131,6 @@ function LloydGeorgeRecordPage() {
                     className={`nhsuk-select lg-actions-select ${
                         showActionsMenu ? 'lg-actions-select--selected' : ''
                     }`}
-                    ref={actionsRef}
                     onClick={handleMoreActions}
                     style={{ background: '#fff' }}
                 >
@@ -139,24 +143,19 @@ function LloydGeorgeRecordPage() {
                     <Chevron className="lg-actions-select_icon" />
                 </div>
                 {showActionsMenu && (
-                    <Card className="lg-actions-menu lg-action">
-                        <Card.Content className="lg-action">
-                            <ol className="lg-action">
-                                {[
-                                    'See all files',
-                                    'Download all files',
-                                    'Delete a selection of files',
-                                    'Delete file',
-                                ].map((link, i) => (
-                                    <li key={link + i} className="lg-actions">
-                                        <Link to="#" className="lg-actions">
-                                            {link}
-                                        </Link>
-                                    </li>
-                                ))}
-                            </ol>
-                        </Card.Content>
-                    </Card>
+                    <div ref={actionsRef}>
+                        <Card className="lg-actions-menu">
+                            <Card.Content>
+                                <ol>
+                                    {actionLinks.map((link, i) => (
+                                        <li key={link.label + i}>
+                                            <Link to="#">{link.label}</Link>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </Card.Content>
+                        </Card>
+                    </div>
                 )}
             </div>
             <>{patientInfo}</>
