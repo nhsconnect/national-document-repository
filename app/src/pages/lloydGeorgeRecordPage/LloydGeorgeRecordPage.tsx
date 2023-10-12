@@ -112,6 +112,7 @@ function LloydGeorgeRecordPage() {
             {fullScreen && (
                 <BackLink
                     href="#"
+                    data-cy="back-link"
                     onClick={() => {
                         setFullScreen(false);
                     }}
@@ -158,6 +159,7 @@ function LloydGeorgeRecordPage() {
                                         right: '28px',
                                         top: '30px',
                                     }}
+                                    data-cy="full-screen-btn"
                                     className="link-button"
                                     onClick={() => {
                                         setFullScreen(true);

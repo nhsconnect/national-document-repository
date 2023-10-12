@@ -1,5 +1,6 @@
-import viewLloydGeorgePayload from '../../fixtures/view_lloyd_george.json';
-import searchPatientPayload from '../../fixtures/search_patient.json';
+import viewLloydGeorgePayload from '../../fixtures/requests/GET_LloydGeorgeStitch.json';
+import searchPatientPayload from '../../fixtures/requests/GET_SearchPatient.json';
+
 const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 
 describe('GP View Lloyd George Workflow', () => {
@@ -8,7 +9,7 @@ describe('GP View Lloyd George Workflow', () => {
         navigateToLgPage();
     });
 
-    it('allows a GP user to view the Lloyd George document of an active patient', () => {
+    it.only('allows a GP user to view the Lloyd George document of an active patient', () => {
         // Act
         cy.intercept('GET', '/LloydGeorgeStitch*', {
             statusCode: 200,
@@ -18,12 +19,25 @@ describe('GP View Lloyd George Workflow', () => {
 
         // Assert
         assertPatientInfo();
-
         cy.getCy('pdf-card-heading').should('have.text', 'Lloyd George record');
-
         cy.getCy('pdf-card-description')
-            .should('include.text', 'Last updated: 09 October 2023 at 16:41:38')
+            .should('include.text', 'Last updated: 09 October 2023 at 15:41:38')
             .should('include.text', '12 files | File size: 502 KB | File format: PDF');
+        cy.getCy('pdf-viewer').should('be.visible');
+
+        // Act - open full screen view
+        cy.getCy('full-screen-btn').click();
+
+        // Assert
+        assertPatientInfo();
+        cy.getCy('pdf-card-description').should('not.exist');
+        cy.getCy('pdf-viewer').should('be.visible');
+
+        //  Act - close full screen view
+        cy.getCy('back-link').click();
+
+        // Assert
+        cy.getCy('pdf-card-description').should('be.visible');
         cy.getCy('pdf-viewer').should('be.visible');
     });
 
@@ -86,7 +100,10 @@ describe('GP View Lloyd George Workflow', () => {
     };
 
     const assertPatientInfo = () => {
-        cy.getCy('patient-name').should('have.text', 'Default Given Name Default Surname');
+        cy.getCy('patient-name').should(
+            'have.text',
+            `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
+        );
         cy.getCy('patient-nhs-number').should('have.text', `NHS number: 900 000 0009`);
         cy.getCy('patient-dob').should('have.text', `Date of birth: 01 January 1970`);
     };

@@ -1,7 +1,7 @@
 {
     "birthDate": "1970-01-01",
-    "familyName": "Default Surname",
-    "givenName": ["Default Given Name"],
+    "familyName": "Surname",
+    "givenName": ["GivenName"],
     "nhsNumber": "9000000009",
     "postalCode": "AA1 1AA",
     "superseded": false,
