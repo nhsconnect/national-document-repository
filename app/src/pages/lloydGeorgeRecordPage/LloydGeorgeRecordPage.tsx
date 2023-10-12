@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import { useNavigate } from 'react-router';
-import { Card, Details, Select } from 'nhsuk-react-components';
+import { Card, Details } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
@@ -12,6 +12,7 @@ import formatFileSize from '../../helpers/utils/formatFileSize';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { useOnClickOutside } from 'usehooks-ts';
 import { ReactComponent as Chevron } from '../../styles/down-chevron.svg';
+import { Link } from 'react-router-dom';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -25,8 +26,15 @@ function LloydGeorgeRecordPage() {
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
     const actionsRef = useRef(null);
+    const [showActionsMenu, setShowActionsMenu] = useState(false);
 
-    useOnClickOutside(actionsRef, () => setSelectExpanded(false));
+    useOnClickOutside(actionsRef, (e) => {
+        const el = e?.target as HTMLElement;
+        const isOutside = !Array.from(el.classList).includes('lg-actions');
+        if (isOutside) {
+            setShowActionsMenu(false);
+        }
+    });
 
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
@@ -87,7 +95,6 @@ function LloydGeorgeRecordPage() {
         setNumberOfFiles,
         setTotalFileSizeInByte,
     ]);
-    const [selectExpanded, setSelectExpanded] = useState(false);
     const pdfCardDescription = (
         <>
             <span style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</span>
@@ -108,32 +115,52 @@ function LloydGeorgeRecordPage() {
     };
 
     const handleMoreActions = () => {
-        setSelectExpanded(!selectExpanded);
+        setShowActionsMenu(!showActionsMenu);
     };
 
     return (
         //nhsuk-select--error
         <>
-            <Select className="lg-test" label="More actions">
-                <Select.Option>Select an action...</Select.Option>
-            </Select>
-            <div
-                className={`nhsuk-select lg-actions-select ${
-                    selectExpanded ? 'lg-actions-select--selected' : ''
-                }`}
-                ref={actionsRef}
-                onClick={handleMoreActions}
-                style={{ background: '#fff' }}
-            >
+            <div className="lg-actions">
                 <div
-                    className={`lg-actions-select_border ${
-                        selectExpanded ? 'lg-actions-select_border--selected' : ''
+                    className={`nhsuk-select lg-actions-select ${
+                        showActionsMenu ? 'lg-actions-select--selected' : ''
                     }`}
-                />
-                <span className="lg-actions-select_placeholder">Select an action...</span>
-                <Chevron className="lg-actions-select_icon" />
+                    ref={actionsRef}
+                    onClick={handleMoreActions}
+                    style={{ background: '#fff' }}
+                >
+                    <div
+                        className={`lg-actions-select_border ${
+                            showActionsMenu ? 'lg-actions-select_border--selected' : ''
+                        }`}
+                    />
+                    <span className="lg-actions-select_placeholder">Select an action...</span>
+                    <Chevron className="lg-actions-select_icon" />
+                </div>
+                {showActionsMenu && (
+                    <Card className="lg-actions-menu lg-action">
+                        <Card.Content className="lg-action" style={{ padding: '0' }}>
+                            <ol className="lg-action" style={{ margin: '32px' }}>
+                                {[
+                                    'See all files',
+                                    'Download all files',
+                                    'Delete a selection of files',
+                                    'Delete file',
+                                ].map((link, i) => (
+                                    <li key={link + i} className="lg-actions">
+                                        <Link to="#" className="lg-actions">
+                                            {link}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ol>
+                        </Card.Content>
+                    </Card>
+                )}
             </div>
             <>{patientInfo}</>
+
             <Card style={{ marginBottom: 0 }}>
                 <Card.Content>
                     <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
