@@ -14,6 +14,11 @@ import { useOnClickOutside } from 'usehooks-ts';
 import { ReactComponent as Chevron } from '../../styles/down-chevron.svg';
 import { Link } from 'react-router-dom';
 
+enum LG_RECORD_STAGE {
+    RECORD = 0,
+    DOWNLOAD_ALL = 1,
+}
+
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
     const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
@@ -27,6 +32,7 @@ function LloydGeorgeRecordPage() {
     const mounted = useRef(false);
     const actionsRef = useRef(null);
     const [showActionsMenu, setShowActionsMenu] = useState(false);
+    const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
 
     useOnClickOutside(actionsRef, (e) => {
         setShowActionsMenu(false);
@@ -114,7 +120,9 @@ function LloydGeorgeRecordPage() {
         setShowActionsMenu(!showActionsMenu);
     };
 
-    const downloadAllHandler = () => {};
+    const downloadAllHandler = () => {
+        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+    };
 
     const actionLinks = [
         { label: 'See all files', handler: () => null },
@@ -123,8 +131,7 @@ function LloydGeorgeRecordPage() {
         { label: 'Delete file', handler: () => null },
     ];
 
-    return (
-        //nhsuk-select--error
+    const RecordStage = () => (
         <>
             <div className="lg-actions">
                 <div
@@ -149,7 +156,9 @@ function LloydGeorgeRecordPage() {
                                 <ol>
                                     {actionLinks.map((link, i) => (
                                         <li key={link.label + i}>
-                                            <Link to="#">{link.label}</Link>
+                                            <Link to="#" onClick={link.handler}>
+                                                {link.label}
+                                            </Link>
                                         </li>
                                     ))}
                                 </ol>
@@ -178,6 +187,22 @@ function LloydGeorgeRecordPage() {
             )}
         </>
     );
+    const DownloadAllStage = () => (
+        <>
+            <h1>Downloading documents</h1>
+            <h2>Alex Cool Bloggs</h2>
+            <h3>NHS number: 1428571428</h3>
+        </>
+    );
+
+    switch (stage) {
+        case LG_RECORD_STAGE.RECORD:
+            return <RecordStage />;
+            break;
+        case LG_RECORD_STAGE.DOWNLOAD_ALL:
+            return <DownloadAllStage />;
+            break;
+    }
 }
 
 export default LloydGeorgeRecordPage;
