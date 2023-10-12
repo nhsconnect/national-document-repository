@@ -140,8 +140,8 @@ function LloydGeorgeRecordPage() {
                 </div>
                 {showActionsMenu && (
                     <Card className="lg-actions-menu lg-action">
-                        <Card.Content className="lg-action" style={{ padding: '0' }}>
-                            <ol className="lg-action" style={{ margin: '32px' }}>
+                        <Card.Content className="lg-action">
+                            <ol className="lg-action">
                                 {[
                                     'See all files',
                                     'Download all files',
