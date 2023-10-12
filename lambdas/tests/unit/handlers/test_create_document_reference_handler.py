@@ -281,7 +281,7 @@ def test_invalid_file_type_for_lg_return_400(set_env, context, mocker, event_bod
 
     expected = ApiGatewayResponse(
         400,
-        "One or more if the files is not valid",
+        "One or more of the files is not valid",
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler({"body": json.dumps(event_body)}, context)

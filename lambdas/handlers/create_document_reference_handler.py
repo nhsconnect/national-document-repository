@@ -159,7 +159,7 @@ def lambda_handler(event, context):
     except LGInvalidFilesException as e:
         logger.error(e)
         response = ApiGatewayResponse(
-            400, "One or more if the files is not valid", "POST"
+            400, "One or more of the files is not valid", "POST"
         ).create_api_gateway_response()
         return response
 
