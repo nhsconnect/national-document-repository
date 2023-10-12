@@ -2,28 +2,14 @@ from datetime import datetime, timezone
 from typing import Any
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel
 
-from services.lloyd_george_validator import validate_lg_file_type
 
 
 class UploadRequestDocument(BaseModel):
     fileName: str
     contentType: str
     docType: str
-
-    @model_validator(mode='before')
-    @classmethod
-    def check_file_type_for_lg(cls, data: Any) -> Any:
-        if isinstance(data, dict):
-            doc_type = data.get('docType')
-            content_type = data.get('contentType')
-        elif isinstance(data, UploadRequestDocument):
-            doc_type = data.docType
-            content_type = data.contentType
-        if doc_type == 'LG':
-            validate_lg_file_type(content_type)
-        return data
 
 
 class NHSDocumentReference:
