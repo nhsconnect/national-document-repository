@@ -6,7 +6,7 @@ from pydantic import BaseModel, ValidationError
 
 class Period(BaseModel):
     start: str
-    end: str
+    end: Optional[str] = ""
 
 
 class Address(BaseModel):
@@ -14,7 +14,7 @@ class Address(BaseModel):
 
     use: str
     period: Period
-    postal_code: str
+    postal_code: Optional[str] = ""
 
 
 class Name(BaseModel):

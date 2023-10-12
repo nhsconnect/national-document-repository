@@ -2,6 +2,7 @@ import logging
 from json import JSONDecodeError
 
 from pydantic import ValidationError
+from requests import HTTPError
 from services.pds_api_service import PdsApiService
 from utils.exceptions import (InvalidResourceIdException,
                               PatientNotFoundException, PdsErrorException)
@@ -25,7 +26,9 @@ def lambda_handler(event, context):
         response = patient_details.model_dump_json(by_alias=True)
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
-
+    except HTTPError as e:
+        logger.error(e.response)
+        return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
     except PatientNotFoundException as e:
         return ApiGatewayResponse(404, f"{str(e)}", "GET").create_api_gateway_response()
 
