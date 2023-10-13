@@ -116,6 +116,7 @@ function LgRecordStage({
         <>
             {fullScreen && (
                 <BackLink
+                    data-cy="back-link"
                     href="#"
                     onClick={() => {
                         setFullScreen(false);
@@ -138,7 +139,7 @@ function LgRecordStage({
             {!fullScreen ? (
                 <>
                     <Card style={{ marginBottom: 0 }}>
-                        <Card.Content style={{ position: 'relative' }}>
+                        <Card.Content style={{ position: 'relative' }} data-cy="pdf-card">
                             <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
                                 Lloyd George record
                             </Card.Heading>
@@ -152,7 +153,10 @@ function LgRecordStage({
                                 open
                                 style={{ position: 'relative', borderTop: 'none' }}
                             >
-                                <Details.Summary style={{ display: 'inline-block' }}>
+                                <Details.Summary
+                                    style={{ display: 'inline-block' }}
+                                    data-cy="view-record-bin"
+                                >
                                     View record
                                 </Details.Summary>
                                 <button
@@ -163,6 +167,7 @@ function LgRecordStage({
                                         top: '30px',
                                     }}
                                     className="link-button"
+                                    data-cy="full-screen-btn"
                                     onClick={() => {
                                         setFullScreen(true);
                                     }}
