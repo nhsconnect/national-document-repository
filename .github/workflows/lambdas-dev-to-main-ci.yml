@@ -35,6 +35,7 @@ jobs:
       authoriser_changed: ${{steps.filter.outputs.authoriser}}
       logout_changed: ${{steps.filter.outputs.logout}}
       lloyd_george_stitch_changed: ${{steps.filter.outputs.lloyd_george_stitch}}
+      bulk_upload_metadata_changed: ${{steps.filter.outputs.bulk_upload_metadata}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -69,7 +70,9 @@ jobs:
             logout:
               - 'lambdas/handlers/logout_handler.py'
             lloyd_george_stitch:
-              - 'lambdas/handlers/lloyd_george_record_stitch.py'
+              - 'lambdas/handlers/lloyd_george_record_stitch_handler.py'
+            bulk_upload_metadata:
+              - 'lambdas/handlers/bulk_upload_metadata_handler.py'
             
   
   
@@ -533,3 +536,50 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ vars.BUILD_ENV}}_LloydGeorgeStitchLambda
           zip_file: package_lambdas_lloyd_george_record_stitch_handler.zip
+
+  python_deploy_bulk_upload_metadata_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    if: |
+      (github.ref == 'refs/heads/main') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.bulk_upload_metadata_changed == 'true'
+          )
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Bulk Upload Metadata Lambda
+        run: |
+          make lambda_name=bulk_upload_metadata_handler zip
+
+      - name: Upload Lambda Function for BulkUploadMetadataLambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ vars.BUILD_ENV}}_BulkUploadMetadataLambda
+          zip_file: package_lambdas_bulk_upload_metadata_handler.zip
