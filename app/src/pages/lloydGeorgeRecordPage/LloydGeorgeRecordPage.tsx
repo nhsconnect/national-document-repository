@@ -112,54 +112,52 @@ function LloydGeorgeRecordPage() {
         { label: 'Delete file', handler: () => null },
     ];
 
-    const PdfCardDescription = () => (
-        <div className="lg-pdf-description">
-            <div className="lg-pdf-description_content">
-                <span style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</span>
-                <span style={{ color: '#4C6272' }}>
+    const PdfCardDetails = () => (
+        <>
+            <div>
+                <div style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</div>
+                <div style={{ color: '#4C6272' }}>
                     {numberOfFiles} files | File size: {formatFileSize(totalFileSizeInByte)} | File
                     format: PDF
-                </span>
-            </div>
-            <div className="lg-pdf-description_actions">
-                <div className="lg-actions">
-                    <div
-                        className={`nhsuk-select lg-actions-select ${
-                            showActionsMenu ? 'lg-actions-select--selected' : ''
-                        }`}
-                        onClick={handleMoreActions}
-                        style={{ background: '#fff' }}
-                    >
-                        <div
-                            className={`lg-actions-select_border ${
-                                showActionsMenu ? 'lg-actions-select_border--selected' : ''
-                            }`}
-                        />
-                        <span className="lg-actions-select_placeholder">Select an action...</span>
-                        <Chevron className="lg-actions-select_icon" />
-                    </div>
-                    {showActionsMenu && (
-                        <div ref={actionsRef}>
-                            <Card className="lg-actions-menu">
-                                <Card.Content>
-                                    <ol>
-                                        {actionLinks.map((link, i) => (
-                                            <li key={link.label + i}>
-                                                <Link to="#">{link.label}</Link>
-                                            </li>
-                                        ))}
-                                    </ol>
-                                </Card.Content>
-                            </Card>
-                        </div>
-                    )}
                 </div>
             </div>
-        </div>
+            <div className="lg-actions">
+                <div
+                    className={`nhsuk-select lg-actions-select ${
+                        showActionsMenu ? 'lg-actions-select--selected' : ''
+                    }`}
+                    onClick={handleMoreActions}
+                    style={{ background: '#fff' }}
+                >
+                    <div
+                        className={`lg-actions-select_border ${
+                            showActionsMenu ? 'lg-actions-select_border--selected' : ''
+                        }`}
+                    />
+                    <span className="lg-actions-select_placeholder">Select an action...</span>
+                    <Chevron className="lg-actions-select_icon" />
+                </div>
+                {showActionsMenu && (
+                    <div ref={actionsRef}>
+                        <Card className="lg-actions-menu">
+                            <Card.Content>
+                                <ol>
+                                    {actionLinks.map((link, i) => (
+                                        <li key={link.label + i}>
+                                            <Link to="#">{link.label}</Link>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </Card.Content>
+                        </Card>
+                    </div>
+                )}
+            </div>
+        </>
     );
-    const displayPdfCardDescription = () => {
+    const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
-            return <PdfCardDescription />;
+            return <PdfCardDetails />;
         } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
             return <span>No documents are available</span>;
         } else {
@@ -172,13 +170,11 @@ function LloydGeorgeRecordPage() {
             <>{patientInfo}</>
 
             <Card style={{ marginBottom: 0 }}>
-                <Card.Content>
+                <Card.Content style={{ position: 'relative' }}>
                     <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
                         Lloyd George record
                     </Card.Heading>
-                    <Card.Description style={{ fontSize: '16px' }}>
-                        {displayPdfCardDescription()}
-                    </Card.Description>
+                    <PdfCardDescription />
                 </Card.Content>
             </Card>
             {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (

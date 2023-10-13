@@ -116,7 +116,9 @@
 }
 
 .lg-actions {
-    position: relative;
+    position: absolute;
+    top: 32px;
+    right: 32px;
     &-select {
         border-color: #000;
         position: relative;
@@ -126,6 +128,9 @@
         width: 182.5px;
         @media (max-width: 640px) {
             width: 161.5px;
+        }
+        @media (max-width: 480px) {
+            display: none;
         }
         &_border {
             border: solid black 2px;
@@ -161,8 +166,9 @@
     }
     &-menu {
         position: absolute;
+        right: 0px;
         z-index: 1000;
-        width: unset;
+        width: 252.5px;
         box-shadow: 0 10px 10px rgba(0, 0, 0, 0.3);
         ol {
             padding-left: 0;
@@ -172,9 +178,4 @@
             }
         }
     }
-}
-
-.lg-pdf-description {
-    display: flex;
-    flex-flow: row nowrap;
 }
