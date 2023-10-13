@@ -27,7 +27,6 @@ function LloydGeorgeRecordPage() {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
-    const [showActionsMenu, setShowActionsMenu] = useState(false);
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
 
     useEffect(() => {
@@ -98,8 +97,6 @@ function LloydGeorgeRecordPage() {
                         lloydGeorgeUrl={lloydGeorgeUrl}
                         patientDetails={patientDetails}
                         downloadStage={downloadStage}
-                        showActionsMenu={showActionsMenu}
-                        setShowActionsMenu={setShowActionsMenu}
                         actionLinks={actionLinks}
                     />
                 )

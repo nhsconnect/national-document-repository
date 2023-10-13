@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import { BackLink, Card, Details } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
@@ -18,8 +18,6 @@ type Props = {
     numberOfFiles: number;
     totalFileSizeInByte: number;
     actionLinks: Array<PdfActionLink>;
-    setShowActionsMenu: Dispatch<SetStateAction<boolean>>;
-    showActionsMenu: boolean;
 };
 
 function LgRecordStage({
@@ -29,8 +27,6 @@ function LgRecordStage({
     lastUpdated,
     numberOfFiles,
     totalFileSizeInByte,
-    showActionsMenu,
-    setShowActionsMenu,
     actionLinks,
 }: Props) {
     const [fullScreen, setFullScreen] = useState(false);
@@ -38,6 +34,7 @@ function LgRecordStage({
         setShowActionsMenu(!showActionsMenu);
     };
 
+    const [showActionsMenu, setShowActionsMenu] = useState(false);
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
