@@ -51,13 +51,17 @@ function LloydGeorgeRecordPage() {
         patientDetails?.nhsNumber.slice(6, 10);
 
     const patientInfo = (
-        <>
-            <p style={{ marginBottom: 5, fontWeight: '700' }}>
+        <div id="patient-info">
+            <p style={{ marginBottom: 5, fontWeight: '700' }} data-cy="patient-name">
                 {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
             </p>
-            <p style={{ fontSize: '16px', marginBottom: 5 }}>NHS number: {nhsNumber}</p>
-            <p style={{ fontSize: '16px' }}>Date of birth: {dob}</p>
-        </>
+            <p style={{ fontSize: '16px', marginBottom: 5 }} data-cy="patient-nhs-number">
+                NHS number: {nhsNumber}
+            </p>
+            <p style={{ fontSize: '16px' }} data-cy="patient-dob">
+                Date of birth: {dob}
+            </p>
+        </div>
     );
 
     useEffect(() => {
@@ -179,6 +183,7 @@ function LloydGeorgeRecordPage() {
             {fullScreen && (
                 <BackLink
                     href="#"
+                    data-cy="back-link"
                     onClick={() => {
                         setFullScreen(false);
                     }}
@@ -190,7 +195,7 @@ function LloydGeorgeRecordPage() {
             {!fullScreen ? (
                 <>
                     <Card style={{ marginBottom: 0 }}>
-                        <Card.Content style={{ position: 'relative' }}>
+                        <Card.Content style={{ position: 'relative' }} data-cy="pdf-card">
                             <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
                                 Lloyd George record
                             </Card.Heading>
@@ -204,7 +209,10 @@ function LloydGeorgeRecordPage() {
                                 open
                                 style={{ position: 'relative', borderTop: 'none' }}
                             >
-                                <Details.Summary style={{ display: 'inline-block' }}>
+                                <Details.Summary
+                                    style={{ display: 'inline-block' }}
+                                    data-cy="view-record-btn"
+                                >
                                     View record
                                 </Details.Summary>
                                 <button
@@ -214,6 +222,7 @@ function LloydGeorgeRecordPage() {
                                         right: '28px',
                                         top: '30px',
                                     }}
+                                    data-cy="full-screen-btn"
                                     className="link-button"
                                     onClick={() => {
                                         setFullScreen(true);
