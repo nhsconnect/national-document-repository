@@ -158,7 +158,7 @@ function LloydGeorgeRecordPage() {
     );
     const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
-            return;
+            return <PdfCardDetails />;
         } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
             return <span>No documents are available</span>;
         } else {
