@@ -1,3 +1,6 @@
+# import os
+# from unittest.mock import patch
+#
 # import pytest
 # from models.pds_models import PatientDetails
 # from requests.models import Response
@@ -8,8 +11,15 @@
 #
 # pds_service = PdsApiService()
 #
+# @pytest.fixture
+# def patch_env_vars():
+#     env_vars = {
+#         "PDS_FHIR_IS_STUBBED": False,
+#     }
+#     with patch.dict(os.environ, env_vars):
+#         yield env_vars
 #
-# def test_fetch_patient_details_valid_returns_PatientDetails(mocker):
+# def test_fetch_patient_details_valid_returns_PatientDetails(mocker, patch_env_vars):
 #     nhs_number = "9000000025"
 #
 #     response = Response()

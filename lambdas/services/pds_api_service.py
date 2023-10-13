@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import uuid
 from time import time
 
@@ -18,8 +19,10 @@ logger.setLevel(logging.INFO)
 class PdsApiService:
     def fetch_patient_details(self, nhs_number: str) -> PatientDetails:
         validate_id(nhs_number)
-
-        response = self.pds_request(nhs_number)
+        if os.environ["PDS_FHIR_IS_STUBBED"] :
+            response = self.pds_request(nhs_number, retry_on_expired=True)
+        else:
+            response = self.fake_pds_request(nhs_number)
 
         return self.handle_response(response, nhs_number)
 
@@ -41,23 +44,24 @@ class PdsApiService:
 
         raise PdsErrorException("Error when requesting patient from PDS")
 
-    def pds_request(self, nshNumber: str) -> Response:
+    def pds_request(self, nshNumber: str, retry_on_expired: bool):
         endpoint = self.get_ssm_parameter("/prs/dev/user-input/pds-fhir-endpoint")
-        access_token = self.get_ssm_parameter("/prs/dev/pds-fhir-access-token")
+        access_token_response = self.get_ssm_parameter("/prs/dev-ndr/pds-fhir-access-token")
+        access_token = access_token_response['access_token']
+        if access_token_response['expires_at'] < time():
+            access_token = self.get_new_access_token()
+
         x_request_id = str(uuid.uuid4())
+
         authorization_header = {"Authorization" : f"Bearer {access_token}",
                                 "X-Request-ID" : x_request_id}
 
         url_endpoint = endpoint + 'Patient/' + nshNumber
         pds_response = requests.get(url=url_endpoint, headers=authorization_header)
 
-        if pds_response.status_code == 401:
-            access_token = self.get_new_access_token()
-            authorization_header = {"Authorization" : f"Bearer {access_token}",
-                                    "X-Request-ID" : x_request_id}
-            pds_response = requests.get(url=url_endpoint, headers=authorization_header)
+        if pds_response.status_code == 401 & retry_on_expired:
+            return self.pds_request(nshNumber, retry_on_expired=False)
         return pds_response
-
 
     def fake_pds_request(self, nhsNumber: str) -> Response:
         mock_pds_results: list[dict] = []
@@ -121,12 +125,14 @@ class PdsApiService:
         response = requests.post(url=nhs_oauth_endpoint, headers=access_token_headers, data=access_token_data)
         logging.error(response.content)
         response.raise_for_status()
-        access_token = response.json()['access_token']
-        self.update_access_token_ssm(access_token)
-        return access_token
+        token_access_response = response.json()
+        safety_time_delta = 5
+        token_access_response['expires_at'] = token_access_response['expires_in'] + time() - safety_time_delta
+        self.update_access_token_ssm(token_access_response)
+        return token_access_response['access_token']
 
     def update_access_token_ssm(self, parameter_value):
-        parameter_key = "/prs/dev/pds-fhir-access-token"
+        parameter_key = "/prs/dev-ndr/pds-fhir-access-token"
         client = boto3.client("ssm", region_name="eu-west-2")
         client.put_parameter(Name=parameter_key, Value=parameter_value, Type='SecureString', Overwrite=True)
 
