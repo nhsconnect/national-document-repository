@@ -93,4 +93,4 @@ docker-down:
 	docker-compose -f ./app/docker-compose.yml down
 
 cypress-open:
-	npm --prefix ./app run cypress
+	TZ=GMT npm --prefix ./app run cypress
