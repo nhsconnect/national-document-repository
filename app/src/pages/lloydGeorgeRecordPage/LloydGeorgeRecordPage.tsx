@@ -8,8 +8,16 @@ import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import formatFileSize from '../../helpers/utils/formatFileSize';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import { useOnClickOutside } from 'usehooks-ts';
+import { ReactComponent as Chevron } from '../../styles/down-chevron.svg';
+import { Link } from 'react-router-dom';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
+
+enum LG_RECORD_STAGE {
+    RECORD = 0,
+    DOWNLOAD_ALL = 1,
+}
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -23,6 +31,13 @@ function LloydGeorgeRecordPage() {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
+    const actionsRef = useRef(null);
+    const [showActionsMenu, setShowActionsMenu] = useState(false);
+    const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
+
+    useOnClickOutside(actionsRef, (e) => {
+        setShowActionsMenu(false);
+    });
 
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
@@ -87,27 +102,83 @@ function LloydGeorgeRecordPage() {
         setNumberOfFiles,
         setTotalFileSizeInByte,
     ]);
+    const handleMoreActions = () => {
+        setShowActionsMenu(!showActionsMenu);
+    };
 
-    const pdfCardDescription = (
+    const downloadAllHandler = () => {
+        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+    };
+
+    const actionLinks = [
+        { label: 'See all files', handler: () => null },
+        { label: 'Download all files', handler: downloadAllHandler },
+        { label: 'Delete a selection of files', handler: () => null },
+        { label: 'Delete file', handler: () => null },
+    ];
+
+    const PdfCardDetails = () => (
         <>
-            <span style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</span>
-            <span style={{ color: '#4C6272' }}>
-                {numberOfFiles} files | File size: {formatFileSize(totalFileSizeInByte)} | File
-                format: PDF
-            </span>
+            <div>
+                <div style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</div>
+                <div style={{ color: '#4C6272' }}>
+                    {numberOfFiles} files | File size: {formatFileSize(totalFileSizeInByte)} | File
+                    format: PDF
+                </div>
+            </div>
+            <div className="lg-actions">
+                <div
+                    className={`nhsuk-select lg-actions-select ${
+                        showActionsMenu ? 'lg-actions-select--selected' : ''
+                    }`}
+                    onClick={handleMoreActions}
+                    style={{ background: '#fff' }}
+                >
+                    <div
+                        className={`lg-actions-select_border ${
+                            showActionsMenu ? 'lg-actions-select_border--selected' : ''
+                        }`}
+                    />
+                    <span className="lg-actions-select_placeholder">Select an action...</span>
+                    <Chevron className="lg-actions-select_icon" />
+                </div>
+                {showActionsMenu && (
+                    <div ref={actionsRef}>
+                        <Card className="lg-actions-menu">
+                            <Card.Content>
+                                <ol>
+                                    {actionLinks.map((link, i) => (
+                                        <li key={link.label + i}>
+                                            <Link
+                                                to="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    link.handler();
+                                                }}
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </Card.Content>
+                        </Card>
+                    </div>
+                )}
+            </div>
         </>
     );
-    const displayPdfCardDescription = () => {
+    const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
-            return pdfCardDescription;
+            return <PdfCardDetails />;
         } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
-            return 'No documents are available';
+            return <span>No documents are available</span>;
         } else {
-            return 'Loading...';
+            return <span> Loading...</span>;
         }
     };
 
-    return (
+    const RecordStage = () => (
         <>
             {fullScreen && (
                 <BackLink
@@ -124,19 +195,11 @@ function LloydGeorgeRecordPage() {
             {!fullScreen ? (
                 <>
                     <Card style={{ marginBottom: 0 }}>
-                        <Card.Content>
-                            <Card.Heading
-                                style={{ fontWeight: '700', fontSize: '24px' }}
-                                data-cy="pdf-card-heading"
-                            >
+                        <Card.Content style={{ position: 'relative' }} data-cy="pdf-card">
+                            <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
                                 Lloyd George record
                             </Card.Heading>
-                            <Card.Description
-                                style={{ fontSize: '16px' }}
-                                data-cy="pdf-card-description"
-                            >
-                                {displayPdfCardDescription()}
-                            </Card.Description>
+                            <PdfCardDescription />
                         </Card.Content>
                     </Card>
                     {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
@@ -177,6 +240,20 @@ function LloydGeorgeRecordPage() {
             )}
         </>
     );
+    const DownloadAllStage = () => (
+        <>
+            <h1>Downloading documents</h1>
+            <h2>Alex Cool Bloggs</h2>
+            <h3>NHS number: 1428571428</h3>
+        </>
+    );
+
+    switch (stage) {
+        case LG_RECORD_STAGE.RECORD:
+            return <RecordStage />;
+        case LG_RECORD_STAGE.DOWNLOAD_ALL:
+            return <DownloadAllStage />;
+    }
 }
 
 export default LloydGeorgeRecordPage;

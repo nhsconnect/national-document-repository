@@ -19,8 +19,8 @@ describe('GP View Lloyd George Workflow', () => {
 
         // Assert
         assertPatientInfo();
-        cy.getCy('pdf-card-heading').should('have.text', 'Lloyd George record');
-        cy.getCy('pdf-card-description')
+        cy.getCy('pdf-card')
+            .should('include.text', 'Lloyd George record')
             .should('include.text', 'Last updated: 09 October 2023 at 15:41:38')
             .should('include.text', '12 files | File size: 502 KB | File format: PDF');
         cy.getCy('pdf-viewer').should('be.visible');
@@ -30,14 +30,14 @@ describe('GP View Lloyd George Workflow', () => {
 
         // Assert
         assertPatientInfo();
-        cy.getCy('pdf-card-description').should('not.exist');
+        cy.getCy('pdf-card').should('not.exist');
         cy.getCy('pdf-viewer').should('be.visible');
 
         //  Act - close full screen view
         cy.getCy('back-link').click();
 
         // Assert
-        cy.getCy('pdf-card-description').should('be.visible');
+        cy.getCy('pdf-card').should('be.visible');
         cy.getCy('pdf-viewer').should('be.visible');
     });
 
@@ -109,7 +109,7 @@ describe('GP View Lloyd George Workflow', () => {
     };
 
     const assertEmptyLloydGeorgeCard = () => {
-        cy.getCy('pdf-card-heading').should('have.text', 'Lloyd George record');
-        cy.getCy('pdf-card-description').should('have.text', 'No documents are available');
+        cy.getCy('pdf-card').should('include.text', 'Lloyd George record');
+        cy.getCy('pdf-card').should('include.text', 'No documents are available');
     };
 });
