@@ -70,6 +70,7 @@ def extract_info_from_filename(filename: str) -> dict:
     nhs_number = r"(?P<nhs_number>\d{10})"
     date_of_birth = r"(?P<dob>\d\d-\d\d-\d\d\d\d)"
 
+    # ruff: noqa: E501
     lg_regex = rf"{page_number}of{total_page_number}_Lloyd_George_Record_\[{patient_name}\]_\[{nhs_number}\]_\[{date_of_birth}\].pdf"
 
     if match := re.fullmatch(lg_regex, filename):

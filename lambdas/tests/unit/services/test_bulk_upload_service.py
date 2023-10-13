@@ -1,21 +1,12 @@
 import pytest
 from botocore.exceptions import ClientError
-
 from services.bulk_upload_service import BulkUploadService
 from services.lloyd_george_validator import LGInvalidFilesException
+from tests.unit.conftest import (MOCK_LG_BUCKET, MOCK_LG_STAGING_STORE_BUCKET,
+                                 MOCK_LG_TABLE_NAME, TEST_OBJECT_KEY)
 from tests.unit.helpers.data.bulk_upload.expected_data import (
-    TEST_SQS_MESSAGE,
-    TEST_STAGING_METADATA,
-    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
-    TEST_DOCUMENT_REFERENCE,
-    TEST_FILE_METADATA,
-)
-from tests.unit.conftest import (
-    MOCK_LG_STAGING_STORE_BUCKET,
-    MOCK_LG_BUCKET,
-    TEST_OBJECT_KEY,
-    MOCK_LG_TABLE_NAME,
-)
+    TEST_DOCUMENT_REFERENCE, TEST_FILE_METADATA, TEST_SQS_MESSAGE,
+    TEST_STAGING_METADATA, TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
 from utils.exceptions import InvalidMessageException
 
 
@@ -156,4 +147,3 @@ def test_convert_to_document_reference(set_env, mock_uuid):
     expected.created = "mock_timestamp"
 
     assert actual == expected
-

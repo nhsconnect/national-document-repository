@@ -110,4 +110,7 @@ TEST_STAGING_METADATA_WITH_INVALID_FILENAME = build_test_staging_metadata(
 
 
 TEST_DOCUMENT_REFERENCE = build_test_document_reference(make_valid_lg_file_names(3)[0])
-TEST_DOCUMENT_REFERENCE_LIST = [build_test_document_reference(file_name) for file_name in make_valid_lg_file_names(3)]
+TEST_DOCUMENT_REFERENCE_LIST = [
+    build_test_document_reference(file_name)
+    for file_name in make_valid_lg_file_names(3)
+]

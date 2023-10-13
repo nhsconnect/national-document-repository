@@ -1,9 +1,7 @@
 from datetime import datetime, timezone
-from typing import Any
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from pydantic import BaseModel
-
 
 
 class UploadRequestDocument(BaseModel):

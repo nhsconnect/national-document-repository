@@ -94,10 +94,11 @@ class BulkUploadService:
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
 
-    def create_record_in_lg_dynamo_table(self, document_reference: NHSDocumentReference):
+    def create_record_in_lg_dynamo_table(
+        self, document_reference: NHSDocumentReference
+    ):
         self.dynamo_service.post_item_service(
-            table_name=self.lg_dynamo_table,
-            item=document_reference.to_dict()
+            table_name=self.lg_dynamo_table, item=document_reference.to_dict()
         )
         self.dynamo_records_in_transaction.append(document_reference)
 

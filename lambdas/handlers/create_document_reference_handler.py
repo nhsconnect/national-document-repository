@@ -17,8 +17,6 @@ from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import create_reference_id, validate_id
 
-from services.lloyd_george_validator import validate_lg_files, LGInvalidFilesException
-
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
 logger = logging.getLogger()
@@ -122,7 +120,6 @@ def lambda_handler(event, context):
             return response
 
         try:
-
             s3_response = s3_service.create_document_presigned_url_handler(
                 document_reference.s3_bucket_name,
                 document_reference.nhs_number + "/" + document_reference.id,
