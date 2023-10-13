@@ -145,7 +145,15 @@ function LloydGeorgeRecordPage() {
                                 <ol>
                                     {actionLinks.map((link, i) => (
                                         <li key={link.label + i}>
-                                            <Link to="#">{link.label}</Link>
+                                            <Link
+                                                to="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    link.handler();
+                                                }}
+                                            >
+                                                {link.label}
+                                            </Link>
                                         </li>
                                     ))}
                                 </ol>
