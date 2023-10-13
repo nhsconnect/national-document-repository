@@ -10,12 +10,12 @@ from models.nhs_document_reference import (NHSDocumentReference,
                                            UploadRequestDocument)
 from pydantic import ValidationError
 from services.dynamo_service import DynamoDBService
+from services.lloyd_george_validator import (LGInvalidFilesException,
+                                             validate_lg_files)
 from services.s3_service import S3Service
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import create_reference_id, validate_id
-
-from services.lloyd_george_validator import validate_lg_files, LGInvalidFilesException
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -63,7 +63,7 @@ def lambda_handler(event, context):
     except ValidationError as e:
         logger.error(e)
         return ApiGatewayResponse(
-            400, f"Failed to parse document upload request data", "GET"
+            400, "Failed to parse document upload request data", "GET"
         ).create_api_gateway_response()
     except JSONDecodeError as e:
         logger.error(e)
@@ -120,7 +120,6 @@ def lambda_handler(event, context):
             return response
 
         try:
-
             s3_response = s3_service.create_document_presigned_url_handler(
                 document_reference.s3_bucket_name,
                 document_reference.nhs_number + "/" + document_reference.id,

@@ -62,3 +62,36 @@ EXPECTED_SQS_MSG_FOR_PATIENT_1234567890 = readfile(
 EXPECTED_SQS_MSG_FOR_PATIENT_1234567891 = readfile(
     "expect_sqs_msg_for_patient_1234567891.json"
 )
+
+
+def build_test_staging_metadata(file_names: list[str], nhs_number: str = "1234567890"):
+    files = []
+    for file_name in file_names:
+        source_file_path = f"/{nhs_number}/{file_name}"
+        files.append(
+            patient_1_file_1.model_copy(update={"file_path": source_file_path})
+        )
+    return StagingMetadata(files=files, nhs_number=nhs_number)
+
+
+def build_test_sqs_message(staging_metadata: StagingMetadata):
+    return {
+        "body": staging_metadata.model_dump_json(by_alias=True),
+        "eventSource": "aws:sqs",
+    }
+
+
+def make_valid_lg_file_names(total_number: int, nhs_number: str = "1234567890"):
+    return [
+        f"{i}of{total_number}_Lloyd_George_Record_[Joe Bloggs]_[{nhs_number}]_[25-12-2019].pdf"
+        for i in range(1, total_number + 1)
+    ]
+
+
+TEST_STAGING_METADATA = build_test_staging_metadata(make_valid_lg_file_names(3))
+TEST_SQS_MESSAGE = build_test_sqs_message(TEST_STAGING_METADATA)
+
+SQS_MESSAGE_WITH_INVALID_LG_FILES = {
+    "body": EXPECTED_SQS_MSG_FOR_PATIENT_1234567891,
+    "eventSource": "aws:sqs",
+}

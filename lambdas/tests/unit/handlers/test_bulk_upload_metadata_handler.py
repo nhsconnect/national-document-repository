@@ -10,15 +10,13 @@ from handlers.bulk_upload_metadata_handler import (csv_to_staging_metadata,
 from models.staging_metadata import METADATA_FILENAME
 from tests.unit.conftest import (MOCK_LG_METADATA_SQS_QUEUE,
                                  MOCK_LG_STAGING_STORE_BUCKET)
-from tests.unit.helpers.data.staging_metadata.expected_data import (
+from tests.unit.helpers.data.bulk_upload.expected_data import (
     EXPECTED_PARSED_METADATA, EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567891)
 
-MOCK_METADATA_CSV = "tests/unit/helpers/data/staging_metadata/metadata.csv"
-MOCK_INVALID_METADATA_CSV = (
-    "tests/unit/helpers/data/staging_metadata/metadata_invalid.csv"
-)
-MOCK_TEMP_FOLDER = "tests/unit/helpers/data/staging_metadata"
+MOCK_METADATA_CSV = "tests/unit/helpers/data/bulk_upload/metadata.csv"
+MOCK_INVALID_METADATA_CSV = "tests/unit/helpers/data/bulk_upload/metadata_invalid.csv"
+MOCK_TEMP_FOLDER = "tests/unit/helpers/data/bulk_upload"
 
 
 def test_lambda_send_metadata_to_sqs_queue(set_env, mocker, mock_sqs_service):
