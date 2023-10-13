@@ -1,6 +1,6 @@
 import re
 
-from lambdas.models.nhs_document_reference import NHSDocumentReference
+from models.nhs_document_reference import NHSDocumentReference
 
 class LGInvalidFilesException(Exception):
     pass

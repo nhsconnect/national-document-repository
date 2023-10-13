@@ -4,7 +4,7 @@ from oauthlib.oauth2 import InsecureTransportError
 from tests.unit.helpers.ssm_responses import \
     MOCK_MULTI_STRING_PARAMETERS_RESPONSE
 
-from lambdas.utils.lambda_response import ApiGatewayResponse
+from utils.lambda_response import ApiGatewayResponse
 
 RETURN_URL = (
     "https://www.string_value_1.com?"
