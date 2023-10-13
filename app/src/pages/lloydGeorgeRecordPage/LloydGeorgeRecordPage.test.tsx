@@ -9,6 +9,7 @@ import {
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import axios from 'axios';
 import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
+import userEvent from '@testing-library/user-event';
 
 jest.mock('axios');
 jest.mock('react-router');
@@ -84,12 +85,57 @@ describe('LloydGeorgeRecordPage', () => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
         });
         expect(screen.getByText('View record')).toBeInTheDocument();
+        expect(screen.getByText('View in full screen')).toBeInTheDocument();
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
         expect(
             screen.getByText('7 files | File size: 7 bytes | File format: PDF'),
         ).toBeInTheDocument();
+    });
+
+    it("renders 'full screen' mode correctly", async () => {
+        const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
+        const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
+        mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
+
+        renderPage();
+
+        await waitFor(() => {
+            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+        });
+
+        userEvent.click(screen.getByText('View in full screen'));
+
+        await waitFor(() => {
+            expect(screen.queryByText('Lloyd George record')).not.toBeInTheDocument();
+        });
+        expect(screen.getByText('Go back')).toBeInTheDocument();
+        expect(screen.getByText(patientName)).toBeInTheDocument();
+        expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
+        expect(screen.getByText(/NHS number/)).toBeInTheDocument();
+    });
+
+    it("returns to previous view when 'Go back' link is clicked", async () => {
+        mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
+
+        renderPage();
+
+        await waitFor(() => {
+            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+        });
+
+        userEvent.click(screen.getByText('View in full screen'));
+
+        await waitFor(() => {
+            expect(screen.queryByText('Lloyd George record')).not.toBeInTheDocument();
+        });
+
+        userEvent.click(screen.getByText('Go back'));
+
+        await waitFor(() => {
+            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        });
     });
 });
 

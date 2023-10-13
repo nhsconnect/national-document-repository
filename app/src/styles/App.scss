@@ -179,3 +179,9 @@
         }
     }
 }
+
+@-moz-document url-prefix() {
+    #pdf-viewer {
+        margin-top: 6px;
+    }
+}
