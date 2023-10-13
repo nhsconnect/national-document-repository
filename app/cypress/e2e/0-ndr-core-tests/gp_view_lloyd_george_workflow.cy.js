@@ -9,7 +9,7 @@ describe('GP View Lloyd George Workflow', () => {
         navigateToLgPage();
     });
 
-    it.only('allows a GP user to view the Lloyd George document of an active patient', () => {
+    it('allows a GP user to view the Lloyd George document of an active patient', () => {
         // Act
         cy.intercept('GET', '/LloydGeorgeStitch*', {
             statusCode: 200,
