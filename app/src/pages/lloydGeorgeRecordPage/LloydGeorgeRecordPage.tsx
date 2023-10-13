@@ -97,25 +97,6 @@ function LloydGeorgeRecordPage() {
         setNumberOfFiles,
         setTotalFileSizeInByte,
     ]);
-    const pdfCardDescription = (
-        <>
-            <span style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</span>
-            <span style={{ color: '#4C6272' }}>
-                {numberOfFiles} files | File size: {formatFileSize(totalFileSizeInByte)} | File
-                format: PDF
-            </span>
-        </>
-    );
-    const displayPdfCardDescription = () => {
-        if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
-            return pdfCardDescription;
-        } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
-            return 'No documents are available';
-        } else {
-            return 'Loading...';
-        }
-    };
-
     const handleMoreActions = () => {
         setShowActionsMenu(!showActionsMenu);
     };
@@ -131,42 +112,63 @@ function LloydGeorgeRecordPage() {
         { label: 'Delete file', handler: () => null },
     ];
 
+    const PdfCardDescription = () => (
+        <div className="lg-pdf-description">
+            <div className="lg-pdf-description_content">
+                <span style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</span>
+                <span style={{ color: '#4C6272' }}>
+                    {numberOfFiles} files | File size: {formatFileSize(totalFileSizeInByte)} | File
+                    format: PDF
+                </span>
+            </div>
+            <div className="lg-pdf-description_actions">
+                <div className="lg-actions">
+                    <div
+                        className={`nhsuk-select lg-actions-select ${
+                            showActionsMenu ? 'lg-actions-select--selected' : ''
+                        }`}
+                        onClick={handleMoreActions}
+                        style={{ background: '#fff' }}
+                    >
+                        <div
+                            className={`lg-actions-select_border ${
+                                showActionsMenu ? 'lg-actions-select_border--selected' : ''
+                            }`}
+                        />
+                        <span className="lg-actions-select_placeholder">Select an action...</span>
+                        <Chevron className="lg-actions-select_icon" />
+                    </div>
+                    {showActionsMenu && (
+                        <div ref={actionsRef}>
+                            <Card className="lg-actions-menu">
+                                <Card.Content>
+                                    <ol>
+                                        {actionLinks.map((link, i) => (
+                                            <li key={link.label + i}>
+                                                <Link to="#">{link.label}</Link>
+                                            </li>
+                                        ))}
+                                    </ol>
+                                </Card.Content>
+                            </Card>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+    const displayPdfCardDescription = () => {
+        if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
+            return <PdfCardDescription />;
+        } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
+            return <span>No documents are available</span>;
+        } else {
+            return <span> Loading...</span>;
+        }
+    };
+
     const RecordStage = () => (
         <>
-            <div className="lg-actions">
-                <div
-                    className={`nhsuk-select lg-actions-select ${
-                        showActionsMenu ? 'lg-actions-select--selected' : ''
-                    }`}
-                    onClick={handleMoreActions}
-                    style={{ background: '#fff' }}
-                >
-                    <div
-                        className={`lg-actions-select_border ${
-                            showActionsMenu ? 'lg-actions-select_border--selected' : ''
-                        }`}
-                    />
-                    <span className="lg-actions-select_placeholder">Select an action...</span>
-                    <Chevron className="lg-actions-select_icon" />
-                </div>
-                {showActionsMenu && (
-                    <div ref={actionsRef}>
-                        <Card className="lg-actions-menu">
-                            <Card.Content>
-                                <ol>
-                                    {actionLinks.map((link, i) => (
-                                        <li key={link.label + i}>
-                                            <Link to="#" onClick={link.handler}>
-                                                {link.label}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ol>
-                            </Card.Content>
-                        </Card>
-                    </div>
-                )}
-            </div>
             <>{patientInfo}</>
 
             <Card style={{ marginBottom: 0 }}>
@@ -198,10 +200,8 @@ function LloydGeorgeRecordPage() {
     switch (stage) {
         case LG_RECORD_STAGE.RECORD:
             return <RecordStage />;
-            break;
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
             return <DownloadAllStage />;
-            break;
     }
 }
 
