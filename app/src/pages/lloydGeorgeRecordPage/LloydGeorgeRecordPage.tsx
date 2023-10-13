@@ -7,8 +7,9 @@ import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import LgRecordStage from '../../components/blocks/lgRecordStage/LgRecordStage';
+import LgDownloadAllStage from '../../components/blocks/lgDownloadAllStage/LgDownloadAllStage';
 
-enum LG_RECORD_STAGE {
+export enum LG_RECORD_STAGE {
     RECORD = 0,
     DOWNLOAD_ALL = 1,
 }
@@ -78,14 +79,6 @@ function LloydGeorgeRecordPage() {
         { label: 'Delete file', handler: () => null },
     ];
 
-    const DownloadAllStage = () => (
-        <>
-            <h1>Downloading documents</h1>
-            <h2>Alex Cool Bloggs</h2>
-            <h3>NHS number: 1428571428</h3>
-        </>
-    );
-
     switch (stage) {
         case LG_RECORD_STAGE.RECORD:
             return (
@@ -102,7 +95,7 @@ function LloydGeorgeRecordPage() {
                 )
             );
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
-            return <DownloadAllStage />;
+            return <LgDownloadAllStage numberOfFiles={numberOfFiles} />;
     }
 }
 
