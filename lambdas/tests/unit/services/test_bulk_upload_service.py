@@ -1,21 +1,35 @@
 import pytest
+from botocore.exceptions import ClientError
+
 from services.bulk_upload_service import BulkUploadService
 from services.lloyd_george_validator import LGInvalidFilesException
 from tests.unit.helpers.data.bulk_upload.expected_data import (
-    TEST_SQS_MESSAGE, TEST_STAGING_METADATA)
+    TEST_SQS_MESSAGE,
+    TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
+    TEST_DOCUMENT_REFERENCE,
+    TEST_FILE_METADATA,
+)
+from tests.unit.conftest import (
+    MOCK_LG_STAGING_STORE_BUCKET,
+    MOCK_LG_BUCKET,
+    TEST_OBJECT_KEY,
+    MOCK_LG_TABLE_NAME,
+)
+from utils.exceptions import InvalidMessageException
 
 
 @pytest.fixture
 def mock_uuid(mocker):
-    test_uuid = "UUID_MOCK"
+    test_uuid = TEST_OBJECT_KEY
     mocker.patch("uuid.uuid4", return_value=test_uuid)
     yield test_uuid
 
 
-def test_handle_sqs_message_create_record_and_copy_lg_file_when_files_are_valid(
+def test_handle_sqs_message_calls_create_lg_records_and_copy_files_when_validation_passed(
     set_env, mocker, mock_uuid
 ):
-    create_lg_records_and_copy_files = mocker.patch.object(
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
     mocker.patch.object(BulkUploadService, "validate_files", return_value=None)
@@ -23,14 +37,16 @@ def test_handle_sqs_message_create_record_and_copy_lg_file_when_files_are_valid(
     service = BulkUploadService()
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
-    create_lg_records_and_copy_files.assert_called_with(TEST_STAGING_METADATA)
+    mock_create_lg_records_and_copy_files.assert_called_with(TEST_STAGING_METADATA)
 
 
-def test_handle_invalid_message_is_called_when_lg_files_are_invalid(set_env, mocker):
-    create_lg_records_and_copy_files = mocker.patch.object(
+def test_handle_sqs_message_calls_handle_invalid_message_when_validation_failed(
+    set_env, mocker
+):
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
-    handle_invalid_message = mocker.patch.object(
+    mock_handle_invalid_message = mocker.patch.object(
         BulkUploadService, "handle_invalid_message"
     )
     mocker.patch.object(
@@ -40,5 +56,104 @@ def test_handle_invalid_message_is_called_when_lg_files_are_invalid(set_env, moc
     service = BulkUploadService()
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
-    handle_invalid_message.assert_called()
-    create_lg_records_and_copy_files.assert_not_called()
+    mock_handle_invalid_message.assert_called()
+    mock_create_lg_records_and_copy_files.assert_not_called()
+
+
+def test_handle_sqs_message_rollback_transaction_when_file_transfer_failed_halfway(
+    set_env, mocker
+):
+    mocked_rollback_transaction = mocker.patch.object(
+        BulkUploadService, "rollback_transaction"
+    )
+    service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+    service.dynamo_service = mocker.MagicMock()
+
+    def simulate_third_file_not_found_in_bucket(**kwargs):
+        if "3of" in kwargs["source_file_key"]:
+            raise ClientError(
+                {"Error": {"Code": "404", "Message": "Object not found in bucket"}},
+                "GetObject",
+            )
+
+    service.s3_service.copy_across_bucket.side_effect = (
+        simulate_third_file_not_found_in_bucket
+    )
+
+    service.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    mocked_rollback_transaction.assert_called()
+
+
+def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract_data_from_message(
+    set_env, mocker
+):
+    invalid_message = {"body": "invalid content"}
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+
+    service = BulkUploadService()
+    with pytest.raises(InvalidMessageException):
+        service.handle_sqs_message(invalid_message)
+
+    mock_create_lg_records_and_copy_files.assert_not_called()
+
+
+def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(set_env):
+    service = BulkUploadService()
+
+    with pytest.raises(LGInvalidFilesException):
+        service.validate_files(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+
+
+def test_validate_files_does_not_raise_error_when_file_names_valid(set_env):
+    service = BulkUploadService()
+
+    assert service.validate_files(TEST_STAGING_METADATA) is None
+
+
+def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid):
+    service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+    service.dynamo_service = mocker.MagicMock()
+    service.convert_to_document_reference = mocker.MagicMock(
+        return_value=TEST_DOCUMENT_REFERENCE
+    )
+
+    service.create_lg_records_and_copy_files(TEST_STAGING_METADATA)
+
+    nhs_number = TEST_STAGING_METADATA.nhs_number
+
+    for file in TEST_STAGING_METADATA.files:
+        expected_source_file_key = BulkUploadService.strip_leading_slash(file.file_path)
+        expected_dest_file_key = f"{nhs_number}/{mock_uuid}"
+        service.s3_service.copy_across_bucket.assert_any_call(
+            source_bucket=MOCK_LG_STAGING_STORE_BUCKET,
+            source_file_key=expected_source_file_key,
+            dest_bucket=MOCK_LG_BUCKET,
+            dest_file_key=expected_dest_file_key,
+        )
+    assert service.s3_service.copy_across_bucket.call_count == 3
+
+    service.dynamo_service.post_item_service.assert_any_call(
+        table_name=MOCK_LG_TABLE_NAME, item=TEST_DOCUMENT_REFERENCE.to_dict()
+    )
+    assert service.dynamo_service.post_item_service.call_count == 3
+
+
+def test_convert_to_document_reference(set_env, mock_uuid):
+    service = BulkUploadService()
+
+    expected = TEST_DOCUMENT_REFERENCE
+    actual = service.convert_to_document_reference(
+        file_metadata=TEST_FILE_METADATA, nhs_number=TEST_STAGING_METADATA.nhs_number
+    )
+
+    # exclude the created timestamp from comparison
+    actual.created = "mock_timestamp"
+    expected.created = "mock_timestamp"
+
+    assert actual == expected
+

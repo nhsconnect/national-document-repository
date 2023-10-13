@@ -36,10 +36,6 @@ class BulkUploadService:
         self.dest_bucket_files_in_transaction = []
 
     def handle_sqs_message(self, message: dict):
-        if message["eventSource"] != "aws:sqs":
-            logger.warning("Rejecting message as not coming from sqs")
-            raise InvalidMessageException("Message not coming from sqs")
-
         logger.info("Parsing message from sqs...")
 
         try:
@@ -73,6 +69,8 @@ class BulkUploadService:
             self.rollback_transaction()
 
     def validate_files(self, staging_metadata: StagingMetadata):
+        # Delegate to lloyd_george_validator service
+        # Expect LGInvalidFilesException to be called when validation fails
         file_names = [
             os.path.basename(metadata.file_path) for metadata in staging_metadata.files
         ]
@@ -96,9 +94,10 @@ class BulkUploadService:
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
 
-    def create_record_in_lg_dynamo_table(self, document_reference):
+    def create_record_in_lg_dynamo_table(self, document_reference: NHSDocumentReference):
         self.dynamo_service.post_item_service(
-            self.lg_dynamo_table, document_reference.to_dict()
+            table_name=self.lg_dynamo_table,
+            item=document_reference.to_dict()
         )
         self.dynamo_records_in_transaction.append(document_reference)
 

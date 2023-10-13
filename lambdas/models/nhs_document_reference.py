@@ -67,6 +67,6 @@ class NHSDocumentReference:
             and self.created == other.created
             and self.deleted == other.deleted
             and self.uploaded == other.uploaded
-            and self.virus_scanner_result == other.virus_scan_result
+            and self.virus_scanner_result == other.virus_scanner_result
             and self.file_location == other.file_location
         )
