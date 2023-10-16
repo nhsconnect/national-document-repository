@@ -29,7 +29,9 @@ function LgDownloadAllStage({ numberOfFiles, setStage }: Props) {
 
             <Card>
                 <Card.Content>
-                    <span>Compressing record into a zip file</span>
+                    <strong>
+                        <p>Compressing record into a zip file</p>
+                    </strong>
 
                     <div
                         style={{
