@@ -8,4 +8,6 @@ export enum endpoints {
     DOCUMENT_SEARCH = '/SearchDocumentReferences',
     DOCUMENT_UPLOAD = '/DocumentReference',
     DOCUMENT_PRESIGN = '/DocumentManifest',
+
+    LG_STITCH = '/LloydGeorgeStitch',
 }

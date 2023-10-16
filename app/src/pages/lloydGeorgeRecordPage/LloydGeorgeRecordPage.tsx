@@ -95,7 +95,15 @@ function LloydGeorgeRecordPage() {
                 )
             );
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
-            return <LgDownloadAllStage numberOfFiles={numberOfFiles} setStage={setStage} />;
+            return (
+                patientDetails && (
+                    <LgDownloadAllStage
+                        numberOfFiles={numberOfFiles}
+                        setStage={setStage}
+                        patientDetails={patientDetails}
+                    />
+                )
+            );
     }
 }
 
