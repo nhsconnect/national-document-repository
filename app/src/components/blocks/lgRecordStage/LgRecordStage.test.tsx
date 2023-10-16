@@ -7,12 +7,25 @@ import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import { useState } from 'react';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 const mockPdf = buildLgSearchResult();
-describe('LgRecordStage', () => {
-    const mockPdf = buildLgSearchResult();
-    const mockPatientDetails = buildPatientDetails();
-    // it('renders lg record stage component', () => {
+const mockPatientDetails = buildPatientDetails();
 
-    // })
+describe('LgRecordStage', () => {
+    it('renders initial lg stage record component', async () => {
+        renderComponent();
+
+        await waitFor(() => {
+            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+        });
+        expect(screen.getByText('View record')).toBeInTheDocument();
+        expect(screen.getByText('View in full screen')).toBeInTheDocument();
+
+        expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
+        expect(
+            screen.getByText('7 files | File size: 7 bytes | File format: PDF'),
+        ).toBeInTheDocument();
+    });
+
     it("renders 'full screen' mode correctly", async () => {
         const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
@@ -33,6 +46,25 @@ describe('LgRecordStage', () => {
         expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
     });
+
+    it("returns to previous view when 'Go back' link clicked during full screen", async () => {
+        renderComponent();
+        await waitFor(() => {
+            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+        });
+
+        userEvent.click(screen.getByText('View in full screen'));
+
+        await waitFor(() => {
+            expect(screen.queryByText('Lloyd George record')).not.toBeInTheDocument();
+        });
+
+        userEvent.click(screen.getByText('Go back'));
+
+        await waitFor(() => {
+            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
+        });
+    });
 });
 const TestApp = (props: Omit<Props, 'setStage'>) => {
     const [, setStage] = useState(LG_RECORD_STAGE.RECORD);
@@ -41,7 +73,7 @@ const TestApp = (props: Omit<Props, 'setStage'>) => {
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage'> = {
-        patientDetails: buildPatientDetails(),
+        patientDetails: mockPatientDetails,
         downloadStage: DOWNLOAD_STAGE.SUCCEEDED,
         lloydGeorgeUrl: mockPdf.presign_url,
         lastUpdated: mockPdf.last_updated,
