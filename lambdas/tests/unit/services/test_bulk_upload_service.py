@@ -172,25 +172,3 @@ def test_rollback_transaction(set_env, mocker, mock_uuid):
         file_key=f"{TEST_NHS_NUMBER_FOR_BULK_UPLOAD}/mock_uuid_2",
     )
     assert service.s3_service.delete_object.call_count == 2
-
-
-def test_handle_invalid_message(set_env, mocker):
-    service = BulkUploadService()
-    service.sqs_service = mocker.MagicMock()
-
-    service.handle_invalid_message(
-        message=TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
-        nhs_number=TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
-        error=LGInvalidFilesException("Incorrect file name"),
-    )
-
-    service.sqs_service.send_message_with_nhs_number_attr.assert_called_with(
-        queue_url=MOCK_LG_INVALID_SQS_QUEUE,
-        message_body=json.dumps(
-            {
-                "original_message": TEST_SQS_MESSAGE_WITH_INVALID_FILENAME["body"],
-                "error": str(LGInvalidFilesException("Incorrect file name")),
-            }
-        ),
-        nhs_number=TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
-    )

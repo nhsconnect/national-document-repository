@@ -40,19 +40,19 @@ class BulkUploadService:
         self.dest_bucket_files_in_transaction = []
 
     def handle_sqs_message(self, message: dict):
-        logger.info("Parsing message from sqs...")
-
         try:
+            logger.info("Parsing message from sqs...")
             staging_metadata_json = message["body"]
             staging_metadata = StagingMetadata.model_validate_json(
                 staging_metadata_json
             )
         except (pydantic.ValidationError, KeyError) as e:
-            logger.error(f"Got unrecognised message: {message}")
+            logger.error(f"Got incomprehensible message: {message}")
             logger.error(e)
             raise InvalidMessageException(str(e))
 
         try:
+            logger.info("Running validation for file names...")
             self.validate_files(staging_metadata)
         except LGInvalidFilesException as e:
             logger.info(
@@ -61,8 +61,7 @@ class BulkUploadService:
             logger.info("Will stop processing Lloyd George record for this patient")
             raise e
 
-
-        logger.info("Validation complete. Start copying Lloyd George records across")
+        logger.info("Validation complete. Start uploading Lloyd George records")
 
         self.init_transaction()
 
@@ -151,21 +150,6 @@ class BulkUploadService:
             logger.error(
                 f"Failed to rollback the incomplete transaction due to error: {e}"
             )
-
-    def handle_invalid_message(self, message: dict, nhs_number: str, error=None):
-        # Currently we just drop the invalid message to invalid queue.
-        # In future ticket, will change this to record the error in dynamo db
-
-        message = {"original_message": message["body"]}
-        if error:
-            message["error"] = str(error)
-
-        self.sqs_service.send_message_with_nhs_number_attr(
-            queue_url=self.invalid_queue_url,
-            message_body=json.dumps(message),
-            nhs_number=nhs_number,
-        )
-        logger.info(f"Sent message to invalid queue: {message}")
 
     @staticmethod
     def strip_leading_slash(filepath: str) -> str:
