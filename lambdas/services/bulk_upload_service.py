@@ -9,8 +9,10 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
 from services.dynamo_service import DynamoDBService
-from services.lloyd_george_validator import (LGInvalidFilesException,
-                                             validate_lg_file_names)
+from services.lloyd_george_validator import (
+    LGInvalidFilesException,
+    validate_lg_file_names,
+)
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.exceptions import InvalidMessageException
@@ -57,7 +59,8 @@ class BulkUploadService:
                 f"Detected invalid file name related to patient number: {staging_metadata.nhs_number}"
             )
             logger.info("Will stop processing Lloyd George record for this patient")
-            return self.handle_invalid_message(message, staging_metadata.nhs_number, e)
+            raise e
+
 
         logger.info("Validation complete. Start copying Lloyd George records across")
 
@@ -65,6 +68,9 @@ class BulkUploadService:
 
         try:
             self.create_lg_records_and_copy_files(staging_metadata)
+            logger.info(
+                f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}"
+            )
         except Exception as e:
             logger.debug(f"Got unexpected error during file transfer: {str(e)}")
             logger.debug("Will try to rollback any change to database and bucket")
@@ -72,7 +78,7 @@ class BulkUploadService:
 
     def validate_files(self, staging_metadata: StagingMetadata):
         # Delegate to lloyd_george_validator service
-        # Expect LGInvalidFilesException to be called when validation fails
+        # Expect LGInvalidFilesException to be raised when validation fails
         file_names = [
             os.path.basename(metadata.file_path) for metadata in staging_metadata.files
         ]
@@ -138,12 +144,13 @@ class BulkUploadService:
                 )
             for dest_bucket_file_key in self.dest_bucket_files_in_transaction:
                 self.s3_service.delete_object(
-                    s3_bucket_name=self.lg_bucket_name,
-                    file_key=dest_bucket_file_key
+                    s3_bucket_name=self.lg_bucket_name, file_key=dest_bucket_file_key
                 )
             logger.info("Rolled back an incomplete transaction")
         except ClientError as e:
-            logger.error(f"Failed to rollback the incomplete transaction due to error: {e}")
+            logger.error(
+                f"Failed to rollback the incomplete transaction due to error: {e}"
+            )
 
     def handle_invalid_message(self, message: dict, nhs_number: str, error=None):
         # Currently we just drop the invalid message to invalid queue.
@@ -154,7 +161,9 @@ class BulkUploadService:
             message["error"] = str(error)
 
         self.sqs_service.send_message_with_nhs_number_attr(
-            queue_url=self.invalid_queue_url, message_body=json.dumps(message), nhs_number=nhs_number
+            queue_url=self.invalid_queue_url,
+            message_body=json.dumps(message),
+            nhs_number=nhs_number,
         )
         logger.info(f"Sent message to invalid queue: {message}")
 

@@ -87,6 +87,7 @@ def build_test_sqs_message(staging_metadata: StagingMetadata):
     return {
         "body": staging_metadata.model_dump_json(by_alias=True),
         "eventSource": "aws:sqs",
+        "messageAttributes": {"NhsNumber": staging_metadata.nhs_number}
     }
 
 
@@ -100,7 +101,7 @@ def build_test_document_reference(file_name: str, nhs_number: str = "1234567890"
     )
 
 
-TEST_NHS_NUMBER = "1234567890"
+TEST_NHS_NUMBER_FOR_BULK_UPLOAD = "1234567890"
 TEST_STAGING_METADATA = build_test_staging_metadata(make_valid_lg_file_names(3))
 TEST_SQS_MESSAGE = build_test_sqs_message(TEST_STAGING_METADATA)
 TEST_FILE_METADATA = TEST_STAGING_METADATA.files[0]
@@ -115,5 +116,11 @@ TEST_DOCUMENT_REFERENCE_LIST = [
     for file_name in make_valid_lg_file_names(3)
 ]
 
-TEST_SQS_MESSAGE_WITH_INVALID_FILENAME = build_test_sqs_message(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+TEST_SQS_MESSAGE_WITH_INVALID_FILENAME = build_test_sqs_message(
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME
+)
 TEST_STAGING_METADATA_WITH_INVALID_FILENAME.model_dump_json(by_alias=True)
+
+TEST_EVENT_WITH_SQS_MESSAGES = {
+    "Records": [TEST_SQS_MESSAGE, TEST_SQS_MESSAGE_WITH_INVALID_FILENAME, TEST_SQS_MESSAGE]
+}
