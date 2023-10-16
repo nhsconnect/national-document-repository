@@ -418,7 +418,7 @@ jobs:
           function_name: ${{ vars.BUILD_ENV}}_LloydGeorgeStitchLambda
           zip_file: package_lambdas_lloyd_george_record_stitch_handler.zip
 
-  python_deploy_bulk_upload_lambda:
+  python_deploy_bulk_upload_metadata_lambda:
     runs-on: ubuntu-latest
     environment: test
     needs: ["python_lambdas_test"]
@@ -458,3 +458,44 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ vars.BUILD_ENV}}_BulkUploadMetadataLambda
           zip_file: package_lambdas_bulk_upload_metadata_handler.zip
+
+  python_deploy_bulk_upload_lambda:
+    runs-on: ubuntu-latest
+    environment: test
+    needs: ["python_lambdas_test"]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.buildBranch}}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Bulk Upload Lambda
+        run: |
+          make lambda_name=bulk_upload_handler zip
+
+      - name: Upload Lambda Function for BulkUpload Lambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ vars.BUILD_ENV}}_BulkUpload Lambda
+          zip_file: package_lambdas_bulk_upload_handler.zip
