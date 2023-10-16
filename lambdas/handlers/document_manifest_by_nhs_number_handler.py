@@ -2,9 +2,8 @@ import logging
 import os
 
 from botocore.exceptions import ClientError
-from enums.supported_document_types import SupportedDocumentTypes
-from lambdas.utils.decorators.validate_patient_id import validate_patient_id
-from lambdas.utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.validate_patient_id import validate_patient_id
+from utils.decorators.ensure_env_var import ensure_environment_variables
 from services.manifest_dynamo_service import ManifestDynamoService
 from services.document_manifest_service import DocumentManifestService
 from utils.decorators.validate_document_type import validate_document_type
