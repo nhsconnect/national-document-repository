@@ -1,13 +1,9 @@
 import pytest
 from services.lloyd_george_validator import (
-    LGInvalidFilesException,
-    check_for_duplicate_files,
-    check_for_number_of_files_match_expected,
-    validate_file_name,
-    validate_lg_file_type,
+    LGInvalidFilesException, check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
-    extract_info_from_filename,
-)
+    check_for_number_of_files_match_expected, extract_info_from_filename,
+    validate_file_name, validate_lg_file_type)
 
 
 def test_catching_error_when_file_type_not_pdf():
@@ -93,14 +89,17 @@ def test_files_without_missing_files():
     except LGInvalidFilesException:
         assert False, "There are missing file(s) in the request"
 
+
 def test_extract_info_from_filename():
-    test_file_name = "123of456_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf"
+    test_file_name = (
+        "123of456_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf"
+    )
     expected = {
         "page_no": "123",
         "total_page_no": "456",
         "patient_name": "Joé Blöggês-Glüë",
         "nhs_number": "1111111111",
-        "date_of_birth": "25-12-2019"
+        "date_of_birth": "25-12-2019",
     }
 
     actual = extract_info_from_filename(test_file_name)
@@ -116,7 +115,5 @@ def test_files_for_different_patients():
         "4of4_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
     ]
     with pytest.raises(LGInvalidFilesException) as e:
-        check_for_file_names_agrees_with_each_other(
-            lg_file_list
-        )
+        check_for_file_names_agrees_with_each_other(lg_file_list)
         assert e == LGInvalidFilesException("File names does not match with each other")
