@@ -47,16 +47,15 @@ jobs:
         echo Current tag: ${{steps.versioning.outputs.tag}} 
         echo New tag: ${{steps.versioning.outputs.new_tag}}
 
-  deploy_all:
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
-    needs: ["run_tests", "tag_and_release"]
-    with:
-      environment: pre-prod
-      python_version: "3.11"
-      build-branch: ${{ needs.tag_and_release.outputs.tag }}
-      sandbox: ndr-pre-prod
-    secrets:
-      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+  # deploy_all:
+  #   name: Deploy all Lambdas
+  #   uses: ./.github/workflows/new_lambdas-deploy-feature-to-sandbox.yml
+  #   with:
+  #     build_branch: ${{ needs.tag_and_release.outputs.tag }}
+  #     sandbox: pre-prod
+  #     environment: pre-prod
+  #   secrets:
+  #     AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   
 
