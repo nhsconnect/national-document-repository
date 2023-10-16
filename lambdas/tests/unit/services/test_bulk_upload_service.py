@@ -11,7 +11,7 @@ from tests.unit.conftest import (
     TEST_OBJECT_KEY,
     MOCK_LG_INVALID_SQS_QUEUE,
 )
-from tests.unit.helpers.data.bulk_upload.expected_data import (
+from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_DOCUMENT_REFERENCE,
     TEST_FILE_METADATA,
     TEST_SQS_MESSAGE,
