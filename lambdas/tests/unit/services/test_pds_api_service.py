@@ -1,27 +1,26 @@
 import pytest
 from models.pds_models import PatientDetails
-from requests.models import Response
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from utils.exceptions import (InvalidResourceIdException,
                               PatientNotFoundException, PdsErrorException)
 
-from services.mock_pds_service import MockPdsApiService
+from services.pds_api_service import PdsApiService
 
-pds_service = MockPdsApiService()
+class FakeSSMService:
+    def __init__(self, *arg, **kwargs):
+        pass
 
 
-def test_fetch_patient_details_valid_returns_PatientDetails(mocker):
+pds_service = PdsApiService(FakeSSMService)
+
+def test_handle_response_200_returns_PatientDetails(mocker):
     nhs_number = "9000000025"
 
-    response = Response()
+    response = mocker.MagicMock()
     response.status_code = 200
-    response._content = PDS_PATIENT
+    response.json.return_value = PDS_PATIENT
 
-    mocker.patch(
-        "services.mock_pds_service.MockPdsApiService.fake_pds_request", return_value=response
-    )
-
-    actual = pds_service.fetch_patient_details(nhs_number)
+    actual = pds_service.handle_response(response, nhs_number)
 
     expected = PatientDetails(
         givenName=["Jane"],
@@ -36,60 +35,31 @@ def test_fetch_patient_details_valid_returns_PatientDetails(mocker):
     assert actual == expected
 
 
-def test_fetch_patient_details_invalid_nhs_number_raises_InvalidResourceIdException():
-    nhs_number = "000000000"
+def test_handle_response_404_raises_PatientNotFoundException(mocker):
+    nhs_number = "9000000025"
+
+    response = mocker.MagicMock()
+    response.status_code = 404
+
+    with pytest.raises(PatientNotFoundException):
+        pds_service.handle_response(response, nhs_number)
+
+
+def test_handle_response_400_raises_InvalidResourceIdException(mocker):
+    nhs_number = "9000000025"
+
+    response = mocker.MagicMock()
+    response.status_code = 400
 
     with pytest.raises(InvalidResourceIdException):
-        pds_service.fetch_patient_details(nhs_number)
+        pds_service.handle_response(response, nhs_number)
 
 
-# def test_handle_response_200_returns_PatientDetails():
-#     nhs_number = "9000000025"
-#
-#     response = Response()
-#     response.status_code = 200
-#     response._content = PDS_PATIENT
-#
-#     actual = pds_service.handle_response(response, nhs_number)
-#
-#     expected = PatientDetails(
-#         givenName=["Jane"],
-#         familyName="Smith",
-#         birthDate="2010-10-22",
-#         postalCode="LS1 6AE",
-#         nhsNumber="9000000009",
-#         superseded=False,
-#         restricted=False,
-#     )
-#
-#     assert actual == expected
+def test_handle_response_catch_all_raises_PdsErrorException(mocker):
+    nhs_number = "9000000025"
 
+    response = mocker.MagicMock()
+    response.status_code = 500
 
-# def test_handle_response_404_raises_PatientNotFoundException():
-#     nhs_number = "9000000025"
-#
-#     response = Response()
-#     response.status_code = 404
-#
-#     with pytest.raises(PatientNotFoundException):
-#         pds_service.handle_response(response, nhs_number)
-#
-#
-# def test_handle_response_400_raises_InvalidResourceIdException():
-#     nhs_number = "9000000025"
-#
-#     response = Response()
-#     response.status_code = 400
-#
-#     with pytest.raises(InvalidResourceIdException):
-#         pds_service.handle_response(response, nhs_number)
-#
-#
-# def test_handle_response_catch_all_raises_PdsErrorException():
-#     nhs_number = "9000000025"
-#
-#     response = Response()
-#     response.status_code = 500
-#
-#     with pytest.raises(PdsErrorException):
-#         pds_service.handle_response(response, nhs_number)
+    with pytest.raises(PdsErrorException):
+        pds_service.handle_response(response, nhs_number)

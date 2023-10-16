@@ -4,6 +4,7 @@ from time import time
 
 import jwt
 import requests
+from botocore.exceptions import ClientError
 from models.pds_models import Patient, PatientDetails
 from requests.models import Response, HTTPError
 from utils.exceptions import (InvalidResourceIdException,
@@ -18,9 +19,13 @@ class PdsApiService:
         self.ssm_service = ssm_service
 
     def fetch_patient_details(self, nhs_number: str,) -> PatientDetails:
-        validate_id(nhs_number)
-        response = self.pds_request(nhs_number, retry_on_expired=True)
-        return self.handle_response(response, nhs_number)
+        try:
+            validate_id(nhs_number)
+            response = self.pds_request(nhs_number, retry_on_expired=True)
+            return self.handle_response(response, nhs_number)
+        except ClientError as e:
+            logger.error(f"Error when getting ssm parameters {e}")
+            raise PdsErrorException("Failed to preform patient search")
 
     def handle_response(self, response: Response, nhs_number: str) -> PatientDetails:
         if response.status_code == 200:
@@ -56,7 +61,6 @@ class PdsApiService:
         if pds_response.status_code == 401 & retry_on_expired:
             return self.pds_request(nshNumber, retry_on_expired=False)
         return pds_response
-
 
     def get_new_access_token(self):
         try:
