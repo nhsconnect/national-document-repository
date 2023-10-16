@@ -87,7 +87,7 @@ def build_test_sqs_message(staging_metadata: StagingMetadata):
     return {
         "body": staging_metadata.model_dump_json(by_alias=True),
         "eventSource": "aws:sqs",
-        "messageAttributes": {"NhsNumber": staging_metadata.nhs_number}
+        "messageAttributes": {"NhsNumber": staging_metadata.nhs_number},
     }
 
 
@@ -122,5 +122,9 @@ TEST_SQS_MESSAGE_WITH_INVALID_FILENAME = build_test_sqs_message(
 TEST_STAGING_METADATA_WITH_INVALID_FILENAME.model_dump_json(by_alias=True)
 
 TEST_EVENT_WITH_SQS_MESSAGES = {
-    "Records": [TEST_SQS_MESSAGE, TEST_SQS_MESSAGE_WITH_INVALID_FILENAME, TEST_SQS_MESSAGE]
+    "Records": [
+        TEST_SQS_MESSAGE,
+        TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
+        TEST_SQS_MESSAGE,
+    ]
 }

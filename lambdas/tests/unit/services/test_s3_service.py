@@ -1,11 +1,6 @@
 from services.s3_service import S3Service
-from tests.unit.conftest import (
-    MOCK_BUCKET,
-    TEST_FILE_KEY,
-    TEST_FILE_NAME,
-    TEST_OBJECT_KEY,
-    TEST_NHS_NUMBER,
-)
+from tests.unit.conftest import (MOCK_BUCKET, TEST_FILE_KEY, TEST_FILE_NAME,
+                                 TEST_NHS_NUMBER, TEST_OBJECT_KEY)
 
 MOCK_PRESIGNED_POST_RESPONSE = {
     "url": "https://ndr-dev-document-store.s3.amazonaws.com/",

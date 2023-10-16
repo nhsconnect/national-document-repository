@@ -24,10 +24,7 @@ def lambda_handler(event, _context):
             logger.info(f"Processing message {index} of {len(event['Records'])}")
             bulk_upload_service.handle_sqs_message(message)
         except (InvalidMessageException, LGInvalidFilesException) as error:
-            handle_invalid_message(
-                invalid_message=message,
-                error=error
-            )
+            handle_invalid_message(invalid_message=message, error=error)
 
 
 def handle_invalid_message(invalid_message: dict, error=None):

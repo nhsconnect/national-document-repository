@@ -1,26 +1,14 @@
-import json
 
 import pytest
 from botocore.exceptions import ClientError
 from services.bulk_upload_service import BulkUploadService
 from services.lloyd_george_validator import LGInvalidFilesException
-from tests.unit.conftest import (
-    MOCK_LG_BUCKET,
-    MOCK_LG_STAGING_STORE_BUCKET,
-    MOCK_LG_TABLE_NAME,
-    TEST_OBJECT_KEY,
-    MOCK_LG_INVALID_SQS_QUEUE,
-)
+from tests.unit.conftest import (MOCK_LG_BUCKET, MOCK_LG_STAGING_STORE_BUCKET,
+                                 MOCK_LG_TABLE_NAME, TEST_OBJECT_KEY)
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    TEST_DOCUMENT_REFERENCE,
-    TEST_FILE_METADATA,
-    TEST_SQS_MESSAGE,
-    TEST_STAGING_METADATA,
-    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
-    TEST_DOCUMENT_REFERENCE_LIST,
-    TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
-    TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
-)
+    TEST_DOCUMENT_REFERENCE, TEST_DOCUMENT_REFERENCE_LIST, TEST_FILE_METADATA,
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD, TEST_SQS_MESSAGE, TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
 from utils.exceptions import InvalidMessageException
 
 
