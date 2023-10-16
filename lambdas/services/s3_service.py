@@ -63,3 +63,7 @@ class S3Service:
             Key=dest_file_key,
             CopySource={"Bucket": source_bucket, "Key": source_file_key},
         )
+
+    def delete_object(self, s3_bucket_name: str, file_key: str):
+        # TODO: add unit test for this new method
+        return self.client.delete_object(Bucket=s3_bucket_name, Key=file_key)

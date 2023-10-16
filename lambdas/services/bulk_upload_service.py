@@ -3,6 +3,8 @@ import logging
 import os
 
 import pydantic
+from botocore.exceptions import ClientError
+
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
@@ -126,27 +128,33 @@ class BulkUploadService:
         )
 
     def rollback_transaction(self):
-        for document_reference in self.dynamo_records_in_transaction:
-            primary_key_name = DocumentReferenceMetadataFields.ID.field_name
-            primary_key_value = document_reference.id
-            deletion_key = {primary_key_name: primary_key_value}
-            self.dynamo_service.delete_item(
-                table_name=self.lg_dynamo_table, key=deletion_key
-            )
-        for dest_bucket_file_name in self.dest_bucket_files_in_transaction:
-            pass
-            # delete the copied file here
+        try:
+            for document_reference in self.dynamo_records_in_transaction:
+                primary_key_name = DocumentReferenceMetadataFields.ID.field_name
+                primary_key_value = document_reference.id
+                deletion_key = {primary_key_name: primary_key_value}
+                self.dynamo_service.delete_item(
+                    table_name=self.lg_dynamo_table, key=deletion_key
+                )
+            for dest_bucket_file_key in self.dest_bucket_files_in_transaction:
+                self.s3_service.delete_object(
+                    s3_bucket_name=self.lg_bucket_name,
+                    file_key=dest_bucket_file_key
+                )
+            logger.info("Rolled back an incomplete transaction")
+        except ClientError as e:
+            logger.error(f"Failed to rollback the incomplete transaction due to error: {e}")
 
     def handle_invalid_message(self, message: dict, nhs_number: str, error=None):
         # Currently we just drop the invalid message to invalid queue.
         # In future ticket, will change this to record the error in dynamo db
 
-        message = {"original_message": message["body"], "nhs_number": nhs_number}
+        message = {"original_message": message["body"]}
         if error:
-            message["error_message"] = str(error)
+            message["error"] = str(error)
 
-        self.sqs_service.send_message(
-            queue_url=self.invalid_queue_url, message_body=json.dumps(message)
+        self.sqs_service.send_message_with_nhs_number_attr(
+            queue_url=self.invalid_queue_url, message_body=json.dumps(message), nhs_number=nhs_number
         )
         logger.info(f"Sent message to invalid queue: {message}")
 

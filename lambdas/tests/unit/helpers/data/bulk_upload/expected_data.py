@@ -100,6 +100,7 @@ def build_test_document_reference(file_name: str, nhs_number: str = "1234567890"
     )
 
 
+TEST_NHS_NUMBER = "1234567890"
 TEST_STAGING_METADATA = build_test_staging_metadata(make_valid_lg_file_names(3))
 TEST_SQS_MESSAGE = build_test_sqs_message(TEST_STAGING_METADATA)
 TEST_FILE_METADATA = TEST_STAGING_METADATA.files[0]
@@ -108,9 +109,11 @@ TEST_STAGING_METADATA_WITH_INVALID_FILENAME = build_test_staging_metadata(
     [*make_valid_lg_file_names(2), "invalid_file_name.txt"]
 )
 
-
 TEST_DOCUMENT_REFERENCE = build_test_document_reference(make_valid_lg_file_names(3)[0])
 TEST_DOCUMENT_REFERENCE_LIST = [
     build_test_document_reference(file_name)
     for file_name in make_valid_lg_file_names(3)
 ]
+
+TEST_SQS_MESSAGE_WITH_INVALID_FILENAME = build_test_sqs_message(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+TEST_STAGING_METADATA_WITH_INVALID_FILENAME.model_dump_json(by_alias=True)

@@ -1,12 +1,26 @@
+import json
+
 import pytest
 from botocore.exceptions import ClientError
 from services.bulk_upload_service import BulkUploadService
 from services.lloyd_george_validator import LGInvalidFilesException
-from tests.unit.conftest import (MOCK_LG_BUCKET, MOCK_LG_STAGING_STORE_BUCKET,
-                                 MOCK_LG_TABLE_NAME, TEST_OBJECT_KEY)
+from tests.unit.conftest import (
+    MOCK_LG_BUCKET,
+    MOCK_LG_STAGING_STORE_BUCKET,
+    MOCK_LG_TABLE_NAME,
+    TEST_OBJECT_KEY,
+    MOCK_LG_INVALID_SQS_QUEUE,
+)
 from tests.unit.helpers.data.bulk_upload.expected_data import (
-    TEST_DOCUMENT_REFERENCE, TEST_FILE_METADATA, TEST_SQS_MESSAGE,
-    TEST_STAGING_METADATA, TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+    TEST_DOCUMENT_REFERENCE,
+    TEST_FILE_METADATA,
+    TEST_SQS_MESSAGE,
+    TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
+    TEST_DOCUMENT_REFERENCE_LIST,
+    TEST_NHS_NUMBER,
+    TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
+)
 from utils.exceptions import InvalidMessageException
 
 
@@ -51,8 +65,8 @@ def test_handle_sqs_message_calls_handle_invalid_message_when_validation_failed(
     mock_create_lg_records_and_copy_files.assert_not_called()
 
 
-def test_handle_sqs_message_rollback_transaction_when_file_transfer_failed_halfway(
-    set_env, mocker
+def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(
+    set_env, mocker, mock_uuid
 ):
     mocked_rollback_transaction = mocker.patch.object(
         BulkUploadService, "rollback_transaction"
@@ -142,8 +156,59 @@ def test_convert_to_document_reference(set_env, mock_uuid):
         file_metadata=TEST_FILE_METADATA, nhs_number=TEST_STAGING_METADATA.nhs_number
     )
 
-    # exclude the created timestamp from comparison
+    # exclude the `created` timestamp from comparison
     actual.created = "mock_timestamp"
     expected.created = "mock_timestamp"
 
     assert actual == expected
+
+
+def test_rollback_transaction(set_env, mocker, mock_uuid):
+    service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+    service.dynamo_service = mocker.MagicMock()
+
+    service.dynamo_records_in_transaction = TEST_DOCUMENT_REFERENCE_LIST
+    service.dest_bucket_files_in_transaction = [
+        f"{TEST_NHS_NUMBER}/mock_uuid_1",
+        f"{TEST_NHS_NUMBER}/mock_uuid_2",
+    ]
+
+    service.rollback_transaction()
+
+    service.dynamo_service.delete_item.assert_called_with(
+        table_name=MOCK_LG_TABLE_NAME, key={"ID": mock_uuid}
+    )
+    assert service.dynamo_service.delete_item.call_count == len(
+        TEST_DOCUMENT_REFERENCE_LIST
+    )
+
+    service.s3_service.delete_object.assert_any_call(
+        s3_bucket_name=MOCK_LG_BUCKET, file_key=f"{TEST_NHS_NUMBER}/mock_uuid_1"
+    )
+    service.s3_service.delete_object.assert_any_call(
+        s3_bucket_name=MOCK_LG_BUCKET, file_key=f"{TEST_NHS_NUMBER}/mock_uuid_2"
+    )
+    assert service.s3_service.delete_object.call_count == 2
+
+
+def test_handle_invalid_message(set_env, mocker):
+    service = BulkUploadService()
+    service.sqs_service = mocker.MagicMock()
+
+    service.handle_invalid_message(
+        message=TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
+        nhs_number=TEST_NHS_NUMBER,
+        error=LGInvalidFilesException("Incorrect file name"),
+    )
+
+    service.sqs_service.send_message_with_nhs_number_attr.assert_called_with(
+        queue_url=MOCK_LG_INVALID_SQS_QUEUE,
+        message_body=json.dumps(
+            {
+                "original_message": TEST_SQS_MESSAGE_WITH_INVALID_FILENAME["body"],
+                "error": str(LGInvalidFilesException("Incorrect file name")),
+            }
+        ),
+        nhs_number=TEST_NHS_NUMBER,
+    )
