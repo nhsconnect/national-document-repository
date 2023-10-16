@@ -96,9 +96,7 @@ If successful, the lambda will return status code 200 with patient details as th
 
 ```json
 {
-  "givenName": [
-    "Jane"
-  ],
+  "givenName": ["Jane"],
   "familyName": "Smith",
   "birthDate": "2010-10-22",
   "postalCode": "LS1 6AE",
@@ -122,7 +120,7 @@ Testing in AWS on the lambda directly:
 ```json
 {
   "queryStringParameters": {
-      "patientId":"9449305552"
+    "patientId": "9449305552"
   }
 }
 ```
@@ -138,7 +136,6 @@ Hitting URL directly:
 ```
 https://{url}/SearchDocumentReferences?patientId=9449305552
 ```
-
 
 #### Possible outputs
 
@@ -232,3 +229,19 @@ or...
 }
 ```
 
+### document_manifest_by_nhs_number_handler
+
+The manifest lambda expects two query string parameters called patientId and docType.
+
+**patientId** is to be supplied as a String, and should conform to standard NHS Number format
+
+**docType** is a String and expects a single or comma-seperated list of types of document you're searching for.
+It can be set to the following values:
+
+For just Lloyd George docs "LG"
+
+For just ARF docs "ARF"
+
+For all docs "LG,ARF"
+
+If the parameter is not supplied, the values contain something unspecified, or it is an empty String, a 400 error will be returned
