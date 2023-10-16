@@ -68,7 +68,7 @@ def extract_info_from_filename(filename: str) -> dict:
     total_page_number = r"(?P<total_page_no>[1-9][0-9]*)"
     patient_name = r"(?P<patient_name>[A-Za-z À-ÿ\-]+)"
     nhs_number = r"(?P<nhs_number>\d{10})"
-    date_of_birth = r"(?P<dob>\d\d-\d\d-\d\d\d\d)"
+    date_of_birth = r"(?P<date_of_birth>\d\d-\d\d-\d\d\d\d)"
 
     # ruff: noqa: E501
     lg_regex = rf"{page_number}of{total_page_number}_Lloyd_George_Record_\[{patient_name}\]_\[{nhs_number}\]_\[{date_of_birth}\].pdf"

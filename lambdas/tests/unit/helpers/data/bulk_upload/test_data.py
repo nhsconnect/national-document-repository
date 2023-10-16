@@ -87,7 +87,9 @@ def build_test_sqs_message(staging_metadata: StagingMetadata):
     return {
         "body": staging_metadata.model_dump_json(by_alias=True),
         "eventSource": "aws:sqs",
-        "messageAttributes": {"NhsNumber": staging_metadata.nhs_number},
+        "messageAttributes": {
+            "NhsNumber": {"stringValue": staging_metadata.nhs_number}
+        },
     }
 
 

@@ -6,6 +6,7 @@ from services.lloyd_george_validator import (
     validate_file_name,
     validate_lg_file_type,
     check_for_file_names_agrees_with_each_other,
+    extract_info_from_filename,
 )
 
 
@@ -91,6 +92,21 @@ def test_files_without_missing_files():
         )
     except LGInvalidFilesException:
         assert False, "There are missing file(s) in the request"
+
+def test_extract_info_from_filename():
+    test_file_name = "123of456_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf"
+    expected = {
+        "page_no": "123",
+        "total_page_no": "456",
+        "patient_name": "Joé Blöggês-Glüë",
+        "nhs_number": "1111111111",
+        "date_of_birth": "25-12-2019"
+    }
+
+    actual = extract_info_from_filename(test_file_name)
+
+    assert actual == expected
+
 
 def test_files_for_different_patients():
     lg_file_list = [

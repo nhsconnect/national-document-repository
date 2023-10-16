@@ -38,7 +38,7 @@ def handle_invalid_message(invalid_message: dict, error=None):
         new_message["error"] = str(error)
 
     try:
-        nhs_number = invalid_message["messageAttributes"]["NhsNumber"]
+        nhs_number = invalid_message["messageAttributes"]["NhsNumber"]["stringValue"]
     except KeyError:
         nhs_number = ""
 
