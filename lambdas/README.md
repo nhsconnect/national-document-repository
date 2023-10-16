@@ -233,16 +233,15 @@ or...
 
 The manifest lambda expects two query string parameters called patientId and docType.
 
-PatientID is an NHS Number
+**patientId** is to be supplied as a String, and should conform to standard NHS Number format
 
-This is an array and can be set to the following values:
+**docType** is a String and expects a single or comma-seperated list of types of document you're searching for.
+It can be set to the following values:
 
-For just Lloyd George docs ["LG"]
+For just Lloyd George docs "LG"
 
-For just ARF docs ["ARF"]
+For just ARF docs "ARF"
 
-For all docs ["LG", "ARF"]
+For all docs "LG,ARF"
 
-If the value is not one of the above speified then a 204 will be returned
-
-this applies to branch PRMDR-180
+If the parameter is not supplied, the values contain something unspecified, or it is an empty String, a 400 error will be returned
