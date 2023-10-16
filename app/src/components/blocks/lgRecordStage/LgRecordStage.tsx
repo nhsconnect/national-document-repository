@@ -1,25 +1,28 @@
-import React, { useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useRef, useState } from 'react';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import { BackLink, Card, Details } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-import { PdfActionLink } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { ReactComponent as Chevron } from '../../../styles/down-chevron.svg';
 import { useOnClickOutside } from 'usehooks-ts';
 import { Link } from 'react-router-dom';
 
-type Props = {
+export type Props = {
     patientDetails: PatientDetails;
     downloadStage: DOWNLOAD_STAGE;
     lloydGeorgeUrl: string;
     lastUpdated: string;
     numberOfFiles: number;
     totalFileSizeInByte: number;
-    actionLinks: Array<PdfActionLink>;
+    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
-
+type PdfActionLink = {
+    label: string;
+    handler: () => void;
+};
 function LgRecordStage({
     patientDetails,
     downloadStage,
@@ -27,7 +30,7 @@ function LgRecordStage({
     lastUpdated,
     numberOfFiles,
     totalFileSizeInByte,
-    actionLinks,
+    setStage,
 }: Props) {
     const [fullScreen, setFullScreen] = useState(false);
     const handleMoreActions = () => {
@@ -49,6 +52,16 @@ function LgRecordStage({
     useOnClickOutside(actionsRef, (e) => {
         setShowActionsMenu(false);
     });
+
+    const downloadAllHandler = () => {
+        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+    };
+    const actionLinks: Array<PdfActionLink> = [
+        { label: 'See all files', handler: () => null },
+        { label: 'Download all files', handler: downloadAllHandler },
+        { label: 'Delete a selection of files', handler: () => null },
+        { label: 'Delete file', handler: () => null },
+    ];
 
     const PdfCardDetails = () => (
         <>

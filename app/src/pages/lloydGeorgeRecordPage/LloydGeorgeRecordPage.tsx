@@ -13,10 +13,6 @@ export enum LG_RECORD_STAGE {
     RECORD = 0,
     DOWNLOAD_ALL = 1,
 }
-export type PdfActionLink = {
-    label: string;
-    handler: () => void;
-};
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
     const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
@@ -68,16 +64,6 @@ function LloydGeorgeRecordPage() {
         setNumberOfFiles,
         setTotalFileSizeInByte,
     ]);
-    const downloadAllHandler = () => {
-        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
-    };
-
-    const actionLinks: Array<PdfActionLink> = [
-        { label: 'See all files', handler: () => null },
-        { label: 'Download all files', handler: downloadAllHandler },
-        { label: 'Delete a selection of files', handler: () => null },
-        { label: 'Delete file', handler: () => null },
-    ];
 
     switch (stage) {
         case LG_RECORD_STAGE.RECORD:
@@ -90,7 +76,7 @@ function LloydGeorgeRecordPage() {
                         lloydGeorgeUrl={lloydGeorgeUrl}
                         patientDetails={patientDetails}
                         downloadStage={downloadStage}
-                        actionLinks={actionLinks}
+                        setStage={setStage}
                     />
                 )
             );
