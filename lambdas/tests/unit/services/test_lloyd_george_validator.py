@@ -1,8 +1,12 @@
 import pytest
 from services.lloyd_george_validator import (
-    LGInvalidFilesException, check_for_duplicate_files,
-    check_for_number_of_files_match_expected, validate_file_name,
-    validate_lg_file_type)
+    LGInvalidFilesException,
+    check_for_duplicate_files,
+    check_for_number_of_files_match_expected,
+    validate_file_name,
+    validate_lg_file_type,
+    check_for_file_names_agrees_with_each_other,
+)
 
 
 def test_catching_error_when_file_type_not_pdf():
@@ -87,3 +91,16 @@ def test_files_without_missing_files():
         )
     except LGInvalidFilesException:
         assert False, "There are missing file(s) in the request"
+
+def test_files_for_different_patients():
+    lg_file_list = [
+        "1of4_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
+        "2of4_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
+        "3of4_Lloyd_George_Record_[John Smith]_[1111111112]_[25-12-2019].pdf",
+        "4of4_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
+    ]
+    with pytest.raises(LGInvalidFilesException) as e:
+        check_for_file_names_agrees_with_each_other(
+            lg_file_list
+        )
+        assert e == LGInvalidFilesException("File names does not match with each other")
