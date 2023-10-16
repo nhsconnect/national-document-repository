@@ -10,7 +10,7 @@ const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 
 describe('LgRecordStage', () => {
-    it('renders initial lg stage record component', async () => {
+    it('renders an lg record', async () => {
         renderComponent();
 
         await waitFor(() => {
@@ -24,6 +24,18 @@ describe('LgRecordStage', () => {
         expect(
             screen.getByText('7 files | File size: 7 bytes | File format: PDF'),
         ).toBeInTheDocument();
+    });
+
+    it('renders no docs available text if there is no LG record', async () => {
+        renderComponent({
+            downloadStage: DOWNLOAD_STAGE.FAILED,
+        });
+
+        await waitFor(async () => {
+            expect(screen.getByText('No documents are available')).toBeInTheDocument();
+        });
+
+        expect(screen.queryByText('View record')).not.toBeInTheDocument();
     });
 
     it("renders 'full screen' mode correctly", async () => {
