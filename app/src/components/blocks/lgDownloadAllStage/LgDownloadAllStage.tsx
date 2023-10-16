@@ -19,21 +19,18 @@ function LgDownloadAllStage({ numberOfFiles, setStage }: Props) {
     }, []);
     return (
         <>
-            <div>
-                <h1>Downloading documents</h1>
-                <br />
-                <h2>Alex Cool Bloggs</h2>
-                <h3>NHS number: 1428571428</h3>
-            </div>
-            <div>
-                <span>Preparing download for {numberOfFiles} files</span>
-            </div>
+            <h1>Downloading documents</h1>
+            <h2 style={{ margin: 0 }}>Alex Cool Bloggs</h2>
+            <h4 style={{ fontWeight: 'unset', fontStyle: 'unset' }}>NHS number: 1428571428</h4>
+            <div className="nhsuk-heading-xl" />
+            <h4 style={{ fontWeight: 'unset', fontStyle: 'unset' }}>
+                Preparing download for {numberOfFiles} files
+            </h4>
+
             <Card>
                 <Card.Content>
-                    <span style={{ fontStyle: 'strong' }}>Compressing record into a zip file</span>
-                    <div>
-                        <span>{progress} downloaded...</span>
-                    </div>
+                    <span>Compressing record into a zip file</span>
+
                     <div
                         style={{
                             display: 'flex',
@@ -41,15 +38,28 @@ function LgDownloadAllStage({ numberOfFiles, setStage }: Props) {
                             justifyContent: 'space-between',
                         }}
                     >
-                        <Link
-                            to="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setStage(LG_RECORD_STAGE.RECORD);
-                            }}
-                        >
-                            Cancel
-                        </Link>
+                        <div>
+                            <span>{progress} downloaded...</span>
+                        </div>
+                        <div>
+                            <Link
+                                to="#"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    const w = global.window;
+                                    if (
+                                        typeof w !== 'undefined' &&
+                                        w.confirm(
+                                            'Are you sure you would like to cancel the download?',
+                                        )
+                                    ) {
+                                        setStage(LG_RECORD_STAGE.RECORD);
+                                    }
+                                }}
+                            >
+                                Cancel
+                            </Link>
+                        </div>
                     </div>
                 </Card.Content>
             </Card>
