@@ -439,7 +439,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ vars.BUILD_ENV }}_TokenRequestHandlerLambda
+          function_name: ${{ vars.BUILD_ENV }}_TokenRequestHandler
           zip_file: package_lambdas_token_handler.zip
 
   python_deploy_logout_handler_lambda:

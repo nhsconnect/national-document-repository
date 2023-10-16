@@ -2,11 +2,45 @@ from dataclasses import dataclass
 
 import pytest
 
+from lambdas.enums.supported_document_types import SupportedDocumentTypes
+
 
 @pytest.fixture
 def valid_id_event():
     api_gateway_proxy_event = {
         "queryStringParameters": {"patientId": "9000000009"},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def valid_id_and_both_doctype_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"patientId": "9000000009", "docType": "LG,ARF"},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def valid_id_and_arf_doctype_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"patientId": "9000000009", "docType": "ARF"},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def valid_id_and_lg_doctype_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"patientId": "9000000009", "docType": "LG"},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def valid_id_and_invalid_doctype_event():
+    api_gateway_proxy_event = {
+        "queryStringParameters": {"patientId": "9000000009", "docType": "MANGO"},
     }
     return api_gateway_proxy_event
 
