@@ -57,7 +57,6 @@ class S3Service:
         dest_bucket: str,
         dest_file_key: str,
     ):
-        # TODO: add unit test for this new method
         return self.client.copy_object(
             Bucket=dest_bucket,
             Key=dest_file_key,
@@ -65,5 +64,4 @@ class S3Service:
         )
 
     def delete_object(self, s3_bucket_name: str, file_key: str):
-        # TODO: add unit test for this new method
         return self.client.delete_object(Bucket=s3_bucket_name, Key=file_key)
