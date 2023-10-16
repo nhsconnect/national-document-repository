@@ -15,9 +15,8 @@ from services.mock_pds_service import MockPdsApiService
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-pds_service = PdsApiService if not bool(os.environ["PDS_FHIR_IS_STUBBED"]) else MockPdsApiService
-
+def get_pds_service():
+    return PdsApiService if not bool(os.getenv("PDS_FHIR_IS_STUBBED")) else MockPdsApiService
 
 def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
@@ -27,14 +26,17 @@ def lambda_handler(event, context):
         nhs_number = event["queryStringParameters"]["patientId"]
 
         logger.info("Retrieving patient details")
-        pds_api_service = pds_service(SSMService())
+        pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
         response = patient_details.model_dump_json(by_alias=True)
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
 
-    except (PatientNotFoundException, InvalidResourceIdException, PdsErrorException) as e:
+    except PatientNotFoundException as e:
         return ApiGatewayResponse(404, f"{str(e)}", "GET").create_api_gateway_response()
+
+    except (InvalidResourceIdException, PdsErrorException) as e:
+        return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
 
     except ValidationError as e:
         return ApiGatewayResponse(
