@@ -15,6 +15,7 @@ export type Props = {
     numberOfFiles: number;
     totalFileSizeInByte: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    stage: LG_RECORD_STAGE;
 };
 function LgRecordStage({
     patientDetails,
@@ -24,6 +25,7 @@ function LgRecordStage({
     numberOfFiles,
     totalFileSizeInByte,
     setStage,
+    stage,
 }: Props) {
     const [fullScreen, setFullScreen] = useState(false);
 
@@ -47,7 +49,7 @@ function LgRecordStage({
                 setStage,
             };
 
-            return <LgRecordDetails {...detailsProps} />;
+            return <LgRecordDetails {...detailsProps} setStage={setStage} stage={stage} />;
         } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
             return <span>No documents are available</span>;
         } else {

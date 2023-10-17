@@ -80,6 +80,7 @@ function LloydGeorgeRecordPage() {
                         patientDetails={patientDetails}
                         downloadStage={downloadStage}
                         setStage={setStage}
+                        stage={stage}
                     />
                 )
             );
@@ -93,6 +94,8 @@ function LloydGeorgeRecordPage() {
                     />
                 )
             );
+        default:
+            return <div>test</div>;
     }
 }
 

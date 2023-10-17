@@ -27,7 +27,7 @@ function LgRecordDetails({
 }: Props) {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
-    const downloadAllHandler = () => {};
+
     const handleMoreActions = () => {
         setShowActionsMenu(!showActionsMenu);
     };

@@ -95,13 +95,13 @@ describe('LgRecordStage', () => {
         });
     });
 });
-const TestApp = (props: Omit<Props, 'setStage'>) => {
-    const [, setStage] = useState(LG_RECORD_STAGE.RECORD);
-    return <LgRecordStage {...props} setStage={setStage} />;
+const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
+    const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
+    return <LgRecordStage {...props} setStage={setStage} stage={stage} />;
 };
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
-    const props: Omit<Props, 'setStage'> = {
+    const props: Omit<Props, 'setStage' | 'stage'> = {
         patientDetails: mockPatientDetails,
         downloadStage: DOWNLOAD_STAGE.SUCCEEDED,
         lloydGeorgeUrl: mockPdf.presign_url,
