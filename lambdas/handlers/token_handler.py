@@ -105,9 +105,7 @@ def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
     }
 
     dynamodb_service = DynamoDBService()
-    dynamodb_service.post_item_service(
-        table_name=session_table_name, item=session_record
-    )
+    dynamodb_service.create_item(table_name=session_table_name, item=session_record)
 
     return session_id
 

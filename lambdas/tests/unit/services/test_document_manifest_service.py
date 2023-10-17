@@ -1,3 +1,5 @@
+import os
+
 from models.document import Document
 from services.document_manifest_service import DocumentManifestService
 from tests.unit.conftest import (MOCK_BUCKET, MOCK_ZIP_OUTPUT_BUCKET,
@@ -90,7 +92,6 @@ def test_download_documents_to_be_zipped_calls_download_file(set_env, mocker):
 
 def test_download_documents_to_be_zipped_creates_download_path(set_env, mocker):
     mocker.patch("boto3.client")
-
     mock_document = [
         Document(
             "123456789",
@@ -109,9 +110,10 @@ def test_download_documents_to_be_zipped_creates_download_path(set_env, mocker):
 
     service.download_documents_to_be_zipped()
 
-    expected_download_path = (
-        f"{service.temp_downloads_dir}/{MOCK_DOCUMENTS[0].file_name}"
+    expected_download_path = os.path.join(
+        service.temp_downloads_dir, MOCK_DOCUMENTS[0].file_name
     )
+
     document_file_key = MOCK_DOCUMENTS[0].file_key
 
     mock_s3_service_download_file.assert_called_with(

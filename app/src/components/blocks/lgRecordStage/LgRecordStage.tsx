@@ -17,6 +17,7 @@ export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     stage: LG_RECORD_STAGE;
 };
+
 function LgRecordStage({
     patientDetails,
     downloadStage,
