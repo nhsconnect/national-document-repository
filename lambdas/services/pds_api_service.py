@@ -55,6 +55,7 @@ class PdsApiService:
 
     def pds_request(self, nshNumber: str, retry_on_expired: bool):
         endpoint, access_token_response = self.get_parameters_for_pds_api_request()
+        access_token_response = json.loads(access_token_response)
         access_token = access_token_response["access_token"]
         access_token_expiration = int(access_token_response["expires_in"]) + int(
             access_token_response["issued_at"]
@@ -107,7 +108,7 @@ class PdsApiService:
         return self.ssm_service.get_ssm_parameters(parameters, with_decryption=True)
 
     def update_access_token_ssm(self, parameter_value: str):
-        parameter_key = "/prs/dev-ndr/pds-fhir-access-token"
+        parameter_key = SSMParameter.PDS_API_ACCESS_TOKEN
         self.ssm_service.update_ssm_parameter(
             parameter_key=parameter_key,
             parameter_value=parameter_value,
@@ -120,9 +121,9 @@ class PdsApiService:
             SSMParameter.PDS_API_ACCESS_TOKEN,
         ]
         ssm_response = self.ssm_service.get_ssm_parameters(
-            parameters, with_decryption=True
+            parameters_keys=parameters, with_decryption=True
         )
-        return ssm_response[parameters[0]], json.loads(ssm_response[parameters[1]])
+        return ssm_response[parameters[0]], ssm_response[parameters[1]]
 
     def create_jwt_token_for_new_access_token_request(
         self, access_token_ssm_parameters

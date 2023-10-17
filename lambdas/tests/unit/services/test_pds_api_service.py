@@ -16,11 +16,14 @@ class FakeSSMService:
     def __init__(self, *arg, **kwargs):
         pass
 
-    def get_ssm_parameters(self, *arg, **kwargs):
+    def get_ssm_parameters(self, parameters_keys, *arg, **kwargs):
+        return {parameter : f"test_value_{parameter}" for parameter in parameters_keys}
+
+    def update_ssm_parameter(self, *arg, **kwargs):
         pass
 
-
-pds_service = PdsApiService(FakeSSMService)
+fake_ssm_service = FakeSSMService()
+pds_service = PdsApiService(fake_ssm_service)
 
 
 def test_handle_response_200_returns_PatientDetails(mocker):
@@ -116,3 +119,29 @@ def test_create_jwt_for_new_access_token(mocker):
         algorithm="RS512",
         headers={"kid": "test_string_pds_kid"},
     )
+
+def test_get_parameters_for_pds_api_request():
+    ssm_parameters_expected =  (f"test_value_{SSMParameter.PDS_API_ENDPOINT}", f"test_value_{SSMParameter.PDS_API_ACCESS_TOKEN}")
+    actual = pds_service.get_parameters_for_pds_api_request()
+    assert ssm_parameters_expected == actual
+
+def test_update_access_token_ssm(mocker):
+    fake_ssm_service.update_ssm_parameter = mocker.MagicMock()
+
+    pds_service.update_access_token_ssm("test_string")
+
+    fake_ssm_service.update_ssm_parameter.assert_called_with(parameter_key=SSMParameter.PDS_API_ACCESS_TOKEN, parameter_value="test_string", parameter_type="SecureString")
+
+def test_get_parameters_for_new_access_token(mocker):
+    parameters = [
+        SSMParameter.NHS_OAUTH_ENDPOINT,
+        SSMParameter.PDS_KID,
+        SSMParameter.NHS_OAUTH_KEY,
+        SSMParameter.PDS_API_KEY,
+    ]
+    fake_ssm_service.get_ssm_parameters = mocker.MagicMock()
+    pds_service.get_parameters_for_new_access_token()
+    fake_ssm_service.get_ssm_parameters.assert_called_with(parameters, with_decryption=True)
+
+def test_get_new_access_token(mocker):
+    pass
