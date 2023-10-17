@@ -1,11 +1,12 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import getAllLloydGeorgePDFs from '../../../helpers/requests/getAllLloydGeorgePDFs';
 import { Card } from 'nhsuk-react-components';
 import { Link } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
+import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
+import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 
 type Props = {
     numberOfFiles: number;
@@ -32,26 +33,22 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
     useEffect(() => {
         if (linkRef.current && linkAttributes.url) {
-            setProgress(100);
             linkRef.current.click();
         }
     }, [linkAttributes]);
 
     useEffect(() => {
-        setProgress(20);
         const onPageLoad = async () => {
-            setProgress(40);
-
-            const { presign_url } = await getAllLloydGeorgePDFs({
+            const preSignedUrl = await getPresignedUrlForZip({
                 baseUrl,
                 baseHeaders,
                 nhsNumber,
+                docType: DOCUMENT_TYPE.LLOYD_GEORGE,
             });
-            setProgress(80);
 
             const filename = `lloyd_george-patient-record-${nhsNumber}`;
 
-            setLinkAttributes({ url: presign_url, filename: filename });
+            setLinkAttributes({ url: preSignedUrl, filename: filename });
         };
         void onPageLoad();
     }, [baseHeaders, baseUrl, nhsNumber]);

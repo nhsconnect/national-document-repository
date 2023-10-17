@@ -95,7 +95,7 @@ function LloydGeorgeRecordPage() {
                 )
             );
         default:
-            return <div>test</div>;
+            return <div />;
     }
 }
 
