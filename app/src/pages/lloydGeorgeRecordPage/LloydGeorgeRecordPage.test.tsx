@@ -9,6 +9,7 @@ import {
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import axios from 'axios';
 import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
+import formatFileSize from '../../helpers/utils/formatFileSize';
 
 jest.mock('axios');
 jest.mock('react-router');
@@ -76,7 +77,8 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     it('renders initial lg record view with file info when LG record is returned by search', async () => {
-        mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
+        const lgResult = buildLgSearchResult();
+        mockAxios.get.mockReturnValue(Promise.resolve({ data: lgResult }));
 
         renderPage();
 
@@ -88,9 +90,12 @@ describe('LloydGeorgeRecordPage', () => {
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
+
+        expect(screen.getByText(`${lgResult.number_of_files} files`)).toBeInTheDocument();
         expect(
-            screen.getByText('7 files | File size: 7 bytes | File format: PDF'),
+            screen.getByText(`File size: ${formatFileSize(lgResult.total_file_size_in_byte)}`),
         ).toBeInTheDocument();
+        expect(screen.getByText('File format: PDF')).toBeInTheDocument();
     });
 });
 

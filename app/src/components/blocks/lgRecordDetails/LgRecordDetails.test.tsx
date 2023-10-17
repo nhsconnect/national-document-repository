@@ -1,22 +1,20 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import LgRecordDetails, { Props } from './LgRecordDetails';
-import { useState } from 'react';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import * as ReactRouter from 'react-router';
 import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 const mockPdf = buildLgSearchResult();
 
 describe('LgRecordDetails', () => {
-    const [, setStage] = useState(LG_RECORD_STAGE.RECORD);
-
     const actionLinkStrings = [
-        'See all files',
-        'Download all files',
-        'Delete a selection of files',
-        'Delete file',
+        { label: 'See all files', expectedStage: LG_RECORD_STAGE.SEE_ALL },
+        { label: 'Download all files', expectedStage: LG_RECORD_STAGE.DOWNLOAD_ALL },
+        { label: 'Delete a selection of files', expectedStage: LG_RECORD_STAGE.DELETE_ANY },
+        { label: 'Delete file', expectedStage: LG_RECORD_STAGE.DELETE_ONE },
     ];
 
     beforeEach(() => {
@@ -24,7 +22,6 @@ describe('LgRecordDetails', () => {
     });
     afterEach(() => {
         jest.clearAllMocks();
-        setStage(LG_RECORD_STAGE.RECORD);
     });
 
     it('renders the record details component', () => {
@@ -43,39 +40,60 @@ describe('LgRecordDetails', () => {
 
         expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
         expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-        actionLinkStrings.forEach((label) => {
-            expect(screen.queryByText(label)).not.toBeInTheDocument();
+        actionLinkStrings.forEach((action) => {
+            expect(screen.queryByText(action.label)).not.toBeInTheDocument();
         });
 
         userEvent.click(screen.getByTestId('actions-menu'));
         await waitFor(async () => {
-            actionLinkStrings.forEach((label) => {
-                expect(screen.getByText(label)).toBeInTheDocument();
+            actionLinkStrings.forEach((action) => {
+                expect(screen.getByText(action.label)).toBeInTheDocument();
             });
         });
     });
 
-    const TestApp = (props: Omit<Props, 'setStage'>) => {
-        const history = createMemoryHistory({
-            initialEntries: ['/', '/example'],
-            initialIndex: 1,
-        });
+    it.each(actionLinkStrings)(
+        "navigates to a new stage when action '%s' is clicked",
+        async (action) => {
+            renderComponent();
 
-        return (
-            <ReactRouter.Router navigator={history} location={'/example'}>
-                <LgRecordDetails {...props} setStage={setStage} />;
-            </ReactRouter.Router>
-        );
-    };
+            expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
+            expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
 
-    const renderComponent = (propsOverride?: Partial<Props>) => {
-        const props: Omit<Props, 'setStage'> = {
-            lastUpdated: mockPdf.last_updated,
-            numberOfFiles: mockPdf.number_of_files,
-            totalFileSizeInByte: mockPdf.total_file_size_in_byte,
+            expect(screen.queryByText(action.label)).not.toBeInTheDocument();
+            userEvent.click(screen.getByTestId('actions-menu'));
+            await waitFor(async () => {
+                expect(screen.getByText(action.label)).toBeInTheDocument();
+            });
 
-            ...propsOverride,
-        };
-        render(<TestApp {...props} />);
-    };
+            userEvent.click(screen.getByText(action.label));
+            await waitFor(async () => {
+                expect(screen.getByTestId(action.expectedStage)).toBeInTheDocument();
+            });
+        },
+    );
 });
+
+const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
+    const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
+    const history = createMemoryHistory({
+        initialEntries: ['/', '/example'],
+        initialIndex: 1,
+    });
+    return (
+        <ReactRouter.Router navigator={history} location={'/example'}>
+            <LgRecordDetails {...props} stage={stage} setStage={setStage} />;
+        </ReactRouter.Router>
+    );
+};
+
+const renderComponent = (propsOverride?: Partial<Props>) => {
+    const props: Omit<Props, 'setStage' | 'stage'> = {
+        lastUpdated: mockPdf.last_updated,
+        numberOfFiles: mockPdf.number_of_files,
+        totalFileSizeInByte: mockPdf.total_file_size_in_byte,
+
+        ...propsOverride,
+    };
+    return render(<TestApp {...props} />);
+};

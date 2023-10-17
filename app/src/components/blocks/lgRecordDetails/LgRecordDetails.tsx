@@ -10,6 +10,7 @@ export type Props = {
     lastUpdated: string;
     numberOfFiles: number;
     totalFileSizeInByte: number;
+    stage: LG_RECORD_STAGE;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
@@ -17,12 +18,16 @@ type PdfActionLink = {
     label: string;
     handler: () => void;
 };
-function LgRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInByte, setStage }: Props) {
+function LgRecordDetails({
+    lastUpdated,
+    numberOfFiles,
+    totalFileSizeInByte,
+    stage,
+    setStage,
+}: Props) {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
-    const downloadAllHandler = () => {
-        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
-    };
+    const downloadAllHandler = () => {};
     const handleMoreActions = () => {
         setShowActionsMenu(!showActionsMenu);
     };
@@ -31,15 +36,18 @@ function LgRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInByte, setS
     });
 
     const actionLinks: Array<PdfActionLink> = [
-        { label: 'See all files', handler: () => null },
-        { label: 'Download all files', handler: downloadAllHandler },
-        { label: 'Delete a selection of files', handler: () => null },
-        { label: 'Delete file', handler: () => null },
+        { label: 'See all files', handler: () => setStage(LG_RECORD_STAGE.SEE_ALL) },
+        { label: 'Download all files', handler: () => setStage(LG_RECORD_STAGE.DOWNLOAD_ALL) },
+        {
+            label: 'Delete a selection of files',
+            handler: () => setStage(LG_RECORD_STAGE.DELETE_ANY),
+        },
+        { label: 'Delete file', handler: () => setStage(LG_RECORD_STAGE.DELETE_ONE) },
     ];
 
     return (
         <>
-            <div>
+            <div data-testid={`${stage}`}>
                 <div style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</div>
                 <div style={{ color: '#4C6272' }}>
                     <span>{numberOfFiles} files</span>
