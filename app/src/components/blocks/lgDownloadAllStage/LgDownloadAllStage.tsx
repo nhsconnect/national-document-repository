@@ -8,7 +8,7 @@ import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 
-type Props = {
+export type Props = {
     numberOfFiles: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     patientDetails: PatientDetails;
@@ -28,7 +28,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
         filename: '',
     });
     const linkRef = useRef<HTMLAnchorElement | null>(null);
-
+    const mounted = useRef(false);
     const { nhsNumber } = patientDetails;
 
     useEffect(() => {
@@ -39,18 +39,24 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
     useEffect(() => {
         const onPageLoad = async () => {
-            const preSignedUrl = await getPresignedUrlForZip({
-                baseUrl,
-                baseHeaders,
-                nhsNumber,
-                docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-            });
+            try {
+                const preSignedUrl = await getPresignedUrlForZip({
+                    baseUrl,
+                    baseHeaders,
+                    nhsNumber,
+                    docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                });
 
-            const filename = `lloyd_george-patient-record-${nhsNumber}`;
+                const filename = `lloyd_george-patient-record-${nhsNumber}`;
 
-            setLinkAttributes({ url: preSignedUrl, filename: filename });
+                setLinkAttributes({ url: preSignedUrl, filename: filename });
+            } catch (e) {}
+
+            mounted.current = true;
         };
-        void onPageLoad();
+        if (!mounted.current) {
+            void onPageLoad();
+        }
     }, [baseHeaders, baseUrl, nhsNumber]);
 
     return (
