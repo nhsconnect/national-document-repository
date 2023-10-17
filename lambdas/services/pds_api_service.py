@@ -1,7 +1,7 @@
 import json
 import logging
 import uuid
-from time import time
+import time
 
 import jwt
 import requests
@@ -60,7 +60,7 @@ class PdsApiService:
             access_token_response["issued_at"]
         )
         time_safety_margin_seconds = 10
-        if time() - access_token_expiration < time_safety_margin_seconds:
+        if time.time() - access_token_expiration < time_safety_margin_seconds:
             access_token = self.get_new_access_token()
 
         x_request_id = str(uuid.uuid4())
@@ -119,17 +119,17 @@ class PdsApiService:
         )
         return ssm_response[parameters[0]], json.loads(ssm_response[parameters[1]])
 
-    def create_jwt_token_for_new_access_token_request(self, access_token_ssm_parameter):
-        nhs_oauth_endpoint = access_token_ssm_parameter[SSMParameter.NHS_OAUTH_ENDPOINT]
-        kid = access_token_ssm_parameter[SSMParameter.PDS_KID]
-        nhs_key = access_token_ssm_parameter[SSMParameter.NHS_OAUTH_KEY]
-        pds_key = access_token_ssm_parameter[SSMParameter.PDS_API_KEY]
+    def create_jwt_token_for_new_access_token_request(self, access_token_ssm_parameters):
+        nhs_oauth_endpoint = access_token_ssm_parameters[SSMParameter.NHS_OAUTH_ENDPOINT]
+        kid = access_token_ssm_parameters[SSMParameter.PDS_KID]
+        nhs_key = access_token_ssm_parameters[SSMParameter.NHS_OAUTH_KEY]
+        pds_key = access_token_ssm_parameters[SSMParameter.PDS_API_KEY]
         payload = {
             "iss": nhs_key,
             "sub": nhs_key,
             "aud": nhs_oauth_endpoint,
             "jti": str(uuid.uuid4()),
-            "exp": int(time()) + 300,
+            "exp": int(time.time()) + 300,
         }
         return jwt.encode(payload, pds_key, algorithm="RS512", headers={"kid": kid})
 

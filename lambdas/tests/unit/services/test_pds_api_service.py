@@ -6,8 +6,14 @@ from utils.exceptions import (InvalidResourceIdException,
 
 from services.pds_api_service import PdsApiService
 
+from enums.pds_ssm_parameters import SSMParameter
+
+
 class FakeSSMService:
     def __init__(self, *arg, **kwargs):
+        pass
+
+    def get_ssm_parameters(self, *arg, **kwargs):
         pass
 
 
@@ -65,7 +71,7 @@ def test_handle_response_catch_all_raises_PdsErrorException(mocker):
         pds_service.handle_response(response, nhs_number)
 
 def test_request_new_token_is_call_with_correct_data(mocker):
-    mock_jwt_token = "fgjkstjgkld"
+    mock_jwt_token = "testtest"
     mock_endpoint = "api.endpoint/mock"
     access_token_headers = {"content-type": "application/x-www-form-urlencoded"}
     access_token_data = {
@@ -76,4 +82,24 @@ def test_request_new_token_is_call_with_correct_data(mocker):
     mock_post = mocker.patch("requests.post")
     pds_service.request_new_access_token(mock_jwt_token, mock_endpoint)
     mock_post.assert_called_with(url=mock_endpoint, headers=access_token_headers, data=access_token_data)
+
+def test_create_jwt_for_new_access_token(mocker):
+    access_token_parameters = {SSMParameter.NHS_OAUTH_ENDPOINT : "api.endpoint/mock",
+                               SSMParameter.PDS_KID: "test_string_pds_kid",
+                                SSMParameter.NHS_OAUTH_KEY: "test_string_key_oauth",
+                               SSMParameter.PDS_API_KEY: "test_string_key_pds"
+    }
+    expected_payload = {
+        "iss": "test_string_key_oauth",
+        "sub": "test_string_key_oauth",
+        "aud": "api.endpoint/mock",
+        "jti": "123412342",
+        "exp": 1534,
+    }
+    mocker.patch("time.time", return_value=1234.1)
+    mocker.patch("uuid.uuid4", return_value="123412342")
+
+    mock_jwt_encode = mocker.patch("jwt.encode")
+    pds_service.create_jwt_token_for_new_access_token_request(access_token_parameters)
+    mock_jwt_encode.assert_called_with(expected_payload, "test_string_key_pds", algorithm="RS512", headers={"kid": "test_string_pds_kid"})
 
