@@ -2,12 +2,16 @@ import pytest
 from models.pds_models import PatientDetails
 from requests.models import Response
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
-from utils.exceptions import (InvalidResourceIdException,
-                              PatientNotFoundException, PdsErrorException)
+from utils.exceptions import (
+    InvalidResourceIdException,
+    PatientNotFoundException,
+    PdsErrorException,
+)
 
 from services.mock_pds_service import MockPdsApiService
 
 pds_service = MockPdsApiService()
+
 
 def test_fetch_patient_details_valid_returns_PatientDetails(mocker):
     nhs_number = "9000000025"
@@ -17,7 +21,8 @@ def test_fetch_patient_details_valid_returns_PatientDetails(mocker):
     response._content = PDS_PATIENT
 
     mocker.patch(
-        "services.mock_pds_service.MockPdsApiService.fake_pds_request", return_value=response
+        "services.mock_pds_service.MockPdsApiService.fake_pds_request",
+        return_value=response,
     )
 
     actual = pds_service.fetch_patient_details(nhs_number)
@@ -40,4 +45,3 @@ def test_fetch_patient_details_invalid_nhs_number_raises_InvalidResourceIdExcept
 
     with pytest.raises(InvalidResourceIdException):
         pds_service.fetch_patient_details(nhs_number)
-

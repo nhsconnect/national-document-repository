@@ -98,7 +98,12 @@ class PdsApiService:
         return token_access_response["access_token"]
 
     def get_parameters_for_new_access_token(self):
-        parameters = [SSMParameter.NHS_OAUTH_ENDPOINT, SSMParameter.PDS_KID, SSMParameter.NHS_OAUTH_KEY, SSMParameter.PDS_API_KEY]
+        parameters = [
+            SSMParameter.NHS_OAUTH_ENDPOINT,
+            SSMParameter.PDS_KID,
+            SSMParameter.NHS_OAUTH_KEY,
+            SSMParameter.PDS_API_KEY,
+        ]
         return self.ssm_service.get_ssm_parameters(parameters, with_decryption=True)
 
     def update_access_token_ssm(self, parameter_value: str):
@@ -112,15 +117,19 @@ class PdsApiService:
     def get_parameters_for_pds_api_request(self):
         parameters = [
             SSMParameter.PDS_API_ENDPOINT,
-           SSMParameter.PDS_API_ACCESS_TOKEN,
+            SSMParameter.PDS_API_ACCESS_TOKEN,
         ]
         ssm_response = self.ssm_service.get_ssm_parameters(
             parameters, with_decryption=True
         )
         return ssm_response[parameters[0]], json.loads(ssm_response[parameters[1]])
 
-    def create_jwt_token_for_new_access_token_request(self, access_token_ssm_parameters):
-        nhs_oauth_endpoint = access_token_ssm_parameters[SSMParameter.NHS_OAUTH_ENDPOINT]
+    def create_jwt_token_for_new_access_token_request(
+        self, access_token_ssm_parameters
+    ):
+        nhs_oauth_endpoint = access_token_ssm_parameters[
+            SSMParameter.NHS_OAUTH_ENDPOINT
+        ]
         kid = access_token_ssm_parameters[SSMParameter.PDS_KID]
         nhs_key = access_token_ssm_parameters[SSMParameter.NHS_OAUTH_KEY]
         pds_key = access_token_ssm_parameters[SSMParameter.PDS_API_KEY]

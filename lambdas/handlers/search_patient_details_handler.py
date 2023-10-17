@@ -5,8 +5,11 @@ from json import JSONDecodeError
 from pydantic import ValidationError
 from requests import HTTPError
 from services.pds_api_service import PdsApiService
-from utils.exceptions import (InvalidResourceIdException,
-                              PatientNotFoundException, PdsErrorException)
+from utils.exceptions import (
+    InvalidResourceIdException,
+    PatientNotFoundException,
+    PdsErrorException,
+)
 from utils.lambda_response import ApiGatewayResponse
 
 from services.ssm_service import SSMService
@@ -15,8 +18,15 @@ from services.mock_pds_service import MockPdsApiService
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+
 def get_pds_service():
-    return PdsApiService if not bool(os.getenv("PDS_FHIR_IS_STUBBED")) else MockPdsApiService
+    return (
+        PdsApiService
+        if not bool(os.getenv("PDS_FHIR_IS_STUBBED"))
+        else MockPdsApiService
+    )
+
 
 def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
