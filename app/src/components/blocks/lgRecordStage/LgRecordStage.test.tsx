@@ -7,6 +7,7 @@ import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import { useState } from 'react';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
+import { act } from 'react-dom/test-utils';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 
@@ -60,8 +61,9 @@ describe('LgRecordStage', () => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
         });
 
-        userEvent.click(screen.getByText('View in full screen'));
-
+        act(() => {
+            userEvent.click(screen.getByText('View in full screen'));
+        });
         await waitFor(() => {
             expect(screen.queryByText('Lloyd George record')).not.toBeInTheDocument();
         });
@@ -77,13 +79,16 @@ describe('LgRecordStage', () => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
         });
 
-        userEvent.click(screen.getByText('View in full screen'));
-
+        act(() => {
+            userEvent.click(screen.getByText('View in full screen'));
+        });
         await waitFor(() => {
             expect(screen.queryByText('Lloyd George record')).not.toBeInTheDocument();
         });
 
-        userEvent.click(screen.getByText('Go back'));
+        act(() => {
+            userEvent.click(screen.getByText('Go back'));
+        });
 
         await waitFor(() => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();

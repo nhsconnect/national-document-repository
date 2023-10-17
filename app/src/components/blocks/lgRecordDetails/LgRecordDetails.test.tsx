@@ -7,6 +7,7 @@ import * as ReactRouter from 'react-router';
 import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
+import { act } from 'react-dom/test-utils';
 const mockPdf = buildLgSearchResult();
 
 describe('LgRecordDetails', () => {
@@ -44,7 +45,9 @@ describe('LgRecordDetails', () => {
             expect(screen.queryByText(action.label)).not.toBeInTheDocument();
         });
 
-        userEvent.click(screen.getByTestId('actions-menu'));
+        act(() => {
+            userEvent.click(screen.getByTestId('actions-menu'));
+        });
         await waitFor(async () => {
             actionLinkStrings.forEach((action) => {
                 expect(screen.getByText(action.label)).toBeInTheDocument();
@@ -61,12 +64,17 @@ describe('LgRecordDetails', () => {
             expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
 
             expect(screen.queryByText(action.label)).not.toBeInTheDocument();
-            userEvent.click(screen.getByTestId('actions-menu'));
+
+            act(() => {
+                userEvent.click(screen.getByTestId('actions-menu'));
+            });
             await waitFor(async () => {
                 expect(screen.getByText(action.label)).toBeInTheDocument();
             });
 
-            userEvent.click(screen.getByText(action.label));
+            act(() => {
+                userEvent.click(screen.getByText(action.label));
+            });
             await waitFor(async () => {
                 expect(screen.getByTestId(action.expectedStage)).toBeInTheDocument();
             });
