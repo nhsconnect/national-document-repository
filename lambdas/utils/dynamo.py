@@ -1,10 +1,21 @@
-# Make the expressions
-# ExpressionAttributeNames = {"#create": "Created", "#file": "FileName", "#doc": "DocumentUploaded"}
-# ProjectionExpression = "#id,#create,#file,#doc"
 import inflection
 
 
-def create_expressions(requested_fields: list):
+def create_expressions(requested_fields: list) -> tuple[str, dict]:
+    """
+    Creates expression components for a dynamo query
+        :param requested_fields: List of enum fields names
+
+    example usage:
+        requested_fields = [enum.ID, enum.CREATED", "enum.FILE_NAME"]
+        projection_expression, expression_attribute_names = create_expressions(requested_fields)
+
+    result:
+        [
+            "#id,#created,#fileName",
+            {"#id": "Id", "#created": "Created", "#fileName": "FileName"}
+        ]
+    """
     projection_expression = ""
     expression_attribute_names = {}
 
