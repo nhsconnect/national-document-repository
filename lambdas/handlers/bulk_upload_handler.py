@@ -3,9 +3,9 @@ import logging
 import os
 
 from services.bulk_upload_service import BulkUploadService
-from services.lloyd_george_validator import LGInvalidFilesException
 from services.sqs_service import SQSService
 from utils.exceptions import InvalidMessageException
+from utils.lloyd_george_validator import LGInvalidFilesException
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

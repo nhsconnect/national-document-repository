@@ -2,13 +2,12 @@ import logging
 import os
 
 from botocore.exceptions import ClientError
-from utils.decorators.validate_patient_id import validate_patient_id
-from utils.decorators.ensure_env_var import ensure_environment_variables
-from services.manifest_dynamo_service import ManifestDynamoService
 from services.document_manifest_service import DocumentManifestService
+from services.manifest_dynamo_service import ManifestDynamoService
+from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.validate_document_type import validate_document_type
-from utils.exceptions import (DynamoDbException,
-                              ManifestDownloadException)
+from utils.decorators.validate_patient_id import validate_patient_id
+from utils.exceptions import DynamoDbException, ManifestDownloadException
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
@@ -18,11 +17,12 @@ logger.setLevel(logging.INFO)
 @validate_patient_id
 @validate_document_type
 @ensure_environment_variables(
-    names=["DOCUMENT_STORE_DYNAMODB_NAME",
-           "LLOYD_GEORGE_DYNAMODB_NAME",
-           "ZIPPED_STORE_BUCKET_NAME",
-           "ZIPPED_STORE_DYNAMODB_NAME"
-           ]
+    names=[
+        "DOCUMENT_STORE_DYNAMODB_NAME",
+        "LLOYD_GEORGE_DYNAMODB_NAME",
+        "ZIPPED_STORE_BUCKET_NAME",
+        "ZIPPED_STORE_DYNAMODB_NAME",
+    ]
 )
 def lambda_handler(event, context):
     logger.info("Starting document manifest process")

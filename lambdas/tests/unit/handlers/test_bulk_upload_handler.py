@@ -3,10 +3,10 @@ from unittest.mock import ANY
 
 import pytest
 from handlers.bulk_upload_handler import handle_invalid_message, lambda_handler
-from services.lloyd_george_validator import LGInvalidFilesException
 from tests.unit.conftest import MOCK_LG_INVALID_SQS_QUEUE
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_EVENT_WITH_SQS_MESSAGES, TEST_NHS_NUMBER_FOR_BULK_UPLOAD)
+from utils.lloyd_george_validator import LGInvalidFilesException
 
 
 @pytest.fixture

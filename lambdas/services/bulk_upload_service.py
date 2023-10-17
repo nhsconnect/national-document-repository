@@ -7,11 +7,11 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
 from services.dynamo_service import DynamoDBService
-from services.lloyd_george_validator import (LGInvalidFilesException,
-                                             validate_lg_file_names)
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.exceptions import InvalidMessageException
+from utils.lloyd_george_validator import (LGInvalidFilesException,
+                                          validate_lg_file_names)
 from utils.utilities import create_reference_id
 
 logger = logging.getLogger()

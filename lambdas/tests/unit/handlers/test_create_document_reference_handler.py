@@ -45,7 +45,7 @@ def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
         SupportedDocumentTypes.ARF
     )
 
-    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
@@ -70,7 +70,7 @@ def test_create_document_reference_valid_arf_type_returns_200(
         SupportedDocumentTypes.ARF
     )
 
-    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
@@ -92,7 +92,7 @@ def test_create_document_reference_valid_lg_type_returns_200(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
     mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
-    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
@@ -110,7 +110,7 @@ def test_create_document_reference_valid_lg_type_returns_200(
 def test_create_document_reference_valid_arf_type_uses_arf_s3_bucket(
     set_env, arf_type_event, context, mocker
 ):
-    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
@@ -130,7 +130,7 @@ def test_create_document_reference_valid_arf_type_uses_arf_s3_bucket(
 def test_create_document_reference_valid_arf_type_adds_nhs_number_as_s3_folder(
     set_env, arf_type_event, context, mocker
 ):
-    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_uuid = mocker.patch("uuid.uuid4")
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
@@ -157,7 +157,7 @@ def test_create_document_reference_valid_arf_type_uses_arf_dynamo_table(
     set_env, arf_type_event, context, mocker
 ):
     mock_dynamo_request = mocker.patch(
-        "services.dynamo_service.DynamoDBService.post_item_service"
+        "services.dynamo_service.DynamoDBService.create_item"
     )
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
@@ -178,7 +178,7 @@ def test_create_document_reference_valid_arf_type_uses_arf_dynamo_table(
 def test_create_document_reference_valid_lg_type_uses_lg_s3_bucket(
     set_env, lg_type_event, context, mocker
 ):
-    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
@@ -198,7 +198,7 @@ def test_create_document_reference_valid_lg_type_uses_lg_dynamo_table(
     set_env, lg_type_event, context, mocker
 ):
     mock_dynamo_request = mocker.patch(
-        "services.dynamo_service.DynamoDBService.post_item_service"
+        "services.dynamo_service.DynamoDBService.create_item"
     )
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
@@ -220,9 +220,7 @@ def test_create_document_reference_arf_type_dynamo_ClientError_returns_500(
     error = {"Error": {"Code": 500, "Message": "DynamoDB is down"}}
     exception = ClientError(error, "Query")
 
-    mock_dynamo = mocker.patch(
-        "services.dynamo_service.DynamoDBService.post_item_service"
-    )
+    mock_dynamo = mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_dynamo.side_effect = exception
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
@@ -247,7 +245,7 @@ def test_create_document_reference_arf_type_s3_ClientError_returns_500(
     error = {"Error": {"Code": 500, "Message": "S3 is down"}}
     exception = ClientError(error, "Query")
 
-    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
@@ -281,7 +279,7 @@ def test_invalid_file_type_for_lg_return_400(set_env, context, mocker, event_bod
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
     mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
-    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )

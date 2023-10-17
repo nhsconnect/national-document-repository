@@ -60,7 +60,7 @@ def save_state_in_dynamo_db(state):
     ten_minutes = 60 * 10
     ttl = round(time.time()) + ten_minutes
     item = {"State": state, "TimeToExist": ttl}
-    dynamodb_service.post_item_service(item=item, table_name=dynamodb_name)
+    dynamodb_service.create_item(item=item, table_name=dynamodb_name)
 
 
 def get_ssm_parameters():
