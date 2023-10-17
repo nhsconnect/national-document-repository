@@ -14,7 +14,7 @@ jest.mock('axios');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe.skip('<DocumentSearchResultsPage />', () => {
+describe('<DocumentSearchResultsPage />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
     });
@@ -144,7 +144,6 @@ const renderSearchResultsPage = (
         ...buildPatientDetails(),
         ...patientOverride,
     };
-
     render(
         <ReactRouter.Router navigator={history} location={homeRoute}>
             <PatientDetailsProvider patientDetails={patient}>

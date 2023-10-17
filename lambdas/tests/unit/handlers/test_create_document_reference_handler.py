@@ -10,13 +10,14 @@ from tests.unit.conftest import (MOCK_ARF_BUCKET, MOCK_ARF_TABLE_NAME,
                                  TEST_NHS_NUMBER, TEST_OBJECT_KEY)
 from tests.unit.helpers.data.create_document_reference import (
     ARF_MOCK_EVENT_BODY, ARF_MOCK_RESPONSE, LG_AND_ARF_MOCK_RESPONSE,
-    LG_MOCK_EVENT_BODY, LG_MOCK_RESPONSE, MOCK_EVENT_BODY, LG_MOCK_BAD_EVENT_BODY)
+    LG_MOCK_BAD_FILE_NAME_EVENT_BODY, LG_MOCK_BAD_FILE_TYPE_EVENT_BODY,
+    LG_MOCK_DUPLICATE_FILES_EVENT_BODY, LG_MOCK_EVENT_BODY,
+    LG_MOCK_MISSING_FILES_EVENT_BODY, LG_MOCK_RESPONSE, MOCK_EVENT_BODY)
 from tests.unit.services.test_s3_service import MOCK_PRESIGNED_POST_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_ARF_BUCKET}/{TEST_OBJECT_KEY}"
 TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_LG_BUCKET}/{TEST_OBJECT_KEY}"
-
 
 
 @pytest.fixture
@@ -266,14 +267,34 @@ def test_create_document_reference_arf_type_s3_ClientError_returns_500(
     assert actual == expected
 
 
-def test_invalid_file_type_for_lg_return_400(set_env, context):
+@pytest.mark.parametrize(
+    "event_body",
+    [
+        LG_MOCK_BAD_FILE_TYPE_EVENT_BODY,
+        LG_MOCK_MISSING_FILES_EVENT_BODY,
+        LG_MOCK_BAD_FILE_NAME_EVENT_BODY,
+        LG_MOCK_DUPLICATE_FILES_EVENT_BODY,
+    ],
+)
+def test_invalid_file_type_for_lg_return_400(set_env, context, mocker, event_body):
+    mock_supported_document_get_from_field_name = mocker.patch(
+        "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
+    )
+    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
+    mocker.patch("services.dynamo_service.DynamoDBService.post_item_service")
+    mock_presigned = mocker.patch(
+        "services.s3_service.S3Service.create_document_presigned_url_handler"
+    )
+    mock_presigned.return_value = MOCK_PRESIGNED_POST_RESPONSE
+
     expected = ApiGatewayResponse(
         400,
-        "Failed to parse document upload request data",
-        "GET",
+        "One or more of the files is not valid",
+        "POST",
     ).create_api_gateway_response()
-    actual = lambda_handler({"body": json.dumps(LG_MOCK_BAD_EVENT_BODY)}, context)
+    actual = lambda_handler({"body": json.dumps(event_body)}, context)
     assert actual == expected
+
 
 def test_create_document_reference_unknown_document_type_returns_400(
     set_env, arf_type_event, context, mocker

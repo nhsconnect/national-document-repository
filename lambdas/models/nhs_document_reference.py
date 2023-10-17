@@ -1,29 +1,13 @@
 from datetime import datetime, timezone
-from typing import Any
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from pydantic import BaseModel, model_validator
-
-from services.lloyd_george_validator import validate_lg_file_type
+from pydantic import BaseModel
 
 
 class UploadRequestDocument(BaseModel):
     fileName: str
     contentType: str
     docType: str
-
-    @model_validator(mode='before')
-    @classmethod
-    def check_file_type_for_lg(cls, data: Any) -> Any:
-        if isinstance(data, dict):
-            doc_type = data.get('docType')
-            content_type = data.get('contentType')
-        elif isinstance(data, UploadRequestDocument):
-            doc_type = data.docType
-            content_type = data.contentType
-        if doc_type == 'LG':
-            validate_lg_file_type(content_type)
-        return data
 
 
 class NHSDocumentReference:
@@ -39,7 +23,7 @@ class NHSDocumentReference:
         self.deleted = None
         self.uploaded = None
         self.virus_scanner_result = "Not Scanned"
-        self.file_location = f"s3://{self.s3_bucket_name}/{self.nhs_number}/{self.id}"
+        self.file_location = f"s3://{self.s3_bucket_name}/{self.s3_file_key}"
 
     def set_uploaded(self) -> None:
         self.uploaded = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -68,6 +52,10 @@ class NHSDocumentReference:
         }
         return document_metadata
 
+    @property
+    def s3_file_key(self):
+        return f"{self.nhs_number}/{self.id}"
+
     def __eq__(self, other):
         return (
             self.id == other.id
@@ -77,6 +65,6 @@ class NHSDocumentReference:
             and self.created == other.created
             and self.deleted == other.deleted
             and self.uploaded == other.uploaded
-            and self.virus_scanner_result == other.virus_scan_result
+            and self.virus_scanner_result == other.virus_scanner_result
             and self.file_location == other.file_location
         )

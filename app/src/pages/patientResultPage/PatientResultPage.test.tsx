@@ -143,8 +143,10 @@ describe('PatientResultPage', () => {
             renderPatientResultPage({}, uploadRole, history);
             expect(history.location.pathname).toBe('/example');
 
-            userEvent.click(screen.getByRole('radio', { name: 'Active patient' }));
-            userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Active patient' }));
+                userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
+            });
 
             await waitFor(() => {
                 expect(history.location.pathname).toBe(routes.LLOYD_GEORGE);
@@ -161,9 +163,10 @@ describe('PatientResultPage', () => {
 
             renderPatientResultPage({}, uploadRole, history);
             expect(history.location.pathname).toBe('/example');
-
-            userEvent.click(screen.getByRole('radio', { name: 'Inactive patient' }));
-            userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Inactive patient' }));
+                userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
+            });
 
             await waitFor(() => {
                 expect(history.location.pathname).toBe(routes.UPLOAD_DOCUMENTS);

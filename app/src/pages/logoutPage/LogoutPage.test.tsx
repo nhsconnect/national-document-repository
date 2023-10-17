@@ -29,7 +29,7 @@ describe('logoutPage', () => {
             initialEntries: [currentPage],
             initialIndex: 0,
         });
-        const func = jest.fn();
+
         const successResponse = {
             response: {
                 status: 200,

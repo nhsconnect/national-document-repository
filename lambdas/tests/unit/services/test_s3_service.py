@@ -1,6 +1,6 @@
 from services.s3_service import S3Service
 from tests.unit.conftest import (MOCK_BUCKET, TEST_FILE_KEY, TEST_FILE_NAME,
-                                 TEST_OBJECT_KEY)
+                                 TEST_NHS_NUMBER, TEST_OBJECT_KEY)
 
 MOCK_PRESIGNED_POST_RESPONSE = {
     "url": "https://ndr-dev-document-store.s3.amazonaws.com/",
@@ -104,3 +104,32 @@ def test_upload_file_with_extra_args(mocker):
     mock_upload_file.assert_called_once_with(
         TEST_FILE_NAME, MOCK_BUCKET, TEST_FILE_KEY, test_extra_args
     )
+
+
+def test_copy_across_bucket(mocker):
+    mocker.patch("boto3.client")
+    service = S3Service()
+    mock_copy_object = mocker.patch.object(service.client, "copy_object")
+
+    service.copy_across_bucket(
+        source_bucket="bucket_to_copy_from",
+        source_file_key=TEST_FILE_KEY,
+        dest_bucket="bucket_to_copy_to",
+        dest_file_key=f"{TEST_NHS_NUMBER}/{TEST_OBJECT_KEY}",
+    )
+
+    mock_copy_object.assert_called_once_with(
+        Bucket="bucket_to_copy_to",
+        Key=f"{TEST_NHS_NUMBER}/{TEST_OBJECT_KEY}",
+        CopySource={"Bucket": "bucket_to_copy_from", "Key": TEST_FILE_KEY},
+    )
+
+
+def test_delete_object(mocker):
+    mocker.patch("boto3.client")
+    service = S3Service()
+    mock_delete_object = mocker.patch.object(service.client, "delete_object")
+
+    service.delete_object(s3_bucket_name=MOCK_BUCKET, file_key=TEST_FILE_NAME)
+
+    mock_delete_object.assert_called_once_with(Bucket=MOCK_BUCKET, Key=TEST_FILE_NAME)

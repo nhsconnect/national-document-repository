@@ -40,3 +40,7 @@ class InvalidParamException(Exception):
 
 class FileProcessingException(Exception):
     pass
+
+
+class InvalidMessageException(Exception):
+    pass

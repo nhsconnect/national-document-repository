@@ -1,16 +1,21 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
-import { getFormattedDate } from '../../helpers/utils/formatDate';
 import { useNavigate } from 'react-router';
-import { Card, Details } from 'nhsuk-react-components';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
-import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
-import PdfViewer from '../../components/generic/pdfViewer/PdfViewer';
-import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
-import formatFileSize from '../../helpers/utils/formatFileSize';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
+import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
+import LgRecordStage from '../../components/blocks/lgRecordStage/LgRecordStage';
 
+enum LG_RECORD_STAGE {
+    RECORD = 0,
+    DOWNLOAD_ALL = 1,
+}
+export type PdfActionLink = {
+    label: string;
+    handler: () => void;
+};
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
     const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
@@ -22,27 +27,7 @@ function LloydGeorgeRecordPage() {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
-
-    const dob: String = patientDetails?.birthDate
-        ? getFormattedDate(new Date(patientDetails.birthDate))
-        : '';
-
-    const nhsNumber: String =
-        patientDetails?.nhsNumber.slice(0, 3) +
-        ' ' +
-        patientDetails?.nhsNumber.slice(3, 6) +
-        ' ' +
-        patientDetails?.nhsNumber.slice(6, 10);
-
-    const patientInfo = (
-        <>
-            <p style={{ marginBottom: 5, fontWeight: '700' }}>
-                {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
-            </p>
-            <p style={{ fontSize: '16px', marginBottom: 5 }}>NHS number: {nhsNumber}</p>
-            <p style={{ fontSize: '16px' }}>Date of birth: {dob}</p>
-        </>
-    );
+    const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
 
     useEffect(() => {
         const search = async () => {
@@ -82,47 +67,43 @@ function LloydGeorgeRecordPage() {
         setNumberOfFiles,
         setTotalFileSizeInByte,
     ]);
-
-    const pdfCardDescription = (
-        <>
-            <p style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</p>
-            <p style={{ color: '#4C6272' }}>
-                {numberOfFiles} files | File size: {formatFileSize(totalFileSizeInByte)} | File
-                format: PDF
-            </p>
-        </>
-    );
-    const displayPdfCardDescription = () => {
-        if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
-            return pdfCardDescription;
-        } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
-            return <>No documents are available</>;
-        } else {
-            return <>Loading...</>;
-        }
+    const downloadAllHandler = () => {
+        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
     };
 
-    return (
+    const actionLinks: Array<PdfActionLink> = [
+        { label: 'See all files', handler: () => null },
+        { label: 'Download all files', handler: downloadAllHandler },
+        { label: 'Delete a selection of files', handler: () => null },
+        { label: 'Delete file', handler: () => null },
+    ];
+
+    const DownloadAllStage = () => (
         <>
-            <>{patientInfo}</>
-            <Card style={{ marginBottom: 0 }}>
-                <Card.Content>
-                    <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
-                        Lloyd George record
-                    </Card.Heading>
-                    <Card.Description style={{ fontSize: '16px' }}>
-                        {displayPdfCardDescription()}
-                    </Card.Description>
-                </Card.Content>
-            </Card>
-            {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
-                <Details expander open>
-                    <Details.Summary>View record</Details.Summary>
-                    <PdfViewer fileUrl={lloydGeorgeUrl} />
-                </Details>
-            )}
+            <h1>Downloading documents</h1>
+            <h2>Alex Cool Bloggs</h2>
+            <h3>NHS number: 1428571428</h3>
         </>
     );
+
+    switch (stage) {
+        case LG_RECORD_STAGE.RECORD:
+            return (
+                patientDetails && (
+                    <LgRecordStage
+                        numberOfFiles={numberOfFiles}
+                        totalFileSizeInByte={totalFileSizeInByte}
+                        lastUpdated={lastUpdated}
+                        lloydGeorgeUrl={lloydGeorgeUrl}
+                        patientDetails={patientDetails}
+                        downloadStage={downloadStage}
+                        actionLinks={actionLinks}
+                    />
+                )
+            );
+        case LG_RECORD_STAGE.DOWNLOAD_ALL:
+            return <DownloadAllStage />;
+    }
 }
 
 export default LloydGeorgeRecordPage;

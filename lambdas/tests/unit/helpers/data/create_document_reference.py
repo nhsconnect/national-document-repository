@@ -69,7 +69,41 @@ LG_MOCK_EVENT_BODY = {
     "created": "2023-10-02T15:55:30.650Z",
 }
 
-LG_MOCK_BAD_EVENT_BODY = {
+LG_MOCK_BAD_FILE_TYPE_EVENT_BODY = {
+    "resourceType": "DocumentReference",
+    "subject": {"identifier": {"value": TEST_NHS_NUMBER}},
+    "content": [
+        {
+            "attachment": [
+                {
+                    "fileName": f"1of1_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
+                    "contentType": "text/plain",
+                    "docType": "LG",
+                }
+            ]
+        }
+    ],
+    "created": "2023-10-02T15:55:30.650Z",
+}
+
+LG_MOCK_BAD_FILE_NAME_EVENT_BODY = {
+    "resourceType": "DocumentReference",
+    "subject": {"identifier": {"value": TEST_NHS_NUMBER}},
+    "content": [
+        {
+            "attachment": [
+                {
+                    "fileName": f"1of1_BAD_NAME_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
+                    "contentType": "application/pdf",
+                    "docType": "LG",
+                }
+            ]
+        }
+    ],
+    "created": "2023-10-02T15:55:30.650Z",
+}
+
+LG_MOCK_MISSING_FILES_EVENT_BODY = {
     "resourceType": "DocumentReference",
     "subject": {"identifier": {"value": TEST_NHS_NUMBER}},
     "content": [
@@ -77,16 +111,28 @@ LG_MOCK_BAD_EVENT_BODY = {
             "attachment": [
                 {
                     "fileName": f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
-                    "contentType": "text/plain",
+                    "contentType": "application/pdf",
                     "docType": "LG",
-                },
+                }
+            ]
+        }
+    ],
+    "created": "2023-10-02T15:55:30.650Z",
+}
+
+LG_MOCK_DUPLICATE_FILES_EVENT_BODY = {
+    "resourceType": "DocumentReference",
+    "subject": {"identifier": {"value": TEST_NHS_NUMBER}},
+    "content": [
+        {
+            "attachment": [
                 {
-                    "fileName": f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
+                    "fileName": f"1of2_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
                     "docType": "LG",
                 },
                 {
-                    "fileName": f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
+                    "fileName": f"1of2_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
                     "docType": "LG",
                 },
@@ -95,6 +141,7 @@ LG_MOCK_BAD_EVENT_BODY = {
     ],
     "created": "2023-10-02T15:55:30.650Z",
 }
+
 
 ARF_MOCK_EVENT_BODY = {
     "resourceType": "DocumentReference",

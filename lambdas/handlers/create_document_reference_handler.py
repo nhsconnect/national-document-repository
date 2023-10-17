@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import sys
-import uuid
 from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
@@ -11,10 +10,12 @@ from models.nhs_document_reference import (NHSDocumentReference,
                                            UploadRequestDocument)
 from pydantic import ValidationError
 from services.dynamo_service import DynamoDBService
+from services.lloyd_george_validator import (LGInvalidFilesException,
+                                             validate_lg_files)
 from services.s3_service import S3Service
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
-from utils.utilities import validate_id
+from utils.utilities import create_reference_id, validate_id
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -62,7 +63,7 @@ def lambda_handler(event, context):
     except ValidationError as e:
         logger.error(e)
         return ApiGatewayResponse(
-            400, f"Failed to parse document upload request data", "GET"
+            400, "Failed to parse document upload request data", "GET"
         ).create_api_gateway_response()
     except JSONDecodeError as e:
         logger.error(e)
@@ -90,7 +91,7 @@ def lambda_handler(event, context):
 
         logger.info("Provided document is supported")
 
-        s3_object_key = str(uuid.uuid4())
+        s3_object_key = create_reference_id()
 
         document_reference: NHSDocumentReference
 
@@ -135,6 +136,7 @@ def lambda_handler(event, context):
             return response
 
     try:
+        validate_lg_files(lg_documents)
         dynamo_service = DynamoDBService()
         if arf_documents:
             logger.info("Writing ARF document references")
@@ -150,6 +152,12 @@ def lambda_handler(event, context):
         logger.error(str(e))
         response = ApiGatewayResponse(
             500, "An error occurred when creating document reference", "POST"
+        ).create_api_gateway_response()
+        return response
+    except LGInvalidFilesException as e:
+        logger.error(e)
+        response = ApiGatewayResponse(
+            400, "One or more of the files is not valid", "POST"
         ).create_api_gateway_response()
         return response
 
