@@ -2,8 +2,6 @@ from dataclasses import dataclass
 
 import pytest
 
-from lambdas.enums.supported_document_types import SupportedDocumentTypes
-
 
 @pytest.fixture
 def valid_id_event():

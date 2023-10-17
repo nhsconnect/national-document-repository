@@ -1,14 +1,13 @@
 import os
+from unittest.mock import MagicMock, patch
 
 import boto3
 import pytest
-
-from unittest.mock import MagicMock, patch
-
-from enums.supported_document_types import SupportedDocumentTypes
-from tests.unit.helpers.data.dynamo_responses import MOCK_EMPTY_RESPONSE, MOCK_MANIFEST_QUERY_RESPONSE
-from lambdas.services.manifest_dynamo_service import ManifestDynamoService
 from models.document import Document
+from tests.unit.helpers.data.dynamo_responses import (
+    MOCK_EMPTY_RESPONSE, MOCK_MANIFEST_QUERY_RESPONSE)
+
+from lambdas.services.manifest_dynamo_service import ManifestDynamoService
 
 
 @pytest.fixture
