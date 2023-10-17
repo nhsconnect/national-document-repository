@@ -15,6 +15,8 @@ from utils.exceptions import (
 )
 from utils.utilities import validate_id
 
+from enums.pds_ssm_parameters import SSMParameter
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -82,7 +84,7 @@ class PdsApiService:
                 access_token_ssm_parameter
             )
             nhs_oauth_endpoint = access_token_ssm_parameter[
-                "/prs/dev/user-input/nhs-oauth-endpoint"
+                SSMParameter.NHS_OAUTH_ENDPOINT
             ]
             nhs_oauth_response = self.request_new_access_token(
                 jwt_token, nhs_oauth_endpoint
@@ -96,12 +98,7 @@ class PdsApiService:
         return token_access_response["access_token"]
 
     def get_parameters_for_new_access_token(self):
-        parameters = [
-            "/prs/dev/user-input/nhs-oauth-endpoint",
-            "/prs/dev/user-input/pds-fhir-kid",
-            "/prs/dev/user-input/nhs-api-key",
-            "/prs/dev/user-input/pds-fhir-private-key",
-        ]
+        parameters = [SSMParameter.NHS_OAUTH_ENDPOINT, SSMParameter.PDS_KID, SSMParameter.NHS_OAUTH_KEY, SSMParameter.PDS_API_KEY]
         return self.ssm_service.get_ssm_parameters(parameters, with_decryption=True)
 
     def update_access_token_ssm(self, parameter_value: str):
@@ -114,8 +111,8 @@ class PdsApiService:
 
     def get_parameters_for_pds_api_request(self):
         parameters = [
-            "/prs/dev/user-input/pds-fhir-endpoint",
-            "/prs/dev-ndr/pds-fhir-access-token",
+            SSMParameter.PDS_API_ENDPOINT,
+           SSMParameter.PDS_API_ACCESS_TOKEN,
         ]
         ssm_response = self.ssm_service.get_ssm_parameters(
             parameters, with_decryption=True
@@ -123,12 +120,10 @@ class PdsApiService:
         return ssm_response[parameters[0]], json.loads(ssm_response[parameters[1]])
 
     def create_jwt_token_for_new_access_token_request(self, access_token_ssm_parameter):
-        nhs_oauth_endpoint = access_token_ssm_parameter[
-            "/prs/dev/user-input/nhs-oauth-endpoint"
-        ]
-        kid = access_token_ssm_parameter["/prs/dev/user-input/pds-fhir-kid"]
-        nhs_key = access_token_ssm_parameter["/prs/dev/user-input/nhs-api-key"]
-        pds_key = access_token_ssm_parameter["/prs/dev/user-input/pds-fhir-private-key"]
+        nhs_oauth_endpoint = access_token_ssm_parameter[SSMParameter.NHS_OAUTH_ENDPOINT]
+        kid = access_token_ssm_parameter[SSMParameter.PDS_KID]
+        nhs_key = access_token_ssm_parameter[SSMParameter.NHS_OAUTH_KEY]
+        pds_key = access_token_ssm_parameter[SSMParameter.PDS_API_KEY]
         payload = {
             "iss": nhs_key,
             "sub": nhs_key,

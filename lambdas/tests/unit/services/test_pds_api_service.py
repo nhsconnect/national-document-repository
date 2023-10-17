@@ -63,3 +63,17 @@ def test_handle_response_catch_all_raises_PdsErrorException(mocker):
 
     with pytest.raises(PdsErrorException):
         pds_service.handle_response(response, nhs_number)
+
+def test_request_new_token_is_call_with_correct_data(mocker):
+    mock_jwt_token = "fgjkstjgkld"
+    mock_endpoint = "api.endpoint/mock"
+    access_token_headers = {"content-type": "application/x-www-form-urlencoded"}
+    access_token_data = {
+    "grant_type": "client_credentials",
+    "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+    "client_assertion": mock_jwt_token,
+}
+    mock_post = mocker.patch("requests.post")
+    pds_service.request_new_access_token(mock_jwt_token, mock_endpoint)
+    mock_post.assert_called_with(url=mock_endpoint, headers=access_token_headers, data=access_token_data)
+
