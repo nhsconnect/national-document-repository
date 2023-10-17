@@ -18,6 +18,7 @@ type PdfActionLink = {
     handler: () => void;
 };
 function LgRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInByte, setStage }: Props) {
+    const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
     const downloadAllHandler = () => {
         setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
@@ -29,7 +30,6 @@ function LgRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInByte, setS
         setShowActionsMenu(false);
     });
 
-    const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionLinks: Array<PdfActionLink> = [
         { label: 'See all files', handler: () => null },
         { label: 'Download all files', handler: downloadAllHandler },
@@ -42,12 +42,17 @@ function LgRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInByte, setS
             <div>
                 <div style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</div>
                 <div style={{ color: '#4C6272' }}>
-                    {numberOfFiles} files | File size: {formatFileSize(totalFileSizeInByte)} | File
-                    format: PDF
+                    <span>{numberOfFiles} files</span>
+                    {' | '}
+                    <span>File size: {formatFileSize(totalFileSizeInByte)}</span>
+                    {' | '}
+                    <span>File format: PDF</span>
+                    {' |'}
                 </div>
             </div>
             <div className="lg-actions">
                 <div
+                    data-testid="actions-menu"
                     className={`nhsuk-select lg-actions-select ${
                         showActionsMenu ? 'lg-actions-select--selected' : ''
                     }`}

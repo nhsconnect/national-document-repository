@@ -6,10 +6,18 @@ import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import { useState } from 'react';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import formatFileSize from '../../../helpers/utils/formatFileSize';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 
 describe('LgRecordStage', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+    });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('renders an lg record', async () => {
         renderComponent();
 
@@ -20,10 +28,14 @@ describe('LgRecordStage', () => {
         expect(screen.getByText('View in full screen')).toBeInTheDocument();
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
-        expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
+        expect(screen.getByText(`Last updated: ${mockPdf.last_updated}`)).toBeInTheDocument();
+        expect(screen.getByText(`${mockPdf.number_of_files} files`)).toBeInTheDocument();
         expect(
-            screen.getByText('7 files | File size: 7 bytes | File format: PDF'),
+            screen.getByText(`File size: ${formatFileSize(mockPdf.total_file_size_in_byte)}`),
         ).toBeInTheDocument();
+        expect(screen.getByText('File format: PDF')).toBeInTheDocument();
+
+        expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
     });
 
     it('renders no docs available text if there is no LG record', async () => {
