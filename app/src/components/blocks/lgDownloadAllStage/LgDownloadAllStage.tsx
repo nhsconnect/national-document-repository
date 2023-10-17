@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import getAllLloydGeorgePDFs from '../../../helpers/requests/getAllLloydGeorgePDFs';
 import { Card } from 'nhsuk-react-components';
 import { Link } from 'react-router-dom';
@@ -13,18 +13,49 @@ type Props = {
     patientDetails: PatientDetails;
 };
 
+type DownloadLinkAttributes = {
+    url: string;
+    filename: string;
+};
+
 function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
-    const progress = '47%';
+    const [progress, setProgress] = useState(0);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
+    const [linkAttributes, setLinkAttributes] = useState<DownloadLinkAttributes>({
+        url: '',
+        filename: '',
+    });
+    const linkRef = useRef<HTMLAnchorElement | null>(null);
+
     const { nhsNumber } = patientDetails;
+
     useEffect(() => {
+        if (linkRef.current && linkAttributes.url) {
+            setProgress(100);
+            linkRef.current.click();
+        }
+    }, [linkAttributes]);
+
+    useEffect(() => {
+        setProgress(20);
         const onPageLoad = async () => {
-            const response = await getAllLloydGeorgePDFs({ baseUrl, baseHeaders, nhsNumber });
-            console.log(response);
+            setProgress(40);
+
+            const { presign_url } = await getAllLloydGeorgePDFs({
+                baseUrl,
+                baseHeaders,
+                nhsNumber,
+            });
+            setProgress(80);
+
+            const filename = `lloyd_george-patient-record-${nhsNumber}`;
+
+            setLinkAttributes({ url: presign_url, filename: filename });
         };
         void onPageLoad();
-    }, []);
+    }, [baseHeaders, baseUrl, nhsNumber]);
+
     return (
         <>
             <h1>Downloading documents</h1>
@@ -54,6 +85,15 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                     >
                         <div>
                             <span>{progress} downloaded...</span>
+                            <a
+                                hidden
+                                id="download-link"
+                                ref={linkRef}
+                                href={linkAttributes.url}
+                                download={linkAttributes.filename}
+                            >
+                                Download Lloyd George Documents URL
+                            </a>
                         </div>
                         <div>
                             <Link

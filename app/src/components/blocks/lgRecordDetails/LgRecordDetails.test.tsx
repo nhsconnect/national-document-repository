@@ -53,7 +53,7 @@ describe('LgRecordDetails', () => {
     });
 
     it.each(actionLinkStrings)(
-        "navigates to a new stage when action '%s' is clicked",
+        "navigates to a required stage when action '%s' is clicked",
         async (action) => {
             renderComponent();
 
