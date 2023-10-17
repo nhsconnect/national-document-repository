@@ -3,7 +3,11 @@ import json
 from models.pds_models import PatientDetails
 from requests import Response
 from utils.utilities import validate_id
-from utils.exceptions import PdsErrorException, PatientNotFoundException, InvalidResourceIdException
+from utils.exceptions import (
+    PdsErrorException,
+    PatientNotFoundException,
+    InvalidResourceIdException,
+)
 from models.pds_models import Patient
 
 
@@ -30,7 +34,6 @@ class MockPdsApiService:
             raise InvalidResourceIdException("Invalid NHS number")
 
         raise PdsErrorException("Error when requesting patient from PDS")
-
 
     def fake_pds_request(self, nhsNumber: str) -> Response:
         mock_pds_results: list[dict] = []
