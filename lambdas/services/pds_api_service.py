@@ -30,6 +30,7 @@ class PdsApiService:
         nhs_number: str,
     ) -> PatientDetails:
         try:
+            logger.info("Using real pds service")
             validate_id(nhs_number)
             response = self.pds_request(nhs_number, retry_on_expired=True)
             return self.handle_response(response, nhs_number)
@@ -73,19 +74,19 @@ class PdsApiService:
 
         url_endpoint = endpoint + "Patient/" + nshNumber
         pds_response = requests.get(url=url_endpoint, headers=authorization_header)
-
         if pds_response.status_code == 401 & retry_on_expired:
             return self.pds_request(nshNumber, retry_on_expired=False)
         return pds_response
 
     def get_new_access_token(self):
+        logger.info("Getting new PDS access token")
         try:
             access_token_ssm_parameter = self.get_parameters_for_new_access_token()
             jwt_token = self.create_jwt_token_for_new_access_token_request(
                 access_token_ssm_parameter
             )
             nhs_oauth_endpoint = access_token_ssm_parameter[
-                SSMParameter.NHS_OAUTH_ENDPOINT
+                SSMParameter.NHS_OAUTH_ENDPOINT.value
             ]
             nhs_oauth_response = self.request_new_access_token(
                 jwt_token, nhs_oauth_endpoint
@@ -100,15 +101,15 @@ class PdsApiService:
 
     def get_parameters_for_new_access_token(self):
         parameters = [
-            SSMParameter.NHS_OAUTH_ENDPOINT,
-            SSMParameter.PDS_KID,
-            SSMParameter.NHS_OAUTH_KEY,
-            SSMParameter.PDS_API_KEY,
+            SSMParameter.NHS_OAUTH_ENDPOINT.value,
+            SSMParameter.PDS_KID.value,
+            SSMParameter.NHS_OAUTH_KEY.value,
+            SSMParameter.PDS_API_KEY.value,
         ]
         return self.ssm_service.get_ssm_parameters(parameters, with_decryption=True)
 
     def update_access_token_ssm(self, parameter_value: str):
-        parameter_key = SSMParameter.PDS_API_ACCESS_TOKEN
+        parameter_key = SSMParameter.PDS_API_ACCESS_TOKEN.value
         self.ssm_service.update_ssm_parameter(
             parameter_key=parameter_key,
             parameter_value=parameter_value,
@@ -117,8 +118,8 @@ class PdsApiService:
 
     def get_parameters_for_pds_api_request(self):
         parameters = [
-            SSMParameter.PDS_API_ENDPOINT,
-            SSMParameter.PDS_API_ACCESS_TOKEN,
+            SSMParameter.PDS_API_ENDPOINT.value,
+            SSMParameter.PDS_API_ACCESS_TOKEN.value,
         ]
         ssm_response = self.ssm_service.get_ssm_parameters(
             parameters_keys=parameters, with_decryption=True
@@ -129,11 +130,11 @@ class PdsApiService:
         self, access_token_ssm_parameters
     ):
         nhs_oauth_endpoint = access_token_ssm_parameters[
-            SSMParameter.NHS_OAUTH_ENDPOINT
+            SSMParameter.NHS_OAUTH_ENDPOINT.value
         ]
-        kid = access_token_ssm_parameters[SSMParameter.PDS_KID]
-        nhs_key = access_token_ssm_parameters[SSMParameter.NHS_OAUTH_KEY]
-        pds_key = access_token_ssm_parameters[SSMParameter.PDS_API_KEY]
+        kid = access_token_ssm_parameters[SSMParameter.PDS_KID.value]
+        nhs_key = access_token_ssm_parameters[SSMParameter.NHS_OAUTH_KEY.value]
+        pds_key = access_token_ssm_parameters[SSMParameter.PDS_API_KEY.value]
         payload = {
             "iss": nhs_key,
             "sub": nhs_key,

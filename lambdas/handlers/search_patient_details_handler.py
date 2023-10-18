@@ -23,7 +23,7 @@ logger.setLevel(logging.INFO)
 def get_pds_service():
     return (
         PdsApiService
-        if not bool(os.getenv("PDS_FHIR_IS_STUBBED"))
+        if (os.getenv("PDS_FHIR_IS_STUBBED") == 'false')
         else MockPdsApiService
     )
 

@@ -96,10 +96,10 @@ def test_request_new_token_is_call_with_correct_data(mocker):
 
 def test_create_jwt_for_new_access_token(mocker):
     access_token_parameters = {
-        SSMParameter.NHS_OAUTH_ENDPOINT: "api.endpoint/mock",
-        SSMParameter.PDS_KID: "test_string_pds_kid",
-        SSMParameter.NHS_OAUTH_KEY: "test_string_key_oauth",
-        SSMParameter.PDS_API_KEY: "test_string_key_pds",
+        SSMParameter.NHS_OAUTH_ENDPOINT.value: "api.endpoint/mock",
+        SSMParameter.PDS_KID.value: "test_string_pds_kid",
+        SSMParameter.NHS_OAUTH_KEY.value: "test_string_key_oauth",
+        SSMParameter.PDS_API_KEY.value: "test_string_key_pds",
     }
     expected_payload = {
         "iss": "test_string_key_oauth",
@@ -121,7 +121,7 @@ def test_create_jwt_for_new_access_token(mocker):
     )
 
 def test_get_parameters_for_pds_api_request():
-    ssm_parameters_expected =  (f"test_value_{SSMParameter.PDS_API_ENDPOINT}", f"test_value_{SSMParameter.PDS_API_ACCESS_TOKEN}")
+    ssm_parameters_expected =  (f"test_value_{SSMParameter.PDS_API_ENDPOINT.value}", f"test_value_{SSMParameter.PDS_API_ACCESS_TOKEN.value}")
     actual = pds_service.get_parameters_for_pds_api_request()
     assert ssm_parameters_expected == actual
 
@@ -130,14 +130,14 @@ def test_update_access_token_ssm(mocker):
 
     pds_service.update_access_token_ssm("test_string")
 
-    fake_ssm_service.update_ssm_parameter.assert_called_with(parameter_key=SSMParameter.PDS_API_ACCESS_TOKEN, parameter_value="test_string", parameter_type="SecureString")
+    fake_ssm_service.update_ssm_parameter.assert_called_with(parameter_key=SSMParameter.PDS_API_ACCESS_TOKEN.value, parameter_value="test_string", parameter_type="SecureString")
 
 def test_get_parameters_for_new_access_token(mocker):
     parameters = [
-        SSMParameter.NHS_OAUTH_ENDPOINT,
-        SSMParameter.PDS_KID,
-        SSMParameter.NHS_OAUTH_KEY,
-        SSMParameter.PDS_API_KEY,
+        SSMParameter.NHS_OAUTH_ENDPOINT.value,
+        SSMParameter.PDS_KID.value,
+        SSMParameter.NHS_OAUTH_KEY.value,
+        SSMParameter.PDS_API_KEY.value,
     ]
     fake_ssm_service.get_ssm_parameters = mocker.MagicMock()
     pds_service.get_parameters_for_new_access_token()
