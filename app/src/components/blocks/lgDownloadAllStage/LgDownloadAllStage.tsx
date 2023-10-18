@@ -81,7 +81,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                     timer.stop();
                     onPageLoad();
                 },
-                (timeToComplete / (Math.floor(Math.random() * 93) + 84)) * 100,
+                (timeToComplete * (Math.floor(Math.random() * 93) + 84)) / 100,
             );
         }
     }, [baseHeaders, baseUrl, interval, nhsNumber, timer]);
