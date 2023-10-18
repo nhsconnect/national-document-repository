@@ -1,14 +1,12 @@
 // env vars
 const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
+
 beforeEach(() => {
-    cy.visit(baseUrl);
+    cy.login('gp');
+    navigateToUploadPage();
 });
 
-const roles = Object.freeze({
-    GP: 'gp',
-    PCSE: 'pcse',
-});
 const formTypes = Object.freeze({
     LG: 'LG',
     ARF: 'ARF',
@@ -31,27 +29,11 @@ const successNoContent = 204;
 const selectForm = (formType) => cy.get(`#${formType}-documents-input`);
 
 const navigateToUploadPage = () => {
-    cy.visit(baseUrl + 'auth-callback');
-    cy.intercept('GET', '/Auth/TokenRequest*', {
-        statusCode: 200,
-        body: {
-            organisations: [
-                {
-                    org_name: 'PORTWAY LIFESTYLE CENTRE',
-                    ods_code: 'A470',
-                    role: 'DEV',
-                },
-            ],
-            authorisation_token: '111xxx222',
-        },
-    }).as('auth');
     cy.intercept('GET', '/SearchPatient*', {
         statusCode: 200,
         body: patient,
     }).as('search');
-    cy.wait('@auth');
-    cy.get(`#${roles.GP}-radio-button`).click();
-    cy.get('#role-submit-button').click();
+
     cy.get('#nhs-number-input').click();
     cy.get('#nhs-number-input').type(testPatient);
 
@@ -103,11 +85,6 @@ const uploadedFileNames = {
         ],
     ],
 };
-
-beforeEach(() => {
-    cy.visit(baseUrl);
-    navigateToUploadPage();
-});
 
 describe('[ALL] GP Upload Workflow Step 2: Uploads docs and tests it looks OK', () => {
     it('(Smoke test) On Start now button click, redirect to uploads is successful', () => {

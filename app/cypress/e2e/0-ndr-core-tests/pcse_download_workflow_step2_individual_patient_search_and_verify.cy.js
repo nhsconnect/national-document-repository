@@ -1,5 +1,3 @@
-// pcse_all_worflows_step1_individual_patient_search is the first step in this workflow
-
 describe('PCSE Download Workflow: Access and download found files', () => {
     // env vars
     const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
@@ -35,31 +33,15 @@ describe('PCSE Download Workflow: Access and download found files', () => {
     ];
 
     beforeEach(() => {
-        cy.visit(baseUrl);
+        cy.login('pcse');
     });
 
     const navigateToVerify = (role) => {
-        cy.visit(baseUrl + 'auth-callback');
-        cy.intercept('GET', '/Auth/TokenRequest*', {
-            statusCode: 200,
-            body: {
-                organisations: [
-                    {
-                        org_name: 'PORTWAY LIFESTYLE CENTRE',
-                        ods_code: 'A470',
-                        role: 'DEV',
-                    },
-                ],
-                authorisation_token: '111xxx222',
-            },
-        }).as('auth');
         cy.intercept('GET', '/SearchPatient*', {
             statusCode: 200,
             body: patient,
         }).as('search');
-        cy.wait('@auth');
-        cy.get(`#${role}-radio-button`).click();
-        cy.get('#role-submit-button').click();
+
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
         cy.get('#search-submit').click();
@@ -86,7 +68,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
                 day: '2-digit',
                 month: 'long',
                 year: 'numeric',
-            })
+            }),
         );
         cy.get('#patient-summary-postcode').should('have.text', patient.postalCode);
     });
@@ -104,7 +86,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.get('#no-files-message').should('have.length', 1);
         cy.get('#no-files-message').should(
             'have.text',
-            'There are no documents available for this patient.'
+            'There are no documents available for this patient.',
         );
     });
 
@@ -123,11 +105,11 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.get('.available-files-row').should('have.length', 2);
         cy.get('#available-files-row-0-filename').should(
             'have.text',
-            searchDocumentReferencesResponse[1].fileName
+            searchDocumentReferencesResponse[1].fileName,
         );
         cy.get('#available-files-row-1-filename').should(
             'have.text',
-            searchDocumentReferencesResponse[0].fileName
+            searchDocumentReferencesResponse[0].fileName,
         );
 
         cy.get('#available-files-row-0-created-date').should('exist');
@@ -146,7 +128,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
                     hour: 'numeric',
                     minute: 'numeric',
                     second: 'numeric',
-                })
+                }),
             );
             cy.get('#available-files-row-1-created-date').should(
                 'have.text',
@@ -157,7 +139,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
                     hour: 'numeric',
                     minute: 'numeric',
                     second: 'numeric',
-                })
+                }),
             );
         }
     });
