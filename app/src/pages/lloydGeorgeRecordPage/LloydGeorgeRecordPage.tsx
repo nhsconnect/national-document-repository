@@ -7,15 +7,15 @@ import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import LgRecordStage from '../../components/blocks/lgRecordStage/LgRecordStage';
+import LgDownloadAllStage from '../../components/blocks/lgDownloadAllStage/LgDownloadAllStage';
 
-enum LG_RECORD_STAGE {
+export enum LG_RECORD_STAGE {
     RECORD = 0,
     DOWNLOAD_ALL = 1,
+    SEE_ALL = 2,
+    DELETE_ANY = 3,
+    DELETE_ONE = 4,
 }
-export type PdfActionLink = {
-    label: string;
-    handler: () => void;
-};
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
     const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
@@ -30,7 +30,7 @@ function LloydGeorgeRecordPage() {
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
 
     useEffect(() => {
-        const search = async () => {
+        const onPageLoad = async () => {
             setDownloadStage(DOWNLOAD_STAGE.PENDING);
             const nhsNumber: string = patientDetails?.nhsNumber || '';
             try {
@@ -51,10 +51,10 @@ function LloydGeorgeRecordPage() {
             } catch (e) {
                 setDownloadStage(DOWNLOAD_STAGE.FAILED);
             }
-            mounted.current = true;
         };
         if (!mounted.current) {
-            void search();
+            mounted.current = true;
+            void onPageLoad();
         }
     }, [
         patientDetails,
@@ -67,24 +67,6 @@ function LloydGeorgeRecordPage() {
         setNumberOfFiles,
         setTotalFileSizeInByte,
     ]);
-    const downloadAllHandler = () => {
-        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
-    };
-
-    const actionLinks: Array<PdfActionLink> = [
-        { label: 'See all files', handler: () => null },
-        { label: 'Download all files', handler: downloadAllHandler },
-        { label: 'Delete a selection of files', handler: () => null },
-        { label: 'Delete file', handler: () => null },
-    ];
-
-    const DownloadAllStage = () => (
-        <>
-            <h1>Downloading documents</h1>
-            <h2>Alex Cool Bloggs</h2>
-            <h3>NHS number: 1428571428</h3>
-        </>
-    );
 
     switch (stage) {
         case LG_RECORD_STAGE.RECORD:
@@ -97,12 +79,23 @@ function LloydGeorgeRecordPage() {
                         lloydGeorgeUrl={lloydGeorgeUrl}
                         patientDetails={patientDetails}
                         downloadStage={downloadStage}
-                        actionLinks={actionLinks}
+                        setStage={setStage}
+                        stage={stage}
                     />
                 )
             );
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
-            return <DownloadAllStage />;
+            return (
+                patientDetails && (
+                    <LgDownloadAllStage
+                        numberOfFiles={numberOfFiles}
+                        setStage={setStage}
+                        patientDetails={patientDetails}
+                    />
+                )
+            );
+        default:
+            return <div />;
     }
 }
 

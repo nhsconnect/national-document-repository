@@ -1,23 +1,21 @@
-import React, { useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import { BackLink, Card, Details } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
-import formatFileSize from '../../../helpers/utils/formatFileSize';
-import { PdfActionLink } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
-import { ReactComponent as Chevron } from '../../../styles/down-chevron.svg';
-import { useOnClickOutside } from 'usehooks-ts';
-import { Link } from 'react-router-dom';
+import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import LgRecordDetails from '../lgRecordDetails/LgRecordDetails';
 
-type Props = {
+export type Props = {
     patientDetails: PatientDetails;
     downloadStage: DOWNLOAD_STAGE;
     lloydGeorgeUrl: string;
     lastUpdated: string;
     numberOfFiles: number;
     totalFileSizeInByte: number;
-    actionLinks: Array<PdfActionLink>;
+    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    stage: LG_RECORD_STAGE;
 };
 
 function LgRecordStage({
@@ -27,14 +25,11 @@ function LgRecordStage({
     lastUpdated,
     numberOfFiles,
     totalFileSizeInByte,
-    actionLinks,
+    setStage,
+    stage,
 }: Props) {
     const [fullScreen, setFullScreen] = useState(false);
-    const handleMoreActions = () => {
-        setShowActionsMenu(!showActionsMenu);
-    };
 
-    const [showActionsMenu, setShowActionsMenu] = useState(false);
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
@@ -45,66 +40,17 @@ function LgRecordStage({
         patientDetails?.nhsNumber.slice(3, 6) +
         ' ' +
         patientDetails?.nhsNumber.slice(6, 10);
-    const actionsRef = useRef(null);
-    useOnClickOutside(actionsRef, (e) => {
-        setShowActionsMenu(false);
-    });
-
-    const PdfCardDetails = () => (
-        <>
-            <div>
-                <div style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</div>
-                <div style={{ color: '#4C6272' }}>
-                    {numberOfFiles} files | File size: {formatFileSize(totalFileSizeInByte)} | File
-                    format: PDF
-                </div>
-            </div>
-            <div className="lg-actions">
-                <div
-                    className={`nhsuk-select lg-actions-select ${
-                        showActionsMenu ? 'lg-actions-select--selected' : ''
-                    }`}
-                    onClick={handleMoreActions}
-                    style={{ background: '#fff' }}
-                >
-                    <div
-                        className={`lg-actions-select_border ${
-                            showActionsMenu ? 'lg-actions-select_border--selected' : ''
-                        }`}
-                    />
-                    <span className="lg-actions-select_placeholder">Select an action...</span>
-                    <Chevron className="lg-actions-select_icon" />
-                </div>
-                {showActionsMenu && (
-                    <div ref={actionsRef}>
-                        <Card className="lg-actions-menu">
-                            <Card.Content>
-                                <ol>
-                                    {actionLinks.map((link, i) => (
-                                        <li key={link.label + i}>
-                                            <Link
-                                                to="#"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    link.handler();
-                                                }}
-                                            >
-                                                {link.label}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ol>
-                            </Card.Content>
-                        </Card>
-                    </div>
-                )}
-            </div>
-        </>
-    );
 
     const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
-            return <PdfCardDetails />;
+            const detailsProps = {
+                lastUpdated,
+                numberOfFiles,
+                totalFileSizeInByte,
+                setStage,
+            };
+
+            return <LgRecordDetails {...detailsProps} setStage={setStage} stage={stage} />;
         } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
             return <span>No documents are available</span>;
         } else {
