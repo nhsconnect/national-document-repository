@@ -20,10 +20,11 @@ type DownloadLinkAttributes = {
 };
 
 function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
+    const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     var FakeProgress = require('fake-progress');
     var p = new FakeProgress({
-        timeConstant: 600,
+        timeConstant: timeToComplete,
         autoStart: true,
     });
 
@@ -51,7 +52,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                 if (!mounting.current) {
                     setProgress(parseInt((p.progress * 100).toFixed(1)));
                 }
-            }, 100);
+            }, 200);
         } else if (progress >= 100) {
             clearInterval(interval);
         }
@@ -78,7 +79,9 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
         };
 
         if (!mounted.current) {
-            void onPageLoad();
+            setTimeout(() => {
+                void onPageLoad();
+            }, timeToComplete / 3);
         }
     }, [baseHeaders, baseUrl, nhsNumber]);
 
