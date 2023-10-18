@@ -37,15 +37,16 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
         url: '',
         filename: '',
     });
+    const [triggerDownload, setTriggerDownload] = useState(false);
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
     const { nhsNumber } = patientDetails;
 
     useEffect(() => {
-        if (linkRef.current && linkAttributes.url) {
+        if (linkRef.current && linkAttributes.url && triggerDownload) {
             linkRef.current.click();
         }
-    }, [linkAttributes]);
+    }, [triggerDownload, linkAttributes]);
 
     useEffect(() => {
         let interval: number = 0;
@@ -54,6 +55,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                 setProgress(parseInt((p.progress * 100).toFixed(1)));
             }, 200);
         } else if (progress >= 100) {
+            setTriggerDownload(true);
             clearInterval(interval);
         }
     }, [baseHeaders, baseUrl, nhsNumber, p.progress, progress]);
