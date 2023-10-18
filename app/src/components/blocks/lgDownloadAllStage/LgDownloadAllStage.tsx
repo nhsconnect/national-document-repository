@@ -7,6 +7,7 @@ import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider'
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
+import LgDownloadComplete from '../lgDownloadComplete/LgDownloadComplete';
 const FakeProgress = require('fake-progress');
 
 export type Props = {
@@ -36,7 +37,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
         url: '',
         filename: '',
     });
-    const [downloadComplete, setDownloadComplete] = useState(false);
+    const [inProgress, setInProgress] = useState(true);
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
 
@@ -45,7 +46,9 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     useEffect(() => {
         if (linkRef.current && linkAttributes.url) {
             linkRef.current.click();
-            setDownloadComplete(true);
+            setTimeout(() => {
+                setInProgress(false);
+            }, 600);
         }
     }, [linkAttributes]);
 
@@ -54,7 +57,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
             setProgress(1);
             const intervalTimer = window.setInterval(() => {
                 setProgress(parseInt((timer.progress * 100).toFixed(1)));
-            }, 50);
+            }, 100);
             setInterval(intervalTimer);
         }
     }, [baseHeaders, baseUrl, nhsNumber, timer.progress, progress]);
@@ -83,11 +86,11 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                     timer.stop();
                     onPageLoad();
                 },
-                (timeToComplete * (Math.floor(Math.random() * (93 - 86 + 1)) + 86)) / 100,
+                (timeToComplete * (Math.floor(Math.random() * (98 - 96 + 1)) + 96)) / 100,
             );
         }
     }, [baseHeaders, baseUrl, interval, nhsNumber, timer]);
-    return !downloadComplete ? (
+    return inProgress ? (
         <>
             <h1>Downloading documents</h1>
             <h2 style={{ margin: 0 }}>
@@ -150,7 +153,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
             </Card>
         </>
     ) : (
-        <>download complete !</>
+        <LgDownloadComplete patientDetails={patientDetails} setStage={setStage} />
     );
 }
 
