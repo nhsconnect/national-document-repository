@@ -73,9 +73,6 @@ jobs:
               - 'lambdas/handlers/lloyd_george_record_stitch_handler.py'
             bulk_upload_metadata:
               - 'lambdas/handlers/bulk_upload_metadata_handler.py'
-            
-  
-  
 
   python_lambdas_test:
     runs-on: ubuntu-latest
@@ -209,7 +206,7 @@ jobs:
   python_deploy_document_reference_search_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
       (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
@@ -256,7 +253,7 @@ jobs:
   python_deploy_document_manifest_by_nhs_number_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
       (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
@@ -300,11 +297,10 @@ jobs:
           function_name: ${{ vars.BUILD_ENV }}_DocumentManifestByNHSNumberLambda
           zip_file: package_lambdas_document_manifest_by_nhs_number_handler.zip
 
-
   python_deploy_login_redirect_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
       (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
@@ -351,7 +347,7 @@ jobs:
   python_deploy_authoriser_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
       (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
@@ -398,7 +394,7 @@ jobs:
   python_deploy_token_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
       (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
@@ -445,7 +441,7 @@ jobs:
   python_deploy_logout_handler_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
       (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
@@ -489,11 +485,10 @@ jobs:
           function_name: ${{ vars.BUILD_ENV }}_LogoutHandler
           zip_file: package_lambdas_logout_handler.zip
 
-
   python_deploy_lloyd_george_record_stitch_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
       (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
@@ -540,7 +535,7 @@ jobs:
   python_deploy_bulk_upload_metadata_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: [ "python_lambdas_test", "identify_changed_functions" ]
+    needs: ["python_lambdas_test", "identify_changed_functions"]
     if: |
       (github.ref == 'refs/heads/main') 
         && (needs.identify_changed_functions.outputs.utils_changed == 'true'
@@ -583,3 +578,42 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ vars.BUILD_ENV}}_BulkUploadMetadataLambda
           zip_file: package_lambdas_bulk_upload_metadata_handler.zip
+
+  python_deploy_back_channel_logout_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: ["python_lambdas_test"]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Back Channel Logout Lambda
+        run: |
+          make lambda_name=back_channel_logout_handler zip
+
+      - name: Upload Lambda Function for Back Channel Logout Lambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_BackChannelLogoutHandler
+          zip_file: package_lambdas_back_channel_logout_handler.zip

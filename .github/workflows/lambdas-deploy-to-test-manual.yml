@@ -33,9 +33,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
-        run: | 
+        run: |
           make env
-      
+
       - name: Start virtual environement
         run: |
           source ./lambdas/venv/bin/activate
@@ -69,7 +69,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
-        run: | 
+        run: |
           make env
 
       - name: Configure AWS Credentials
@@ -82,7 +82,7 @@ jobs:
       - name: Create release package for Create Document Reference
         run: |
           make lambda_name=create_document_reference_handler zip
-    
+
       - name: Upload Lambda Function for CreateDocRefLambda
         uses: appleboy/lambda-action@master
         with:
@@ -110,7 +110,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
-        run: | 
+        run: |
           make env
 
       - name: Configure AWS Credentials
@@ -123,7 +123,7 @@ jobs:
       - name: Create release package for Search Patient Details Reference
         run: |
           make lambda_name=search_patient_details_handler zip
-    
+
       - name: Upload Lambda Function for SearchPatientDetailsHandler
         uses: appleboy/lambda-action@master
         with:
@@ -134,11 +134,11 @@ jobs:
   python_deploy_document_reference_search_lambda:
     runs-on: ubuntu-latest
     environment: test
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
         python-version: ["3.11"]
-        
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -151,7 +151,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
-        run: | 
+        run: |
           make env
 
       - name: Configure AWS Credentials
@@ -175,11 +175,11 @@ jobs:
   python_deploy_document_manifest_by_nhs_number_lambda:
     runs-on: ubuntu-latest
     environment: test
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
         python-version: ["3.11"]
-        
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -192,7 +192,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
-        run: | 
+        run: |
           make env
 
       - name: Configure AWS Credentials
@@ -216,7 +216,7 @@ jobs:
   python_deploy_login_redirect_lambda:
     runs-on: ubuntu-latest
     environment: test
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -233,7 +233,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
-        run: | 
+        run: |
           make env
 
       - name: Configure AWS Credentials
@@ -257,10 +257,10 @@ jobs:
   python_deploy_authoriser_lambda:
     runs-on: ubuntu-latest
     environment: test
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
-        python-version: [ "3.11" ]
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
@@ -298,10 +298,10 @@ jobs:
   python_deploy_token_lambda:
     runs-on: ubuntu-latest
     environment: test
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
-        python-version: [ "3.11" ]
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
@@ -339,10 +339,10 @@ jobs:
   python_deploy_logout_handler_lambda:
     runs-on: ubuntu-latest
     environment: test
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
-        python-version: [ "3.11" ]
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
@@ -499,3 +499,42 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ vars.BUILD_ENV}}_BulkUpload Lambda
           zip_file: package_lambdas_bulk_upload_handler.zip
+
+  python_deploy_back_channel_logout_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: ["python_lambdas_test"]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Back Channel Logout Lambda
+        run: |
+          make lambda_name=back_channel_logout_handler zip
+
+      - name: Upload Lambda Function for Back Channel Logout Lambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_BackChannelLogoutHandler
+          zip_file: package_lambdas_back_channel_logout_handler.zip

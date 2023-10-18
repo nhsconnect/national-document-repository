@@ -9,7 +9,6 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-
   tag_and_release:
     runs-on: ubuntu-latest
     environment: pre-prod
@@ -22,29 +21,28 @@ jobs:
     permissions: write-all
 
     steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+          fetch-depth: "0"
 
-    - uses: actions/checkout@v3
-      with:
-        ref: main
-        fetch-depth: '0'
+      - name: Bump version and push tag
+        id: versioning
+        uses: anothrNick/github-tag-action@1.64.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: false
+          DEFAULT_BUMP: patch
 
-    - name: Bump version and push tag
-      id: versioning
-      uses: anothrNick/github-tag-action@1.64.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        WITH_V: false
-        DEFAULT_BUMP: patch
-    
-    - name: View outputs
-      run: |
-        echo Current tag: ${{steps.versioning.outputs.tag}} 
-        echo New tag: ${{steps.versioning.outputs.new_tag}}
+      - name: View outputs
+        run: |
+          echo Current tag: ${{steps.versioning.outputs.tag}} 
+          echo New tag: ${{steps.versioning.outputs.new_tag}}
 
   python_lambdas_test:
     runs-on: ubuntu-latest
     environment: pre-prod
-    needs: ['tag_and_release']
+    needs: ["tag_and_release"]
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -54,7 +52,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{needs.tag_and_release.outputs.tag}}
-          fetch-depth: '0'
+          fetch-depth: "0"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -64,7 +62,7 @@ jobs:
       - name: Make virtual environement
         run: |
           make env
-      
+
       - name: Start virtual environement
         run: |
           source ./lambdas/venv/bin/activate
@@ -81,7 +79,7 @@ jobs:
   python_deploy_create_document_reference_lambda:
     runs-on: ubuntu-latest
     environment: pre-prod
-    needs: ["python_lambdas_test", 'tag_and_release']
+    needs: ["python_lambdas_test", "tag_and_release"]
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -91,7 +89,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{needs.tag_and_release.outputs.tag}}
-          fetch-depth: '0'
+          fetch-depth: "0"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -101,7 +99,7 @@ jobs:
       - name: Make virtual environment
         run: |
           make env
-          
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -112,14 +110,14 @@ jobs:
       - name: Create release package for Create Document Reference
         run: |
           make lambda_name=create_document_reference_handler zip
-    
+
       - name: Upload Lambda Function for CreateDocRefLambda
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ vars.BUILD_ENV }}_CreateDocRefLambda
           zip_file: package_lambdas_create_document_reference_handler.zip
-   
+
   python_deploy_search_patient_details_lambda:
     runs-on: ubuntu-latest
     environment: pre-prod
@@ -133,7 +131,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{needs.tag_and_release.outputs.tag}}
-          fetch-depth: '0'
+          fetch-depth: "0"
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -141,7 +139,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Make virtual environement
-        run: | 
+        run: |
           make env
 
       - name: Configure AWS Credentials
@@ -154,7 +152,7 @@ jobs:
       - name: Create release package for Search Patient Details Reference
         run: |
           make lambda_name=search_patient_details_handler zip
-    
+
       - name: Upload Lambda Function for SearchPatientDetailsHandler
         uses: appleboy/lambda-action@master
         with:
@@ -165,7 +163,7 @@ jobs:
   python_deploy_document_reference_search_lambda:
     runs-on: ubuntu-latest
     environment: pre-prod
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -206,7 +204,7 @@ jobs:
   python_deploy_document_manifest_by_nhs_number_lambda:
     runs-on: ubuntu-latest
     environment: pre-prod
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -244,11 +242,10 @@ jobs:
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_DocumentManifestByNHSNumberLambda
           zip_file: package_lambdas_document_manifest_by_nhs_number_handler.zip
 
-
   python_deploy_login_redirect_lambda:
     runs-on: ubuntu-latest
     environment: pre-prod
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -289,7 +286,7 @@ jobs:
   python_deploy_authoriser_lambda:
     runs-on: ubuntu-latest
     environment: pre-prod
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -330,7 +327,7 @@ jobs:
   python_deploy_token_lambda:
     runs-on: ubuntu-latest
     environment: pre-prod
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -371,7 +368,7 @@ jobs:
   python_deploy_logout_handler_lambda:
     runs-on: ubuntu-latest
     environment: pre-prod
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -412,10 +409,10 @@ jobs:
   python_deploy_lloyd_george_record_stitch_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: [ "python_lambdas_test" ]
+    needs: ["python_lambdas_test"]
     strategy:
       matrix:
-        python-version: [ "3.11" ]
+        python-version: ["3.11"]
 
     steps:
       - name: Checkout
@@ -449,3 +446,42 @@ jobs:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_LloydGeorgeStitchLambda
           zip_file: package_lambdas_lloyd_george_record_stitch_handler.zip
+
+  python_deploy_back_channel_logout_lambda:
+    runs-on: ubuntu-latest
+    environment: development
+    needs: ["python_lambdas_test"]
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Back Channel Logout Lambda
+        run: |
+          make lambda_name=back_channel_logout_handler zip
+
+      - name: Upload Lambda Function for Back Channel Logout Lambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_BackChannelLogoutHandler
+          zip_file: package_lambdas_back_channel_logout_handler.zip
