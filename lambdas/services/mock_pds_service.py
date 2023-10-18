@@ -1,41 +1,20 @@
 import json
 
-from models.pds_models import PatientDetails
 from requests import Response
-from utils.utilities import validate_id
 from utils.exceptions import (
     PdsErrorException,
     PatientNotFoundException,
     InvalidResourceIdException,
 )
-from models.pds_models import Patient
+
+from services.patient_search_service import PatientSearch
 
 
-class MockPdsApiService:
+class MockPdsApiService(PatientSearch):
     def __init__(self, *args, **kwargs):
         pass
 
-    def fetch_patient_details(self, nhs_number: str) -> PatientDetails:
-        validate_id(nhs_number)
-
-        response = self.fake_pds_request(nhs_number)
-
-        if response.status_code == 200:
-            patient = Patient.model_validate(response.content)
-            patient_details = patient.get_patient_details(nhs_number)
-            return patient_details
-
-        if response.status_code == 404:
-            raise PatientNotFoundException(
-                "Patient does not exist for given NHS number"
-            )
-
-        if response.status_code == 400:
-            raise InvalidResourceIdException("Invalid NHS number")
-
-        raise PdsErrorException("Error when requesting patient from PDS")
-
-    def fake_pds_request(self, nhsNumber: str) -> Response:
+    def pds_request(self, nhsNumber: str, *args, **kwargs) -> Response:
         mock_pds_results: list[dict] = []
 
         try:
@@ -59,7 +38,7 @@ class MockPdsApiService:
 
         if bool(pds_patient):
             response.status_code = 200
-            response._content = pds_patient
+            response._content = json.dumps(pds_patient).encode('utf-8')
         else:
             response.status_code = 404
 

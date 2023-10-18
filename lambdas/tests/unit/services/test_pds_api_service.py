@@ -1,5 +1,8 @@
+import json
+
 import pytest
 from models.pds_models import PatientDetails
+from requests import Response
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from utils.exceptions import (
     InvalidResourceIdException,
@@ -29,9 +32,9 @@ pds_service = PdsApiService(fake_ssm_service)
 def test_handle_response_200_returns_PatientDetails(mocker):
     nhs_number = "9000000025"
 
-    response = mocker.MagicMock()
+    response = Response()
     response.status_code = 200
-    response.json.return_value = PDS_PATIENT
+    response._content = json.dumps(PDS_PATIENT).encode('utf-8')
 
     actual = pds_service.handle_response(response, nhs_number)
 

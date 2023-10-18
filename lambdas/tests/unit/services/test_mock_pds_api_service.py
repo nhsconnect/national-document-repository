@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from models.pds_models import PatientDetails
 from requests.models import Response
@@ -18,10 +20,10 @@ def test_fetch_patient_details_valid_returns_PatientDetails(mocker):
 
     response = Response()
     response.status_code = 200
-    response._content = PDS_PATIENT
+    response._content = json.dumps(PDS_PATIENT).encode('utf-8')
 
     mocker.patch(
-        "services.mock_pds_service.MockPdsApiService.fake_pds_request",
+        "services.mock_pds_service.MockPdsApiService.pds_request",
         return_value=response,
     )
 
@@ -38,10 +40,3 @@ def test_fetch_patient_details_valid_returns_PatientDetails(mocker):
     )
 
     assert actual == expected
-
-
-def test_fetch_patient_details_invalid_nhs_number_raises_InvalidResourceIdException():
-    nhs_number = "000000000"
-
-    with pytest.raises(InvalidResourceIdException):
-        pds_service.fetch_patient_details(nhs_number)

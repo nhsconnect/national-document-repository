@@ -3,7 +3,6 @@ import os
 from json import JSONDecodeError
 
 from pydantic import ValidationError
-from requests import HTTPError
 from services.pds_api_service import PdsApiService
 from utils.exceptions import (
     InvalidResourceIdException,
@@ -16,6 +15,8 @@ from services.ssm_service import SSMService
 
 from services.mock_pds_service import MockPdsApiService
 
+from utils.decorators.validate_patient_id import validate_patient_id
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -27,7 +28,7 @@ def get_pds_service():
         else MockPdsApiService
     )
 
-
+@validate_patient_id
 def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
     logger.info(event)
