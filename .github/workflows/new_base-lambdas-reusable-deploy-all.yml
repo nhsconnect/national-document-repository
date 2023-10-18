@@ -92,8 +92,8 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
-  deploy_bulk_upload_lambda:
-    name: Deploy metadata_bulk_upload_lambda
+  deploy_bulk_upload_metadata_lambda:
+    name: Deploy bulk_upload_metadata_lambda
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
@@ -167,5 +167,18 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: logout_handler
       lambda_aws_name: LogoutHandler
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_bulk_upload_lambda:
+    name: Deploy bulk_upload_lambda
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: bulk_upload_handler
+      lambda_aws_name: BulkUploadLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}

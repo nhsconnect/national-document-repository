@@ -101,4 +101,4 @@ class DocumentManifestService:
             f"s3://{self.zip_output_bucket}/{self.zip_file_name}",
         )
 
-        self.dynamo_service.post_item_service(self.zip_trace_table, zip_trace.to_dict())
+        self.dynamo_service.create_item(self.zip_trace_table, zip_trace.to_dict())

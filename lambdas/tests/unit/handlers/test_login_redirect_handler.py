@@ -3,7 +3,6 @@ from handlers import login_redirect_handler
 from oauthlib.oauth2 import InsecureTransportError
 from tests.unit.helpers.ssm_responses import \
     MOCK_MULTI_STRING_PARAMETERS_RESPONSE
-
 from utils.lambda_response import ApiGatewayResponse
 
 RETURN_URL = (
@@ -105,8 +104,8 @@ def test_save_to_dynamo(mocker, monkeypatch):
     login_redirect_handler.save_state_in_dynamo_db("test")
 
     mock_dynamo_service.assert_called_once()
-    mocked_dynamo_service_instance.post_item_service.assert_called_once()
-    mocked_dynamo_service_instance.post_item_service.assert_called_with(
+    mocked_dynamo_service_instance.create_item.assert_called_once()
+    mocked_dynamo_service_instance.create_item.assert_called_with(
         item=expected_item, table_name="test_table"
     )
 

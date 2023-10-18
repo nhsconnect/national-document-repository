@@ -12,7 +12,9 @@ from utils.lambda_response import ApiGatewayResponse
 def test_lambda_handler_returns_items_from_dynamo_returns_200(
     set_env, valid_id_event, context, mocker
 ):
-    mock_dynamo = mocker.patch("services.dynamo_service.DynamoDBService.query_service")
+    mock_dynamo = mocker.patch(
+        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+    )
     mock_dynamo.return_value = MOCK_RESPONSE
 
     expected = ApiGatewayResponse(
@@ -27,7 +29,9 @@ def test_lambda_handler_returns_items_from_dynamo_returns_200(
 def test_lambda_handler_returns_items_from_doc_store_only_returns_200(
     set_env, valid_id_event, context, mocker
 ):
-    mock_dynamo = mocker.patch("services.dynamo_service.DynamoDBService.query_service")
+    mock_dynamo = mocker.patch(
+        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+    )
     mock_dynamo.side_effect = [MOCK_RESPONSE, MOCK_EMPTY_RESPONSE]
 
     expected = ApiGatewayResponse(
@@ -42,7 +46,9 @@ def test_lambda_handler_returns_items_from_doc_store_only_returns_200(
 def test_lambda_handler_when_dynamo_returns_no_records_returns_204(
     set_env, valid_id_event, context, mocker
 ):
-    mock_dynamo = mocker.patch("services.dynamo_service.DynamoDBService.query_service")
+    mock_dynamo = mocker.patch(
+        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+    )
     mock_dynamo.return_value = MOCK_EMPTY_RESPONSE
 
     expected = ApiGatewayResponse(204, "[]", "GET").create_api_gateway_response()
@@ -55,7 +61,9 @@ def test_lambda_handler_when_dynamo_returns_no_records_returns_204(
 def test_lambda_handler_raises_DynamoDbException_returns_500(
     set_env, valid_id_event, context, mocker
 ):
-    mock_dynamo = mocker.patch("services.dynamo_service.DynamoDBService.query_service")
+    mock_dynamo = mocker.patch(
+        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+    )
     mock_dynamo.side_effect = DynamoDbException
 
     expected = ApiGatewayResponse(
@@ -70,7 +78,9 @@ def test_lambda_handler_raises_DynamoDbException_returns_500(
 def test_lambda_handler_raises_ClientError_returns_500(
     set_env, valid_id_event, context, mocker
 ):
-    mock_dynamo = mocker.patch("services.dynamo_service.DynamoDBService.query_service")
+    mock_dynamo = mocker.patch(
+        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+    )
     mock_dynamo.return_value = MOCK_EMPTY_RESPONSE
     mock_dynamo.side_effect = ClientError(
         {"Error": {"Code": 500, "Message": "test error"}}, "testing"
@@ -90,7 +100,9 @@ def test_lambda_handler_raises_InvalidResourceIdException_returns_500(
 ):
     exception = InvalidResourceIdException
 
-    mock_dynamo = mocker.patch("services.dynamo_service.DynamoDBService.query_service")
+    mock_dynamo = mocker.patch(
+        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+    )
     mock_dynamo.side_effect = exception
 
     expected = ApiGatewayResponse(
@@ -124,7 +136,7 @@ def test_lambda_handler_when_dynamo_tables_env_variable_not_supplied_then_return
     valid_id_event, context
 ):
     expected = ApiGatewayResponse(
-        400, "An error occurred due to missing key: 'DYNAMODB_TABLE_LIST'", "GET"
+        500, "An error occurred due to missing key: 'DYNAMODB_TABLE_LIST'", "GET"
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_event, context)
     assert expected == actual

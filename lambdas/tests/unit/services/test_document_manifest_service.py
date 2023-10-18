@@ -90,7 +90,6 @@ def test_download_documents_to_be_zipped_calls_download_file(set_env, mocker):
     assert mock_s3_service_download_file.call_count == 3
 
 
-
 def test_download_documents_to_be_zipped_creates_download_path(set_env, mocker):
     mocker.patch("boto3.client")
     mock_document = [
@@ -111,7 +110,9 @@ def test_download_documents_to_be_zipped_creates_download_path(set_env, mocker):
 
     service.download_documents_to_be_zipped()
 
-    expected_download_path = os.path.join(service.temp_downloads_dir, MOCK_DOCUMENTS[0].file_name)
+    expected_download_path = os.path.join(
+        service.temp_downloads_dir, MOCK_DOCUMENTS[0].file_name
+    )
 
     document_file_key = MOCK_DOCUMENTS[0].file_key
 

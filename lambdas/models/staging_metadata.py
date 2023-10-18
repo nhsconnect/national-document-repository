@@ -18,7 +18,6 @@ class MetadataFile(BaseModel):
     file_path: str = Field(alias="FILEPATH")
     page_count: str = Field(alias="PAGE COUNT")
     gp_practice_code: str
-    nhs_number: str = Field(exclude=True, alias=NHS_NUMBER_FIELD_NAME)
     section: str
     sub_section: Optional[str]
     scan_date: str

@@ -21,6 +21,7 @@ const getPresignedUrlForZip = async ({ nhsNumber, baseUrl, baseHeaders }: Args) 
         },
         params: {
             patientId: nhsNumber,
+            docType: 'ARF',
         },
     });
     return data;

@@ -135,7 +135,7 @@ LG_MOCK_DUPLICATE_FILES_EVENT_BODY = {
                     "fileName": f"1of2_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
                     "docType": "LG",
-                }
+                },
             ]
         }
     ],

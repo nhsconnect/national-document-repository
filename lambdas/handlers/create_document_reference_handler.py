@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import sys
-import uuid
 from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
@@ -14,9 +13,9 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
-from utils.utilities import validate_id
-
-from services.lloyd_george_validator import validate_lg_files, LGInvalidFilesException
+from utils.lloyd_george_validator import (LGInvalidFilesException,
+                                          validate_lg_files)
+from utils.utilities import create_reference_id, validate_id
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -64,7 +63,7 @@ def lambda_handler(event, context):
     except ValidationError as e:
         logger.error(e)
         return ApiGatewayResponse(
-            400, f"Failed to parse document upload request data", "GET"
+            400, "Failed to parse document upload request data", "GET"
         ).create_api_gateway_response()
     except JSONDecodeError as e:
         logger.error(e)
@@ -92,7 +91,7 @@ def lambda_handler(event, context):
 
         logger.info("Provided document is supported")
 
-        s3_object_key = str(uuid.uuid4())
+        s3_object_key = create_reference_id()
 
         document_reference: NHSDocumentReference
 
@@ -121,7 +120,6 @@ def lambda_handler(event, context):
             return response
 
         try:
-
             s3_response = s3_service.create_document_presigned_url_handler(
                 document_reference.s3_bucket_name,
                 document_reference.nhs_number + "/" + document_reference.id,
@@ -144,12 +142,12 @@ def lambda_handler(event, context):
             logger.info("Writing ARF document references")
             # TODO - Replace with dynamo batch writing
             for document in arf_documents:
-                dynamo_service.post_item_service(arf_dynamo_table, document.to_dict())
+                dynamo_service.create_item(arf_dynamo_table, document.to_dict())
         if lg_documents:
             logger.info("Writing LG document references")
             # TODO - Replace with dynamo batch writing
             for document in lg_documents:
-                dynamo_service.post_item_service(lg_dynamo_table, document.to_dict())
+                dynamo_service.create_item(lg_dynamo_table, document.to_dict())
     except ClientError as e:
         logger.error(str(e))
         response = ApiGatewayResponse(

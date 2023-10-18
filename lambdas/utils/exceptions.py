@@ -40,3 +40,13 @@ class InvalidParamException(Exception):
 
 class FileProcessingException(Exception):
     pass
+
+
+class LGFileTypeException(ValueError):
+    """One or more of the files do not match the required file type."""
+
+    pass
+
+
+class InvalidMessageException(Exception):
+    pass
