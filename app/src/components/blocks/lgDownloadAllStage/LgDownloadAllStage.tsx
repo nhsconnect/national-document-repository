@@ -70,7 +70,6 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                 const filename = `lloyd_george-patient-record-${nhsNumber}`;
 
                 window.clearInterval(interval);
-                setProgress(100);
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
             } catch (e) {}
         };
@@ -86,7 +85,6 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
             mounted.current = true;
         }
     }, [baseHeaders, baseUrl, interval, nhsNumber, timer]);
-
     return (
         <>
             <h1>Downloading documents</h1>
@@ -115,7 +113,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                         }}
                     >
                         <div>
-                            <span>{`${progress} %`} downloaded...</span>
+                            <span>{`${linkAttributes.url ? 100 : progress} %`} downloaded...</span>
                             <a
                                 hidden
                                 id="download-link"
