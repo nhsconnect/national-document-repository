@@ -1,9 +1,8 @@
 import logging
 import os
-import jwt
 from botocore.exceptions import ClientError
-from lambdas.services.oidc_service import OidcService
-from lambdas.utils.exceptions import AuthorisationException
+from services.oidc_service import OidcService
+from utils.exceptions import AuthorisationException
 from services.dynamo_service import DynamoDBService
 from utils.lambda_response import ApiGatewayResponse
 

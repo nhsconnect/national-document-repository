@@ -1,8 +1,8 @@
 from botocore.exceptions import ClientError
 import pytest
 from handlers.back_channel_logout_handler import lambda_handler
-from lambdas.services.oidc_service import OidcService
-from lambdas.utils.exceptions import AuthorisationException
+from services.oidc_service import OidcService
+from utils.exceptions import AuthorisationException
 from tests.unit.helpers.ssm_responses import \
     MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
