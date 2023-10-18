@@ -524,4 +524,4 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_BackChannelLogoutLambda
-          zip_file: package_lambdas_back_channel_logout.zip
+          zip_file: package_lambdas_back_channel_logout_handler.zip
