@@ -50,10 +50,10 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     useEffect(() => {
         if (!progress) {
             setProgress(1);
-            const interval = window.setInterval(() => {
+            const intervalTimer = window.setInterval(() => {
                 setProgress(parseInt((timer.progress * 100).toFixed(1)));
             }, 200);
-            setInterval(interval);
+            setInterval(intervalTimer);
         }
     }, [baseHeaders, baseUrl, nhsNumber, timer.progress, progress]);
 
