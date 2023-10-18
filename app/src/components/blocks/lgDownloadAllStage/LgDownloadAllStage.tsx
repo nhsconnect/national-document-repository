@@ -75,14 +75,14 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
         };
 
         if (!mounted.current) {
+            mounted.current = true;
             setTimeout(
                 () => {
                     timer.stop();
                     onPageLoad();
                 },
-                (timeToComplete / Math.floor(Math.random() * (94 - 86 + 1)) + 86) * 100,
+                (timeToComplete / Math.floor(Math.random() * (5 - 4 + 1)) + 4) * 6,
             );
-            mounted.current = true;
         }
     }, [baseHeaders, baseUrl, interval, nhsNumber, timer]);
     return (

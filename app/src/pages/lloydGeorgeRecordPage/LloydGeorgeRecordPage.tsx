@@ -30,7 +30,7 @@ function LloydGeorgeRecordPage() {
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
 
     useEffect(() => {
-        const search = async () => {
+        const onPageLoad = async () => {
             setDownloadStage(DOWNLOAD_STAGE.PENDING);
             const nhsNumber: string = patientDetails?.nhsNumber || '';
             try {
@@ -51,10 +51,10 @@ function LloydGeorgeRecordPage() {
             } catch (e) {
                 setDownloadStage(DOWNLOAD_STAGE.FAILED);
             }
-            mounted.current = true;
         };
         if (!mounted.current) {
-            void search();
+            mounted.current = true;
+            void onPageLoad();
         }
     }, [
         patientDetails,
