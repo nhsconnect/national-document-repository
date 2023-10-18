@@ -77,7 +77,7 @@ class BulkUploadService:
         file_names = [
             os.path.basename(metadata.file_path) for metadata in staging_metadata.files
         ]
-        validate_lg_file_names(file_names)
+        validate_lg_file_names(file_names, staging_metadata.nhs_number)
 
     def init_transaction(self):
         self.dynamo_records_in_transaction = []
