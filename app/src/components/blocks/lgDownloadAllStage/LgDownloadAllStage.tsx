@@ -69,9 +69,9 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
                 const filename = `lloyd_george-patient-record-${nhsNumber}`;
 
+                window.clearInterval(interval);
                 setProgress(100);
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
-                window.clearInterval(interval);
             } catch (e) {}
         };
 
