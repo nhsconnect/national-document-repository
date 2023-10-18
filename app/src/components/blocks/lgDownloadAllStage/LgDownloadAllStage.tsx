@@ -27,6 +27,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
         new FakeProgress({
             timeConstant: timeToComplete,
             autoStart: true,
+            autoStartTime: 1,
         }),
     );
 
