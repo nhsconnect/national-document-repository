@@ -519,9 +519,9 @@ jobs:
         run: |
           make lambda_name=back_channel_logout_handler zip
 
-      - name: Upload Lambda Function for BackChannelLogout Lambda
+      - name: Upload Lambda Function for Back Channel Logout Lambda
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_BackChannelLogoutLambda
+          function_name: ${{ github.event.inputs.sandboxWorkspace}}_BackChannelLogoutHandler
           zip_file: package_lambdas_back_channel_logout_handler.zip
