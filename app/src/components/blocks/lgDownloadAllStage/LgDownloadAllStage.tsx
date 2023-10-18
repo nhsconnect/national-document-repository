@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
 import { Card } from 'nhsuk-react-components';
 import { Link } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
@@ -23,11 +23,14 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     var FakeProgress = require('fake-progress');
-    var p = new FakeProgress({
-        timeConstant: timeToComplete,
-        autoStart: true,
-    });
-
+    var p = useMemo(
+        () =>
+            new FakeProgress({
+                timeConstant: timeToComplete,
+                autoStart: true,
+            }),
+        [FakeProgress],
+    );
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const [linkAttributes, setLinkAttributes] = useState<DownloadLinkAttributes>({
@@ -36,7 +39,6 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     });
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
-    const mounting = useRef(false);
     const { nhsNumber } = patientDetails;
 
     useEffect(() => {
@@ -49,9 +51,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
         let interval: number = 0;
         if (!progress) {
             interval = window.setInterval(() => {
-                if (!mounting.current) {
-                    setProgress(parseInt((p.progress * 100).toFixed(1)));
-                }
+                setProgress(parseInt((p.progress * 100).toFixed(1)));
             }, 200);
         } else if (progress >= 100) {
             clearInterval(interval);
@@ -60,7 +60,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
     useEffect(() => {
         const onPageLoad = async () => {
-            mounting.current = true;
+            p.stop();
             try {
                 const preSignedUrl = await getPresignedUrlForZip({
                     baseUrl,
@@ -72,18 +72,20 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                 const filename = `lloyd_george-patient-record-${nhsNumber}`;
 
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
+                p.start();
             } catch (e) {}
-
-            mounting.current = false;
             mounted.current = true;
         };
 
         if (!mounted.current) {
-            setTimeout(() => {
-                void onPageLoad();
-            }, timeToComplete / 3);
+            setTimeout(
+                () => {
+                    void onPageLoad();
+                },
+                (timeToComplete / 2) * 3,
+            );
         }
-    }, [baseHeaders, baseUrl, nhsNumber]);
+    }, [baseHeaders, baseUrl, nhsNumber, p]);
 
     return (
         <>
