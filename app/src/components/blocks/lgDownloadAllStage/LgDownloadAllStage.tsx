@@ -23,6 +23,7 @@ type DownloadLinkAttributes = {
 function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
+    const [interval, setInterval] = useState(0);
     const timer = useMemo(() => {
         return new FakeProgress({
             timeConstant: timeToComplete,
@@ -35,28 +36,24 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
         url: '',
         filename: '',
     });
-    const [triggerDownload, setTriggerDownload] = useState(false);
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
-    const loaded = useRef(false);
 
     const { nhsNumber } = patientDetails;
 
     useEffect(() => {
-        if (linkRef.current && linkAttributes.url && triggerDownload) {
+        if (linkRef.current && linkAttributes.url) {
             linkRef.current.click();
         }
-    }, [triggerDownload, linkAttributes]);
+    }, [linkAttributes]);
 
     useEffect(() => {
-        let interval: number = 0;
         if (!progress) {
-            interval = window.setInterval(() => {
+            setProgress(1);
+            const interval = window.setInterval(() => {
                 setProgress(parseInt((timer.progress * 100).toFixed(1)));
             }, 200);
-        } else if (progress >= 100) {
-            setTriggerDownload(true);
-            clearInterval(interval);
+            setInterval(interval);
         }
     }, [baseHeaders, baseUrl, nhsNumber, timer.progress, progress]);
 
@@ -72,23 +69,23 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
                 const filename = `lloyd_george-patient-record-${nhsNumber}`;
 
+                setProgress(100);
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
+                window.clearInterval(interval);
             } catch (e) {}
-            mounted.current = true;
         };
 
-        if (!mounted.current && !loaded.current) {
-            loaded.current = true;
+        if (!mounted.current) {
             setTimeout(
-                async () => {
+                () => {
                     timer.stop();
-                    await onPageLoad();
-                    setProgress(100);
+                    onPageLoad();
                 },
                 (timeToComplete / 3) * 4,
             );
+            mounted.current = true;
         }
-    }, [baseHeaders, baseUrl, nhsNumber, timer]);
+    }, [baseHeaders, baseUrl, interval, nhsNumber, timer]);
 
     return (
         <>
