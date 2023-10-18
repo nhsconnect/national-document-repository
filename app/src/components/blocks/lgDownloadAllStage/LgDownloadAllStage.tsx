@@ -80,7 +80,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                     timer.stop();
                     onPageLoad();
                 },
-                (timeToComplete / 3) * 4,
+                (timeToComplete / Math.floor(Math.random() * (9 - 6 + 1)) + 6) * 10,
             );
             mounted.current = true;
         }
