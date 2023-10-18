@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
 import { Card } from 'nhsuk-react-components';
 import { Link } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
@@ -7,7 +7,7 @@ import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider'
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
-const FakeProgress = require('../../../helpers/modules/fakeProgress');
+const FakeProgress = require('fake-progress');
 
 export type Props = {
     numberOfFiles: number;
@@ -23,14 +23,12 @@ type DownloadLinkAttributes = {
 function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
-    const [timer, setTimer] = useState(
-        new FakeProgress({
+    const timer = useMemo(() => {
+        return new FakeProgress({
             timeConstant: timeToComplete,
             autoStart: true,
-            autoStartTime: 1,
-        }),
-    );
-
+        });
+    }, []);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const [linkAttributes, setLinkAttributes] = useState<DownloadLinkAttributes>({
@@ -83,18 +81,11 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
             loaded.current = true;
             setTimeout(
                 async () => {
-                    const cachedProgress = timer.progress;
                     timer.stop();
                     await onPageLoad();
-                    setTimer(
-                        new FakeProgress({
-                            timeConstant: timeToComplete,
-                            autoStart: true,
-                            autoStartTime: cachedProgress,
-                        }),
-                    );
+                    setProgress(100);
                 },
-                (timeToComplete / 2) * 3,
+                (timeToComplete / 3) * 4,
             );
         }
     }, [baseHeaders, baseUrl, nhsNumber, timer]);
