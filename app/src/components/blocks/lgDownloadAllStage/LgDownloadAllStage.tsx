@@ -21,6 +21,12 @@ type DownloadLinkAttributes = {
 
 function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
     const [progress, setProgress] = useState(0);
+    var FakeProgress = require('fake-progress');
+    var p = new FakeProgress({
+        timeConstant: 600,
+        autoStart: true,
+    });
+
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const [linkAttributes, setLinkAttributes] = useState<DownloadLinkAttributes>({
@@ -54,10 +60,21 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
             mounted.current = true;
         };
-        if (!mounted.current) {
-            void onPageLoad();
+
+        let interval: number = 0;
+        if (!progress) {
+            interval = window.setInterval(() => {
+                setProgress(parseInt((p.progress * 100).toFixed(1)));
+            }, 100);
+        } else if (progress >= 100) {
+            clearInterval(interval);
+            if (!mounted.current) {
+                void onPageLoad();
+            }
         }
-    }, [baseHeaders, baseUrl, nhsNumber]);
+    }, [baseHeaders, baseUrl, nhsNumber, p.progress, progress]);
+
+    useEffect(() => {}, [baseHeaders, baseUrl, nhsNumber]);
 
     return (
         <>
@@ -87,7 +104,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                         }}
                     >
                         <div>
-                            <span>{progress} downloaded...</span>
+                            <span>{`${progress} %`} downloaded...</span>
                             <a
                                 hidden
                                 id="download-link"
