@@ -5,8 +5,8 @@ import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorg
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
-import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
+import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 
 export type Props = {
     numberOfFiles: number;
@@ -35,6 +35,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     });
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
+    const mounting = useRef(false);
     const { nhsNumber } = patientDetails;
 
     useEffect(() => {
@@ -44,7 +45,21 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     }, [linkAttributes]);
 
     useEffect(() => {
+        let interval: number = 0;
+        if (!progress) {
+            interval = window.setInterval(() => {
+                if (!mounting.current) {
+                    setProgress(parseInt((p.progress * 100).toFixed(1)));
+                }
+            }, 100);
+        } else if (progress >= 100) {
+            clearInterval(interval);
+        }
+    }, [baseHeaders, baseUrl, nhsNumber, p.progress, progress]);
+
+    useEffect(() => {
         const onPageLoad = async () => {
+            mounting.current = true;
             try {
                 const preSignedUrl = await getPresignedUrlForZip({
                     baseUrl,
@@ -58,23 +73,14 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
             } catch (e) {}
 
+            mounting.current = false;
             mounted.current = true;
         };
 
-        let interval: number = 0;
-        if (!progress) {
-            interval = window.setInterval(() => {
-                setProgress(parseInt((p.progress * 100).toFixed(1)));
-            }, 100);
-        } else if (progress >= 100) {
-            clearInterval(interval);
-            if (!mounted.current) {
-                void onPageLoad();
-            }
+        if (!mounted.current) {
+            void onPageLoad();
         }
-    }, [baseHeaders, baseUrl, nhsNumber, p.progress, progress]);
-
-    useEffect(() => {}, [baseHeaders, baseUrl, nhsNumber]);
+    }, [baseHeaders, baseUrl, nhsNumber]);
 
     return (
         <>
