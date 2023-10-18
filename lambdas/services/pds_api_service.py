@@ -59,10 +59,10 @@ class PdsApiService:
         access_token_response = json.loads(access_token_response)
         access_token = access_token_response["access_token"]
         access_token_expiration = int(access_token_response["expires_in"]) + int(
-            access_token_response["issued_at"]
+            access_token_response["issued_at"]/1000
         )
         time_safety_margin_seconds = 10
-        if time.time() - access_token_expiration < time_safety_margin_seconds:
+        if time.time() - access_token_expiration > time_safety_margin_seconds:
             access_token = self.get_new_access_token()
 
         x_request_id = str(uuid.uuid4())
