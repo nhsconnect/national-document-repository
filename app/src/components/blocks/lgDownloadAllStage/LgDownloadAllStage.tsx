@@ -22,7 +22,7 @@ type DownloadLinkAttributes = {
 function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
-    var FakeProgress = require('fake-progress');
+    var FakeProgress = require('../../../helpers/modules/fakeProgress');
     var p = useMemo(
         () =>
             new FakeProgress({
@@ -62,6 +62,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
     useEffect(() => {
         const onPageLoad = async () => {
+            const cachedProgress = p.progress;
             p.stop();
             try {
                 const preSignedUrl = await getPresignedUrlForZip({
@@ -74,7 +75,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                 const filename = `lloyd_george-patient-record-${nhsNumber}`;
 
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
-                p.start();
+                p.start(cachedProgress);
             } catch (e) {}
             mounted.current = true;
         };
