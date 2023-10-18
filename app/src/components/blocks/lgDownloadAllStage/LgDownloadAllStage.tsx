@@ -40,6 +40,8 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     const [triggerDownload, setTriggerDownload] = useState(false);
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
+    const triggered = useRef(false);
+
     const { nhsNumber } = patientDetails;
 
     useEffect(() => {
@@ -62,8 +64,6 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
     useEffect(() => {
         const onPageLoad = async () => {
-            const cachedProgress = p.progress;
-            p.stop();
             try {
                 const preSignedUrl = await getPresignedUrlForZip({
                     baseUrl,
@@ -75,15 +75,18 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                 const filename = `lloyd_george-patient-record-${nhsNumber}`;
 
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
-                p.start(cachedProgress);
             } catch (e) {}
             mounted.current = true;
         };
 
-        if (!mounted.current) {
+        if (!mounted.current && !triggered.current) {
+            triggered.current = true;
             setTimeout(
-                () => {
-                    void onPageLoad();
+                async () => {
+                    const cachedProgress = p.progress;
+                    p.stop();
+                    await onPageLoad();
+                    p.start(cachedProgress);
                 },
                 (timeToComplete / 2) * 3,
             );
