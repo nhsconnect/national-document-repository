@@ -19,8 +19,9 @@ const FakeProgress = function (opts) {
     this.parent = opts.parent;
     this.parentStart = opts.parentStart;
     this.parentEnd = opts.parentEnd;
-    if (this.autoStart) {
-        this.start();
+    this.autoStartTime = opts.autoStartTime;
+    if (this.autoStart && this.autoStartTime) {
+        this.start(this.autoStartTime);
     }
 };
 

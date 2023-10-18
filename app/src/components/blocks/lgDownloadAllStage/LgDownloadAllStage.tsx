@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { Card } from 'nhsuk-react-components';
 import { Link } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
@@ -7,6 +7,7 @@ import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider'
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
+const FakeProgress = require('../../../helpers/modules/fakeProgress');
 
 export type Props = {
     numberOfFiles: number;
@@ -22,15 +23,13 @@ type DownloadLinkAttributes = {
 function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
-    var FakeProgress = require('../../../helpers/modules/fakeProgress');
-    var p = useMemo(
-        () =>
-            new FakeProgress({
-                timeConstant: timeToComplete,
-                autoStart: true,
-            }),
-        [FakeProgress],
+    const [timer, setTimer] = useState(
+        new FakeProgress({
+            timeConstant: timeToComplete,
+            autoStart: true,
+        }),
     );
+
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const [linkAttributes, setLinkAttributes] = useState<DownloadLinkAttributes>({
@@ -40,7 +39,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     const [triggerDownload, setTriggerDownload] = useState(false);
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
-    const triggered = useRef(false);
+    const loaded = useRef(false);
 
     const { nhsNumber } = patientDetails;
 
@@ -54,13 +53,13 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
         let interval: number = 0;
         if (!progress) {
             interval = window.setInterval(() => {
-                setProgress(parseInt((p.progress * 100).toFixed(1)));
+                setProgress(parseInt((timer.progress * 100).toFixed(1)));
             }, 200);
         } else if (progress >= 100) {
             setTriggerDownload(true);
             clearInterval(interval);
         }
-    }, [baseHeaders, baseUrl, nhsNumber, p.progress, progress]);
+    }, [baseHeaders, baseUrl, nhsNumber, timer.progress, progress]);
 
     useEffect(() => {
         const onPageLoad = async () => {
@@ -79,19 +78,25 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
             mounted.current = true;
         };
 
-        if (!mounted.current && !triggered.current) {
-            triggered.current = true;
+        if (!mounted.current && !loaded.current) {
+            loaded.current = true;
             setTimeout(
                 async () => {
-                    const cachedProgress = p.progress;
-                    p.stop();
+                    const cachedProgress = timer.progress;
+                    timer.stop();
                     await onPageLoad();
-                    p.start(cachedProgress);
+                    setTimer(
+                        new FakeProgress({
+                            timeConstant: timeToComplete,
+                            autoStart: true,
+                            autoStartTime: cachedProgress,
+                        }),
+                    );
                 },
                 (timeToComplete / 2) * 3,
             );
         }
-    }, [baseHeaders, baseUrl, nhsNumber, p]);
+    }, [baseHeaders, baseUrl, nhsNumber, timer]);
 
     return (
         <>
