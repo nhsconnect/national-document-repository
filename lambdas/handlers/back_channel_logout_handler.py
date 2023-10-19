@@ -13,11 +13,14 @@ logger.setLevel(logging.INFO)
 
 
 @ensure_environment_variables(
-    names = ["OIDC_CALLBACK_URL"]
+    names=["OIDC_CALLBACK_URL"]
 )
 def lambda_handler(event, context):
-    body = json.loads(event["body"])
-    token = body["logout_token"]
+    try:
+        token = event["body"]["logout_token"]
+    except KeyError as e:
+        return ApiGatewayResponse(400, f"An error occurred due to missing key: {str(e)}",
+                                  "POST").create_api_gateway_response()
     return logout_handler(token)
 
 
