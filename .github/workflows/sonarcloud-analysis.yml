@@ -47,15 +47,11 @@ jobs:
       - name: Start virtual environment
         run: |
           source ./lambdas/venv/bin/activate
-          echo PATH=$PATH >> $GITHUB_ENV
+          # echo PATH=$PATH >> $GITHUB_ENV
 
       - name: Test with pytest
         run: |
           make test-unit-coverage
-        
-      - name: Deactivate venv
-        run: |
-          deactivate
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
