@@ -1,4 +1,4 @@
-name: 'Full - Deploy All'
+name: 'FULL - Deploy All'
 
 on:
   workflow_dispatch:
