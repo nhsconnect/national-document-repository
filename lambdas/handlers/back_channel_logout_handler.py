@@ -16,7 +16,7 @@ logger.setLevel(logging.INFO)
     names = ["OIDC_CALLBACK_URL"]
 )
 def lambda_handler(event, context):
-    body = json.load(event["body"])
+    body = json.loads(event["body"])
     token = body["logout_token"]
     return logout_handler(token)
 
