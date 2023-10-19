@@ -1,11 +1,8 @@
-import json
 from botocore.exceptions import ClientError
 import pytest
 from handlers.back_channel_logout_handler import lambda_handler
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
-from tests.unit.helpers.ssm_responses import \
-    MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
 
 
@@ -87,7 +84,6 @@ def test_back_channel_logout_handler_jwt_without_session_id_returns_400(mock_oid
 def test_back_channel_logout_handler_invalid_jwt_returns_400(mock_oidc_service, monkeypatch):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     mock_token = "mock_token"
-    mock_session_id = "mock_session_id"
     mock_oidc_service.side_effect = AuthorisationException
 
     expected = ApiGatewayResponse(
