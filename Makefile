@@ -80,6 +80,9 @@ storybook:
 test-ui:
 	npm --prefix ./app run test-all
 
+test-ui-coverage:
+	npm --prefix ./app run test-all:coverage
+
 build:
 	npm --prefix ./app run build
 
