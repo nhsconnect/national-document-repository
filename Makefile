@@ -33,6 +33,9 @@ format:
 test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
 
+test-unit-coverage:
+	cd ./lambdas && ./venv/bin/python3 -m pytest tests/ --cov
+
 test-unit-collect:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/ --collect-only
 
