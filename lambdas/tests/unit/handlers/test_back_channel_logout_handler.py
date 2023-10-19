@@ -1,3 +1,5 @@
+import json
+
 from botocore.exceptions import ClientError
 import pytest
 from handlers.back_channel_logout_handler import lambda_handler
@@ -54,8 +56,10 @@ def test_back_channel_logout_handler_missing_jwt_returns_400(mocker, mock_oidc_s
                                                              context):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     mock_token = "mock_token"
-    event = build_event_from_token(mock_token)
-    del(event["body"]["logout_token"])
+    event = {
+        "httpMethod": "POST",
+        "body": "{}"
+    }
     expected = ApiGatewayResponse(400, "An error occurred due to missing key: 'logout_token'",
                                   "POST").create_api_gateway_response()
 
@@ -121,7 +125,8 @@ def test_back_channel_logout_handler_boto_error_returns_400(mocker, mock_oidc_se
 
 
 def build_event_from_token(token: str) -> dict:
+    body_string = {"logout_token": token}
     return {
         "httpMethod": "POST",
-        "body": {"logout_token": token}
+        "body": json.dumps(body_string)
     }

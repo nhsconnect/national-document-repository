@@ -18,7 +18,8 @@ logger.setLevel(logging.INFO)
 def lambda_handler(event, context):
     logger.info(f"event = {event}")
     try:
-        token = event["body"]["logout_token"]
+        body = json.loads(event["body"])
+        token = body["logout_token"]
     except KeyError as e:
         return ApiGatewayResponse(400, f"An error occurred due to missing key: {str(e)}",
                                   "POST").create_api_gateway_response()
