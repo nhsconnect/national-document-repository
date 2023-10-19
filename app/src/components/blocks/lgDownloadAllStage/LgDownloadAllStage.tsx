@@ -22,7 +22,7 @@ type DownloadLinkAttributes = {
 };
 
 function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
-    const timeToComplete = 600;
+    const [timeToComplete, setTimeToComplete] = useState(600);
     const [progress, setProgress] = useState(0);
     const progressTimer = useMemo(() => {
         return new FakeProgress({
@@ -75,7 +75,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
         if (!mounted.current) {
             mounted.current = true;
-            setTimeout(onPageLoad, timeToComplete - 50);
+            setTimeout(onPageLoad, timeToComplete + 400);
         }
     }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer]);
 
