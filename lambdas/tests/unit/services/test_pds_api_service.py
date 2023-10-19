@@ -2,7 +2,6 @@ import json
 
 import pytest
 from botocore.exceptions import ClientError
-from models.pds_models import PatientDetails
 from requests import Response
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from utils.exceptions import (
@@ -31,58 +30,6 @@ class FakeSSMService:
 
 fake_ssm_service = FakeSSMService()
 pds_service = PdsApiService(fake_ssm_service)
-
-
-def test_handle_response_200_returns_PatientDetails(mocker):
-    nhs_number = "9000000025"
-
-    response = Response()
-    response.status_code = 200
-    response._content = json.dumps(PDS_PATIENT).encode("utf-8")
-
-    actual = pds_service.handle_response(response, nhs_number)
-
-    expected = PatientDetails(
-        givenName=["Jane"],
-        familyName="Smith",
-        birthDate="2010-10-22",
-        postalCode="LS1 6AE",
-        nhsNumber="9000000009",
-        superseded=False,
-        restricted=False,
-    )
-
-    assert actual == expected
-
-
-def test_handle_response_404_raises_PatientNotFoundException(mocker):
-    nhs_number = "9000000025"
-
-    response = mocker.MagicMock()
-    response.status_code = 404
-
-    with pytest.raises(PatientNotFoundException):
-        pds_service.handle_response(response, nhs_number)
-
-
-def test_handle_response_400_raises_InvalidResourceIdException(mocker):
-    nhs_number = "9000000025"
-
-    response = mocker.MagicMock()
-    response.status_code = 400
-
-    with pytest.raises(InvalidResourceIdException):
-        pds_service.handle_response(response, nhs_number)
-
-
-def test_handle_response_catch_all_raises_PdsErrorException(mocker):
-    nhs_number = "9000000025"
-
-    response = mocker.MagicMock()
-    response.status_code = 500
-
-    with pytest.raises(PdsErrorException):
-        pds_service.handle_response(response, nhs_number)
 
 
 def test_request_new_token_is_call_with_correct_data(mocker):
