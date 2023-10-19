@@ -15,9 +15,26 @@ jobs:
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
-      - name: UI Test and coverage generation
-        run: make test-ui-coverage
-      
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
+
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
+          AWS_REGION: test region
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: development
+          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
+        run: |
+          ./react-environment-config.sh
+        working-directory: ./app
+        shell: bash
+
+      - run: make clean-install
+      - run: make test-ui-coverage
+
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
