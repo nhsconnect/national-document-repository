@@ -106,6 +106,13 @@ class BulkUploadService:
         self.dynamo_records_in_transaction.append(document_reference)
 
     def copy_to_lg_bucket(self, source_file_key: str, dest_file_key: str):
+
+        logger.debug("Checking Copy Params:")
+        logger.debug("Staging Bucket Name: " + self.staging_bucket_name)
+        logger.debug("Source File Name: " + source_file_key)
+        logger.debug("LG Bucket Name: " + self.lg_bucket_name)
+        logger.debug("Destination File Name: " + dest_file_key)
+        
         self.s3_service.copy_across_bucket(
             source_bucket=self.staging_bucket_name,
             source_file_key=source_file_key,
