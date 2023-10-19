@@ -31,12 +31,12 @@ def logout_handler(token):
     except ClientError as e:
         logger.error(f"Error logging out user: {e}")
         return ApiGatewayResponse(
-            400, """{ "error":"Internal error logging user out"}""", "GET"
+            400, """{ "error":"Internal error logging user out"}""", "POST"
         ).create_api_gateway_response()
     except AuthorisationException as e:
         logger.error(f"error while decoding JWT: {e}")
         return ApiGatewayResponse(
-            400, """{ "error":"JWT was invalid"}""", "GET"
+            400, """{ "error":"JWT was invalid"}""", "POST"
         ).create_api_gateway_response()
     except KeyError as e:
         logger.error(f"No field 'sid' in decoded token: {e}")
@@ -44,7 +44,7 @@ def logout_handler(token):
             400, """{ "error":"No sid field in decoded token"}""", "POST"
         ).create_api_gateway_response()
 
-    return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
+    return ApiGatewayResponse(200, "", "POST").create_api_gateway_response()
 
 
 def remove_session_from_dynamo_db(session_id):

@@ -33,7 +33,8 @@ def test_returns_500_when_env_vars_not_set():
     assert actual == expected
 
 
-def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(mocker, mock_oidc_service):
+def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(mocker, mock_oidc_service, monkeypatch):
+    monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"sid": mock_session_id}
@@ -42,7 +43,7 @@ def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(moc
         "handlers.back_channel_logout_handler.remove_session_from_dynamo_db"
     )
 
-    expected = ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
+    expected = ApiGatewayResponse(200, "", "POST").create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), None)
 
@@ -51,14 +52,15 @@ def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(moc
     mock_dynamo_service.assert_called_with(mock_session_id)
 
 
-def test_back_channel_logout_handler_jwt_without_session_id_returns_400(mock_oidc_service):
+def test_back_channel_logout_handler_jwt_without_session_id_returns_400(mock_oidc_service, monkeypatch):
+    monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"not_an_sid": mock_session_id}
     mock_oidc_service.return_value = mock_decoded_token
 
     expected = ApiGatewayResponse(
-        400, """{ "error":"No sid field in decoded token"}""", "GET"
+        400, """{ "error":"No sid field in decoded token"}""", "POST"
     ).create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), None)
@@ -67,13 +69,14 @@ def test_back_channel_logout_handler_jwt_without_session_id_returns_400(mock_oid
     mock_oidc_service.asset_called_with(mock_token)
 
 
-def test_back_channel_logout_handler_invalid_jwt_returns_400(mock_oidc_service):
+def test_back_channel_logout_handler_invalid_jwt_returns_400(mock_oidc_service, monkeypatch):
+    monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_oidc_service.side_effect = AuthorisationException
 
     expected = ApiGatewayResponse(
-        400, """{ "error":"JWT was invalid"}""", "GET"
+        400, """{ "error":"JWT was invalid"}""", "POST"
     ).create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), None)
@@ -82,7 +85,8 @@ def test_back_channel_logout_handler_invalid_jwt_returns_400(mock_oidc_service):
     mock_oidc_service.asset_called_with(mock_token)
 
 
-def test_back_channel_logout_handler_boto_error_returns_400(mocker, mock_oidc_service):
+def test_back_channel_logout_handler_boto_error_returns_400(mocker, mock_oidc_service, monkeypatch):
+    monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"sid": mock_session_id}
@@ -95,7 +99,7 @@ def test_back_channel_logout_handler_boto_error_returns_400(mocker, mock_oidc_se
     )
 
     expected = ApiGatewayResponse(
-        400, """{ "error":"Internal error logging user out"}""", "GET"
+        400, """{ "error":"Internal error logging user out"}""", "POST"
     ).create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), None)
