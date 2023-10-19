@@ -5,6 +5,7 @@ import time
 
 import jwt
 import requests
+from botocore.exceptions import ClientError
 from requests.models import HTTPError
 from utils.exceptions import (
     InvalidResourceIdException,
@@ -25,28 +26,32 @@ class PdsApiService(PatientSearch):
         self.ssm_service = ssm_service
 
     def pds_request(self, nshNumber: str, retry_on_expired: bool):
-        endpoint, access_token_response = self.get_parameters_for_pds_api_request()
-        access_token_response = json.loads(access_token_response)
-        access_token = access_token_response["access_token"]
-        access_token_expiration = int(access_token_response["expires_in"]) + int(
-            access_token_response["issued_at"]/1000
-        )
-        time_safety_margin_seconds = 10
-        if time.time() - access_token_expiration > time_safety_margin_seconds:
-            access_token = self.get_new_access_token()
+        try:
+            endpoint, access_token_response = self.get_parameters_for_pds_api_request()
+            access_token_response = json.loads(access_token_response)
+            access_token = access_token_response["access_token"]
+            access_token_expiration = int(access_token_response["expires_in"]) + int(
+                access_token_response["issued_at"])/1000
+            time_safety_margin_seconds = 10
+            if time.time() - access_token_expiration > time_safety_margin_seconds:
+                access_token = self.get_new_access_token()
 
-        x_request_id = str(uuid.uuid4())
+            x_request_id = str(uuid.uuid4())
 
-        authorization_header = {
-            "Authorization": f"Bearer {access_token}",
-            "X-Request-ID": x_request_id,
-        }
+            authorization_header = {
+                "Authorization": f"Bearer {access_token}",
+                "X-Request-ID": x_request_id,
+            }
 
-        url_endpoint = endpoint + "Patient/" + nshNumber
-        pds_response = requests.get(url=url_endpoint, headers=authorization_header)
-        if pds_response.status_code == 401 & retry_on_expired:
-            return self.pds_request(nshNumber, retry_on_expired=False)
-        return pds_response
+            url_endpoint = endpoint + "Patient/" + nshNumber
+            pds_response = requests.get(url=url_endpoint, headers=authorization_header)
+            if pds_response.status_code == 401 and retry_on_expired:
+                return self.pds_request(nshNumber, retry_on_expired=False)
+            return pds_response
+
+        except ClientError as e:
+            logger.error(f"Error when getting ssm parameters {e}")
+            raise PdsErrorException("Failed to preform patient search")
 
     def get_new_access_token(self):
         logger.info("Getting new PDS access token")

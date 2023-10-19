@@ -1,14 +1,8 @@
 import json
 
-import pytest
 from models.pds_models import PatientDetails
 from requests.models import Response
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
-from utils.exceptions import (
-    InvalidResourceIdException,
-    PatientNotFoundException,
-    PdsErrorException,
-)
 
 from services.mock_pds_service import MockPdsApiService
 
