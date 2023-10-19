@@ -53,11 +53,14 @@ jobs:
         run: |
           make test-unit-coverage
       
-      - name: View Folders
+      - name: View Folders APP
         run: | 
           cd app
           ls
           cd ..
+      
+      - name: View Folders Lambdas
+        run: | 
           cd lambdas
           ls
           cd ..
