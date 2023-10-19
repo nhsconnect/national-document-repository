@@ -13,12 +13,6 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
 const mockSetStage = jest.fn();
-const baseUiUrl = 'http://localhost:3000';
-Object.defineProperty(window, 'location', {
-    configurable: true,
-    enumerable: true,
-    value: new URL(baseUiUrl),
-});
 
 describe('LgDownloadAllStage', () => {
     beforeEach(() => {
