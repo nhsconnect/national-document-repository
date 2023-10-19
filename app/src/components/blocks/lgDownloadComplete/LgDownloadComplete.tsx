@@ -11,12 +11,22 @@ type Props = {
 function LgDownloadComplete({ patientDetails, setStage }: Props) {
     return (
         <>
-            <Card>
-                <Card.Heading>Download complete</Card.Heading>
-                <Card.Content>
+            <Card style={{ maxWidth: '620px' }}>
+                <Card.Content
+                    style={{
+                        textAlign: 'center',
+                        backgroundColor: '#555',
+                        color: '#fff',
+                        padding: '38px',
+                        fontSize: '20px',
+                    }}
+                >
+                    <Card.Heading style={{ fontSize: '48px' }}>Download complete</Card.Heading>
                     Documents from the Lloyd George record of:
-                    <div style={{ fontSize: '18px' }}>
-                        {patientDetails.givenName + ' ' + patientDetails.familyName}
+                    <div style={{ fontSize: '34px' }}>
+                        <strong>
+                            {patientDetails.givenName + ' ' + patientDetails.familyName}
+                        </strong>
                     </div>
                     <div>{`(NHS number: ${patientDetails.nhsNumber})`}</div>
                 </Card.Content>
