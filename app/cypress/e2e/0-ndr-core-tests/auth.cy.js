@@ -1,6 +1,6 @@
 import authPayload from '../../fixtures/requests/auth/GET_TokenRequest.json';
 
-describe('login functionality', () => {
+describe('authentication & authorisation', () => {
     const baseUrl = 'http://localhost:3000';
 
     context('session management', () => {
