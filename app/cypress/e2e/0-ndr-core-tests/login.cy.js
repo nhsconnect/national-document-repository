@@ -48,8 +48,8 @@ describe('login functionality', () => {
         ];
 
         unauthorisedRoutes.forEach((route) => {
-            it('redirects logged-out user on unauthorized access to ' + route, () => {
-                // Visit the unauthorized route
+            it('redirects logged-out user on unauthorised access to ' + route, () => {
+                // Visit the unauthorised route
                 cy.visit(baseUrl + route);
 
                 // Assert that the user is redirected
