@@ -55,7 +55,7 @@ jobs:
         
       - name: Deactivate venv
         run: |
-          make deactivate
+          deactivate
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
