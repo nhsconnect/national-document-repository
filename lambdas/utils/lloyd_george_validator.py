@@ -2,6 +2,8 @@ import re
 from typing import Optional
 
 from models.nhs_document_reference import NHSDocumentReference
+from services.pds_api_service import PdsApiService
+from services.ssm_service import SSMService
 
 
 class LGInvalidFilesException(Exception):
@@ -87,3 +89,13 @@ def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
     ]
     if len(set(expected_common_part)) != 1:
         raise LGInvalidFilesException("File names does not match with each other")
+
+def validate_nhs_number(file_name_list: list[str], nhs_number: str):
+    # Check file names match with the nhs number in metadata.csv
+    file_name_info = extract_info_from_filename(file_name_list[0])
+    if file_name_info["nhs_number"] != nhs_number:
+        raise LGInvalidFilesException(
+            "NHS number in file names does not match the given NHS number"
+        )
+    pds_service = PdsApiService(SSMService())
+    pds_service.fetch_patient_details(nhs_number=nhs_number)

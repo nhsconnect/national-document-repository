@@ -28,11 +28,19 @@ class Security(BaseModel):
     code: str
     display: str
 
-
 class Meta(BaseModel):
     versionId: str
     security: list[Security]
 
+class GPIdentifier(BaseModel):
+    system: Optional[str]
+    value: str
+    period: Optional[Period]
+
+class GeneralPractitioner(BaseModel):
+    id: Optional[str]
+    type: Optional[str]
+    identifier: GPIdentifier
 
 class PatientDetails(BaseModel):
     model_config = conf
@@ -44,7 +52,7 @@ class PatientDetails(BaseModel):
     nhs_number: str
     superseded: bool
     restricted: bool
-
+    general_practice = GeneralPractitioner
 
 class Patient(BaseModel):
     model_config = conf
@@ -85,6 +93,18 @@ class Patient(BaseModel):
             familyName=self.get_current_usual_name().family,
             birthDate=self.birth_date,
             postalCode=self.get_current_home_address().postal_code
+            if self.is_unrestricted()
+            else "",
+            nhsNumber=self.id,
+            superseded=bool(nhs_number == id),
+            restricted=not self.is_unrestricted(),
+        )
+
+    def get_minimum_patient_details(self, nhs_number) -> PatientDetails:
+        return PatientDetails(
+            givenName=self.get_current_usual_name().given,
+            familyName=self.get_current_usual_name().family,
+            birthDate=self.birth_date
             if self.is_unrestricted()
             else "",
             nhsNumber=self.id,
