@@ -52,6 +52,15 @@ jobs:
       - name: Test with pytest
         run: |
           make test-unit-coverage
+      
+      - name: View Folders
+        run: | 
+          cd app
+          ls
+          cd ..
+          cd lambdas
+          ls
+          cd ..
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
