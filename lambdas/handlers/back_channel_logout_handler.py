@@ -13,10 +13,8 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    body = json.loads(event["body"])
-    token = body["logout_token"]
+    token = event["body"]["logout_token"]
     return logout_handler(token)
-
 
 def logout_handler(token):
     try:
