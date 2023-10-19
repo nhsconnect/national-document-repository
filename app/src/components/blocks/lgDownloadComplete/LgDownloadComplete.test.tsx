@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { PatientDetails } from '../../../types/generic/patientDetails';
@@ -7,6 +6,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
 
+const mockSetStage = jest.fn();
 const mockPatient = buildPatientDetails();
 describe('LgDownloadComplete', () => {
     it('renders the component', () => {
@@ -35,24 +35,19 @@ describe('LgDownloadComplete', () => {
             name: "Return to patient's available medical records",
         });
         expect(returnToRecordButton).toBeInTheDocument();
-        expect(screen.getByTestId(LG_RECORD_STAGE.DOWNLOAD_ALL)).toBeInTheDocument();
-        expect(screen.queryByTestId(LG_RECORD_STAGE.RECORD)).not.toBeInTheDocument();
 
         act(() => {
             userEvent.click(returnToRecordButton);
         });
 
         await waitFor(async () => {
-            expect(screen.getByTestId(LG_RECORD_STAGE.RECORD)).toBeInTheDocument();
+            expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
         });
-        expect(screen.queryByTestId(LG_RECORD_STAGE.DOWNLOAD_ALL)).not.toBeInTheDocument();
     });
 });
 
 const TestApp = ({ patientDetails }: Omit<Props, 'setStage'>) => {
-    const [stage, setStage] = useState(LG_RECORD_STAGE.DOWNLOAD_ALL);
-
-    return <LgDownloadComplete patientDetails={patientDetails} setStage={setStage} stage={stage} />;
+    return <LgDownloadComplete patientDetails={patientDetails} setStage={mockSetStage} />;
 };
 
 const renderComponent = (patientDetails: PatientDetails) => {

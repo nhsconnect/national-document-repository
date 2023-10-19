@@ -10,7 +10,6 @@ export type Props = {
     lastUpdated: string;
     numberOfFiles: number;
     totalFileSizeInByte: number;
-    stage?: LG_RECORD_STAGE; // For unit tests only
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
@@ -18,13 +17,7 @@ type PdfActionLink = {
     label: string;
     handler: () => void;
 };
-function LgRecordDetails({
-    lastUpdated,
-    numberOfFiles,
-    totalFileSizeInByte,
-    stage,
-    setStage,
-}: Props) {
+function LgRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInByte, setStage }: Props) {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
 
@@ -47,7 +40,7 @@ function LgRecordDetails({
 
     return (
         <>
-            <div data-testid={`${stage}`}>
+            <div>
                 <div style={{ marginBottom: 16 }}>Last updated: {lastUpdated}</div>
                 <div style={{ color: '#4C6272' }}>
                     <span>{numberOfFiles} files</span>

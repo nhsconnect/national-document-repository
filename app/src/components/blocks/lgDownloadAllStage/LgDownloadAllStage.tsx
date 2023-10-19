@@ -22,7 +22,7 @@ type DownloadLinkAttributes = {
 };
 
 function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
-    const [timeToComplete, setTimeToComplete] = useState(600);
+    const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     const progressTimer = useMemo(() => {
         return new FakeProgress({
@@ -48,7 +48,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
     useEffect(() => {
         if (linkRef.current && linkAttributes.url) {
-            linkRef.current.click();
+            linkRef?.current?.click();
             setTimeout(() => {
                 setInProgress(false);
             }, 600);
@@ -75,7 +75,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
         if (!mounted.current) {
             mounted.current = true;
-            const min = timeToComplete + 100;
+            const min = timeToComplete - 100;
             const max = timeToComplete + 200;
             const delay = Math.floor(Math.random() * (max - min + 1) + min);
             setTimeout(onPageLoad, timeToComplete + delay);
@@ -110,10 +110,11 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                         }}
                     >
                         <div>
-                            <span>{`${linkAttributes.url ? 100 : progress} %`} downloaded...</span>
+                            <span>{`${linkAttributes.url ? 100 : progress}%`} downloaded...</span>
                             <a
                                 hidden
                                 id="download-link"
+                                data-testid={linkAttributes.url}
                                 ref={linkRef}
                                 href={linkAttributes.url}
                                 download={linkAttributes.filename}

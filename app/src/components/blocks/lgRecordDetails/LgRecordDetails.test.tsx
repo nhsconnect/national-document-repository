@@ -6,9 +6,10 @@ import formatFileSize from '../../../helpers/utils/formatFileSize';
 import * as ReactRouter from 'react-router';
 import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
-import { useState } from 'react';
 import { act } from 'react-dom/test-utils';
 const mockPdf = buildLgSearchResult();
+
+const mockSetStaqe = jest.fn();
 
 describe('LgRecordDetails', () => {
     const actionLinkStrings = [
@@ -63,8 +64,6 @@ describe('LgRecordDetails', () => {
             expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
             expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
 
-            expect(screen.queryByText(action.label)).not.toBeInTheDocument();
-
             act(() => {
                 userEvent.click(screen.getByTestId('actions-menu'));
             });
@@ -76,21 +75,20 @@ describe('LgRecordDetails', () => {
                 userEvent.click(screen.getByText(action.label));
             });
             await waitFor(async () => {
-                expect(screen.getByTestId(action.expectedStage)).toBeInTheDocument();
+                expect(mockSetStaqe).toHaveBeenCalledWith(action.expectedStage);
             });
         },
     );
 });
 
-const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
-    const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
+const TestApp = (props: Omit<Props, 'setStage'>) => {
     const history = createMemoryHistory({
         initialEntries: ['/', '/example'],
         initialIndex: 1,
     });
     return (
         <ReactRouter.Router navigator={history} location={'/example'}>
-            <LgRecordDetails {...props} stage={stage} setStage={setStage} />;
+            <LgRecordDetails {...props} setStage={mockSetStaqe} />;
         </ReactRouter.Router>
     );
 };
