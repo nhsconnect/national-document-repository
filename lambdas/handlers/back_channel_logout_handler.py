@@ -16,6 +16,7 @@ logger.setLevel(logging.INFO)
     names=["OIDC_CALLBACK_URL"]
 )
 def lambda_handler(event, context):
+    logger.info(f"event = {event}")
     try:
         token = event["body"]["logout_token"]
     except KeyError as e:
