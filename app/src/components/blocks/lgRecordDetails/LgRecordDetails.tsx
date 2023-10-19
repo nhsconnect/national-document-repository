@@ -10,7 +10,7 @@ export type Props = {
     lastUpdated: string;
     numberOfFiles: number;
     totalFileSizeInByte: number;
-    stage: LG_RECORD_STAGE;
+    stage?: LG_RECORD_STAGE; // For unit tests only
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 

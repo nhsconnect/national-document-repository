@@ -3,15 +3,16 @@ import { PatientDetails } from '../../../types/generic/patientDetails';
 import { Button, Card } from 'nhsuk-react-components';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 
-type Props = {
+export type Props = {
     patientDetails: PatientDetails;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    stage?: LG_RECORD_STAGE; // For unit tests only
 };
 
-function LgDownloadComplete({ patientDetails, setStage }: Props) {
+function LgDownloadComplete({ patientDetails, stage, setStage }: Props) {
     return (
         <>
-            <Card style={{ maxWidth: '620px' }}>
+            <Card style={{ maxWidth: '620px' }} data-testid={`${stage}`}>
                 <Card.Content
                     style={{
                         textAlign: 'center',

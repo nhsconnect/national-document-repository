@@ -50,7 +50,7 @@ function LgRecordStage({
                 setStage,
             };
 
-            return <LgRecordDetails {...detailsProps} setStage={setStage} stage={stage} />;
+            return <LgRecordDetails {...detailsProps} setStage={setStage} />;
         } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
             return <span>No documents are available</span>;
         } else {
