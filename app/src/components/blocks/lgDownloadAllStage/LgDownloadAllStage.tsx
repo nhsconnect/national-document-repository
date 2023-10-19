@@ -75,9 +75,12 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
         if (!mounted.current) {
             mounted.current = true;
-            setTimeout(onPageLoad, timeToComplete + 400);
+            const min = timeToComplete - 50;
+            const max = timeToComplete + 50;
+            const delay = Math.floor(Math.random() * (max - min + 1) + min);
+            setTimeout(onPageLoad, timeToComplete + delay);
         }
-    }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer]);
+    }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer, timeToComplete]);
 
     return inProgress ? (
         <>
