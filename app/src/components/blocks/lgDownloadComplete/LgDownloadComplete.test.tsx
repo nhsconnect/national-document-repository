@@ -5,6 +5,7 @@ import { PatientDetails } from '../../../types/generic/patientDetails';
 import LgDownloadComplete, { Props } from './LgDownloadComplete';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { act } from 'react-dom/test-utils';
 
 const mockPatient = buildPatientDetails();
 describe('LgDownloadComplete', () => {
@@ -37,7 +38,9 @@ describe('LgDownloadComplete', () => {
         expect(screen.getByTestId(LG_RECORD_STAGE.DOWNLOAD_ALL)).toBeInTheDocument();
         expect(screen.queryByTestId(LG_RECORD_STAGE.RECORD)).not.toBeInTheDocument();
 
-        userEvent.click(returnToRecordButton);
+        act(() => {
+            userEvent.click(returnToRecordButton);
+        });
 
         await waitFor(async () => {
             expect(screen.getByTestId(LG_RECORD_STAGE.RECORD)).toBeInTheDocument();
