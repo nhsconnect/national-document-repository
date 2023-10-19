@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 from botocore.exceptions import ClientError
@@ -12,7 +13,8 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    token = event["body"]["logout_token"]
+    body = json.loads(event["body"])
+    token = body["logout_token"]
     return logout_handler(token)
 
 
