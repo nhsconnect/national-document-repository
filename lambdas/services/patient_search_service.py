@@ -1,16 +1,20 @@
 from models.pds_models import PatientDetails, Patient
 from requests import Response
 
-from utils.exceptions import PdsErrorException, PatientNotFoundException, InvalidResourceIdException
+from utils.exceptions import (
+    PdsErrorException,
+    PatientNotFoundException,
+    InvalidResourceIdException,
+)
+
 
 class PatientSearch:
     def fetch_patient_details(
-            self,
-            nhs_number: str,
+        self,
+        nhs_number: str,
     ) -> PatientDetails:
         response = self.pds_request(nhs_number, retry_on_expired=True)
         return self.handle_response(response, nhs_number)
-
 
     def handle_response(self, response: Response, nhs_number: str) -> PatientDetails:
         if response.status_code == 200:

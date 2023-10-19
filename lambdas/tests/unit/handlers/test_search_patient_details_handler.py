@@ -22,7 +22,7 @@ def test_lambda_handler_valid_id_returns_200(
 ):
     response = Response()
     response.status_code = 200
-    response._content = json.dumps(PDS_PATIENT).encode('utf-8')
+    response._content = json.dumps(PDS_PATIENT).encode("utf-8")
 
     mocker.patch(
         "services.mock_pds_service.MockPdsApiService.pds_request",
@@ -104,7 +104,6 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
 def test_lambda_handler_missing_id_in_query_params_returns_400(
     missing_id_event, context, mocker, patch_env_vars
 ):
-
     actual = lambda_handler(missing_id_event, context)
 
     expected = {

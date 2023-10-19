@@ -14,12 +14,12 @@ PDS_PATIENT = {
                                 "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-NHSNumberVerificationStatus",
                                 "version": "1.0.0",
                                 "code": "01",
-                                "display": "Number present and verified"
+                                "display": "Number present and verified",
                             }
                         ]
-                    }
+                    },
                 }
-            ]
+            ],
         }
     ],
     "meta": {
@@ -28,9 +28,9 @@ PDS_PATIENT = {
             {
                 "system": "http://terminology.hl7.org/CodeSystem/v3-Confidentiality",
                 "code": "U",
-                "display": "unrestricted"
+                "display": "unrestricted",
             }
-        ]
+        ],
     },
     "name": [
         {
@@ -40,7 +40,7 @@ PDS_PATIENT = {
             "given": ["Jane"],
             "family": "Smith",
             "prefix": ["Mrs"],
-            "suffix": ["MBE"]
+            "suffix": ["MBE"],
         },
         {
             "id": "1234",
@@ -49,8 +49,8 @@ PDS_PATIENT = {
             "given": ["Jim"],
             "family": "Stevens",
             "prefix": ["Mr"],
-            "suffix": ["MBE"]
-        }
+            "suffix": ["MBE"],
+        },
     ],
     "gender": "female",
     "birthDate": "2010-10-22",
@@ -63,8 +63,8 @@ PDS_PATIENT = {
             "identifier": {
                 "system": "https://fhir.nhs.uk/Id/ods-organization-code",
                 "value": "Y12345",
-                "period": {"start": "2020-01-01", "end": "2021-12-31"}
-            }
+                "period": {"start": "2020-01-01", "end": "2021-12-31"},
+            },
         }
     ],
     "managingOrganization": {
@@ -72,8 +72,8 @@ PDS_PATIENT = {
         "identifier": {
             "system": "https://fhir.nhs.uk/Id/ods-organization-code",
             "value": "Y12345",
-            "period": {"start": "2020-01-01", "end": "2021-12-31"}
-        }
+            "period": {"start": "2020-01-01", "end": "2021-12-31"},
+        },
     },
     "extension": [
         {
@@ -81,27 +81,27 @@ PDS_PATIENT = {
             "valueReference": {
                 "identifier": {
                     "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-                    "value": "Y12345"
+                    "value": "Y12345",
                 }
-            }
+            },
         },
         {
             "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-PreferredDispenserOrganization",
             "valueReference": {
                 "identifier": {
                     "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-                    "value": "Y23456"
+                    "value": "Y23456",
                 }
-            }
+            },
         },
         {
             "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-MedicalApplianceSupplier",
             "valueReference": {
                 "identifier": {
                     "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-                    "value": "Y34567"
+                    "value": "Y34567",
                 }
-            }
+            },
         },
         {
             "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
@@ -114,16 +114,16 @@ PDS_PATIENT = {
                                 "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-DeathNotificationStatus",
                                 "version": "1.0.0",
                                 "code": "2",
-                                "display": "Formal - death notice received from Registrar of Deaths"
+                                "display": "Formal - death notice received from Registrar of Deaths",
                             }
                         ]
-                    }
+                    },
                 },
                 {
                     "url": "systemEffectiveDate",
-                    "valueDateTime": "2010-10-22T00:00:00+00:00"
-                }
-            ]
+                    "valueDateTime": "2010-10-22T00:00:00+00:00",
+                },
+            ],
         },
         {
             "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NHSCommunication",
@@ -136,13 +136,13 @@ PDS_PATIENT = {
                                 "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-HumanLanguage",
                                 "version": "1.0.0",
                                 "code": "fr",
-                                "display": "French"
+                                "display": "French",
                             }
                         ]
-                    }
+                    },
                 },
-                {"url": "interpreterRequired", "valueBoolean": "True"}
-            ]
+                {"url": "interpreterRequired", "valueBoolean": "True"},
+            ],
         },
         {
             "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-ContactPreference",
@@ -154,10 +154,10 @@ PDS_PATIENT = {
                             {
                                 "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-PreferredWrittenCommunicationFormat",
                                 "code": "12",
-                                "display": "Braille"
+                                "display": "Braille",
                             }
                         ]
-                    }
+                    },
                 },
                 {
                     "url": "PreferredContactMethod",
@@ -166,21 +166,21 @@ PDS_PATIENT = {
                             {
                                 "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-PreferredContactMethod",
                                 "code": "1",
-                                "display": "Letter"
+                                "display": "Letter",
                             }
                         ]
-                    }
+                    },
                 },
-                {"url": "PreferredContactTimes", "valueString": "Not after 7pm"}
-            ]
+                {"url": "PreferredContactTimes", "valueString": "Not after 7pm"},
+            ],
         },
         {
             "url": "http://hl7.org/fhir/StructureDefinition/patient-birthPlace",
             "valueAddress": {
                 "city": "Manchester",
                 "district": "Greater Manchester",
-                "country": "GBR"
-            }
+                "country": "GBR",
+            },
         },
         {
             "url": "https://fhir.nhs.uk/StructureDefinition/Extension-PDS-RemovalFromRegistration",
@@ -192,20 +192,20 @@ PDS_PATIENT = {
                             {
                                 "system": "https://fhir.nhs.uk/CodeSystem/PDS-RemovalReasonExitCode",
                                 "code": "SCT",
-                                "display": "Transferred to Scotland"
+                                "display": "Transferred to Scotland",
                             }
                         ]
-                    }
+                    },
                 },
                 {
                     "url": "effectiveTime",
                     "valuePeriod": {
                         "start": "2020-01-01T00:00:00+00:00",
-                        "end": "2021-12-31T00:00:00+00:00"
-                    }
-                }
-            ]
-        }
+                        "end": "2021-12-31T00:00:00+00:00",
+                    },
+                },
+            ],
+        },
     ],
     "telecom": [
         {
@@ -213,14 +213,14 @@ PDS_PATIENT = {
             "period": {"start": "2020-01-01", "end": "2021-12-31"},
             "system": "phone",
             "value": "01632960587",
-            "use": "home"
+            "use": "home",
         },
         {
             "id": "790",
             "period": {"start": "2019-01-01", "end": "2022-12-31"},
             "system": "email",
             "value": "jane.smith@example.com",
-            "use": "home"
+            "use": "home",
         },
         {
             "id": "OC789",
@@ -234,11 +234,11 @@ PDS_PATIENT = {
                     "valueCoding": {
                         "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-OtherContactSystem",
                         "code": "textphone",
-                        "display": "Minicom (Textphone)"
-                    }
+                        "display": "Minicom (Textphone)",
+                    },
                 }
-            ]
-        }
+            ],
+        },
     ],
     "contact": [
         {
@@ -250,12 +250,12 @@ PDS_PATIENT = {
                         {
                             "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
                             "code": "C",
-                            "display": "Emergency Contact"
+                            "display": "Emergency Contact",
                         }
                     ]
                 }
             ],
-            "telecom": [{"system": "phone", "value": "01632960587"}]
+            "telecom": [{"system": "phone", "value": "01632960587"}],
         }
     ],
     "address": [
@@ -268,7 +268,7 @@ PDS_PATIENT = {
                 "Boar Lane",
                 "City Centre",
                 "Leeds",
-                "West Yorkshire"
+                "West Yorkshire",
             ],
             "postalCode": "LS1 6AE",
             "extension": [
@@ -279,11 +279,11 @@ PDS_PATIENT = {
                             "url": "type",
                             "valueCoding": {
                                 "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-AddressKeyType",
-                                "code": "PAF"
-                            }
+                                "code": "PAF",
+                            },
                         },
-                        {"url": "value", "valueString": "12345678"}
-                    ]
+                        {"url": "value", "valueString": "12345678"},
+                    ],
                 },
                 {
                     "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-AddressKey",
@@ -292,13 +292,13 @@ PDS_PATIENT = {
                             "url": "type",
                             "valueCoding": {
                                 "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-AddressKeyType",
-                                "code": "UPRN"
-                            }
+                                "code": "UPRN",
+                            },
                         },
-                        {"url": "value", "valueString": "123456789012"}
-                    ]
-                }
-            ]
+                        {"url": "value", "valueString": "123456789012"},
+                    ],
+                },
+            ],
         },
         {
             "id": "T456",
@@ -310,7 +310,7 @@ PDS_PATIENT = {
                 "Boar Lane",
                 "City Centre",
                 "Leeds",
-                "West Yorkshire"
+                "West Yorkshire",
             ],
             "postalCode": "LS1 6AE",
             "extension": [
@@ -321,11 +321,11 @@ PDS_PATIENT = {
                             "url": "type",
                             "valueCoding": {
                                 "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-AddressKeyType",
-                                "code": "PAF"
-                            }
+                                "code": "PAF",
+                            },
                         },
                         {"url": "value", "valueString": "12345678"},
-                    ]
+                    ],
                 },
                 {
                     "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-AddressKey",
@@ -334,15 +334,15 @@ PDS_PATIENT = {
                             "url": "type",
                             "valueCoding": {
                                 "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-AddressKeyType",
-                                "code": "UPRN"
-                            }
+                                "code": "UPRN",
+                            },
                         },
-                        {"url": "value", "valueString": "123456789012"}
-                    ]
-                }
-            ]
-        }
-    ]
+                        {"url": "value", "valueString": "123456789012"},
+                    ],
+                },
+            ],
+        },
+    ],
 }
 
 PDS_PATIENT_RESTRICTED = {

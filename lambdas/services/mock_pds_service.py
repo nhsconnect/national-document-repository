@@ -38,7 +38,7 @@ class MockPdsApiService(PatientSearch):
 
         if bool(pds_patient):
             response.status_code = 200
-            response._content = json.dumps(pds_patient).encode('utf-8')
+            response._content = json.dumps(pds_patient).encode("utf-8")
         else:
             response.status_code = 404
 

@@ -24,9 +24,10 @@ logger.setLevel(logging.INFO)
 def get_pds_service():
     return (
         PdsApiService
-        if (os.getenv("PDS_FHIR_IS_STUBBED") == 'false')
+        if (os.getenv("PDS_FHIR_IS_STUBBED") == "false")
         else MockPdsApiService
     )
+
 
 @validate_patient_id
 def lambda_handler(event, context):
@@ -45,11 +46,15 @@ def lambda_handler(event, context):
 
     except PatientNotFoundException as e:
         logger.error(f"PDS not found: {str(e)}")
-        return ApiGatewayResponse(404, f"Patient does not exist for given NHS number", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(
+            404, f"Patient does not exist for given NHS number", "GET"
+        ).create_api_gateway_response()
 
     except (InvalidResourceIdException, PdsErrorException) as e:
         logger.error(f"PDS Error: {str(e)}")
-        return ApiGatewayResponse(400, f"An error occurred while searching for patient", "GET").create_api_gateway_response()
+        return ApiGatewayResponse(
+            400, f"An error occurred while searching for patient", "GET"
+        ).create_api_gateway_response()
 
     except ValidationError as e:
         logger.error(f"Failed to parse PDS data:{str(e)}")
