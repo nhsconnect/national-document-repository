@@ -25,7 +25,7 @@ def ensure_environment_variables(names: list[str]) -> Callable:
                 if name not in os.environ:
                     logger.info(f"missing env var: '{name}'")
                     return ApiGatewayResponse(
-                        500, f"An error occurred due to missing key: '{name}'", "GET"
+                        500, f"An error occurred due to missing key: '{name}'", event["httpMethod"]
                     ).create_api_gateway_response()
 
             # Validation done. Return control flow to original lambda handler

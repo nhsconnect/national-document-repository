@@ -21,16 +21,16 @@ def mock_oidc_service(mocker):
     yield mock_oidc_service
 
 
-# def test_returns_500_when_env_vars_not_set():
-#     mock_token = "mock_token"
-#     expected = ApiGatewayResponse(
-#         500,
-#         "An error occurred due to missing key: 'OIDC_CALLBACK_URL'",
-#         "GET",
-#     ).create_api_gateway_response()
-#     actual = lambda_handler(build_event_from_token(mock_token), None)
+def test_returns_500_when_env_vars_not_set():
+    mock_token = "mock_token"
+    expected = ApiGatewayResponse(
+        500,
+        "An error occurred due to missing key: 'OIDC_CALLBACK_URL'",
+        "POST",
+    ).create_api_gateway_response()
+    actual = lambda_handler(build_event_from_token(mock_token), None)
 
-#     assert actual == expected
+    assert actual == expected
 
 
 # def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(mocker, mock_oidc_service, monkeypatch):
@@ -109,5 +109,8 @@ def mock_oidc_service(mocker):
 #     mock_dynamo_service.assert_called_with(mock_session_id)
 
 
-# def build_event_from_token(token: str) -> dict:
-#     return {"body": {"logout_token": token}}
+def build_event_from_token(token: str) -> dict:
+    return {
+        "httpMethod": "POST",
+        "body": {"logout_token": token}
+    }
