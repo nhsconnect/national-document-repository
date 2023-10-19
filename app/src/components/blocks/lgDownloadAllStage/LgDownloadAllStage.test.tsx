@@ -6,12 +6,19 @@ import * as ReactRouter from 'react-router';
 import SessionProvider from '../../../providers/sessionProvider/SessionProvider';
 import axios from 'axios';
 import userEvent from '@testing-library/user-event';
+import { act } from 'react-dom/test-utils';
 jest.mock('axios');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
 const mockSetStage = jest.fn();
+const baseUiUrl = 'http://localhost:3000';
+Object.defineProperty(window, 'location', {
+    configurable: true,
+    enumerable: true,
+    value: new URL(baseUiUrl),
+});
 
 describe('LgDownloadAllStage', () => {
     beforeEach(() => {
@@ -20,6 +27,7 @@ describe('LgDownloadAllStage', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
+
     it('renders the component', () => {
         renderComponent();
 
@@ -50,12 +58,15 @@ describe('LgDownloadAllStage', () => {
         mockedAxios.get.mockImplementation(() => Promise.resolve({ data: mockPdf.presign_url }));
 
         jest.useFakeTimers();
+
         renderComponent();
 
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
         expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
 
-        jest.advanceTimersByTime(400);
+        act(() => {
+            jest.advanceTimersByTime(500);
+        });
 
         await waitFor(() => {
             expect(screen.getByText('100% downloaded...')).toBeInTheDocument();
@@ -63,7 +74,10 @@ describe('LgDownloadAllStage', () => {
         expect(screen.queryByText('0% downloaded...')).not.toBeInTheDocument();
 
         expect(screen.getByTestId(mockPdf.presign_url)).toBeInTheDocument();
-        userEvent.click(screen.getByTestId(mockPdf.presign_url));
+
+        act(() => {
+            userEvent.click(screen.getByTestId(mockPdf.presign_url));
+        });
         await waitFor(async () => {
             expect(screen.queryByText('Downloading documents')).not.toBeInTheDocument();
         });
@@ -92,5 +106,5 @@ const renderComponent = (propsOverride?: Partial<Props>) => {
         ...propsOverride,
     };
 
-    render(<TestApp {...props} />);
+    return render(<TestApp {...props} />);
 };

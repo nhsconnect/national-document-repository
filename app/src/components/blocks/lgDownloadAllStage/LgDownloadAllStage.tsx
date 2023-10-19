@@ -58,6 +58,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     useEffect(() => {
         const onPageLoad = async () => {
             progressTimer.stop();
+            window.clearInterval(intervalTimer);
             try {
                 const preSignedUrl = await getPresignedUrlForZip({
                     baseUrl,
@@ -67,9 +68,7 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
                 });
 
                 const filename = `lloyd_george-patient-record-${nhsNumber}`;
-
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
-                window.clearInterval(intervalTimer);
             } catch (e) {}
         };
 
