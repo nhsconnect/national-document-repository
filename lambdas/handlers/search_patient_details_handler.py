@@ -44,23 +44,27 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
 
     except PatientNotFoundException as e:
-        return ApiGatewayResponse(404, f"{str(e)}", "GET").create_api_gateway_response()
+        logger.error(f"PDS not found: {str(e)}")
+        return ApiGatewayResponse(404, f"Patient does not exist for given NHS number", "GET").create_api_gateway_response()
 
     except (InvalidResourceIdException, PdsErrorException) as e:
-        return ApiGatewayResponse(400, f"{str(e)}", "GET").create_api_gateway_response()
+        logger.error(f"PDS Error: {str(e)}")
+        return ApiGatewayResponse(400, f"An error occurred while searching for patient", "GET").create_api_gateway_response()
 
     except ValidationError as e:
+        logger.error(f"Failed to parse PDS data:{str(e)}")
         return ApiGatewayResponse(
-            400, f"Failed to parse PDS data: {str(e)}", "GET"
+            400, f"Failed to parse PDS data", "GET"
         ).create_api_gateway_response()
 
     except JSONDecodeError as e:
+        logger.error(f"Error while decoding Json:{str(e)}")
         return ApiGatewayResponse(
-            400, f"Invalid json in body: {str(e)}", "GET"
+            400, f"Invalid json in body", "GET"
         ).create_api_gateway_response()
 
     except KeyError as e:
-        logger.info(f"Error parsing patientId from json: {str(e)}")
+        logger.error(f"Error parsing patientId from json: {str(e)}")
         return ApiGatewayResponse(
             400, "No NHS number found in request parameters.", "GET"
         ).create_api_gateway_response()
