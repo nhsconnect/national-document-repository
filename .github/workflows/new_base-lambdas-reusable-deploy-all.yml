@@ -118,7 +118,7 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
-  deploy_bulk_upload_lambda:
+  deploy_back_channel_logout_lambda:
     name: Deploy back_channel_logout_lambda
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
     with:
