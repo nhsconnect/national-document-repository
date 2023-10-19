@@ -24,8 +24,7 @@ type DownloadLinkAttributes = {
 function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
-    const [interval, setInterval] = useState(0);
-    const timer = useMemo(() => {
+    const progressTimer = useMemo(() => {
         return new FakeProgress({
             timeConstant: timeToComplete,
             autoStart: true,
@@ -43,6 +42,10 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
     const { nhsNumber } = patientDetails;
 
+    const intervalTimer = window.setInterval(() => {
+        setProgress(parseInt((progressTimer.progress * 100).toFixed(1)));
+    }, 100);
+
     useEffect(() => {
         if (linkRef.current && linkAttributes.url) {
             linkRef.current.click();
@@ -53,17 +56,8 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     }, [linkAttributes]);
 
     useEffect(() => {
-        if (!progress) {
-            setProgress(1);
-            const intervalTimer = window.setInterval(() => {
-                setProgress(parseInt((timer.progress * 100).toFixed(1)));
-            }, 100);
-            setInterval(intervalTimer);
-        }
-    }, [baseHeaders, baseUrl, nhsNumber, timer.progress, progress]);
-
-    useEffect(() => {
         const onPageLoad = async () => {
+            progressTimer.stop();
             try {
                 const preSignedUrl = await getPresignedUrlForZip({
                     baseUrl,
@@ -74,22 +68,17 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
 
                 const filename = `lloyd_george-patient-record-${nhsNumber}`;
 
-                window.clearInterval(interval);
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
+                window.clearInterval(intervalTimer);
             } catch (e) {}
         };
 
         if (!mounted.current) {
             mounted.current = true;
-            setTimeout(
-                () => {
-                    timer.stop();
-                    onPageLoad();
-                },
-                (timeToComplete * (Math.floor(Math.random() * (98 - 96 + 1)) + 96)) / 100,
-            );
+            setTimeout(onPageLoad, timeToComplete - 50);
         }
-    }, [baseHeaders, baseUrl, interval, nhsNumber, timer]);
+    }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer]);
+
     return inProgress ? (
         <>
             <h1>Downloading documents</h1>
