@@ -200,7 +200,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_SearchDocumentReferencesLambda
+          function_name: ${{ vars.BUILD_ENV }}_SearchDocumentReferencesLambda
           zip_file: package_lambdas_document_reference_search_handler.zip
 
   python_deploy_document_manifest_by_nhs_number_lambda:
@@ -241,7 +241,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_DocumentManifestByNHSNumberLambda
+          function_name: ${{ vars.BUILD_ENV }}_DocumentManifestByNHSNumberLambda
           zip_file: package_lambdas_document_manifest_by_nhs_number_handler.zip
 
 
@@ -283,7 +283,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_LoginRedirectHandler
+          function_name: ${{ vars.BUILD_ENV }}_LoginRedirectHandler
           zip_file: package_lambdas_login_redirect_handler.zip
 
   python_deploy_authoriser_lambda:
@@ -324,10 +324,10 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_AuthoriserLambda
+          function_name: ${{ vars.BUILD_ENV }}_AuthoriserLambda
           zip_file: package_lambdas_authoriser_handler.zip
 
-  python_deploy_token_lambda:
+  python_deploy_token_request_lambda:
     runs-on: ubuntu-latest
     environment: pre-prod
     needs: [ "python_lambdas_test" ]
@@ -365,7 +365,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_TokenRequestHandler
+          function_name: ${{ vars.BUILD_ENV }}_TokenRequestHandler
           zip_file: package_lambdas_token_handler.zip
 
   python_deploy_logout_handler_lambda:
@@ -406,7 +406,7 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_LogoutHandler
+          function_name: ${{ vars.BUILD_ENV }}_LogoutHandler
           zip_file: package_lambdas_logout_handler.zip
 
   python_deploy_lloyd_george_record_stitch_lambda:
@@ -447,5 +447,5 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_LloydGeorgeStitchLambda
+          function_name: ${{ vars.BUILD_ENV }}_LloydGeorgeStitchLambda
           zip_file: package_lambdas_lloyd_george_record_stitch_handler.zip

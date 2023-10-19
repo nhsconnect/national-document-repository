@@ -106,10 +106,10 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid):
         )
     assert service.s3_service.copy_across_bucket.call_count == 3
 
-    service.dynamo_service.post_item_service.assert_any_call(
+    service.dynamo_service.create_item.assert_any_call(
         table_name=MOCK_LG_TABLE_NAME, item=TEST_DOCUMENT_REFERENCE.to_dict()
     )
-    assert service.dynamo_service.post_item_service.call_count == 3
+    assert service.dynamo_service.create_item.call_count == 3
 
 
 def test_convert_to_document_reference(set_env, mock_uuid):
