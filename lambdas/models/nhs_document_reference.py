@@ -20,13 +20,9 @@ class NHSDocumentReference:
         self.file_name = file_name
         self.created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         self.s3_bucket_name = s3_bucket_name
-        self.deleted = None
-        self.uploaded = None
+        self.deleted = ""
         self.virus_scanner_result = "Not Scanned"
         self.file_location = f"s3://{self.s3_bucket_name}/{self.s3_file_key}"
-
-    def set_uploaded(self) -> None:
-        self.uploaded = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
     def set_deleted(self) -> None:
         self.deleted = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -36,9 +32,6 @@ class NHSDocumentReference:
 
     def update_location(self, updated_file_location):
         self.file_location = updated_file_location
-
-    def is_uploaded(self) -> bool:
-        return bool(self.uploaded)
 
     def to_dict(self):
         document_metadata = {
