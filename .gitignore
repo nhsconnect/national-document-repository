@@ -95,3 +95,6 @@ node_modules/
 *.zip
 .idea/
 .vscode/
+
+lambdas/tests/unit/helpers/data/pdf/tmp
+/lambdas/package_/

@@ -8,6 +8,7 @@
         "build-env-check": "node ./react-build-env-checker.js && react-scripts build",
         "test": "./node_modules/.bin/react-scripts test --watchAll=true",
         "test-all": "./node_modules/.bin/react-scripts test --watchAll=false",
+        "test-all:coverage": "./node_modules/.bin/react-scripts test --watchAll=false --coverage src",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "format": "prettier --write \"**/*.+(ts|tsx|js|scss|json|css|md)\"",
@@ -15,12 +16,16 @@
         "cypress": "cypress open --env CYPRESS_BASE_URL=http://localhost:3000/,CYPRESS_RUN_AS_SMOKETEST=false"
     },
     "dependencies": {
+        "@testing-library/jest-dom": "^5.17.0",
+        "@testing-library/react": "^13.4.0",
+        "@testing-library/user-event": "^13.5.0",
         "axios": "^1.5.0",
         "dotenv": "^16.3.1",
         "eslint-plugin-legacy-decorators": "^1.0.0",
         "history": "^5.3.0",
         "nhsuk-frontend": "^7.0.0",
         "nhsuk-react-components": "^2.2.2",
+        "pdfobject": "^2.2.12",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-hook-form": "^7.45.4",
@@ -30,6 +35,8 @@
         "sass": "^1.66.1",
         "serve": "^14.2.1",
         "typescript": "^4.9.5",
+        "usehooks-ts": "^2.9.1",
+        "util": "^0.12.5",
         "web-vitals": "^2.1.4"
     },
     "devDependencies": {
@@ -43,9 +50,6 @@
         "@storybook/react": "^7.4.0",
         "@storybook/react-webpack5": "^7.4.0",
         "@storybook/testing-library": "^0.2.0",
-        "@testing-library/jest-dom": "^5.17.0",
-        "@testing-library/react": "^13.4.0",
-        "@testing-library/user-event": "^13.5.0",
         "@types/jest": "^27.5.2",
         "@types/node": "^16.18.40",
         "@types/react": "^18.2.19",

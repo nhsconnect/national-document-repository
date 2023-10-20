@@ -3,6 +3,8 @@ import * as ReactRouter from 'react-router';
 import userEvent from '@testing-library/user-event';
 import Header from './Header';
 import { createMemoryHistory } from 'history';
+import { buildUserAuth } from '../../../helpers/test/testBuilders';
+import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
 
 describe('Header', () => {
     afterEach(() => {
@@ -16,11 +18,7 @@ describe('Header', () => {
                 initialIndex: 1,
             });
 
-            render(
-                <ReactRouter.Router navigator={history} location={'/example'}>
-                    <Header />
-                </ReactRouter.Router>,
-            );
+            renderHeaderWithRouter(history);
 
             expect(screen.getByRole('banner')).toBeInTheDocument();
         });
@@ -33,11 +31,8 @@ describe('Header', () => {
                 initialIndex: 1,
             });
 
-            render(
-                <ReactRouter.Router navigator={history} location={'/example'}>
-                    <Header />
-                </ReactRouter.Router>,
-            );
+            renderHeaderWithRouter(history);
+
             expect(history.location.pathname).toBe('/example');
 
             userEvent.click(screen.getByText('Inactive Patient Record Administration'));
@@ -53,11 +48,7 @@ describe('Header', () => {
                 initialIndex: 1,
             });
 
-            render(
-                <ReactRouter.Router navigator={history} location={'/example'}>
-                    <Header />
-                </ReactRouter.Router>,
-            );
+            renderHeaderWithRouter(history);
             expect(history.location.pathname).toBe('/example');
 
             userEvent.click(screen.getByRole('img', { name: 'NHS Logo' }));
@@ -67,4 +58,25 @@ describe('Header', () => {
             });
         });
     });
+
+    const renderHeaderWithRouter = (
+        history = createMemoryHistory({
+            initialEntries: ['/'],
+            initialIndex: 1,
+        }),
+        authOverride?: Partial<Session>,
+    ) => {
+        const auth: Session = {
+            auth: buildUserAuth(),
+            isLoggedIn: true,
+            ...authOverride,
+        };
+        render(
+            <ReactRouter.Router navigator={history} location={'/'}>
+                <SessionProvider sessionOverride={auth}>
+                    <Header />
+                </SessionProvider>
+            </ReactRouter.Router>,
+        );
+    };
 });

@@ -6,8 +6,16 @@ import {
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
     UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
-import { buildPatientDetails, buildTextFile } from '../../../helpers/test/testBuilders';
+import {
+    buildPatientDetails,
+    buildTextFile,
+    buildUserAuth,
+} from '../../../helpers/test/testBuilders';
 import UploadingStage from './UploadingStage';
+import { createMemoryHistory } from 'history';
+import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
+import { PatientDetails } from '../../../types/generic/patientDetails';
+import PatientDetailsProvider from '../../../providers/patientProvider/PatientProvider';
 
 jest.mock('react-router');
 const mockPatient = buildPatientDetails();
@@ -48,12 +56,7 @@ describe('<UploadDocumentsPage />', () => {
                 docType: DOCUMENT_TYPE.ARF,
             };
 
-            render(
-                <UploadingStage
-                    patientDetails={mockPatient}
-                    documents={[documentOne, documentTwo, documentThree]}
-                />,
-            );
+            renderUploadingStage([documentOne, documentTwo, documentThree]);
 
             triggerUploadStateChange(documentOne, documentUploadStates.UPLOADING, 0);
 
@@ -158,3 +161,29 @@ describe('<UploadDocumentsPage />', () => {
         });
     });
 });
+
+const homeRoute = '/example';
+const renderUploadingStage = (
+    documents: Array<UploadDocument>,
+    patientOverride: Partial<PatientDetails> = {},
+    history = createMemoryHistory({
+        initialEntries: [homeRoute],
+        initialIndex: 1,
+    }),
+) => {
+    const auth: Session = {
+        auth: buildUserAuth(),
+        isLoggedIn: true,
+    };
+    const patient: PatientDetails = {
+        ...buildPatientDetails(),
+        ...patientOverride,
+    };
+    render(
+        <SessionProvider sessionOverride={auth}>
+            <PatientDetailsProvider patientDetails={patient}>
+                <UploadingStage patientDetails={mockPatient} documents={documents} />
+            </PatientDetailsProvider>
+        </SessionProvider>,
+    );
+};

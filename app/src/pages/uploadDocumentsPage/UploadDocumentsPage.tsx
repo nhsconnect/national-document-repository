@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -11,22 +11,16 @@ import SelectStage from '../../components/blocks/selectStage/SelectStage';
 import UploadingStage from '../../components/blocks/uploadingStage/UploadingStage';
 import CompleteStage from '../../components/blocks/completeStage/CompleteStage';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
-import { useNavigate } from 'react-router';
-import { routes } from '../../types/generic/routes';
+import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 type Props = {};
+
 function UploadDocumentsPage(props: Props) {
     const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const baseUrl = useBaseAPIUrl();
+    const baseHeaders = useBaseAPIHeaders();
     const [patientDetails] = usePatientDetailsContext();
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!patientDetails) {
-            navigate(routes.HOME);
-        }
-    }, [patientDetails, navigate]);
 
     const setDocumentState = (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => {
         setDocuments((prevDocuments) => {
@@ -44,17 +38,14 @@ function UploadDocumentsPage(props: Props) {
     const uploadDocuments = async () => {
         if (patientDetails) {
             setStage(UPLOAD_STAGE.Uploading);
-            await Promise.all(
-                documents.map((document) =>
-                    uploadDocument({
-                        nhsNumber: patientDetails.nhsNumber,
-                        docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-                        setDocumentState,
-                        document,
-                        baseUrl,
-                    }),
-                ),
-            );
+            await uploadDocument({
+                nhsNumber: patientDetails.nhsNumber,
+                docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                setDocumentState,
+                documents,
+                baseUrl,
+                baseHeaders,
+            });
             setStage(UPLOAD_STAGE.Complete);
         }
     };

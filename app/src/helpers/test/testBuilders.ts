@@ -6,6 +6,23 @@ import {
 } from '../../types/pages/UploadDocumentsPage/types';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import { SearchResult } from '../../types/generic/searchResult';
+import { UserAuth } from '../../types/blocks/userAuth';
+import { LloydGeorgeStitchResult } from '../requests/getLloydGeorgeRecord';
+
+const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
+    const auth: UserAuth = {
+        organisations: [
+            {
+                org_name: 'PORTWAY LIFESTYLE CENTRE',
+                ods_code: 'A470',
+                role: 'DEV',
+            },
+        ],
+        authorisation_token: '111xxx222',
+        ...userAuthOverride,
+    };
+    return auth;
+};
 
 const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) => {
     const patient: PatientDetails = {
@@ -26,6 +43,24 @@ const buildTextFile = (name: string, size?: number) => {
     const file = new File(['test'], `${name}.txt`, {
         type: 'text/plain',
     });
+
+    if (size) {
+        Object.defineProperty(file, 'size', {
+            value: size,
+        });
+    }
+
+    return file;
+};
+
+const buildLgFile = (name: number, numberOfFiles: number, size?: number) => {
+    const file = new File(
+        ['test'],
+        `${name}of${numberOfFiles}_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf`,
+        {
+            type: 'application/pdf',
+        },
+    );
 
     if (size) {
         Object.defineProperty(file, 'size', {
@@ -61,4 +96,22 @@ const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
     return result;
 };
 
-export { buildPatientDetails, buildTextFile, buildDocument, buildSearchResult };
+const buildLgSearchResult = () => {
+    const result: LloydGeorgeStitchResult = {
+        number_of_files: 7,
+        total_file_size_in_byte: 7,
+        last_updated: '2023-10-03T09:11:54.618694Z',
+        presign_url: 'https://test-url',
+    };
+    return result;
+};
+
+export {
+    buildPatientDetails,
+    buildTextFile,
+    buildDocument,
+    buildSearchResult,
+    buildLgSearchResult,
+    buildUserAuth,
+    buildLgFile,
+};

@@ -1,0 +1,6 @@
+export enum DOWNLOAD_STAGE {
+    INITIAL = 'INITIAL',
+    PENDING = 'PENDING',
+    SUCCEEDED = 'SUCCEEDED',
+    FAILED = 'FAILED',
+}

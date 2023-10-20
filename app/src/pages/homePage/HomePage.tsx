@@ -1,20 +1,30 @@
-import React from 'react';
-import type { MouseEvent as ReactEvent } from 'react';
+import React, { useState } from 'react';
+import type { MouseEvent } from 'react';
 import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
+import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
+import Spinner from '../../components/generic/spinner/Spinner';
 import { routes } from '../../types/generic/routes';
+import { endpoints } from '../../types/generic/endpoints';
+import { isLocal } from '../../helpers/utils/isLocal';
 
 type Props = {};
 
 function HomePage(props: Props) {
     const navigate = useNavigate();
+    const baseAPIUrl = useBaseAPIUrl();
+    const [isLoading, setIsLoading] = useState(false);
 
-    const navigateUpload = (e: ReactEvent<HTMLAnchorElement, MouseEvent>) => {
+    const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
+        setIsLoading(true);
         e.preventDefault();
-        navigate(routes.SELECT_ORG);
+        if (isLocal) {
+            navigate(routes.AUTH_CALLBACK);
+        } else {
+            window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
+        }
     };
-
-    return (
+    return !isLoading ? (
         <>
             <h1>Inactive Patient Record Administration</h1>
             <p>
@@ -43,10 +53,9 @@ function HomePage(props: Props) {
             </p>
             <h2>Before You Start</h2>
             <p>You can only use this service if you have a valid NHS smartcard.</p>
-            <ButtonLink role="button" id="start-button" onClick={navigateUpload}>
+            <ButtonLink role="button" id="start-button" onClick={handleLogin}>
                 Start now
             </ButtonLink>
-
             {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
                 process.env.REACT_APP_ENVIRONMENT === 'development' ||
                 process.env.REACT_APP_ENVIRONMENT === 'test') && (
@@ -62,6 +71,8 @@ function HomePage(props: Props) {
                 </div>
             )}
         </>
+    ) : (
+        <Spinner status="Logging in..." />
     );
 }
 

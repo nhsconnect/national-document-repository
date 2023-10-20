@@ -2,7 +2,7 @@ from models.document import Document
 
 NHS_NUMBER = "1111111111"
 
-TEST_DS_DOCS = [
+TEST_ARF_DOCS = [
     Document(
         NHS_NUMBER,
         "document.csv",

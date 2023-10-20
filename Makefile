@@ -33,6 +33,9 @@ format:
 test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
 
+test-unit-coverage:
+	cd ./lambdas && ./venv/bin/python3 -m pytest --cov-report xml:coverage.xml --cov tests/
+
 test-unit-collect:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/ --collect-only
 
@@ -46,7 +49,7 @@ env:
 zip:
 	rm -rf ./lambdas/package_$(lambda_name) || true 
 	mkdir ./lambdas/package_$(lambda_name)
-	./lambdas/venv/bin/pip3 install --cache-dir .pip_cache -r lambdas/requirements.txt -t ./lambdas/package_$(lambda_name)
+	./lambdas/venv/bin/pip3 install --platform manylinux2014_x86_64 --only-binary=:all: --implementation cp  -r lambdas/requirements.txt -t ./lambdas/package_$(lambda_name)
 	mkdir ./lambdas/package_$(lambda_name)/handlers
 	cp -r lambdas/handlers/$(lambda_name).py lambdas/package_$(lambda_name)/handlers
 	cp -r lambdas/utils lambdas/package_$(lambda_name)
@@ -80,6 +83,9 @@ storybook:
 test-ui:
 	npm --prefix ./app run test-all
 
+test-ui-coverage:
+	npm --prefix ./app run test-all:coverage
+
 build:
 	npm --prefix ./app run build
 
@@ -93,4 +99,4 @@ docker-down:
 	docker-compose -f ./app/docker-compose.yml down
 
 cypress-open:
-	npm --prefix ./app run cypress
+	TZ=GMT npm --prefix ./app run cypress

@@ -1,19 +1,29 @@
 from datetime import datetime, timezone
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from pydantic import BaseModel
+
+
+class UploadRequestDocument(BaseModel):
+    fileName: str
+    contentType: str
+    docType: str
 
 
 class NHSDocumentReference:
-    def __init__(self, reference_id, file_location, data) -> None:
+    def __init__(
+        self, nhs_number, content_type, file_name, reference_id, s3_bucket_name
+    ) -> None:
         self.id = reference_id
-        self.nhs_number = data["subject"]["identifier"]["value"]
-        self.content_type = data["content"][0]["attachment"]["contentType"]
-        self.file_name = data["description"]
+        self.nhs_number = nhs_number
+        self.content_type = content_type
+        self.file_name = file_name
         self.created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        self.s3_bucket_name = s3_bucket_name
         self.deleted = None
         self.uploaded = None
         self.virus_scanner_result = "Not Scanned"
-        self.file_location = file_location
+        self.file_location = f"s3://{self.s3_bucket_name}/{self.s3_file_key}"
 
     def set_uploaded(self) -> None:
         self.uploaded = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -42,6 +52,10 @@ class NHSDocumentReference:
         }
         return document_metadata
 
+    @property
+    def s3_file_key(self):
+        return f"{self.nhs_number}/{self.id}"
+
     def __eq__(self, other):
         return (
             self.id == other.id
@@ -51,6 +65,6 @@ class NHSDocumentReference:
             and self.created == other.created
             and self.deleted == other.deleted
             and self.uploaded == other.uploaded
-            and self.virus_scanner_result == other.virus_scan_result
+            and self.virus_scanner_result == other.virus_scanner_result
             and self.file_location == other.file_location
         )

@@ -14,6 +14,7 @@ type Story = StoryObj<typeof meta>;
 
 export const OrgSelectPage: Story = {
     args: {
+        id: 'spinner-button',
         status: 'Loading...',
         disabled: false,
     },

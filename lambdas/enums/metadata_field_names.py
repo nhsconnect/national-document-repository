@@ -5,6 +5,7 @@ class DocumentReferenceMetadataFields(Enum):
     ID = "ID", "#id"
     CONTENT_TYPE = "ContentType", "#contentType"
     CREATED = "Created", "#created"
+    DELETED = "Deleted", "#deleted"
     FILE_NAME = "FileName", "#fileName"
     FILE_LOCATION = "FileLocation", "#fileLocation"
     NHS_NUMBER = "NhsNumber", "#nhsNumber"
@@ -21,6 +22,7 @@ class DocumentReferenceMetadataFields(Enum):
             DocumentReferenceMetadataFields.ID,
             DocumentReferenceMetadataFields.CONTENT_TYPE,
             DocumentReferenceMetadataFields.CREATED,
+            DocumentReferenceMetadataFields.DELETED,
             DocumentReferenceMetadataFields.FILE_NAME,
             DocumentReferenceMetadataFields.FILE_LOCATION,
             DocumentReferenceMetadataFields.NHS_NUMBER,
