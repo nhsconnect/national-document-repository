@@ -36,6 +36,7 @@ jobs:
       logout_changed: ${{steps.filter.outputs.logout}}
       lloyd_george_stitch_changed: ${{steps.filter.outputs.lloyd_george_stitch}}
       bulk_upload_metadata_changed: ${{steps.filter.outputs.bulk_upload_metadata}}
+      back_channel_logout_changed: ${{steps.filter.outputs.back_channel_logout}}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -73,6 +74,8 @@ jobs:
               - 'lambdas/handlers/lloyd_george_record_stitch_handler.py'
             bulk_upload_metadata:
               - 'lambdas/handlers/bulk_upload_metadata_handler.py'
+            back_channel_logout:
+              - 'lambdas/handlers/back_channel_logout_handler.py'
 
   python_lambdas_test:
     runs-on: ubuntu-latest
@@ -582,7 +585,15 @@ jobs:
   python_deploy_back_channel_logout_lambda:
     runs-on: ubuntu-latest
     environment: development
-    needs: ["python_lambdas_test"]
+    needs: ["python_lambdas_test", "identify_changed_functions"]
+    if: |
+      (github.ref == 'refs/heads/main') 
+        && (needs.identify_changed_functions.outputs.utils_changed == 'true'
+          || needs.identify_changed_functions.outputs.enums_changed == 'true'
+          || needs.identify_changed_functions.outputs.services_changed == 'true' 
+          || needs.identify_changed_functions.outputs.models_changed == 'true' 
+          || needs.identify_changed_functions.outputs.back_channel_logout_changed == 'true'
+          )
     strategy:
       matrix:
         python-version: ["3.11"]
@@ -615,5 +626,5 @@ jobs:
         uses: appleboy/lambda-action@master
         with:
           aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ github.event.inputs.sandboxWorkspace}}_BackChannelLogoutHandler
+          function_name: ${{ vars.BUILD_ENV}}_BackChannelLogoutHandler
           zip_file: package_lambdas_back_channel_logout_handler.zip
