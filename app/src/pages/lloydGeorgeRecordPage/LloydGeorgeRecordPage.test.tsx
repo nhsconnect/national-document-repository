@@ -9,7 +9,7 @@ import {
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import axios from 'axios';
 import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
-import userEvent from '@testing-library/user-event';
+import formatFileSize from '../../helpers/utils/formatFileSize';
 
 jest.mock('axios');
 jest.mock('react-router');
@@ -40,14 +40,14 @@ describe('LloydGeorgeRecordPage', () => {
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
     });
 
-    it('LG card with title', async () => {
+    it('renders initial lg record view', async () => {
         renderPage();
         await waitFor(async () => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
     });
 
-    it('renders LG card with no docs available text if there is no LG record', async () => {
+    it('renders initial lg record view with no docs available text if there is no LG record', async () => {
         const errorResponse = {
             response: {
                 status: 404,
@@ -66,7 +66,7 @@ describe('LloydGeorgeRecordPage', () => {
         expect(screen.queryByText('View record')).not.toBeInTheDocument();
     });
 
-    it('displays Loading... until the pdf is rendered', async () => {
+    it('displays Loading... until the pdf is fetched', async () => {
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
         renderPage();
@@ -76,8 +76,9 @@ describe('LloydGeorgeRecordPage', () => {
         });
     });
 
-    it('renders LG card with file info when LG record is returned by search', async () => {
-        mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
+    it('renders initial lg record view with file info when LG record is returned by search', async () => {
+        const lgResult = buildLgSearchResult();
+        mockAxios.get.mockReturnValue(Promise.resolve({ data: lgResult }));
 
         renderPage();
 
@@ -89,53 +90,12 @@ describe('LloydGeorgeRecordPage', () => {
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
+
+        expect(screen.getByText(`${lgResult.number_of_files} files`)).toBeInTheDocument();
         expect(
-            screen.getByText('7 files | File size: 7 bytes | File format: PDF'),
+            screen.getByText(`File size: ${formatFileSize(lgResult.total_file_size_in_byte)}`),
         ).toBeInTheDocument();
-    });
-
-    it("renders 'full screen' mode correctly", async () => {
-        const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
-        const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
-        mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
-
-        renderPage();
-
-        await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
-        });
-
-        userEvent.click(screen.getByText('View in full screen'));
-
-        await waitFor(() => {
-            expect(screen.queryByText('Lloyd George record')).not.toBeInTheDocument();
-        });
-        expect(screen.getByText('Go back')).toBeInTheDocument();
-        expect(screen.getByText(patientName)).toBeInTheDocument();
-        expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
-        expect(screen.getByText(/NHS number/)).toBeInTheDocument();
-    });
-
-    it("returns to previous view when 'Go back' link is clicked", async () => {
-        mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
-
-        renderPage();
-
-        await waitFor(() => {
-            expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
-        });
-
-        userEvent.click(screen.getByText('View in full screen'));
-
-        await waitFor(() => {
-            expect(screen.queryByText('Lloyd George record')).not.toBeInTheDocument();
-        });
-
-        userEvent.click(screen.getByText('Go back'));
-
-        await waitFor(() => {
-            expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
-        });
+        expect(screen.getByText('File format: PDF')).toBeInTheDocument();
     });
 });
 

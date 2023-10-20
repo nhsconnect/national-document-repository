@@ -8,6 +8,7 @@ import { AxiosError } from 'axios';
 import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 import { useEffect, useRef, useState } from 'react';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
+import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 
 type Props = {
     nhsNumber: string;
@@ -43,6 +44,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 nhsNumber: props.nhsNumber,
                 baseUrl: baseUrl,
                 baseHeaders,
+                docType: DOCUMENT_TYPE.ARF,
             });
 
             const filename = `patient-record-${props.nhsNumber}`;

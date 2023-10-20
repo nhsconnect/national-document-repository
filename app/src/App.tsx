@@ -20,8 +20,8 @@ import PatientGuard from './components/blocks/patientGuard/PatientGuard';
 import PatientResultPage from './pages/patientResultPage/PatientResultPage';
 import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage';
 import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
-import LloydGeorgeRecordPage from './pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import AuthErrorPage from './pages/authErrorPage/AuthErrorPage';
+import LloydGeorgeRecordPage from './pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 
 function App() {
     return (

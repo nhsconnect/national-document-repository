@@ -31,7 +31,7 @@ function DocumentSearchResultsPage() {
     };
     const mounted = useRef(false);
     useEffect(() => {
-        const search = async () => {
+        const onPageLoad = async () => {
             setSubmissionState(SUBMISSION_STATE.PENDING);
 
             try {
@@ -50,10 +50,10 @@ function DocumentSearchResultsPage() {
                 }
                 setSubmissionState(SUBMISSION_STATE.FAILED);
             }
-            mounted.current = true;
         };
         if (!mounted.current) {
-            void search();
+            mounted.current = true;
+            void onPageLoad();
         }
     }, [
         patientDetails,
