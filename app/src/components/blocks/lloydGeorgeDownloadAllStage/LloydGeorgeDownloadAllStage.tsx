@@ -82,32 +82,22 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
     }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer, timeToComplete]);
 
     return inProgress ? (
-        <>
-            <h1>Downloading documents</h1>
-            <h2 style={{ margin: 0 }}>
-                {patientDetails.givenName + ' ' + patientDetails.familyName}
-            </h2>
-            <h4 style={{ fontWeight: 'unset', fontStyle: 'unset' }}>
-                NHS number: {patientDetails.nhsNumber}
-            </h4>
-            <div className="nhsuk-heading-xl" />
-            <h4 style={{ fontWeight: 'unset', fontStyle: 'unset' }}>
-                Preparing download for {numberOfFiles} files
-            </h4>
+        <div className="lloydgeorge_downloadall-stage">
+            <div className="lloydgeorge_downloadall-stage_header">
+                <h1>Downloading documents</h1>
+                <h2>{patientDetails.givenName + ' ' + patientDetails.familyName}</h2>
+                <h4>NHS number: {patientDetails.nhsNumber}</h4>
+                <div className="nhsuk-heading-xl" />
+                <h4>Preparing download for {numberOfFiles} files</h4>
+            </div>
 
-            <Card>
+            <Card className="lloydgeorge_downloadall-stage_details">
                 <Card.Content>
                     <strong>
                         <p>Compressing record into a zip file</p>
                     </strong>
 
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexFlow: 'row nowrap',
-                            justifyContent: 'space-between',
-                        }}
-                    >
+                    <div className="lloydgeorge_downloadall-stage_details-content">
                         <div>
                             <span>{`${linkAttributes.url ? 100 : progress}%`} downloaded...</span>
                             <a
@@ -143,7 +133,7 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
                     </div>
                 </Card.Content>
             </Card>
-        </>
+        </div>
     ) : (
         <LgDownloadComplete patientDetails={patientDetails} setStage={setStage} />
     );

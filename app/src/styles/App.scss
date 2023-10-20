@@ -153,6 +153,24 @@
             }
         }
     }
+    &_downloadall-stage {
+        &_header {
+            h2 {
+                margin: 0;
+            }
+            h4 {
+                font-weight: unset;
+                font-style: unset;
+            }
+        }
+        &_details {
+            &-content {
+                display: flex;
+                flex-flow: row nowrap;
+                justify-content: space-between;
+            }
+        }
+    }
 }
 .lg-actions {
     position: absolute;
