@@ -141,7 +141,7 @@ PDS_PATIENT = {
                         ]
                     },
                 },
-                {"url": "interpreterRequired", "valueBoolean": True},
+                {"url": "interpreterRequired", "valueBoolean": "True"},
             ],
         },
         {

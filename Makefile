@@ -33,6 +33,9 @@ format:
 test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
 
+test-unit-coverage:
+	cd ./lambdas && ./venv/bin/python3 -m pytest --cov-report xml:coverage.xml --cov tests/
+
 test-unit-collect:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/ --collect-only
 
@@ -79,6 +82,9 @@ storybook:
 
 test-ui:
 	npm --prefix ./app run test-all
+
+test-ui-coverage:
+	npm --prefix ./app run test-all:coverage
 
 build:
 	npm --prefix ./app run build

@@ -1,5 +1,4 @@
-# .github/workflows/terraform-dev
-name: 'Full UI- Dispatch Deploy'
+name: 'FULL UI - Dispatch Deploy'
 
 on:
   repository_dispatch:

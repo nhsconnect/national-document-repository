@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: 'UI - Deploy Feature branch to Perf'
+name: 'PERF UI - Deploy Feature branch to Perf'
 
 on:
   workflow_dispatch:

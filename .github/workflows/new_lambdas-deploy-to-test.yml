@@ -1,4 +1,4 @@
-name: "(NEW) Lambdas - Deploy Feature Branch to Test"
+name: "TEST Lambdas - Deploy Feature Branch to Test"
 
 on:
   workflow_dispatch:

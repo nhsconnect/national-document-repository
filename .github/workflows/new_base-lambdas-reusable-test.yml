@@ -1,4 +1,4 @@
-name: "BASE: Lambda test runner"
+name: "Z-BASE Lambdas: Lambda test runner"
 
 on:
   workflow_call:

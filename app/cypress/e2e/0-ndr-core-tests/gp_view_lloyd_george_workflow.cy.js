@@ -6,7 +6,19 @@ const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 describe('GP View Lloyd George Workflow', () => {
     beforeEach(() => {
         // Arrange
-        navigateToLgPage();
+        cy.login('gp');
+
+        // Arrange - search patient
+        cy.intercept('GET', '/SearchPatient*', {
+            statusCode: 200,
+            body: searchPatientPayload,
+        }).as('search');
+        cy.get('#nhs-number-input').type(searchPatientPayload.nhsNumber);
+        cy.get('#search-submit').click();
+        cy.wait('@search');
+
+        // Arrange - verify patient is active
+        cy.get('#active-radio-button').click();
     });
 
     it('allows a GP user to view the Lloyd George document of an active patient', () => {
@@ -64,40 +76,6 @@ describe('GP View Lloyd George Workflow', () => {
         assertPatientInfo();
         assertEmptyLloydGeorgeCard();
     });
-
-    const navigateToLgPage = () => {
-        // login and navigate to search
-        cy.intercept('GET', '/Auth/TokenRequest*', {
-            statusCode: 200,
-            body: {
-                organisations: [
-                    {
-                        org_name: 'PORTWAY LIFESTYLE CENTRE',
-                        ods_code: 'A470',
-                        role: 'DEV',
-                    },
-                ],
-                authorisation_token: '111xxx222',
-            },
-        }).as('auth');
-        cy.visit(baseUrl + 'auth-callback');
-        cy.wait('@auth');
-
-        cy.get(`#gp-radio-button`).click();
-        cy.get('#role-submit-button').click();
-
-        // search patient
-        cy.intercept('GET', '/SearchPatient*', {
-            statusCode: 200,
-            body: searchPatientPayload,
-        }).as('search');
-        cy.get('#nhs-number-input').type(searchPatientPayload.nhsNumber);
-        cy.get('#search-submit').click();
-        cy.wait('@search');
-
-        // verify patient is active
-        cy.get('#active-radio-button').click();
-    };
 
     const assertPatientInfo = () => {
         cy.getCy('patient-name').should(

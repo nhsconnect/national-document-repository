@@ -1,4 +1,4 @@
-name: "BASE: action to deploy a single lambda"
+name: "Z-BASE Lambdas: action to deploy a single lambda"
 
 on:
   workflow_call:
