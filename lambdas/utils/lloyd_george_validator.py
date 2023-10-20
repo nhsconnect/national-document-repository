@@ -1,7 +1,14 @@
+import datetime
 import re
 from typing import Optional
 
+from botocore.exceptions import ClientError
+from pydantic import ValidationError
+from requests import HTTPError
+
+from enums.pds_ssm_parameters import SSMParameter
 from models.nhs_document_reference import NHSDocumentReference
+from models.pds_models import Patient
 from services.pds_api_service import PdsApiService
 from services.ssm_service import SSMService
 
@@ -90,12 +97,32 @@ def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
     if len(set(expected_common_part)) != 1:
         raise LGInvalidFilesException("File names does not match with each other")
 
-def validate_nhs_number(file_name_list: list[str], nhs_number: str):
+def validate_nhs_number(file_name_list: list[str], nhs_number: str, patient_name: str, date_of_birth:str):
     # Check file names match with the nhs number in metadata.csv
     file_name_info = extract_info_from_filename(file_name_list[0])
     if file_name_info["nhs_number"] != nhs_number:
         raise LGInvalidFilesException(
             "NHS number in file names does not match the given NHS number"
         )
-    pds_service = PdsApiService(SSMService())
-    pds_service.fetch_patient_details(nhs_number=nhs_number)
+    try:
+        pds_service = PdsApiService(SSMService())
+        pds_response = pds_service.pds_request(nsh_number=nhs_number, retry_on_expired=True)
+        pds_response.raise_for_status()
+        patient = Patient.model_validate(pds_response.json())
+        patient_details = patient.get_minimum_patient_details(nhs_number)
+        current_user_ods = get_user_ods_code()
+        if patient_details.general_practice_ods != current_user_ods:
+            raise ValidationError("User is not allowed to access patient")
+        date_of_birth = datetime.datetime.strptime(date_of_birth, '%d/%m/%Y')
+        if patient_details.birth_date != date_of_birth:
+            raise ValidationError("Patient DoB does not match our records")
+        patient_full_name = patient_details.given_Name + patient_details.family_name
+        if patient_full_name != patient_name:
+            raise ValidationError("Patient name does not match our records")
+
+    except (HTTPError, ValidationError, ClientError, ValueError) as e:
+        pass
+
+def get_user_ods_code():
+    ssm_servie = SSMService()
+    return ssm_servie.get_ssm_parameter(SSMParameter.GP_ODS_CODE.value)
