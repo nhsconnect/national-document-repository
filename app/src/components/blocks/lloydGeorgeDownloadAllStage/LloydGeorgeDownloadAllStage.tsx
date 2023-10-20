@@ -97,16 +97,7 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
             const delayTimer = setTimeout(onPageLoad, timeToComplete + delay);
             setDelayTimer(delayTimer);
         }
-    }, [
-        baseHeaders,
-        baseUrl,
-        delayTimer,
-        handlePageExit,
-        intervalTimer,
-        nhsNumber,
-        progressTimer,
-        timeToComplete,
-    ]);
+    }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer]);
 
     return inProgress ? (
         <div className="lloydgeorge_downloadall-stage">
