@@ -1,28 +1,28 @@
 import json
 import logging
 import os
+
 from botocore.exceptions import ClientError
+from services.dynamo_service import DynamoDBService
 from services.oidc_service import OidcService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.exceptions import AuthorisationException
-from services.dynamo_service import DynamoDBService
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-@ensure_environment_variables(
-    names=["OIDC_CALLBACK_URL", "AUTH_DYNAMODB_NAME"]
-)
+@ensure_environment_variables(names=["OIDC_CALLBACK_URL", "AUTH_DYNAMODB_NAME"])
 def lambda_handler(event, context):
     logger.info(f"event = {event}")
     try:
         body = json.loads(event["body"])
         token = body["logout_token"]
     except KeyError as e:
-        return ApiGatewayResponse(400, f"An error occurred due to missing key: {str(e)}",
-                                  "POST").create_api_gateway_response()
+        return ApiGatewayResponse(
+            400, f"An error occurred due to missing key: {str(e)}", "POST"
+        ).create_api_gateway_response()
     return logout_handler(token)
 
 

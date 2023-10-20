@@ -44,7 +44,7 @@ def lambda_handler(event, context):
             documents = document_service.fetch_documents_from_table_with_filter(
                 nhs_number,
                 table_name,
-                attr_filter={DocumentReferenceMetadataFields.DELETED.field_name: ""},
+                attr_filter={DocumentReferenceMetadataFields.DELETED.value: ""},
             )
 
             results += documents

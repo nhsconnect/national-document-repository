@@ -21,6 +21,7 @@ class NHSDocumentReference:
         self.created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         self.s3_bucket_name = s3_bucket_name
         self.deleted = ""
+        self.ttl = ""
         self.virus_scanner_result = "Not Scanned"
         self.file_location = f"s3://{self.s3_bucket_name}/{self.s3_file_key}"
 
@@ -35,14 +36,15 @@ class NHSDocumentReference:
 
     def to_dict(self):
         document_metadata = {
-            DocumentReferenceMetadataFields.ID.field_name: str(self.id),
-            DocumentReferenceMetadataFields.NHS_NUMBER.field_name: self.nhs_number,
-            DocumentReferenceMetadataFields.FILE_NAME.field_name: self.file_name,
-            DocumentReferenceMetadataFields.FILE_LOCATION.field_name: self.file_location,
-            DocumentReferenceMetadataFields.CREATED.field_name: self.created,
-            DocumentReferenceMetadataFields.DELETED.field_name: self.deleted,
-            DocumentReferenceMetadataFields.CONTENT_TYPE.field_name: self.content_type,
-            DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.field_name: self.virus_scanner_result,
+            DocumentReferenceMetadataFields.ID.value: str(self.id),
+            DocumentReferenceMetadataFields.NHS_NUMBER.value: self.nhs_number,
+            DocumentReferenceMetadataFields.FILE_NAME.value: self.file_name,
+            DocumentReferenceMetadataFields.FILE_LOCATION.value: self.file_location,
+            DocumentReferenceMetadataFields.CREATED.value: self.created,
+            DocumentReferenceMetadataFields.DELETED.value: self.deleted,
+            DocumentReferenceMetadataFields.TTL.value: self.ttl,
+            DocumentReferenceMetadataFields.CONTENT_TYPE.value: self.content_type,
+            DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value: self.virus_scanner_result,
         }
         return document_metadata
 
@@ -58,6 +60,7 @@ class NHSDocumentReference:
             and self.file_name == other.file_name
             and self.created == other.created
             and self.deleted == other.deleted
+            and self.ttl == other.ttl
             and self.virus_scanner_result == other.virus_scanner_result
             and self.file_location == other.file_location
         )

@@ -84,6 +84,7 @@ LG_MOCK_BAD_FILE_TYPE_EVENT_BODY = {
         }
     ],
     "created": "2023-10-02T15:55:30.650Z",
+    "httpMethod": "POST",
 }
 
 LG_MOCK_BAD_FILE_NAME_EVENT_BODY = {
@@ -101,6 +102,7 @@ LG_MOCK_BAD_FILE_NAME_EVENT_BODY = {
         }
     ],
     "created": "2023-10-02T15:55:30.650Z",
+    "httpMethod": "POST",
 }
 
 LG_MOCK_MISSING_FILES_EVENT_BODY = {
@@ -118,6 +120,7 @@ LG_MOCK_MISSING_FILES_EVENT_BODY = {
         }
     ],
     "created": "2023-10-02T15:55:30.650Z",
+    "httpMethod": "POST",
 }
 
 LG_MOCK_DUPLICATE_FILES_EVENT_BODY = {
@@ -140,6 +143,7 @@ LG_MOCK_DUPLICATE_FILES_EVENT_BODY = {
         }
     ],
     "created": "2023-10-02T15:55:30.650Z",
+    "httpMethod": "POST",
 }
 
 

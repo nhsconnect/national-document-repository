@@ -39,8 +39,8 @@ def test_lambda_handler_returns_items_from_dynamo(
                 "NhsNumber",
                 TEST_NHS_NUMBER,
                 [
-                    DocumentReferenceMetadataFields.FILE_NAME,
-                    DocumentReferenceMetadataFields.CREATED,
+                    DocumentReferenceMetadataFields.FILE_NAME.value,
+                    DocumentReferenceMetadataFields.CREATED.value,
                 ],
             )
 
@@ -75,12 +75,10 @@ def test_lambda_handler_returns_items_from_dynamo_with_filter(
                 "NhsNumber",
                 TEST_NHS_NUMBER,
                 [
-                    DocumentReferenceMetadataFields.FILE_NAME,
-                    DocumentReferenceMetadataFields.CREATED,
+                    DocumentReferenceMetadataFields.FILE_NAME.value,
+                    DocumentReferenceMetadataFields.CREATED.value,
                 ],
-                filtered_fields={
-                    DocumentReferenceMetadataFields.DELETED.field_name: ""
-                },
+                filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
             )
 
             mock_dynamo_table.query.assert_called_with(
@@ -173,7 +171,7 @@ def test_DynamoDbException_raised_when_results_are_invalid(
                     "NhsNumber",
                     TEST_NHS_NUMBER,
                     [
-                        DocumentReferenceMetadataFields.FILE_NAME,
-                        DocumentReferenceMetadataFields.CREATED,
+                        DocumentReferenceMetadataFields.FILE_NAME.value,
+                        DocumentReferenceMetadataFields.CREATED.value,
                     ],
                 )

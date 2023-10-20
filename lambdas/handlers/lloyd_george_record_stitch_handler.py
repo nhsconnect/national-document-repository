@@ -94,13 +94,13 @@ def get_lloyd_george_records_for_patient(
             "NhsNumber",
             nhs_number,
             [
-                DocumentReferenceMetadataFields.ID,
-                DocumentReferenceMetadataFields.FILE_LOCATION,
-                DocumentReferenceMetadataFields.NHS_NUMBER,
-                DocumentReferenceMetadataFields.FILE_NAME,
-                DocumentReferenceMetadataFields.CREATED,
+                DocumentReferenceMetadataFields.ID.value,
+                DocumentReferenceMetadataFields.FILE_LOCATION.value,
+                DocumentReferenceMetadataFields.NHS_NUMBER.value,
+                DocumentReferenceMetadataFields.FILE_NAME.value,
+                DocumentReferenceMetadataFields.CREATED.value,
             ],
-            filtered_fields={DocumentReferenceMetadataFields.DELETED.field_name: ""},
+            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
         )
         if response is None or ("Items" not in response):
             logger.error(f"Unrecognised response from DynamoDB: {response}")
@@ -118,9 +118,9 @@ def download_lloyd_george_files(
     temp_folder = tempfile.mkdtemp()
     for lg_part in ordered_lg_records:
         file_location_on_s3 = lg_part[
-            DocumentReferenceMetadataFields.FILE_LOCATION.field_name
+            DocumentReferenceMetadataFields.FILE_LOCATION.value
         ]
-        original_file_name = lg_part[DocumentReferenceMetadataFields.FILE_NAME.field_name]  # fmt: skip
+        original_file_name = lg_part[DocumentReferenceMetadataFields.FILE_NAME.value]  # fmt: skip
 
         s3_file_name = urlparse(file_location_on_s3).path.lstrip("/")
 
@@ -136,7 +136,7 @@ def make_filename_for_stitched_file(dynamo_response: list[dict]) -> str:
     # Build a filename with this pattern:
     # Combined_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf
 
-    filename_key = DocumentReferenceMetadataFields.FILE_NAME.field_name
+    filename_key = DocumentReferenceMetadataFields.FILE_NAME.value
     base_filename = dynamo_response[0][filename_key]
     end_of_total_page_numbers = base_filename.index("_")
 
@@ -144,7 +144,7 @@ def make_filename_for_stitched_file(dynamo_response: list[dict]) -> str:
 
 
 def get_most_recent_created_date(dynamo_response: list[dict]) -> str:
-    created_date_key = DocumentReferenceMetadataFields.CREATED.field_name
+    created_date_key = DocumentReferenceMetadataFields.CREATED.value
     return max(lg_part[created_date_key] for lg_part in dynamo_response)
 
 

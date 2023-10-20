@@ -5,10 +5,10 @@ from utils.dynamo import (create_expression_attribute_values,
 
 
 def test_create_expressions_correctly_creates_an_expression_of_one_field(set_env):
-    expected_projection = "#vscanResult"
-    expected_expr_attr_names = {"#vscanResult": "VirusScannerResult"}
+    expected_projection = "#virusScannerResult"
+    expected_expr_attr_names = {"#virusScannerResult": "VirusScannerResult"}
 
-    fields_requested = [DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT]
+    fields_requested = [DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value]
 
     actual_projection, actual_expr_attr_names = create_expressions(fields_requested)
 
@@ -25,9 +25,9 @@ def test_create_expressions_correctly_creates_an_expression_of_multiple_fields(s
     }
 
     fields_requested = [
-        DocumentReferenceMetadataFields.NHS_NUMBER,
-        DocumentReferenceMetadataFields.FILE_LOCATION,
-        DocumentReferenceMetadataFields.TYPE,
+        DocumentReferenceMetadataFields.NHS_NUMBER.value,
+        DocumentReferenceMetadataFields.FILE_LOCATION.value,
+        DocumentReferenceMetadataFields.TYPE.value,
     ]
 
     actual_projection, actual_expr_attr_names = create_expressions(fields_requested)

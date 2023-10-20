@@ -26,7 +26,7 @@ def lambda_handler(event, context):
     nhs_number = event["queryStringParameters"]["patientId"]
     doc_type = event["queryStringParameters"]["docType"]
 
-    results:  list[DocumentReference] = []
+    results: list[DocumentReference] = []
     table = ""
 
     document_service = DocumentService()

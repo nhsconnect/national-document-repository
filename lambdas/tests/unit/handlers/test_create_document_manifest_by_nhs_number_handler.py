@@ -137,7 +137,7 @@ def test_lambda_handler_missing_environment_variables_returns_500(
     monkeypatch.delenv("DOCUMENT_STORE_DYNAMODB_NAME")
     expected = ApiGatewayResponse(
         500,
-        "An error occurred due to missing key: 'DOCUMENT_STORE_DYNAMODB_NAME'",
+        "An error occurred due to missing environment variable: 'DOCUMENT_STORE_DYNAMODB_NAME'",
         "GET",
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)

@@ -42,11 +42,11 @@ class DocumentService(DynamoDBService):
     ) -> list[DocumentReference]:
         documents = []
         response = self.query_with_requested_fields(
-            table,
-            "NhsNumberIndex",
-            "NhsNumber",
-            nhs_number,
-            DocumentReferenceMetadataFields.list(),
+            table_name=table,
+            index_name="NhsNumberIndex",
+            search_key="NhsNumber",
+            search_condition=nhs_number,
+            requested_fields=DocumentReferenceMetadataFields.list(),
         )
 
         for item in response["Items"]:
@@ -64,9 +64,7 @@ class DocumentService(DynamoDBService):
             index_name="NhsNumberIndex",
             search_key="NhsNumber",
             search_condition=nhs_number,
-            requested_fields=[
-                DocumentReferenceMetadataFields.list(),
-            ],
+            requested_fields=DocumentReferenceMetadataFields.list(),
             filtered_fields=attr_filter,
         )
 
@@ -76,6 +74,19 @@ class DocumentService(DynamoDBService):
         return documents
 
     def delete_documents(self, table_name: str, documents: list[DocumentReference]):
+        deletion_date = datetime.now(timezone.utc)
+
+        ttl_days = float(S3LifecycleTags.SOFT_DELETE_DAYS.value)
+        ttl_seconds = ttl_days * 24 * 60 * 60
+        document_reference_ttl = int(deletion_date.timestamp() + ttl_seconds)
+
+        update_fields = {
+            DocumentReferenceMetadataFields.DELETED.value: deletion_date.strftime(
+                "%Y-%m-%dT%H:%M:%S.%fZ"
+            ),
+            DocumentReferenceMetadataFields.TTL.value: document_reference_ttl,
+        }
+
         for doc in documents:
             self.s3_service.create_object_tag(
                 file_key=doc.get_file_key(),
@@ -84,10 +95,4 @@ class DocumentService(DynamoDBService):
                 tag_value=str(S3LifecycleTags.SOFT_DELETE_VAL.value),
             )
 
-            update_deleted_field = {
-                DocumentReferenceMetadataFields.DELETED.field_name: datetime.now(
-                    timezone.utc
-                ).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
-            }
-
-            self.update_item(table_name, doc.id, updated_fields=update_deleted_field)
+            self.update_item(table_name, doc.id, updated_fields=update_fields)

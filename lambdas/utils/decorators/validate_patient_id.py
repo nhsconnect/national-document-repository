@@ -31,7 +31,9 @@ def validate_patient_id(lambda_func: Callable):
             ).create_api_gateway_response()
         except KeyError as e:
             return ApiGatewayResponse(
-                400, f"An error occurred due to missing key: {str(e)}", event["httpMethod"]
+                400,
+                f"An error occurred due to missing key: {str(e)}",
+                event["httpMethod"],
             ).create_api_gateway_response()
 
         # Validation done. Return control flow to original lambda handler

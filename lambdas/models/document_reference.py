@@ -12,23 +12,23 @@ class DocumentReferenceSearchResult(BaseModel):
 
 
 class DocumentReference(BaseModel):
-    id: str = Field(..., alias=DocumentReferenceMetadataFields.ID.field_name)
+    id: str = Field(..., alias=str(DocumentReferenceMetadataFields.ID.value))
     content_type: str = Field(
-        ..., alias=DocumentReferenceMetadataFields.CONTENT_TYPE.field_name
+        ..., alias=str(DocumentReferenceMetadataFields.CONTENT_TYPE.value)
     )
-    created: str = Field(..., alias=DocumentReferenceMetadataFields.CREATED.field_name)
-    deleted: str = Field(..., alias=DocumentReferenceMetadataFields.DELETED.field_name)
+    created: str = Field(..., alias=str(DocumentReferenceMetadataFields.CREATED.value))
+    deleted: str = Field(..., alias=str(DocumentReferenceMetadataFields.DELETED.value))
     file_location: str = Field(
-        ..., alias=DocumentReferenceMetadataFields.FILE_LOCATION.field_name
+        ..., alias=str(DocumentReferenceMetadataFields.FILE_LOCATION.value)
     )
     file_name: str = Field(
-        ..., alias=DocumentReferenceMetadataFields.FILE_NAME.field_name
+        ..., alias=str(DocumentReferenceMetadataFields.FILE_NAME.value)
     )
     nhs_number: str = Field(
-        ..., alias=DocumentReferenceMetadataFields.NHS_NUMBER.field_name
+        ..., alias=str(DocumentReferenceMetadataFields.NHS_NUMBER.value)
     )
     virus_scanner_result: str = Field(
-        ..., alias=DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.field_name
+        ..., alias=str(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value)
     )
 
     def get_file_name_path(self):

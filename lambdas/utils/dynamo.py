@@ -1,4 +1,9 @@
+import logging
+
 import inflection
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def create_expressions(requested_fields: list) -> tuple[str, dict]:
@@ -7,7 +12,7 @@ def create_expressions(requested_fields: list) -> tuple[str, dict]:
         :param requested_fields: List of enum fields names
 
     example usage:
-        requested_fields = [enum.ID, enum.CREATED", "enum.FILE_NAME"]
+        requested_fields = ["ID", "CREATED", "FILE_NAME"]
         projection_expression, expression_attribute_names = create_expressions(requested_fields)
 
     result:
@@ -20,17 +25,13 @@ def create_expressions(requested_fields: list) -> tuple[str, dict]:
     expression_attribute_names = {}
 
     for field_definition in requested_fields:
+        field_placeholder = create_projection_placeholder(field_definition)
         if len(projection_expression) > 0:
-            projection_expression = (
-                f"{projection_expression},{field_definition.field_alias}"
-            )
+            projection_expression = f"{projection_expression},{field_placeholder}"
         else:
-            projection_expression = field_definition.field_alias
+            projection_expression = field_placeholder
 
-        expression_attribute_names[field_definition.field_alias] = str(
-            field_definition.field_name
-        )
-
+        expression_attribute_names[field_placeholder] = field_definition
     return projection_expression, expression_attribute_names
 
 
@@ -120,3 +121,17 @@ def create_expression_placeholder(value: str) -> str:
         ":virus_scan_result_value"
     """
     return f":{inflection.underscore(value)}_value"
+
+
+def create_projection_placeholder(value: str) -> str:
+    """
+    Creates a placeholder value for a projection attribute name
+        :param value: Value to change into a placeholder
+
+    example usage:
+        placeholder = create_projection_placeholder("VirusScanResult")
+
+    result:
+        "#virusScanResult"
+    """
+    return f"#{inflection.camelize(value, uppercase_first_letter=False)}"

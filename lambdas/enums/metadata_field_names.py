@@ -2,32 +2,30 @@ from enum import Enum
 
 
 class DocumentReferenceMetadataFields(Enum):
-    ID = "ID", "#id"
-    CONTENT_TYPE = "ContentType", "#contentType"
-    CREATED = "Created", "#created"
-    DELETED = "Deleted", "#deleted"
-    FILE_NAME = "FileName", "#fileName"
-    FILE_LOCATION = "FileLocation", "#fileLocation"
-    NHS_NUMBER = "NhsNumber", "#nhsNumber"
-    TYPE = "Type", "#type"
-    VIRUS_SCANNER_RESULT = "VirusScannerResult", "#vscanResult"
-
-    def __init__(self, field_name, field_alias):
-        self.field_name = field_name
-        self.field_alias = field_alias
+    ID = "ID"
+    CONTENT_TYPE = "ContentType"
+    CREATED = "Created"
+    DELETED = "Deleted"
+    FILE_NAME = "FileName"
+    FILE_LOCATION = "FileLocation"
+    NHS_NUMBER = "NhsNumber"
+    TTL = "TTL"
+    TYPE = "Type"
+    VIRUS_SCANNER_RESULT = "VirusScannerResult"
 
     @staticmethod
-    def list():
+    def list() -> list[str]:
         return [
-            DocumentReferenceMetadataFields.ID,
-            DocumentReferenceMetadataFields.CONTENT_TYPE,
-            DocumentReferenceMetadataFields.CREATED,
-            DocumentReferenceMetadataFields.DELETED,
-            DocumentReferenceMetadataFields.FILE_NAME,
-            DocumentReferenceMetadataFields.FILE_LOCATION,
-            DocumentReferenceMetadataFields.NHS_NUMBER,
-            DocumentReferenceMetadataFields.TYPE,
-            DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT,
+            DocumentReferenceMetadataFields.ID.value,
+            DocumentReferenceMetadataFields.CONTENT_TYPE.value,
+            DocumentReferenceMetadataFields.CREATED.value,
+            DocumentReferenceMetadataFields.DELETED.value,
+            DocumentReferenceMetadataFields.FILE_NAME.value,
+            DocumentReferenceMetadataFields.FILE_LOCATION.value,
+            DocumentReferenceMetadataFields.NHS_NUMBER.value,
+            DocumentReferenceMetadataFields.TTL.value,
+            DocumentReferenceMetadataFields.TYPE.value,
+            DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value,
         ]
 
 

@@ -1,5 +1,5 @@
-from pydantic import ConfigDict
 import inflection
+from pydantic import ConfigDict
 
 
 def to_camel(string: str) -> str:
