@@ -20,7 +20,6 @@ TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_ARF_BUCKET}/{TEST_OBJECT_KEY}"
 TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_LG_BUCKET}/{TEST_OBJECT_KEY}"
 
 
-
 @pytest.fixture
 def both_type_event():
     return {"httpMethod": "POST", "body": json.dumps(MOCK_EVENT_BODY)}

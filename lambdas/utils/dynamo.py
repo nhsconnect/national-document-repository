@@ -12,20 +12,20 @@ def create_expressions(requested_fields: list) -> tuple[str, dict]:
         :param requested_fields: List of enum fields names
 
     example usage:
-        requested_fields = ["ID", "CREATED", "FILE_NAME"]
+        requested_fields = ["ID", "Created", "FileName"]
         projection_expression, expression_attribute_names = create_expressions(requested_fields)
 
     result:
         [
-            "#id,#created,#fileName",
-            {"#id": "Id", "#created": "Created", "#fileName": "FileName"}
+            "#ID_attr,#Created_attr,#FileName_attr",
+            {"#ID_attr": "ID", "#Created_attr": "Created", "#FileName_attr": "FileName"}
         ]
     """
     projection_expression = ""
     expression_attribute_names = {}
 
     for field_definition in requested_fields:
-        field_placeholder = create_projection_placeholder(field_definition)
+        field_placeholder = create_expression_attribute_placeholder(field_definition)
         if len(projection_expression) > 0:
             projection_expression = f"{projection_expression},{field_placeholder}"
         else:
@@ -45,12 +45,12 @@ def create_nonexistant_or_empty_attr_filter(field_names: list):
         fields_filter = create_nonexistant_or_empty_attr_filter(field_names)
 
     result:
-        "attribute_not_exists(Name) OR Name = :name_value"
+        "attribute_not_exists(Name) OR Name = :Name_val"
 
     """
     attr_filter = ""
     for field in field_names:
-        filter_string = f"attribute_not_exists({field}) OR {field} = {create_expression_placeholder(field)}"
+        filter_string = f"attribute_not_exists({field}) OR {field} = {create_expression_value_placeholder(field)}"
         if not attr_filter:
             attr_filter = filter_string
         else:
@@ -69,18 +69,18 @@ def create_update_expression(field_names: list):
         fields_filter = create_update_expression(field_names)
 
     result:
-        "SET Name = :name_val AND AGE = :age_val"
+        "SET #Name_attr = :Name_val, #Age_attr = :Age_val"
 
     """
-    attr_filter = "SET"
+    update_expression = "SET"
     for field in field_names:
-        filter_string = f" {field} = {create_expression_placeholder(field)}"
-        if attr_filter == "SET":
-            attr_filter += filter_string
+        expression = f"{create_expression_attribute_placeholder(field)} = {create_expression_value_placeholder(field)}"
+        if update_expression == "SET":
+            update_expression += expression
         else:
-            attr_filter += f", {filter_string}"
+            update_expression += f", {expression}"
 
-    return attr_filter
+    return update_expression
 
 
 def create_expression_attribute_values(
@@ -98,40 +98,42 @@ def create_expression_attribute_values(
 
     result:
         {
-            ":deleted_value" : ""
-            ":virus_scan_result_value" : "Scanned"
+            ":Deleted_val" : ""
+            ":VirusScannerResult_val" : "Scanned"
         }
     """
     expression_attribute_values = {}
     for name, value in zip(expression_names, expression_values):
-        expression_attribute_values[f"{create_expression_placeholder(name)}"] = value
+        expression_attribute_values[
+            f"{create_expression_value_placeholder(name)}"
+        ] = value
 
     return expression_attribute_values
 
 
-def create_expression_placeholder(value: str) -> str:
+def create_expression_value_placeholder(value: str) -> str:
     """
     Creates a placeholder value for an expression attribute name
         :param value: Value to change into a placeholder
 
     example usage:
-        placeholder = create_expression_placeholder("VirusScanResult")
+        placeholder = create_expression_value_placeholder("VirusScanResult")
 
     result:
-        ":virus_scan_result_value"
+        ":VirusScanResult_val"
     """
-    return f":{inflection.underscore(value)}_value"
+    return f":{inflection.camelize(value, uppercase_first_letter=True)}_val"
 
 
-def create_projection_placeholder(value: str) -> str:
+def create_expression_attribute_placeholder(value: str) -> str:
     """
     Creates a placeholder value for a projection attribute name
         :param value: Value to change into a placeholder
 
     example usage:
-        placeholder = create_projection_placeholder("VirusScanResult")
+        placeholder = create_expression_attribute_placeholder("VirusScanResult")
 
     result:
-        "#virusScanResult"
+        "#VirusScanResult_attr"
     """
-    return f"#{inflection.camelize(value, uppercase_first_letter=False)}"
+    return f"#{inflection.camelize(value, uppercase_first_letter=True)}_attr"

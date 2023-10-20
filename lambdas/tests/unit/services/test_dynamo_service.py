@@ -28,8 +28,11 @@ def test_lambda_handler_returns_items_from_dynamo(
         mock_dynamo_table.query.return_value = MOCK_SEARCH_RESPONSE
         expected = MOCK_SEARCH_RESPONSE
         search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
-        expected_projection = "#fileName,#created"
-        expected_expr_attr_names = {"#fileName": "FileName", "#created": "Created"}
+        expected_projection = "#FileName_attr,#Created_attr"
+        expected_expr_attr_names = {
+            "#FileName_attr": "FileName",
+            "#Created_attr": "Created",
+        }
 
         with patch.object(Key, "eq", return_value=search_key_obj):
             db_service = DynamoDBService()
@@ -62,10 +65,13 @@ def test_lambda_handler_returns_items_from_dynamo_with_filter(
         mock_dynamo_table.query.return_value = MOCK_SEARCH_RESPONSE
         expected = MOCK_SEARCH_RESPONSE
         search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
-        expected_projection = "#fileName,#created"
-        expected_expr_attr_names = {"#fileName": "FileName", "#created": "Created"}
-        expected_filter = "attribute_not_exists(Deleted) OR Deleted = :deleted_value"
-        expected_attributes_values = {":deleted_value": ""}
+        expected_projection = "#FileName_attr,#Created_attr"
+        expected_expr_attr_names = {
+            "#FileName_attr": "FileName",
+            "#Created_attr": "Created",
+        }
+        expected_filter = "attribute_not_exists(Deleted) OR Deleted = :Deleted_val"
+        expected_attributes_values = {":Deleted_val": ""}
 
         with patch.object(Key, "eq", return_value=search_key_obj):
             db_service = DynamoDBService()

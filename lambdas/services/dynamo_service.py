@@ -43,6 +43,8 @@ class DynamoDBService:
             projection_expression, expression_attribute_names = create_expressions(
                 requested_fields
             )
+            logger.info(projection_expression)
+            logger.info(expression_attribute_names)
 
             if not filtered_fields:
                 results = table.query(
@@ -127,16 +129,20 @@ class DynamoDBService:
             updated_field_values = list(updated_fields.values())
 
             update_expression = create_update_expression(updated_field_names)
+
+            _, expression_attribute_names = create_expressions(updated_field_names)
             expression_attribute_values = create_expression_attribute_values(
                 updated_field_names, updated_field_values
             )
 
             logger.info(update_expression)
+            logger.info(expression_attribute_names)
             logger.info(expression_attribute_values)
 
             table.update_item(
                 Key={"ID": key},
                 UpdateExpression=update_expression,
+                ExpressionAttributeNames=expression_attribute_names,
                 ExpressionAttributeValues=expression_attribute_values,
             )
 
