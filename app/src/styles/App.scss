@@ -4,6 +4,11 @@
 @import 'node_modules/nhsuk-frontend/packages/components/input/input';
 @import 'node_modules/nhsuk-frontend/packages/components/tables/tables';
 
+/**
+*   Styleguide:  Blocks, Elements and Modifiers
+*   Docs: https://getbem.com/
+**/
+
 @keyframes spin {
     0% {
         transform: rotate(0deg);
