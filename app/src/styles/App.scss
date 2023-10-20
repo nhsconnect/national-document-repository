@@ -115,6 +115,45 @@
     font-size: 24px;
 }
 
+// Lloyd George
+
+.lloydgeorge {
+    &_record-stage {
+        &_patient-info {
+            p:first-child {
+                margin-bottom: 5px;
+                font-weight: 700;
+            }
+            p:nth-child(1) {
+                font-size: 16px;
+                margin-bottom: 5px;
+            }
+            p:nth-child(2) {
+                font-size: 16px;
+            }
+        }
+        &_header {
+            margin-bottom: 0;
+            &-content {
+                position: relative;
+                &-label {
+                    font-weight: 700;
+                    font-size: 24px;
+                }
+            }
+        }
+        &_expander {
+            position: relative;
+            border-top: none;
+            &-button {
+                display: inline-block;
+                position: absolute;
+                right: 28px;
+                top: 30px;
+            }
+        }
+    }
+}
 .lg-actions {
     position: absolute;
     top: 32px;

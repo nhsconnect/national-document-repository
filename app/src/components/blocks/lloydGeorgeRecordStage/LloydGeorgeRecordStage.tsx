@@ -59,7 +59,7 @@ function LloydGeorgeRecordStage({
     };
 
     return (
-        <>
+        <div className="lloydgeorge_record-stage">
             {fullScreen && (
                 <BackLink
                     data-cy="back-link"
@@ -71,22 +71,21 @@ function LloydGeorgeRecordStage({
                     Go back
                 </BackLink>
             )}
-            <div id="patient-info">
-                <p style={{ marginBottom: 5, fontWeight: '700' }} data-cy="patient-name">
+            <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
+                <p data-cy="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
                 </p>
-                <p style={{ fontSize: '16px', marginBottom: 5 }} data-cy="patient-nhs-number">
-                    NHS number: {nhsNumber}
-                </p>
-                <p style={{ fontSize: '16px' }} data-cy="patient-dob">
-                    Date of birth: {dob}
-                </p>
+                <p data-cy="patient-nhs-number">NHS number: {nhsNumber}</p>
+                <p data-cy="patient-dob">Date of birth: {dob}</p>
             </div>
             {!fullScreen ? (
                 <>
-                    <Card style={{ marginBottom: 0 }}>
-                        <Card.Content style={{ position: 'relative' }} data-cy="pdf-card">
-                            <Card.Heading style={{ fontWeight: '700', fontSize: '24px' }}>
+                    <Card className="lloydgeorge_record-stage_header">
+                        <Card.Content
+                            data-cy="pdf-card"
+                            className="lloydgeorge_record-stage_header-content"
+                        >
+                            <Card.Heading className="lloydgeorge_record-stage_header-content-label">
                                 Lloyd George record
                             </Card.Heading>
                             <PdfCardDescription />
@@ -94,11 +93,7 @@ function LloydGeorgeRecordStage({
                     </Card>
                     {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
                         <>
-                            <Details
-                                expander
-                                open
-                                style={{ position: 'relative', borderTop: 'none' }}
-                            >
+                            <Details expander open className="lloydgeorge_record-stage_expander">
                                 <Details.Summary
                                     style={{ display: 'inline-block' }}
                                     data-cy="view-record-bin"
@@ -106,13 +101,7 @@ function LloydGeorgeRecordStage({
                                     View record
                                 </Details.Summary>
                                 <button
-                                    style={{
-                                        display: 'inline-block',
-                                        position: 'absolute',
-                                        right: '28px',
-                                        top: '30px',
-                                    }}
-                                    className="link-button"
+                                    className="lloydgeorge_record-stage_expander-button link-button"
                                     data-cy="full-screen-btn"
                                     onClick={() => {
                                         setFullScreen(true);
@@ -128,7 +117,7 @@ function LloydGeorgeRecordStage({
             ) : (
                 <PdfViewer fileUrl={lloydGeorgeUrl} />
             )}
-        </>
+        </div>
     );
 }
 

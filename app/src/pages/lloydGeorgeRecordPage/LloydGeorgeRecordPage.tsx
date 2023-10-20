@@ -6,8 +6,8 @@ import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
-import LloydGeorgeRecordStage from '../../components/blocks/lgRecordStage/LloydGeorgeRecordStage';
-import LloydGeorgeDownloadAllStage from '../../components/blocks/lgDownloadAllStage/LloydGeorgeDownloadAllStage';
+import LloydGeorgeRecordStage from '../../components/blocks/lloydGeorgeRecordStage/LloydGeorgeRecordStage';
+import LloydGeorgeDownloadAllStage from '../../components/blocks/lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
 
 export enum LG_RECORD_STAGE {
     RECORD = 0,

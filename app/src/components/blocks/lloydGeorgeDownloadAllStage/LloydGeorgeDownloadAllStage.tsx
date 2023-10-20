@@ -7,7 +7,7 @@ import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider'
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
-import LgDownloadComplete from '../lgDownloadComplete/LloydGeorgeDownloadComplete';
+import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownloadComplete';
 const FakeProgress = require('fake-progress');
 
 export type Props = {
