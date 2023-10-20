@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: 'UI - Development CI Feature Branch to Main'
+name: 'CI UI - Development CI Feature Branch to Main'
 
 on:
   push:

@@ -1,4 +1,4 @@
-name: "Full Lambdas - Dispatch Deploy"
+name: "FULL Lambdas - Dispatch Deploy"
 
 on:
   repository_dispatch:

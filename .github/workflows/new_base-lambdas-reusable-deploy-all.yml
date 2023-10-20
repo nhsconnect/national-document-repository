@@ -1,4 +1,4 @@
-name: "BASE: Deploy all required Lambda functions"
+name: "ZBASE Lambdas: Deploy all required Lambda functions"
 
 on:
   workflow_call:

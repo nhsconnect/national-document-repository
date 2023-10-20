@@ -1,4 +1,4 @@
-name: "(NEW) Lambdas - CI Feature to Main"
+name: " CI Lambdas - CI Feature to Main"
 
 on:
   push:

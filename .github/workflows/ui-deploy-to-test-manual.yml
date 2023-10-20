@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: 'UI - Deploy Main to Test'
+name: 'TEST UI - Deploy Main to Test'
 
 on:
   workflow_dispatch:

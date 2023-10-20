@@ -1,4 +1,4 @@
-name: '(NEW) UI - Deploy Feature Branch to Sandbox'
+name: 'SANDBOX UI - Deploy Feature Branch to Sandbox'
 
 on:
   workflow_dispatch:
