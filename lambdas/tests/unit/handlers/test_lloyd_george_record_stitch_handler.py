@@ -229,6 +229,7 @@ def mock_tempfile():
 @pytest.fixture
 def joe_bloggs_event():
     api_gateway_proxy_event = {
+        "httpMethod": "GET",
         "queryStringParameters": {"patientId": "1234567890"},
     }
     return api_gateway_proxy_event

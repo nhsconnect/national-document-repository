@@ -20,15 +20,15 @@ def validate_document_type(lambda_func: Callable):
             doc_type = event["queryStringParameters"]["docType"]
             if doc_type is None:
                 return ApiGatewayResponse(
-                    400, "docType not supplied", "GET"
+                    400, "docType not supplied", event["httpMethod"]
                 ).create_api_gateway_response()
             if not doc_type_is_valid(doc_type):
                 return ApiGatewayResponse(
-                    400, "Invalid document type requested", "GET"
+                    400, "Invalid document type requested", event["httpMethod"]
                 ).create_api_gateway_response()
         except KeyError as e:
             return ApiGatewayResponse(
-                400, f"An error occurred due to missing key: {str(e)}", "GET"
+                400, f"An error occurred due to missing key: {str(e)}", event["httpMethod"]
             ).create_api_gateway_response()
 
         # Validation done. Return control flow to original lambda handler

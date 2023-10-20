@@ -97,3 +97,4 @@ node_modules/
 .vscode/
 
 lambdas/tests/unit/helpers/data/pdf/tmp
+/lambdas/package_/

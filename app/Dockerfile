@@ -1,5 +1,5 @@
 # Build the App
-FROM node:alpine as builder
+FROM node:18-alpine as builder
 WORKDIR /app
 
 COPY package.json ./

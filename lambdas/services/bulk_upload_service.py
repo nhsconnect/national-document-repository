@@ -67,8 +67,8 @@ class BulkUploadService:
                 f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}"
             )
         except Exception as e:
-            logger.debug(f"Got unexpected error during file transfer: {str(e)}")
-            logger.debug("Will try to rollback any change to database and bucket")
+            logger.info(f"Got unexpected error during file transfer: {str(e)}")
+            logger.info("Will try to rollback any change to database and bucket")
             self.rollback_transaction()
 
     def validate_files(self, staging_metadata: StagingMetadata):
@@ -77,7 +77,7 @@ class BulkUploadService:
         file_names = [
             os.path.basename(metadata.file_path) for metadata in staging_metadata.files
         ]
-        validate_lg_file_names(file_names)
+        validate_lg_file_names(file_names, staging_metadata.nhs_number)
 
     def init_transaction(self):
         self.dynamo_records_in_transaction = []
@@ -100,7 +100,7 @@ class BulkUploadService:
     def create_record_in_lg_dynamo_table(
         self, document_reference: NHSDocumentReference
     ):
-        self.dynamo_service.post_item_service(
+        self.dynamo_service.create_item(
             table_name=self.lg_dynamo_table, item=document_reference.to_dict()
         )
         self.dynamo_records_in_transaction.append(document_reference)

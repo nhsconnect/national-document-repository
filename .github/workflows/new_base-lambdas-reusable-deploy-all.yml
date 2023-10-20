@@ -117,7 +117,7 @@ jobs:
       lambda_aws_name: TokenRequestHandler
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-  
+
   deploy_login_redirect_lambda:
     name: Deploy LoginRedirectHandler
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
@@ -130,7 +130,7 @@ jobs:
       lambda_aws_name: LoginRedirectHandler
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-  
+
   deploy_authoriser_lambda:
     name: Deploy AuthoriserLambda
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
@@ -139,11 +139,11 @@ jobs:
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
-      lambda_handler_name: authoriser_handler 
+      lambda_handler_name: authoriser_handler
       lambda_aws_name: AuthoriserLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-  
+
   deploy_lloyd_george_record_stitch_lambda:
     name: Deploy LloydGeorgeStitchLambda
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
@@ -156,7 +156,7 @@ jobs:
       lambda_aws_name: LloydGeorgeStitchLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-  
+
   deploy_logout_handler_lambda:
     name: Deploy LogoutHandler
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
@@ -180,5 +180,18 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: bulk_upload_handler
       lambda_aws_name: BulkUploadLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_back_channel_logout_lambda:
+    name: Deploy back_channel_logout_lambda
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: back_channel_logout_handler
+      lambda_aws_name: BackChannelLogoutHandler
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
