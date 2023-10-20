@@ -122,35 +122,24 @@ class DynamoDBService:
             raise e
 
     def update_item(self, table_name: str, key: str, updated_fields: dict):
-        try:
-            table = self.get_table(table_name)
+        table = self.get_table(table_name)
 
-            updated_field_names = list(updated_fields.keys())
-            updated_field_values = list(updated_fields.values())
+        updated_field_names = list(updated_fields.keys())
+        updated_field_values = list(updated_fields.values())
 
-            update_expression = create_update_expression(updated_field_names)
+        update_expression = create_update_expression(updated_field_names)
 
-            _, expression_attribute_names = create_expressions(updated_field_names)
-            expression_attribute_values = create_expression_attribute_values(
-                updated_field_names, updated_field_values
-            )
+        _, expression_attribute_names = create_expressions(updated_field_names)
+        expression_attribute_values = create_expression_attribute_values(
+            updated_field_names, updated_field_values
+        )
 
-            logger.info(update_expression)
-            logger.info(expression_attribute_names)
-            logger.info(expression_attribute_values)
-
-            table.update_item(
-                Key={"ID": key},
-                UpdateExpression=update_expression,
-                ExpressionAttributeNames=expression_attribute_names,
-                ExpressionAttributeValues=expression_attribute_values,
-            )
-
-            logger.info(f"Updating item in table: {table_name}")
-        except ClientError as e:
-            logger.error(f"Unable to update item in table: {table_name}")
-            logger.error(e)
-            raise e
+        table.update_item(
+            Key={"ID": key},
+            UpdateExpression=update_expression,
+            ExpressionAttributeNames=expression_attribute_names,
+            ExpressionAttributeValues=expression_attribute_values,
+        )
 
     def delete_item(self, table_name: str, key: dict):
         try:

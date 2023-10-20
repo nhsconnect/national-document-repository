@@ -3,7 +3,8 @@ from unittest.mock import call
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from handlers.document_manifest_by_nhs_number_handler import lambda_handler
-from tests.unit.helpers.data.test_documents import TEST_ARF_DOCS, TEST_LG_DOCS
+from tests.unit.helpers.data.test_documents import (
+    create_test_doc_store_refs, create_test_lloyd_george_doc_store_refs)
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_METADATA_FIELDS = [
@@ -11,6 +12,7 @@ TEST_METADATA_FIELDS = [
     DocumentReferenceMetadataFields.FILE_LOCATION,
     DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT,
 ]
+
 
 
 def test_lambda_handler_returns_204_when_no_documents_returned_from_dynamo_response(
@@ -49,9 +51,9 @@ def test_lambda_handler_returns_400_when_doc_type_invalid_response(
 
 def manifest_service_side_effect(nhs_number, doc_types):
     if SupportedDocumentTypes.ARF.name in doc_types:
-        return [TEST_ARF_DOCS]
+        return create_test_doc_store_refs()
     if SupportedDocumentTypes.LG.name in doc_types:
-        return [TEST_LG_DOCS]
+        return create_test_lloyd_george_doc_store_refs()
     return []
 
 

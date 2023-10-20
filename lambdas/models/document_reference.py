@@ -27,6 +27,7 @@ class DocumentReference(BaseModel):
     nhs_number: str = Field(
         ..., alias=str(DocumentReferenceMetadataFields.NHS_NUMBER.value)
     )
+    ttl: str = Field(..., alias=str(DocumentReferenceMetadataFields.TTL.value))
     virus_scanner_result: str = Field(
         ..., alias=str(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value)
     )

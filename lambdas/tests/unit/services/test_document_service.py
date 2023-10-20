@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 import boto3
 import pytest
 from models.document_reference import DocumentReference
-from tests.unit.helpers.data.dynamo_responses import (
-    MOCK_DOCUMENT_QUERY_RESPONSE, MOCK_EMPTY_RESPONSE)
+from tests.unit.helpers.data.dynamo_responses import (MOCK_EMPTY_RESPONSE,
+                                                      MOCK_SEARCH_RESPONSE)
 
 from lambdas.services.document_service import DocumentService
 
@@ -23,7 +23,7 @@ def test_returns_list_of_documents_when_results_are_returned(nhs_number):
     with patch.object(boto3, "resource", return_value=MagicMock()) as mock_dynamo:
         mock_table = MagicMock()
         mock_dynamo.return_value.Table.return_value = mock_table
-        mock_table.query.return_value = MOCK_DOCUMENT_QUERY_RESPONSE
+        mock_table.query.return_value = MOCK_SEARCH_RESPONSE
         result = DocumentService().retrieve_all_document_references(nhs_number, "LG")
 
         mock_dynamo.return_value.Table.assert_called_with(expected_table)

@@ -47,9 +47,6 @@ def lambda_handler(event, context):
                 404, "No documents available", "DELETE"
             ).create_api_gateway_response()
 
-        for result in results:
-            print(result.file_location)
-
         document_service.delete_documents(table, results)
     except ClientError as e:
         logger.info(str(e))

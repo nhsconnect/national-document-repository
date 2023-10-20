@@ -87,6 +87,8 @@ class DocumentService(DynamoDBService):
             DocumentReferenceMetadataFields.TTL.value: document_reference_ttl,
         }
 
+        logger.info(f"Deleting items in table: {table_name}")
+
         for doc in documents:
             self.s3_service.create_object_tag(
                 file_key=doc.get_file_key(),

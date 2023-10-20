@@ -66,11 +66,11 @@ class DocumentManifestService:
 
             try:
                 self.s3_service.download_file(
-                    document.file_bucket, document.file_key, download_path
+                    document.get_file_bucket(), document.get_file_key(), download_path
                 )
             except ClientError:
                 logger.error(
-                    f"{document.file_key} may reference missing file in s3 bucket {document.file_bucket}"
+                    f"{document.get_file_key()} may reference missing file in s3 bucket {document.get_file_bucket()}"
                 )
                 raise ManifestDownloadException(
                     f"Reference to {document.file_key} that doesn't exist in s3"
