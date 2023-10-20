@@ -1,4 +1,12 @@
-import React, { Dispatch, SetStateAction, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { Card } from 'nhsuk-react-components';
 import { Link } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
@@ -24,12 +32,6 @@ type DownloadLinkAttributes = {
 function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
-    const progressTimer = useMemo(() => {
-        return new FakeProgress({
-            timeConstant: timeToComplete,
-            autoStart: true,
-        });
-    }, []);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const [linkAttributes, setLinkAttributes] = useState<DownloadLinkAttributes>({
@@ -43,9 +45,23 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
     const { nhsNumber } = patientDetails;
 
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
+
+    const progressTimer = useMemo(() => {
+        return new FakeProgress({
+            timeConstant: timeToComplete,
+            autoStart: true,
+        });
+    }, []);
     const intervalTimer = window.setInterval(() => {
         setProgress(parseInt((progressTimer.progress * 100).toFixed(1)));
     }, 100);
+
+    const handlePageExit = useCallback(() => {
+        window.clearInterval(intervalTimer);
+        if (delayTimer) {
+            window.clearTimeout(delayTimer);
+        }
+    }, [delayTimer, intervalTimer]);
 
     useEffect(() => {
         if (linkRef.current && linkAttributes.url) {
@@ -81,14 +97,16 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
             const delayTimer = setTimeout(onPageLoad, timeToComplete + delay);
             setDelayTimer(delayTimer);
         }
-
-        return () => {
-            window.clearInterval(intervalTimer);
-            if (delayTimer) {
-                window.clearTimeout(delayTimer);
-            }
-        };
-    }, [baseHeaders, baseUrl, delayTimer, intervalTimer, nhsNumber, progressTimer, timeToComplete]);
+    }, [
+        baseHeaders,
+        baseUrl,
+        delayTimer,
+        handlePageExit,
+        intervalTimer,
+        nhsNumber,
+        progressTimer,
+        timeToComplete,
+    ]);
 
     return inProgress ? (
         <div className="lloydgeorge_downloadall-stage">
@@ -125,10 +143,7 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
                                 to="#"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    window.clearInterval(intervalTimer);
-                                    if (delayTimer) {
-                                        window.clearTimeout(delayTimer);
-                                    }
+                                    handlePageExit();
                                     setStage(LG_RECORD_STAGE.RECORD);
                                 }}
                             >
