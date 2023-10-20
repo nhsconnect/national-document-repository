@@ -42,6 +42,7 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
 
     const { nhsNumber } = patientDetails;
 
+    const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
     const intervalTimer = window.setInterval(() => {
         setProgress(parseInt((progressTimer.progress * 100).toFixed(1)));
     }, 100);
@@ -77,9 +78,17 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
             const min = timeToComplete - 100;
             const max = timeToComplete + 200;
             const delay = Math.floor(Math.random() * (max - min + 1) + min);
-            setTimeout(onPageLoad, timeToComplete + delay);
+            const delayTimer = setTimeout(onPageLoad, timeToComplete + delay);
+            setDelayTimer(delayTimer);
         }
-    }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer, timeToComplete]);
+
+        return () => {
+            window.clearInterval(intervalTimer);
+            if (delayTimer) {
+                window.clearTimeout(delayTimer);
+            }
+        };
+    }, [baseHeaders, baseUrl, delayTimer, intervalTimer, nhsNumber, progressTimer, timeToComplete]);
 
     return inProgress ? (
         <div className="lloydgeorge_downloadall-stage">
@@ -116,15 +125,11 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
                                 to="#"
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    const w = global.window;
-                                    if (
-                                        typeof w !== 'undefined' &&
-                                        w.confirm(
-                                            'Are you sure you would like to cancel the download?',
-                                        )
-                                    ) {
-                                        setStage(LG_RECORD_STAGE.RECORD);
+                                    window.clearInterval(intervalTimer);
+                                    if (delayTimer) {
+                                        window.clearTimeout(delayTimer);
                                     }
+                                    setStage(LG_RECORD_STAGE.RECORD);
                                 }}
                             >
                                 Cancel
