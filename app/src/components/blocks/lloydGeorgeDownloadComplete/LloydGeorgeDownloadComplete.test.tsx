@@ -8,7 +8,7 @@ import { act } from 'react-dom/test-utils';
 
 const mockSetStage = jest.fn();
 const mockPatient = buildPatientDetails();
-describe('LgDownloadComplete', () => {
+describe('LloydGeorgeDownloadComplete', () => {
     it('renders the component', () => {
         renderComponent(mockPatient);
 

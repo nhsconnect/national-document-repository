@@ -6,25 +6,18 @@ import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorg
 export type Props = {
     patientDetails: PatientDetails;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    stage?: LG_RECORD_STAGE; // For unit tests only
 };
 
-function LgDownloadComplete({ patientDetails, stage, setStage }: Props) {
+function LloydGeorgeDownloadComplete({ patientDetails, setStage }: Props) {
     return (
-        <>
-            <Card style={{ maxWidth: '620px' }} data-testid={`${stage}`}>
-                <Card.Content
-                    style={{
-                        textAlign: 'center',
-                        backgroundColor: '#555',
-                        color: '#fff',
-                        padding: '38px',
-                        fontSize: '20px',
-                    }}
-                >
-                    <Card.Heading style={{ fontSize: '48px' }}>Download complete</Card.Heading>
+        <div className="lloydgeorge_download-complete">
+            <Card className="lloydgeorge_download-complete_details">
+                <Card.Content className="lloydgeorge_download-complete_details-content">
+                    <Card.Heading className="lloydgeorge_download-complete_details-content_header">
+                        Download complete
+                    </Card.Heading>
                     Documents from the Lloyd George record of:
-                    <div style={{ fontSize: '34px' }}>
+                    <div className="lloydgeorge_download-complete_details-content_subheader">
                         <strong>
                             {patientDetails.givenName + ' ' + patientDetails.familyName}
                         </strong>
@@ -35,8 +28,8 @@ function LgDownloadComplete({ patientDetails, stage, setStage }: Props) {
             <Button onClick={() => setStage(LG_RECORD_STAGE.RECORD)}>
                 Return to patient's available medical records
             </Button>
-        </>
+        </div>
     );
 }
 
-export default LgDownloadComplete;
+export default LloydGeorgeDownloadComplete;

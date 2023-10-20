@@ -246,6 +246,24 @@
             }
         }
     }
+    &_download-complete {
+        &_details {
+            max-width: 620px;
+            &-content {
+                text-align: center;
+                background-color: #555;
+                color: #fff;
+                padding: 38px;
+                font-size: 20px;
+                &_header {
+                    font-size: 48px;
+                }
+                &_subheader {
+                    font-size: 34px;
+                }
+            }
+        }
+    }
 }
 
 @-moz-document url-prefix() {
