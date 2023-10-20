@@ -9,5 +9,5 @@ export enum endpoints {
     DOCUMENT_UPLOAD = '/DocumentReference',
     DOCUMENT_PRESIGN = '/DocumentManifest',
 
-    LG_STITCH = '/LloydGeorgeStitch',
+    LLOYDGEORGE_STITCH = '/LloydGeorgeStitch',
 }

@@ -1,7 +1,7 @@
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { PatientDetails } from '../../../types/generic/patientDetails';
-import LgDownloadComplete, { Props } from './LgDownloadComplete';
+import LgDownloadComplete, { Props } from './LloydGeorgeDownloadComplete';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';

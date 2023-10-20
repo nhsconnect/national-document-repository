@@ -17,7 +17,7 @@ type GetAllLloydGeorgePDFsResponse = {
 };
 
 const getAllLloydGeorgePDFs = async ({ baseUrl, baseHeaders, nhsNumber }: Args) => {
-    const gatewayUrl = baseUrl + endpoints.LG_STITCH;
+    const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
     try {
         const response = await axios.get(gatewayUrl, {
             headers: {

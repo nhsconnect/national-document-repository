@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import LgRecordDetails, { Props } from './LgRecordDetails';
+import LgRecordDetails, { Props } from './LlloydGeorgeRecordDetails';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
@@ -11,7 +11,7 @@ const mockPdf = buildLgSearchResult();
 
 const mockSetStaqe = jest.fn();
 
-describe('LgRecordDetails', () => {
+describe('LloydGeorgeRecordDetails', () => {
     const actionLinkStrings = [
         { label: 'See all files', expectedStage: LG_RECORD_STAGE.SEE_ALL },
         { label: 'Download all files', expectedStage: LG_RECORD_STAGE.DOWNLOAD_ALL },

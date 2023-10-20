@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
-import LgRecordStage, { Props } from './LgRecordStage';
+import LgRecordStage, { Props } from './LloydGeorgeRecordStage';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import { useState } from 'react';
@@ -11,7 +11,7 @@ import { act } from 'react-dom/test-utils';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 
-describe('LgRecordStage', () => {
+describe('LloydGeorgeRecordStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
     });

@@ -17,7 +17,12 @@ type PdfActionLink = {
     label: string;
     handler: () => void;
 };
-function LgRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInByte, setStage }: Props) {
+function LloydGeorgeRecordDetails({
+    lastUpdated,
+    numberOfFiles,
+    totalFileSizeInByte,
+    setStage,
+}: Props) {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
 
@@ -96,4 +101,4 @@ function LgRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInByte, setS
     );
 }
 
-export default LgRecordDetails;
+export default LloydGeorgeRecordDetails;

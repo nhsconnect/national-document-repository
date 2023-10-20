@@ -5,7 +5,7 @@ import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
-import LgRecordDetails from '../lgRecordDetails/LgRecordDetails';
+import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LlloydGeorgeRecordDetails';
 
 export type Props = {
     patientDetails: PatientDetails;
@@ -18,7 +18,7 @@ export type Props = {
     stage: LG_RECORD_STAGE;
 };
 
-function LgRecordStage({
+function LloydGeorgeRecordStage({
     patientDetails,
     downloadStage,
     lloydGeorgeUrl,
@@ -50,7 +50,7 @@ function LgRecordStage({
                 setStage,
             };
 
-            return <LgRecordDetails {...detailsProps} setStage={setStage} />;
+            return <LloydGeorgeRecordDetails {...detailsProps} setStage={setStage} />;
         } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
             return <span>No documents are available</span>;
         } else {
@@ -132,4 +132,4 @@ function LgRecordStage({
     );
 }
 
-export default LgRecordStage;
+export default LloydGeorgeRecordStage;

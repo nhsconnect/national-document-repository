@@ -7,7 +7,7 @@ import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider'
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
-import LgDownloadComplete from '../lgDownloadComplete/LgDownloadComplete';
+import LgDownloadComplete from '../lgDownloadComplete/LloydGeorgeDownloadComplete';
 const FakeProgress = require('fake-progress');
 
 export type Props = {
@@ -21,7 +21,7 @@ type DownloadLinkAttributes = {
     filename: string;
 };
 
-function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
+function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     const progressTimer = useMemo(() => {
@@ -149,4 +149,4 @@ function LgDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) 
     );
 }
 
-export default LgDownloadAllStage;
+export default LloydGeorgeDownloadAllStage;

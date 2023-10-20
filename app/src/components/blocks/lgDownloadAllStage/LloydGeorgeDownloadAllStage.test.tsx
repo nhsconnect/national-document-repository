@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import LgDownloadAllStage, { Props } from './LgDownloadAllStage';
+import LgDownloadAllStage, { Props } from './LloydGeorgeDownloadAllStage';
 import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
 import { createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router';
@@ -14,7 +14,7 @@ const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
 const mockSetStage = jest.fn();
 
-describe('LgDownloadAllStage', () => {
+describe('LloydGeorgeDownloadAllStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
     });

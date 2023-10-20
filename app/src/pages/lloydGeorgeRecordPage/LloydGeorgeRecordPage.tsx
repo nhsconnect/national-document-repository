@@ -6,8 +6,8 @@ import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
-import LgRecordStage from '../../components/blocks/lgRecordStage/LgRecordStage';
-import LgDownloadAllStage from '../../components/blocks/lgDownloadAllStage/LgDownloadAllStage';
+import LloydGeorgeRecordStage from '../../components/blocks/lgRecordStage/LloydGeorgeRecordStage';
+import LloydGeorgeDownloadAllStage from '../../components/blocks/lgDownloadAllStage/LloydGeorgeDownloadAllStage';
 
 export enum LG_RECORD_STAGE {
     RECORD = 0,
@@ -72,7 +72,7 @@ function LloydGeorgeRecordPage() {
         case LG_RECORD_STAGE.RECORD:
             return (
                 patientDetails && (
-                    <LgRecordStage
+                    <LloydGeorgeRecordStage
                         numberOfFiles={numberOfFiles}
                         totalFileSizeInByte={totalFileSizeInByte}
                         lastUpdated={lastUpdated}
@@ -87,7 +87,7 @@ function LloydGeorgeRecordPage() {
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
             return (
                 patientDetails && (
-                    <LgDownloadAllStage
+                    <LloydGeorgeDownloadAllStage
                         numberOfFiles={numberOfFiles}
                         setStage={setStage}
                         patientDetails={patientDetails}
