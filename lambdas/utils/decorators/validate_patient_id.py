@@ -27,11 +27,11 @@ def validate_patient_id(lambda_func: Callable):
             validate_id(nhs_number)
         except InvalidResourceIdException:
             return ApiGatewayResponse(
-                400, "Invalid NHS number", "GET"
+                400, "Invalid NHS number", event["httpMethod"]
             ).create_api_gateway_response()
         except KeyError as e:
             return ApiGatewayResponse(
-                400, f"An error occurred due to missing key: {str(e)}", "GET"
+                400, f"An error occurred due to missing key: {str(e)}", event["httpMethod"]
             ).create_api_gateway_response()
 
         # Validation done. Return control flow to original lambda handler
