@@ -194,7 +194,9 @@ MOCK_TOTAL_FILE_SIZE = 1024 * 256
 
 @pytest.fixture
 def mock_dynamo_db():
-    with patch.object(DynamoDBService, "query_service") as mocked_query_service:
+    with patch.object(
+        DynamoDBService, "query_with_requested_fields"
+    ) as mocked_query_service:
         mocked_query_service.return_value = MOCK_LG_DYNAMODB_RESPONSE
         yield mocked_query_service
 

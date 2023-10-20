@@ -88,7 +88,7 @@ def get_lloyd_george_records_for_patient(
 ) -> dict:
     try:
         dynamo_service = DynamoDBService()
-        response = dynamo_service.query_service(
+        response = dynamo_service.query_with_requested_fields(
             lloyd_george_table_name,
             "NhsNumberIndex",
             "NhsNumber",
@@ -100,6 +100,7 @@ def get_lloyd_george_records_for_patient(
                 DocumentReferenceMetadataFields.FILE_NAME,
                 DocumentReferenceMetadataFields.CREATED,
             ],
+            filtered_fields={DocumentReferenceMetadataFields.DELETED.field_name: ""},
         )
         if response is None or ("Items" not in response):
             logger.error(f"Unrecognised response from DynamoDB: {response}")

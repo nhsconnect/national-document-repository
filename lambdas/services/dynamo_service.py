@@ -3,6 +3,9 @@ import logging
 import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
+from utils.dynamo import (create_expression_attribute_values,
+                          create_expressions,
+                          create_nonexistant_or_empty_attr_filter)
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 
 logger = logging.getLogger()
@@ -21,13 +24,14 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
-    def query_service(
+    def query_with_requested_fields(
         self,
         table_name,
         index_name,
         search_key,
         search_condition: str,
         requested_fields: list = None,
+        filtered_fields: dict = None,
     ):
         try:
             table = self.get_table(table_name)
@@ -35,16 +39,37 @@ class DynamoDBService:
             if requested_fields is None or len(requested_fields) == 0:
                 raise InvalidResourceIdException
 
-            projection_expression, expression_attribute_names = self.create_expressions(
+            projection_expression, expression_attribute_names = create_expressions(
                 requested_fields
             )
 
-            results = table.query(
-                IndexName=index_name,
-                KeyConditionExpression=Key(search_key).eq(search_condition),
-                ExpressionAttributeNames=expression_attribute_names,
-                ProjectionExpression=projection_expression,
-            )
+            if not filtered_fields:
+                results = table.query(
+                    IndexName=index_name,
+                    KeyConditionExpression=Key(search_key).eq(search_condition),
+                    ExpressionAttributeNames=expression_attribute_names,
+                    ProjectionExpression=projection_expression,
+                )
+            else:
+                filtered_field_names = list(filtered_fields.keys())
+                filtered_field_values = list(filtered_fields.values())
+
+                fields_filter = create_nonexistant_or_empty_attr_filter(
+                    filtered_field_names
+                )
+
+                expression_attribute_values = create_expression_attribute_values(
+                    filtered_field_names, filtered_field_values
+                )
+
+                results = table.query(
+                    IndexName=index_name,
+                    KeyConditionExpression=Key(search_key).eq(search_condition),
+                    FilterExpression=fields_filter,
+                    ExpressionAttributeNames=expression_attribute_names,
+                    ExpressionAttributeValues=expression_attribute_values,
+                    ProjectionExpression=projection_expression,
+                )
 
             if results is None or "Items" not in results:
                 logger.error(f"Unusable results in DynamoDB: {results!r}")
@@ -83,7 +108,7 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
-    def post_item_service(self, table_name, item):
+    def create_item(self, table_name, item):
         try:
             table = self.get_table(table_name)
             logger.info(f"Writing item to table: {table_name}")
@@ -93,7 +118,7 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
-    def update_item_service(
+    def update_item(
         self, table_name, key, update_expression, expression_attribute_values
     ):
         try:
@@ -118,25 +143,3 @@ class DynamoDBService:
             logger.error(f"Unable to delete item in table: {table_name}")
             logger.error(e)
             raise e
-
-    # Make the expressions
-    # ExpressionAttributeNames = {"#create": "Created", "#file": "FileName", "#doc": "DocumentUploaded"}
-    # ProjectionExpression = "#id,#create,#file,#doc"
-    @staticmethod
-    def create_expressions(requested_fields: list):
-        projection_expression = ""
-        expression_attribute_names = {}
-
-        for field_definition in requested_fields:
-            if len(projection_expression) > 0:
-                projection_expression = (
-                    f"{projection_expression},{field_definition.field_alias}"
-                )
-            else:
-                projection_expression = field_definition.field_alias
-
-            expression_attribute_names[field_definition.field_alias] = str(
-                field_definition.field_name
-            )
-
-        return projection_expression, expression_attribute_names

@@ -14,7 +14,7 @@ TEST_METADATA_FIELDS = [
 
 
 def test_lambda_handler_returns_204_when_no_documents_returned_from_dynamo_response(
-        mocker, set_env, valid_id_and_arf_doctype_event, context
+    mocker, set_env, valid_id_and_arf_doctype_event, context
 ):
     mock_document_query = mocker.patch(
         "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
@@ -31,7 +31,7 @@ def test_lambda_handler_returns_204_when_no_documents_returned_from_dynamo_respo
 
 
 def test_lambda_handler_returns_400_when_doc_type_invalid_response(
-        mocker, set_env, valid_id_and_invalid_doctype_event, context
+    mocker, set_env, valid_id_and_invalid_doctype_event, context
 ):
     mock_document_query = mocker.patch(
         "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
@@ -56,7 +56,7 @@ def manifest_service_side_effect(nhs_number, doc_types):
 
 
 def test_lambda_handler_valid_parameters_arf_doc_type_request_returns_200(
-        mocker, set_env, valid_id_and_arf_doctype_event, context
+    mocker, set_env, valid_id_and_arf_doctype_event, context
 ):
     expected_url = "test-url"
 
@@ -80,7 +80,7 @@ def test_lambda_handler_valid_parameters_arf_doc_type_request_returns_200(
 
 
 def test_lambda_handler_valid_parameters_lg_doc_type_request_returns_200(
-        mocker, set_env, valid_id_and_lg_doctype_event, context
+    mocker, set_env, valid_id_and_lg_doctype_event, context
 ):
     expected_url = "test-url"
 
@@ -104,7 +104,7 @@ def test_lambda_handler_valid_parameters_lg_doc_type_request_returns_200(
 
 
 def test_lambda_handler_valid_parameters_both_doc_type_request_returns_200(
-        mocker, set_env, valid_id_and_both_doctype_event, context
+    mocker, set_env, valid_id_and_both_doctype_event, context
 ):
     expected_url = "test-url"
 
@@ -123,14 +123,16 @@ def test_lambda_handler_valid_parameters_both_doc_type_request_returns_200(
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_both_doctype_event, context)
-    mock_dynamo.assert_has_calls([
-        call("9000000009", "LG,ARF"),
-    ])
+    mock_dynamo.assert_has_calls(
+        [
+            call("9000000009", "LG,ARF"),
+        ]
+    )
     assert expected == actual
 
 
 def test_lambda_handler_missing_environment_variables_returns_500(
-        set_env, monkeypatch, valid_id_and_arf_doctype_event, context
+    set_env, monkeypatch, valid_id_and_arf_doctype_event, context
 ):
     monkeypatch.delenv("DOCUMENT_STORE_DYNAMODB_NAME")
     expected = ApiGatewayResponse(
@@ -151,7 +153,7 @@ def test_lambda_handler_id_not_valid_returns_400(set_env, invalid_id_event, cont
 
 
 def test_lambda_handler_when_id_not_supplied_returns_400(
-        set_env, missing_id_event, context
+    set_env, missing_id_event, context
 ):
     expected = ApiGatewayResponse(
         400, "An error occurred due to missing key: 'patientId'", "GET"
@@ -161,7 +163,7 @@ def test_lambda_handler_when_id_not_supplied_returns_400(
 
 
 def test_lambda_handler_returns_400_when_doc_type_not_supplied(
-        set_env, valid_id_event, context
+    set_env, valid_id_event, context
 ):
     expected = ApiGatewayResponse(
         400, "An error occurred due to missing key: 'docType'", "GET"

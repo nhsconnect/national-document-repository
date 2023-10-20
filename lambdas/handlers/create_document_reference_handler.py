@@ -10,11 +10,11 @@ from models.nhs_document_reference import (NHSDocumentReference,
                                            UploadRequestDocument)
 from pydantic import ValidationError
 from services.dynamo_service import DynamoDBService
-from services.lloyd_george_validator import (LGInvalidFilesException,
-                                             validate_lg_files)
 from services.s3_service import S3Service
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
+from utils.lloyd_george_validator import (LGInvalidFilesException,
+                                          validate_lg_files)
 from utils.utilities import create_reference_id, validate_id
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
@@ -142,12 +142,12 @@ def lambda_handler(event, context):
             logger.info("Writing ARF document references")
             # TODO - Replace with dynamo batch writing
             for document in arf_documents:
-                dynamo_service.post_item_service(arf_dynamo_table, document.to_dict())
+                dynamo_service.create_item(arf_dynamo_table, document.to_dict())
         if lg_documents:
             logger.info("Writing LG document references")
             # TODO - Replace with dynamo batch writing
             for document in lg_documents:
-                dynamo_service.post_item_service(lg_dynamo_table, document.to_dict())
+                dynamo_service.create_item(lg_dynamo_table, document.to_dict())
     except ClientError as e:
         logger.error(str(e))
         response = ApiGatewayResponse(

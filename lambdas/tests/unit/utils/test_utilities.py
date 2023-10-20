@@ -1,6 +1,6 @@
 import pytest
 from utils.exceptions import InvalidResourceIdException
-from utils.utilities import validate_id
+from utils.utilities import camelize_dict, validate_id
 
 
 def test_validate_id_with_valid_id_returns_true():
@@ -16,3 +16,13 @@ def test_validate_id_with_valid_id_raises_InvalidResourceIdException():
 
     with pytest.raises(InvalidResourceIdException):
         validate_id(nhs_number)
+
+
+def test_decapitalise_keys():
+    test_dict = {"FileName": "test", "VirusScannerResult": "test"}
+
+    expected = {"fileName": "test", "virusScannerResult": "test"}
+
+    actual = camelize_dict(test_dict)
+
+    assert actual == expected

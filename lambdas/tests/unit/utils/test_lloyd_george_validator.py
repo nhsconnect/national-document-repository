@@ -1,5 +1,5 @@
 import pytest
-from services.lloyd_george_validator import (
+from utils.lloyd_george_validator import (
     LGInvalidFilesException, check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
     check_for_number_of_files_match_expected, extract_info_from_filename,
