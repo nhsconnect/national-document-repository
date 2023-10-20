@@ -9,7 +9,7 @@ from utils.lambda_response import ApiGatewayResponse
 TEST_METADATA_FIELDS = [
     DocumentReferenceMetadataFields.FILE_NAME,
     DocumentReferenceMetadataFields.FILE_LOCATION,
-    DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT,
+    DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT,
 ]
 
 
@@ -17,7 +17,7 @@ def test_lambda_handler_returns_204_when_no_documents_returned_from_dynamo_respo
     mocker, set_env, valid_id_and_arf_doctype_event, context
 ):
     mock_document_query = mocker.patch(
-        "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
+        "services.document_service.DocumentService.retrieve_all_document_references"
     )
     mock_document_query.return_value = []
 
@@ -34,7 +34,7 @@ def test_lambda_handler_returns_400_when_doc_type_invalid_response(
     mocker, set_env, valid_id_and_invalid_doctype_event, context
 ):
     mock_document_query = mocker.patch(
-        "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
+        "services.document_service.DocumentService.retrieve_all_document_references"
     )
     mock_document_query.return_value = []
 
@@ -61,7 +61,7 @@ def test_lambda_handler_valid_parameters_arf_doc_type_request_returns_200(
     expected_url = "test-url"
 
     mock_dynamo = mocker.patch(
-        "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
+        "services.document_service.DocumentService.retrieve_all_document_references"
     )
     mock_dynamo.side_effect = manifest_service_side_effect
 
@@ -85,7 +85,7 @@ def test_lambda_handler_valid_parameters_lg_doc_type_request_returns_200(
     expected_url = "test-url"
 
     mock_dynamo = mocker.patch(
-        "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
+        "services.document_service.DocumentService.retrieve_all_document_references"
     )
     mock_dynamo.side_effect = manifest_service_side_effect
 
@@ -109,7 +109,7 @@ def test_lambda_handler_valid_parameters_both_doc_type_request_returns_200(
     expected_url = "test-url"
 
     mock_dynamo = mocker.patch(
-        "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
+        "services.document_service.DocumentService.retrieve_all_document_references"
     )
     mock_dynamo.side_effect = manifest_service_side_effect
 

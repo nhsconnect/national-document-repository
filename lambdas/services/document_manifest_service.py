@@ -5,7 +5,7 @@ import tempfile
 import zipfile
 
 from botocore.exceptions import ClientError
-from models.document import Document
+from models.document_reference import DocumentReference
 from models.zip_trace import ZipTrace
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
@@ -19,7 +19,7 @@ class DocumentManifestService:
     def __init__(
         self,
         nhs_number: str,
-        documents: list[Document],
+        documents: list[DocumentReference],
         zip_output_bucket: str,
         zip_trace_table: str,
     ):

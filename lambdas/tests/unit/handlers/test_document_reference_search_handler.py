@@ -4,7 +4,7 @@ from botocore.exceptions import ClientError
 from handlers.document_reference_search_handler import lambda_handler
 from tests.unit.helpers.data.dynamo_responses import (EXPECTED_RESPONSE,
                                                       MOCK_EMPTY_RESPONSE,
-                                                      MOCK_RESPONSE)
+                                                      MOCK_SEARCH_RESPONSE)
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 
@@ -15,7 +15,7 @@ def test_lambda_handler_returns_items_from_dynamo_returns_200(
     mock_dynamo = mocker.patch(
         "services.dynamo_service.DynamoDBService.query_with_requested_fields"
     )
-    mock_dynamo.return_value = MOCK_RESPONSE
+    mock_dynamo.return_value = MOCK_SEARCH_RESPONSE
 
     expected = ApiGatewayResponse(
         200, json.dumps(EXPECTED_RESPONSE * 2), "GET"
@@ -32,7 +32,7 @@ def test_lambda_handler_returns_items_from_doc_store_only_returns_200(
     mock_dynamo = mocker.patch(
         "services.dynamo_service.DynamoDBService.query_with_requested_fields"
     )
-    mock_dynamo.side_effect = [MOCK_RESPONSE, MOCK_EMPTY_RESPONSE]
+    mock_dynamo.side_effect = [MOCK_SEARCH_RESPONSE, MOCK_EMPTY_RESPONSE]
 
     expected = ApiGatewayResponse(
         200, json.dumps(EXPECTED_RESPONSE), "GET"

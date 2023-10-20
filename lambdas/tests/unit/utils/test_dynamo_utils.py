@@ -8,7 +8,7 @@ def test_create_expressions_correctly_creates_an_expression_of_one_field(set_env
     expected_projection = "#vscanResult"
     expected_expr_attr_names = {"#vscanResult": "VirusScannerResult"}
 
-    fields_requested = [DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT]
+    fields_requested = [DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT]
 
     actual_projection, actual_expr_attr_names = create_expressions(fields_requested)
 

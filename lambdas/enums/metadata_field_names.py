@@ -10,7 +10,7 @@ class DocumentReferenceMetadataFields(Enum):
     FILE_LOCATION = "FileLocation", "#fileLocation"
     NHS_NUMBER = "NhsNumber", "#nhsNumber"
     TYPE = "Type", "#type"
-    VIRUS_SCAN_RESULT = "VirusScannerResult", "#vscanResult"
+    VIRUS_SCANNER_RESULT = "VirusScannerResult", "#vscanResult"
 
     def __init__(self, field_name, field_alias):
         self.field_name = field_name
@@ -27,7 +27,7 @@ class DocumentReferenceMetadataFields(Enum):
             DocumentReferenceMetadataFields.FILE_LOCATION,
             DocumentReferenceMetadataFields.NHS_NUMBER,
             DocumentReferenceMetadataFields.TYPE,
-            DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT,
+            DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT,
         ]
 
 

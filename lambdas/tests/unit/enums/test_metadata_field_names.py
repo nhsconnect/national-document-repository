@@ -18,4 +18,4 @@ def test_returns_all_as_list():
     assert DocumentReferenceMetadataFields.FILE_LOCATION in subject
     assert DocumentReferenceMetadataFields.NHS_NUMBER in subject
     assert DocumentReferenceMetadataFields.TYPE in subject
-    assert DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT in subject
+    assert DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT in subject

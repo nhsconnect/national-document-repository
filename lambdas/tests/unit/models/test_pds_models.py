@@ -1,9 +1,7 @@
 import pytest
 from models.pds_models import PatientDetails
-from tests.unit.helpers.data.pds.utils import (
-    create_restricted_patient,
-    create_unrestricted_patient,
-)
+from tests.unit.helpers.data.pds.utils import (create_restricted_patient,
+                                               create_unrestricted_patient)
 from utils.exceptions import InvalidResourceIdException
 from utils.utilities import validate_id
 

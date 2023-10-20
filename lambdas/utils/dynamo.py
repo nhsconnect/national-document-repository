@@ -58,6 +58,30 @@ def create_nonexistant_or_empty_attr_filter(field_names: list):
     return attr_filter
 
 
+def create_update_expression(field_names: list):
+    """
+    Creates an expression for dynamodb queries to SET a new value for an item
+        :param field_names: List of fields to update
+
+    example usage:
+        field_names = ["Name", "Age"...]
+        fields_filter = create_update_expression(field_names)
+
+    result:
+        "SET Name = :name_val AND AGE = :age_val"
+
+    """
+    attr_filter = "SET"
+    for field in field_names:
+        filter_string = f" {field} = {create_expression_placeholder(field)}"
+        if attr_filter == "SET":
+            attr_filter += filter_string
+        else:
+            attr_filter += f", {filter_string}"
+
+    return attr_filter
+
+
 def create_expression_attribute_values(
     expression_names: list[str], expression_values: list[str]
 ):

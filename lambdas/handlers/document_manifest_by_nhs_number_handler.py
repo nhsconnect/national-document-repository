@@ -2,8 +2,9 @@ import logging
 import os
 
 from botocore.exceptions import ClientError
+from pydantic import ValidationError
 from services.document_manifest_service import DocumentManifestService
-from services.manifest_dynamo_service import ManifestDynamoService
+from services.document_service import DocumentService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.validate_document_type import validate_document_type
 from utils.decorators.validate_patient_id import validate_patient_id
@@ -35,8 +36,10 @@ def lambda_handler(event, context):
         zip_trace_table_name = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
         # zip_trace_ttl = os.environ["DOCUMENT_ZIP_TRACE_TTL_IN_DAYS"]
 
-        dynamo_service = ManifestDynamoService()
-        documents = dynamo_service.discover_uploaded_documents(nhs_number, doc_type)
+        dynamo_service = DocumentService()
+        documents = dynamo_service.retrieve_all_document_references(
+            nhs_number, doc_type
+        )
 
         if not documents:
             return ApiGatewayResponse(
@@ -55,6 +58,13 @@ def lambda_handler(event, context):
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
 
+    except ValidationError as e:
+        logger.info(e)
+        return ApiGatewayResponse(
+            500,
+            "Failed to parse document reference from from DynamoDb response",
+            "GET",
+        ).create_api_gateway_response()
     except ManifestDownloadException as e:
         return ApiGatewayResponse(
             500,
@@ -70,6 +80,6 @@ def lambda_handler(event, context):
     except ClientError as e:
         logger.error(str(e))
         response = ApiGatewayResponse(
-            500, "An error occurred when creating document manifest", "POST"
+            500, "An error occurred when creating document manifest", "GET"
         ).create_api_gateway_response()
         return response

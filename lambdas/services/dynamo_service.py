@@ -5,7 +5,8 @@ from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from utils.dynamo import (create_expression_attribute_values,
                           create_expressions,
-                          create_nonexistant_or_empty_attr_filter)
+                          create_nonexistant_or_empty_attr_filter,
+                          create_update_expression)
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 
 logger = logging.getLogger()
@@ -118,16 +119,27 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
-    def update_item(
-        self, table_name, key, update_expression, expression_attribute_values
-    ):
+    def update_item(self, table_name: str, key: str, updated_fields: dict):
         try:
             table = self.get_table(table_name)
+
+            updated_field_names = list(updated_fields.keys())
+            updated_field_values = list(updated_fields.values())
+
+            update_expression = create_update_expression(updated_field_names)
+            expression_attribute_values = create_expression_attribute_values(
+                updated_field_names, updated_field_values
+            )
+
+            logger.info(update_expression)
+            logger.info(expression_attribute_values)
+
             table.update_item(
-                Key=key,
+                Key={"ID": key},
                 UpdateExpression=update_expression,
                 ExpressionAttributeValues=expression_attribute_values,
             )
+
             logger.info(f"Updating item in table: {table_name}")
         except ClientError as e:
             logger.error(f"Unable to update item in table: {table_name}")

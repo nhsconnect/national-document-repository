@@ -47,8 +47,9 @@ class NHSDocumentReference:
             DocumentReferenceMetadataFields.FILE_NAME.field_name: self.file_name,
             DocumentReferenceMetadataFields.FILE_LOCATION.field_name: self.file_location,
             DocumentReferenceMetadataFields.CREATED.field_name: self.created,
+            DocumentReferenceMetadataFields.DELETED.field_name: self.deleted,
             DocumentReferenceMetadataFields.CONTENT_TYPE.field_name: self.content_type,
-            DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT.field_name: self.virus_scanner_result,
+            DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.field_name: self.virus_scanner_result,
         }
         return document_metadata
 

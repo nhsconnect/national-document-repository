@@ -1,28 +1,53 @@
-MOCK_RESPONSE = {
+MOCK_SEARCH_RESPONSE = {
     "Items": [
         {
-            "FileName": "Screenshot 2023-08-16 at 15.26.11.png",
-            "Created": "2023-08-23T00:38:04.103Z",
-            "VirusScannerResult": "Clean",
-        },
-        {
-            "FileName": "GIF.gif",
-            "Created": "2023-08-22T17:38:31.890Z",
-            "VirusScannerResult": "Clean",
-        },
-        {
-            "FileName": "Screen Recording 2023-08-15 at 16.18.31.mov",
+            "ID": "1d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
             "Created": "2023-08-23T00:38:04.095Z",
+            "Deleted": "",
+            "FileLocation": "s3://test-bucket/test-key-123",
+            "FileName": "document.csv",
+            "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
         },
         {
-            "FileName": "screenshot guidance.png",
-            "Created": "2023-08-22T23:39:27.178Z",
+            "ID": "2d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-23T01:38:04.095Z",
+            "Deleted": "",
+            "FileLocation": "s3://test-bucket/test-key-223",
+            "FileName": "GIF.gif",
+            "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
         },
         {
-            "FileName": "Screenshot 2023-08-15 at 16.17.56.png",
-            "Created": "2023-08-23T00:38:04.101Z",
+            "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-25T00:38:04.095Z",
+            "Deleted": "",
+            "FileLocation": "s3://test-bucket/test-key-323",
+            "FileName": "Screen Recording 2023-08-15 at 16.18.31.mov",
+            "NhsNumber": "9000000009",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "ID": "4d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-25T00:38:04.095Z",
+            "Deleted": "",
+            "FileLocation": "s3://test-bucket/test-key-423",
+            "FileName": "screenshot_guidance.png",
+            "NhsNumber": "9000000009",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "ID": "5d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-26T00:38:04.095Z",
+            "Deleted": "",
+            "FileLocation": "s3://test-bucket/test-key-523",
+            "FileName": "results.csv",
+            "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
         },
     ],
@@ -66,28 +91,28 @@ MOCK_EMPTY_RESPONSE = {
 
 EXPECTED_RESPONSE = [
     {
-        "fileName": "Screenshot 2023-08-16 at 15.26.11.png",
-        "created": "2023-08-23T00:38:04.103Z",
-        "virusScannerResult": "Clean",
-    },
-    {
-        "fileName": "GIF.gif",
-        "created": "2023-08-22T17:38:31.890Z",
-        "virusScannerResult": "Clean",
-    },
-    {
-        "fileName": "Screen Recording 2023-08-15 at 16.18.31.mov",
         "created": "2023-08-23T00:38:04.095Z",
+        "fileName": "document.csv",
         "virusScannerResult": "Clean",
     },
     {
-        "fileName": "screenshot guidance.png",
-        "created": "2023-08-22T23:39:27.178Z",
+        "created": "2023-08-23T01:38:04.095Z",
+        "fileName": "GIF.gif",
         "virusScannerResult": "Clean",
     },
     {
-        "fileName": "Screenshot 2023-08-15 at 16.17.56.png",
-        "created": "2023-08-23T00:38:04.101Z",
+        "created": "2023-08-25T00:38:04.095Z",
+        "fileName": "Screen Recording 2023-08-15 at 16.18.31.mov",
+        "virusScannerResult": "Clean",
+    },
+    {
+        "created": "2023-08-25T00:38:04.095Z",
+        "fileName": "screenshot_guidance.png",
+        "virusScannerResult": "Clean",
+    },
+    {
+        "created": "2023-08-26T00:38:04.095Z",
+        "fileName": "results.csv",
         "virusScannerResult": "Clean",
     },
 ]
@@ -119,26 +144,41 @@ UNEXPECTED_RESPONSE = {
     },
 }
 
-MOCK_MANIFEST_QUERY_RESPONSE = {
+MOCK_DOCUMENT_QUERY_RESPONSE = {
     "Items": [
         {
-            "FileName": "document.csv",
+            "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-23T00:38:04.095Z",
+            "Deleted": "",
             "FileLocation": "s3://test-bucket/test-key-123",
+            "FileName": "document.csv",
+            "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
         },
         {
-            "FileName": "results.pdf",
+            "ID": "4d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-23T00:38:04.095Z",
+            "Deleted": "",
             "FileLocation": "s3://test-bucket/test-key-456",
+            "FileName": "results.pdf",
+            "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
         },
         {
-            "FileName": "output.csv",
+            "ID": "5d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-23T00:38:04.095Z",
+            "Deleted": "",
             "FileLocation": "s3://test-bucket/test-key-789",
+            "FileName": "output.csv",
+            "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
         },
     ],
-    "Count": 5,
-    "ScannedCount": 5,
+    "Count": 3,
+    "ScannedCount": 3,
     "ResponseMetadata": {
         "RequestId": "VNS38QDVQCIQ1EMGKQ1EA2E5MVVV4KQNSO5AEMVJF66Q9ASUAAJG",
         "HTTPStatusCode": 200,

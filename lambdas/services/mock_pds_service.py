@@ -1,20 +1,15 @@
 import json
 
 from requests import Response
-from utils.exceptions import (
-    PdsErrorException,
-    PatientNotFoundException,
-    InvalidResourceIdException,
-)
-
 from services.patient_search_service import PatientSearch
+from utils.exceptions import PdsErrorException
 
 
 class MockPdsApiService(PatientSearch):
     def __init__(self, *args, **kwargs):
         pass
 
-    def pds_request(self, nhsNumber: str, *args, **kwargs) -> Response:
+    def pds_request(self, nhs_number: str, *args, **kwargs) -> Response:
         mock_pds_results: list[dict] = []
 
         try:
@@ -31,7 +26,7 @@ class MockPdsApiService(PatientSearch):
 
         for result in mock_pds_results:
             for k, v in result.items():
-                if v == nhsNumber:
+                if v == nhs_number:
                     pds_patient = result.copy()
 
         response = Response()

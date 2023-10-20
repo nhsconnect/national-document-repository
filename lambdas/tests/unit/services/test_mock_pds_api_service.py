@@ -2,9 +2,8 @@ import json
 
 from models.pds_models import PatientDetails
 from requests.models import Response
-from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
-
 from services.mock_pds_service import MockPdsApiService
+from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 
 pds_service = MockPdsApiService()
 
