@@ -5,7 +5,7 @@ import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
-import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LlloydGeorgeRecordDetails';
+import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
 
 export type Props = {
     patientDetails: PatientDetails;

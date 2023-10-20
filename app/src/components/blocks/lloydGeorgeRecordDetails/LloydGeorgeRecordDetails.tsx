@@ -1,105 +1,109 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import LgRecordDetails, { Props } from './LlloydGeorgeRecordDetails';
-import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
-import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
+import React, { Dispatch, SetStateAction, useRef, useState } from 'react';
+import { ReactComponent as Chevron } from '../../../styles/down-chevron.svg';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-import * as ReactRouter from 'react-router';
-import { createMemoryHistory } from 'history';
-import userEvent from '@testing-library/user-event';
-import { act } from 'react-dom/test-utils';
-const mockPdf = buildLgSearchResult();
+import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import { useOnClickOutside } from 'usehooks-ts';
+import { Card } from 'nhsuk-react-components';
+import { Link } from 'react-router-dom';
 
-const mockSetStaqe = jest.fn();
+export type Props = {
+    lastUpdated: string;
+    numberOfFiles: number;
+    totalFileSizeInByte: number;
+    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+};
 
-describe('LloydGeorgeRecordDetails', () => {
-    const actionLinkStrings = [
-        { label: 'See all files', expectedStage: LG_RECORD_STAGE.SEE_ALL },
-        { label: 'Download all files', expectedStage: LG_RECORD_STAGE.DOWNLOAD_ALL },
-        { label: 'Delete a selection of files', expectedStage: LG_RECORD_STAGE.DELETE_ANY },
-        { label: 'Delete file', expectedStage: LG_RECORD_STAGE.DELETE_ONE },
+type PdfActionLink = {
+    label: string;
+    handler: () => void;
+};
+function LloydGeorgeRecordDetails({
+    lastUpdated,
+    numberOfFiles,
+    totalFileSizeInByte,
+    setStage,
+}: Props) {
+    const [showActionsMenu, setShowActionsMenu] = useState(false);
+    const actionsRef = useRef(null);
+
+    const handleMoreActions = () => {
+        setShowActionsMenu(!showActionsMenu);
+    };
+    useOnClickOutside(actionsRef, (e) => {
+        setShowActionsMenu(false);
+    });
+
+    const actionLinks: Array<PdfActionLink> = [
+        { label: 'See all files', handler: () => setStage(LG_RECORD_STAGE.SEE_ALL) },
+        { label: 'Download all files', handler: () => setStage(LG_RECORD_STAGE.DOWNLOAD_ALL) },
+        {
+            label: 'Delete a selection of files',
+            handler: () => setStage(LG_RECORD_STAGE.DELETE_ANY),
+        },
+        { label: 'Delete file', handler: () => setStage(LG_RECORD_STAGE.DELETE_ONE) },
     ];
 
-    beforeEach(() => {
-        process.env.REACT_APP_ENVIRONMENT = 'jest';
-    });
-    afterEach(() => {
-        jest.clearAllMocks();
-    });
-
-    it('renders the record details component', () => {
-        renderComponent();
-
-        expect(screen.getByText(`Last updated: ${mockPdf.last_updated}`)).toBeInTheDocument();
-        expect(screen.getByText(`${mockPdf.number_of_files} files`)).toBeInTheDocument();
-        expect(
-            screen.getByText(`File size: ${formatFileSize(mockPdf.total_file_size_in_byte)}`),
-        ).toBeInTheDocument();
-        expect(screen.getByText('File format: PDF')).toBeInTheDocument();
-    });
-
-    it('renders record details actions menu', async () => {
-        renderComponent();
-
-        expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-        expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-        actionLinkStrings.forEach((action) => {
-            expect(screen.queryByText(action.label)).not.toBeInTheDocument();
-        });
-
-        act(() => {
-            userEvent.click(screen.getByTestId('actions-menu'));
-        });
-        await waitFor(async () => {
-            actionLinkStrings.forEach((action) => {
-                expect(screen.getByText(action.label)).toBeInTheDocument();
-            });
-        });
-    });
-
-    it.each(actionLinkStrings)(
-        "navigates to a required stage when action '%s' is clicked",
-        async (action) => {
-            renderComponent();
-
-            expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-            expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-
-            act(() => {
-                userEvent.click(screen.getByTestId('actions-menu'));
-            });
-            await waitFor(async () => {
-                expect(screen.getByText(action.label)).toBeInTheDocument();
-            });
-
-            act(() => {
-                userEvent.click(screen.getByText(action.label));
-            });
-            await waitFor(async () => {
-                expect(mockSetStaqe).toHaveBeenCalledWith(action.expectedStage);
-            });
-        },
-    );
-});
-
-const TestApp = (props: Omit<Props, 'setStage'>) => {
-    const history = createMemoryHistory({
-        initialEntries: ['/', '/example'],
-        initialIndex: 1,
-    });
     return (
-        <ReactRouter.Router navigator={history} location={'/example'}>
-            <LgRecordDetails {...props} setStage={mockSetStaqe} />;
-        </ReactRouter.Router>
+        <div className="lloydgeorge_record-details">
+            <div className="lloydgeorge_record-details_details">
+                <div className="lloydgeorge_record-details_details--last-updated">
+                    Last updated: {lastUpdated}
+                </div>
+                <div className="lloydgeorge_record-details_details--num-files">
+                    <span>{numberOfFiles} files</span>
+                    {' | '}
+                    <span>File size: {formatFileSize(totalFileSizeInByte)}</span>
+                    {' | '}
+                    <span>File format: PDF</span>
+                    {' |'}
+                </div>
+            </div>
+            <div className="lloydgeorge_record-details_actions">
+                <div
+                    data-testid="actions-menu"
+                    className={`nhsuk-select lloydgeorge_record-details_actions-select ${
+                        showActionsMenu ? 'lloydgeorge_record-details_actions-select--selected' : ''
+                    }`}
+                    onClick={handleMoreActions}
+                >
+                    <div
+                        className={`lloydgeorge_record-details_actions-select_border ${
+                            showActionsMenu
+                                ? 'lloydgeorge_record-details_actions-select_border--selected'
+                                : ''
+                        }`}
+                    />
+                    <span className="lloydgeorge_record-details_actions-select_placeholder">
+                        Select an action...
+                    </span>
+                    <Chevron className="lloydgeorge_record-details_actions-select_icon" />
+                </div>
+                {showActionsMenu && (
+                    <div ref={actionsRef}>
+                        <Card className="lloydgeorge_record-details_actions-menu">
+                            <Card.Content>
+                                <ol>
+                                    {actionLinks.map((link, i) => (
+                                        <li key={link.label + i}>
+                                            <Link
+                                                to="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    link.handler();
+                                                }}
+                                            >
+                                                {link.label}
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </Card.Content>
+                        </Card>
+                    </div>
+                )}
+            </div>
+        </div>
     );
-};
+}
 
-const renderComponent = (propsOverride?: Partial<Props>) => {
-    const props: Omit<Props, 'setStage' | 'stage'> = {
-        lastUpdated: mockPdf.last_updated,
-        numberOfFiles: mockPdf.number_of_files,
-        totalFileSizeInByte: mockPdf.total_file_size_in_byte,
-
-        ...propsOverride,
-    };
-    return render(<TestApp {...props} />);
-};
+export default LloydGeorgeRecordDetails;
