@@ -103,7 +103,7 @@ def test_back_channel_logout_handler_invalid_jwt_returns_400(mock_oidc_service, 
     mock_oidc_service.asset_called_with(mock_token)
 
 
-def test_back_channel_logout_handler_boto_error_returns_400(mocker, mock_oidc_service, monkeypatch):
+def test_back_channel_logout_handler_boto_error_returns_500(mocker, mock_oidc_service, monkeypatch):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
     mock_token = "mock_token"
@@ -118,7 +118,7 @@ def test_back_channel_logout_handler_boto_error_returns_400(mocker, mock_oidc_se
     )
 
     expected = ApiGatewayResponse(
-        400, """{ "error":"Internal error logging user out"}""", "POST"
+        500, """{ "error":"Internal error logging user out"}""", "POST"
     ).create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), None)

@@ -37,7 +37,7 @@ def logout_handler(token):
     except ClientError as e:
         logger.error(f"Error logging out user: {e}")
         return ApiGatewayResponse(
-            400, """{ "error":"Internal error logging user out"}""", "POST"
+            500, """{ "error":"Internal error logging user out"}""", "POST"
         ).create_api_gateway_response()
     except AuthorisationException as e:
         logger.error(f"error while decoding JWT: {e}")
