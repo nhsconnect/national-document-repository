@@ -13,7 +13,7 @@ logger.setLevel(logging.INFO)
 
 
 @ensure_environment_variables(
-    names=["OIDC_CALLBACK_URL"]
+    names=["OIDC_CALLBACK_URL", "AUTH_DYNAMODB_NAME"]
 )
 def lambda_handler(event, context):
     logger.info(f"event = {event}")

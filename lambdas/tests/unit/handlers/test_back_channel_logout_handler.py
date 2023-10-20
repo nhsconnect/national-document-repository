@@ -35,6 +35,7 @@ def test_returns_500_when_env_vars_not_set():
 def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(mocker, mock_oidc_service, monkeypatch,
                                                                              context):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
+    monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"sid": mock_session_id}
@@ -55,7 +56,7 @@ def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(moc
 def test_back_channel_logout_handler_missing_jwt_returns_400(mocker, mock_oidc_service, monkeypatch,
                                                              context):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
-    mock_token = "mock_token"
+    monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
     event = {
         "httpMethod": "POST",
         "body": "{}"
@@ -70,6 +71,7 @@ def test_back_channel_logout_handler_missing_jwt_returns_400(mocker, mock_oidc_s
 
 def test_back_channel_logout_handler_jwt_without_session_id_returns_400(mock_oidc_service, monkeypatch):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
+    monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"not_an_sid": mock_session_id}
@@ -87,6 +89,7 @@ def test_back_channel_logout_handler_jwt_without_session_id_returns_400(mock_oid
 
 def test_back_channel_logout_handler_invalid_jwt_returns_400(mock_oidc_service, monkeypatch):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
+    monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
     mock_token = "mock_token"
     mock_oidc_service.side_effect = AuthorisationException
 
@@ -102,6 +105,7 @@ def test_back_channel_logout_handler_invalid_jwt_returns_400(mock_oidc_service, 
 
 def test_back_channel_logout_handler_boto_error_returns_400(mocker, mock_oidc_service, monkeypatch):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
+    monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
     mock_token = "mock_token"
     mock_session_id = "mock_session_id"
     mock_decoded_token = {"sid": mock_session_id}
