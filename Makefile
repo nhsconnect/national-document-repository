@@ -34,7 +34,7 @@ test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
 
 test-unit-coverage:
-	cd ./lambdas && ./venv/bin/python3 -m pytest --cov-report xml:coverage.xml --cov tests/
+	cd ./lambdas && ./venv/bin/python3 -m pytest --cov-report xml:coverage.xml
 
 test-unit-collect:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/ --collect-only
