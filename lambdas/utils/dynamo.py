@@ -74,11 +74,11 @@ def create_update_expression(field_names: list):
     """
     update_expression = "SET"
     for field in field_names:
-        expression = f"{create_expression_attribute_placeholder(field)} = {create_expression_value_placeholder(field)}"
+        expression = f" {create_expression_attribute_placeholder(field)} = {create_expression_value_placeholder(field)}"
         if update_expression == "SET":
             update_expression += expression
         else:
-            update_expression += f", {expression}"
+            update_expression += f",{expression}"
 
     return update_expression
 

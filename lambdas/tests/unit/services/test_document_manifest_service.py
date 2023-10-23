@@ -20,7 +20,6 @@ MOCK_PRESIGNED_URL_RESPONSE = {
 }
 
 
-
 def test_create_document_manifest_presigned_url(set_env, mocker):
     mocker.patch("boto3.client")
 

@@ -1,8 +1,10 @@
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from utils.dynamo import (create_expression_attribute_values,
+from utils.dynamo import (create_expression_attribute_placeholder,
+                          create_expression_attribute_values,
                           create_expression_value_placeholder,
                           create_expressions,
-                          create_nonexistant_or_empty_attr_filter)
+                          create_nonexistant_or_empty_attr_filter,
+                          create_update_expression)
 
 
 def test_create_expressions_correctly_creates_an_expression_of_one_field(set_env):
@@ -68,7 +70,25 @@ def test_create_nonexistant_or_empty_attr_filter_singular_value():
     assert actual == expected
 
 
-def test_create_expression_placeholder_capital_camel_case():
+def test_create_update_expression_multiple_values():
+    field_names = ["Deleted", "VirusScannerResult"]
+    expected = "SET #Deleted_attr = :Deleted_val, #VirusScannerResult_attr = :VirusScannerResult_val"
+
+    actual = create_update_expression(field_names)
+
+    assert actual == expected
+
+
+def test_create_update_expression_singular_value():
+    field_names = ["Deleted"]
+    expected = "SET #Deleted_attr = :Deleted_val"
+
+    actual = create_update_expression(field_names)
+
+    assert actual == expected
+
+
+def test_create_expression_value_placeholder_capital_camel_case():
     test_value = "VirusScannerResult"
     expected = ":VirusScannerResult_val"
 
@@ -77,10 +97,28 @@ def test_create_expression_placeholder_capital_camel_case():
     assert actual == expected
 
 
-def test_create_expression_placeholder_camel_case():
+def test_create_expression_value_placeholder_camel_case():
     test_value = "virusScannerResult"
     expected = ":VirusScannerResult_val"
 
     actual = create_expression_value_placeholder(test_value)
+
+    assert actual == expected
+
+
+def test_create_expression_attribute_placeholder_capital_camel_case():
+    test_value = "VirusScannerResult"
+    expected = "#VirusScannerResult_attr"
+
+    actual = create_expression_attribute_placeholder(test_value)
+
+    assert actual == expected
+
+
+def test_create_expression_attribute_placeholder_camel_case():
+    test_value = "virusScannerResult"
+    expected = "#VirusScannerResult_attr"
+
+    actual = create_expression_attribute_placeholder(test_value)
 
     assert actual == expected

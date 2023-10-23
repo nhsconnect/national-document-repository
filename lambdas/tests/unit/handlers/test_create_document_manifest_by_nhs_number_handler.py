@@ -14,7 +14,6 @@ TEST_METADATA_FIELDS = [
 ]
 
 
-
 def test_lambda_handler_returns_204_when_no_documents_returned_from_dynamo_response(
     mocker, set_env, valid_id_and_arf_doctype_event, context
 ):
