@@ -63,7 +63,7 @@ PDS_PATIENT = {
             "identifier": {
                 "system": "https://fhir.nhs.uk/Id/ods-organization-code",
                 "value": "Y12345",
-                "period": {"start": "2020-01-01", "end": "2021-12-31"},
+                "period": {"start": "2020-01-01"},
             },
         }
     ],

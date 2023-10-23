@@ -1,10 +1,14 @@
+import json
+
 import pytest
+from requests import Response
+
+from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from utils.lloyd_george_validator import (
     LGInvalidFilesException, check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
     check_for_number_of_files_match_expected, extract_info_from_filename,
-    validate_file_name, validate_lg_file_type)
-
+    validate_file_name, validate_lg_file_type, validate_with_pds_service)
 
 def test_catching_error_when_file_type_not_pdf():
     with pytest.raises(LGInvalidFilesException):
@@ -117,3 +121,19 @@ def test_files_for_different_patients():
     with pytest.raises(LGInvalidFilesException) as e:
         check_for_file_names_agrees_with_each_other(lg_file_list)
         assert e == LGInvalidFilesException("File names does not match with each other")
+
+def test_validate_nhs_id_with_pds_service(mocker):
+    response = Response()
+    response.status_code = 200
+    response._content = json.dumps(PDS_PATIENT).encode("utf-8")
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+    ]
+    mocker.patch(
+        "services.pds_api_service.PdsApiService.pds_request",
+        return_value=response,
+    )
+    mocker.patch("utils.lloyd_george_validator.get_user_ods_code", return_value='Y12345')
+
+    validate_with_pds_service(lg_file_list, "9000000009")
