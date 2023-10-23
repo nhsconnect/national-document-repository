@@ -92,7 +92,7 @@ class Patient(BaseModel):
                     return entry
 
     def get_ods_code_for_gp(self) -> str:
-        for entry in self.general_practice:
+        for entry in self.general_practitioner:
             gp_end_date = entry.identifier.period.end
             if not gp_end_date or gp_end_date > date.today():
                 return entry.identifier.value

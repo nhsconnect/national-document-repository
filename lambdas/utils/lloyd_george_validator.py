@@ -1,4 +1,5 @@
 import datetime
+import logging
 import re
 from typing import Optional
 
@@ -12,6 +13,8 @@ from models.pds_models import Patient
 from services.pds_api_service import PdsApiService
 from services.ssm_service import SSMService
 
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 class LGInvalidFilesException(Exception):
     pass
@@ -63,13 +66,10 @@ def validate_lg_file_names(file_name_list: list[str], nhs_number: Optional[str] 
     check_for_duplicate_files(file_name_list)
     check_for_file_names_agrees_with_each_other(file_name_list)
 
+
     if nhs_number:
         # Check file names match with the nhs number in metadata.csv
-        file_name_info = extract_info_from_filename(file_name_list[0])
-        if file_name_info["nhs_number"] != nhs_number:
-            raise LGInvalidFilesException(
-                "NHS number in file names does not match the given NHS number"
-            )
+        validate_nhs_number(file_name_list, nhs_number)
 
 
 def extract_info_from_filename(filename: str) -> dict:
@@ -97,13 +97,15 @@ def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
     if len(set(expected_common_part)) != 1:
         raise LGInvalidFilesException("File names does not match with each other")
 
-def validate_nhs_number(file_name_list: list[str], nhs_number: str, patient_name: str, date_of_birth:str):
+def validate_nhs_number(file_name_list: list[str], nhs_number: str):
     # Check file names match with the nhs number in metadata.csv
     file_name_info = extract_info_from_filename(file_name_list[0])
     if file_name_info["nhs_number"] != nhs_number:
         raise LGInvalidFilesException(
             "NHS number in file names does not match the given NHS number"
         )
+    patient_name = file_name_info["patient_name"]
+    date_of_birth = file_name_info["date_of_birth"]
     try:
         pds_service = PdsApiService(SSMService())
         pds_response = pds_service.pds_request(nsh_number=nhs_number, retry_on_expired=True)
@@ -112,16 +114,17 @@ def validate_nhs_number(file_name_list: list[str], nhs_number: str, patient_name
         patient_details = patient.get_minimum_patient_details(nhs_number)
         current_user_ods = get_user_ods_code()
         if patient_details.general_practice_ods != current_user_ods:
-            raise ValidationError("User is not allowed to access patient")
+            raise LGInvalidFilesException("User is not allowed to access patient")
         date_of_birth = datetime.datetime.strptime(date_of_birth, '%d/%m/%Y')
         if patient_details.birth_date != date_of_birth:
-            raise ValidationError("Patient DoB does not match our records")
+            raise LGInvalidFilesException("Patient DoB does not match our records")
         patient_full_name = patient_details.given_Name + patient_details.family_name
         if patient_full_name != patient_name:
-            raise ValidationError("Patient name does not match our records")
+            raise LGInvalidFilesException("Patient name does not match our records")
 
     except (HTTPError, ValidationError, ClientError, ValueError) as e:
-        pass
+        logger.error(e)
+        raise LGInvalidFilesException(e)
 
 def get_user_ods_code():
     ssm_servie = SSMService()
