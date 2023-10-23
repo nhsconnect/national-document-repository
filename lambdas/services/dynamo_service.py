@@ -43,8 +43,6 @@ class DynamoDBService:
             projection_expression, expression_attribute_names = create_expressions(
                 requested_fields
             )
-            logger.info(projection_expression)
-            logger.info(expression_attribute_names)
 
             if not filtered_fields:
                 results = table.query(

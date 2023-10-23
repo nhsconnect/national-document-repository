@@ -74,12 +74,13 @@ class DocumentReference(BaseModel):
         if isinstance(self, DocumentReference):
             return (
                 self.id == other.id
-                and self.ContentType == other.ContentType
-                and self.Created == other.Created
-                and self.Deleted == other.Deleted
-                and self.FileLocation == other.FileLocation
-                and self.FileName == other.FileName
-                and self.NhsNumber == other.NhsNumber
-                and self.VirusScannerResult == other.VirusScannerResult
+                and self.content_type == other.content_type
+                and self.created == other.created
+                and self.deleted == other.deleted
+                and self.file_location == other.file_location
+                and self.file_name == other.file_name
+                and self.nhs_number == other.nhs_number
+                and self.ttl == other.ttl
+                and self.virus_scanner_result == other.virus_scanner_result
             )
         return False
