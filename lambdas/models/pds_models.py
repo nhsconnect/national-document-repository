@@ -54,7 +54,7 @@ class PatientDetails(BaseModel):
     nhs_number: str
     superseded: bool
     restricted: bool
-    general_practice_ods = Optional[str]
+    general_practice_ods: Optional[str] = ""
 
 class Patient(BaseModel):
     model_config = conf
@@ -64,7 +64,7 @@ class Patient(BaseModel):
     address: Optional[list[Address]] = []
     name: list[Name]
     meta: Meta
-    general_practitioner = Optional[list[GeneralPractitioner]]
+    general_practitioner: Optional[list[GeneralPractitioner]] = []
 
 
     def get_security(self) -> Security:
