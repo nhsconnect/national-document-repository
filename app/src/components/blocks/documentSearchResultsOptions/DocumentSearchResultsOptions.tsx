@@ -44,7 +44,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 nhsNumber: props.nhsNumber,
                 baseUrl: baseUrl,
                 baseHeaders,
-                docType: DOCUMENT_TYPE.ARF,
+                docType: DOCUMENT_TYPE.ALL,
             });
 
             const filename = `patient-record-${props.nhsNumber}`;
