@@ -7,3 +7,7 @@ def to_camel(string: str) -> str:
 
 
 conf = ConfigDict(alias_generator=to_camel)
+
+
+def to_capwords(snake_case_string: str) -> str:
+    return "".join(x.capitalize() for x in snake_case_string.split("_"))
