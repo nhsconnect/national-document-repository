@@ -48,7 +48,9 @@ def lambda_handler(event, context):
                 404, "No documents available", "DELETE"
             ).create_api_gateway_response()
 
-        document_service.delete_documents(table, results, S3LifecycleTags.SOFT_DELETE.value)
+        document_service.delete_documents(
+            table, results, S3LifecycleTags.SOFT_DELETE.value
+        )
     except ClientError as e:
         logger.info(str(e))
         return ApiGatewayResponse(

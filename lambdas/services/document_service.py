@@ -29,14 +29,16 @@ class DocumentService(DynamoDBService):
         if SupportedDocumentTypes.ARF.name in doc_types:
             logger.info("Retrieving ARF documents")
             arf_documents = self.fetch_documents_from_table_with_filter(
-                nhs_number, os.environ["DOCUMENT_STORE_DYNAMODB_NAME"],
-                attr_filter=delete_filter
+                nhs_number,
+                os.environ["DOCUMENT_STORE_DYNAMODB_NAME"],
+                attr_filter=delete_filter,
             )
         if SupportedDocumentTypes.LG.name in doc_types:
             logger.info("Retrieving Lloyd George documents")
             lg_documents = self.fetch_documents_from_table_with_filter(
-                nhs_number, os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
-                attr_filter=delete_filter
+                nhs_number,
+                os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
+                attr_filter=delete_filter,
             )
 
         return arf_documents + lg_documents
@@ -81,11 +83,11 @@ class DocumentService(DynamoDBService):
         self,
         table_name: str,
         document_references: list[DocumentReference],
-        delete_type: str,
+        type_of_delete: str,
     ):
         deletion_date = datetime.now(timezone.utc)
 
-        if delete_type == S3LifecycleTags.DEATH_DELETE.value:
+        if type_of_delete == S3LifecycleTags.DEATH_DELETE.value:
             ttl_days = S3LifecycleDays.DEATH_DELETE
         else:
             ttl_days = S3LifecycleDays.SOFT_DELETE

@@ -1,4 +1,4 @@
-from enum import IntEnum, Enum
+from enum import Enum, IntEnum
 
 
 class S3LifecycleTags(Enum):
@@ -11,5 +11,3 @@ class S3LifecycleTags(Enum):
 class S3LifecycleDays(IntEnum):
     SOFT_DELETE = 56
     DEATH_DELETE = 3650
-
-
