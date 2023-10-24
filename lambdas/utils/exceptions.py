@@ -50,3 +50,11 @@ class LGFileTypeException(ValueError):
 
 class InvalidMessageException(Exception):
     pass
+
+
+class VirusNoResultException(Exception):
+    pass
+
+
+class VirusFailedException(Exception):
+    pass

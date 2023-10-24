@@ -9,9 +9,12 @@ from models.staging_metadata import MetadataFile, StagingMetadata
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
-from utils.exceptions import InvalidMessageException
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names)
+from utils.exceptions import (
+    InvalidMessageException,
+    VirusFailedException,
+    VirusNoResultException,
+)
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
 
 logger = logging.getLogger()
@@ -68,16 +71,16 @@ class BulkUploadService:
             )
             logger.info("Will stop processing Lloyd George record for this patient")
             raise e
-        except VirusFailedResultException as e:
+        except VirusFailedException as e:
             logger.info(
                 f"Virus scan results check failed for: {staging_metadata.nhs_number}, removing from queue"
             )
             logger.info("Will stop processing Lloyd George record for this patient")
             raise e
 
-        
-        logger.info("Virus result validation complete. Start uploading Lloyd George records")
-
+        logger.info(
+            "Virus result validation complete. Start uploading Lloyd George records"
+        )
 
         self.init_transaction()
 
@@ -101,18 +104,24 @@ class BulkUploadService:
         validate_lg_file_names(file_names, staging_metadata.nhs_number)
 
     def check_virus_result(self, staging_metadata: StagingMetadata):
-         for file_metadata in staging_metadata.files:
+        for file_metadata in staging_metadata.files:
             source_file_key = self.strip_leading_slash(file_metadata.file_path)
-            scan_result = self.s3_service.get_tag_value(self, self.staging_bucket_name, source_file_key, 'scan-result')
-            if (scan_result == 'Clean'):
+            scan_result = self.s3_service.get_tag_value(
+                self, self.staging_bucket_name, source_file_key, "scan-result"
+            )
+            if scan_result == "Clean":
                 pass
-            elif (scan_result == 'Infected'):
-                logger.info(f"Found infected document(s) for scanId: {file_metadata.scan_id}")
-                raise VirusFailedResultException
+            elif scan_result == "Infected":
+                logger.info(
+                    f"Found infected document(s) for scanId: {file_metadata.scan_id}"
+                )
+                raise VirusFailedException
             else:
                 sqs_service = SQSService()
                 nhs_number = staging_metadata.nhs_number
-                logger.info(f"Found no virus scan results for scanId: {file_metadata.scan_id}")
+                logger.info(
+                    f"Found no virus scan results for scanId: {file_metadata.scan_id}"
+                )
 
                 sqs_service.send_message_with_nhs_number_attr(
                     queue_url=self.metadata_queue_url,
@@ -120,7 +129,6 @@ class BulkUploadService:
                     nhs_number=nhs_number,
                 )
                 raise VirusNoResultException
-
 
     def init_transaction(self):
         self.dynamo_records_in_transaction = []
