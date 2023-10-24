@@ -64,7 +64,7 @@ class BulkUploadService:
             self.check_virus_result(staging_metadata)
         except VirusNoResultException as e:
             logger.info(
-                f"Detected missing scan results for: {staging_metadata.nhs_number}, adding message back to queue"
+                f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
             )
             logger.info("Will stop processing Lloyd George record for this patient")
             raise e
@@ -105,14 +105,14 @@ class BulkUploadService:
             source_file_key = self.strip_leading_slash(file_metadata.file_path)
             scan_result = self.s3_service.get_tag_value(self, self.staging_bucket_name, source_file_key, 'scan-result')
             if (scan_result == 'Clean'):
-                logger.info(f"Scan passed: Document(s) are clean for patientId: {nhs_number}")
+                pass
             elif (scan_result == 'Infected'):
-                logger.info(f"Scan failed: Found infected document(s) for patientId: {nhs_number}")
+                logger.info(f"Found infected document(s) for scanId: {file_metadata.scan_id}")
                 raise VirusFailedResultException
             else:
                 sqs_service = SQSService()
                 nhs_number = staging_metadata.nhs_number
-                logger.info(f"Scan failed: Waiting for virus results for patientId: {nhs_number}")
+                logger.info(f"Found no virus scan results for scanId: {file_metadata.scan_id}")
 
                 sqs_service.send_message_with_nhs_number_attr(
                     queue_url=self.metadata_queue_url,
