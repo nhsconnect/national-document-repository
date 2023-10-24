@@ -10,7 +10,6 @@ MOCK_DATA = {
     "FileLocation": "s3://test-bucket/9000000009/test-key-123",
     "FileName": "document.csv",
     "NhsNumber": "9000000009",
-    "TTL": "",
     "VirusScannerResult": "Clean",
 }
 

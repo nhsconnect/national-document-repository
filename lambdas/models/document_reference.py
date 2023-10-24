@@ -1,4 +1,5 @@
 import pathlib
+from typing import Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from pydantic import BaseModel, Field
@@ -27,7 +28,7 @@ class DocumentReference(BaseModel):
     nhs_number: str = Field(
         ..., alias=str(DocumentReferenceMetadataFields.NHS_NUMBER.value)
     )
-    ttl: str = Field(..., alias=str(DocumentReferenceMetadataFields.TTL.value))
+    ttl: Optional[int] = Field(alias=str(DocumentReferenceMetadataFields.TTL.value), default=None)
     virus_scanner_result: str = Field(
         ..., alias=str(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value)
     )
