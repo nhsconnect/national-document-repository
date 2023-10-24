@@ -113,16 +113,16 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         pds_response.raise_for_status()
         patient = Patient.model_validate(pds_response.json())
         patient_details = patient.get_minimum_patient_details(nhs_number)
-        current_user_ods = get_user_ods_code()
 
-        if patient_details.general_practice_ods != current_user_ods:
-            raise LGInvalidFilesException("User is not allowed to access patient")
         date_of_birth = datetime.datetime.strptime(date_of_birth, '%d-%m-%Y').date()
         if patient_details.birth_date != date_of_birth:
             raise LGInvalidFilesException("Patient DoB does not match our records")
         patient_full_name =' '.join([name for name in patient_details.given_Name]) + ' ' + patient_details.family_name
         if patient_full_name != patient_name:
             raise LGInvalidFilesException("Patient name does not match our records")
+        current_user_ods = get_user_ods_code()
+        if patient_details.general_practice_ods != current_user_ods:
+            raise LGInvalidFilesException("User is not allowed to access patient")
 
     except (HTTPError, ValidationError, ClientError, ValueError) as e:
         logger.error(e)
