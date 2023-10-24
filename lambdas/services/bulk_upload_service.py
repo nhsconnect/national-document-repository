@@ -4,6 +4,7 @@ import os
 import pydantic
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from models.bulk_upload_status import BulkUploadStatus
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
 from services.dynamo_service import DynamoDBService
@@ -29,6 +30,7 @@ class BulkUploadService:
         self.staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
         self.lg_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
         self.lg_dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+        self.bulk_upload_report_dynamo_table = os.environ["BULK_UPLOAD_DYNAMODB"]
         self.invalid_queue_url = os.environ["INVALID_SQS_QUEUE_URL"]
 
         self.pdf_content_type = "application/pdf"
@@ -146,6 +148,17 @@ class BulkUploadService:
             logger.error(
                 f"Failed to rollback the incomplete transaction due to error: {e}"
             )
+
+    def report_failure(self, nhs_number: str, reason: str, file_path: str):
+        record = BulkUploadStatus(
+            nhs_number=nhs_number,
+            failed_reason=reason,
+            file_path_of_failed_file=file_path,
+        )
+        self.dynamo_service.create_item(
+            table_name=self.bulk_upload_report_dynamo_table, item=record.model_dump()
+        )
+        pass
 
     @staticmethod
     def strip_leading_slash(filepath: str) -> str:
