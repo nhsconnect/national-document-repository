@@ -15,18 +15,7 @@ class DocumentReferenceMetadataFields(Enum):
 
     @staticmethod
     def list() -> list[str]:
-        return [
-            DocumentReferenceMetadataFields.ID.value,
-            DocumentReferenceMetadataFields.CONTENT_TYPE.value,
-            DocumentReferenceMetadataFields.CREATED.value,
-            DocumentReferenceMetadataFields.DELETED.value,
-            DocumentReferenceMetadataFields.FILE_NAME.value,
-            DocumentReferenceMetadataFields.FILE_LOCATION.value,
-            DocumentReferenceMetadataFields.NHS_NUMBER.value,
-            DocumentReferenceMetadataFields.TTL.value,
-            DocumentReferenceMetadataFields.TYPE.value,
-            DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value,
-        ]
+        return [str(field.value) for field in DocumentReferenceMetadataFields]
 
 
 class DocumentZipTraceFields(Enum):

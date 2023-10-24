@@ -18,7 +18,7 @@ class DocumentService(DynamoDBService):
         super().__init__()
         self.s3_service = S3Service()
 
-    def retrieve_all_document_references(
+    def fetch_document_references_by_type(
         self, nhs_number: str, doc_types: str
     ) -> list[DocumentReference]:
         arf_documents = []

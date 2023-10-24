@@ -67,7 +67,7 @@ class DocumentReference(BaseModel):
                 "Failed to parse object key from file location"
             )
 
-    def create_unique_filename(self, duplicates):
+    def create_unique_filename(self, duplicates: int):
         return f"{self.get_base_name()}({duplicates}){self.get_file_extension()}"
 
     def __eq__(self, other):

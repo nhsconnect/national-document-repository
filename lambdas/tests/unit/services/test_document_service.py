@@ -24,7 +24,7 @@ def test_returns_list_of_documents_when_results_are_returned(nhs_number):
         mock_table = MagicMock()
         mock_dynamo.return_value.Table.return_value = mock_table
         mock_table.query.return_value = MOCK_SEARCH_RESPONSE
-        result = DocumentService().retrieve_all_document_references(nhs_number, "LG")
+        result = DocumentService().fetch_document_references_by_type(nhs_number, "LG")
 
         mock_dynamo.return_value.Table.assert_called_with(expected_table)
 
@@ -41,7 +41,7 @@ def test_only_retrieves_documents_from_lloyd_george_table(nhs_number):
         mock_table = MagicMock()
         mock_dynamo.return_value.Table.return_value = mock_table
         mock_table.query.return_value = MOCK_EMPTY_RESPONSE
-        result = DocumentService().retrieve_all_document_references(nhs_number, "LG")
+        result = DocumentService().fetch_document_references_by_type(nhs_number, "LG")
 
         mock_dynamo.return_value.Table.assert_called_with(expected_table)
 
@@ -57,7 +57,7 @@ def test_only_retrieves_documents_from_electronic_health_record_table(nhs_number
         mock_table = MagicMock()
         mock_dynamo.return_value.Table.return_value = mock_table
         mock_table.query.return_value = MOCK_EMPTY_RESPONSE
-        result = DocumentService().retrieve_all_document_references(nhs_number, "ARF")
+        result = DocumentService().fetch_document_references_by_type(nhs_number, "ARF")
 
         mock_dynamo.return_value.Table.assert_called_with(expected_table)
 
@@ -72,6 +72,6 @@ def test_nothing_returned_when_invalid_doctype_supplied(nhs_number):
     with patch.object(boto3, "resource", return_value=MagicMock()) as mock_dynamo:
         mock_table = MagicMock()
         mock_dynamo.return_value.Table.return_value = mock_table
-        result = DocumentService().retrieve_all_document_references(nhs_number, "")
+        result = DocumentService().fetch_document_references_by_type(nhs_number, "")
 
         assert len(result) == 0
