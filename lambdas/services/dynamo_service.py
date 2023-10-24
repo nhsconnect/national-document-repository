@@ -148,3 +148,12 @@ class DynamoDBService:
             logger.error(f"Unable to delete item in table: {table_name}")
             logger.error(e)
             raise e
+
+    def scan_table(self, table_name: str, exclusive_start_key: dict = None, filter_expression: str = None):
+        try:
+            table = self.get_table(table_name)
+            return table.scan(FilterExpression=filter_expression, ExclusiveStartKey=exclusive_start_key)
+        except ClientError as e:
+            logger.error(f"Unable to delete item in table: {table_name}")
+            logger.error(e)
+            raise e
