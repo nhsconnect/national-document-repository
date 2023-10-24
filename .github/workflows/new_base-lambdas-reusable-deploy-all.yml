@@ -78,6 +78,19 @@ jobs:
       lambda_aws_name: SearchDocumentReferencesLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_delete_document_reference_handler:
+    name: Deploy delete_document_reference_handler
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: delete_document_reference_handler
+      lambda_aws_name: DeleteDocRefLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   
   deploy_document_manifest_by_nhs_number_lambda:
     name: Deploy document_manifest_by_nhs_number_lambda
