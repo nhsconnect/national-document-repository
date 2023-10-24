@@ -1,16 +1,12 @@
 import json
 
 import pytest
+from models.pds_models import PatientDetails
 from requests import Response
 from services.patient_search_service import PatientSearch
-
-from models.pds_models import PatientDetails
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
-from utils.exceptions import (
-    PatientNotFoundException,
-    InvalidResourceIdException,
-    PdsErrorException,
-)
+from utils.exceptions import (InvalidResourceIdException,
+                              PatientNotFoundException, PdsErrorException)
 
 search_service = PatientSearch()
 

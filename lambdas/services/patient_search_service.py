@@ -1,11 +1,7 @@
-from models.pds_models import PatientDetails, Patient
+from models.pds_models import Patient, PatientDetails
 from requests import Response
-
-from utils.exceptions import (
-    PdsErrorException,
-    PatientNotFoundException,
-    InvalidResourceIdException,
-)
+from utils.exceptions import (InvalidResourceIdException,
+                              PatientNotFoundException, PdsErrorException)
 
 
 class PatientSearch:
@@ -32,5 +28,5 @@ class PatientSearch:
 
         raise PdsErrorException("Error when requesting patient from PDS")
 
-    def pds_request(self, nhsNumber: str, *args, **kwargs) -> Response:
+    def pds_request(self, nhs_number: str, *args, **kwargs) -> Response:
         pass

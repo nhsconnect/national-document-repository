@@ -50,3 +50,7 @@ class LGFileTypeException(ValueError):
 
 class InvalidMessageException(Exception):
     pass
+
+
+class InvalidDocumentReferenceException(Exception):
+    pass

@@ -3,11 +3,11 @@ from unittest.mock import MagicMock, patch
 
 import boto3
 import pytest
-from models.document import Document
-from tests.unit.helpers.data.dynamo_responses import (
-    MOCK_EMPTY_RESPONSE, MOCK_MANIFEST_QUERY_RESPONSE)
+from models.document_reference import DocumentReference
+from tests.unit.helpers.data.dynamo_responses import (MOCK_EMPTY_RESPONSE,
+                                                      MOCK_SEARCH_RESPONSE)
 
-from lambdas.services.manifest_dynamo_service import ManifestDynamoService
+from lambdas.services.document_service import DocumentService
 
 
 @pytest.fixture
@@ -23,13 +23,13 @@ def test_returns_list_of_documents_when_results_are_returned(nhs_number):
     with patch.object(boto3, "resource", return_value=MagicMock()) as mock_dynamo:
         mock_table = MagicMock()
         mock_dynamo.return_value.Table.return_value = mock_table
-        mock_table.query.return_value = MOCK_MANIFEST_QUERY_RESPONSE
-        result = ManifestDynamoService().discover_uploaded_documents(nhs_number, "LG")
+        mock_table.query.return_value = MOCK_SEARCH_RESPONSE
+        result = DocumentService().fetch_document_references_by_type(nhs_number, "LG")
 
         mock_dynamo.return_value.Table.assert_called_with(expected_table)
 
         assert len(result) == 3
-        assert type(result[0]) == Document
+        assert type(result[0]) == DocumentReference
 
 
 def test_only_retrieves_documents_from_lloyd_george_table(nhs_number):
@@ -41,7 +41,7 @@ def test_only_retrieves_documents_from_lloyd_george_table(nhs_number):
         mock_table = MagicMock()
         mock_dynamo.return_value.Table.return_value = mock_table
         mock_table.query.return_value = MOCK_EMPTY_RESPONSE
-        result = ManifestDynamoService().discover_uploaded_documents(nhs_number, "LG")
+        result = DocumentService().fetch_document_references_by_type(nhs_number, "LG")
 
         mock_dynamo.return_value.Table.assert_called_with(expected_table)
 
@@ -57,7 +57,7 @@ def test_only_retrieves_documents_from_electronic_health_record_table(nhs_number
         mock_table = MagicMock()
         mock_dynamo.return_value.Table.return_value = mock_table
         mock_table.query.return_value = MOCK_EMPTY_RESPONSE
-        result = ManifestDynamoService().discover_uploaded_documents(nhs_number, "ARF")
+        result = DocumentService().fetch_document_references_by_type(nhs_number, "ARF")
 
         mock_dynamo.return_value.Table.assert_called_with(expected_table)
 
@@ -72,6 +72,6 @@ def test_nothing_returned_when_invalid_doctype_supplied(nhs_number):
     with patch.object(boto3, "resource", return_value=MagicMock()) as mock_dynamo:
         mock_table = MagicMock()
         mock_dynamo.return_value.Table.return_value = mock_table
-        result = ManifestDynamoService().discover_uploaded_documents(nhs_number, "")
+        result = DocumentService().fetch_document_references_by_type(nhs_number, "")
 
         assert len(result) == 0

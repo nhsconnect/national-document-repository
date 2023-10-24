@@ -1,33 +1,41 @@
-MOCK_RESPONSE = {
+MOCK_SEARCH_RESPONSE = {
     "Items": [
         {
-            "FileName": "Screenshot 2023-08-16 at 15.26.11.png",
-            "Created": "2023-08-23T00:38:04.103Z",
+            "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-23T13:38:04.095Z",
+            "Deleted": "",
+            "FileLocation": "s3://test_s3_bucket/test-key-123",
+            "FileName": "document.csv",
+            "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
+            "TTL": "",
         },
         {
-            "FileName": "GIF.gif",
-            "Created": "2023-08-22T17:38:31.890Z",
+            "ID": "4d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-23T13:38:04.095Z",
+            "Deleted": "",
+            "FileLocation": "s3://test_s3_bucket/test-key-223",
+            "FileName": "results.pdf",
+            "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
+            "TTL": "",
         },
         {
-            "FileName": "Screen Recording 2023-08-15 at 16.18.31.mov",
-            "Created": "2023-08-23T00:38:04.095Z",
+            "ID": "5d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-24T14:38:04.095Z",
+            "Deleted": "",
+            "FileLocation": "s3://test_s3_bucket/test-key-323",
+            "FileName": "output.csv",
+            "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
-        },
-        {
-            "FileName": "screenshot guidance.png",
-            "Created": "2023-08-22T23:39:27.178Z",
-            "VirusScannerResult": "Clean",
-        },
-        {
-            "FileName": "Screenshot 2023-08-15 at 16.17.56.png",
-            "Created": "2023-08-23T00:38:04.101Z",
-            "VirusScannerResult": "Clean",
+            "TTL": "",
         },
     ],
-    "Count": 5,
-    "ScannedCount": 5,
+    "Count": 3,
+    "ScannedCount": 3,
     "ResponseMetadata": {
         "RequestId": "JHJBP4GU007VMB2V8C9NEKUL8VVV4KQNSO5AEMVJF66Q9ASUAAJG",
         "HTTPStatusCode": 200,
@@ -66,28 +74,18 @@ MOCK_EMPTY_RESPONSE = {
 
 EXPECTED_RESPONSE = [
     {
-        "fileName": "Screenshot 2023-08-16 at 15.26.11.png",
-        "created": "2023-08-23T00:38:04.103Z",
+        "created": "2023-08-23T13:38:04.095Z",
+        "fileName": "document.csv",
         "virusScannerResult": "Clean",
     },
     {
-        "fileName": "GIF.gif",
-        "created": "2023-08-22T17:38:31.890Z",
+        "created": "2023-08-23T13:38:04.095Z",
+        "fileName": "results.pdf",
         "virusScannerResult": "Clean",
     },
     {
-        "fileName": "Screen Recording 2023-08-15 at 16.18.31.mov",
-        "created": "2023-08-23T00:38:04.095Z",
-        "virusScannerResult": "Clean",
-    },
-    {
-        "fileName": "screenshot guidance.png",
-        "created": "2023-08-22T23:39:27.178Z",
-        "virusScannerResult": "Clean",
-    },
-    {
-        "fileName": "Screenshot 2023-08-15 at 16.17.56.png",
-        "created": "2023-08-23T00:38:04.101Z",
+        "created": "2023-08-24T14:38:04.095Z",
+        "fileName": "output.csv",
         "virusScannerResult": "Clean",
     },
 ]
@@ -114,42 +112,6 @@ UNEXPECTED_RESPONSE = {
             "connection": "keep-alive",
             "x-amzn-requestid": "JHJBP4GU007VMB2V8C9NEKUL8VVV4KQNSO5AEMVJF66Q9ASUAAJG",
             "x-amz-crc32": "820258331",
-        },
-        "RetryAttempts": 0,
-    },
-}
-
-MOCK_MANIFEST_QUERY_RESPONSE = {
-    "Items": [
-        {
-            "FileName": "document.csv",
-            "FileLocation": "s3://test-bucket/test-key-123",
-            "VirusScannerResult": "Clean",
-        },
-        {
-            "FileName": "results.pdf",
-            "FileLocation": "s3://test-bucket/test-key-456",
-            "VirusScannerResult": "Clean",
-        },
-        {
-            "FileName": "output.csv",
-            "FileLocation": "s3://test-bucket/test-key-789",
-            "VirusScannerResult": "Clean",
-        },
-    ],
-    "Count": 5,
-    "ScannedCount": 5,
-    "ResponseMetadata": {
-        "RequestId": "VNS38QDVQCIQ1EMGKQ1EA2E5MVVV4KQNSO5AEMVJF66Q9ASUAAJG",
-        "HTTPStatusCode": 200,
-        "HTTPHeaders": {
-            "server": "Server",
-            "date": "Thu, 07 Sep 2023 11:14:01 GMT",
-            "content-type": "application/x-amz-json-1.0",
-            "content-length": "583",
-            "connection": "keep-alive",
-            "x-amzn-requestid": "VNS38QDVQCIQ1EMGKQ1EA2E5MVVV4KQNSO5AEMVJF66Q9ASUAAJG",
-            "x-amz-crc32": "2636774765",
         },
         "RetryAttempts": 0,
     },
