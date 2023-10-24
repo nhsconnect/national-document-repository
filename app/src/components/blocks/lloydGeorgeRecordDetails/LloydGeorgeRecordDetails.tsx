@@ -15,6 +15,7 @@ export type Props = {
 
 type PdfActionLink = {
     label: string;
+    dataTestId: string;
     handler: () => void;
 };
 function LloydGeorgeRecordDetails({
@@ -34,13 +35,26 @@ function LloydGeorgeRecordDetails({
     });
 
     const actionLinks: Array<PdfActionLink> = [
-        { label: 'See all files', handler: () => setStage(LG_RECORD_STAGE.SEE_ALL) },
-        { label: 'Download all files', handler: () => setStage(LG_RECORD_STAGE.DOWNLOAD_ALL) },
+        {
+            label: 'See all files',
+            dataTestId: 'see-all-files-link',
+            handler: () => setStage(LG_RECORD_STAGE.SEE_ALL),
+        },
+        {
+            label: 'Download all files',
+            dataTestId: 'download-all-files-link',
+            handler: () => setStage(LG_RECORD_STAGE.DOWNLOAD_ALL),
+        },
         {
             label: 'Delete a selection of files',
+            dataTestId: 'delete-any-files-link',
             handler: () => setStage(LG_RECORD_STAGE.DELETE_ANY),
         },
-        { label: 'Delete file', handler: () => setStage(LG_RECORD_STAGE.DELETE_ONE) },
+        {
+            label: 'Delete file',
+            handler: () => setStage(LG_RECORD_STAGE.DELETE_ONE),
+            dataTestId: 'delete-one-file-link',
+        },
     ];
 
     return (
@@ -84,7 +98,7 @@ function LloydGeorgeRecordDetails({
                             <Card.Content>
                                 <ol>
                                     {actionLinks.map((link, i) => (
-                                        <li key={link.label + i}>
+                                        <li key={link.label + i} data-testid={link.dataTestId}>
                                             <Link
                                                 to="#"
                                                 onClick={(e) => {

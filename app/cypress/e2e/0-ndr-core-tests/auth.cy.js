@@ -16,7 +16,7 @@ describe('authentication & authorisation', () => {
             cy.intercept('GET', '/Auth/Logout', {
                 statusCode: 200,
             }).as('logout');
-            cy.getCy('logout-btn').click();
+            cy.getByTestId('logout-btn').click();
             cy.wait('@logout');
 
             assertSessionStorage({
