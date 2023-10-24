@@ -57,7 +57,27 @@ class BulkUploadService:
             logger.info("Will stop processing Lloyd George record for this patient")
             raise e
 
-        logger.info("Validation complete. Start uploading Lloyd George records")
+        logger.info("File validation complete. Checking virus scan results")
+
+         try:
+            logger.info("Running validation for virus scan results...")
+            self.check_virus_result(staging_metadata)
+        except VirusNoResultException:
+            logger.info(
+                f"Detected missing scan results for: {staging_metadata.nhs_number}, adding message back to queue"
+            )
+            logger.info("Will stop processing Lloyd George record for this patient")
+            raise e
+        except VirusFailedResultException:
+            logger.info(
+                f"Virus scan results check failed for: {staging_metadata.nhs_number}, removing from queue"
+            )
+            logger.info("Will stop processing Lloyd George record for this patient")
+            raise e
+
+        
+        logger.info("Virus result validation complete. Start uploading Lloyd George records")
+
 
         self.init_transaction()
 
@@ -74,10 +94,20 @@ class BulkUploadService:
     def validate_files(self, staging_metadata: StagingMetadata):
         # Delegate to lloyd_george_validator service
         # Expect LGInvalidFilesException to be raised when validation fails
-        file_names = [
-            os.path.basename(metadata.file_path) for metadata in staging_metadata.files
+        file_paths = [
+            metadata.file_path for metadata in staging_metadata.files
         ]
+        # file_names = [
+        #     os.path.basename(metadata.file_path) for metadata in staging_metadata.files
+        # ]
         validate_lg_file_names(file_names, staging_metadata.nhs_number)
+
+    def check_virus_result(self, staging_metadata: StagingMetadata):
+        file_paths = [
+            metadata.file_path for metadata in staging_metadata.files
+        ]
+
+        check_file_virus_status(file_paths, staging_metadata.nhs_number)
 
     def init_transaction(self):
         self.dynamo_records_in_transaction = []
