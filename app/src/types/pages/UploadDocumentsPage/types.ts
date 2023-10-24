@@ -12,6 +12,7 @@ export enum UPLOAD_STAGE {
 export enum DOCUMENT_TYPE {
     LLOYD_GEORGE = 'LG',
     ARF = 'ARF',
+    ALL = 'LG,ARF',
 }
 
 export enum DOCUMENT_UPLOAD_STATE {
