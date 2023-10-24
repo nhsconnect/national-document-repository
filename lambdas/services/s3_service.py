@@ -3,6 +3,7 @@ from typing import Any, Mapping
 
 import boto3
 from botocore.client import Config as BotoConfig
+from lambdas.models.staging_metadata import StagingMetadata
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -65,3 +66,15 @@ class S3Service:
 
     def delete_object(self, s3_bucket_name: str, file_key: str):
         return self.client.delete_object(Bucket=s3_bucket_name, Key=file_key)
+    
+    def get_tag_value(self, s3_bucket_name: str, file_key: str, tag_key: str):
+        response = self.client.get_object_tagging(
+            Bucket=s3_bucket_name,
+            Key=file_key,
+        )
+        for key_value_pair in response['TagSet']:
+            if key_value_pair['Key'] == tag_key:
+                return key_value_pair['Value']
+            
+        raise TagNotFoundException
+

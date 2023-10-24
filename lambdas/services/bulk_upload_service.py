@@ -30,7 +30,7 @@ class BulkUploadService:
         self.lg_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
         self.lg_dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
         self.invalid_queue_url = os.environ["INVALID_SQS_QUEUE_URL"]
-
+        self.metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
         self.pdf_content_type = "application/pdf"
         self.dynamo_records_in_transaction: list[NHSDocumentReference] = []
         self.dest_bucket_files_in_transaction = []
@@ -59,16 +59,16 @@ class BulkUploadService:
 
         logger.info("File validation complete. Checking virus scan results")
 
-         try:
+        try:
             logger.info("Running validation for virus scan results...")
             self.check_virus_result(staging_metadata)
-        except VirusNoResultException:
+        except VirusNoResultException as e:
             logger.info(
                 f"Detected missing scan results for: {staging_metadata.nhs_number}, adding message back to queue"
             )
             logger.info("Will stop processing Lloyd George record for this patient")
             raise e
-        except VirusFailedResultException:
+        except VirusFailedResultException as e:
             logger.info(
                 f"Virus scan results check failed for: {staging_metadata.nhs_number}, removing from queue"
             )
@@ -94,20 +94,33 @@ class BulkUploadService:
     def validate_files(self, staging_metadata: StagingMetadata):
         # Delegate to lloyd_george_validator service
         # Expect LGInvalidFilesException to be raised when validation fails
-        file_paths = [
-            metadata.file_path for metadata in staging_metadata.files
+        file_names = [
+            os.path.basename(metadata.file_path) for metadata in staging_metadata.files
         ]
-        # file_names = [
-        #     os.path.basename(metadata.file_path) for metadata in staging_metadata.files
-        # ]
+
         validate_lg_file_names(file_names, staging_metadata.nhs_number)
 
     def check_virus_result(self, staging_metadata: StagingMetadata):
-        file_paths = [
-            metadata.file_path for metadata in staging_metadata.files
-        ]
+         for file_metadata in staging_metadata.files:
+            source_file_key = self.strip_leading_slash(file_metadata.file_path)
+            scan_result = self.s3_service.get_tag_value(self, self.staging_bucket_name, source_file_key, 'scan-result')
+            if (scan_result == 'Clean'):
+                logger.info(f"Scan passed: Document(s) are clean for patientId: {nhs_number}")
+            elif (scan_result == 'Infected'):
+                logger.info(f"Scan failed: Found infected document(s) for patientId: {nhs_number}")
+                raise VirusFailedResultException
+            else:
+                sqs_service = SQSService()
+                nhs_number = staging_metadata.nhs_number
+                logger.info(f"Scan failed: Waiting for virus results for patientId: {nhs_number}")
 
-        check_file_virus_status(file_paths, staging_metadata.nhs_number)
+                sqs_service.send_message_with_nhs_number_attr(
+                    queue_url=self.metadata_queue_url,
+                    message_body=staging_metadata.model_dump_json(by_alias=True),
+                    nhs_number=nhs_number,
+                )
+                raise VirusNoResultException
+
 
     def init_transaction(self):
         self.dynamo_records_in_transaction = []
