@@ -38,46 +38,22 @@ def mock_ods_responses():
     # load test data from several json files and pass to below tests in a dict
     yield load_ods_response_data()
 
-
-def test_parse_ods_response_extract_organisation_with_permitted_gp_role(
-    mock_ods_responses,
+def test_is_gpp_org_returns_true_with_gp_details(
+    mock_ods_responses, mocker
 ):
-    test_response = mock_ods_responses["with_valid_gp_role"]
+    mocker.patch("services.ods_api_service.OdsApiService.fetch_organisation_data", return_value=mock_ods_responses["with_valid_gp_role"])
 
-    actual = OdsApiService.parse_ods_response(test_response)
-    expect = ("PORTWAY LIFESTYLE CENTRE", "A9A5A", PermittedRole.GP.name)
+    actual = OdsApiService.is_gpp_org("ods_code")
+    expected = True
 
-    assert actual == expect
+    assert actual == expected
 
-
-def test_parse_ods_response_extract_organisation_with_permitted_PCSE_role(
-    mock_ods_responses,
+def test_is_gpp_org_returns_false_with_none_gp_details(
+    mock_ods_responses,mocker
 ):
-    test_response = mock_ods_responses["with_valid_pcse_role"]
+    mocker.patch("services.ods_api_service.OdsApiService.fetch_organisation_data", return_value=mock_ods_responses["with_no_valid_roles"])
 
-    actual = OdsApiService.parse_ods_response(test_response)
-    expect = ("Primary Care Support England", "B9A5A", PermittedRole.PCSE.name)
+    actual = OdsApiService.is_gpp_org("ods_code")
+    expected = False
 
-    assert actual == expect
-
-
-def test_parse_ods_response_return_the_first_valid_role_if_more_than_one_exists(
-    mock_ods_responses,
-):
-    test_response = mock_ods_responses["with_multiple_valid_roles"]
-
-    actual = OdsApiService.parse_ods_response(test_response)
-    expect = ("PORTWAY LIFESTYLE CENTRE", "A9A5A", PermittedRole.GP.name)
-
-    assert actual == expect
-
-
-def test_parse_ods_response_should_return_none_if_no_valid_role_was_found(
-    mock_ods_responses,
-):
-    test_response = mock_ods_responses["with_no_valid_roles"]
-
-    actual = OdsApiService.parse_ods_response(test_response)
-    expect = None
-
-    assert actual == expect
+    assert actual == expected

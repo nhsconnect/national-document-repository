@@ -18,6 +18,7 @@ from utils.lambda_response import ApiGatewayResponse
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE = "X4S4L"
 
 def lambda_handler(event, _context):
     try:
@@ -41,15 +42,18 @@ def lambda_handler(event, _context):
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
 
-        logger.info("Use the access token to fetch user's organisation codes")
-        org_codes = oidc_service.fetch_user_org_codes(access_token)
+        #get selected_roleid from id_token_claimset
+        selected_roleid = id_token_claim_set.selected_roleid
 
-        permitted_orgs_and_roles = OdsApiService.fetch_organisation_with_permitted_role(
-            org_codes
-        )
-        if len(permitted_orgs_and_roles) == 0:
-            logger.info("User has no valid organisations to log in")
-            raise AuthorisationException("No valid organisations for user")
+        logger.info("Use the access token to fetch details of user's selected role")
+        ods_code = oidc_service.fetch_users_org_code(access_token, selected_roleid)
+
+        is_gpp = OdsApiService.is_gpp_org(ods_code);
+        is_pcse = ods_code == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE
+
+        if (not(is_gpp or is_pcse)):
+            logger.info("User's selected role is not for a GPP or PCSE")
+            raise AuthorisationException("Selected role invalid")
 
         session_id = create_login_session(id_token_claim_set)
 
