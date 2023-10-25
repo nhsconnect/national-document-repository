@@ -40,7 +40,9 @@ function DeletionConfirmationStage({
                 <Card.Content>
                     <Card.Heading style={{ margin: 'auto' }}>Deletion complete</Card.Heading>
                     <Card.Description style={{ fontSize: '16px' }}>
-                        {numberOfFiles} files from the Lloyd George record of:{' '}
+                        {numberOfFiles} files from the{' '}
+                        {userType === USER_ROLE.GP && 'Lloyd George '}
+                        record of:{' '}
                     </Card.Description>
                     <Card.Description style={{ fontWeight: '700', fontSize: '24px' }}>
                         {patientDetails?.givenName?.map((name) => `${name} `)}
