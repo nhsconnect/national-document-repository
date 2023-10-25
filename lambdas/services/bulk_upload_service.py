@@ -9,7 +9,8 @@ from models.staging_metadata import MetadataFile, StagingMetadata
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
-from utils.exceptions import InvalidMessageException
+from utils.exceptions import (InvalidMessageException, VirusFailedException,
+                              VirusNoResultException)
 from utils.lloyd_george_validator import (LGInvalidFilesException,
                                           validate_lg_file_names)
 from utils.utilities import create_reference_id
@@ -30,7 +31,7 @@ class BulkUploadService:
         self.lg_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
         self.lg_dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
         self.invalid_queue_url = os.environ["INVALID_SQS_QUEUE_URL"]
-
+        self.metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
         self.pdf_content_type = "application/pdf"
         self.dynamo_records_in_transaction: list[NHSDocumentReference] = []
         self.dest_bucket_files_in_transaction = []
@@ -57,7 +58,27 @@ class BulkUploadService:
             logger.info("Will stop processing Lloyd George record for this patient")
             raise e
 
-        logger.info("Validation complete. Start uploading Lloyd George records")
+        logger.info("File validation complete. Checking virus scan results")
+
+        try:
+            logger.info("Running validation for virus scan results...")
+            self.check_virus_result(staging_metadata)
+        except VirusNoResultException as e:
+            logger.info(
+                f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
+            )
+            logger.info("Will stop processing Lloyd George record for this patient")
+            raise e
+        except VirusFailedException as e:
+            logger.info(
+                f"Virus scan results check failed for: {staging_metadata.nhs_number}, removing from queue"
+            )
+            logger.info("Will stop processing Lloyd George record for this patient")
+            raise e
+
+        logger.info(
+            "Virus result validation complete. Start uploading Lloyd George records"
+        )
 
         self.init_transaction()
 
@@ -77,7 +98,35 @@ class BulkUploadService:
         file_names = [
             os.path.basename(metadata.file_path) for metadata in staging_metadata.files
         ]
+
         validate_lg_file_names(file_names, staging_metadata.nhs_number)
+
+    def check_virus_result(self, staging_metadata: StagingMetadata):
+        for file_metadata in staging_metadata.files:
+            source_file_key = self.strip_leading_slash(file_metadata.file_path)
+            scan_result = self.s3_service.get_tag_value(
+                self, self.staging_bucket_name, source_file_key, "scan-result"
+            )
+            if scan_result == "Clean":
+                pass
+            elif scan_result == "Infected":
+                logger.info(
+                    f"Found infected document(s) for scanId: {file_metadata.scan_id}"
+                )
+                raise VirusFailedException
+            else:
+                sqs_service = SQSService()
+                nhs_number = staging_metadata.nhs_number
+                logger.info(
+                    f"Found no virus scan results for scanId: {file_metadata.scan_id}"
+                )
+
+                sqs_service.send_message_with_nhs_number_attr(
+                    queue_url=self.metadata_queue_url,
+                    message_body=staging_metadata.model_dump_json(by_alias=True),
+                    nhs_number=nhs_number,
+                )
+                raise VirusNoResultException
 
     def init_transaction(self):
         self.dynamo_records_in_transaction = []
