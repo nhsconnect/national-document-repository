@@ -2,11 +2,11 @@ import pytest
 from freezegun import freeze_time
 
 from models.pds_models import PatientDetails, Patient
-from unit.helpers.data.pds.utils import (
+from tests.unit.helpers.data.pds.utils import (
     create_restricted_patient,
     create_unrestricted_patient,
 )
-from unit.helpers.data.pds.pds_patient_response import (
+from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT_WITHOUT_ACTIVE_GP,
     PDS_PATIENT_WITH_GP_END_DATE,
 )
