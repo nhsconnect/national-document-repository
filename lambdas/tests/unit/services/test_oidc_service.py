@@ -162,7 +162,7 @@ def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_inva
     mocker.patch("requests.get", return_value=mock_response)
 
     with pytest.raises(AuthorisationException):
-        oidc_service.fetch_user_org_codes(mock_token)
+        oidc_service.fetch_users_org_code(mock_token, "not a real role")
 
 
 @pytest.fixture(name="mock_id_tokens", scope="session")

@@ -47,6 +47,8 @@ def lambda_handler(event, _context):
 
         logger.info("Use the access token to fetch details of user's selected role")
         ods_code = oidc_service.fetch_users_org_code(access_token, selected_roleid)
+        if ods_code is None:
+            return ApiGatewayResponse(500, "Unable to fathom user role", "GET")
 
         is_gpp = OdsApiService.is_gpp_org(ods_code);
         is_pcse = ods_code == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE
