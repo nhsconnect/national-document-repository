@@ -29,7 +29,7 @@ class BulkUploadService:
         self.staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
         self.lg_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
         self.lg_dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-        self.bulk_upload_report_dynamo_table = os.environ["BULK_UPLOAD_DYNAMODB"]
+        self.bulk_upload_report_dynamo_table = os.environ["BULK_UPLOAD_DYNAMODB_NAME"]
         self.invalid_queue_url = os.environ["INVALID_SQS_QUEUE_URL"]
 
         self.pdf_content_type = "application/pdf"
