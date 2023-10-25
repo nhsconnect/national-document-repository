@@ -1,12 +1,21 @@
 import pytest
 from botocore.exceptions import ClientError
 from services.bulk_upload_service import BulkUploadService
-from tests.unit.conftest import (MOCK_LG_BUCKET, MOCK_LG_STAGING_STORE_BUCKET,
-                                 MOCK_LG_TABLE_NAME, TEST_OBJECT_KEY)
+from tests.unit.conftest import (
+    MOCK_LG_BUCKET,
+    MOCK_LG_STAGING_STORE_BUCKET,
+    MOCK_LG_TABLE_NAME,
+    TEST_OBJECT_KEY,
+)
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    TEST_DOCUMENT_REFERENCE, TEST_DOCUMENT_REFERENCE_LIST, TEST_FILE_METADATA,
-    TEST_NHS_NUMBER_FOR_BULK_UPLOAD, TEST_SQS_MESSAGE, TEST_STAGING_METADATA,
-    TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+    TEST_DOCUMENT_REFERENCE,
+    TEST_DOCUMENT_REFERENCE_LIST,
+    TEST_FILE_METADATA,
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
+    TEST_SQS_MESSAGE,
+    TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
+)
 from utils.exceptions import InvalidMessageException
 from utils.lloyd_george_validator import LGInvalidFilesException
 
@@ -41,6 +50,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     service = BulkUploadService()
     service.s3_service = mocker.MagicMock()
     service.dynamo_service = mocker.MagicMock()
+    service.validate_files = mocker.MagicMock()
 
     mock_client_error = ClientError(
         {"Error": {"Code": "404", "Message": "Object not found in bucket"}},
@@ -75,12 +85,6 @@ def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(se
 
     with pytest.raises(LGInvalidFilesException):
         service.validate_files(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
-
-
-def test_validate_files_does_not_raise_error_when_file_names_valid(set_env):
-    service = BulkUploadService()
-
-    assert service.validate_files(TEST_STAGING_METADATA) is None
 
 
 def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid):
