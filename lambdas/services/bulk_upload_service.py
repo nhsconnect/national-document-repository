@@ -118,10 +118,10 @@ class BulkUploadService:
         for file_metadata in staging_metadata.files:
             source_file_key = self.strip_leading_slash(file_metadata.file_path)
             scan_result = self.s3_service.get_tag_value(
-                self, self.staging_bucket_name, source_file_key, "scan-result"
+                self.staging_bucket_name, source_file_key, "scan-result"
             )
             if scan_result == "Clean":
-                pass
+                continue
             elif scan_result == "Infected":
                 logger.info(
                     f"Found infected document(s) for scanId: {file_metadata.scan_id}"

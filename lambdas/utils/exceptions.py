@@ -62,3 +62,7 @@ class VirusNoResultException(Exception):
 
 class VirusFailedException(Exception):
     pass
+
+
+class TagNotFoundException(Exception):
+    pass

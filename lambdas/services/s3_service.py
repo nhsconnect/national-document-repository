@@ -85,6 +85,7 @@ class S3Service:
             Bucket=s3_bucket_name,
             Key=file_key,
         )
+        status = None
         for key_value_pair in response["TagSet"]:
             if key_value_pair["Key"] == tag_key:
                 status = str(key_value_pair["Value"])

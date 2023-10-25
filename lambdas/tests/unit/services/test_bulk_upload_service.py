@@ -28,6 +28,7 @@ def test_handle_sqs_message_calls_create_lg_records_and_copy_files_when_validati
     mock_report_upload_complete = mocker.patch.object(
         BulkUploadService, "report_upload_complete"
     )
+
     mocker.patch.object(BulkUploadService, "validate_files", return_value=None)
 
     service = BulkUploadService()
