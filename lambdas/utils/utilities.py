@@ -1,7 +1,11 @@
+import os
 import re
 import uuid
 
 from inflection import camelize
+
+from services.mock_pds_service import MockPdsApiService
+from services.pds_api_service import PdsApiService
 from utils.exceptions import InvalidResourceIdException
 
 
@@ -34,3 +38,11 @@ def camelize_dict(data: dict) -> dict:
 
 def create_reference_id() -> str:
     return str(uuid.uuid4())
+
+
+def get_pds_service():
+    return (
+        PdsApiService
+        if (os.getenv("PDS_FHIR_IS_STUBBED") == "false")
+        else MockPdsApiService
+    )

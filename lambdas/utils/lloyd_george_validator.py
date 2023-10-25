@@ -10,8 +10,8 @@ from requests import HTTPError
 from enums.pds_ssm_parameters import SSMParameter
 from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient
-from services.pds_api_service import PdsApiService
 from services.ssm_service import SSMService
+from utils.utilities import get_pds_service
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -108,7 +108,8 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         patient_name = file_name_info["patient_name"]
         date_of_birth = file_name_info["date_of_birth"]
 
-        pds_service = PdsApiService(SSMService())
+        pds_service_class = get_pds_service()
+        pds_service = pds_service_class(SSMService())
         pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)
         pds_response.raise_for_status()
         patient = Patient.model_validate(pds_response.json())
