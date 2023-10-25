@@ -70,7 +70,6 @@ class Patient(BaseModel):
     meta: Meta
     general_practitioner: Optional[list[GeneralPractitioner]] = []
 
-
     def get_security(self) -> Security:
         security = self.meta.security[0] if self.meta.security[0] else None
         if not security:

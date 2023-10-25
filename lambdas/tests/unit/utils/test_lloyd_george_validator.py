@@ -3,18 +3,12 @@ import json
 import pytest
 from botocore.exceptions import ClientError
 from requests import Response
-
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from utils.lloyd_george_validator import (
-    LGInvalidFilesException,
-    check_for_duplicate_files,
+    LGInvalidFilesException, check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
-    check_for_number_of_files_match_expected,
-    extract_info_from_filename,
-    validate_file_name,
-    validate_lg_file_type,
-    validate_with_pds_service,
-)
+    check_for_number_of_files_match_expected, extract_info_from_filename,
+    validate_file_name, validate_lg_file_type, validate_with_pds_service)
 
 
 def test_catching_error_when_file_type_not_pdf():

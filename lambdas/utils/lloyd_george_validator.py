@@ -4,12 +4,11 @@ import re
 from typing import Optional
 
 from botocore.exceptions import ClientError
-from pydantic import ValidationError
-from requests import HTTPError
-
 from enums.pds_ssm_parameters import SSMParameter
 from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient
+from pydantic import ValidationError
+from requests import HTTPError
 from services.ssm_service import SSMService
 from utils.utilities import get_pds_service
 
@@ -67,10 +66,12 @@ def validate_lg_file_names(file_name_list: list[str], nhs_number: Optional[str] 
     check_for_duplicate_files(file_name_list)
     check_for_file_names_agrees_with_each_other(file_name_list)
 
-
     if nhs_number:
         # Check file names match with the nhs number in metadata.csv
-        validate_with_pds_service(file_name_list, nhs_number,)
+        validate_with_pds_service(
+            file_name_list,
+            nhs_number,
+        )
 
 
 def extract_info_from_filename(filename: str) -> dict:
