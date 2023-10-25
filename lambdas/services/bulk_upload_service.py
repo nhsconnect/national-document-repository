@@ -4,15 +4,14 @@ import os
 import pydantic
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from models.bulk_upload_status import FailedUpload
+from models.bulk_upload_status import FailedUpload, SuccessfulUpload
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.exceptions import InvalidMessageException
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names)
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
 
 logger = logging.getLogger()
@@ -52,12 +51,15 @@ class BulkUploadService:
         try:
             logger.info("Running validation for file names...")
             self.validate_files(staging_metadata)
-        except LGInvalidFilesException as e:
+        except LGInvalidFilesException as error:
             logger.info(
                 f"Detected invalid file name related to patient number: {staging_metadata.nhs_number}"
             )
             logger.info("Will stop processing Lloyd George record for this patient")
-            raise e
+
+            failure_reason = str(error)
+            self.report_upload_failure(staging_metadata, failure_reason)
+            return
 
         logger.info("Validation complete. Start uploading Lloyd George records")
 
@@ -72,6 +74,14 @@ class BulkUploadService:
             logger.info(f"Got unexpected error during file transfer: {str(e)}")
             logger.info("Will try to rollback any change to database and bucket")
             self.rollback_transaction()
+
+            self.report_upload_failure(
+                staging_metadata,
+                "Validation passed but error occurred during file transfer",
+            )
+            return
+
+        self.report_upload_complete(staging_metadata)
 
     def validate_files(self, staging_metadata: StagingMetadata):
         # Delegate to lloyd_george_validator service
@@ -149,15 +159,31 @@ class BulkUploadService:
                 f"Failed to rollback the incomplete transaction due to error: {e}"
             )
 
-    def report_failure(self, nhs_number: str, reason: str, file_path: str):
-        record = FailedUpload(
-            nhs_number=nhs_number,
-            failed_reason=reason,
-            file_path=file_path,
-        )
-        self.dynamo_service.create_item(
-            table_name=self.bulk_upload_report_dynamo_table, item=record.model_dump()
-        )
+    def report_upload_complete(self, staging_metadata: StagingMetadata):
+        nhs_number = staging_metadata.nhs_number
+        for file in staging_metadata.files:
+            dynamo_record = SuccessfulUpload(
+                nhs_number=nhs_number,
+                file_path=file.file_path,
+            )
+            self.dynamo_service.create_item(
+                table_name=self.bulk_upload_report_dynamo_table,
+                item=dynamo_record.model_dump(),
+            )
+
+    def report_upload_failure(self, staging_metadata: StagingMetadata, failure_reason: str):
+        nhs_number = staging_metadata.nhs_number
+
+        for file in staging_metadata.files:
+            dynamo_record = FailedUpload(
+                nhs_number=nhs_number,
+                failure_reason=failure_reason,
+                file_path=file.file_path,
+            )
+            self.dynamo_service.create_item(
+                table_name=self.bulk_upload_report_dynamo_table,
+                item=dynamo_record.model_dump(),
+            )
 
     @staticmethod
     def strip_leading_slash(filepath: str) -> str:

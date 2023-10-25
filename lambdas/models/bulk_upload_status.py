@@ -43,19 +43,3 @@ def timestamp_as_string(time_now: datetime) -> str:
 
 def date_as_string(time_now: datetime) -> str:
     return time_now.strftime("%Y-%m-%d")
-
-
-# def dump_upload_status_list_as_csv(
-#     upload_status_list: UploadStatusList, csv_file_path: str
-# ):
-#     pass
-#
-#
-# def store(persons: Iterable[Person]):
-#     fieldnames = list(Person.schema()["properties"].keys())
-#
-#     with open("test.csv", "w") as fp:
-#         writer = csv.DictWriter(fp, fieldnames=fieldnames)
-#         writer.writeheader()
-#         for person in persons:
-#             writer.writerow(json.loads(PersonOut(**person.dict()).json()))
