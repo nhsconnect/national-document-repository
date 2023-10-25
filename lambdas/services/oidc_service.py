@@ -94,14 +94,14 @@ class OidcService:
             logger.error(err)
             raise AuthorisationException("The given JWT is invalid or expired.")
         
-    def fetch_users_org_code(self, access_token: str, role_id: str) -> List[str]:
+    def fetch_users_org_code(self, access_token: str, role_id: str) -> str:
         userinfo = self.fetch_userinfo(access_token)
-        return self.extract_org_codes(userinfo)
+        return self.extract_org_code_for_roleid(userinfo, role_id)
     
-    def fetch_nrbac_info(self, access_token: AccessToken) -> Dict:
+    def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         userinfo_response = requests.get(
             self._oidc_userinfo_url,
-            headers={"Authorization": f"Bearer {access_token}, scope nationalrbacaccess"}, #Bearer 6776787678
+            headers={"Authorization": f"Bearer {access_token}, scope nationalrbacaccess"}, #see if setting scope is actually needed
         )
         if userinfo_response.status_code == 200:
             return userinfo_response.json()
@@ -112,7 +112,7 @@ class OidcService:
             )
             raise AuthorisationException("Failed to retrieve userinfo")
 
-    def extract_org_code_for_roleid(self, userinfo: Dict, role_id: str) -> List[str]:
+    def extract_org_code_for_roleid(self, userinfo: Dict, role_id: str) -> str:
         nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
         return [role["org_code"] for role in nrbac_roles if role["person_roleid"] == role_id]
 

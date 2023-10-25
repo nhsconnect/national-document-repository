@@ -103,15 +103,16 @@ def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_id_
         oidc_service.fetch_tokens("test_auth_code")
 
 
-def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
+def test_oidc_service_fetch_users_org_code(mocker, oidc_service):
     mock_token = "fake_access_token"
+    role_id = "500000000001"
     mock_userinfo = {
         "nhsid_useruid": "500000000000",
         "name": "TestUserOne Caius Mr",
         "nhsid_nrbac_roles": [
             {
                 "person_orgid": "500000000000",
-                "person_roleid": "500000000000",
+                "person_roleid": role_id,
                 "org_code": "A9A5A",
                 "role_name": '"Support":"Systems Support":"Systems Support Access Role"',
                 "role_code": "S8001:G8005:R8015",
@@ -134,13 +135,14 @@ def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
         "sub": "500000000000",
     }
 
-    expected = ["A9A5A", "B9A5A"]
+
+    expected = "A9A5A"
 
     mock_response = MockResponse(status_code=200, json_data=mock_userinfo)
 
     mocker.patch("requests.get", return_value=mock_response)
 
-    actual = oidc_service.fetch_user_org_codes(mock_token)
+    actual = oidc_service.fetch_users_org_code(mock_token, role_id)
     assert actual == expected
 
 
