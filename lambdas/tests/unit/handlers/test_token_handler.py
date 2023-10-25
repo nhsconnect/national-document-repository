@@ -53,7 +53,7 @@ def mock_oidc_service(mocker):
     mocker.patch.object(OidcService, "__init__", return_value=None)
     mocked_fetch_token = mocker.patch.object(OidcService, "fetch_tokens")
     mocked_fetch_user_org_codes = mocker.patch.object(
-        OidcService, "fetch_user_org_codes"
+        OidcService, "fetch_users_org_code"
     )
 
     mocked_tokens = [
@@ -67,7 +67,7 @@ def mock_oidc_service(mocker):
 
     yield {
         "fetch_token": mocked_fetch_token,
-        "fetch_user_org_codes": mocked_fetch_user_org_codes,
+        "fetch_users_org_code": mocked_fetch_user_org_codes,
     }
 
 
@@ -147,7 +147,7 @@ def test_lambda_handler_respond_with_400_if_state_or_auth_code_missing(
 
         assert actual == expected
         mock_oidc_service["fetch_token"].assert_not_called()
-        mock_oidc_service["fetch_user_org_codes"].assert_not_called()
+        mock_oidc_service["fetch_users_org_code"].assert_not_called()
         mock_aws_infras["session_table"].post.assert_not_called()
 
 
@@ -171,7 +171,7 @@ def test_lambda_handler_respond_with_401_when_auth_code_is_invalid(
 
     assert actual == expected
 
-    mock_oidc_service["fetch_user_org_codes"].assert_not_called()
+    mock_oidc_service["fetch_users_org_code"].assert_not_called()
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
@@ -196,7 +196,7 @@ def test_lambda_handler_respond_with_400_when_given_state_not_found_in_state_tab
     assert actual == expected
 
     mock_oidc_service["fetch_token"].assert_not_called()
-    mock_oidc_service["fetch_user_org_codes"].assert_not_called()
+    mock_oidc_service["fetch_users_org_code"].assert_not_called()
     mock_aws_infras["session_table"].post.assert_not_called()
 
 

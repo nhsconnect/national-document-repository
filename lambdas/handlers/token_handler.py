@@ -12,14 +12,22 @@ from models.oidc_models import IdTokenClaimSet
 from services.dynamo_service import DynamoDBService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
-from utils.exceptions import AuthorisationException
+from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.exceptions import AuthorisationException, OdsErrorException
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+# TODO Move this to SSM
 PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE = "X4S4L"
 
+
+@ensure_environment_variables(
+    [
+        "OIDC_CALLBACK_URL"
+    ]
+)
 def lambda_handler(event, _context):
     try:
         auth_code = event["queryStringParameters"]["code"]
@@ -42,7 +50,7 @@ def lambda_handler(event, _context):
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
 
-        #get selected_roleid from id_token_claimset
+        # get selected_roleid from id_token_claimset
         selected_roleid = id_token_claim_set.selected_roleid
 
         logger.info("Use the access token to fetch details of user's selected role")
@@ -50,23 +58,28 @@ def lambda_handler(event, _context):
         if ods_code is None:
             return ApiGatewayResponse(500, "Unable to fathom user role", "GET")
 
-        is_gpp = OdsApiService.is_gpp_org(ods_code);
+        is_gpp = OdsApiService.is_gpp_org(ods_code)
         is_pcse = ods_code == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE
 
-        if (not(is_gpp or is_pcse)):
+        if (not (is_gpp or is_pcse)):
             logger.info("User's selected role is not for a GPP or PCSE")
             raise AuthorisationException("Selected role invalid")
 
         session_id = create_login_session(id_token_claim_set)
 
-        authorisation_token = issue_auth_token(
-            session_id, id_token_claim_set, permitted_orgs_and_roles
-        )
-
-        response = {
-            "organisations": permitted_orgs_and_roles,
-            "authorisation_token": authorisation_token,
-        }
+        if is_dev_environment():
+            permitted_orgs_and_roles = OdsApiService.fetch_organisation_with_permitted_role(
+                oidc_service.fetch_users_org_code(access_token)
+            )
+            authorisation_token = issue_auth_token(
+                session_id, id_token_claim_set, permitted_orgs_and_roles
+            )
+            response = {
+                "organisations": permitted_orgs_and_roles,
+                "authorisation_token": authorisation_token,
+            }
+        else:
+            response = ""
 
     except AuthorisationException as error:
         logger.error(error)
@@ -82,6 +95,10 @@ def lambda_handler(event, _context):
         logger.info(f"error while encoding JWT: {error}")
         return ApiGatewayResponse(
             500, "Server error", "GET"
+        ).create_api_gateway_response()
+    except OdsErrorException:
+        return ApiGatewayResponse(
+            500, "Failed to fetch organisation data from ODS", "GET"
         ).create_api_gateway_response()
 
     return ApiGatewayResponse(
@@ -117,9 +134,9 @@ def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
 
 
 def issue_auth_token(
-    session_id: str,
-    id_token_claim_set: IdTokenClaimSet,
-    permitted_orgs_and_roles: list[dict],
+        session_id: str,
+        id_token_claim_set: IdTokenClaimSet,
+        permitted_orgs_and_roles: list[dict],
 ) -> str:
     ssm_client = boto3.client("ssm")
     logger.info("starting ssm request to retrieve NDR private key")
@@ -148,3 +165,7 @@ def response_400_bad_request_for_missing_parameter():
     return ApiGatewayResponse(
         400, "Please supply an authorisation code and state", "GET"
     ).create_api_gateway_response()
+
+# Quick and dirty check to see if we're on Dev
+def is_dev_environment() -> bool:
+    return "dev" in os.environ["OIDC_CALLBACK_URL"]
