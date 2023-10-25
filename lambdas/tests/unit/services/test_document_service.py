@@ -7,7 +7,7 @@ from models.document_reference import DocumentReference
 from tests.unit.helpers.data.dynamo_responses import (MOCK_EMPTY_RESPONSE,
                                                       MOCK_SEARCH_RESPONSE)
 
-from lambdas.services.document_service import DocumentService
+from services.document_service import DocumentService
 
 
 @pytest.fixture

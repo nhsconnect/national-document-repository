@@ -1,6 +1,6 @@
 from utils.lambda_response import ApiGatewayResponse
 
-from lambdas.utils.decorators.validate_document_type import \
+from utils.decorators.validate_document_type import \
     validate_document_type
 
 

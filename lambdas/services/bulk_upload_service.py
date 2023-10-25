@@ -10,10 +10,12 @@ from models.staging_metadata import MetadataFile, StagingMetadata
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
-from utils.exceptions import (InvalidMessageException, VirusFailedException,
-                              VirusNoResultException)
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names)
+from utils.exceptions import (
+    InvalidMessageException,
+    VirusFailedException,
+    VirusNoResultException,
+)
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
 
 logger = logging.getLogger()
@@ -73,13 +75,16 @@ class BulkUploadService:
                 f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
             )
             logger.info("Will stop processing Lloyd George record for this patient")
-            raise e
+            return
         except VirusFailedException as e:
             logger.info(
                 f"Virus scan results check failed for: {staging_metadata.nhs_number}, removing from queue"
             )
             logger.info("Will stop processing Lloyd George record for this patient")
-            raise e
+
+            failure_reason = "One or more of the files failed virus scanner check"
+            self.report_upload_failure(staging_metadata, failure_reason)
+            return
 
         logger.info(
             "Virus result validation complete. Start uploading Lloyd George records"
