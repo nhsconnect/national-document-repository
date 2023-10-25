@@ -1,6 +1,8 @@
 import viewLloydGeorgePayload from '../../fixtures/requests/GET_LloydGeorgeStitch.json';
 import searchPatientPayload from '../../fixtures/requests/GET_SearchPatient.json';
 
+const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+
 describe('GP View Lloyd George Workflow', () => {
     beforeEach(() => {
         cy.login('gp');
@@ -88,7 +90,7 @@ describe('GP View Lloyd George Workflow', () => {
         it('allows a GP user to download the Lloyd George document of an active patient', () => {
             cy.intercept('GET', '/DocumentManifest*', {
                 statusCode: 200,
-                body: 'http://localhost:3000/browserconfig.xml', // uses public served file in place of a ZIP file
+                body: baseUrl + 'browserconfig.xml', // uses public served file in place of a ZIP file
             }).as('documentManifest');
 
             cy.getByTestId('actions-menu').click();
