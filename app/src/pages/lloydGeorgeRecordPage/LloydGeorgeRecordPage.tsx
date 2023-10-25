@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router';
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import LloydGeorgeRecordStage from '../../components/blocks/lloydGeorgeRecordStage/LloydGeorgeRecordStage';
 import LloydGeorgeDownloadAllStage from '../../components/blocks/lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
+import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 
 export enum LG_RECORD_STAGE {
     RECORD = 0,
@@ -28,6 +30,10 @@ function LloydGeorgeRecordPage() {
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
+
+    const handleNavigate = (navigateTo: string) => {
+        navigate(navigateTo);
+    };
 
     useEffect(() => {
         const onPageLoad = async () => {
@@ -94,8 +100,21 @@ function LloydGeorgeRecordPage() {
                     />
                 )
             );
+        case LG_RECORD_STAGE.DELETE_ANY:
+            return (
+                patientDetails && (
+                    <DeleteDocumentsStage
+                        docType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                        numberOfFiles={numberOfFiles}
+                        patientDetails={patientDetails}
+                        setStage={setStage}
+                        passNavigate={handleNavigate}
+                        setDownloadStage={setDownloadStage}
+                    />
+                )
+            );
         default:
-            return <div />;
+            return <div></div>;
     }
 }
 
