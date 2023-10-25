@@ -456,8 +456,7 @@ PDS_PATIENT_WITHOUT_ACTIVE_GP = {
     "birthDate": "2010-10-22",
     "multipleBirthInteger": 1,
     "deceasedDateTime": "2010-10-22T00:00:00+00:00",
-    "generalPractitioner": [
-    ],
+    "generalPractitioner": [],
     "managingOrganization": {
         "type": "Organization",
         "identifier": {

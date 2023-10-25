@@ -2,9 +2,14 @@ import pytest
 from freezegun import freeze_time
 
 from models.pds_models import PatientDetails, Patient
-from tests.unit.helpers.data.pds.utils import (create_restricted_patient,
-                                               create_unrestricted_patient)
-from unit.helpers.data.pds.pds_patient_response import PDS_PATIENT_WITHOUT_ACTIVE_GP, PDS_PATIENT_WITH_GP_END_DATE
+from unit.helpers.data.pds.utils import (
+    create_restricted_patient,
+    create_unrestricted_patient,
+)
+from unit.helpers.data.pds.pds_patient_response import (
+    PDS_PATIENT_WITHOUT_ACTIVE_GP,
+    PDS_PATIENT_WITH_GP_END_DATE,
+)
 from utils.exceptions import InvalidResourceIdException
 from utils.utilities import validate_id
 
@@ -59,6 +64,7 @@ def test_get_restricted_patient_details():
 
     assert expected_patient_details == result
 
+
 def test_get_minimum_patient_details():
     patient = create_unrestricted_patient()
 
@@ -76,6 +82,7 @@ def test_get_minimum_patient_details():
 
     assert expected_patient_details == result
 
+
 @freeze_time("2024-12-31")
 def test_raise_error_when_gp_end_date_indicates_inactive():
     patient = Patient.model_validate(PDS_PATIENT_WITH_GP_END_DATE)
@@ -90,6 +97,7 @@ def test_raise_error_when_no_gp_in_response():
     with pytest.raises(ValueError):
         patient.get_minimum_patient_details(patient.id)
 
+
 @freeze_time("2021-12-31")
 def test_not_raise_error_when_gp_end_date_is_today():
     try:
@@ -97,6 +105,7 @@ def test_not_raise_error_when_gp_end_date_is_today():
         patient.get_minimum_patient_details(patient.id)
     except ValueError:
         assert False, "No active GP practice for the patient"
+
 
 @freeze_time("2019-12-31")
 def test_not_raise_error_when_gp_end_date_is_in_the_future():

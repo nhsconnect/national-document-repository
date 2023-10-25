@@ -8,6 +8,7 @@ class FakeSSMService:
     def update_ssm_parameter(self, *arg, **kwargs):
         pass
 
+
 class FakePDSService:
     def __init__(self, *arg, **kwargs):
         pass

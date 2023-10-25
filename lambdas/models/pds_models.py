@@ -29,19 +29,23 @@ class Security(BaseModel):
     code: str
     display: str
 
+
 class Meta(BaseModel):
     versionId: str
     security: list[Security]
+
 
 class GPIdentifier(BaseModel):
     system: Optional[str]
     value: str
     period: Optional[Period]
 
+
 class GeneralPractitioner(BaseModel):
     id: Optional[str]
     type: Optional[str]
     identifier: GPIdentifier
+
 
 class PatientDetails(BaseModel):
     model_config = conf
@@ -55,6 +59,7 @@ class PatientDetails(BaseModel):
     restricted: bool
     general_practice_ods: Optional[str] = ""
 
+
 class Patient(BaseModel):
     model_config = conf
 
@@ -64,7 +69,6 @@ class Patient(BaseModel):
     name: list[Name]
     meta: Meta
     general_practitioner: Optional[list[GeneralPractitioner]] = []
-
 
     def get_security(self) -> Security:
         security = self.meta.security[0] if self.meta.security[0] else None
@@ -95,7 +99,7 @@ class Patient(BaseModel):
             gp_end_date = entry.identifier.period.end
             if not gp_end_date or gp_end_date >= date.today():
                 return entry.identifier.value
-        raise ValueError('No active GP practice for the patient')
+        raise ValueError("No active GP practice for the patient")
 
     def get_patient_details(self, nhs_number) -> PatientDetails:
         return PatientDetails(

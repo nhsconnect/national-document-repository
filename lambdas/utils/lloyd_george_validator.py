@@ -16,6 +16,7 @@ from services.ssm_service import SSMService
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 class LGInvalidFilesException(Exception):
     pass
 
@@ -66,10 +67,12 @@ def validate_lg_file_names(file_name_list: list[str], nhs_number: Optional[str] 
     check_for_duplicate_files(file_name_list)
     check_for_file_names_agrees_with_each_other(file_name_list)
 
-
     if nhs_number:
         # Check file names match with the nhs number in metadata.csv
-        validate_with_pds_service(file_name_list, nhs_number,)
+        validate_with_pds_service(
+            file_name_list,
+            nhs_number,
+        )
 
 
 def extract_info_from_filename(filename: str) -> dict:
@@ -97,6 +100,7 @@ def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
     if len(set(expected_common_part)) != 1:
         raise LGInvalidFilesException("File names does not match with each other")
 
+
 def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
     try:
         file_name_info = extract_info_from_filename(file_name_list[0])
@@ -108,15 +112,21 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         date_of_birth = file_name_info["date_of_birth"]
 
         pds_service = PdsApiService(SSMService())
-        pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)
+        pds_response = pds_service.pds_request(
+            nhs_number=nhs_number, retry_on_expired=True
+        )
         pds_response.raise_for_status()
         patient = Patient.model_validate(pds_response.json())
         patient_details = patient.get_minimum_patient_details(nhs_number)
 
-        date_of_birth = datetime.datetime.strptime(date_of_birth, '%d-%m-%Y').date()
+        date_of_birth = datetime.datetime.strptime(date_of_birth, "%d-%m-%Y").date()
         if patient_details.birth_date != date_of_birth:
             raise LGInvalidFilesException("Patient DoB does not match our records")
-        patient_full_name =' '.join([name for name in patient_details.given_Name]) + ' ' + patient_details.family_name
+        patient_full_name = (
+            " ".join([name for name in patient_details.given_Name])
+            + " "
+            + patient_details.family_name
+        )
         if patient_full_name != patient_name:
             raise LGInvalidFilesException("Patient name does not match our records")
         current_user_ods = get_user_ods_code()
@@ -126,6 +136,7 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
     except (HTTPError, ValidationError, ClientError, ValueError) as e:
         logger.error(e)
         raise LGInvalidFilesException(e)
+
 
 def get_user_ods_code():
     ssm_service = SSMService()
