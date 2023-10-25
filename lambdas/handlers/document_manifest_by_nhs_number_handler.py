@@ -37,7 +37,7 @@ def lambda_handler(event, context):
         # zip_trace_ttl = os.environ["DOCUMENT_ZIP_TRACE_TTL_IN_DAYS"]
 
         dynamo_service = DocumentService()
-        documents = dynamo_service.fetch_document_references_by_type(
+        documents = dynamo_service.fetch_available_document_references_by_type(
             nhs_number, doc_type
         )
 
