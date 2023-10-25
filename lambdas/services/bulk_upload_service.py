@@ -168,7 +168,7 @@ class BulkUploadService:
             )
             self.dynamo_service.create_item(
                 table_name=self.bulk_upload_report_dynamo_table,
-                item=dynamo_record.model_dump(),
+                item=dynamo_record.model_dump(by_alias=True),
             )
 
     def report_upload_failure(self, staging_metadata: StagingMetadata, failure_reason: str):
@@ -182,7 +182,7 @@ class BulkUploadService:
             )
             self.dynamo_service.create_item(
                 table_name=self.bulk_upload_report_dynamo_table,
-                item=dynamo_record.model_dump(),
+                item=dynamo_record.model_dump(by_alias=True),
             )
 
     @staticmethod

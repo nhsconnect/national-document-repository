@@ -139,7 +139,7 @@ def test_validate_nhs_id_with_pds_service(mocker):
 
     validate_with_pds_service(lg_file_list, "9000000009")
 
-    mock_pds_call.assert_called_with(nsh_number="9000000009", retry_on_expired=True)
+    mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
     mock_odc_code.assert_called_once()
 
 def test_mismatch_nhs_id_no_pds_service(mocker):
@@ -176,7 +176,7 @@ def test_mismatch_name_with_pds_service(mocker):
 
         validate_with_pds_service(lg_file_list, "9000000009")
 
-        mock_pds_call.assert_called_with(nsh_number="9000000009", retry_on_expired=True)
+        mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
         mock_odc_code.assert_not_called()
 
 def test_mismatch_ods_with_pds_service(mocker):
@@ -196,7 +196,7 @@ def test_mismatch_ods_with_pds_service(mocker):
 
         validate_with_pds_service(lg_file_list, "9000000009")
 
-        mock_pds_call.assert_called_with(nsh_number="9000000009", retry_on_expired=True)
+        mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
         mock_odc_code.assert_called_once()
 
 def test_mismatch_dob_with_pds_service(mocker):
@@ -216,7 +216,7 @@ def test_mismatch_dob_with_pds_service(mocker):
 
         validate_with_pds_service(lg_file_list, "9000000009")
 
-        mock_pds_call.assert_called_with(nsh_number="9000000009", retry_on_expired=True)
+        mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
         mock_odc_code.assert_not_called()
 
 def test_patient_not_found_with_pds_service(mocker):
@@ -235,7 +235,7 @@ def test_patient_not_found_with_pds_service(mocker):
 
         validate_with_pds_service(lg_file_list, "9000000009")
 
-        mock_pds_call.assert_called_with(nsh_number="9000000009", retry_on_expired=True)
+        mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
         mock_odc_code.assert_not_called()
 
 def test_bad_request_with_pds_service(mocker):
@@ -254,7 +254,7 @@ def test_bad_request_with_pds_service(mocker):
 
         validate_with_pds_service(lg_file_list, "9000000009")
 
-        mock_pds_call.assert_called_with(nsh_number="9000000009", retry_on_expired=True)
+        mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
         mock_odc_code.assert_not_called()
 
 def test_raise_client_error_from_ssm_with_pds_service(mocker):
@@ -277,5 +277,5 @@ def test_raise_client_error_from_ssm_with_pds_service(mocker):
 
         validate_with_pds_service(lg_file_list, "9000000009")
 
-        mock_pds_call.assert_called_with(nsh_number="9000000009", retry_on_expired=True)
+        mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
         mock_odc_code.assert_called_once()
