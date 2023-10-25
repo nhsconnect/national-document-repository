@@ -80,10 +80,9 @@
             "type": "Organization",
             "identifier": {
                 "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-                "value": "Y12345",
+                "value": "H81109",
                 "period": {
-                    "start": "2020-01-01",
-                    "end": "2021-12-31"
+                    "start": "2020-01-01"
                 }
             }
         }
