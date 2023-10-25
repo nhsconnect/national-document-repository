@@ -49,7 +49,9 @@ def lambda_handler(event, context):
             ).create_api_gateway_response()
 
         document_service.delete_documents(
-            table, results, S3LifecycleTags.SOFT_DELETE.value
+            table_name=table,
+            document_references=results,
+            type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
         )
     except ClientError as e:
         logger.info(str(e))

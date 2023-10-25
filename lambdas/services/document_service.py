@@ -109,7 +109,7 @@ class DocumentService(DynamoDBService):
                 file_key=reference.get_file_key(),
                 s3_bucket_name=reference.get_file_bucket(),
                 tag_key=str(S3LifecycleTags.SOFT_DELETE.value),
-                tag_value=str(S3LifecycleTags.SOFT_DELETE_VAL.value),
+                tag_value=str(S3LifecycleTags.ENABLE_TAG.value),
             )
 
             self.update_item(table_name, reference.id, updated_fields=update_fields)
