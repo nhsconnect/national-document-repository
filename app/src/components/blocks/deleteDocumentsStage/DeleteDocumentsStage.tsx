@@ -70,7 +70,7 @@ function DeleteDocumentsStage({
 
         if (fieldValues.deleteDocs === 'yes') {
             setDeletionStage(SUBMISSION_STATE.PENDING);
-            let response = null;
+            let response;
             try {
                 if (docType === DOCUMENT_TYPE.LLOYD_GEORGE) {
                     response = await deleteAllDocuments({
@@ -94,16 +94,17 @@ function DeleteDocumentsStage({
                         baseHeaders,
                     });
                 }
-                if (response === null) {
-                    setDeletionStage(SUBMISSION_STATE.FAILED);
-                } else {
-                    if (response.status === 200) {
-                        setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
-                        if (setDownloadStage) {
-                            setDownloadStage(DOWNLOAD_STAGE.FAILED);
-                        }
+                console.log(response);
+                // if (response === null) {
+                //     setDeletionStage(SUBMISSION_STATE.FAILED);
+                // } else {
+                if (response?.status === 200) {
+                    setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
+                    if (setDownloadStage) {
+                        setDownloadStage(DOWNLOAD_STAGE.FAILED);
                     }
                 }
+                // }
             } catch (e) {
                 setDeletionStage(SUBMISSION_STATE.FAILED);
                 const error = e as AxiosError;
