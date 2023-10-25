@@ -87,7 +87,7 @@ describe('GP View Lloyd George Workflow', () => {
             cy.wait('@lloydGeorgeStitch');
         });
 
-        it.only('allows a GP user to download the Lloyd George document of an active patient', () => {
+        it('allows a GP user to download the Lloyd George document of an active patient', () => {
             cy.intercept('GET', '/DocumentManifest*', {
                 statusCode: 200,
                 body: 'http://localhost:3000/browserconfig.xml', // uses public served file in place of a ZIP file
