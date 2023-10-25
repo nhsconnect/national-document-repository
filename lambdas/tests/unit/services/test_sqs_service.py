@@ -31,4 +31,5 @@ def test_send_message_with_nhs_number_attr(set_env, mocker):
             "NhsNumber": {"DataType": "String", "StringValue": TEST_NHS_NUMBER},
         },
         MessageBody=test_message_body,
+        DelaySeconds=None
     )

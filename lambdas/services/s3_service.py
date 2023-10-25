@@ -3,6 +3,7 @@ from typing import Any, Mapping
 
 import boto3
 from botocore.client import Config as BotoConfig
+
 from utils.exceptions import TagNotFoundException
 
 logger = logging.getLogger()

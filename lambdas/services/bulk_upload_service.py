@@ -14,6 +14,7 @@ from utils.exceptions import (
     InvalidMessageException,
     VirusFailedException,
     VirusNoResultException,
+    TagNotFoundException,
 )
 from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
@@ -122,29 +123,40 @@ class BulkUploadService:
     def check_virus_result(self, staging_metadata: StagingMetadata):
         for file_metadata in staging_metadata.files:
             source_file_key = self.strip_leading_slash(file_metadata.file_path)
-            scan_result = self.s3_service.get_tag_value(
-                self.staging_bucket_name, source_file_key, "scan-result"
-            )
-            if scan_result == "Clean":
-                continue
-            elif scan_result == "Infected":
-                logger.info(
-                    f"Found infected document(s) for scanId: {file_metadata.scan_id}"
+            try:
+                scan_result = self.s3_service.get_tag_value(
+                    self.staging_bucket_name, source_file_key, "scan-result"
                 )
-                raise VirusFailedException
-            else:
-                sqs_service = SQSService()
-                nhs_number = staging_metadata.nhs_number
+                if scan_result == "Clean":
+                    continue
+                elif scan_result == "Infected":
+                    logger.info(
+                        f"Found infected document(s) for scanId: {file_metadata.scan_id}"
+                    )
+                    raise VirusFailedException
+                else:
+                    logger.info(
+                        f"Found no virus scan results for scanId: {file_metadata.scan_id}"
+                    )
+                    self.put_message_back_to_queue(staging_metadata)
+
+            except TagNotFoundException:
                 logger.info(
                     f"Found no virus scan results for scanId: {file_metadata.scan_id}"
                 )
+                self.put_message_back_to_queue(staging_metadata)
 
-                sqs_service.send_message_with_nhs_number_attr(
-                    queue_url=self.metadata_queue_url,
-                    message_body=staging_metadata.model_dump_json(by_alias=True),
-                    nhs_number=nhs_number,
-                )
-                raise VirusNoResultException
+    def put_message_back_to_queue(self, staging_metadata: StagingMetadata):
+        sqs_service = SQSService()
+        nhs_number = staging_metadata.nhs_number
+
+        sqs_service.send_message_with_nhs_number_attr(
+            queue_url=self.metadata_queue_url,
+            message_body=staging_metadata.model_dump_json(by_alias=True),
+            nhs_number=nhs_number,
+            delay_second=60 * 5,
+        )
+        raise VirusNoResultException
 
     def init_transaction(self):
         self.dynamo_records_in_transaction = []

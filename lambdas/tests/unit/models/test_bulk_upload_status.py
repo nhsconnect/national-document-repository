@@ -27,7 +27,7 @@ def test_parse_json_into_successful_upload():
     expected = SuccessfulUpload(
         ID="719ca7a7-9c30-48f3-a472-c3daaf30d548",
         nhs_number="9000000009",
-        timestamp="1698146661",
+        timestamp=1698146661,
         date="2023-10-24",
         upload_status="complete",
         file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019]",
@@ -43,7 +43,7 @@ def test_parse_json_into_failed_upload():
     expected = FailedUpload(
         ID="719ca7a7-9c30-48f3-a472-c3daaf30e975",
         nhs_number="9000000025",
-        timestamp="1698109408",
+        timestamp=1698109408,
         date="2023-10-24",
         upload_status="failed",
         failure_reason="File name not matching Lloyd George naming convention",
@@ -82,7 +82,7 @@ def test_ids_and_timestamp_are_auto_populated_if_not_given(mocker):
     )
 
     assert upload_status.date == "2023-10-20"
-    assert upload_status.timestamp == "1697793900.0"
+    assert upload_status.timestamp == 1697793900
     assert upload_status.id == "mocked_uuid"
     assert upload_status.upload_status == "complete"
     print(upload_status.model_dump())
@@ -94,6 +94,6 @@ def test_ids_and_timestamp_are_auto_populated_if_not_given(mocker):
     )
 
     assert upload_status_failed.date == "2023-10-20"
-    assert upload_status_failed.timestamp == "1697793900.0"
+    assert upload_status_failed.timestamp == 1697793900
     assert upload_status_failed.id == "mocked_uuid"
     assert upload_status_failed.upload_status == "failed"

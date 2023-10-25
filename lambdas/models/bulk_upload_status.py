@@ -10,7 +10,7 @@ class UploadStatusBaseClass(BaseModel):
     model_config = ConfigDict(alias_generator=to_capwords, populate_by_name=True)
     id: str = Field(alias="ID", default_factory=create_reference_id)
     nhs_number: str
-    timestamp: str = Field(default_factory=lambda: timestamp_as_string(now()))
+    timestamp: int = Field(default_factory=lambda: int(now().timestamp()))
     date: str = Field(default_factory=lambda: date_as_string(now()))
     file_path: str
 
@@ -35,10 +35,6 @@ FieldsToReport = []
 def now() -> datetime:
     """Helper func for easier mocking, as datetime.now is immutable"""
     return datetime.now()
-
-
-def timestamp_as_string(time_now: datetime) -> str:
-    return str(time_now.timestamp())
 
 
 def date_as_string(time_now: datetime) -> str:

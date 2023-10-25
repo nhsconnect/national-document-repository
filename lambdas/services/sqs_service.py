@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import boto3
 from botocore.client import Config as BotoConfig
@@ -13,7 +14,11 @@ class SQSService:
         self.client = boto3.client("sqs", config=config)
 
     def send_message_with_nhs_number_attr(
-        self, queue_url: str, message_body: str, nhs_number: str
+        self,
+        queue_url: str,
+        message_body: str,
+        nhs_number: str,
+        delay_second: Optional[int] = None,
     ):
         self.client.send_message(
             QueueUrl=queue_url,
@@ -21,4 +26,5 @@ class SQSService:
                 "NhsNumber": {"DataType": "String", "StringValue": nhs_number},
             },
             MessageBody=message_body,
+            DelaySeconds=delay_second,
         )

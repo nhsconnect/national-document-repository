@@ -1,13 +1,22 @@
 import pytest
 from botocore.exceptions import ClientError
 from services.bulk_upload_service import BulkUploadService
-from tests.unit.conftest import (MOCK_LG_BUCKET, MOCK_LG_STAGING_STORE_BUCKET,
-                                 MOCK_LG_TABLE_NAME, TEST_OBJECT_KEY)
+from tests.unit.conftest import (
+    MOCK_LG_BUCKET,
+    MOCK_LG_STAGING_STORE_BUCKET,
+    MOCK_LG_TABLE_NAME,
+    TEST_OBJECT_KEY,
+)
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    TEST_DOCUMENT_REFERENCE, TEST_DOCUMENT_REFERENCE_LIST, TEST_FILE_METADATA,
-    TEST_NHS_NUMBER_FOR_BULK_UPLOAD, TEST_SQS_MESSAGE,
-    TEST_SQS_MESSAGE_WITH_INVALID_FILENAME, TEST_STAGING_METADATA,
-    TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+    TEST_DOCUMENT_REFERENCE,
+    TEST_DOCUMENT_REFERENCE_LIST,
+    TEST_FILE_METADATA,
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
+    TEST_SQS_MESSAGE,
+    TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
+    TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
+)
 from utils.exceptions import InvalidMessageException
 from utils.lloyd_george_validator import LGInvalidFilesException
 
@@ -19,8 +28,14 @@ def mock_uuid(mocker):
     yield test_uuid
 
 
+@pytest.fixture
+def mock_check_virus_result(mocker):
+    mocker.patch.object(BulkUploadService, "check_virus_result")
+    yield
+
+
 def test_handle_sqs_message_calls_create_lg_records_and_copy_files_when_validation_passed(
-    set_env, mocker, mock_uuid
+    set_env, mocker, mock_uuid, mock_check_virus_result
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
@@ -62,7 +77,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_are_invalid
 
 
 def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(
-    set_env, mocker, mock_uuid
+    set_env, mocker, mock_uuid, mock_check_virus_result
 ):
     mocked_rollback_transaction = mocker.patch.object(
         BulkUploadService, "rollback_transaction"
