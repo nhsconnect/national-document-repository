@@ -40,7 +40,7 @@ function DeletionConfirmationStage({
                 <Card.Content>
                     <Card.Heading style={{ margin: 'auto' }}>Deletion complete</Card.Heading>
                     <Card.Description style={{ fontSize: '16px' }}>
-                        {numberOfFiles} files from the{' '}
+                        {numberOfFiles} file{numberOfFiles !== 1 && 's'} from the{' '}
                         {userType === USER_ROLE.GP && 'Lloyd George '}
                         record of:{' '}
                     </Card.Description>
