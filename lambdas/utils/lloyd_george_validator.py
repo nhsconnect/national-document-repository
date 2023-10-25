@@ -99,7 +99,6 @@ def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
 
 def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
     try:
-    # Check file names match with the nhs number in metadata.csv
         file_name_info = extract_info_from_filename(file_name_list[0])
         if file_name_info["nhs_number"] != nhs_number:
             raise LGInvalidFilesException(
@@ -109,7 +108,7 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         date_of_birth = file_name_info["date_of_birth"]
 
         pds_service = PdsApiService(SSMService())
-        pds_response = pds_service.pds_request(nsh_number=nhs_number, retry_on_expired=True)
+        pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)
         pds_response.raise_for_status()
         patient = Patient.model_validate(pds_response.json())
         patient_details = patient.get_minimum_patient_details(nhs_number)
