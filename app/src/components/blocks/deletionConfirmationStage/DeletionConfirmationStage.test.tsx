@@ -9,6 +9,9 @@ import DeletionConfirmationStage from './DeletionConfirmationStage';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import * as ReactRouter from 'react-router';
+import { createMemoryHistory } from 'history';
+import { USER_ROLE } from '../../../types/generic/roles';
 
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
@@ -23,32 +26,32 @@ describe('DeletionConfirmationStage', () => {
         const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
         const numberOfFiles = mockLgSearchResult.number_of_files;
 
-        renderPage();
+        renderComponent(USER_ROLE.GP);
 
         await waitFor(async () => {
             expect(screen.getByText('Deletion complete')).toBeInTheDocument();
         });
 
         expect(
-            screen.getByText(`${numberOfFiles} files from the Lloyd George record of:`)
+            screen.getByText(`${numberOfFiles} files from the Lloyd George record of:`),
         ).toBeInTheDocument();
         expect(screen.getByText(patientName)).toBeInTheDocument();
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
         expect(
             screen.getByRole('button', {
                 name: "Return to patient's Lloyd George record page",
-            })
+            }),
         ).toBeInTheDocument();
     });
 
     it('renders LgRecordStage when button is clicked', async () => {
-        renderPage();
+        renderComponent(USER_ROLE.GP);
 
         act(() => {
             userEvent.click(
                 screen.getByRole('button', {
                     name: "Return to patient's Lloyd George record page",
-                })
+                }),
             );
         });
 
@@ -58,18 +61,27 @@ describe('DeletionConfirmationStage', () => {
     });
 });
 
-const renderPage = () => {
+const renderComponent = (
+    userType: USER_ROLE,
+    history = createMemoryHistory({
+        initialEntries: ['/'],
+        initialIndex: 0,
+    }),
+) => {
     const auth: Session = {
         auth: buildUserAuth(),
         isLoggedIn: true,
     };
     render(
-        <SessionProvider sessionOverride={auth}>
-            <DeletionConfirmationStage
-                numberOfFiles={mockLgSearchResult.number_of_files}
-                patientDetails={mockPatientDetails}
-                setStage={mockSetStage}
-            />
-        </SessionProvider>
+        <ReactRouter.Router navigator={history} location={history.location}>
+            <SessionProvider sessionOverride={auth}>
+                <DeletionConfirmationStage
+                    numberOfFiles={mockLgSearchResult.number_of_files}
+                    patientDetails={mockPatientDetails}
+                    setStage={mockSetStage}
+                    userType={userType}
+                />
+            </SessionProvider>
+        </ReactRouter.Router>,
     );
 };

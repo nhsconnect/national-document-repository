@@ -1,4 +1,4 @@
-import { Button } from 'nhsuk-react-components';
+import { Button, ButtonLink } from 'nhsuk-react-components';
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 import { routes } from '../../../types/generic/routes';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
@@ -6,14 +6,18 @@ import { Link, useNavigate } from 'react-router-dom';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { AxiosError } from 'axios';
 import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
-import { useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
+import { PatientDetails } from '../../../types/generic/patientDetails';
 
 type Props = {
     nhsNumber: string;
     downloadState: string;
     updateDownloadState: (newState: SUBMISSION_STATE) => void;
+    numberOfFiles: number;
+    patientDetails: PatientDetails;
+    setIsDeletingDocuments: Dispatch<SetStateAction<boolean>>;
 };
 
 interface DownloadLinkAttributes {
@@ -61,6 +65,10 @@ const DocumentSearchResultsOptions = (props: Props) => {
         }
     };
 
+    const deleteAllDocuments = () => {
+        props.setIsDeletingDocuments(true);
+    };
+
     return (
         <>
             <p>
@@ -88,14 +96,14 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 >
                     Download Manifest URL
                 </a>
-                <Link
+                <ButtonLink
                     className="nhsuk-button nhsuk-button--secondary"
                     style={{ marginLeft: 72 }}
-                    to={routes.DELETE_DOCUMENTS}
                     role="button"
+                    onClick={deleteAllDocuments}
                 >
                     Delete All Documents
-                </Link>
+                </ButtonLink>
             </div>
             {props.downloadState === SUBMISSION_STATE.SUCCEEDED && (
                 <p>

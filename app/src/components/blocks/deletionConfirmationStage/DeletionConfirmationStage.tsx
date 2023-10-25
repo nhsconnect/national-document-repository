@@ -1,21 +1,38 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { ButtonLink, Card } from 'nhsuk-react-components';
+import { ButtonLink, Card, Hero } from 'nhsuk-react-components';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import { USER_ROLE } from '../../../types/generic/roles';
+import { routes } from '../../../types/generic/routes';
+import { Link } from 'react-router-dom';
 
 export type Props = {
     numberOfFiles: number;
     patientDetails: PatientDetails;
-    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    userType: USER_ROLE;
+    passNavigate: (navigateTo: string) => void;
 };
 
-function DeletionConfirmationStage({ numberOfFiles, patientDetails, setStage }: Props) {
+function DeletionConfirmationStage({
+    numberOfFiles,
+    patientDetails,
+    setStage,
+    userType,
+    passNavigate,
+}: Props) {
     const nhsNumber: String =
         patientDetails?.nhsNumber.slice(0, 3) +
         ' ' +
         patientDetails?.nhsNumber.slice(3, 6) +
         ' ' +
         patientDetails?.nhsNumber.slice(6, 10);
+
+    const handleClick = () => {
+        if (setStage) {
+            setStage(LG_RECORD_STAGE.RECORD);
+        }
+    };
 
     return (
         <div className="deletion-complete">
@@ -35,9 +52,23 @@ function DeletionConfirmationStage({ numberOfFiles, patientDetails, setStage }: 
                 </Card.Content>
             </Card>
             <p style={{ marginTop: 40 }}>
-                <ButtonLink onClick={() => setStage(LG_RECORD_STAGE.RECORD)}>
-                    Return to patient's Lloyd George record page
-                </ButtonLink>
+                {userType === USER_ROLE.GP ? (
+                    <ButtonLink onClick={handleClick}>
+                        Return to patient's Lloyd George record page
+                    </ButtonLink>
+                ) : (
+                    <Link
+                        id="start-again-link"
+                        to=""
+                        onClick={(e) => {
+                            e.preventDefault();
+                            // navigate(routes.HOME);
+                            passNavigate(routes.HOME);
+                        }}
+                    >
+                        Start Again
+                    </Link>
+                )}
             </p>
         </div>
     );

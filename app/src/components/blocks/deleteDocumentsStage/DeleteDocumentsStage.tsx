@@ -15,13 +15,16 @@ import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 import ServiceError from '../../layout/serviceErrorBox/ServiceErrorBox';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
+import { USER_ROLE } from '../../../types/generic/roles';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
     numberOfFiles: number;
     patientDetails: PatientDetails;
-    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
+    setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    setIsDeletingDocuments?: Dispatch<SetStateAction<boolean>>;
+    userType: USER_ROLE;
+    setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     passNavigate: (navigateTo: string) => void;
 };
 
@@ -30,6 +33,8 @@ function DeleteDocumentsStage({
     numberOfFiles,
     patientDetails,
     setStage,
+    setIsDeletingDocuments,
+    userType,
     passNavigate,
     setDownloadStage,
 }: Props) {
@@ -65,16 +70,39 @@ function DeleteDocumentsStage({
 
         if (fieldValues.deleteDocs === 'yes') {
             setDeletionStage(SUBMISSION_STATE.PENDING);
+            let response = null;
             try {
-                const response = await deleteAllDocuments({
-                    docType,
-                    nhsNumber: patientNhsNumber,
-                    baseUrl,
-                    baseHeaders,
-                });
-                if (response.status === 200) {
-                    setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
-                    setDownloadStage(DOWNLOAD_STAGE.FAILED);
+                if (docType === DOCUMENT_TYPE.LLOYD_GEORGE) {
+                    response = await deleteAllDocuments({
+                        docType,
+                        nhsNumber: patientNhsNumber,
+                        baseUrl,
+                        baseHeaders,
+                    });
+                }
+                if (docType === DOCUMENT_TYPE.ALL) {
+                    response = await deleteAllDocuments({
+                        docType: DOCUMENT_TYPE.ARF,
+                        nhsNumber: patientNhsNumber,
+                        baseUrl,
+                        baseHeaders,
+                    });
+                    response = await deleteAllDocuments({
+                        docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                        nhsNumber: patientNhsNumber,
+                        baseUrl,
+                        baseHeaders,
+                    });
+                }
+                if (response === null) {
+                    setDeletionStage(SUBMISSION_STATE.FAILED);
+                } else {
+                    if (response.status === 200) {
+                        setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
+                        if (setDownloadStage) {
+                            setDownloadStage(DOWNLOAD_STAGE.FAILED);
+                        }
+                    }
                 }
             } catch (e) {
                 setDeletionStage(SUBMISSION_STATE.FAILED);
@@ -83,8 +111,17 @@ function DeleteDocumentsStage({
                     passNavigate(routes.HOME);
                 }
             }
-        } else {
-            setStage(LG_RECORD_STAGE.RECORD);
+        } else if (fieldValues.deleteDocs === 'no') {
+            if (userType === USER_ROLE.GP) {
+                if (setStage) {
+                    setStage(LG_RECORD_STAGE.RECORD);
+                }
+            }
+            if (userType === USER_ROLE.PCSE) {
+                if (setIsDeletingDocuments) {
+                    setIsDeletingDocuments(false);
+                }
+            }
         }
     };
 
@@ -131,6 +168,8 @@ function DeleteDocumentsStage({
             numberOfFiles={numberOfFiles}
             patientDetails={patientDetails}
             setStage={setStage}
+            userType={userType}
+            passNavigate={passNavigate}
         />
     );
 }
