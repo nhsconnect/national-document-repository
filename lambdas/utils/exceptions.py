@@ -54,3 +54,11 @@ class InvalidMessageException(Exception):
 
 class InvalidDocumentReferenceException(Exception):
     pass
+
+
+class VirusNoResultException(Exception):
+    pass
+
+
+class VirusFailedException(Exception):
+    pass
