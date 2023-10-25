@@ -4,7 +4,7 @@ import os
 import pydantic
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from models.bulk_upload_status import BulkUploadStatus
+from models.bulk_upload_status import FailedUpload
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
 from services.dynamo_service import DynamoDBService
@@ -150,15 +150,14 @@ class BulkUploadService:
             )
 
     def report_failure(self, nhs_number: str, reason: str, file_path: str):
-        record = BulkUploadStatus(
+        record = FailedUpload(
             nhs_number=nhs_number,
             failed_reason=reason,
-            file_path_of_failed_file=file_path,
+            file_path=file_path,
         )
         self.dynamo_service.create_item(
             table_name=self.bulk_upload_report_dynamo_table, item=record.model_dump()
         )
-        pass
 
     @staticmethod
     def strip_leading_slash(filepath: str) -> str:
