@@ -1,9 +1,8 @@
-import datetime
 from datetime import date
 from typing import Optional
 
 from models.config import conf
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
 
 class Period(BaseModel):
@@ -94,7 +93,7 @@ class Patient(BaseModel):
     def get_ods_code_for_gp(self) -> str:
         for entry in self.general_practitioner:
             gp_end_date = entry.identifier.period.end
-            if not gp_end_date or gp_end_date > date.today():
+            if not gp_end_date or gp_end_date >= date.today():
                 return entry.identifier.value
         raise ValueError('No active GP practice for the patient')
 
