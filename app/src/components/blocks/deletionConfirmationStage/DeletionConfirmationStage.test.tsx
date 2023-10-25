@@ -16,6 +16,7 @@ import { USER_ROLE } from '../../../types/generic/roles';
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
 const mockSetStage = jest.fn();
+const mockNavigateCallback = jest.fn();
 
 describe('DeletionConfirmationStage', () => {
     beforeEach(() => {
@@ -80,6 +81,7 @@ const renderComponent = (
                     patientDetails={mockPatientDetails}
                     setStage={mockSetStage}
                     userType={userType}
+                    passNavigate={mockNavigateCallback}
                 />
             </SessionProvider>
         </ReactRouter.Router>,
