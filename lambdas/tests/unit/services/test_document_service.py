@@ -122,7 +122,7 @@ def test_delete_documents_soft_delete(set_env, mocker):
     mock_update_item = mocker.patch.object(document_service, "update_item")
 
     document_service.delete_documents(
-        MOCK_TABLE_NAME, [test_doc_ref], S3LifecycleTags.SOFT_DELETE.value
+        MOCK_TABLE_NAME, [test_doc_ref], str(S3LifecycleTags.SOFT_DELETE.value)
     )
 
     mock_create_object_tag.assert_called_once_with(
@@ -159,13 +159,13 @@ def test_delete_documents_death_delete(set_env, mocker):
     mock_update_item = mocker.patch.object(document_service, "update_item")
 
     document_service.delete_documents(
-        MOCK_TABLE_NAME, [test_doc_ref], S3LifecycleTags.DEATH_DELETE.value
+        MOCK_TABLE_NAME, [test_doc_ref], str(S3LifecycleTags.DEATH_DELETE.value)
     )
 
     mock_create_object_tag.assert_called_once_with(
         file_key=test_doc_ref.get_file_key(),
         s3_bucket_name=test_doc_ref.get_file_bucket(),
-        tag_key="soft-delete",
+        tag_key="patient-death",
         tag_value="true",
     )
 

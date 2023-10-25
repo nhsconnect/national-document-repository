@@ -89,8 +89,10 @@ class DocumentService(DynamoDBService):
 
         if type_of_delete == S3LifecycleTags.DEATH_DELETE.value:
             ttl_days = S3LifecycleDays.DEATH_DELETE
+            tag_key = str(S3LifecycleTags.DEATH_DELETE.value)
         else:
             ttl_days = S3LifecycleDays.SOFT_DELETE
+            tag_key = str(S3LifecycleTags.SOFT_DELETE.value)
 
         ttl_seconds = ttl_days * 24 * 60 * 60
         document_reference_ttl = int(deletion_date.timestamp() + ttl_seconds)
@@ -108,7 +110,7 @@ class DocumentService(DynamoDBService):
             self.s3_service.create_object_tag(
                 file_key=reference.get_file_key(),
                 s3_bucket_name=reference.get_file_bucket(),
-                tag_key=str(S3LifecycleTags.SOFT_DELETE.value),
+                tag_key=tag_key,
                 tag_value=str(S3LifecycleTags.ENABLE_TAG.value),
             )
 
