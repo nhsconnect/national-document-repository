@@ -126,7 +126,7 @@ def test_files_for_different_patients():
         assert e == LGInvalidFilesException("File names does not match with each other")
 
 
-def test_validate_nhs_id_with_pds_service(mocker):
+def test_validate_nhs_id_with_pds_service(mocker, mock_pds_call):
     response = Response()
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
@@ -134,10 +134,7 @@ def test_validate_nhs_id_with_pds_service(mocker):
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
     ]
-    mock_pds_call = mocker.patch(
-        "services.pds_api_service.PdsApiService.pds_request",
-        return_value=response,
-    )
+    mock_pds_call.return_value = response
     mock_odc_code = mocker.patch(
         "utils.lloyd_george_validator.get_user_ods_code", return_value="Y12345"
     )
@@ -148,12 +145,11 @@ def test_validate_nhs_id_with_pds_service(mocker):
     mock_odc_code.assert_called_once()
 
 
-def test_mismatch_nhs_id_no_pds_service(mocker):
+def test_mismatch_nhs_id_no_pds_service(mocker, mock_pds_call):
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000005]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000005]_[22-10-2010].pdf",
     ]
-    mock_pds_call = mocker.patch("services.pds_api_service.PdsApiService.pds_request")
     mock_odc_code = mocker.patch(
         "utils.lloyd_george_validator.get_user_ods_code", return_value="Y12345"
     )
@@ -165,7 +161,7 @@ def test_mismatch_nhs_id_no_pds_service(mocker):
     mock_odc_code.assert_not_called()
 
 
-def test_mismatch_name_with_pds_service(mocker):
+def test_mismatch_name_with_pds_service(mocker, mock_pds_call):
     response = Response()
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
@@ -173,10 +169,7 @@ def test_mismatch_name_with_pds_service(mocker):
         "1of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[22-10-2010].pdf",
     ]
-    mock_pds_call = mocker.patch(
-        "services.pds_api_service.PdsApiService.pds_request",
-        return_value=response,
-    )
+    mock_pds_call.return_value = response
     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
 
     with pytest.raises(LGInvalidFilesException):
@@ -186,7 +179,7 @@ def test_mismatch_name_with_pds_service(mocker):
     mock_odc_code.assert_not_called()
 
 
-def test_mismatch_ods_with_pds_service(mocker):
+def test_mismatch_ods_with_pds_service(mocker, mock_pds_call):
     response = Response()
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
@@ -194,10 +187,7 @@ def test_mismatch_ods_with_pds_service(mocker):
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
     ]
-    mock_pds_call = mocker.patch(
-        "services.pds_api_service.PdsApiService.pds_request",
-        return_value=response,
-    )
+    mock_pds_call.return_value = response
     mock_odc_code = mocker.patch(
         "utils.lloyd_george_validator.get_user_ods_code", return_value="H98765"
     )
@@ -209,7 +199,7 @@ def test_mismatch_ods_with_pds_service(mocker):
     mock_odc_code.assert_called_once()
 
 
-def test_mismatch_dob_with_pds_service(mocker):
+def test_mismatch_dob_with_pds_service(mocker, mock_pds_call):
     response = Response()
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
@@ -217,10 +207,7 @@ def test_mismatch_dob_with_pds_service(mocker):
         "1of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[14-01-2000].pdf",
         "2of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[14-01-2000].pdf",
     ]
-    mock_pds_call = mocker.patch(
-        "services.pds_api_service.PdsApiService.pds_request",
-        return_value=response,
-    )
+    mock_pds_call.return_value = response
     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
 
     with pytest.raises(LGInvalidFilesException):
@@ -230,17 +217,14 @@ def test_mismatch_dob_with_pds_service(mocker):
     mock_odc_code.assert_not_called()
 
 
-def test_patient_not_found_with_pds_service(mocker):
+def test_patient_not_found_with_pds_service(mocker, mock_pds_call):
     response = Response()
     response.status_code = 404
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
     ]
-    mock_pds_call = mocker.patch(
-        "services.pds_api_service.PdsApiService.pds_request",
-        return_value=response,
-    )
+    mock_pds_call.return_value = response
     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
 
     with pytest.raises(LGInvalidFilesException):
@@ -250,17 +234,14 @@ def test_patient_not_found_with_pds_service(mocker):
     mock_odc_code.assert_not_called()
 
 
-def test_bad_request_with_pds_service(mocker):
+def test_bad_request_with_pds_service(mocker, mock_pds_call):
     response = Response()
     response.status_code = 400
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[22-10-2010].pdf",
     ]
-    mock_pds_call = mocker.patch(
-        "services.pds_api_service.PdsApiService.pds_request",
-        return_value=response,
-    )
+    mock_pds_call.return_value = response
     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
 
     with pytest.raises(LGInvalidFilesException):
@@ -270,7 +251,7 @@ def test_bad_request_with_pds_service(mocker):
     mock_odc_code.assert_not_called()
 
 
-def test_raise_client_error_from_ssm_with_pds_service(mocker):
+def test_raise_client_error_from_ssm_with_pds_service(mocker, mock_pds_call):
     response = Response()
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
@@ -281,10 +262,7 @@ def test_raise_client_error_from_ssm_with_pds_service(mocker):
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
     ]
-    mock_pds_call = mocker.patch(
-        "services.pds_api_service.PdsApiService.pds_request",
-        return_value=response,
-    )
+    mock_pds_call.return_value = response
     mock_odc_code = mocker.patch(
         "utils.lloyd_george_validator.get_user_ods_code", return_value=mock_client_error
     )
@@ -294,3 +272,8 @@ def test_raise_client_error_from_ssm_with_pds_service(mocker):
 
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
     mock_odc_code.assert_called_once()
+
+
+@pytest.fixture
+def mock_pds_call(mocker):
+    yield mocker.patch("services.mock_pds_service.MockPdsApiService.pds_request")
