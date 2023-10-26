@@ -29,13 +29,13 @@ def report_handler(db_service, s3_service):
     report_data = get_dynamo_data(
         db_service, int(start_time.timestamp()), int(end_time.timestamp())
     )
-    file_name = f"Bulk upload report for {str(start_time)} to {str(end_time)}"
-    write_items_to_csv(report_data, f"/tmp/{file_name}.csv")
+    file_name = f"Bulk upload report for {str(start_time)} to {str(end_time)}.csv"
+    write_items_to_csv(report_data, f"/tmp/{file_name}")
     logger.info("Uploading new report file to S3")
     s3_service.upload_file(
         s3_bucket_name=staging_bucket_name,
         file_key=f"reports/{file_name}",
-        file_name=f"/tmp/{file_name}.csv",
+        file_name=f"/tmp/{file_name}",
     )
 
 
@@ -72,12 +72,12 @@ def write_items_to_csv(items: list, csv_file_path: str):
 
 def get_times_for_scan():
     current_time = datetime.datetime.now()
-    end_report_time = datetime.time(6, 59, 59, 0)
+    end_report_time = datetime.time(7, 00, 00, 0)
     today_date = datetime.datetime.today()
     end_timestamp = datetime.datetime.combine(today_date, end_report_time)
     if current_time < end_timestamp:
         end_timestamp -= datetime.timedelta(days=1)
     start_timestamp = (
-        end_timestamp - datetime.timedelta(days=1) + datetime.timedelta(seconds=1)
+        end_timestamp - datetime.timedelta(days=1)
     )
     return start_timestamp, end_timestamp
