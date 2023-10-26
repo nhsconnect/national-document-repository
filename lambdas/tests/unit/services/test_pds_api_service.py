@@ -4,13 +4,11 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
 from requests import Response
-from tests.unit.helpers.mock_services import FakeSSMService
-
 from services.pds_api_service import PdsApiService
 from tests.unit.helpers.data.pds.access_token_response import RESPONSE_TOKEN
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
+from tests.unit.helpers.mock_services import FakeSSMService
 from utils.exceptions import PdsErrorException
-
 
 fake_ssm_service = FakeSSMService()
 pds_service = PdsApiService(fake_ssm_service)

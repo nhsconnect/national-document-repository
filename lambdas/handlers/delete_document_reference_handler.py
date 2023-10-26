@@ -2,9 +2,9 @@ import logging
 import os
 
 from botocore.exceptions import ClientError
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
-from models.document_reference import DocumentReference
 from services.document_service import DocumentService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.validate_document_type import validate_document_type
@@ -27,21 +27,21 @@ def lambda_handler(event, context):
     nhs_number = event["queryStringParameters"]["patientId"]
     doc_type = event["queryStringParameters"]["docType"]
 
-    results: list[DocumentReference] = []
-    table = ""
-
     document_service = DocumentService()
 
     try:
+        table = ""
         if SupportedDocumentTypes.ARF.name == doc_type:
             logger.info("Retrieving ARF documents for deletion")
             table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-            results = document_service.fetch_documents_from_table(nhs_number, table)
 
         if SupportedDocumentTypes.LG.name == doc_type:
             logger.info("Retrieving Lloyd George documents for deletion")
             table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-            results = document_service.fetch_documents_from_table(nhs_number, table)
+
+        results = document_service.fetch_documents_from_table_with_filter(
+            nhs_number, table, {DocumentReferenceMetadataFields.DELETED.value: ""}
+        )
 
         if not results:
             return ApiGatewayResponse(
