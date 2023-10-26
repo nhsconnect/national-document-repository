@@ -8,7 +8,7 @@ from utils.exceptions import OdsErrorException, OrganisationNotFoundException
 def test_fetch_organisation_data_valid_returns_organisation_data():
     test_ods_code = "X26"
 
-    actual = OdsApiServiceForPassword.fetch_organisation_data(test_ods_code)
+    actual = OdsApiServiceForPassword().fetch_organisation_data(test_ods_code)
 
     assert "NHS ENGLAND - X26" in str(actual)
     assert "PrimaryRoleId" in str(actual)
@@ -19,7 +19,7 @@ def test_fetch_organisation_data_404_raise_OrganisationNotFoundException(mocker)
 
     mocker.patch("requests.get", return_value=response_404)
     with pytest.raises(OrganisationNotFoundException):
-        OdsApiServiceForPassword.fetch_organisation_data("non-exist-ods-code")
+        OdsApiServiceForPassword().fetch_organisation_data("non-exist-ods-code")
 
 
 def test_fetch_organisation_data_catch_all_raises_OdsErrorException(mocker):
@@ -29,7 +29,7 @@ def test_fetch_organisation_data_catch_all_raises_OdsErrorException(mocker):
     invalid_ods_code = "!@?£?$?@?"
 
     with pytest.raises(OdsErrorException):
-        OdsApiServiceForPassword.fetch_organisation_data(invalid_ods_code)
+        OdsApiServiceForPassword().fetch_organisation_data(invalid_ods_code)
 
 
 @pytest.fixture()

@@ -17,7 +17,7 @@ def test_is_gpp_org_returns_true_with_gp_details(
     mocker.patch("services.ods_api_service.OdsApiService.fetch_organisation_data",
                  return_value=mock_ods_responses["with_valid_gp_role"])
 
-    actual = OdsApiServiceForSmartcard.is_gpp_org("ods_code")
+    actual = OdsApiServiceForSmartcard().is_gpp_org("ods_code")
     expected = True
 
     assert actual == expected
@@ -29,7 +29,7 @@ def test_is_gpp_org_returns_false_with_none_gp_details(
     mocker.patch("services.ods_api_service.OdsApiService.fetch_organisation_data",
                  return_value=mock_ods_responses["with_no_valid_roles"])
 
-    actual = OdsApiServiceForSmartcard.is_gpp_org("ods_code")
+    actual = OdsApiServiceForSmartcard().is_gpp_org("ods_code")
     expected = False
 
     assert actual == expected
