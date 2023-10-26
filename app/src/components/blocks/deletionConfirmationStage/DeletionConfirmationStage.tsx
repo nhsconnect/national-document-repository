@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { ButtonLink, Card, Hero } from 'nhsuk-react-components';
+import { ButtonLink, Card } from 'nhsuk-react-components';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { USER_ROLE } from '../../../types/generic/roles';
@@ -64,7 +64,6 @@ function DeletionConfirmationStage({
                         to=""
                         onClick={(e) => {
                             e.preventDefault();
-                            // navigate(routes.HOME);
                             passNavigate(routes.HOME);
                         }}
                     >

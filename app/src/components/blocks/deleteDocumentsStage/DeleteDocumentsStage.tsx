@@ -94,17 +94,12 @@ function DeleteDocumentsStage({
                         baseHeaders,
                     });
                 }
-                console.log(response);
-                // if (response === null) {
-                //     setDeletionStage(SUBMISSION_STATE.FAILED);
-                // } else {
                 if (response?.status === 200) {
                     setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
                     if (setDownloadStage) {
                         setDownloadStage(DOWNLOAD_STAGE.FAILED);
                     }
                 }
-                // }
             } catch (e) {
                 setDeletionStage(SUBMISSION_STATE.FAILED);
                 const error = e as AxiosError;
