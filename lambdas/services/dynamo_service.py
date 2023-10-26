@@ -149,7 +149,12 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
-    def scan_table(self, table_name: str, exclusive_start_key: dict = None, filter_expression: str = None):
+    def scan_table(
+        self,
+        table_name: str,
+        exclusive_start_key: dict = None,
+        filter_expression: str = None,
+    ):
         try:
             table = self.get_table(table_name)
             if not filter_expression and not exclusive_start_key:
@@ -158,7 +163,10 @@ class DynamoDBService:
                 return table.scan(FilterExpression=filter_expression)
             if exclusive_start_key is None:
                 return table.scan(FilterExpression=filter_expression)
-            return table.scan(FilterExpression=filter_expression, ExclusiveStartKey=exclusive_start_key)
+            return table.scan(
+                FilterExpression=filter_expression,
+                ExclusiveStartKey=exclusive_start_key,
+            )
         except ClientError as e:
             logger.error(f"Unable to delete item in table: {table_name}")
             logger.error(e)
