@@ -160,7 +160,7 @@ class DynamoDBService:
             if not filter_expression and not exclusive_start_key:
                 return table.scan()
             if filter_expression is None:
-                return table.scan(FilterExpression=filter_expression)
+                return table.scan(ExclusiveStartKey=exclusive_start_key)
             if exclusive_start_key is None:
                 return table.scan(FilterExpression=filter_expression)
             return table.scan(

@@ -181,3 +181,39 @@ def test_DynamoDbException_raised_when_results_are_invalid(
                         DocumentReferenceMetadataFields.CREATED.value,
                     ],
                 )
+
+def test_test_scan_table_no_args(mock_dynamo_table, mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.scan.return_value = []
+
+        db_service = DynamoDBService()
+        db_service.scan_table(MOCK_TABLE_NAME)
+        mock_dynamo_table.scan.assert_called_once()
+
+def test_test_scan_table_with_filter(mock_dynamo_table, mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.scan.return_value = []
+
+        db_service = DynamoDBService()
+        db_service.scan_table(MOCK_TABLE_NAME, filter_expression='filter_test')
+        mock_dynamo_table.scan.assert_called_with(FilterExpression='filter_test')
+
+def test_test_scan_table_with_start_key(mock_dynamo_table, mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.scan.return_value = []
+
+        db_service = DynamoDBService()
+        db_service.scan_table(MOCK_TABLE_NAME, exclusive_start_key={'key': 'exclusive_start_key'})
+        mock_dynamo_table.scan.assert_called_with(ExclusiveStartKey={'key': 'exclusive_start_key'})
+
+def test_test_scan_table_with_start_key_and_filter(mock_dynamo_table, mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.scan.return_value = []
+
+        db_service = DynamoDBService()
+        db_service.scan_table(MOCK_TABLE_NAME, exclusive_start_key={'key': 'exclusive_start_key'}, filter_expression='filter_test')
+        mock_dynamo_table.scan.assert_called_with(ExclusiveStartKey={'key': 'exclusive_start_key'}, FilterExpression='filter_test')

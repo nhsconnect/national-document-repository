@@ -8,11 +8,17 @@ from botocore.exceptions import ClientError
 
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
+from utils.decorators.ensure_env_var import ensure_environment_variables
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
+@ensure_environment_variables(
+    names=[
+        "STAGING_STORE_BUCKET_NAME",
+        "BULK_UPLOAD_DYNAMODB_NAME",
+    ]
+)
 def lambda_handler(event, context):
     db_service = DynamoDBService()
     s3_service = S3Service()
