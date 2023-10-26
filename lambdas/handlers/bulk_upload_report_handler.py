@@ -1,9 +1,15 @@
 import csv
 import datetime
+import logging
 import os
+
+from boto3.dynamodb.conditions import Attr
 
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
@@ -11,34 +17,36 @@ def lambda_handler(event, context):
     s3_service = S3Service()
     staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
     start_time, end_time = get_times_for_scan()
-    report_data = get_dynamo_data(db_service, start_time.timestamp(), end_time.timestamp())
+    report_data = get_dynamo_data(db_service, int(start_time.timestamp()), int(end_time.timestamp()))
     file_name = f'Bulk upload report for {str(start_time)} to {str(end_time)}'
-    write_items_to_csv(report_data, file_name)
-    s3_service.upload_file(s3_bucket_name=staging_bucket_name, file_key=file_name, file_name=f'reports/{file_name}')
+    write_items_to_csv(report_data, f'/tmp/{file_name}')
+    logger.info("Uploading new report file to S3")
+    s3_service.upload_file(s3_bucket_name=staging_bucket_name, file_key=f'reports/{file_name}', file_name=f'/tmp/{file_name}')
 
 def get_dynamo_data(db_service, start_timestamp, end_timestamp):
-    bulk_upload_table_name = os.getenv("BULK_UPLOAD_DYNAMODB")
-    db_response = db_service.scan_table(bulk_upload_table_name)
-    last_key = db_response['LastEvaluatedKey']
+    logger.info("Starting Scan on DynamoDB table")
+    bulk_upload_table_name = os.getenv("BULK_UPLOAD_DYNAMODB_NAME")
+    filter_time = Attr('Timestamp').gt(start_timestamp) & Attr('Timestamp').lt(end_timestamp)
+    db_response = db_service.scan_table(bulk_upload_table_name, filter_expression=filter_time)
     items = db_response['Items']
-    filter_time = f"Attr('timestamp').gt({start_timestamp})&Attr('timestamp').lt({end_timestamp})"
-    while last_key:
-        db_response = db_service.scan_table(bulk_upload_table_name, exclusive_start_key=last_key, filter_expression=filter_time)
-        last_key = db_response['LastEvaluatedKey']
+    while 'LastEvaluatedKey' in db_response:
+        db_response = db_service.scan_table(bulk_upload_table_name, exclusive_start_key=db_response['LastEvaluatedKey'], filter_expression=filter_time)
         items.append(db_response['Items'])
     return items
 
 def write_items_to_csv(items: list, csv_file_path: str):
-   with open(csv_file_path, 'w') as output_file:
+    logger.info("Writing scan results to csv file")
+    with open(csv_file_path, 'w') as output_file:
         field_names = items[0].keys()
         dict_writer_object = csv.DictWriter(output_file, fieldnames=field_names)
+        dict_writer_object.writeheader()
         for item in items:
             dict_writer_object.writerow(item)
         output_file.close()
 
 def get_times_for_scan():
     current_time = datetime.datetime.now()
-    seven_pm_time = datetime.time(19, 0, 0)
+    seven_pm_time = datetime.time(19, 0, 0, 0)
     today_date = datetime.datetime.today()
     end_timestamp = datetime.datetime.combine(today_date, seven_pm_time)
     if current_time < end_timestamp:
