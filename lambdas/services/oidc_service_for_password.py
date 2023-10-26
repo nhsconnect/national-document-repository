@@ -1,17 +1,23 @@
+import json
 import logging
 from typing import List, Dict
 
+import jwt
 import requests
+from botocore.exceptions import ClientError
 
 from models.oidc_models import AccessToken
+from services.ods_api_service_for_password import OdsApiServiceForPassword
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
+from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
 class OidcServiceForPassword(OidcService):
+
 
     def fetch_user_org_codes(self, access_token: str, selected_role: str = None) -> List[str]:
         userinfo = self.fetch_userinfo(access_token)
@@ -31,3 +37,9 @@ class OidcServiceForPassword(OidcService):
                 f"{userinfo_response.content}"
             )
             raise AuthorisationException("Failed to retrieve userinfo")
+
+
+def response_400_bad_request_for_missing_parameter():
+    return ApiGatewayResponse(
+        400, "Please supply an authorisation code and state", "GET"
+    ).create_api_gateway_response()

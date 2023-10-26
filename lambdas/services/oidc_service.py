@@ -8,6 +8,7 @@ import requests
 from models.oidc_models import AccessToken, IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
 from requests import Response
+
 from utils.exceptions import AuthorisationException
 
 logger = logging.getLogger()
@@ -95,6 +96,7 @@ class OidcService:
             logger.error(err)
             raise AuthorisationException("The given JWT is invalid or expired.")
 
+    # TODO AKH SSM service
     @staticmethod
     def fetch_oidc_parameters():
         parameters_names = [
@@ -125,3 +127,4 @@ class OidcService:
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         raise NotImplementedError
+

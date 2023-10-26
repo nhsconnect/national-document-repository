@@ -13,9 +13,11 @@ logger.setLevel(logging.INFO)
 
 class OdsApiServiceForSmartcard(OdsApiService):
 
-    @classmethod
-    def is_gpp_org(cls, ods_code: str):
-        org_details = cls.fetch_organisation_data(ods_code)
+    def token_request(self, oidc_service, event):
+        pass
+
+    def is_gpp_org(self, ods_code: str):
+        org_details = self.fetch_organisation_data(ods_code)
 
         json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
 

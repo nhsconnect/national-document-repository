@@ -18,6 +18,9 @@ logger.setLevel(logging.INFO)
 
 class OidcServiceForSmartcard(OidcService):
 
+    def token_request(self, event):
+        pass
+
     def fetch_user_org_codes(self, access_token: str, selected_role: str) -> List[str]:
         userinfo = self.fetch_userinfo(access_token)
         nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])

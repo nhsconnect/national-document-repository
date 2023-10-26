@@ -5,15 +5,17 @@ import time
 import uuid
 
 import boto3
-import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
 from models.oidc_models import IdTokenClaimSet
 from services.dynamo_service import DynamoDBService
-from services.ods_api_service import OdsApiService
-from services.oidc_service import OidcService
+from botocore.exceptions import ClientError
+from services.ods_api_service_for_password import OdsApiServiceForPassword
+from services.ods_api_service_for_smartcard import OdsApiServiceForSmartcard
+from services.oidc_service_for_smartcard import OidcServiceForSmartcard
+from services.oidc_service_for_password import OidcServiceForPassword
 from utils.decorators.ensure_env_var import ensure_environment_variables
-from utils.exceptions import AuthorisationException, OdsErrorException
+from utils.exceptions import AuthorisationException, OdsErrorException, OrganisationNotFoundException
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
@@ -23,12 +25,20 @@ logger.setLevel(logging.INFO)
 PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE = "X4S4L"
 
 
-@ensure_environment_variables(
-    [
-        "OIDC_CALLBACK_URL"
-    ]
-)
-def lambda_handler(event, _context):
+def lambda_handler(event, context):
+    if is_dev_environment():
+        oidc_service = OidcServiceForPassword()
+        ods_api_service = OdsApiServiceForPassword()
+    else:
+        oidc_service = OidcServiceForSmartcard()
+        ods_api_service = OdsApiServiceForSmartcard()
+    try:
+        return token_request(oidc_service, ods_api_service, event)
+    except Exception as e:
+        return ApiGatewayResponse(500, e, "GET")
+
+
+def token_request(oidc_service, ods_api_service, event):
     try:
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
@@ -45,7 +55,72 @@ def lambda_handler(event, _context):
                 "GET",
             ).create_api_gateway_response()
 
-        oidc_service = OidcService()
+        logger.info("Fetching access token from OIDC Provider")
+        access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
+
+        logger.info("Use the access token to fetch user's organisation codes")
+        org_codes = oidc_service.fetch_user_org_codes(access_token)
+
+        permitted_orgs_and_roles = ods_api_service.fetch_organisation_with_permitted_role(
+            org_codes
+        )
+        if len(permitted_orgs_and_roles) == 0:
+            logger.info("User has no valid organisations to log in")
+            raise AuthorisationException("No valid organisations for user")
+
+        session_id = create_login_session(id_token_claim_set)
+
+        authorisation_token = issue_auth_token(
+            session_id, id_token_claim_set, permitted_orgs_and_roles
+        )
+
+        response = {
+            "organisations": permitted_orgs_and_roles,
+            "authorisation_token": authorisation_token,
+        }
+
+    except AuthorisationException as error:
+        logger.error(error)
+        return ApiGatewayResponse(
+            401, f"Failed to authenticate user with OIDC service", "GET"
+        ).create_api_gateway_response()
+    except (ClientError, KeyError, TypeError) as error:
+        logger.error(error)
+        return ApiGatewayResponse(
+            500, "Server error", "GET"
+        ).create_api_gateway_response()
+    except jwt.PyJWTError as error:
+        logger.info(f"error while encoding JWT: {error}")
+        return ApiGatewayResponse(
+            500, "Server error", "GET"
+        ).create_api_gateway_response()
+    except OrganisationNotFoundException as error:
+        logger.info(f"Organisation does not exist for given ODS code: {error}")
+        return ApiGatewayResponse(
+            500, "Organisation does not exist for given ODS code", "GET"
+        ).create_api_gateway_response()
+
+    return ApiGatewayResponse(
+        200, json.dumps(response), "GET"
+    ).create_api_gateway_response()
+
+
+def token_request2(oidc_service, event):
+    try:
+        auth_code = event["queryStringParameters"]["code"]
+        state = event["queryStringParameters"]["state"]
+        if not (auth_code and state):
+            return response_400_bad_request_for_missing_parameter()
+    except (KeyError, TypeError):
+        return response_400_bad_request_for_missing_parameter()
+
+    try:
+        if not have_matching_state_value_in_record(state):
+            return ApiGatewayResponse(
+                400,
+                f"Mismatching state values. Cannot find state {state} in record",
+                "GET",
+            ).create_api_gateway_response()
 
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
@@ -60,10 +135,6 @@ def lambda_handler(event, _context):
 
         is_gpp = OdsApiService.is_gpp_org(ods_code)
         is_pcse = ods_code == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE
-
-        if (not (is_gpp or is_pcse)):
-            logger.info("User's selected role is not for a GPP or PCSE")
-            raise AuthorisationException("Selected role invalid")
 
         session_id = create_login_session(id_token_claim_set)
 
@@ -80,13 +151,16 @@ def lambda_handler(event, _context):
             }
         else:
             response = ""
+            if not (is_gpp or is_pcse):
+                logger.info("User's selected role is not for a GPP or PCSE")
+                raise AuthorisationException("Selected role invalid")
 
     except AuthorisationException as error:
         logger.error(error)
         return ApiGatewayResponse(
             401, "Failed to authenticate user with OIDC service", "GET"
         ).create_api_gateway_response()
-    except (botocore.exceptions.ClientError, KeyError, TypeError) as error:
+    except (ClientError, KeyError, TypeError) as error:
         logger.error(error)
         return ApiGatewayResponse(
             500, "Server error", "GET"
@@ -106,6 +180,7 @@ def lambda_handler(event, _context):
     ).create_api_gateway_response()
 
 
+# TODO AKH Dynamo Service class
 def have_matching_state_value_in_record(state: str) -> bool:
     state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
 
@@ -116,6 +191,7 @@ def have_matching_state_value_in_record(state: str) -> bool:
     return "Count" in query_response and query_response["Count"] > 0
 
 
+# TODO AKH Dynamo Service class
 def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
     session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
 
@@ -133,6 +209,7 @@ def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
     return session_id
 
 
+# TODO AKH SSM service
 def issue_auth_token(
         session_id: str,
         id_token_claim_set: IdTokenClaimSet,
@@ -147,7 +224,7 @@ def issue_auth_token(
 
     private_key = ssm_response["Parameter"]["Value"]
 
-    thirty_minutes_later = time.time() + 60 * 30
+    thirty_minutes_later = time.time() + (60 * 30)
     ndr_token_expiry_time = min(thirty_minutes_later, id_token_claim_set.exp)
 
     ndr_token_content = {
@@ -166,6 +243,8 @@ def response_400_bad_request_for_missing_parameter():
         400, "Please supply an authorisation code and state", "GET"
     ).create_api_gateway_response()
 
+
+# TODO AKH Utility method
 # Quick and dirty check to see if we're on Dev
 def is_dev_environment() -> bool:
-    return "dev" in os.environ["OIDC_CALLBACK_URL"]
+    return "dev" in os.environ["WORKSPACE"] or "ndr" in os.environ["WORKSPACE"]
