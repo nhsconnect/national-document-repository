@@ -54,7 +54,7 @@ def lambda_handler(event, _context):
         selected_roleid = id_token_claim_set.selected_roleid
 
         logger.info("Use the access token to fetch details of user's selected role")
-        ods_code = oidc_service.fetch_users_org_code(access_token, selected_roleid)
+        ods_code = oidc_service.fetch_user_org_codes(access_token, selected_roleid)
         if ods_code is None:
             return ApiGatewayResponse(500, "Unable to fathom user role", "GET")
 
