@@ -115,6 +115,16 @@ describe('DocumentSearchResultsOptions', () => {
                 expect(updateDownloadState).toHaveBeenCalledWith(SUBMISSION_STATE.FAILED);
             });
         });
+
+        it('calls delete all documents function when Delete button is clicked', async () => {
+            renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
+
+            userEvent.click(screen.getByRole('button', { name: 'Delete All Documents' }));
+
+            await waitFor(() => {
+                expect(mockSetIsDeletingDocuments).toHaveBeenCalledWith(true);
+            });
+        });
     });
 
     describe('Navigation', () => {

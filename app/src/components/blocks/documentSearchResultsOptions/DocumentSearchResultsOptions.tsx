@@ -2,7 +2,7 @@ import { Button, ButtonLink } from 'nhsuk-react-components';
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 import { routes } from '../../../types/generic/routes';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { AxiosError } from 'axios';
 import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
