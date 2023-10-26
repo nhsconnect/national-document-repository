@@ -13,6 +13,7 @@ import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorg
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import axios from 'axios/index';
 import { USER_ROLE } from '../../../types/generic/roles';
+import { BrowserRouter } from 'react-router-dom';
 jest.mock('axios');
 
 const mockPatientDetails = buildPatientDetails();
@@ -70,6 +71,7 @@ describe('DeleteAllDocumentsStage', () => {
             mockedAxios.delete.mockReturnValue(Promise.resolve({ status: 200, data: 'Success' }));
 
             renderComponent(USER_ROLE.GP, DOCUMENT_TYPE.LLOYD_GEORGE);
+
             expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
 
@@ -84,7 +86,58 @@ describe('DeleteAllDocumentsStage', () => {
         });
     });
 
-    describe('PCSE USER', () => {});
+    describe('PCSE USER', () => {
+        it('renders the page with patient details', async () => {
+            const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
+            const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
+
+            renderComponent(USER_ROLE.PCSE, DOCUMENT_TYPE.ALL);
+
+            await waitFor(async () => {
+                expect(
+                    screen.getByText('Are you sure you want to permanently delete files for:'),
+                ).toBeInTheDocument();
+            });
+
+            expect(screen.getByText(patientName)).toBeInTheDocument();
+            expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
+            expect(screen.getByText(/NHS number/)).toBeInTheDocument();
+            expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
+            expect(screen.getByRole('radio', { name: 'No' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+        });
+
+        it('renders Document search results when the No radio button is selected and Continue button clicked', async () => {
+            renderComponent(USER_ROLE.PCSE, DOCUMENT_TYPE.ALL);
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'No' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await waitFor(() => {
+                expect(mockSetIsDeletingDocuments).toHaveBeenCalledWith(false);
+            });
+        });
+
+        it('renders DeletionConfirmationStage when the Yes radio button is selected and Continue button clicked', async () => {
+            mockedAxios.delete.mockReturnValue(Promise.resolve({ status: 200, data: 'Success' }));
+
+            renderComponent(USER_ROLE.PCSE, DOCUMENT_TYPE.ALL);
+
+            expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await waitFor(() => {
+                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+            });
+        });
+    });
 });
 
 const TestApp = (
@@ -116,7 +169,9 @@ const renderComponent = (userType: USER_ROLE, docType: DOCUMENT_TYPE) => {
 
     render(
         <SessionProvider sessionOverride={auth}>
-            <TestApp {...props} />
+            <BrowserRouter>
+                <TestApp {...props} />
+            </BrowserRouter>
         </SessionProvider>,
     );
 };
