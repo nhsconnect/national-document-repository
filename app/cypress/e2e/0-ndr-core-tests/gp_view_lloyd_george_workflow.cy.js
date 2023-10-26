@@ -115,8 +115,11 @@ describe('GP View Lloyd George Workflow', () => {
             cy.contains(`(NHS number: ${searchPatientPayload.nhsNumber})`).should('be.visible');
 
             // Assert file has been downloaded
-            console.log('Dowload Route Check: ' + Cypress.config('downloadsFolder'));
-            cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
+            cy.readFile(
+                `${Cypress.config('downloadsFolder')}/lloyd_george-patient-record-${
+                    searchPatientPayload.nhsNumber
+                }.xml`,
+            );
 
             cy.getByTestId('return-btn').click();
 
