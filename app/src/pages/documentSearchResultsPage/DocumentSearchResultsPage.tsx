@@ -77,7 +77,6 @@ function DocumentSearchResultsPage() {
         baseHeaders,
     ]);
 
-    // @ts-ignore
     return !isDeletingDocuments ? (
         <>
             <h1 id="download-page-title">Download electronic health records and attachments</h1>
