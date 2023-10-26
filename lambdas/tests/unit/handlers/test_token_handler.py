@@ -7,7 +7,7 @@ from botocore.exceptions import ClientError
 from handlers.token_handler import lambda_handler
 from jwt import PyJWTError
 from models.oidc_models import IdTokenClaimSet
-from services.oidc_service import OidcService
+from services.oidc_service_for_password import OidcServiceForPassword
 from utils.exceptions import AuthorisationException
 from utils.lambda_response import ApiGatewayResponse
 
@@ -50,10 +50,10 @@ def mock_aws_infras(mocker, patch_env_vars):
 
 @pytest.fixture
 def mock_oidc_service(mocker):
-    mocker.patch.object(OidcService, "__init__", return_value=None)
-    mocked_fetch_token = mocker.patch.object(OidcService, "fetch_tokens")
+    mocker.patch.object(OidcServiceForPassword, "__init__", return_value=None)
+    mocked_fetch_token = mocker.patch.object(OidcServiceForPassword, "fetch_tokens")
     mocked_fetch_user_org_codes = mocker.patch.object(
-        OidcService, "fetch_users_org_code"
+        OidcServiceForPassword, "fetch_user_org_codes"
     )
 
     mocked_tokens = [
@@ -67,13 +67,13 @@ def mock_oidc_service(mocker):
 
     yield {
         "fetch_token": mocked_fetch_token,
-        "fetch_users_org_code": mocked_fetch_user_org_codes,
+        "fetch_user_org_codes": mocked_fetch_user_org_codes,
     }
 
 
 @pytest.fixture
 def mock_ods_api_service(mocker):
-    mock = mocker.patch("handlers.token_handler.OdsApiService")
+    mock = mocker.patch("handlers.token_handler.OdsApiServiceForPassword")
 
     mock.fetch_organisation_with_permitted_role.return_value = [
         {"org_name": "PORTWAY LIFESTYLE CENTRE", "ods_code": "A9A5A", "role": "DEV"}
@@ -147,7 +147,7 @@ def test_lambda_handler_respond_with_400_if_state_or_auth_code_missing(
 
         assert actual == expected
         mock_oidc_service["fetch_token"].assert_not_called()
-        mock_oidc_service["fetch_users_org_code"].assert_not_called()
+        mock_oidc_service["fetch_user_org_codes"].assert_not_called()
         mock_aws_infras["session_table"].post.assert_not_called()
 
 
@@ -171,7 +171,7 @@ def test_lambda_handler_respond_with_401_when_auth_code_is_invalid(
 
     assert actual == expected
 
-    mock_oidc_service["fetch_users_org_code"].assert_not_called()
+    mock_oidc_service["fetch_user_org_codes"].assert_not_called()
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
@@ -196,7 +196,7 @@ def test_lambda_handler_respond_with_400_when_given_state_not_found_in_state_tab
     assert actual == expected
 
     mock_oidc_service["fetch_token"].assert_not_called()
-    mock_oidc_service["fetch_users_org_code"].assert_not_called()
+    mock_oidc_service["fetch_user_org_codes"].assert_not_called()
     mock_aws_infras["session_table"].post.assert_not_called()
 
 

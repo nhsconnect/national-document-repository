@@ -70,8 +70,6 @@ class OidcService:
                 self.validate_and_decode_token(raw_id_token)
             )
 
-            self.selected_role_id = id_token_claims_set.selected_roleid
-
             return access_token, id_token_claims_set
         except KeyError:
             raise AuthorisationException(
