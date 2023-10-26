@@ -139,6 +139,7 @@ jobs:
           CYPRESS_RUN_AS_SMOKETEST: false
       
       - name: Folder Analysis
+        if: always()
         run: |
           echo "project root"
           pwd
