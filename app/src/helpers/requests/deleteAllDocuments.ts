@@ -9,7 +9,7 @@ type Args = {
     baseHeaders: AuthHeaders;
 };
 
-type DeleteResponse = {
+export type DeleteResponse = {
     data: string;
     status: number;
 };

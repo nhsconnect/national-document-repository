@@ -5,7 +5,7 @@ import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import DeletionConfirmationStage from '../deletionConfirmationStage/DeletionConfirmationStage';
-import deleteAllDocuments from '../../../helpers/requests/deleteAllDocuments';
+import deleteAllDocuments, { DeleteResponse } from '../../../helpers/requests/deleteAllDocuments';
 import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
@@ -28,6 +28,11 @@ export type Props = {
     passNavigate: (navigateTo: string) => void;
 };
 
+enum DELETE_DOCUMENTS_OPTION {
+    YES = 'yes',
+    NO = 'no',
+}
+
 function DeleteDocumentsStage({
     docType,
     numberOfFiles,
@@ -43,6 +48,9 @@ function DeleteDocumentsStage({
     const [deletionStage, setDeletionStage] = useState(SUBMISSION_STATE.INITIAL);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
+
+    const patientNhsNumber: string = patientDetails?.nhsNumber || '';
+
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
@@ -65,59 +73,64 @@ function DeleteDocumentsStage({
         </>
     );
 
-    const submit = async (fieldValues: FieldValues) => {
-        const patientNhsNumber: string = patientDetails?.nhsNumber || '';
+    const deleteDocumentsFor = async (type: DOCUMENT_TYPE) =>
+        await deleteAllDocuments({
+            docType: type,
+            nhsNumber: patientNhsNumber,
+            baseUrl,
+            baseHeaders,
+        });
 
-        if (fieldValues.deleteDocs === 'yes') {
-            setDeletionStage(SUBMISSION_STATE.PENDING);
-            let response;
-            try {
-                if (docType === DOCUMENT_TYPE.LLOYD_GEORGE) {
-                    response = await deleteAllDocuments({
-                        docType,
-                        nhsNumber: patientNhsNumber,
-                        baseUrl,
-                        baseHeaders,
+    const handleYesOption = async () => {
+        setDeletionStage(SUBMISSION_STATE.PENDING);
+        let response: DeleteResponse | undefined;
+
+        try {
+            if (docType === DOCUMENT_TYPE.LLOYD_GEORGE) {
+                response = await deleteDocumentsFor(docType);
+            } else if (docType === DOCUMENT_TYPE.ALL) {
+                response = await new Promise((resolve) => {
+                    const documentPromises = [
+                        deleteDocumentsFor(DOCUMENT_TYPE.LLOYD_GEORGE),
+                        deleteDocumentsFor(DOCUMENT_TYPE.ARF),
+                    ];
+                    Promise.all(documentPromises).then((responses) => {
+                        const finalResponse = responses.reduce((acc, res) =>
+                            acc.status && acc.status === 403 ? acc : res,
+                        );
+                        resolve(finalResponse);
                     });
-                }
-                if (docType === DOCUMENT_TYPE.ALL) {
-                    response = await deleteAllDocuments({
-                        docType: DOCUMENT_TYPE.ARF,
-                        nhsNumber: patientNhsNumber,
-                        baseUrl,
-                        baseHeaders,
-                    });
-                    response = await deleteAllDocuments({
-                        docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-                        nhsNumber: patientNhsNumber,
-                        baseUrl,
-                        baseHeaders,
-                    });
-                }
-                if (response?.status === 200) {
-                    setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
-                    if (setDownloadStage) {
-                        setDownloadStage(DOWNLOAD_STAGE.FAILED);
-                    }
-                }
-            } catch (e) {
-                setDeletionStage(SUBMISSION_STATE.FAILED);
-                const error = e as AxiosError;
-                if (error.response?.status === 403) {
-                    passNavigate(routes.HOME);
+                });
+            }
+            if (response?.status === 200) {
+                setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
+
+                if (setDownloadStage) {
+                    setDownloadStage(DOWNLOAD_STAGE.FAILED);
                 }
             }
-        } else if (fieldValues.deleteDocs === 'no') {
-            if (userType === USER_ROLE.GP) {
-                if (setStage) {
-                    setStage(LG_RECORD_STAGE.RECORD);
-                }
+        } catch (e) {
+            setDeletionStage(SUBMISSION_STATE.FAILED);
+            const error = e as AxiosError;
+            if (error.response?.status === 403) {
+                passNavigate(routes.HOME);
             }
-            if (userType === USER_ROLE.PCSE) {
-                if (setIsDeletingDocuments) {
-                    setIsDeletingDocuments(false);
-                }
-            }
+        }
+    };
+
+    const handleNoOption = () => {
+        if (userType === USER_ROLE.GP && setStage) {
+            setStage(LG_RECORD_STAGE.RECORD);
+        } else if (userType === USER_ROLE.PCSE && setIsDeletingDocuments) {
+            setIsDeletingDocuments(false);
+        }
+    };
+
+    const submit = async (fieldValues: FieldValues) => {
+        if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.YES) {
+            await handleYesOption();
+        } else if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.NO) {
+            handleNoOption();
         }
     };
 
@@ -132,7 +145,7 @@ function DeleteDocumentsStage({
                     {patientInfo}
                     <Radios id="delete-docs">
                         <Radios.Radio
-                            value="yes"
+                            value={DELETE_DOCUMENTS_OPTION.YES}
                             inputRef={deleteDocsRef}
                             {...radioProps}
                             id="yes-radio-button"
@@ -141,7 +154,7 @@ function DeleteDocumentsStage({
                             Yes
                         </Radios.Radio>
                         <Radios.Radio
-                            value="no"
+                            value={DELETE_DOCUMENTS_OPTION.NO}
                             inputRef={deleteDocsRef}
                             {...radioProps}
                             id="no-radio-button"
