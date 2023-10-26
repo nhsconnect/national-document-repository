@@ -155,3 +155,21 @@ def test_create_object_tag(mocker):
         Key=TEST_FILE_NAME,
         Tagging={"TagSet": [{"Key": test_tag_key, "Value": test_tag_value}]},
     )
+
+def test_get_tag_value(mocker):
+    mocker.patch("boto3.client")
+    service = S3Service()
+    mock_get_object_tag = mocker.patch.object(service.client, "get_object_tagging")
+
+    test_tag_key = "tag_key"
+    test_tag_value = "tag_name"
+
+    service.client.get_object_tagging(
+            Bucket=MOCK_BUCKET,
+            Key=TEST_FILE_NAME,
+        )
+
+    mock_get_object_tag.assert_called_once_with(
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_NAME,
+    )
