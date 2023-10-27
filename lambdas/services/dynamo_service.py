@@ -168,6 +168,6 @@ class DynamoDBService:
                 ExclusiveStartKey=exclusive_start_key,
             )
         except ClientError as e:
-            logger.error(f"Unable to delete item in table: {table_name}")
+            logger.error(f"Unable to scan table: {table_name}")
             logger.error(e)
             raise e

@@ -33,7 +33,7 @@ def lambda_handler(event, context):
 def report_handler(db_service, s3_service):
     staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
     start_time, end_time = get_times_for_scan()
-    report_data = get_dynamo_data(
+    report_data = get_dynamodb_report_items(
         db_service, int(start_time.timestamp()), int(end_time.timestamp())
     )
     if report_data:
@@ -50,7 +50,7 @@ def report_handler(db_service, s3_service):
     )
 
 
-def get_dynamo_data(
+def get_dynamodb_report_items(
     db_service, start_timestamp: int, end_timestamp: int
 ) -> None or list:
     logger.info("Starting Scan on DynamoDB table")
