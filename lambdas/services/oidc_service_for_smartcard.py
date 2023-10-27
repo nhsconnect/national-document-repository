@@ -32,7 +32,8 @@ class OidcServiceForSmartcard(OidcService):
         userinfo_response = requests.get(
             self._oidc_userinfo_url,
             headers={
-                "Authorization": f"Bearer {access_token}"
+                "Authorization": f"Bearer {access_token}",
+                "scope": "nrbacaccess"
             },
             # see if setting scope is actually needed
         )
