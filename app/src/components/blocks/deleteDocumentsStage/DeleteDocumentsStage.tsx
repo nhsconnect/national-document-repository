@@ -74,32 +74,29 @@ function DeleteDocumentsStage({
 
     const handleYesOption = async () => {
         setDeletionStage(SUBMISSION_STATE.PENDING);
-        let response: DeleteResponse | undefined;
+        let documentPromises: Array<Promise<DeleteResponse>> = [];
 
+        if (docType === DOCUMENT_TYPE.LLOYD_GEORGE) {
+            documentPromises = [deleteDocumentsFor(DOCUMENT_TYPE.LLOYD_GEORGE)];
+        } else if (docType === DOCUMENT_TYPE.ALL) {
+            documentPromises = [
+                deleteDocumentsFor(DOCUMENT_TYPE.LLOYD_GEORGE),
+                deleteDocumentsFor(DOCUMENT_TYPE.ARF),
+            ];
+        }
         try {
-            if (docType === DOCUMENT_TYPE.LLOYD_GEORGE) {
-                response = await deleteDocumentsFor(docType);
-            } else if (docType === DOCUMENT_TYPE.ALL) {
-                response = await new Promise((resolve) => {
-                    const documentPromises = [
-                        deleteDocumentsFor(DOCUMENT_TYPE.LLOYD_GEORGE),
-                        deleteDocumentsFor(DOCUMENT_TYPE.ARF),
-                    ];
-                    Promise.all(documentPromises).then((responses) => {
-                        const finalResponse = responses.reduce((acc, res) =>
-                            acc.status && acc.status === 403 ? acc : res,
-                        );
-                        resolve(finalResponse);
-                    });
-                });
-            }
-            if (response?.status === 200) {
-                setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
+            Promise.all(documentPromises).then((responses) => {
+                const finalResponse = responses.reduce((acc, res) =>
+                    acc.status && acc.status === 403 ? acc : res,
+                );
+                if (finalResponse.status === 200) {
+                    setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
 
-                if (setDownloadStage) {
-                    setDownloadStage(DOWNLOAD_STAGE.FAILED);
+                    if (setDownloadStage) {
+                        setDownloadStage(DOWNLOAD_STAGE.FAILED);
+                    }
                 }
-            }
+            });
         } catch (e) {
             setDeletionStage(SUBMISSION_STATE.FAILED);
         }
