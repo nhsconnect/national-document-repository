@@ -1,10 +1,7 @@
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from utils.dynamo import (
-    create_expression_attribute_values,
-    create_expression_placeholder,
-    create_expressions,
-    create_nonexistant_or_empty_attr_filter,
-)
+from utils.dynamo import (create_expression_attribute_values,
+                          create_expression_placeholder, create_expressions,
+                          create_nonexistant_or_empty_attr_filter)
 
 
 def test_create_expressions_correctly_creates_an_expression_of_one_field(set_env):

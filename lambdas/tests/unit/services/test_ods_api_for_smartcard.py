@@ -1,7 +1,5 @@
 import pytest
-
 from services.ods_api_service_for_smartcard import is_gpp_org
-
 from tests.unit.helpers.data.ods.utils import load_ods_response_data
 
 

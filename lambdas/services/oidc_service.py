@@ -8,7 +8,6 @@ import requests
 from models.oidc_models import AccessToken, IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
 from requests import Response
-
 from utils.exceptions import AuthorisationException
 
 logger = logging.getLogger()

@@ -1,8 +1,7 @@
 import logging
-from typing import List, Dict
+from typing import Dict, List
 
 import requests
-
 from models.oidc_models import AccessToken
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException

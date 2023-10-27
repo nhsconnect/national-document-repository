@@ -1,19 +1,15 @@
 import json
 import logging
-import uuid
 import time
+import uuid
 
 import jwt
 import requests
 from botocore.exceptions import ClientError
-from requests.models import HTTPError
-from utils.exceptions import (
-    PdsErrorException,
-)
-
 from enums.pds_ssm_parameters import SSMParameter
-
+from requests.models import HTTPError
 from services.patient_search_service import PatientSearch
+from utils.exceptions import PdsErrorException
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

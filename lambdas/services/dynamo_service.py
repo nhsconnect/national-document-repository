@@ -3,11 +3,9 @@ import logging
 import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-from utils.dynamo import (
-    create_expression_attribute_values,
-    create_expressions,
-    create_nonexistant_or_empty_attr_filter,
-)
+from utils.dynamo import (create_expression_attribute_values,
+                          create_expressions,
+                          create_nonexistant_or_empty_attr_filter)
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 
 logger = logging.getLogger()

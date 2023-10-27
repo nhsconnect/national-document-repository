@@ -1,11 +1,8 @@
 import json
 
 from requests import Response
-from utils.exceptions import (
-    PdsErrorException,
-)
-
 from services.patient_search_service import PatientSearch
+from utils.exceptions import PdsErrorException
 
 
 class MockPdsApiService(PatientSearch):

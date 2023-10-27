@@ -1,11 +1,12 @@
 import json
 import logging
 import os
+
 from botocore.exceptions import ClientError
+from services.dynamo_service import DynamoDBService
 from services.oidc_service import OidcService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.exceptions import AuthorisationException
-from services.dynamo_service import DynamoDBService
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()

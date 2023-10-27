@@ -7,17 +7,15 @@ import uuid
 import boto3
 import jwt
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 from models.oidc_models import IdTokenClaimSet
 from services.dynamo_service import DynamoDBService
-from botocore.exceptions import ClientError
 from services.ods_api_service_for_password import OdsApiServiceForPassword
 from services.ods_api_service_for_smartcard import OdsApiServiceForSmartcard
-from services.oidc_service_for_smartcard import OidcServiceForSmartcard
 from services.oidc_service_for_password import OidcServiceForPassword
-from utils.exceptions import (
-    AuthorisationException,
-    OrganisationNotFoundException,
-)
+from services.oidc_service_for_smartcard import OidcServiceForSmartcard
+from utils.exceptions import (AuthorisationException,
+                              OrganisationNotFoundException)
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
@@ -247,4 +245,4 @@ def response_400_bad_request_for_missing_parameter():
 # TODO AKH Utility method
 # Quick and dirty check to see if we're on Dev
 def is_dev_environment() -> bool:
-    return "dev" in os.environ["WORKSPACE"] or "ndr" in os.environ["WORKSPACE"]
+    return False  # "dev" in os.environ["WORKSPACE"] or "ndr" in os.environ["WORKSPACE"]

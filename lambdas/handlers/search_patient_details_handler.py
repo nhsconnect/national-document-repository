@@ -3,19 +3,13 @@ import os
 from json import JSONDecodeError
 
 from pydantic import ValidationError
-from services.pds_api_service import PdsApiService
-from utils.exceptions import (
-    InvalidResourceIdException,
-    PatientNotFoundException,
-    PdsErrorException,
-)
-from utils.lambda_response import ApiGatewayResponse
-
-from services.ssm_service import SSMService
-
 from services.mock_pds_service import MockPdsApiService
-
+from services.pds_api_service import PdsApiService
+from services.ssm_service import SSMService
 from utils.decorators.validate_patient_id import validate_patient_id
+from utils.exceptions import (InvalidResourceIdException,
+                              PatientNotFoundException, PdsErrorException)
+from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

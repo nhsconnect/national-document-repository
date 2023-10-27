@@ -1,7 +1,7 @@
 import json
 
-from botocore.exceptions import ClientError
 import pytest
+from botocore.exceptions import ClientError
 from handlers.back_channel_logout_handler import lambda_handler
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException

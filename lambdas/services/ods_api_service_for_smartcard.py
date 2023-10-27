@@ -3,9 +3,7 @@ from typing import Dict, List, Optional
 
 from enums.permitted_role import PermittedRole
 from services.ods_api_service import OdsApiService, Organisation
-from utils.exceptions import (
-    TooManyOrgsException,
-)
+from utils.exceptions import TooManyOrgsException
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

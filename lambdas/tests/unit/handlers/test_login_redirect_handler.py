@@ -1,7 +1,8 @@
 from botocore.exceptions import ClientError
 from handlers import login_redirect_handler
 from oauthlib.oauth2 import InsecureTransportError
-from tests.unit.helpers.ssm_responses import MOCK_MULTI_STRING_PARAMETERS_RESPONSE
+from tests.unit.helpers.ssm_responses import \
+    MOCK_MULTI_STRING_PARAMETERS_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
 
 RETURN_URL = (

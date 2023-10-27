@@ -1,11 +1,7 @@
-from models.pds_models import PatientDetails, Patient
+from models.pds_models import Patient, PatientDetails
 from requests import Response
-
-from utils.exceptions import (
-    PdsErrorException,
-    PatientNotFoundException,
-    InvalidResourceIdException,
-)
+from utils.exceptions import (InvalidResourceIdException,
+                              PatientNotFoundException, PdsErrorException)
 
 
 class PatientSearch:
