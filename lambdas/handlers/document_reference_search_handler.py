@@ -8,7 +8,9 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.dynamo_service import DynamoDBService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.validate_patient_id import (
-    extract_nhs_number_from_event, validate_patient_id)
+    extract_nhs_number_from_event,
+    validate_patient_id,
+)
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import camelize_dict

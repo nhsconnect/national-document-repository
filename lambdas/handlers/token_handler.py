@@ -14,11 +14,15 @@ from services.ods_api_service_for_password import OdsApiServiceForPassword
 from services.ods_api_service_for_smartcard import OdsApiServiceForSmartcard
 from services.oidc_service_for_smartcard import OidcServiceForSmartcard
 from services.oidc_service_for_password import OidcServiceForPassword
-from utils.exceptions import AuthorisationException, OdsErrorException, OrganisationNotFoundException
+from utils.exceptions import (
+    AuthorisationException,
+    OrganisationNotFoundException,
+)
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
 
 def lambda_handler(event, context):
     if is_dev_environment():
@@ -53,13 +57,11 @@ def token_request(oidc_service, ods_api_service, event):
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
 
-
-
         logger.info("Use the access token to fetch user's organisation codes")
         org_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
 
-        permitted_orgs_and_roles = ods_api_service.fetch_organisation_with_permitted_role(
-            org_codes
+        permitted_orgs_and_roles = (
+            ods_api_service.fetch_organisation_with_permitted_role(org_codes)
         )
 
         if len(permitted_orgs_and_roles) == 0:
@@ -80,7 +82,7 @@ def token_request(oidc_service, ods_api_service, event):
     except AuthorisationException as error:
         logger.error(error)
         return ApiGatewayResponse(
-            401, f"Failed to authenticate user with OIDC service", "GET"
+            401, "Failed to authenticate user with OIDC service", "GET"
         ).create_api_gateway_response()
     except (ClientError, KeyError, TypeError) as error:
         logger.error(error)
@@ -209,9 +211,9 @@ def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
 
 # TODO AKH SSM service
 def issue_auth_token(
-        session_id: str,
-        id_token_claim_set: IdTokenClaimSet,
-        permitted_orgs_and_roles: list[dict],
+    session_id: str,
+    id_token_claim_set: IdTokenClaimSet,
+    permitted_orgs_and_roles: list[dict],
 ) -> str:
     ssm_client = boto3.client("ssm")
     logger.info("starting ssm request to retrieve NDR private key")

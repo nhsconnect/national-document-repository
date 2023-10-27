@@ -6,9 +6,7 @@ import jwt
 import pytest
 from botocore.exceptions import ClientError
 from handlers.token_handler import lambda_handler
-from jwt import PyJWTError
 from models.oidc_models import IdTokenClaimSet
-from services.ods_api_service_for_password import OdsApiServiceForPassword
 from services.oidc_service_for_password import OidcServiceForPassword
 from utils.exceptions import AuthorisationException
 from utils.lambda_response import ApiGatewayResponse
@@ -65,7 +63,9 @@ def mock_oidc_service(mocker):
 
 @pytest.fixture
 def mock_ods_api_service(mocker):
-    mock = mocker.patch("services.ods_api_service_for_password.OdsApiServiceForPassword")
+    mock = mocker.patch(
+        "services.ods_api_service_for_password.OdsApiServiceForPassword"
+    )
 
     mock.return_value.fetch_organisation_with_permitted_role.return_value = [
         {"org_name": "PORTWAY LIFESTYLE CENTRE", "ods_code": "A9A5A", "role": "DEV"}
@@ -79,16 +79,16 @@ def mock_jwt_encode(mocker):
 
 
 def test_lambda_handler_respond_with_200_and_org_info_and_auth_token(
-        set_env,
-        mock_aws_infras,
-        mock_oidc_service,
-        # mock_ods_api_service,
-        mock_jwt_encode,
-        mocker
+    set_env,
+    mock_aws_infras,
+    mock_oidc_service,
+    # mock_ods_api_service,
+    mock_jwt_encode,
+    mocker,
 ):
     test_event = {
         "queryStringParameters": {"code": "test_auth_code", "state": "test_state"},
-        "httpmethod": "GET"
+        "httpmethod": "GET",
     }
 
     expected_response_body = {
@@ -102,7 +102,8 @@ def test_lambda_handler_respond_with_200_and_org_info_and_auth_token(
     ).create_api_gateway_response()
 
     mocker.patch(
-        "services.ods_api_service_for_password.OdsApiServiceForPassword.fetch_organisation_with_permitted_role").return_value = [
+        "services.ods_api_service_for_password.OdsApiServiceForPassword.fetch_organisation_with_permitted_role"
+    ).return_value = [
         {"org_name": "PORTWAY LIFESTYLE CENTRE", "ods_code": "A9A5A", "role": "DEV"}
     ]
 
@@ -112,7 +113,7 @@ def test_lambda_handler_respond_with_200_and_org_info_and_auth_token(
 
 
 def test_lambda_handler_respond_with_400_if_state_or_auth_code_missing(
-        mock_oidc_service, mock_aws_infras, set_env
+    mock_oidc_service, mock_aws_infras, set_env
 ):
     expected = ApiGatewayResponse(
         400, "Please supply an authorisation code and state", "GET"
@@ -152,11 +153,7 @@ def test_lambda_handler_respond_with_400_if_state_or_auth_code_missing(
 
 
 def test_lambda_handler_respond_with_401_when_auth_code_is_invalid(
-        mock_aws_infras,
-        mock_oidc_service,
-        mock_ods_api_service,
-        mock_jwt_encode,
-        set_env
+    mock_aws_infras, mock_oidc_service, mock_ods_api_service, mock_jwt_encode, set_env
 ):
     mock_oidc_service["fetch_token"].side_effect = AuthorisationException
 
@@ -177,7 +174,7 @@ def test_lambda_handler_respond_with_401_when_auth_code_is_invalid(
 
 
 def test_lambda_handler_respond_with_400_when_given_state_not_found_in_state_table(
-        mock_aws_infras, mock_oidc_service, set_env
+    mock_aws_infras, mock_oidc_service, set_env
 ):
     invalid_state = "state_not_exist_in_dynamo_db"
     test_event = {
@@ -202,18 +199,19 @@ def test_lambda_handler_respond_with_400_when_given_state_not_found_in_state_tab
 
 
 def test_lambda_handler_respond_with_401_when_user_dont_have_a_valid_role_to_login(
-        mock_aws_infras,
-        mock_oidc_service,
-        # mock_ods_api_service,
-        mock_jwt_encode,
-        mocker
+    mock_aws_infras,
+    mock_oidc_service,
+    # mock_ods_api_service,
+    mock_jwt_encode,
+    mocker,
 ):
     test_event = {
         "queryStringParameters": {"code": "test_auth_code", "state": "test_state"}
     }
 
     mocker.patch(
-        "services.ods_api_service_for_password.OdsApiServiceForPassword.fetch_organisation_with_permitted_role").return_value = []
+        "services.ods_api_service_for_password.OdsApiServiceForPassword.fetch_organisation_with_permitted_role"
+    ).return_value = []
 
     expected = ApiGatewayResponse(
         401, "Failed to authenticate user with OIDC service", "GET"
@@ -226,7 +224,7 @@ def test_lambda_handler_respond_with_401_when_user_dont_have_a_valid_role_to_log
 
 
 def test_lambda_handler_respond_with_500_when_encounter_boto3_error(
-        mock_aws_infras, set_env, mocker
+    mock_aws_infras, set_env, mocker
 ):
     test_event = {
         "queryStringParameters": {"code": "test_auth_code", "state": "test_state"}
@@ -235,7 +233,9 @@ def test_lambda_handler_respond_with_500_when_encounter_boto3_error(
         {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
     )
 
-    mock_oidc = mocker.patch("services.oidc_service_for_password.OidcServiceForPassword.fetch_oidc_parameters")
+    mock_oidc = mocker.patch(
+        "services.oidc_service_for_password.OidcServiceForPassword.fetch_oidc_parameters"
+    )
     mock_oidc.return_value = {
         "OIDC_CLIENT_ID": "client-id",
         "OIDC_CLIENT_SECRET": "client-secret",
@@ -256,12 +256,12 @@ def test_lambda_handler_respond_with_500_when_encounter_boto3_error(
 
 
 def test_lambda_handler_respond_with_500_when_encounter_pyjwt_encode_error(
-        mock_aws_infras,
-        mock_oidc_service,
-        mock_ods_api_service,
-        mock_jwt_encode,
-        set_env,
-        mocker
+    mock_aws_infras,
+    mock_oidc_service,
+    mock_ods_api_service,
+    mock_jwt_encode,
+    set_env,
+    mocker,
 ):
     test_event = {
         "queryStringParameters": {"code": "test_auth_code", "state": "test_state"}

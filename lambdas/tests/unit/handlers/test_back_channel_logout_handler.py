@@ -10,13 +10,8 @@ from utils.lambda_response import ApiGatewayResponse
 
 @pytest.fixture
 def mock_oidc_service(mocker):
-    mocker.patch.object(
-        OidcService,
-        "__init__",
-        return_value=None)
-    mock_oidc_service = mocker.patch.object(
-        OidcService,
-        "validate_and_decode_token")
+    mocker.patch.object(OidcService, "__init__", return_value=None)
+    mock_oidc_service = mocker.patch.object(OidcService, "validate_and_decode_token")
     yield mock_oidc_service
 
 
@@ -32,8 +27,9 @@ def test_returns_500_when_env_vars_not_set():
     assert actual == expected
 
 
-def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(mocker, mock_oidc_service, monkeypatch,
-                                                                             context):
+def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(
+    mocker, mock_oidc_service, monkeypatch, context
+):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
     mock_token = "mock_token"
@@ -53,23 +49,24 @@ def test_back_channel_logout_handler_valid_jwt_returns_200_if_session_exists(moc
     mock_dynamo_service.assert_called_with(mock_session_id)
 
 
-def test_back_channel_logout_handler_missing_jwt_returns_400(mocker, mock_oidc_service, monkeypatch,
-                                                             context):
+def test_back_channel_logout_handler_missing_jwt_returns_400(
+    mocker, mock_oidc_service, monkeypatch, context
+):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
-    event = {
-        "httpMethod": "POST",
-        "body": "{}"
-    }
-    expected = ApiGatewayResponse(400, "An error occurred due to missing key: 'logout_token'",
-                                  "POST").create_api_gateway_response()
+    event = {"httpMethod": "POST", "body": "{}"}
+    expected = ApiGatewayResponse(
+        400, "An error occurred due to missing key: 'logout_token'", "POST"
+    ).create_api_gateway_response()
 
     actual = lambda_handler(event, context)
 
     assert expected == actual
 
 
-def test_back_channel_logout_handler_jwt_without_session_id_returns_400(mock_oidc_service, monkeypatch):
+def test_back_channel_logout_handler_jwt_without_session_id_returns_400(
+    mock_oidc_service, monkeypatch
+):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
     mock_token = "mock_token"
@@ -87,7 +84,9 @@ def test_back_channel_logout_handler_jwt_without_session_id_returns_400(mock_oid
     mock_oidc_service.asset_called_with(mock_token)
 
 
-def test_back_channel_logout_handler_invalid_jwt_returns_400(mock_oidc_service, monkeypatch):
+def test_back_channel_logout_handler_invalid_jwt_returns_400(
+    mock_oidc_service, monkeypatch
+):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
     mock_token = "mock_token"
@@ -103,7 +102,9 @@ def test_back_channel_logout_handler_invalid_jwt_returns_400(mock_oidc_service, 
     mock_oidc_service.asset_called_with(mock_token)
 
 
-def test_back_channel_logout_handler_boto_error_returns_500(mocker, mock_oidc_service, monkeypatch):
+def test_back_channel_logout_handler_boto_error_returns_500(
+    mocker, mock_oidc_service, monkeypatch
+):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
     mock_token = "mock_token"
@@ -130,7 +131,4 @@ def test_back_channel_logout_handler_boto_error_returns_500(mocker, mock_oidc_se
 
 def build_event_from_token(token: str) -> dict:
     body_string = {"logout_token": token}
-    return {
-        "httpMethod": "POST",
-        "body": json.dumps(body_string)
-    }
+    return {"httpMethod": "POST", "body": json.dumps(body_string)}

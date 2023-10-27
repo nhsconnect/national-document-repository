@@ -47,25 +47,25 @@ def lambda_handler(event, context):
     except PatientNotFoundException as e:
         logger.error(f"PDS not found: {str(e)}")
         return ApiGatewayResponse(
-            404, f"Patient does not exist for given NHS number", "GET"
+            404, "Patient does not exist for given NHS number", "GET"
         ).create_api_gateway_response()
 
     except (InvalidResourceIdException, PdsErrorException) as e:
         logger.error(f"PDS Error: {str(e)}")
         return ApiGatewayResponse(
-            400, f"An error occurred while searching for patient", "GET"
+            400, "An error occurred while searching for patient", "GET"
         ).create_api_gateway_response()
 
     except ValidationError as e:
         logger.error(f"Failed to parse PDS data:{str(e)}")
         return ApiGatewayResponse(
-            400, f"Failed to parse PDS data", "GET"
+            400, "Failed to parse PDS data", "GET"
         ).create_api_gateway_response()
 
     except JSONDecodeError as e:
         logger.error(f"Error while decoding Json:{str(e)}")
         return ApiGatewayResponse(
-            400, f"Invalid json in body", "GET"
+            400, "Invalid json in body", "GET"
         ).create_api_gateway_response()
 
     except KeyError as e:

@@ -32,7 +32,13 @@ def prepare_redirect_response(web_application_client_class):
         url, _headers, _body = oidc_client.prepare_authorization_request(
             authorization_url=oidc_parameters["OIDC_AUTHORISE_URL"],
             redirect_url=os.environ["OIDC_CALLBACK_URL"],
-            scope=["openid", "profile", "nationalrbacaccess", "associatedorgs","selectedrole"],
+            scope=[
+                "openid",
+                "profile",
+                "nationalrbacaccess",
+                "associatedorgs",
+                "selectedrole",
+            ],
         )
 
         save_state_in_dynamo_db(oidc_client.state)

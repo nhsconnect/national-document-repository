@@ -5,7 +5,6 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from models.oidc_models import IdTokenClaimSet
-from services.oidc_service import OidcService
 from services.oidc_service_for_password import OidcServiceForPassword
 from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import AuthorisationException
@@ -24,7 +23,7 @@ MOCK_PARAMETERS = {
 @pytest.fixture
 def oidc_service(mocker):
     with patch.object(
-            OidcServiceForPassword, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
+        OidcServiceForPassword, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
     ):
         oidc_service = OidcServiceForPassword()
         yield oidc_service
@@ -63,7 +62,7 @@ def test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
 
 
 def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_auth_code(
-        mocker, oidc_service
+    mocker, oidc_service
 ):
     mocker.patch(
         "requests.post",
@@ -81,7 +80,7 @@ def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_aut
 
 
 def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_id_token(
-        mocker, oidc_service
+    mocker, oidc_service
 ):
     mock_access_token = "mock_access_token"
     invalid_id_token = "invalid_id_token"
@@ -147,7 +146,7 @@ def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
 
 
 def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_invalid_access_token(
-        mocker, oidc_service
+    mocker, oidc_service
 ):
     mock_token = "fake_access_token"
 
@@ -155,7 +154,7 @@ def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_inva
         status_code=401,
         json_data={
             "error_description": "The access token provided is expired, revoked, "
-                                 "malformed, or invalid for other reasons.",
+            "malformed, or invalid for other reasons.",
             "error": "invalid_token",
         },
     )
@@ -211,7 +210,7 @@ def mock_jwk_client(mocker, mock_id_tokens):
 
 
 def test_oidc_service_validate_and_decode_token__validate_token_with_proper_keys(
-        mock_id_tokens, oidc_service, mock_jwk_client
+    mock_id_tokens, oidc_service, mock_jwk_client
 ):
     id_token = mock_id_tokens["valid_id_token"]
 
@@ -222,7 +221,7 @@ def test_oidc_service_validate_and_decode_token__validate_token_with_proper_keys
 
 
 def test_oidc_service_validate_and_decode_token_raise_AuthorisationException_for_fake_id_token(
-        mock_id_tokens, oidc_service, mock_jwk_client
+    mock_id_tokens, oidc_service, mock_jwk_client
 ):
     counterfeit_id_token = mock_id_tokens["counterfeit_id_token"]
 
@@ -231,7 +230,7 @@ def test_oidc_service_validate_and_decode_token_raise_AuthorisationException_for
 
 
 def test_oidc_service_validate_and_decode_token_raise_AuthorisationException_for_expired_id_token(
-        mock_id_tokens, oidc_service, mock_jwk_client
+    mock_id_tokens, oidc_service, mock_jwk_client
 ):
     expired_id_token = mock_id_tokens["expired_id_token"]
 

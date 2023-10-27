@@ -3,8 +3,6 @@ import json
 from requests import Response
 from utils.exceptions import (
     PdsErrorException,
-    PatientNotFoundException,
-    InvalidResourceIdException,
 )
 
 from services.patient_search_service import PatientSearch

@@ -5,8 +5,6 @@ from botocore.exceptions import ClientError
 from requests import Response
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from utils.exceptions import (
-    InvalidResourceIdException,
-    PatientNotFoundException,
     PdsErrorException,
 )
 

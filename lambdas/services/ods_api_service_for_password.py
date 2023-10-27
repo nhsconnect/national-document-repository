@@ -1,17 +1,15 @@
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List
 
-from enums.permitted_role import PermittedRole
-from services.ods_api_service import OdsApiService, Organisation
+from services.ods_api_service import OdsApiService
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
 class OdsApiServiceForPassword(OdsApiService):
-
     def fetch_organisation_with_permitted_role(
-            self, ods_code_list: list[str]
+        self, ods_code_list: list[str]
     ) -> List[Dict]:
         valid_orgs = []
         for ods_code in ods_code_list:

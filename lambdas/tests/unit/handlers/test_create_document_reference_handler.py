@@ -5,14 +5,26 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
 from handlers.create_document_reference_handler import lambda_handler
-from tests.unit.conftest import (MOCK_ARF_BUCKET, MOCK_ARF_TABLE_NAME,
-                                 MOCK_LG_BUCKET, MOCK_LG_TABLE_NAME,
-                                 TEST_NHS_NUMBER, TEST_OBJECT_KEY)
+from tests.unit.conftest import (
+    MOCK_ARF_BUCKET,
+    MOCK_ARF_TABLE_NAME,
+    MOCK_LG_BUCKET,
+    MOCK_LG_TABLE_NAME,
+    TEST_NHS_NUMBER,
+    TEST_OBJECT_KEY,
+)
 from tests.unit.helpers.data.create_document_reference import (
-    ARF_MOCK_EVENT_BODY, ARF_MOCK_RESPONSE, LG_AND_ARF_MOCK_RESPONSE,
-    LG_MOCK_BAD_FILE_NAME_EVENT_BODY, LG_MOCK_BAD_FILE_TYPE_EVENT_BODY,
-    LG_MOCK_DUPLICATE_FILES_EVENT_BODY, LG_MOCK_EVENT_BODY,
-    LG_MOCK_MISSING_FILES_EVENT_BODY, LG_MOCK_RESPONSE, MOCK_EVENT_BODY)
+    ARF_MOCK_EVENT_BODY,
+    ARF_MOCK_RESPONSE,
+    LG_AND_ARF_MOCK_RESPONSE,
+    LG_MOCK_BAD_FILE_NAME_EVENT_BODY,
+    LG_MOCK_BAD_FILE_TYPE_EVENT_BODY,
+    LG_MOCK_DUPLICATE_FILES_EVENT_BODY,
+    LG_MOCK_EVENT_BODY,
+    LG_MOCK_MISSING_FILES_EVENT_BODY,
+    LG_MOCK_RESPONSE,
+    MOCK_EVENT_BODY,
+)
 from tests.unit.services.test_s3_service import MOCK_PRESIGNED_POST_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
 

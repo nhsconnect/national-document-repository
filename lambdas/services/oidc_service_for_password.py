@@ -1,13 +1,9 @@
-import json
 import logging
 from typing import List, Dict
 
-import jwt
 import requests
-from botocore.exceptions import ClientError
 
 from models.oidc_models import AccessToken
-from services.ods_api_service_for_password import OdsApiServiceForPassword
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
 from utils.lambda_response import ApiGatewayResponse
@@ -17,9 +13,9 @@ logger.setLevel(logging.INFO)
 
 
 class OidcServiceForPassword(OidcService):
-
-
-    def fetch_user_org_codes(self, access_token: str, selected_role: str = None) -> List[str]:
+    def fetch_user_org_codes(
+        self, access_token: str, selected_role: str = None
+    ) -> List[str]:
         userinfo = self.fetch_userinfo(access_token)
         nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
         return [role["org_code"] for role in nrbac_roles if "org_code" in role]

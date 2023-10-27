@@ -3,7 +3,6 @@ from typing import Dict, List, NamedTuple, Optional
 
 import requests
 from enums.permitted_role import PermittedRole
-from models.oidc_models import AccessToken
 from utils.exceptions import OdsErrorException, OrganisationNotFoundException
 
 logger = logging.getLogger()
@@ -35,12 +34,12 @@ class OdsApiService:
             raise OdsErrorException("Failed to fetch organisation data from ODS")
 
     def fetch_organisation_with_permitted_role(
-            self, ods_code_list: list[str]
+        self, ods_code_list: list[str]
     ) -> List[Dict]:
         raise NotImplementedError
 
     def parse_ods_response(self, response_json) -> Optional[Organisation]:
-        logger.info(response_json);
+        logger.info(response_json)
         try:
             org_name = response_json["Organisation"]["Name"]
             ods_code = response_json["Organisation"]["OrgId"]["extension"]
@@ -49,7 +48,8 @@ class OdsApiService:
 
             for json_role in json_roles:
                 if json_role["id"] in PermittedRole.list():
-                    # early return with the first permitted organistation type found. Convert organisation role code to role type as well e.g. RO76 -> GP.
+                    # early return with the first permitted organistation type found
+                    # Convert organisation role code to role type as well e.g. RO76 -> GP.
                     return Organisation(
                         org_name=org_name,
                         ods_code=ods_code,

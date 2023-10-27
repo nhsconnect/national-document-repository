@@ -8,8 +8,6 @@ import requests
 from botocore.exceptions import ClientError
 from requests.models import HTTPError
 from utils.exceptions import (
-    InvalidResourceIdException,
-    PatientNotFoundException,
     PdsErrorException,
 )
 

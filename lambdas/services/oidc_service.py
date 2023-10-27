@@ -48,7 +48,6 @@ class OidcService:
 
         access_token_response = requests.post(url=url, data=body, headers=headers)
         if access_token_response.status_code == 200:
-
             return self.parse_fetch_tokens_response(access_token_response)
         else:
             logger.error(
@@ -60,7 +59,7 @@ class OidcService:
             )
 
     def parse_fetch_tokens_response(
-            self, fetch_token_response: Response
+        self, fetch_token_response: Response
     ) -> Tuple[AccessToken, IdTokenClaimSet]:
         try:
             response_content = fetch_token_response.json()
@@ -127,4 +126,3 @@ class OidcService:
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         raise NotImplementedError
-

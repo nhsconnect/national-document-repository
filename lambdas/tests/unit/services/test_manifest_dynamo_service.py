@@ -5,7 +5,9 @@ import boto3
 import pytest
 from models.document import Document
 from tests.unit.helpers.data.dynamo_responses import (
-    MOCK_EMPTY_RESPONSE, MOCK_MANIFEST_QUERY_RESPONSE)
+    MOCK_EMPTY_RESPONSE,
+    MOCK_MANIFEST_QUERY_RESPONSE,
+)
 
 from lambdas.services.manifest_dynamo_service import ManifestDynamoService
 
