@@ -27,7 +27,7 @@ class OdsApiService:
         elif response.status_code == 404:
             raise OrganisationNotFoundException(
                 "Organisation does not exist for given ODS code"
-            )   # TODO AKH Uncaught
+            )
         else:
             logger.info(
                 f"Got error response from ODS API with ods code {ods_code}: {response}"
