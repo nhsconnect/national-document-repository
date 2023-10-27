@@ -21,25 +21,3 @@ class OdsApiServiceForPassword(OdsApiService):
                 valid_orgs.append(organisation_info._asdict())
 
         return valid_orgs
-
-    def parse_ods_response(self, response_json) -> Optional[Organisation]:
-        try:
-            org_name = response_json["Organisation"]["Name"]
-            ods_code = response_json["Organisation"]["OrgId"]["extension"]
-
-            json_roles: List[Dict] = response_json["Organisation"]["Roles"]["Role"]
-
-            for json_role in json_roles:
-                if json_role["id"] in PermittedRole.list():
-                    # early return with the first permitted role found. convert role code to role name as well.
-                    return Organisation(
-                        org_name=org_name,
-                        ods_code=ods_code,
-                        role=PermittedRole(json_role["id"]).name,
-                    )
-
-            return None
-
-        except KeyError:
-            logger.info(f"Got response from ODS in unexpected format: {response_json}")
-            return None

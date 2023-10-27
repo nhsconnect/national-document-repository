@@ -20,10 +20,6 @@ from utils.lambda_response import ApiGatewayResponse
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# TODO Move this to SSM
-PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE = "X4S4L"
-
-
 def lambda_handler(event, context):
     if is_dev_environment():
         oidc_service = OidcServiceForPassword()
@@ -57,12 +53,15 @@ def token_request(oidc_service, ods_api_service, event):
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
 
+
+
         logger.info("Use the access token to fetch user's organisation codes")
-        org_codes = oidc_service.fetch_user_org_codes(access_token)
+        org_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
 
         permitted_orgs_and_roles = ods_api_service.fetch_organisation_with_permitted_role(
             org_codes
         )
+
         if len(permitted_orgs_and_roles) == 0:
             logger.info("User has no valid organisations to log in")
             raise AuthorisationException("No valid organisations for user")

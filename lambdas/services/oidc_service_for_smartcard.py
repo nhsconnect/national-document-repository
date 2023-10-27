@@ -18,12 +18,14 @@ logger.setLevel(logging.INFO)
 
 class OidcServiceForSmartcard(OidcService):
 
-    def token_request(self, event):
-        pass
-
-    def fetch_user_org_codes(self, access_token: str, selected_role: str) -> List[str]:
+    def fetch_user_org_codes(self, access_token: str, id_token_claim_set) -> List[str]:
         userinfo = self.fetch_userinfo(access_token)
         nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
+        selected_role = get_selected_roleid(id_token_claim_set)
+
+        logger.info(f"Selected role ID: {nrbac_roles}")
+        logger.info(f"Selected role ID: {selected_role}")
+
         for role in nrbac_roles:
             if role["person_roleid"] == selected_role:
                 return role["org_code"]
@@ -43,5 +45,9 @@ class OidcServiceForSmartcard(OidcService):
                 f"{userinfo_response.content}"
             )
             raise AuthorisationException("Failed to retrieve userinfo")
+        
+@staticmethod 
+def get_selected_roleid(id_token_claim_set):
+    return id_token_claim_set.selected_roleid
 
 
