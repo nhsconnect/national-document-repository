@@ -10,6 +10,7 @@ import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import LloydGeorgeRecordStage from '../../components/blocks/lloydGeorgeRecordStage/LloydGeorgeRecordStage';
 import LloydGeorgeDownloadAllStage from '../../components/blocks/lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
+import { USER_ROLE } from '../../types/generic/roles';
 
 export enum LG_RECORD_STAGE {
     RECORD = 0,
@@ -30,10 +31,6 @@ function LloydGeorgeRecordPage() {
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
-
-    const handleNavigate = (navigateTo: string) => {
-        navigate(navigateTo);
-    };
 
     useEffect(() => {
         const onPageLoad = async () => {
@@ -108,7 +105,7 @@ function LloydGeorgeRecordPage() {
                         numberOfFiles={numberOfFiles}
                         patientDetails={patientDetails}
                         setStage={setStage}
-                        passNavigate={handleNavigate}
+                        userType={USER_ROLE.GP}
                         setDownloadStage={setDownloadStage}
                     />
                 )
