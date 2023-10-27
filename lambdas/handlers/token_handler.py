@@ -55,6 +55,8 @@ def token_request(oidc_service, ods_api_service, event):
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
 
+        logger.info(f"Access token: {access_token}")
+
         logger.info("Use the access token to fetch user's organisation codes")
         org_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
 
