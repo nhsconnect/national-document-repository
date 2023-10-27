@@ -6,6 +6,7 @@ import { USER_ROLE } from '../../../types/generic/roles';
 import { routes } from '../../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
+import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 
 export type Props = {
     numberOfFiles: number;
@@ -16,13 +17,8 @@ export type Props = {
 
 function DeletionConfirmationStage({ numberOfFiles, patientDetails, setStage, userType }: Props) {
     const navigate = useNavigate();
-
-    const nhsNumber: String =
-        patientDetails?.nhsNumber.slice(0, 3) +
-        ' ' +
-        patientDetails?.nhsNumber.slice(3, 6) +
-        ' ' +
-        patientDetails?.nhsNumber.slice(6, 10);
+    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
     const handleClick = () => {
         if (setStage) {
@@ -45,7 +41,7 @@ function DeletionConfirmationStage({ numberOfFiles, patientDetails, setStage, us
                         {patientDetails?.familyName}
                     </Card.Description>
                     <Card.Description style={{ fontSize: '16px' }}>
-                        (NHS number: {nhsNumber})
+                        (NHS number: {formattedNhsNumber})
                     </Card.Description>
                 </Card.Content>
             </Card>

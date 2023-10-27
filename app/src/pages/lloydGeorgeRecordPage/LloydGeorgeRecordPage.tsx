@@ -32,10 +32,6 @@ function LloydGeorgeRecordPage() {
     const mounted = useRef(false);
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
 
-    const handleNavigate = (navigateTo: string) => {
-        navigate(navigateTo);
-    };
-
     useEffect(() => {
         const onPageLoad = async () => {
             setDownloadStage(DOWNLOAD_STAGE.PENDING);
@@ -110,7 +106,6 @@ function LloydGeorgeRecordPage() {
                         patientDetails={patientDetails}
                         setStage={setStage}
                         userType={USER_ROLE.GP}
-                        passNavigate={handleNavigate}
                         setDownloadStage={setDownloadStage}
                     />
                 )

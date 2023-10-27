@@ -14,6 +14,7 @@ import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 import ServiceError from '../../layout/serviceErrorBox/ServiceErrorBox';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
 import { USER_ROLE } from '../../../types/generic/roles';
+import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -45,18 +46,12 @@ function DeleteDocumentsStage({
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
 
-    const patientNhsNumber: string = patientDetails?.nhsNumber || '';
+    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
-
-    const nhsNumber: string =
-        patientDetails?.nhsNumber.slice(0, 3) +
-        ' ' +
-        patientDetails?.nhsNumber.slice(3, 6) +
-        ' ' +
-        patientDetails?.nhsNumber.slice(6, 10);
 
     const patientInfo = (
         <>
@@ -64,7 +59,7 @@ function DeleteDocumentsStage({
                 {patientDetails?.givenName?.map((name: String) => `${name} `)}
                 {patientDetails?.familyName}
             </p>
-            <p style={{ fontSize: '16px', marginBottom: 5 }}>NHS number: {nhsNumber}</p>
+            <p style={{ fontSize: '16px', marginBottom: 5 }}>NHS number: {formattedNhsNumber}</p>
             <p style={{ fontSize: '16px' }}>Date of birth: {dob}</p>
         </>
     );
@@ -72,7 +67,7 @@ function DeleteDocumentsStage({
     const deleteDocumentsFor = (type: DOCUMENT_TYPE) =>
         deleteAllDocuments({
             docType: type,
-            nhsNumber: patientNhsNumber,
+            nhsNumber: nhsNumber,
             baseUrl,
             baseHeaders,
         });
