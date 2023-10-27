@@ -13,6 +13,7 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 @ensure_environment_variables(
     names=[
         "STAGING_STORE_BUCKET_NAME",
@@ -35,8 +36,12 @@ def report_handler(db_service, s3_service):
     report_data = get_dynamo_data(
         db_service, int(start_time.timestamp()), int(end_time.timestamp())
     )
-    file_name = f"Bulk upload report for {str(start_time)} to {str(end_time)}.csv"
-    write_items_to_csv(report_data, f"/tmp/{file_name}")
+    if report_data:
+        file_name = f"Bulk upload report for {str(start_time)} to {str(end_time)}.csv"
+        write_items_to_csv(report_data, f"/tmp/{file_name}")
+    else:
+        file_name = f"Bulk upload report for {str(start_time)} to {str(end_time)}.txt"
+        write_empty_report(f"/tmp/{file_name}")
     logger.info("Uploading new report file to S3")
     s3_service.upload_file(
         s3_bucket_name=staging_bucket_name,
@@ -45,7 +50,9 @@ def report_handler(db_service, s3_service):
     )
 
 
-def get_dynamo_data(db_service, start_timestamp, end_timestamp):
+def get_dynamo_data(
+    db_service, start_timestamp: int, end_timestamp: int
+) -> None or list:
     logger.info("Starting Scan on DynamoDB table")
     bulk_upload_table_name = os.getenv("BULK_UPLOAD_DYNAMODB_NAME")
     filter_time = Attr("Timestamp").gt(start_timestamp) & Attr("Timestamp").lt(
@@ -54,6 +61,9 @@ def get_dynamo_data(db_service, start_timestamp, end_timestamp):
     db_response = db_service.scan_table(
         bulk_upload_table_name, filter_expression=filter_time
     )
+
+    if not "Items" in db_response:
+        return None
     items = db_response["Items"]
     while "LastEvaluatedKey" in db_response:
         db_response = db_service.scan_table(
@@ -61,7 +71,8 @@ def get_dynamo_data(db_service, start_timestamp, end_timestamp):
             exclusive_start_key=db_response["LastEvaluatedKey"],
             filter_expression=filter_time,
         )
-        items.append(db_response["Items"])
+        if db_response["Items"]:
+            items.extend(db_response["Items"])
     return items
 
 
@@ -83,7 +94,11 @@ def get_times_for_scan():
     end_timestamp = datetime.datetime.combine(today_date, end_report_time)
     if current_time < end_timestamp:
         end_timestamp -= datetime.timedelta(days=1)
-    start_timestamp = (
-        end_timestamp - datetime.timedelta(days=1)
-    )
+    start_timestamp = end_timestamp - datetime.timedelta(days=1)
     return start_timestamp, end_timestamp
+
+
+def write_empty_report(file_path: str):
+    with open(file_path, "w") as output_file:
+        output_file.write("No data was found for this timeframe")
+    output_file.close()
