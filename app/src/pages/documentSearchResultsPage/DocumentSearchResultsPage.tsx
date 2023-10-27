@@ -9,7 +9,6 @@ import { Link } from 'react-router-dom';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';
 import ProgressBar from '../../components/generic/progressBar/ProgressBar';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
-
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import DocumentSearchResultsOptions from '../../components/blocks/documentSearchResultsOptions/DocumentSearchResultsOptions';
 import { AxiosError } from 'axios';
@@ -33,10 +32,6 @@ function DocumentSearchResultsPage() {
 
     const handleUpdateDownloadState = (newState: SUBMISSION_STATE) => {
         setDownloadState(newState);
-    };
-
-    const handleNavigate = (navigateTo: string) => {
-        navigate(navigateTo);
     };
 
     const mounted = useRef(false);
