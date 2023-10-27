@@ -30,14 +30,13 @@ class OidcServiceForSmartcard(OidcService):
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         logger.info(f"Access toekn for user info request: {access_token}")
 
-        
+        #params={"scope": "nationalrbacaccess"},
 
         userinfo_response = requests.get(
             self._oidc_userinfo_url,
             headers={
                 "Authorization": f"Bearer {access_token}",
             },
-            params={"scope": "nationalrbacaccess"},
         )
 
         if userinfo_response.status_code == 200:

@@ -35,8 +35,8 @@ def prepare_redirect_response(web_application_client_class):
             scope=[
                 "openid",
                 "profile",
+                "nhsperson",
                 "nationalrbacaccess",
-                "associatedorgs",
                 "selectedrole",
             ],
         )
