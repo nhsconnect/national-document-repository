@@ -33,9 +33,8 @@ class OidcServiceForSmartcard(OidcService):
             self._oidc_userinfo_url,
             headers={
                 "Authorization": f"Bearer {access_token}",
-                "scope": "nrbacaccess"
+                "scope": "nationalrbacaccess"
             },
-            # see if setting scope is actually needed
         )
         if userinfo_response.status_code == 200:
             return userinfo_response.json()
