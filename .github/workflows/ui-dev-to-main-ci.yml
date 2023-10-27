@@ -97,21 +97,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Folder Analysis
-        run: |
-          echo "project root"
-          pwd
-          ls
-          echo "app root"
-          cd app 
-          ls
-          echo "cypress root"
-          cd cypress
-          ls
-          echo "downloads root"
-          cd downloads
-          ls
-
       - name: Download the build folder
         uses: actions/download-artifact@v3
         with:
@@ -138,22 +123,6 @@ jobs:
           CYPRESS_BASE_URL: 'http://localhost:3000/'
           CYPRESS_RUN_AS_SMOKETEST: false
       
-      - name: Folder Analysis
-        if: always()
-        run: |
-          echo "project root"
-          pwd
-          ls
-          echo "app root"
-          cd app 
-          ls
-          echo "cypress root"
-          cd cypress
-          ls
-          echo "downloads root"
-          cd downloads
-          ls
-
   cypress-run-firefox:
     runs-on: ubuntu-22.04
     needs: install-cypress-build
