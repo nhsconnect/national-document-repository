@@ -13,10 +13,13 @@ logger.setLevel(logging.INFO)
 class OidcServiceForSmartcard(OidcService):
     def fetch_user_org_codes(self, access_token: str, id_token_claim_set) -> List[str]:
         userinfo = self.fetch_userinfo(access_token)
+
+        logger.info(f"User info response: {userinfo}")
+
         nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
         selected_role = get_selected_roleid(id_token_claim_set)
 
-        logger.info(f"Selected role ID: {nrbac_roles}")
+        logger.info(f"User's NRBAC roles: {nrbac_roles}")
         logger.info(f"Selected role ID: {selected_role}")
 
         for role in nrbac_roles:
@@ -25,10 +28,11 @@ class OidcServiceForSmartcard(OidcService):
         return []
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
+        logger.info(f"Access toekn for user info request: {access_token}")
         userinfo_response = requests.get(
             self._oidc_userinfo_url,
             headers={
-                "Authorization": f"Bearer {access_token}, scope nationalrbacaccess"
+                "Authorization": f"Bearer {access_token}"
             },
             # see if setting scope is actually needed
         )
