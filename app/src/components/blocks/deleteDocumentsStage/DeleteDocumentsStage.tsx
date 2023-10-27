@@ -86,10 +86,9 @@ function DeleteDocumentsStage({
         }
         try {
             Promise.all(documentPromises).then((responses) => {
-                const finalResponse = responses.reduce((acc, res) =>
-                    acc.status && acc.status === 403 ? acc : res,
-                );
-                if (finalResponse.status === 200) {
+                const hasSucceeded = !responses.some((res) => res.status === 403);
+
+                if (hasSucceeded) {
                     setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
 
                     if (setDownloadStage) {
