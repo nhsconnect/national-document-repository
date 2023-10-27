@@ -137,7 +137,6 @@ function DocumentSearchResultsPage() {
                 patientDetails={patientDetails}
                 userType={USER_ROLE.PCSE}
                 setIsDeletingDocuments={setIsDeletingDocuments}
-                passNavigate={handleNavigate}
                 docType={DOCUMENT_TYPE.ALL}
             />
         )

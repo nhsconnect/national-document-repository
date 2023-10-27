@@ -14,6 +14,7 @@ import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import axios from 'axios/index';
 import { USER_ROLE } from '../../../types/generic/roles';
 import { BrowserRouter } from 'react-router-dom';
+
 jest.mock('axios');
 
 const mockPatientDetails = buildPatientDetails();
@@ -21,7 +22,6 @@ const mockLgSearchResult = buildLgSearchResult();
 const mockSetStage = jest.fn();
 const mockSetIsDeletingDocuments = jest.fn();
 const mockSetDownloadStage = jest.fn();
-const mockNavigateCallback = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 describe('DeleteAllDocumentsStage', () => {
@@ -164,14 +164,13 @@ const renderComponent = (userType: USER_ROLE, docType: DOCUMENT_TYPE) => {
         numberOfFiles: mockLgSearchResult.number_of_files,
         userType,
         docType,
-        passNavigate: mockNavigateCallback,
     };
 
     render(
-        <SessionProvider sessionOverride={auth}>
-            <BrowserRouter>
+        <BrowserRouter>
+            <SessionProvider sessionOverride={auth}>
                 <TestApp {...props} />
-            </BrowserRouter>
-        </SessionProvider>,
+            </SessionProvider>
+        </BrowserRouter>,
     );
 };

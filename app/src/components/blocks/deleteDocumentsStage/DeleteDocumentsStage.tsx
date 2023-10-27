@@ -9,8 +9,6 @@ import deleteAllDocuments, { DeleteResponse } from '../../../helpers/requests/de
 import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
-import { AxiosError } from 'axios';
-import { routes } from '../../../types/generic/routes';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 import ServiceError from '../../layout/serviceErrorBox/ServiceErrorBox';
@@ -25,7 +23,6 @@ export type Props = {
     setIsDeletingDocuments?: Dispatch<SetStateAction<boolean>>;
     userType: USER_ROLE;
     setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
-    passNavigate: (navigateTo: string) => void;
 };
 
 enum DELETE_DOCUMENTS_OPTION {
@@ -40,7 +37,6 @@ function DeleteDocumentsStage({
     setStage,
     setIsDeletingDocuments,
     userType,
-    passNavigate,
     setDownloadStage,
 }: Props) {
     const { register, handleSubmit } = useForm();
@@ -73,8 +69,8 @@ function DeleteDocumentsStage({
         </>
     );
 
-    const deleteDocumentsFor = async (type: DOCUMENT_TYPE) =>
-        await deleteAllDocuments({
+    const deleteDocumentsFor = (type: DOCUMENT_TYPE) =>
+        deleteAllDocuments({
             docType: type,
             nhsNumber: patientNhsNumber,
             baseUrl,
@@ -111,10 +107,6 @@ function DeleteDocumentsStage({
             }
         } catch (e) {
             setDeletionStage(SUBMISSION_STATE.FAILED);
-            const error = e as AxiosError;
-            if (error.response?.status === 403) {
-                passNavigate(routes.HOME);
-            }
         }
     };
 
@@ -178,7 +170,6 @@ function DeleteDocumentsStage({
             patientDetails={patientDetails}
             setStage={setStage}
             userType={userType}
-            passNavigate={passNavigate}
         />
     );
 }

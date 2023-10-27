@@ -10,13 +10,13 @@ import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { USER_ROLE } from '../../../types/generic/roles';
-import { BrowserRouter } from 'react-router-dom';
+import * as ReactRouter from 'react-router';
+import { createMemoryHistory } from 'history';
 import { routes } from '../../../types/generic/routes';
 
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
 const mockSetStage = jest.fn();
-const mockNavigateCallback = jest.fn();
 
 describe('DeletionConfirmationStage', () => {
     beforeEach(() => {
@@ -96,10 +96,15 @@ describe('DeletionConfirmationStage', () => {
             ).toBeInTheDocument();
         });
 
-        it('calls navigate to Home page when link is clicked', async () => {
+        it('navigates to Home page when link is clicked', async () => {
+            const history = createMemoryHistory({
+                initialEntries: ['/'],
+                initialIndex: 0,
+            });
+
             const numberOfFiles = 7;
 
-            renderComponent(USER_ROLE.PCSE, numberOfFiles);
+            renderComponent(USER_ROLE.PCSE, numberOfFiles, history);
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -114,28 +119,34 @@ describe('DeletionConfirmationStage', () => {
             });
 
             await waitFor(() => {
-                expect(mockNavigateCallback).toHaveBeenCalledWith(routes.HOME);
+                expect(history.location.pathname).toBe(routes.HOME);
             });
         });
     });
 });
 
-const renderComponent = (userType: USER_ROLE, numberOfFiles: number) => {
+const renderComponent = (
+    userType: USER_ROLE,
+    numberOfFiles: number,
+    history = createMemoryHistory({
+        initialEntries: ['/'],
+        initialIndex: 0,
+    }),
+) => {
     const auth: Session = {
         auth: buildUserAuth(),
         isLoggedIn: true,
     };
     render(
-        <SessionProvider sessionOverride={auth}>
-            <BrowserRouter>
+        <ReactRouter.Router navigator={history} location={'/'}>
+            <SessionProvider sessionOverride={auth}>
                 <DeletionConfirmationStage
                     numberOfFiles={numberOfFiles}
                     patientDetails={mockPatientDetails}
                     setStage={mockSetStage}
                     userType={userType}
-                    passNavigate={mockNavigateCallback}
                 />
-            </BrowserRouter>
-        </SessionProvider>,
+            </SessionProvider>
+        </ReactRouter.Router>,
     );
 };

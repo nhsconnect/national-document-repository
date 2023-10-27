@@ -5,22 +5,18 @@ import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorg
 import { USER_ROLE } from '../../../types/generic/roles';
 import { routes } from '../../../types/generic/routes';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export type Props = {
     numberOfFiles: number;
     patientDetails: PatientDetails;
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     userType: USER_ROLE;
-    passNavigate: (navigateTo: string) => void;
 };
 
-function DeletionConfirmationStage({
-    numberOfFiles,
-    patientDetails,
-    setStage,
-    userType,
-    passNavigate,
-}: Props) {
+function DeletionConfirmationStage({ numberOfFiles, patientDetails, setStage, userType }: Props) {
+    const navigate = useNavigate();
+
     const nhsNumber: String =
         patientDetails?.nhsNumber.slice(0, 3) +
         ' ' +
@@ -64,7 +60,7 @@ function DeletionConfirmationStage({
                         to=""
                         onClick={(e) => {
                             e.preventDefault();
-                            passNavigate(routes.HOME);
+                            navigate(routes.HOME);
                         }}
                     >
                         Start Again
