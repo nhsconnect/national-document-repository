@@ -91,9 +91,6 @@ describe('GP View Lloyd George Workflow', () => {
             cy.intercept('GET', '/DocumentManifest*', {
                 statusCode: 200,
                 body: baseUrl + 'browserconfig.xml', // uses public served file in place of a ZIP file
-                Headers: {
-                    ContentDisposition: `attachment; lloyd_george-patient-record-${searchPatientPayload.nhsNumber}.xml`,
-                },
             }).as('documentManifest');
 
             cy.getByTestId('actions-menu').click();
