@@ -127,6 +127,7 @@ describe('GP View Lloyd George Workflow', () => {
             cy.getByTestId('pdf-card').should('be.visible');
         });
 
+        // TODO - PRMDR-401 - implement error scenario in UI and amend assertions accordingly
         it.skip('displays an error when no Lloyd George record exists for the patient', () => {
             cy.intercept('GET', '/DocumentManifest*', {
                 statusCode: 204,
@@ -139,12 +140,12 @@ describe('GP View Lloyd George Workflow', () => {
             cy.wait('@documentManifest');
 
             // Assert
-            // TODO - implement error scenario in UI and amend assertion accordingly
             cy.contains('appropriate error for when Lloyd George document cannot be found').should(
                 'be.visible',
             );
         });
 
+        // TODO - PRMDR-401 - implement error scenario in UI and amend assertions accordingly
         it.skip('displays an error when the document manifest backend API call fails', () => {
             cy.intercept('GET', '/DocumentManifest*', {
                 statusCode: 500,
@@ -156,7 +157,6 @@ describe('GP View Lloyd George Workflow', () => {
             cy.wait('@documentManifest');
 
             // Assert
-            // TODO - implement error scenario in UI and amend assertion accordingly
             cy.contains(
                 'appropriate error for when the document manifest backend API call fails',
             ).should('be.visible');
