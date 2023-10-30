@@ -9,4 +9,4 @@ class VirusScanResult(Enum):
     ERROR = "Error"
 
 
-SCAN_RESULT_TAG_KEY = 'scan-result'
+SCAN_RESULT_TAG_KEY = "scan-result"

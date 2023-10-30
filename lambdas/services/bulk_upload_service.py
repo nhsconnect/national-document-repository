@@ -11,15 +11,12 @@ from models.staging_metadata import MetadataFile, StagingMetadata
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
-from utils.exceptions import (
-    InvalidMessageException,
-    TagNotFoundException,
-    DocumentInfectedException,
-    VirusScanFailedException,
-    VirusScanNoResultException,
-    S3FileNotFoundException,
-)
-from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
+from utils.exceptions import (DocumentInfectedException,
+                              InvalidMessageException, S3FileNotFoundException,
+                              TagNotFoundException, VirusScanFailedException,
+                              VirusScanNoResultException)
+from utils.lloyd_george_validator import (LGInvalidFilesException,
+                                          validate_lg_file_names)
 from utils.utilities import create_reference_id
 
 logger = logging.getLogger()

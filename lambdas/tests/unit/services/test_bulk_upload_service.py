@@ -1,35 +1,21 @@
 import pytest
 from botocore.exceptions import ClientError
-from freezegun import freeze_time
-
 from enums.virus_scan_result import VirusScanResult
+from freezegun import freeze_time
 from services.bulk_upload_service import BulkUploadService
-from tests.unit.conftest import (
-    MOCK_LG_BUCKET,
-    MOCK_LG_STAGING_STORE_BUCKET,
-    MOCK_LG_TABLE_NAME,
-    TEST_OBJECT_KEY,
-    MOCK_LG_METADATA_SQS_QUEUE,
-    MOCK_BULK_UPLOAD_DYNAMODB,
-)
+from tests.unit.conftest import (MOCK_BULK_UPLOAD_DYNAMODB, MOCK_LG_BUCKET,
+                                 MOCK_LG_METADATA_SQS_QUEUE,
+                                 MOCK_LG_STAGING_STORE_BUCKET,
+                                 MOCK_LG_TABLE_NAME, TEST_OBJECT_KEY)
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    TEST_DOCUMENT_REFERENCE,
-    TEST_DOCUMENT_REFERENCE_LIST,
-    TEST_FILE_METADATA,
-    TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
-    TEST_SQS_MESSAGE,
-    TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
-    TEST_STAGING_METADATA,
-    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
-)
-from utils.exceptions import (
-    InvalidMessageException,
-    TagNotFoundException,
-    VirusScanNoResultException,
-    DocumentInfectedException,
-    VirusScanFailedException,
-    S3FileNotFoundException,
-)
+    TEST_DOCUMENT_REFERENCE, TEST_DOCUMENT_REFERENCE_LIST, TEST_FILE_METADATA,
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD, TEST_SQS_MESSAGE,
+    TEST_SQS_MESSAGE_WITH_INVALID_FILENAME, TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+from utils.exceptions import (DocumentInfectedException,
+                              InvalidMessageException, S3FileNotFoundException,
+                              TagNotFoundException, VirusScanFailedException,
+                              VirusScanNoResultException)
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 
@@ -385,7 +371,9 @@ def test_report_upload_complete_add_record_to_dynamodb(set_env, mocker, mock_uui
 
     service.report_upload_complete(TEST_STAGING_METADATA)
 
-    assert service.dynamo_service.create_item.call_count == len(TEST_STAGING_METADATA.files)
+    assert service.dynamo_service.create_item.call_count == len(
+        TEST_STAGING_METADATA.files
+    )
 
     for file in TEST_STAGING_METADATA.files:
         expected_dynamo_db_record = {
@@ -407,7 +395,9 @@ def test_report_upload_failure_add_record_to_dynamodb(set_env, mocker, mock_uuid
     service.dynamo_service = mocker.MagicMock()
 
     mock_failure_reason = "File name invalid"
-    service.report_upload_failure(TEST_STAGING_METADATA, failure_reason=mock_failure_reason)
+    service.report_upload_failure(
+        TEST_STAGING_METADATA, failure_reason=mock_failure_reason
+    )
 
     for file in TEST_STAGING_METADATA.files:
         expected_dynamo_db_record = {
@@ -417,7 +407,7 @@ def test_report_upload_failure_add_record_to_dynamodb(set_env, mocker, mock_uuid
             "NhsNumber": TEST_STAGING_METADATA.nhs_number,
             "Timestamp": 1696251600,
             "UploadStatus": "failed",
-            "FailureReason": mock_failure_reason
+            "FailureReason": mock_failure_reason,
         }
         service.dynamo_service.create_item.assert_any_call(
             item=expected_dynamo_db_record, table_name=MOCK_BULK_UPLOAD_DYNAMODB

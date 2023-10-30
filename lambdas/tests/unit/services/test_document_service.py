@@ -4,10 +4,9 @@ from unittest.mock import MagicMock, patch
 import boto3
 import pytest
 from models.document_reference import DocumentReference
+from services.document_service import DocumentService
 from tests.unit.helpers.data.dynamo_responses import (MOCK_EMPTY_RESPONSE,
                                                       MOCK_SEARCH_RESPONSE)
-
-from services.document_service import DocumentService
 
 
 @pytest.fixture

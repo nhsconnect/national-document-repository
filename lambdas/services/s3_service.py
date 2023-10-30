@@ -3,7 +3,6 @@ from typing import Any, Mapping
 
 import boto3
 from botocore.client import Config as BotoConfig
-
 from utils.exceptions import TagNotFoundException
 
 logger = logging.getLogger()
@@ -90,4 +89,6 @@ class S3Service:
             if key_value_pair["Key"] == tag_key:
                 return key_value_pair["Value"]
 
-        raise TagNotFoundException(f"Object {file_key} doesn't have a tag of key {tag_key}")
+        raise TagNotFoundException(
+            f"Object {file_key} doesn't have a tag of key {tag_key}"
+        )
