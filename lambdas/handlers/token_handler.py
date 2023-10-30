@@ -63,7 +63,9 @@ def token_request(oidc_service, ods_api_service, event):
         # permitted_orgs_and_roles = (
         #     ods_api_service.fetch_organisation_with_permitted_role(org_codes)
         # )
-        permitted_orgs_and_roles = [{"org_name": "PORTWAY LIFESTYLE CENTRE", "ods_code": "A9A5A", "role": "DEV"}]
+        permitted_orgs_and_roles = [
+            {"org_name": "PORTWAY LIFESTYLE CENTRE", "ods_code": "A9A5A", "role": "DEV"}
+        ]
 
         # if len(permitted_orgs_and_roles) == 0:
         #     logger.info("User has no valid organisations to log in")
@@ -241,7 +243,14 @@ def issue_auth_token(
     logger.info(f"id_token_claim_set: {id_token_claim_set}")
     logger.info(f"ndr_token_content: {ndr_token_content}")
 
-    authorisation_token = jwt.encode(ndr_token_content, private_key, algorithm="RS256")
+    try:
+        authorisation_token = jwt.encode(
+            ndr_token_content, private_key, algorithm="RS256"
+        )
+    except Exception as e:
+        logger.info(e)
+        raise e
+
     logger.info(f"encoded JWT: {authorisation_token}")
     return authorisation_token
 
