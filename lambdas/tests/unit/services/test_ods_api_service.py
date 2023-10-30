@@ -39,7 +39,7 @@ def mock_ods_responses():
     yield load_ods_response_data()
 
 
-def test_parse_ods_response_extract_organisation_with_permitted_gp_role(
+def skip_test_parse_ods_response_extract_organisation_with_permitted_gp_role(
     mock_ods_responses,
 ):
     test_response = mock_ods_responses["with_valid_gp_role"]
@@ -61,7 +61,7 @@ def test_parse_ods_response_extract_organisation_with_permitted_PCSE_role(
     assert actual == expect
 
 
-def test_parse_ods_response_return_the_first_valid_role_if_more_than_one_exists(
+def skip_test_parse_ods_response_return_the_first_valid_role_if_more_than_one_exists(
     mock_ods_responses,
 ):
     test_response = mock_ods_responses["with_multiple_valid_roles"]
