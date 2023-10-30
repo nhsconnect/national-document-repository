@@ -78,7 +78,7 @@ def lambda_handler(event, context):
     # else:
     #     policy.denyAllMethods()
 
-    handle_resource_access_control(_resource_name, _http_verb, user_roles, policy)
+    handle_resource_access_control(user_roles, policy)
     auth_response = policy.build()
 
     return auth_response
@@ -90,6 +90,7 @@ def handle_resource_access_control(user_roles, policy):
     elif PermittedRole.GP_ADMIN.name in user_roles:
         policy.allowAllMethods()
     elif PermittedRole.GP_CLINICAL.name in user_roles:
+        logger.info("GP CLINICAL ROLE TRIGGERED")
         policy.allowAllMethods()
         policy.denyMethod(HttpVerb.DELETE, "/DocumentDelete")
         policy.denyMethod(HttpVerb.POST, "/DocumentReference")
