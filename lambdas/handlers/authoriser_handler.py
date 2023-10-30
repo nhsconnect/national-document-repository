@@ -85,6 +85,7 @@ def lambda_handler(event, context):
 
 
 def handle_resource_access_control(resource_name, http_verb, user_roles, policy):
+    logger.info("resource name: %s, http: %s" % (resource_name, http_verb))
     match resource_name:
         case "/DocumentDelete":
             allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
@@ -103,6 +104,7 @@ def handle_resource_access_control(resource_name, http_verb, user_roles, policy)
                               is False)
         case _:
             allow_resource = True
+    logger.info("allow resource: %s" % allow_resource)
 
     if allow_resource:
         # Validate user role
