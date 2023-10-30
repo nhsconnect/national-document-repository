@@ -57,7 +57,9 @@
                     "**/*.test.jsx",
                     "**/*.test.ts",
                     "**/*.test.tsx",
-                    "src/tests/**/*"
+                    "src/tests/**/*",
+                    "**/cypress/**",
+                    "**/cypress.config.ts"
                 ]
             }
         ],
