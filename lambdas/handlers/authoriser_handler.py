@@ -75,7 +75,7 @@ def lambda_handler(event, context):
 
 def handle_role_access_control(user_roles, policy):
     # Handle deny all policies for PCSE
-    # Handle allow all roles for GP, DEV
+    # Handle allow all policies for GP, DEV
 
     if PermittedRole.DEV.name in user_roles:
         policy.allowAllMethods()
@@ -90,8 +90,8 @@ def handle_role_access_control(user_roles, policy):
 
 
 def handle_resource_access_control(resource_name, user_roles, policy):
-    # Handle deny policy for PCSE
-    # Handle allow policy for GP, DEV
+    # Handle allow specific policy for PCSE
+    # Handle deny specific policy for GP, DEV
 
     match resource_name:
         case "/DocumentDelete":
