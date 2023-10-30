@@ -18,7 +18,7 @@ class SQSService:
         queue_url: str,
         message_body: str,
         nhs_number: str,
-        delay_second: int = 0,
+        delay_seconds: int = 0,
     ):
         self.client.send_message(
             QueueUrl=queue_url,
@@ -26,5 +26,5 @@ class SQSService:
                 "NhsNumber": {"DataType": "String", "StringValue": nhs_number},
             },
             MessageBody=message_body,
-            DelaySeconds=delay_second,
+            DelaySeconds=delay_seconds,
         )

@@ -80,7 +80,6 @@ class BulkUploadService:
                 f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
             )
             self.put_message_back_to_queue(staging_metadata)
-            logger.info("Will stop processing Lloyd George record for this patient")
             return
         except (VirusScanFailedException, DocumentInfectedException) as e:
             logger.info(e)
@@ -89,8 +88,21 @@ class BulkUploadService:
             )
             logger.info("Will stop processing Lloyd George record for this patient")
 
-            failure_reason = "One or more of the files failed virus scanner check"
-            self.report_upload_failure(staging_metadata, failure_reason)
+            self.report_upload_failure(
+                staging_metadata, "One or more of the files failed virus scanner check"
+            )
+            return
+        except S3FileNotFoundException as e:
+            logger.info(e)
+            logger.info(
+                f"One or more of the files is not accessible from S3 bucket for patient {staging_metadata.nhs_number}"
+            )
+            logger.info("Will stop processing Lloyd George record for this patient")
+
+            self.report_upload_failure(
+                staging_metadata,
+                "One or more of the files is not accessible from staging bucket",
+            )
             return
 
         logger.info(
@@ -151,8 +163,12 @@ class BulkUploadService:
                 )
             except ClientError as e:
                 if "AccessDenied" in str(e) or "NoSuchKey" in str(e):
-                    logger.info(f"Failed to check object tag for given file_path: {file_path}")
-                    logger.info("file_path may be incorrect or contain invalid character")
+                    logger.info(
+                        f"Failed to check object tag for given file_path: {file_path}"
+                    )
+                    logger.info(
+                        "file_path may be incorrect or contain invalid character"
+                    )
                     raise S3FileNotFoundException(f"Failed to access file {file_path}")
                 else:
                     raise e
@@ -162,16 +178,12 @@ class BulkUploadService:
         )
 
     def put_message_back_to_queue(self, staging_metadata: StagingMetadata):
-        sqs_service = SQSService()
-        nhs_number = staging_metadata.nhs_number
-
-        sqs_service.send_message_with_nhs_number_attr(
+        self.sqs_service.send_message_with_nhs_number_attr(
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
-            nhs_number=nhs_number,
-            delay_second=60 * 5,
+            nhs_number=staging_metadata.nhs_number,
+            delay_seconds=60 * 5,
         )
-        raise VirusNoResultException
 
     def init_transaction(self):
         self.dynamo_records_in_transaction = []
