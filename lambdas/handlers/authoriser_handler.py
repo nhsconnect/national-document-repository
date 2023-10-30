@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and limitations 
 import logging
 import os
 import time
-
+import json
 import boto3
 import botocore.exceptions
 import jwt
@@ -31,7 +31,7 @@ def lambda_handler(event, context):
     try:
         user_roles = []
         ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
-
+        logger.info(event)
         client = boto3.client("ssm")
         ssm_response = client.get_parameter(
             Name=ssm_public_key_parameter_name, WithDecryption=True
@@ -47,8 +47,6 @@ def lambda_handler(event, context):
         current_session = find_login_session(ndr_session_id)
         validate_login_session(current_session, ndr_session_id)
 
-        user_roles = [org["role"] for org in decoded["organisations"]]
-
     except AuthorisationException as e:
         logger.error(e)
         logger.error("failed to authenticate user")
@@ -63,25 +61,33 @@ def lambda_handler(event, context):
     principal_id = ""
     _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
     api_id, stage, _http_verb, _resource_name = api_gateway_arn.split("/")
-
+    user_roles = [org["role"] for org in decoded["organisations"]]
+    logger.info(json.dumps(user_roles))
     policy = AuthPolicy(principal_id, aws_account_id)
     policy.restApiId = api_id
     policy.region = region
     policy.stage = stage
 
-    # for now, allow all method for GP and DEV role, and allow only search document for PCSE
+    handle_resource_access_control(user_roles, policy)
+    auth_response = policy.build()
+
+    return auth_response
+
+
+def handle_resource_access_control(user_roles, policy):
     if PermittedRole.DEV.name in user_roles:
         policy.allowAllMethods()
-    elif PermittedRole.GP.name in user_roles:
+    elif PermittedRole.GP_ADMIN.name in user_roles:
         policy.allowAllMethods()
+    elif PermittedRole.GP_CLINICAL.name in user_roles:
+        policy.allowAllMethods()
+        policy.denyMethod(HttpVerb.DELETE, "/DocumentDelete")
+        policy.denyMethod(HttpVerb.POST, "/DocumentReference")
+        policy.denyMethod(HttpVerb.GET, "/DocumentManifest")
     elif PermittedRole.PCSE.name in user_roles:
         policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
     else:
         policy.denyAllMethods()
-
-    auth_response = policy.build()
-
-    return auth_response
 
 
 def deny_all_response(event):
