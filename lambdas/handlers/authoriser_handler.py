@@ -68,16 +68,6 @@ def lambda_handler(event, context):
     policy.region = region
     policy.stage = stage
 
-    # for now, allow all method for GP and DEV role, and allow only search document for PCSE
-    # if PermittedRole.DEV.name in user_roles:
-    #     policy.allowAllMethods()
-    # elif PermittedRole.GP.name in user_roles:
-    #     policy.allowAllMethods()
-    # elif PermittedRole.PCSE.name in user_roles:
-    #     policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
-    # else:
-    #     policy.denyAllMethods()
-
     handle_resource_access_control(user_roles, policy)
     auth_response = policy.build()
 
@@ -90,12 +80,10 @@ def handle_resource_access_control(user_roles, policy):
     elif PermittedRole.GP_ADMIN.name in user_roles:
         policy.allowAllMethods()
     elif PermittedRole.GP_CLINICAL.name in user_roles:
-        logger.info("GP CLINICAL ROLE TRIGGERED")
         policy.allowAllMethods()
         policy.denyMethod(HttpVerb.DELETE, "/DocumentDelete")
         policy.denyMethod(HttpVerb.POST, "/DocumentReference")
         policy.denyMethod(HttpVerb.GET, "/DocumentManifest")
-
     elif PermittedRole.PCSE.name in user_roles:
         policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
     else:
