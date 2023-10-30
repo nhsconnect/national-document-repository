@@ -1,5 +1,7 @@
 import pytest
 from botocore.exceptions import ClientError
+
+from enums.virus_scan_result import VirusScanResult
 from services.bulk_upload_service import BulkUploadService
 from tests.unit.conftest import (
     MOCK_LG_BUCKET,
@@ -17,7 +19,14 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_STAGING_METADATA,
     TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
 )
-from utils.exceptions import InvalidMessageException
+from utils.exceptions import (
+    InvalidMessageException,
+    TagNotFoundException,
+    VirusScanNoResultException,
+    DocumentInfectedException,
+    VirusScanFailedException,
+    S3FileNotFoundException,
+)
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 
@@ -124,6 +133,93 @@ def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(se
 
     with pytest.raises(LGInvalidFilesException):
         service.validate_files(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+
+
+def test_check_virus_result_raise_no_error_when_all_files_are_clean(
+    set_env, mocker, caplog
+):
+    service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+    service.s3_service.get_tag_value.return_value = VirusScanResult.CLEAN
+
+    service.check_virus_result(TEST_STAGING_METADATA)
+
+    assert (
+        caplog.records[-1].message
+        == f"Verified that all documents for patient {TEST_STAGING_METADATA.nhs_number} are clean."
+    )
+
+
+def test_check_virus_result_raise_VirusScanNoResultException_when_one_file_not_scanned(
+    set_env, mocker
+):
+    service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+
+    service.s3_service.get_tag_value.side_effect = [
+        VirusScanResult.CLEAN,
+        VirusScanResult.CLEAN,
+        TagNotFoundException,  # the 3rd file is not scanned yet
+    ]
+
+    with pytest.raises(VirusScanNoResultException):
+        service.check_virus_result(TEST_STAGING_METADATA)
+
+
+def test_check_virus_result_raise_DocumentInfectedException_when_one_file_was_infected(
+    set_env, mocker
+):
+    service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+
+    service.s3_service.get_tag_value.side_effect = [
+        VirusScanResult.CLEAN,
+        VirusScanResult.INFECTED,
+        VirusScanResult.CLEAN,
+    ]
+
+    with pytest.raises(DocumentInfectedException):
+        service.check_virus_result(TEST_STAGING_METADATA)
+
+
+def test_check_virus_result_raise_S3FileNotFoundException_when_one_file_not_exist_in_bucket(
+    set_env, mocker
+):
+    service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+
+    mock_s3_exception = ClientError(
+        {"Error": {"Code": "AccessDenied", "Message": "Access Denied"}},
+        "GetObjectTagging",
+    )
+
+    service.s3_service.get_tag_value.side_effect = [
+        VirusScanResult.CLEAN,
+        VirusScanResult.CLEAN,
+        mock_s3_exception,
+    ]
+
+    with pytest.raises(S3FileNotFoundException):
+        service.check_virus_result(TEST_STAGING_METADATA)
+
+
+def test_check_virus_result_raise_VirusScanFailedException_for_special_cases(
+    set_env, mocker
+):
+    service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+
+    cases_to_test_for = [
+        VirusScanResult.UNSCANNABLE,
+        VirusScanResult.ERROR,
+        VirusScanResult.INFECTED_ALLOWED,
+        "some_other_unexpected_value",
+    ]
+
+    for tag_value in cases_to_test_for:
+        service.s3_service.get_tag_value.return_value = tag_value
+        with pytest.raises(VirusScanFailedException):
+            service.check_virus_result(TEST_STAGING_METADATA)
 
 
 def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid):

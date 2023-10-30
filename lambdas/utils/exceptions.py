@@ -56,11 +56,19 @@ class InvalidDocumentReferenceException(Exception):
     pass
 
 
-class VirusNoResultException(Exception):
+class VirusScanNoResultException(Exception):
     pass
 
 
-class VirusFailedException(Exception):
+class DocumentInfectedException(Exception):
+    pass
+
+
+class VirusScanFailedException(Exception):
+    pass
+
+
+class S3FileNotFoundException(Exception):
     pass
 
 

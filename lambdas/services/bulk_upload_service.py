@@ -13,9 +13,11 @@ from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.exceptions import (
     InvalidMessageException,
-    VirusFailedException,
-    VirusNoResultException,
     TagNotFoundException,
+    DocumentInfectedException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+    S3FileNotFoundException,
 )
 from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
@@ -128,6 +130,7 @@ class BulkUploadService:
     def check_virus_result(self, staging_metadata: StagingMetadata):
         for file_metadata in staging_metadata.files:
             source_file_key = self.strip_leading_slash(file_metadata.file_path)
+            file_path = file_metadata.file_path
             try:
                 scan_result = self.s3_service.get_tag_value(
                     self.staging_bucket_name, source_file_key, SCAN_RESULT_TAG_KEY
@@ -135,17 +138,25 @@ class BulkUploadService:
                 if scan_result == VirusScanResult.CLEAN:
                     continue
                 elif scan_result == VirusScanResult.INFECTED:
-                    raise VirusFailedException(
-                        f"Found infected document filepath: {file_metadata.file_path}"
+                    raise DocumentInfectedException(
+                        f"Found infected document filepath: {file_path}"
                     )
                 else:
                     # handle cases other than Clean or Infected e.g. Unscannable, Error
-                    raise VirusFailedException(
-                        f"Failed to scan document filepath: {file_metadata.file_path}, scan result was {scan_result}"
+                    raise VirusScanFailedException(
+                        f"Failed to scan document filepath: {file_path}, scan result was {scan_result}"
                     )
-
             except TagNotFoundException:
-                raise VirusNoResultException(f"Virus scan result not found for document: {file_metadata.file_path}")
+                raise VirusScanNoResultException(
+                    f"Virus scan result not found for document: {file_path}"
+                )
+            except ClientError as e:
+                if "AccessDenied" in str(e) or "NoSuchKey" in str(e):
+                    logger.info(f"Failed to check object tag for given file_path: {file_path}")
+                    logger.info("file_path may be incorrect or contain invalid character")
+                    raise S3FileNotFoundException(f"Failed to access file {file_path}")
+                else:
+                    raise e
 
         logger.info(
             f"Verified that all documents for patient {staging_metadata.nhs_number} are clean."
