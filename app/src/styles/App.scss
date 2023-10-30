@@ -94,9 +94,7 @@
     }
     &:focus {
         background-color: #ffeb3b;
-        box-shadow:
-            0 -2px #ffeb3b,
-            0 4px #212b32;
+        box-shadow: 0 -2px #ffeb3b, 0 4px #212b32;
         color: #212b32;
         outline: 4px solid transparent;
         text-decoration: none;
@@ -275,4 +273,12 @@
     #pdf-viewer {
         margin-top: 6px;
     }
+}
+
+.deletion-complete-card {
+    text-align: center !important;
+    width: auto !important;
+    float: none !important;
+    background-color: #555;
+    color: #fff;
 }

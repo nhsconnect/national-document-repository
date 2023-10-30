@@ -18,7 +18,7 @@ def test_lambda_handler_valid_arf_docs_successful_delete_returns_204(
     mocker.patch("services.document_service.DocumentService.delete_documents")
 
     expected = ApiGatewayResponse(
-        204, "Successfully deleted documents", "DELETE"
+        200, "Success", "DELETE"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)
@@ -37,7 +37,7 @@ def test_lambda_handler_valid_lg_docs_successful_delete_returns_204(
     mocker.patch("services.document_service.DocumentService.delete_documents")
 
     expected = ApiGatewayResponse(
-        204, "Successfully deleted documents", "DELETE"
+        200, "Success", "DELETE"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_lg_doctype_event, context)

@@ -2,6 +2,7 @@ import logging
 import os
 
 from botocore.exceptions import ClientError
+from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from services.document_service import DocumentService
@@ -47,13 +48,15 @@ def lambda_handler(event, context):
                 404, "No documents available", "DELETE"
             ).create_api_gateway_response()
 
-        document_service.delete_documents(table, results)
+        document_service.delete_documents(
+            table_name=table,
+            document_references=results,
+            type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
+        )
     except ClientError as e:
         logger.info(str(e))
         return ApiGatewayResponse(
             500, "Failed to delete documents", "DELETE"
         ).create_api_gateway_response()
 
-    return ApiGatewayResponse(
-        204, "Successfully deleted documents", "DELETE"
-    ).create_api_gateway_response()
+    return ApiGatewayResponse(200, "Success", "DELETE").create_api_gateway_response()

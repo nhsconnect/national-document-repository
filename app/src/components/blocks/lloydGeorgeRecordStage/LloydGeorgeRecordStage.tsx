@@ -6,6 +6,7 @@ import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
+import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 
 export type Props = {
     patientDetails: PatientDetails;
@@ -34,12 +35,8 @@ function LloydGeorgeRecordStage({
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 
-    const nhsNumber: String =
-        patientDetails?.nhsNumber.slice(0, 3) +
-        ' ' +
-        patientDetails?.nhsNumber.slice(3, 6) +
-        ' ' +
-        patientDetails?.nhsNumber.slice(6, 10);
+    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
     const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
@@ -75,7 +72,7 @@ function LloydGeorgeRecordStage({
                 <p data-testid="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
                 </p>
-                <p data-testid="patient-nhs-number">NHS number: {nhsNumber}</p>
+                <p data-testid="patient-nhs-number">NHS number: {formattedNhsNumber}</p>
                 <p data-testid="patient-dob">Date of birth: {dob}</p>
             </div>
             {!fullScreen ? (
