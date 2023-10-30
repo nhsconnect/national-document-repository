@@ -3,7 +3,7 @@ import logging
 from typing import Dict, List
 
 import requests
-from models.oidc_models import AccessToken
+from models.oidc_models import AccessToken, IdTokenClaimSet
 from services.oidc_service import OidcService
 from utils.exceptions import AuthorisationException
 
@@ -12,7 +12,9 @@ logger.setLevel(logging.INFO)
 
 
 class OidcServiceForSmartcard(OidcService):
-    def fetch_user_org_codes(self, access_token: str, id_token_claim_set) -> List[str]:
+    def fetch_user_org_codes(
+        self, access_token: str, id_token_claim_set: IdTokenClaimSet
+    ) -> List[str]:
         userinfo = self.fetch_userinfo(access_token)
 
         logger.info(f"User info response: {userinfo}")
@@ -34,7 +36,7 @@ class OidcServiceForSmartcard(OidcService):
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         logger.info(f"Access token for user info request: {access_token}")
 
-        #params={"scope": "nationalrbacaccess"},
+        # params={"scope": "nationalrbacaccess"},
 
         userinfo_response = requests.get(
             self._oidc_userinfo_url,
@@ -55,6 +57,5 @@ class OidcServiceForSmartcard(OidcService):
             raise AuthorisationException("Failed to retrieve userinfo")
 
 
-@staticmethod
-def get_selected_roleid(id_token_claim_set):
+def get_selected_roleid(id_token_claim_set: IdTokenClaimSet):
     return id_token_claim_set.selected_roleid
