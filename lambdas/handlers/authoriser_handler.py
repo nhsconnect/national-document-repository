@@ -68,27 +68,10 @@ def lambda_handler(event, context):
     policy.region = region
     policy.stage = stage
 
-    handle_role_access_control(user_roles, policy)
     handle_resource_access_control(_resource_name, user_roles, policy)
     auth_response = policy.build()
 
     return auth_response
-
-
-def handle_role_access_control(user_roles, policy):
-    # Handle deny all policies for PCSE
-    # Handle allow all policies for GP, DEV
-
-    if PermittedRole.DEV.name in user_roles:
-        policy.allowAllMethods()
-    elif PermittedRole.GP_ADMIN.name in user_roles:
-        policy.allowAllMethods()
-    elif PermittedRole.GP_CLINICAL.name in user_roles:
-        policy.allowAllMethods()
-    elif PermittedRole.PCSE.name in user_roles:
-        policy.denyAllMethods()
-    else:
-        policy.denyAllMethods()
 
 
 def handle_resource_access_control(resource_name, user_roles, policy):
