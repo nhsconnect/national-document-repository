@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and limitations 
 import logging
 import os
 import time
-
+import json
 import boto3
 import botocore.exceptions
 import jwt
@@ -62,6 +62,7 @@ def lambda_handler(event, context):
     _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
     api_id, stage, _http_verb, _resource_name = api_gateway_arn.split("/")
     user_roles = [org["role"] for org in decoded["organisations"]]
+    logger.info(json.dumps(user_roles))
     policy = AuthPolicy(principal_id, aws_account_id)
     policy.restApiId = api_id
     policy.region = region
@@ -72,6 +73,7 @@ def lambda_handler(event, context):
     auth_response = policy.build()
 
     return auth_response
+
 
 def handle_role_access_control(user_roles, policy):
     # Handle deny all policies for PCSE
@@ -100,14 +102,14 @@ def handle_resource_access_control(resource_name, user_roles, policy):
             return
         case "/DocumentManifest":
             if 'LG' in resource_name:
-                 if PermittedRole.GP_CLINICAL.name in user_roles:
+                if PermittedRole.GP_CLINICAL.name in user_roles:
                     policy.denyMethod(HttpVerb.GET, resource_name)
         case "/DocumentReference":
             if PermittedRole.GP_CLINICAL.name in user_roles:
-                    policy.denyMethod(HttpVerb.POST, resource_name)
+                policy.denyMethod(HttpVerb.POST, resource_name)
         case "/SearchDocumentReferences":
             if PermittedRole.PCSE.name in user_roles:
-                    policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
+                policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
 
 
 def deny_all_response(event):
