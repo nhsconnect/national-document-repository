@@ -28,7 +28,7 @@ class OidcServiceForSmartcard(OidcService):
         return []
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
-        logger.info(f"Access toekn for user info request: {access_token}")
+        logger.info(f"Access token for user info request: {access_token}")
 
         #params={"scope": "nationalrbacaccess"},
 
@@ -39,6 +39,8 @@ class OidcServiceForSmartcard(OidcService):
             },
         )
 
+        logger.info(f"Raw userinfo response: {userinfo_response}")
+        
         if userinfo_response.status_code == 200:
             return userinfo_response.json()
         else:
