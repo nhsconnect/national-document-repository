@@ -31,7 +31,7 @@ def lambda_handler(event, context):
     try:
         user_roles = []
         ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
-        logger.info("AUTH EVENT", event)
+        logger.info(event)
         client = boto3.client("ssm")
         ssm_response = client.get_parameter(
             Name=ssm_public_key_parameter_name, WithDecryption=True
