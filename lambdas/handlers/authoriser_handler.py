@@ -104,7 +104,7 @@ def handle_resource_access_control(resource_name, http_verb, user_roles, policy)
                                and http_verb == HttpVerb.POST)
                               is False)
         case _:
-            allow_resource = PermittedRole.PCSE.name in user_roles and resource_name == "/SearchDocumentReferences"
+            allow_resource = True
 
     if allow_resource:
         # Validate user role
@@ -115,7 +115,7 @@ def handle_resource_access_control(resource_name, http_verb, user_roles, policy)
         elif PermittedRole.GP_CLINICAL.name in user_roles:
             policy.allowMethod(http_verb, resource_name)
         elif PermittedRole.PCSE.name in user_roles:
-            policy.allowMethod(http_verb, resource_name)
+            policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
         else:
             policy.denyMethod(http_verb, resource_name)
     else:
