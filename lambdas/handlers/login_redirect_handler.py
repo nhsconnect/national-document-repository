@@ -39,7 +39,12 @@ def prepare_redirect_response(web_application_client_class):
                 "nationalrbacaccess",
                 "selectedrole",
             ],
+            prompt="login",
         )
+
+        logger.info(f"Login request URL: {url}")
+        logger.info(f"Headers request URL: {_headers}")
+        logger.info(f"Body request URL: {_body}")
 
         save_state_in_dynamo_db(oidc_client.state)
 
