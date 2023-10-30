@@ -80,6 +80,10 @@ def token_request(oidc_service, ods_api_service, event):
             "authorisation_token": authorisation_token,
         }
 
+        return ApiGatewayResponse(
+            200, json.dumps(response), "GET"
+        ).create_api_gateway_response()
+
     except AuthorisationException as error:
         logger.error(error)
         return ApiGatewayResponse(
@@ -100,10 +104,6 @@ def token_request(oidc_service, ods_api_service, event):
         return ApiGatewayResponse(
             500, "Organisation does not exist for given ODS code", "GET"
         ).create_api_gateway_response()
-
-    return ApiGatewayResponse(
-        200, json.dumps(response), "GET"
-    ).create_api_gateway_response()
 
 
 # def token_request2(oidc_service, event):
@@ -224,6 +224,7 @@ def issue_auth_token(
     logger.info("ending ssm request")
 
     private_key = ssm_response["Parameter"]["Value"]
+    logger.info(f"private_key: {private_key}")
 
     thirty_minutes_later = time.time() + (60 * 30)
     ndr_token_expiry_time = min(thirty_minutes_later, id_token_claim_set.exp)
@@ -234,6 +235,12 @@ def issue_auth_token(
         "organisations": permitted_orgs_and_roles,
         "ndr_session_id": session_id,
     }
+
+    logger.info(f"session_id: {session_id}")
+    logger.info(f"permitted_orgs_and_roles: {permitted_orgs_and_roles}")
+    logger.info(f"id_token_claim_set: {id_token_claim_set}")
+    logger.info(f"ndr_token_content: {ndr_token_content}")
+
     authorisation_token = jwt.encode(ndr_token_content, private_key, algorithm="RS256")
     logger.info(f"encoded JWT: {authorisation_token}")
     return authorisation_token
