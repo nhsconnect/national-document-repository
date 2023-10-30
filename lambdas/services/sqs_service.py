@@ -12,6 +12,12 @@ class SQSService:
         config = BotoConfig(retries={"max_attempts": 3, "mode": "standard"})
         self.client = boto3.client("sqs", config=config)
 
+    def send_message(self, queue_url: str, message_body: str):
+        self.client.send_message(
+            QueueUrl=queue_url,
+            MessageBody=message_body,
+        )
+
     def send_message_with_nhs_number_attr(
         self,
         queue_url: str,
