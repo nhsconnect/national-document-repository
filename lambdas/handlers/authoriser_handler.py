@@ -73,11 +73,7 @@ def lambda_handler(event, context):
 
     return auth_response
 
-
 def handle_resource_access_control(resource_name, user_roles, policy):
-    # Handle allow specific policy for PCSE
-    # Handle deny specific policy for GP, DEV
-
     match resource_name:
         case "/DocumentDelete":
             if PermittedRole.GP_CLINICAL.name in user_roles:
@@ -90,10 +86,11 @@ def handle_resource_access_control(resource_name, user_roles, policy):
         case "/DocumentReference":
             if PermittedRole.GP_CLINICAL.name in user_roles:
                 policy.denyMethod(HttpVerb.POST, resource_name)
-        case "/SearchDocumentReferences":
+        case _:
             if PermittedRole.PCSE.name in user_roles:
                 policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
-
+            else:
+                policy.allowMethod(HttpVerb.ALL, resource_name)
 
 def deny_all_response(event):
     _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
