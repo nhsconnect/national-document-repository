@@ -46,7 +46,7 @@ class OidcServiceForSmartcard(OidcService):
         logger.info(f"Raw userinfo response: {userinfo_response.raw}")
 
         if userinfo_response.status_code == 200:
-            return json.loads(userinfo_response.json())
+            return userinfo_response.json()
         else:
             logger.error(
                 f"Got error response from OIDC provider: {userinfo_response.status_code} "
