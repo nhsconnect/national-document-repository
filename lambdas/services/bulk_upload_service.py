@@ -74,7 +74,7 @@ class BulkUploadService:
         try:
             logger.info("Running validation for virus scan results...")
             self.check_virus_result(staging_metadata)
-        except VirusNoResultException as e:
+        except VirusScanNoResultException as e:
             logger.info(e)
             logger.info(
                 f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
@@ -82,8 +82,7 @@ class BulkUploadService:
             self.put_message_back_to_queue(staging_metadata)
             logger.info("Will stop processing Lloyd George record for this patient")
             return
-
-        except VirusFailedException as e:
+        except (VirusScanFailedException, DocumentInfectedException) as e:
             logger.info(e)
             logger.info(
                 f"Virus scan results check failed for: {staging_metadata.nhs_number}, removing from queue"

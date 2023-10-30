@@ -39,8 +39,7 @@ def mock_uuid(mocker):
 
 @pytest.fixture
 def mock_check_virus_result(mocker):
-    mocker.patch.object(BulkUploadService, "check_virus_result")
-    yield
+    yield mocker.patch.object(BulkUploadService, "check_virus_result")
 
 
 def test_handle_sqs_message_calls_create_lg_records_and_copy_files_when_validation_passed(
@@ -82,6 +81,22 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_are_invalid
     mock_create_lg_records_and_copy_files.assert_not_called()
     mocked_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA_WITH_INVALID_FILENAME, str(mocked_error)
+    )
+
+
+def test_test_handle_sqs_message_report_failure_when_document_infected(
+    set_env, mocker, mock_uuid, mock_check_virus_result
+):
+    mock_check_virus_result.side_effect = DocumentInfectedException
+    mocked_report_upload_failure = mocker.patch.object(
+        BulkUploadService, "report_upload_failure"
+    )
+
+    service = BulkUploadService()
+    service.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    mocked_report_upload_failure.assert_called_with(
+        TEST_STAGING_METADATA, "One or more of the files failed virus scanner check"
     )
 
 
