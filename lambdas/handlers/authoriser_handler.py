@@ -68,29 +68,34 @@ def lambda_handler(event, context):
     policy.region = region
     policy.stage = stage
 
-    handle_resource_access_control(_resource_name, user_roles, policy)
+    handle_resource_access_control(_resource_name, _http_verb, user_roles, policy)
     auth_response = policy.build()
 
     return auth_response
 
-def handle_resource_access_control(resource_name, user_roles, policy):
-    match resource_name:
-        case "/DocumentDelete":
-            if PermittedRole.GP_CLINICAL.name in user_roles:
-                policy.denyMethod(HttpVerb.DELETE, resource_name)
-            return
-        case "/DocumentManifest":
-            if 'LG' in resource_name:
-                if PermittedRole.GP_CLINICAL.name in user_roles:
-                    policy.denyMethod(HttpVerb.GET, resource_name)
-        case "/DocumentReference":
-            if PermittedRole.GP_CLINICAL.name in user_roles:
-                policy.denyMethod(HttpVerb.POST, resource_name)
-        case _:
-            if PermittedRole.PCSE.name in user_roles:
-                policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
-            else:
-                policy.allowMethod(HttpVerb.ALL, resource_name)
+def handle_resource_access_control(resource_name, http_verb, user_roles, policy):
+        denyPolicy = False
+        match resource_name:
+            case "/DocumentDelete":
+                denyPolicy = PermittedRole.GP_CLINICAL.name in user_roles and http_verb == HttpVerb.DELETE
+                
+            case "/DocumentManifest":
+                denyPolicy = 'LG' in resource_name and PermittedRole.GP_CLINICAL.name in user_roles and http_verb == HttpVerb.DELETE
+                        
+            case "/DocumentReference":
+                denyPolicy = PermittedRole.GP_CLINICAL.name in user_roles and http_verb == HttpVerb.POST
+
+        allowPolicy = True
+        match resource_name:
+            case "/SearchDocumentReferences":
+                allowPolicy = (PermittedRole.PCSE in user_roles and http_verb == HttpVerb.GET) is not True
+
+        if denyPolicy:
+            policy.denyMethod(http_verb, resource_name)
+        elif allowPolicy:
+            policy.allowMethod(http_verb, resource_name)
+    
+
 
 def deny_all_response(event):
     _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
