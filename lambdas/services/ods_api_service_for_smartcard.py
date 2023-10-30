@@ -26,6 +26,8 @@ class OdsApiServiceForSmartcard(OdsApiService):
 
         ods_code = ods_code_list[0]
 
+        logger.info(f"ods_code selected: {ods_code}")
+
         org_data = self.fetch_organisation_data(ods_code)
 
         if ods_code == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE or is_gpp_org(org_data):

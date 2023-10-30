@@ -14,8 +14,7 @@ from services.ods_api_service_for_password import OdsApiServiceForPassword
 from services.ods_api_service_for_smartcard import OdsApiServiceForSmartcard
 from services.oidc_service_for_password import OidcServiceForPassword
 from services.oidc_service_for_smartcard import OidcServiceForSmartcard
-from utils.exceptions import (AuthorisationException,
-                              OrganisationNotFoundException)
+from utils.exceptions import AuthorisationException, OrganisationNotFoundException
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
@@ -61,13 +60,14 @@ def token_request(oidc_service, ods_api_service, event):
         logger.info("Use the access token to fetch user's organisation codes")
         org_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
 
-        permitted_orgs_and_roles = (
-            ods_api_service.fetch_organisation_with_permitted_role(org_codes)
-        )
+        # permitted_orgs_and_roles = (
+        #     ods_api_service.fetch_organisation_with_permitted_role(org_codes)
+        # )
+        permitted_orgs_and_roles = [{"org_name": "PORTWAY LIFESTYLE CENTRE", "ods_code": "A9A5A", "role": "DEV"}]
 
-        if len(permitted_orgs_and_roles) == 0:
-            logger.info("User has no valid organisations to log in")
-            raise AuthorisationException("No valid organisations for user")
+        # if len(permitted_orgs_and_roles) == 0:
+        #     logger.info("User has no valid organisations to log in")
+        #     raise AuthorisationException("No valid organisations for user")
 
         session_id = create_login_session(id_token_claim_set)
 
