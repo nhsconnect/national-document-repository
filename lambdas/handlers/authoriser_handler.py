@@ -85,42 +85,42 @@ def lambda_handler(event, context):
 
 
 def handle_resource_access_control(resource_name, http_verb, user_roles, policy):
+    path = "/" + resource_name
     logger.info("resource name: %s, http: %s" % (resource_name, http_verb))
-    allow_resource = True
-    # match resource_name:
-    #     case "/DocumentDelete":
-    #         allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
-    #                            and http_verb == HttpVerb.DELETE)
-    #                           is False)
-    #
-    #     case "/DocumentManifest":
-    #         allow_resource = (('LG' in resource_name
-    #                            and PermittedRole.GP_CLINICAL.name in user_roles
-    #                            and http_verb == HttpVerb.DELETE)
-    #                           is False)
-    #
-    #     case "/DocumentReference":
-    #         allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
-    #                            and http_verb == HttpVerb.POST)
-    #                           is False)
-    #     case _:
-    #         allow_resource = True
-    # logger.info("allow resource: %s" % allow_resource)
+    match path:
+        case "/DocumentDelete":
+            allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
+                               and http_verb == HttpVerb.DELETE)
+                              is False)
+
+        case "/DocumentManifest":
+            allow_resource = (('LG' in path
+                               and PermittedRole.GP_CLINICAL.name in user_roles
+                               and http_verb == HttpVerb.DELETE)
+                              is False)
+
+        case "/DocumentReference":
+            allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
+                               and http_verb == HttpVerb.POST)
+                              is False)
+        case _:
+            allow_resource = True
+    logger.info("allow resource: %s" % allow_resource)
 
     if allow_resource:
         # Validate user role
         if PermittedRole.DEV.name in user_roles:
-            policy.allowMethod(http_verb, resource_name)
+            policy.allowMethod(http_verb, path)
         elif PermittedRole.GP_ADMIN.name in user_roles:
-            policy.allowMethod(http_verb, resource_name)
+            policy.allowMethod(http_verb, path)
         elif PermittedRole.GP_CLINICAL.name in user_roles:
-            policy.allowMethod(http_verb, resource_name)
+            policy.allowMethod(http_verb, path)
         elif PermittedRole.PCSE.name in user_roles:
             policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
         else:
-            policy.denyMethod(http_verb, resource_name)
+            policy.denyMethod(http_verb, path)
     else:
-        policy.denyMethod(http_verb, resource_name)
+        policy.denyMethod(http_verb, path)
 
 
 def deny_all_response(event):
