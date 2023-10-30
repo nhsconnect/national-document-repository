@@ -60,7 +60,7 @@ def prepare_redirect_response(web_application_client_class):
         return ApiGatewayResponse(
             500, "Server error", "GET"
         ).create_api_gateway_response()
-    return ApiGatewayResponse(302, "", "GET").create_api_gateway_response(
+    return ApiGatewayResponse(303, "", "GET").create_api_gateway_response(
         headers=location_header
     )
 
