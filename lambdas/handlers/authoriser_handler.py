@@ -47,8 +47,6 @@ def lambda_handler(event, context):
         current_session = find_login_session(ndr_session_id)
         validate_login_session(current_session, ndr_session_id)
 
-        user_roles = [org["role"] for org in decoded["organisations"]]
-
     except AuthorisationException as e:
         logger.error(e)
         logger.error("failed to authenticate user")
@@ -63,25 +61,53 @@ def lambda_handler(event, context):
     principal_id = ""
     _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
     api_id, stage, _http_verb, _resource_name = api_gateway_arn.split("/")
-
+    user_roles = [org["role"] for org in decoded["organisations"]]
     policy = AuthPolicy(principal_id, aws_account_id)
     policy.restApiId = api_id
     policy.region = region
     policy.stage = stage
 
-    # for now, allow all method for GP and DEV role, and allow only search document for PCSE
-    if PermittedRole.DEV.name in user_roles:
-        policy.allowAllMethods()
-    elif PermittedRole.GP.name in user_roles:
-        policy.allowAllMethods()
-    elif PermittedRole.PCSE.name in user_roles:
-        policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
-    else:
-        policy.denyAllMethods()
-
+    handle_role_access_control(user_roles, policy)
+    handle_resource_access_control(_resource_name, user_roles, policy)
     auth_response = policy.build()
 
     return auth_response
+
+def handle_role_access_control(user_roles, policy):
+    # Handle deny all policies for PCSE
+    # Handle allow all roles for GP, DEV
+
+    if PermittedRole.DEV.name in user_roles:
+        policy.allowAllMethods()
+    elif PermittedRole.GP_ADMIN.name in user_roles:
+        policy.allowAllMethods()
+    elif PermittedRole.GP_CLINICAL.name in user_roles:
+        policy.allowAllMethods()
+    elif PermittedRole.PCSE.name in user_roles:
+        policy.denyAllMethods()
+    else:
+        policy.denyAllMethods()
+
+
+def handle_resource_access_control(resource_name, user_roles, policy):
+    # Handle deny policy for PCSE
+    # Handle allow policy for GP, DEV
+
+    match resource_name:
+        case "/DocumentDelete":
+            if PermittedRole.GP_CLINICAL.name in user_roles:
+                policy.denyMethod(HttpVerb.DELETE, resource_name)
+            return
+        case "/DocumentManifest":
+            if 'LG' in resource_name:
+                 if PermittedRole.GP_CLINICAL.name in user_roles:
+                    policy.denyMethod(HttpVerb.GET, resource_name)
+        case "/DocumentReference":
+            if PermittedRole.GP_CLINICAL.name in user_roles:
+                    policy.denyMethod(HttpVerb.POST, resource_name)
+        case "/SearchDocumentReferences":
+            if PermittedRole.PCSE.name in user_roles:
+                    policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
 
 
 def deny_all_response(event):
