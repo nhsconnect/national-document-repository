@@ -11,7 +11,7 @@ def test_lambda_handler_valid_arf_docs_successful_delete_returns_204(
     mocker, set_env, valid_id_and_arf_doctype_event, context
 ):
     mock_document_query = mocker.patch(
-        "services.document_service.DocumentService.fetch_documents_from_table"
+        "services.document_service.DocumentService.fetch_documents_from_table_with_filter"
     )
     mock_document_query.return_value = TEST_DOC_STORE_REFERENCES
 
@@ -30,7 +30,7 @@ def test_lambda_handler_valid_lg_docs_successful_delete_returns_204(
     mocker, set_env, valid_id_and_lg_doctype_event, context
 ):
     mock_document_query = mocker.patch(
-        "services.document_service.DocumentService.fetch_documents_from_table"
+        "services.document_service.DocumentService.fetch_documents_from_table_with_filter"
     )
     mock_document_query.return_value = TEST_LG_DOC_STORE_REFERENCES
 
@@ -49,7 +49,7 @@ def test_lambda_handler_no_documents_found_returns_404(
     mocker, set_env, valid_id_and_arf_doctype_event, context
 ):
     mock_document_query = mocker.patch(
-        "services.document_service.DocumentService.fetch_documents_from_table"
+        "services.document_service.DocumentService.fetch_documents_from_table_with_filter"
     )
     mock_document_query.return_value = []
 
