@@ -81,16 +81,13 @@ class S3Service:
             },
         )
 
-    def get_tag_value(self, s3_bucket_name: str, file_key: str, tag_key: str):
+    def get_tag_value(self, s3_bucket_name: str, file_key: str, tag_key: str) -> str:
         response = self.client.get_object_tagging(
             Bucket=s3_bucket_name,
             Key=file_key,
         )
-        status = None
         for key_value_pair in response["TagSet"]:
             if key_value_pair["Key"] == tag_key:
-                status = str(key_value_pair["Value"])
-        if status:
-            return status
-        else:
-            raise TagNotFoundException
+                return key_value_pair["Value"]
+
+        raise TagNotFoundException(f"Object {file_key} doesn't have a tag of key {tag_key}")
