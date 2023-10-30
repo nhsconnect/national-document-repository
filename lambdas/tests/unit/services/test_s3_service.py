@@ -195,14 +195,16 @@ def test_get_tag_value(mocker):
     )
 
 
-def test_get_tag_value_raise_error_when_object_dont_have_tag(mocker):
+def test_get_tag_value_raise_error_when_object_dont_have_the_specific_tag(mocker):
     mocker.patch("boto3.client")
     service = S3Service()
     test_tag_key = "tag_key"
 
     mock_response = {
         "VersionId": "mock_version",
-        "TagSet": [],
+        "TagSet": [
+            {"Key": "some_other_unrelated_tag", "Value": "abcd1234"},
+        ],
     }
 
     mocker.patch.object(

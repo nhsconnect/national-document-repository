@@ -4,6 +4,7 @@ import os
 import pydantic
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from models.bulk_upload_status import FailedUpload, SuccessfulUpload
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
@@ -72,12 +73,16 @@ class BulkUploadService:
             logger.info("Running validation for virus scan results...")
             self.check_virus_result(staging_metadata)
         except VirusNoResultException as e:
+            logger.info(e)
             logger.info(
                 f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
             )
+            self.put_message_back_to_queue(staging_metadata)
             logger.info("Will stop processing Lloyd George record for this patient")
             return
+
         except VirusFailedException as e:
+            logger.info(e)
             logger.info(
                 f"Virus scan results check failed for: {staging_metadata.nhs_number}, removing from queue"
             )
@@ -125,26 +130,26 @@ class BulkUploadService:
             source_file_key = self.strip_leading_slash(file_metadata.file_path)
             try:
                 scan_result = self.s3_service.get_tag_value(
-                    self.staging_bucket_name, source_file_key, "scan-result"
+                    self.staging_bucket_name, source_file_key, SCAN_RESULT_TAG_KEY
                 )
-                if scan_result == "Clean":
+                if scan_result == VirusScanResult.CLEAN:
                     continue
-                elif scan_result == "Infected":
-                    logger.info(
-                        f"Found infected document(s) for scanId: {file_metadata.scan_id}"
+                elif scan_result == VirusScanResult.INFECTED:
+                    raise VirusFailedException(
+                        f"Found infected document filepath: {file_metadata.file_path}"
                     )
-                    raise VirusFailedException
                 else:
-                    logger.info(
-                        f"Found no virus scan results for scanId: {file_metadata.scan_id}"
+                    # handle cases other than Clean or Infected e.g. Unscannable, Error
+                    raise VirusFailedException(
+                        f"Failed to scan document filepath: {file_metadata.file_path}, scan result was {scan_result}"
                     )
-                    self.put_message_back_to_queue(staging_metadata)
 
             except TagNotFoundException:
-                logger.info(
-                    f"Found no virus scan results for scanId: {file_metadata.scan_id}"
-                )
-                self.put_message_back_to_queue(staging_metadata)
+                raise VirusNoResultException(f"Virus scan result not found for document: {file_metadata.file_path}")
+
+        logger.info(
+            f"Verified that all documents for patient {staging_metadata.nhs_number} are clean."
+        )
 
     def put_message_back_to_queue(self, staging_metadata: StagingMetadata):
         sqs_service = SQSService()
