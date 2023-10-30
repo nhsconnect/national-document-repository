@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Dict, List
 
@@ -17,9 +18,12 @@ class OidcServiceForSmartcard(OidcService):
         logger.info(f"User info response: {userinfo}")
 
         nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
+
+        logger.info(f"nrbac_roles: {nrbac_roles}")
+
         selected_role = get_selected_roleid(id_token_claim_set)
 
-        logger.info(f"User's NRBAC roles: {nrbac_roles}")
+        # logger.info(f"User's NRBAC roles: {nrbac_roles}")
         logger.info(f"Selected role ID: {selected_role}")
 
         for role in nrbac_roles:
@@ -42,7 +46,7 @@ class OidcServiceForSmartcard(OidcService):
         logger.info(f"Raw userinfo response: {userinfo_response.raw}")
 
         if userinfo_response.status_code == 200:
-            return userinfo_response.json()
+            return json.loads(userinfo_response.json())
         else:
             logger.error(
                 f"Got error response from OIDC provider: {userinfo_response.status_code} "
