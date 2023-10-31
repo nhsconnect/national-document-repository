@@ -18,7 +18,7 @@ class OdsApiServiceForSmartcard(OdsApiService):
 
     def fetch_organisation_with_permitted_role(
         self, ods_code_list: list[str]
-    ) -> List[Dict]:
+    ) -> Dict:
         logger.info(f"ODS code list for smartcard login: {ods_code_list}")
 
         logger.info(f"length: {len(ods_code_list)} ")
