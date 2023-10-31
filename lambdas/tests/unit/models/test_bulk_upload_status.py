@@ -1,99 +1,79 @@
-from datetime import datetime
-
-from models.bulk_upload_status import (FailedUpload, SuccessfulUpload,
-                                       UploadStatus, UploadStatusList)
+from freezegun import freeze_time
+from models.bulk_upload_status import FailedUpload, SuccessfulUpload
+from tests.unit.conftest import TEST_OBJECT_KEY
 
 MOCK_DATA_COMPLETE_UPLOAD = {
-    "ID": "719ca7a7-9c30-48f3-a472-c3daaf30d548",
+    "ID": TEST_OBJECT_KEY,
     "NhsNumber": "9000000009",
-    "Timestamp": "1698146661",
-    "Date": "2023-10-24",
+    "Timestamp": 1698661500,
+    "Date": "2023-10-30",
     "UploadStatus": "complete",
-    "FilePath": "/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019]",
+    "FilePath": "/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
 }
 
+MOCK_FAILURE_REASON = "File name not matching Lloyd George naming convention"
 MOCK_DATA_FAILED_UPLOAD = {
-    "ID": "719ca7a7-9c30-48f3-a472-c3daaf30e975",
+    "ID": TEST_OBJECT_KEY,
     "NhsNumber": "9000000025",
-    "Timestamp": "1698109408",
-    "Date": "2023-10-24",
+    "Timestamp": 1698661500,
+    "Date": "2023-10-30",
     "UploadStatus": "failed",
-    "FailureReason": "File name not matching Lloyd George naming convention",
+    "FailureReason": MOCK_FAILURE_REASON,
     "FilePath": "/9000000025/invalid_filename.pdf",
 }
 
 
-def test_parse_json_into_successful_upload():
-    expected = SuccessfulUpload(
-        ID="719ca7a7-9c30-48f3-a472-c3daaf30d548",
+def test_create_successful_upload():
+    expected = MOCK_DATA_COMPLETE_UPLOAD
+    actual = SuccessfulUpload(
+        ID=TEST_OBJECT_KEY,
         nhs_number="9000000009",
-        timestamp=1698146661,
-        date="2023-10-24",
+        timestamp=1698661500,
+        date="2023-10-30",
         upload_status="complete",
-        file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019]",
-    )
+        file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
+    ).model_dump(by_alias=True)
 
-    actual = UploadStatus.validate_python(MOCK_DATA_COMPLETE_UPLOAD)
-
-    assert isinstance(actual, SuccessfulUpload)
     assert actual == expected
 
 
-def test_parse_json_into_failed_upload():
-    expected = FailedUpload(
-        ID="719ca7a7-9c30-48f3-a472-c3daaf30e975",
+def test_create_failed_upload():
+    expected = MOCK_DATA_FAILED_UPLOAD
+    actual = FailedUpload(
+        ID=TEST_OBJECT_KEY,
         nhs_number="9000000025",
-        timestamp=1698109408,
-        date="2023-10-24",
+        timestamp=1698661500,
+        date="2023-10-30",
         upload_status="failed",
-        failure_reason="File name not matching Lloyd George naming convention",
+        failure_reason=MOCK_FAILURE_REASON,
         file_path="/9000000025/invalid_filename.pdf",
-    )
+    ).model_dump(by_alias=True)
 
-    actual = UploadStatus.validate_python(MOCK_DATA_FAILED_UPLOAD)
-
-    assert isinstance(actual, FailedUpload)
     assert actual == expected
 
 
-def test_parsing_a_list_of_record():
-    items = [
-        MOCK_DATA_COMPLETE_UPLOAD,
-        MOCK_DATA_FAILED_UPLOAD,
-        MOCK_DATA_COMPLETE_UPLOAD,
-    ]
+@freeze_time("2023-10-30 10:25:00")
+def test_successful_upload_ids_and_timestamp_are_auto_populated_if_not_given(mocker):
+    mocker.patch("uuid.uuid4", return_value=TEST_OBJECT_KEY)
 
-    actual = UploadStatusList.validate_python(items)
-
-    assert isinstance(actual[0], SuccessfulUpload)
-    assert isinstance(actual[1], FailedUpload)
-    assert isinstance(actual[2], SuccessfulUpload)
-
-
-def test_ids_and_timestamp_are_auto_populated_if_not_given(mocker):
-    mocker.patch(
-        "models.bulk_upload_status.now", return_value=datetime(2023, 10, 20, 10, 25)
-    )
-    mocker.patch("uuid.uuid4", return_value="mocked_uuid")
-
-    upload_status = SuccessfulUpload(
+    expected = MOCK_DATA_COMPLETE_UPLOAD
+    actual = SuccessfulUpload(
         nhs_number="9000000009",
-        file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019]",
-    )
+        file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
+    ).model_dump(by_alias=True)
 
-    assert upload_status.date == "2023-10-20"
-    assert upload_status.timestamp == 1697793900
-    assert upload_status.id == "mocked_uuid"
-    assert upload_status.upload_status == "complete"
-    print(upload_status.model_dump())
+    assert actual == expected
 
-    upload_status_failed = FailedUpload(
-        nhs_number="9000000009",
-        failure_reason="File name not matching Lloyd George name convention",
-        file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019]",
-    )
 
-    assert upload_status_failed.date == "2023-10-20"
-    assert upload_status_failed.timestamp == 1697793900
-    assert upload_status_failed.id == "mocked_uuid"
-    assert upload_status_failed.upload_status == "failed"
+@freeze_time("2023-10-30 10:25:00")
+def test_failed_upload_ids_and_timestamp_are_auto_populated_if_not_given(mocker):
+    mocker.patch("uuid.uuid4", return_value=TEST_OBJECT_KEY)
+
+    expected = MOCK_DATA_FAILED_UPLOAD
+    actual = FailedUpload(
+        nhs_number="9000000025",
+        file_path="/9000000025/invalid_filename.pdf",
+        failure_reason=MOCK_FAILURE_REASON,
+    ).model_dump(by_alias=True)
+
+    assert actual == expected

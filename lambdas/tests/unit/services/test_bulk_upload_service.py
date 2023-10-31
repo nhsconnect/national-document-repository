@@ -36,7 +36,7 @@ def mock_validate_files(mocker):
     yield mocker.patch.object(BulkUploadService, "validate_files")
 
 
-def test_handle_sqs_message_calls_create_lg_records_and_copy_files_when_validation_passed(
+def test_handle_sqs_message_calls_create_lg_records_and_copy_files_for_happy_path(
     set_env, mocker, mock_uuid, mock_check_virus_result, mock_validate_files
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -47,6 +47,7 @@ def test_handle_sqs_message_calls_create_lg_records_and_copy_files_when_validati
     )
 
     mock_validate_files.return_value = None
+    mock_check_virus_result.return_value = None
 
     service = BulkUploadService()
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
@@ -55,7 +56,7 @@ def test_handle_sqs_message_calls_create_lg_records_and_copy_files_when_validati
     mock_report_upload_complete.assert_called()
 
 
-def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_are_invalid(
+def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
     set_env, mocker, mock_uuid, mock_validate_files
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -81,13 +82,13 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_are_invalid
 def test_handle_sqs_message_report_failure_when_document_is_infected(
     set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result
 ):
-    mock_check_virus_result.side_effect = DocumentInfectedException
     mock_report_upload_failure = mocker.patch.object(
         BulkUploadService, "report_upload_failure"
     )
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
+    mock_check_virus_result.side_effect = DocumentInfectedException
 
     service = BulkUploadService()
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
@@ -141,10 +142,10 @@ def test_handle_sqs_message_put_message_back_to_queue_when_virus_scan_result_not
 def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(
     set_env, mocker, mock_uuid, mock_check_virus_result
 ):
-    mocked_rollback_transaction = mocker.patch.object(
+    mock_rollback_transaction = mocker.patch.object(
         BulkUploadService, "rollback_transaction"
     )
-    mocked_report_upload_failure = mocker.patch.object(
+    mock_report_upload_failure = mocker.patch.object(
         BulkUploadService, "report_upload_failure"
     )
     service = BulkUploadService()
@@ -153,7 +154,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     service.validate_files = mocker.MagicMock()
 
     mock_client_error = ClientError(
-        {"Error": {"Code": "404", "Message": "Object not found in bucket"}},
+        {"Error": {"Code": "AccessDenied", "Message": "Access Denied"}},
         "GetObject",
     )
 
@@ -162,8 +163,11 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
 
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
-    mocked_rollback_transaction.assert_called()
-    mocked_report_upload_failure.assert_called()
+    mock_rollback_transaction.assert_called()
+    mock_report_upload_failure.assert_called_with(
+        TEST_STAGING_METADATA,
+        "Validation passed but error occurred during file transfer",
+    )
 
 
 def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract_data_from_message(
@@ -197,10 +201,9 @@ def test_check_virus_result_raise_no_error_when_all_files_are_clean(
 
     service.check_virus_result(TEST_STAGING_METADATA)
 
-    assert (
-        caplog.records[-1].message
-        == f"Verified that all documents for patient {TEST_STAGING_METADATA.nhs_number} are clean."
-    )
+    expected_log = f"Verified that all documents for patient {TEST_STAGING_METADATA.nhs_number} are clean."
+    actual_log = caplog.records[-1].message
+    assert actual_log == expected_log
 
 
 def test_check_virus_result_raise_VirusScanNoResultException_when_one_file_not_scanned(
