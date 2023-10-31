@@ -9,8 +9,12 @@ from services.mock_pds_service import MockPdsApiService
 from services.pds_api_service import PdsApiService
 from services.ssm_service import SSMService
 from utils.decorators.validate_patient_id import validate_patient_id
-from utils.exceptions import (InvalidResourceIdException,
-                              PatientNotFoundException, PdsErrorException, PatientNotAuthorisedException)
+from utils.exceptions import (
+    InvalidResourceIdException,
+    PatientNotFoundException,
+    PdsErrorException,
+    PatientNotAuthorisedException,
+)
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
