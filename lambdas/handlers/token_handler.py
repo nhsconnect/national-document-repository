@@ -67,7 +67,6 @@ def token_request(oidc_service, ods_api_service, event):
 
         permitted_orgs_details = ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
         
-
         logger.info(f"permitted_orgs_details: {permitted_orgs_details}")
         logger.info(f"permitted_orgs_details keys: {permitted_orgs_details.keys()}")
 
@@ -83,11 +82,11 @@ def token_request(oidc_service, ods_api_service, event):
         authorisation_token = issue_auth_token(
             session_id, id_token_claim_set, 
             permitted_orgs_details, 
-            smartcard_role_code, repository_role.name 
+            smartcard_role_code, repository_role.value
         )
 
         response = {
-            "role" : repository_role.name,
+            "role" : repository_role.value,
             "authorisation_token": authorisation_token,
         }
 
@@ -195,21 +194,21 @@ def token_request(oidc_service, ods_api_service, event):
 def generate_repository_role(organisation: dict, smartcart_role: str):
 
     logger.info(f"Smartcard role: {smartcart_role}")
-    logger.info(f"PermittedSmartRole.GP_ADMINrole: {PermittedSmartRole.GP_ADMIN.name}")
+    logger.info(f"PermittedSmartRole.GP_ADMINrole: {PermittedSmartRole.GP_ADMIN.value}")
     logger.info(f"PermittedSmartRole.GP_CLINICAL: {PermittedSmartRole.GP_CLINICAL.name}")
     logger.info(f"PermittedSmartRole.PCSE: {PermittedSmartRole.PCSE.name}")
     match smartcart_role:
-        case PermittedSmartRole.GP_ADMIN.name:
+        case PermittedSmartRole.GP_ADMIN.value:
             logger.info("GP Admin: smartcard ODS identified")
             if has_role_org_ods_code(organisation, PermittedRole.GP):
                 return RepositoryRole.GP_ADMIN
             return RepositoryRole.NONE
-        case PermittedSmartRole.GP_CLINICAL.name:
+        case PermittedSmartRole.GP_CLINICAL.value:
             logger.info("GP Clinical: smartcard ODS identified")
             if has_role_org_ods_code(organisation, PermittedRole.GP):
                 return RepositoryRole.GP_CLINICAL
             return RepositoryRole.NONE
-        case PermittedSmartRole.PCSE.name:
+        case PermittedSmartRole.PCSE.value:
             logger.info("PCSE: smartcard ODS identified")
             if has_role_org_ods_code(organisation, PermittedRole.PCSE):
                 return RepositoryRole.PCSE
