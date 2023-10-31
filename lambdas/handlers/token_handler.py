@@ -131,17 +131,17 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
     match smartcart_role:
         case PermittedSmartRole.GP_ADMIN.value:
             logger.info("GP Admin: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, TokenHandlerSSMService.get_org_role_codes()[0]):
+            if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
                 return RepositoryRole.GP_ADMIN
             return RepositoryRole.NONE
         case PermittedSmartRole.GP_CLINICAL.value:
             logger.info("GP Clinical: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, TokenHandlerSSMService.get_org_role_codes()[0]):
+            if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
                 return RepositoryRole.GP_CLINICAL
             return RepositoryRole.NONE
         case PermittedSmartRole.PCSE.value:
             logger.info("PCSE: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, TokenHandlerSSMService.get_org_ods_codes()[0]):
+            if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_ods_codes()[0]):
                 return RepositoryRole.PCSE
             return RepositoryRole.NONE
         case _:
