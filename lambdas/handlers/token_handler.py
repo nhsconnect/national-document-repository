@@ -17,6 +17,10 @@ from services.oidc_service_for_smartcard import OidcServiceForSmartcard
 from utils.exceptions import AuthorisationException, OrganisationNotFoundException
 from utils.lambda_response import ApiGatewayResponse
 
+from enums.permitted_smart_role import PermittedSmartRole
+from enums.permitted_role import PermittedRole
+from enums.repository_role import RepositoryRole
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -58,27 +62,28 @@ def token_request(oidc_service, ods_api_service, event):
         logger.info(f"Access token: {access_token}")
 
         logger.info("Use the access token to fetch user's organisation codes")
-        org_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
+        org_ods_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
+        smartcard_role_code = oidc_service.fetch_user_role_code(access_token, id_token_claim_set, "R")
 
-        # permitted_orgs_and_roles = (
-        #     ods_api_service.fetch_organisation_with_permitted_role(org_codes)
-        # )
-        permitted_orgs_and_roles = [
-            {"org_name": "PORTWAY LIFESTYLE CENTRE", "ods_code": "A9A5A", "role": "DEV"}
-        ]
+        permitted_orgs_and_org_roles = (
+            ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
+        )
 
-        # if len(permitted_orgs_and_roles) == 0:
-        #     logger.info("User has no valid organisations to log in")
-        #     raise AuthorisationException("No valid organisations for user")
+        if len(permitted_orgs_and_org_roles) == 0:
+            logger.info("User has no valid organisations to log in")
+            raise AuthorisationException("No valid organisations for user")
 
         session_id = create_login_session(id_token_claim_set)
+        repository_role = generate_repository_role(permitted_orgs_and_org_roles, smartcard_role_code)
 
         authorisation_token = issue_auth_token(
-            session_id, id_token_claim_set, permitted_orgs_and_roles
+            session_id, id_token_claim_set, 
+            permitted_orgs_and_org_roles, 
+            smartcard_role_code, repository_role 
         )
 
         response = {
-            "organisations": permitted_orgs_and_roles,
+            "role" : repository_role,
             "authorisation_token": authorisation_token,
         }
 
@@ -183,6 +188,37 @@ def token_request(oidc_service, ods_api_service, event):
 #     ).create_api_gateway_response()
 
 
+def generate_repository_role(organisations: list[dict], smartcart_role: str):
+
+    match smartcart_role:
+        case PermittedSmartRole.GP_ADMIN:
+            logger.info("GP Admin: smartcard ODS identified")
+            if has_role_org_ods_code(organisations, PermittedRole.GP):
+                return RepositoryRole.GP_ADMIN
+            return RepositoryRole.NONE
+        case PermittedSmartRole.GP_CLINICAL:
+            logger.info("GP Clinical: smartcard ODS identified")
+            if has_role_org_ods_code(organisations, PermittedRole.GP):
+                return RepositoryRole.GP_CLINICAL
+            return RepositoryRole.NONE
+        case PermittedSmartRole.PCSE:
+            logger.info("PCSE: smartcard ODS identified")
+            if has_role_org_ods_code(organisations, PermittedRole.PCSE):
+                return RepositoryRole.PCSE
+            return RepositoryRole.NONE
+        case _:
+            logger.info("Role: No smartcard role found")
+            return RepositoryRole.NONE
+
+
+def has_role_org_ods_code(organisations: list[dict], ods_code: str) -> bool:
+    for organisation in organisations:
+        if organisation["ods_code"].upper() == ods_code.upper():
+            return True;
+    return False;
+
+
+
 # TODO AKH Dynamo Service class
 def have_matching_state_value_in_record(state: str) -> bool:
     state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
@@ -217,7 +253,10 @@ def issue_auth_token(
     session_id: str,
     id_token_claim_set: IdTokenClaimSet,
     permitted_orgs_and_roles: list[dict],
+    smart_card_role: str,
+    repository_role : RepositoryRole
 ) -> str:
+
     ssm_client = boto3.client("ssm")
     logger.info("starting ssm request to retrieve NDR private key")
     ssm_response = ssm_client.get_parameter(
@@ -226,7 +265,6 @@ def issue_auth_token(
     logger.info("ending ssm request")
 
     private_key = ssm_response["Parameter"]["Value"]
-    logger.info(f"private_key: {private_key}")
 
     thirty_minutes_later = time.time() + (60 * 30)
     ndr_token_expiry_time = min(thirty_minutes_later, id_token_claim_set.exp)
@@ -234,7 +272,9 @@ def issue_auth_token(
     ndr_token_content = {
         "exp": ndr_token_expiry_time,
         "iss": "nhs repo",
+        "smart_card_role": smart_card_role,
         "organisations": permitted_orgs_and_roles,
+        "repository_role": str(repository_role),
         "ndr_session_id": session_id,
     }
 
@@ -242,6 +282,8 @@ def issue_auth_token(
     logger.info(f"permitted_orgs_and_roles: {permitted_orgs_and_roles}")
     logger.info(f"id_token_claim_set: {id_token_claim_set}")
     logger.info(f"ndr_token_content: {ndr_token_content}")
+    logger.info(f"smartcard_role: {smart_card_role}")
+    logger.info(f"repository_role: {str(repository_role)}")
 
     try:
         authorisation_token = jwt.encode(
