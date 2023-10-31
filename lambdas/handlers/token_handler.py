@@ -69,11 +69,16 @@ def token_request(oidc_service, ods_api_service, event):
             ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
         )
 
+        logger.info(f"permitted_orgs_details: {permitted_orgs_details}")
+        logger.info(f"permitted_orgs_details keys: {permitted_orgs_details.keys()}")
+
         if len(permitted_orgs_details.keys()) != 1:
             logger.info("User has none or more than one org to log in with")
             raise AuthorisationException(f"{permitted_orgs_details.keys()} valid organisations for user")
 
         session_id = create_login_session(id_token_claim_set)
+
+        logger.info("Creating Repository Role")
         repository_role = generate_repository_role(permitted_orgs_details, smartcard_role_code)
 
         authorisation_token = issue_auth_token(
