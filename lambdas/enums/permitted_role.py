@@ -1,10 +1,7 @@
 from enum import Enum
 
-
-// User Role Codes
 class PermittedRole(Enum):
-    GP = "RO76" // role_code_gpp_org
-
+    GP = "RO76" 
     # DEV = "RO198" // Nope
 
     @staticmethod
