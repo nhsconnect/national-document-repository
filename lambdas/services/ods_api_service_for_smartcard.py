@@ -69,7 +69,6 @@ def is_gpp_org(org_details):
     json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
 
     for json_role in json_roles:
-        # TODO use gp role from ssm
         if json_role["id"] in PermittedRole.list():
             return json_role["id"]
     return None
@@ -78,7 +77,6 @@ def is_pcse_ods(org_details):
     json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
 
     for json_role in json_roles:
-        # TODO use gp role from ssm
         if json_role["id"] == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE:
             return json_role["id"]
     return None
