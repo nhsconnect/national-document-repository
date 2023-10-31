@@ -70,13 +70,14 @@ def is_gpp_org(org_details):
     logger.info("Checking GPP Roles")
     json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
 
+    org_role_codes= token_handler_ssm_service.get_org_role_codes()
     for json_role in json_roles:
-        if json_role["id"] in token_handler_ssm_service.get_org_role_codes():
+        if json_role["id"] in org_role_codes:
             return json_role["id"]
     return None
 
 def is_pcse_ods(ods_code):
-    logger.info("Checking GPP Roles")
+    logger.info("Checking PCSE Roles")
     if ods_code == token_handler_ssm_service.get_org_ods_codes()[0]: 
         return ods_code
     return None
