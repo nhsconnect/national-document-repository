@@ -152,7 +152,6 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
             raise LGInvalidFilesException("Failed to retrieve patient data from PDS")
 
 
-
 def get_user_ods_code():
     ssm_service = SSMService()
     return ssm_service.get_ssm_parameter(SSMParameter.GP_ODS_CODE.value)

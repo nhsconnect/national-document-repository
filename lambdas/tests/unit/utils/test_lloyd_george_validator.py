@@ -5,15 +5,10 @@ from botocore.exceptions import ClientError
 from requests import Response
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from utils.lloyd_george_validator import (
-    LGInvalidFilesException,
-    check_for_duplicate_files,
+    LGInvalidFilesException, check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
-    check_for_number_of_files_match_expected,
-    extract_info_from_filename,
-    validate_file_name,
-    validate_lg_file_type,
-    validate_with_pds_service,
-)
+    check_for_number_of_files_match_expected, extract_info_from_filename,
+    validate_file_name, validate_lg_file_type, validate_with_pds_service)
 
 
 def test_catching_error_when_file_type_not_pdf():
@@ -97,6 +92,7 @@ def test_files_list_with_too_many_files():
         check_for_number_of_files_match_expected(lg_file_list[0], len(lg_file_list))
     assert str(e.value) == "There are more files than the total number in file name"
 
+
 def test_files_list_with_invalid_name():
     with pytest.raises(LGInvalidFilesException) as e:
         lg_file_list = [
@@ -107,7 +103,6 @@ def test_files_list_with_invalid_name():
         ]
         check_for_number_of_files_match_expected(lg_file_list[0], len(lg_file_list))
     assert str(e.value) == "One or more of the files do not match naming convention"
-
 
 
 def test_files_without_missing_files():

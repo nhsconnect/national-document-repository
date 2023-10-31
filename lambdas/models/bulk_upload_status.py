@@ -24,5 +24,16 @@ class FailedUpload(UploadStatusBaseClass):
     failure_reason: str
 
 
+FieldNamesForBulkUploadReport = [
+    "NhsNumber",
+    "UploadStatus",
+    "FailureReason",
+    "FilePath",
+    "Date",
+    "Timestamp",
+    "ID",
+]
+
+
 def date_string_yyyymmdd(time_now: datetime) -> str:
     return time_now.strftime("%Y-%m-%d")

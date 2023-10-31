@@ -2,9 +2,11 @@ import csv
 import datetime
 import logging
 import os
+from typing import Optional
 
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
+from models.bulk_upload_status import FieldNamesForBulkUploadReport
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.decorators.ensure_env_var import ensure_environment_variables
@@ -51,7 +53,7 @@ def report_handler(db_service, s3_service):
 
 def get_dynamodb_report_items(
     db_service, start_timestamp: int, end_timestamp: int
-) -> None or list:
+) -> Optional[list]:
     logger.info("Starting Scan on DynamoDB table")
     bulk_upload_table_name = os.getenv("BULK_UPLOAD_DYNAMODB_NAME")
     filter_time = Attr("Timestamp").gt(start_timestamp) & Attr("Timestamp").lt(
@@ -78,12 +80,11 @@ def get_dynamodb_report_items(
 def write_items_to_csv(items: list, csv_file_path: str):
     logger.info("Writing scan results to csv file")
     with open(csv_file_path, "w") as output_file:
-        field_names = items[0].keys()
+        field_names = FieldNamesForBulkUploadReport
         dict_writer_object = csv.DictWriter(output_file, fieldnames=field_names)
         dict_writer_object.writeheader()
         for item in items:
             dict_writer_object.writerow(item)
-        output_file.close()
 
 
 def get_times_for_scan():
@@ -100,4 +101,3 @@ def get_times_for_scan():
 def write_empty_report(file_path: str):
     with open(file_path, "w") as output_file:
         output_file.write("No data was found for this timeframe")
-    output_file.close()
