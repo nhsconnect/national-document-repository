@@ -44,16 +44,25 @@ class OdsApiServiceForSmartcard(OdsApiService):
         org_data = self.fetch_organisation_data(ods_code)
 
         logger.info(f"Org Data: {org_data}")
-        if is_pcse_ods(org_data) or is_gpp_org(org_data):
-            logger.info(f"ODS code {ods_code} is a GPP or PCSE, returning org data")
-            response = self.parse_ods_response(org_data, ods_code)
+        pcse_ods = is_pcse_ods(org_data)
+        gpp_ods = is_gpp_org(org_data)
+
+        if pcse_ods is not None: 
+            logger.info(f"ODS code {ods_code} is a PCSE, returning org data")
+            response = self.parse_ods_response(org_data, pcse_ods)
             logger.info(f"ods response: {response}" )
             return response
-        else:
-            logger.info(
-                f"ODS code {ods_code} is not a GPP or PCSE, returning empty list"
-            )
-            return {}
+
+        if gpp_ods is not None: 
+            logger.info(f"ODS code {ods_code} is a GPP, returning org data")
+            response = self.parse_ods_response(org_data, gpp_ods)
+            logger.info(f"ods response: {response}" )
+            return response
+        
+        logger.info(
+            f"ODS code {ods_code} is not a GPP or PCSE, returning empty list"
+        )
+        return {}
 
 
 def is_gpp_org(org_details):
@@ -62,8 +71,8 @@ def is_gpp_org(org_details):
     for json_role in json_roles:
         # TODO use gp role from ssm
         if json_role["id"] in PermittedRole.list():
-            return True
-    return False
+            return json_role["id"]
+    return None
 
 def is_pcse_ods(org_details):
     json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
@@ -71,5 +80,5 @@ def is_pcse_ods(org_details):
     for json_role in json_roles:
         # TODO use gp role from ssm
         if json_role["id"] == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE:
-            return True
-    return False
+            return json_role["id"]
+    return None

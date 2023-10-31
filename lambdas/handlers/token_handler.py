@@ -87,7 +87,7 @@ def token_request(oidc_service, ods_api_service, event):
         )
 
         response = {
-            "role" : repository_role,
+            "role" : str(repository_role),
             "authorisation_token": authorisation_token,
         }
 
