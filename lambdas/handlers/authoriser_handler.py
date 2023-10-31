@@ -66,10 +66,9 @@ def lambda_handler(event, context):
     policy.region = region
     policy.stage = stage
 
-    path = "/" + _resource_name
-    is_valid_access = validate_access_policy(path, _http_verb, user_roles)
+    is_valid_access = validate_access_policy(_http_verb, _resource_name, user_roles)
     if is_valid_access:
-        set_access_policy(_http_verb, path, user_roles, policy)
+        set_access_policy(_http_verb, _resource_name, user_roles, policy)
     else:
         policy.denyMethod(_http_verb, _resource_name)
     auth_response = policy.build()
@@ -77,24 +76,24 @@ def lambda_handler(event, context):
     return auth_response
 
 
-def validate_access_policy(http_verb, path, user_roles):
-    logger.info("resource name: %s, http: %s" % (path, http_verb))
-    match path:
-        case "/DocumentDelete":
+def validate_access_policy(http_verb, resource_name, user_roles):
+    logger.info("resource name: %s, http: %s" % (resource_name, http_verb))
+    match resource_name:
+        case "DocumentDelete":
             allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
                                and http_verb == HttpVerb.DELETE)
                               is False)
 
-        case "/DocumentManifest":
+        case "DocumentManifest":
             allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
                                and http_verb == HttpVerb.DELETE)
                               is False)
 
-        case "/DocumentReference":
+        case "DocumentReference":
             allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
                                and http_verb == HttpVerb.POST)
                               is False)
-        case "/SearchDocumentReferences":
+        case "SearchDocumentReferences":
             allow_resource = ((PermittedRole.PCSE.name in user_roles
                                and http_verb == HttpVerb.GET)
                               is False)
@@ -106,16 +105,16 @@ def validate_access_policy(http_verb, path, user_roles):
     return bool(allow_resource)
 
 
-def set_access_policy(http_verb, path, user_roles, policy):
+def set_access_policy(http_verb, resource_name, user_roles, policy):
     if (
             PermittedRole.DEV.name in user_roles
             or PermittedRole.GP_ADMIN.name in user_roles
             or PermittedRole.GP_CLINICAL.name in user_roles
             or PermittedRole.PCSE.name in user_roles
     ):
-        policy.allowMethod(http_verb, path)
+        policy.allowMethod(http_verb, resource_name)
     else:
-        policy.denyMethod(http_verb, path)
+        policy.denyMethod(http_verb, resource_name)
 
 
 def deny_all_response(event):
