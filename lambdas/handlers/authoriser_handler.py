@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and limitations 
 import logging
 import os
 import time
-import json
+
 import boto3
 import botocore.exceptions
 import jwt
@@ -65,7 +65,7 @@ def lambda_handler(event, context):
     policy.restApiId = api_id
     policy.region = region
     policy.stage = stage
-    
+
     path = "/" + _resource_name
     is_valid_access = validate_access_policy(_http_verb, path, user_roles)
     if is_valid_access:
@@ -81,23 +81,26 @@ def validate_access_policy(http_verb, path, user_roles):
     logger.info("resource name: %s, http: %s" % (path, http_verb))
     match path:
         case "/DocumentDelete":
-            allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
-                               and http_verb == HttpVerb.DELETE)
-                              is False)
+            allow_resource = (
+                PermittedRole.GP_CLINICAL.name in user_roles
+                and http_verb == HttpVerb.DELETE
+            ) is False
 
         case "/DocumentManifest":
-            allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
-                               and http_verb == HttpVerb.DELETE)
-                              is False)
+            allow_resource = (
+                PermittedRole.GP_CLINICAL.name in user_roles
+                and http_verb == HttpVerb.DELETE
+            ) is False
 
         case "/DocumentReference":
-            allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
-                               and http_verb == HttpVerb.POST)
-                              is False)
+            allow_resource = (
+                PermittedRole.GP_CLINICAL.name in user_roles
+                and http_verb == HttpVerb.POST
+            ) is False
         case "/SearchDocumentReferences":
-            allow_resource = ((PermittedRole.PCSE.name in user_roles
-                               and http_verb == HttpVerb.GET)
-                              is False)
+            allow_resource = (
+                PermittedRole.PCSE.name in user_roles and http_verb == HttpVerb.GET
+            ) is False
         case _:
             allow_resource = True
 
@@ -108,10 +111,10 @@ def validate_access_policy(http_verb, path, user_roles):
 
 def set_access_policy(http_verb, path, user_roles, policy):
     if (
-            PermittedRole.DEV.name in user_roles
-            or PermittedRole.GP_ADMIN.name in user_roles
-            or PermittedRole.GP_CLINICAL.name in user_roles
-            or PermittedRole.PCSE.name in user_roles
+        PermittedRole.DEV.name in user_roles
+        or PermittedRole.GP_ADMIN.name in user_roles
+        or PermittedRole.GP_CLINICAL.name in user_roles
+        or PermittedRole.PCSE.name in user_roles
     ):
         policy.allowMethod(http_verb, path)
     else:
