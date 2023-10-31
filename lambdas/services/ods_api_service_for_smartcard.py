@@ -13,10 +13,20 @@ PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE = "X4S4L"
 
 
 class OdsApiServiceForSmartcard(OdsApiService):
-    def parse_ods_response(self, org_data, role_code) -> Optional[Organisation]:
-        return { "name" : org_data["Organisation"]["Name"], 
-                 "org_ods_code" : ["Organisation"]["OrgId"]["extension"],
-                 "role_code" : role_code}
+    def parse_ods_response(self, org_data, role_code) -> dict:
+
+        org_name = org_data["Organisation"]["Name"]
+        logger.info(f"Organisation Name: {org_name}")
+
+        org_ods_code = ["Organisation"]["OrgId"]["extension"]
+        logger.info(f"Organisation Org Code: {org_ods_code}")
+
+        logger.info(f"Role code: {role_code}")
+        response_dictionary = { "name" : org_name, 
+                 "org_ods_code" : org_ods_code,
+                 "role_code" : role_code }
+        
+        return response_dictionary
 
 
     def fetch_organisation_with_permitted_role(
@@ -36,7 +46,9 @@ class OdsApiServiceForSmartcard(OdsApiService):
         logger.info(f"Org Data: {org_data}")
         if is_pcse_ods(org_data) or is_gpp_org(org_data):
             logger.info(f"ODS code {ods_code} is a GPP or PCSE, returning org data")
-            return self.parse_ods_response(org_data, ods_code)
+            response = self.parse_ods_response(org_data, ods_code)
+            logger.info(f"ods response: {response}" )
+            return response
         else:
             logger.info(
                 f"ODS code {ods_code} is not a GPP or PCSE, returning empty list"
