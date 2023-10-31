@@ -25,7 +25,7 @@ function LloydGeorgeDownloadComplete({ patientDetails, setStage }: Props) {
                     <div>{`(NHS number: ${patientDetails.nhsNumber})`}</div>
                 </Card.Content>
             </Card>
-            <Button onClick={() => setStage(LG_RECORD_STAGE.RECORD)}>
+            <Button onClick={() => setStage(LG_RECORD_STAGE.RECORD)} data-testid="return-btn">
                 Return to patient's available medical records
             </Button>
         </div>

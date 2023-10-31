@@ -14,6 +14,10 @@ class AuthorisationException(Exception):
     pass
 
 
+class TooManyOrgsException(Exception):
+    pass
+
+
 class OrganisationNotFoundException(Exception):
     pass
 

@@ -5,7 +5,7 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from models.oidc_models import IdTokenClaimSet
-from services.oidc_service import OidcService
+from services.oidc_service_for_password import OidcServiceForPassword
 from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import AuthorisationException
 
@@ -23,9 +23,9 @@ MOCK_PARAMETERS = {
 @pytest.fixture
 def oidc_service(mocker):
     with patch.object(
-        OidcService, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
+        OidcServiceForPassword, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
     ):
-        oidc_service = OidcService()
+        oidc_service = OidcServiceForPassword()
         yield oidc_service
 
 
@@ -105,13 +105,14 @@ def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_id_
 
 def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
     mock_token = "fake_access_token"
+    role_id = "500000000001"
     mock_userinfo = {
         "nhsid_useruid": "500000000000",
         "name": "TestUserOne Caius Mr",
         "nhsid_nrbac_roles": [
             {
                 "person_orgid": "500000000000",
-                "person_roleid": "500000000000",
+                "person_roleid": role_id,
                 "org_code": "A9A5A",
                 "role_name": '"Support":"Systems Support":"Systems Support Access Role"',
                 "role_code": "S8001:G8005:R8015",
@@ -140,7 +141,7 @@ def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
 
     mocker.patch("requests.get", return_value=mock_response)
 
-    actual = oidc_service.fetch_user_org_codes(mock_token)
+    actual = oidc_service.fetch_user_org_codes(mock_token, role_id)
     assert actual == expected
 
 
@@ -160,7 +161,7 @@ def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_inva
     mocker.patch("requests.get", return_value=mock_response)
 
     with pytest.raises(AuthorisationException):
-        oidc_service.fetch_user_org_codes(mock_token)
+        oidc_service.fetch_user_org_codes(mock_token, "not a real role")
 
 
 @pytest.fixture(name="mock_id_tokens", scope="session")
@@ -219,7 +220,7 @@ def test_oidc_service_validate_and_decode_token__validate_token_with_proper_keys
     assert actual == expect
 
 
-def test_oidc_service_validate_and_decode_token__raise_AuthorisationException_for_fake_id_token(
+def test_oidc_service_validate_and_decode_token_raise_AuthorisationException_for_fake_id_token(
     mock_id_tokens, oidc_service, mock_jwk_client
 ):
     counterfeit_id_token = mock_id_tokens["counterfeit_id_token"]
@@ -228,7 +229,7 @@ def test_oidc_service_validate_and_decode_token__raise_AuthorisationException_fo
         oidc_service.validate_and_decode_token(counterfeit_id_token)
 
 
-def test_oidc_service_validate_and_decode_token__raise_AuthorisationException_for_expired_id_token(
+def test_oidc_service_validate_and_decode_token_raise_AuthorisationException_for_expired_id_token(
     mock_id_tokens, oidc_service, mock_jwk_client
 ):
     expired_id_token = mock_id_tokens["expired_id_token"]

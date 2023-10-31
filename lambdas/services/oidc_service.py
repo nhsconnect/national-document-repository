@@ -64,10 +64,13 @@ class OidcService:
             response_content = fetch_token_response.json()
             access_token: AccessToken = response_content["access_token"]
             raw_id_token = response_content["id_token"]
+            logger.info(f"raw_id_token: {raw_id_token}")
 
             id_token_claims_set: IdTokenClaimSet = IdTokenClaimSet.model_validate(
                 self.validate_and_decode_token(raw_id_token)
             )
+
+            logger.info(f"id_token_claims_set after parsing: {id_token_claims_set}")
 
             return access_token, id_token_claims_set
         except KeyError:
@@ -94,29 +97,9 @@ class OidcService:
             logger.error(err)
             raise AuthorisationException("The given JWT is invalid or expired.")
 
-    def fetch_user_org_codes(self, access_token: str) -> List[str]:
-        userinfo = self.fetch_userinfo(access_token)
-        return self.extract_org_codes(userinfo)
-
-    def fetch_userinfo(self, access_token: AccessToken) -> Dict:
-        userinfo_response = requests.get(
-            self._oidc_userinfo_url,
-            headers={"Authorization": f"Bearer {access_token}"},
-        )
-        if userinfo_response.status_code == 200:
-            return userinfo_response.json()
-        else:
-            logger.error(
-                f"Got error response from OIDC provider: {userinfo_response.status_code} "
-                f"{userinfo_response.content}"
-            )
-            raise AuthorisationException("Failed to retrieve userinfo")
-
-    def extract_org_codes(self, userinfo: Dict) -> List[str]:
-        nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
-        return [role["org_code"] for role in nrbac_roles if "org_code" in role]
-
-    def fetch_oidc_parameters(self):
+    # TODO AKH SSM service
+    @staticmethod
+    def fetch_oidc_parameters():
         parameters_names = [
             "OIDC_CLIENT_ID",
             "OIDC_CLIENT_SECRET",
@@ -139,3 +122,9 @@ class OidcService:
         oidc_parameters["OIDC_CALLBACK_URL"] = os.environ["OIDC_CALLBACK_URL"]
 
         return oidc_parameters
+
+    def fetch_user_org_codes(self, access_token: str, selected_role: str) -> List[str]:
+        raise NotImplementedError
+
+    def fetch_userinfo(self, access_token: AccessToken) -> Dict:
+        raise NotImplementedError
