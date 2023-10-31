@@ -18,7 +18,7 @@ class OdsApiServiceForSmartcard(OdsApiService):
         org_name = org_data["Organisation"]["Name"]
         logger.info(f"Organisation Name: {org_name}")
 
-        org_ods_code = ["Organisation"]["OrgId"]["extension"]
+        org_ods_code = org_data["Organisation"]["OrgId"]["extension"]
         logger.info(f"Organisation Org Code: {org_ods_code}")
 
         logger.info(f"Role code: {role_code}")
