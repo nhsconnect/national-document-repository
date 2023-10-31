@@ -39,7 +39,7 @@ class OdsApiServiceForSmartcard(OdsApiService):
             logger.info(
                 f"ODS code {ods_code} is not a GPP or PCSE, returning empty list"
             )
-            return []
+            return {}
 
 
 def is_gpp_org(org_details):
