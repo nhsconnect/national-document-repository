@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class VirusScanResult(Enum):
+class VirusScanResult(StrEnum):
     CLEAN = "Clean"
     INFECTED = "Infected"
     INFECTED_ALLOWED = "InfectedAllowed"
