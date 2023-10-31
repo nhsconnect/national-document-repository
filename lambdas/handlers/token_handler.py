@@ -65,20 +65,20 @@ def token_request(oidc_service, ods_api_service, event):
         org_ods_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
         smartcard_role_code = oidc_service.fetch_user_role_code(access_token, id_token_claim_set, "R")
 
-        permitted_orgs_and_org_roles = (
+        permitted_orgs_details = (
             ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
         )
 
-        if len(permitted_orgs_and_org_roles.keys()) != 1:
+        if len(permitted_orgs_details.keys()) != 1:
             logger.info("User has none or more than one org to log in with")
-            raise AuthorisationException(f"{permitted_orgs_and_org_roles.keys()} valid organisations for user")
+            raise AuthorisationException(f"{permitted_orgs_details.keys()} valid organisations for user")
 
         session_id = create_login_session(id_token_claim_set)
-        repository_role = generate_repository_role(permitted_orgs_and_org_roles, smartcard_role_code)
+        repository_role = generate_repository_role(permitted_orgs_details, smartcard_role_code)
 
         authorisation_token = issue_auth_token(
             session_id, id_token_claim_set, 
-            permitted_orgs_and_org_roles, 
+            permitted_orgs_details, 
             smartcard_role_code, repository_role 
         )
 
@@ -188,22 +188,22 @@ def token_request(oidc_service, ods_api_service, event):
 #     ).create_api_gateway_response()
 
 
-def generate_repository_role(organisations: list[dict], smartcart_role: str):
+def generate_repository_role(organisation: dict, smartcart_role: str):
 
     match smartcart_role:
         case PermittedSmartRole.GP_ADMIN:
             logger.info("GP Admin: smartcard ODS identified")
-            if has_role_org_ods_code(organisations, PermittedRole.GP):
+            if has_role_org_ods_code(organisation, PermittedRole.GP):
                 return RepositoryRole.GP_ADMIN
             return RepositoryRole.NONE
         case PermittedSmartRole.GP_CLINICAL:
             logger.info("GP Clinical: smartcard ODS identified")
-            if has_role_org_ods_code(organisations, PermittedRole.GP):
+            if has_role_org_ods_code(organisation, PermittedRole.GP):
                 return RepositoryRole.GP_CLINICAL
             return RepositoryRole.NONE
         case PermittedSmartRole.PCSE:
             logger.info("PCSE: smartcard ODS identified")
-            if has_role_org_ods_code(organisations, PermittedRole.PCSE):
+            if has_role_org_ods_code(organisation, PermittedRole.PCSE):
                 return RepositoryRole.PCSE
             return RepositoryRole.NONE
         case _:
@@ -211,10 +211,9 @@ def generate_repository_role(organisations: list[dict], smartcart_role: str):
             return RepositoryRole.NONE
 
 
-def has_role_org_ods_code(organisations: list[dict], ods_code: str) -> bool:
-    for organisation in organisations:
-        if organisation["ods_code"].upper() == ods_code.upper():
-            return True;
+def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
+    if organisation["ods_code"].upper() == ods_code.upper():
+        return True;
     return False;
 
 
