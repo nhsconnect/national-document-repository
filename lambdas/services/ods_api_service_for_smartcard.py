@@ -44,7 +44,8 @@ class OdsApiServiceForSmartcard(OdsApiService):
         org_data = self.fetch_organisation_data(ods_code)
 
         logger.info(f"Org Data: {org_data}")
-        pcse_ods = is_pcse_ods(org_data)
+
+        pcse_ods = is_pcse_ods(ods_code)
         gpp_ods = is_gpp_org(org_data)
 
         if pcse_ods is not None: 
@@ -73,10 +74,7 @@ def is_gpp_org(org_details):
             return json_role["id"]
     return None
 
-def is_pcse_ods(org_details):
-    json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
-
-    for json_role in json_roles:
-        if json_role["id"] == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE:
-            return json_role["id"]
+def is_pcse_ods(ods_code):
+    if ods_code == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE: 
+        return ods_code
     return None
