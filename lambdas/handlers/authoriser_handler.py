@@ -29,7 +29,6 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     try:
-        user_roles = []
         ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
         logger.info(event)
         client = boto3.client("ssm")
@@ -62,7 +61,6 @@ def lambda_handler(event, context):
     _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
     api_id, stage, _http_verb, _resource_name = api_gateway_arn.split("/")
     user_roles = [org["role"] for org in decoded["organisations"]]
-    logger.info(json.dumps(user_roles))
     policy = AuthPolicy(principal_id, aws_account_id)
     policy.restApiId = api_id
     policy.region = region
