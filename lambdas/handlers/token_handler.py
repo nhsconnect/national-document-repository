@@ -211,7 +211,7 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
             return RepositoryRole.NONE
         case PermittedSmartRole.PCSE.value:
             logger.info("PCSE: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, PermittedRole.PCSE.value):
+            if has_role_org_ods_code(organisation, "X4S4L"):   #HERE
                 return RepositoryRole.PCSE
             return RepositoryRole.NONE
         case _:
