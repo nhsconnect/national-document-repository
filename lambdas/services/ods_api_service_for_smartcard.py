@@ -67,6 +67,7 @@ class OdsApiServiceForSmartcard(OdsApiService):
 
 
 def is_gpp_org(org_details):
+    logger.info("Checking GPP Roles")
     json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
 
     for json_role in json_roles:
@@ -75,6 +76,7 @@ def is_gpp_org(org_details):
     return None
 
 def is_pcse_ods(ods_code):
-    if ods_code == token_handler_ssm_service.get_org_ods_codes[0]: 
+    logger.info("Checking GPP Roles")
+    if ods_code == token_handler_ssm_service.get_org_ods_codes()[0]: 
         return ods_code
     return None
