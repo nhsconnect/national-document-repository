@@ -147,12 +147,12 @@ class BulkUploadService:
                     continue
                 elif scan_result == VirusScanResult.INFECTED:
                     raise DocumentInfectedException(
-                        f"Found infected document filepath: {file_path}"
+                        f"Found infected document: {file_path}"
                     )
                 else:
                     # handle cases other than Clean or Infected e.g. Unscannable, Error
                     raise VirusScanFailedException(
-                        f"Failed to scan document filepath: {file_path}, scan result was {scan_result}"
+                        f"Failed to scan document: {file_path}, scan result was {scan_result}"
                     )
             except TagNotFoundException:
                 raise VirusScanNoResultException(
