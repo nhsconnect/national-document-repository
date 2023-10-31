@@ -42,11 +42,16 @@ def check_for_duplicate_files(file_list: list[str]):
 
 def check_for_number_of_files_match_expected(file_name: str, total_files_number: int):
     lg_number_regex = "of[0-9]+"
-    expected_number_of_files = re.search(lg_number_regex, file_name)
-    if expected_number_of_files and not expected_number_of_files.group()[2:] == str(
-        total_files_number
-    ):
-        raise LGInvalidFilesException("There are missing file(s) in the request")
+    regex_match_result = re.search(lg_number_regex, file_name)
+    try:
+        expected_number_of_files = int(regex_match_result.group()[2:])
+        if total_files_number < expected_number_of_files :
+            raise LGInvalidFilesException("There are missing file(s) in the request")
+        elif total_files_number > expected_number_of_files:
+            raise LGInvalidFilesException("There are more files than the total number in file name")
+    except (AttributeError, IndexError, ValueError):
+        raise LGInvalidFilesException("One or more of the files do not match naming convention")
+
 
 
 def validate_lg_files(file_list: list[NHSDocumentReference]):

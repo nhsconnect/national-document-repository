@@ -5,10 +5,15 @@ from botocore.exceptions import ClientError
 from requests import Response
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from utils.lloyd_george_validator import (
-    LGInvalidFilesException, check_for_duplicate_files,
+    LGInvalidFilesException,
+    check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
-    check_for_number_of_files_match_expected, extract_info_from_filename,
-    validate_file_name, validate_lg_file_type, validate_with_pds_service)
+    check_for_number_of_files_match_expected,
+    extract_info_from_filename,
+    validate_file_name,
+    validate_lg_file_type,
+    validate_with_pds_service,
+)
 
 
 def test_catching_error_when_file_type_not_pdf():
@@ -72,12 +77,37 @@ def test_files_without_duplication():
 
 
 def test_files_list_with_missing_files():
-    with pytest.raises(LGInvalidFilesException):
+    with pytest.raises(LGInvalidFilesException) as e:
         lg_file_list = [
             "1of3_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
             "2of3_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
         ]
         check_for_number_of_files_match_expected(lg_file_list[0], len(lg_file_list))
+    assert str(e.value) == "There are missing file(s) in the request"
+
+
+def test_files_list_with_too_many_files():
+    with pytest.raises(LGInvalidFilesException) as e:
+        lg_file_list = [
+            "1of3_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
+            "2of3_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
+            "3of3_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
+            "1of3_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
+        ]
+        check_for_number_of_files_match_expected(lg_file_list[0], len(lg_file_list))
+    assert str(e.value) == "There are more files than the total number in file name"
+
+def test_files_list_with_invalid_name():
+    with pytest.raises(LGInvalidFilesException) as e:
+        lg_file_list = [
+            "invalid_file_name",
+            "2of4_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
+            "3of4_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
+            "4of4_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
+        ]
+        check_for_number_of_files_match_expected(lg_file_list[0], len(lg_file_list))
+    assert str(e.value) == "One or more of the files do not match naming convention"
+
 
 
 def test_files_without_missing_files():
