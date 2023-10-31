@@ -23,8 +23,6 @@ class TokenHandlerSSMService(SSMService):
                      params["/auth/smartcard/role/gp_clinical"],
                      params["/auth/smartcard/role/pcse"] ]
         
-        logger.info(f"smartcard role params: {params}")
-        logger.info(f"smartcard role array: {response}")
         return response
     
     def get_org_role_codes(self):
@@ -34,9 +32,6 @@ class TokenHandlerSSMService(SSMService):
         ])
 
         response = [ params["/auth/org/role_code/gpp"] ]
-
-        logger.info(f"role code params: {params}")
-        logger.info(f"role code array: {response}")
         return response
 
     def get_org_ods_codes(self):
@@ -46,9 +41,6 @@ class TokenHandlerSSMService(SSMService):
         ])
 
         response = [ params["/auth/org/ods_code/pcse"] ]
-
-        logger.info(f"org ods params: {params}")
-        logger.info(f"org ods array: {response}")
         return response
 
     def get_jwt_private_key(self):

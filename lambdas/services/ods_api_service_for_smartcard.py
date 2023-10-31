@@ -1,7 +1,6 @@
 import logging
 from typing import Dict, List, Optional
 
-from enums.permitted_role import PermittedRole
 from services.ods_api_service import OdsApiService, Organisation
 from utils.exceptions import TooManyOrgsException
 from services.token_handler_ssm_service import TokenHandlerSSMService
@@ -36,7 +35,7 @@ class OdsApiServiceForSmartcard(OdsApiService):
 
         logger.info(f"length: {len(ods_code_list)} ")
         if len(ods_code_list) != 1:
-            raise TooManyOrgsException
+            raise TooManyOrgsException("No single organisation found for identified ods codes")
 
         ods_code = ods_code_list[0]
         logger.info(f"ods_code selected: {ods_code}")
@@ -45,19 +44,17 @@ class OdsApiServiceForSmartcard(OdsApiService):
 
         logger.info(f"Org Data: {org_data}")
 
-        pcse_ods = is_pcse_ods(ods_code)
-        gpp_ods = is_gpp_org(org_data)
+        pcse_ods = find_and_get_pcse_ods(ods_code)
+        gpp_ods = find_and_get_gpp_org(org_data)
 
         if pcse_ods is not None: 
             logger.info(f"ODS code {ods_code} is a PCSE, returning org data")
             response = self.parse_ods_response(org_data, pcse_ods)
-            logger.info(f"ods response: {response}" )
             return response
 
         if gpp_ods is not None: 
             logger.info(f"ODS code {ods_code} is a GPP, returning org data")
             response = self.parse_ods_response(org_data, gpp_ods)
-            logger.info(f"ods response: {response}" )
             return response
         
         logger.info(
@@ -66,7 +63,7 @@ class OdsApiServiceForSmartcard(OdsApiService):
         return {}
 
 
-def is_gpp_org(org_details):
+def find_and_get_gpp_org(org_details):
     logger.info("Checking GPP Roles")
     json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
 
@@ -76,7 +73,7 @@ def is_gpp_org(org_details):
             return json_role["id"]
     return None
 
-def is_pcse_ods(ods_code):
+def find_and_get_pcse_ods(ods_code):
     logger.info("Checking PCSE Roles")
     if ods_code == token_handler_ssm_service.get_org_ods_codes()[0]: 
         return ods_code

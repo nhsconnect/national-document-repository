@@ -64,7 +64,6 @@ class OidcService:
             response_content = fetch_token_response.json()
             access_token: AccessToken = response_content["access_token"]
             raw_id_token = response_content["id_token"]
-            logger.info(f"raw_id_token: {raw_id_token}")
 
             id_token_claims_set: IdTokenClaimSet = IdTokenClaimSet.model_validate(
                 self.validate_and_decode_token(raw_id_token)

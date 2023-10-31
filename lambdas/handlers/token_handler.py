@@ -16,11 +16,10 @@ from services.oidc_service_for_password import OidcServiceForPassword
 from services.oidc_service_for_smartcard import OidcServiceForSmartcard
 from services.token_handler_ssm_service import TokenHandlerSSMService
 
-from utils.exceptions import AuthorisationException, OrganisationNotFoundException
+from utils.exceptions import AuthorisationException, OrganisationNotFoundException, TooManyOrgsException
 from utils.lambda_response import ApiGatewayResponse
 
 from enums.permitted_smart_role import PermittedSmartRole
-from enums.permitted_role import PermittedRole
 from enums.repository_role import RepositoryRole
 
 logger = logging.getLogger()
@@ -61,18 +60,16 @@ def token_request(oidc_service, ods_api_service, event):
 
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
-        logger.info(f"id_token_claim_set:  {id_token_claim_set}")
-
+        
         logger.info(f"Access token: {access_token}")
+        logger.info(f"ID token claim set:  {id_token_claim_set}")
 
-        logger.info("Use the access token to fetch user's organisation codes")
+        logger.info("Use the access token to fetch user's organisation and smartcard codes")
         org_ods_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
         smartcard_role_code = oidc_service.fetch_user_role_code(access_token, id_token_claim_set, "R")
-
         permitted_orgs_details = ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
         
-        logger.info(f"permitted_orgs_details: {permitted_orgs_details}")
-        logger.info(f"permitted_orgs_details keys: {permitted_orgs_details.keys()}")
+        logger.info(f"Permitted_orgs_details: {permitted_orgs_details}")
 
         if len(permitted_orgs_details.keys()) == 0:
             logger.info("User has no org to log in with")
@@ -80,15 +77,17 @@ def token_request(oidc_service, ods_api_service, event):
 
         session_id = create_login_session(id_token_claim_set)
 
-        logger.info("Creating Repository Role")
+        logger.info("Calculating repository role")
         repository_role = generate_repository_role(permitted_orgs_details, smartcard_role_code)
 
+        logger.info("Creating authorisation token")
         authorisation_token = issue_auth_token(
             session_id, id_token_claim_set, 
             permitted_orgs_details, 
             smartcard_role_code, repository_role.value
         )
 
+        logger.info("Creating response")
         response = {
             "role" : repository_role.value,
             "authorisation_token": authorisation_token,
@@ -118,15 +117,14 @@ def token_request(oidc_service, ods_api_service, event):
         return ApiGatewayResponse(
             500, "Organisation does not exist for given ODS code", "GET"
         ).create_api_gateway_response()
+    except TooManyOrgsException as error:
+        return ApiGatewayResponse(
+            500, "No single organisation found for given ods codes", "GET"
+        ).create_api_gateway_response()
+
 
 
 def generate_repository_role(organisation: dict, smartcart_role: str):
-
-    logger.info(f"Smartcard role: {smartcart_role}")
-    logger.info(f"PermittedSmartRole.GP_ADMINrole: {PermittedSmartRole.GP_ADMIN.value}")
-    logger.info(f"PermittedSmartRole.GP_CLINICAL: {PermittedSmartRole.GP_CLINICAL.name}")
-    logger.info(f"PermittedSmartRole.PCSE: {PermittedSmartRole.PCSE.name}")
-
     
     match smartcart_role:
         case PermittedSmartRole.GP_ADMIN.value:
@@ -150,10 +148,6 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
 
 
 def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
-    value = organisation["role_code"]
-    logger.info(f"ODS IS: {value.upper()}")
-    logger.info(f"ODS Check: {ods_code.upper()}")
-
     if organisation["role_code"].upper() == ods_code.upper():
         return True;
     return False;
@@ -198,7 +192,7 @@ def issue_auth_token(
 ) -> str:
 
     ssm_client = boto3.client("ssm")
-    logger.info("starting ssm request to retrieve NDR private key")
+    logger.info("Starting ssm request to retrieve NDR private key")
     ssm_response = ssm_client.get_parameter(
         Name="jwt_token_private_key", WithDecryption=True
     )
@@ -218,6 +212,7 @@ def issue_auth_token(
         "ndr_session_id": session_id,
     }
 
+    logger.info("Token contents: ")
     logger.info(f"session_id: {session_id}")
     logger.info(f"permitted_orgs_and_roles: {permitted_orgs_and_roles}")
     logger.info(f"id_token_claim_set: {id_token_claim_set}")
@@ -230,8 +225,7 @@ def issue_auth_token(
             ndr_token_content, private_key, algorithm="RS256"
         )
     except Exception as e:
-        logger.info(e)
-        raise e
+        raise AuthorisationException("Unable to create authorisation token")
 
     logger.info(f"encoded JWT: {authorisation_token}")
     return authorisation_token
