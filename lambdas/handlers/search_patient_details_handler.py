@@ -29,9 +29,6 @@ def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
     logger.info(event)
 
-    org_claims = event["requestContext"]["authorizer"]["jwt"]["claims"]
-    logger.info(json.dumps(org_claims))
-    logger.info(json.dumps(event['requestContext']))
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
 
