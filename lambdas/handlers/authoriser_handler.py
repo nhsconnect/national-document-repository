@@ -19,6 +19,7 @@ import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
 from enums.permitted_role import PermittedRole
+from enums.repository_role import RepositoryRole
 from models.auth_policy import AuthPolicy
 from services.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
@@ -60,37 +61,37 @@ def lambda_handler(event, context):
     principal_id = ""
     _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
     api_id, stage, _http_verb, _resource_name = api_gateway_arn.split("/")
-    user_roles = [org["role"] for org in decoded["organisations"]]
+    user_role = decoded["repository_role"]
     policy = AuthPolicy(principal_id, aws_account_id)
     policy.restApiId = api_id
     policy.region = region
     policy.stage = stage
 
     path = "/" + _resource_name
-    resource_denied = validate_access_policy(_http_verb, path, user_roles)
+    resource_denied = validate_access_policy(_http_verb, path, user_role)
     if resource_denied:
         policy.denyMethod(_http_verb, path)
     else:
-        set_access_policy(_http_verb, path, user_roles, policy)
+        set_access_policy(_http_verb, path, user_role, policy)
     auth_response = policy.build()
 
     return auth_response
 
 
-def validate_access_policy(http_verb, path, user_roles):
+def validate_access_policy(http_verb, path, user_role):
     logger.info("Validating resource req: %s, http: %s" % (path, http_verb))
     match path:
         case "/DocumentDelete":
-            deny_resource = (PermittedRole.GP_CLINICAL.name in user_roles)
+            deny_resource = user_role is PermittedRole.GP_CLINICAL.name
 
         case "/DocumentManifest":
-            deny_resource = (PermittedRole.GP_CLINICAL.name in user_roles)
+            deny_resource = user_role is PermittedRole.GP_CLINICAL.name
 
         case "/DocumentReference":
-            deny_resource = (PermittedRole.GP_CLINICAL.name in user_roles)
+            deny_resource = user_role is PermittedRole.GP_CLINICAL.name
 
         case "/SearchDocumentReferences":
-            deny_resource = (PermittedRole.PCSE.name in user_roles)
+            deny_resource = user_role is PermittedRole.PCSE.name
 
         case _:
             deny_resource = False
@@ -100,13 +101,9 @@ def validate_access_policy(http_verb, path, user_roles):
     return bool(deny_resource)
 
 
-def set_access_policy(http_verb, path, user_roles, policy):
-    if (
-        PermittedRole.DEV.name in user_roles
-        or PermittedRole.GP_ADMIN.name in user_roles
-        or PermittedRole.GP_CLINICAL.name in user_roles
-        or PermittedRole.PCSE.name in user_roles
-    ):
+def set_access_policy(http_verb, path, user_role, policy):
+    accepted_roles = tuple(item.value for item in RepositoryRole)
+    if user_role in accepted_roles:
         policy.allowMethod(http_verb, path)
     else:
         policy.denyMethod(http_verb, path)
