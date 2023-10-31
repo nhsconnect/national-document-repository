@@ -19,7 +19,7 @@ import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
 from enums.permitted_role import PermittedRole
-from models.auth_policy import AuthPolicy, HttpVerb
+from models.auth_policy import AuthPolicy
 from services.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
 
@@ -78,33 +78,24 @@ def lambda_handler(event, context):
 
 
 def validate_access_policy(http_verb, path, user_roles):
-    logger.info("resource name: %s, http: %s" % (path, http_verb))
+    logger.info("Validating resource req: %s, http: %s" % (path, http_verb))
     match path:
         case "/DocumentDelete":
-            allow_resource = (
-                PermittedRole.GP_CLINICAL.name in user_roles
-                and http_verb == HttpVerb.DELETE
-            ) is False
+            allow_resource = (PermittedRole.GP_CLINICAL.name in user_roles) is False
 
         case "/DocumentManifest":
-            allow_resource = (
-                PermittedRole.GP_CLINICAL.name in user_roles
-                and http_verb == HttpVerb.DELETE
-            ) is False
+            allow_resource = (PermittedRole.GP_CLINICAL.name in user_roles) is False
 
         case "/DocumentReference":
-            allow_resource = (
-                PermittedRole.GP_CLINICAL.name in user_roles
-                and http_verb == HttpVerb.POST
-            ) is False
+            allow_resource = (PermittedRole.GP_CLINICAL.name in user_roles) is False
+
         case "/SearchDocumentReferences":
-            allow_resource = (
-                PermittedRole.PCSE.name in user_roles and http_verb == HttpVerb.GET
-            ) is False
+            allow_resource = (PermittedRole.PCSE.name in user_roles) is False
+
         case _:
             allow_resource = True
 
-    logger.info("allow resource: %s" % allow_resource)
+    logger.info("Allow resource: %s" % allow_resource)
 
     return bool(allow_resource)
 
