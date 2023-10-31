@@ -49,5 +49,4 @@ def is_gpp_org(org_details):
         # TODO use gp role from ssm
         if json_role["id"] in PermittedRole.list():
             return True
-        else:
-            return False
+    return False
