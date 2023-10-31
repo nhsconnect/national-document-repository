@@ -21,15 +21,17 @@ class OdsApiServiceForSmartcard(OdsApiService):
     ) -> List[Dict]:
         logger.info(f"ODS code list for smartcard login: {ods_code_list}")
 
+        logger.info(f"length: {len(ods_code_list)} ")
         if len(ods_code_list) != 1:
+            logger.info("AHHHHHHHHHH")
             raise TooManyOrgsException
 
         ods_code = ods_code_list[0]
-
         logger.info(f"ods_code selected: {ods_code}")
 
         org_data = self.fetch_organisation_data(ods_code)
 
+        logger.info(f"Org Data: {org_data}")
         if ods_code == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE or is_gpp_org(org_data):
             logger.info(f"ODS code {ods_code} is a GPP or PCSE, returning org data")
             return self.parse_ods_response(org_data)
