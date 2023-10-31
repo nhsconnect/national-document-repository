@@ -11,6 +11,7 @@ from models.nhs_document_reference import (NHSDocumentReference,
 from pydantic import ValidationError
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
+from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.lloyd_george_validator import (LGInvalidFilesException,
@@ -23,20 +24,21 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+@ensure_environment_variables(
+    names=[
+        "LLOYD_GEORGE_BUCKET_NAME",
+        "LLOYD_GEORGE_DYNAMODB_NAME",
+        "DOCUMENT_STORE_BUCKET_NAME",
+        "DOCUMENT_STORE_DYNAMODB_NAME",
+    ]
+)
 def lambda_handler(event, context):
     logger.info("Starting document reference creation process")
 
-    try:
-        lg_s3_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
-        lg_dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-        arf_s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
-        arf_dynamo_table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-    except KeyError as e:
-        return ApiGatewayResponse(
-            500,
-            f"An error occurred due to missing environment variables: {str(e)}",
-            "POST",
-        ).create_api_gateway_response()
+    lg_s3_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
+    lg_dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+    arf_s3_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
+    arf_dynamo_table = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
 
     try:
         body = json.loads(event["body"])

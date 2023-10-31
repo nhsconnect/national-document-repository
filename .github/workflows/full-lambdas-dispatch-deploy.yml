@@ -172,6 +172,47 @@ jobs:
           function_name: ${{ github.event.client_payload.sandbox }}_SearchDocumentReferencesLambda
           zip_file: package_lambdas_document_reference_search_handler.zip
 
+  python_deploy_delete_document_reference_handler:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.client_payload.environment }}
+    strategy:
+      matrix:
+        python-version: [ "3.11" ]
+    needs: [ "python_lambdas_test" ]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.buildBranch}}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Make virtual environment
+        run: |
+          make env
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Create release package for Delete Document Reference
+        run: |
+          make lambda_name=delete_document_reference_handler zip
+
+      - name: Upload Lambda Function for DeleteDocRefLambda
+        uses: appleboy/lambda-action@master
+        with:
+          aws_region: ${{ vars.AWS_REGION }}
+          function_name: ${{ github.event.client_payload.sandbox }}_DeleteDocRefLambda
+          zip_file: package_lambdas_delete_document_reference_handler.zip
+
   python_deploy_lloyd_george_record_stitch_lambda:
     runs-on: ubuntu-latest
     environment: ${{ github.event.client_payload.environment }}

@@ -22,17 +22,17 @@ TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_LG_BUCKET}/{TEST_OBJECT_KEY}"
 
 @pytest.fixture
 def both_type_event():
-    return {"body": json.dumps(MOCK_EVENT_BODY)}
+    return {"httpMethod": "POST", "body": json.dumps(MOCK_EVENT_BODY)}
 
 
 @pytest.fixture
 def arf_type_event():
-    return {"body": json.dumps(ARF_MOCK_EVENT_BODY)}
+    return {"httpMethod": "POST", "body": json.dumps(ARF_MOCK_EVENT_BODY)}
 
 
 @pytest.fixture
 def lg_type_event():
-    return {"body": json.dumps(LG_MOCK_EVENT_BODY)}
+    return {"httpMethod": "POST", "body": json.dumps(LG_MOCK_EVENT_BODY)}
 
 
 def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
@@ -328,9 +328,7 @@ def test_lambda_handler_missing_environment_variables_type_lg_returns_400(
     monkeypatch.delenv(environmentVariable)
     expected = ApiGatewayResponse(
         500,
-        "An error occurred due to missing environment variables: '"
-        + environmentVariable
-        + "'",
+        f"An error occurred due to missing environment variable: '{environmentVariable}'",
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
@@ -350,9 +348,7 @@ def test_lambda_handler_missing_environment_variables_type_arf_returns_400(
     monkeypatch.delenv(environmentVariable)
     expected = ApiGatewayResponse(
         500,
-        "An error occurred due to missing environment variables: '"
-        + environmentVariable
-        + "'",
+        f"An error occurred due to missing environment variable: '{environmentVariable}'",
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)

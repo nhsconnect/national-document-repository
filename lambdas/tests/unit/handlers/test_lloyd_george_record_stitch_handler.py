@@ -86,7 +86,7 @@ def test_respond_500_throws_error_when_environment_variables_not_set(
     actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
         500,
-        "An error occurred due to missing key: 'LLOYD_GEORGE_DYNAMODB_NAME'",
+        "An error occurred due to missing environment variable: 'LLOYD_GEORGE_DYNAMODB_NAME'",
         "GET",
     ).create_api_gateway_response()
     assert actual == expected

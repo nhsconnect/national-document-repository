@@ -19,7 +19,7 @@ class PdsApiService(PatientSearch):
     def __init__(self, ssm_service):
         self.ssm_service = ssm_service
 
-    def pds_request(self, nshNumber: str, retry_on_expired: bool):
+    def pds_request(self, nhs_number: str, retry_on_expired: bool):
         try:
             endpoint, access_token_response = self.get_parameters_for_pds_api_request()
             access_token_response = json.loads(access_token_response)
@@ -39,10 +39,10 @@ class PdsApiService(PatientSearch):
                 "X-Request-ID": x_request_id,
             }
 
-            url_endpoint = endpoint + "Patient/" + nshNumber
+            url_endpoint = endpoint + "Patient/" + nhs_number
             pds_response = requests.get(url=url_endpoint, headers=authorization_header)
             if pds_response.status_code == 401 and retry_on_expired:
-                return self.pds_request(nshNumber, retry_on_expired=False)
+                return self.pds_request(nhs_number, retry_on_expired=False)
             return pds_response
 
         except ClientError as e:

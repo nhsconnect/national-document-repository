@@ -5,7 +5,7 @@ import pytest
 from botocore.exceptions import ClientError
 from services.dynamo_service import DynamoDBService
 from tests.unit.conftest import MOCK_TABLE_NAME
-from tests.unit.helpers.data.dynamo_responses import MOCK_RESPONSE
+from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def test_when_table_exists_then_table_is_returned_successfully(
 ):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
-        mock_dynamo_table.query.return_value = MOCK_RESPONSE
+        mock_dynamo_table.query.return_value = MOCK_SEARCH_RESPONSE
 
         db_service = DynamoDBService()
         actual = db_service.get_table(

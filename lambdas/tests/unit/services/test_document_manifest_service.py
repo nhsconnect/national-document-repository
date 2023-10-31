@@ -1,24 +1,11 @@
 import os
 
-from models.document import Document
 from services.document_manifest_service import DocumentManifestService
 from tests.unit.conftest import (MOCK_BUCKET, MOCK_ZIP_OUTPUT_BUCKET,
-                                 MOCK_ZIP_TRACE_TABLE, TEST_DOCUMENT_LOCATION,
-                                 TEST_FILE_NAME, TEST_NHS_NUMBER,
-                                 TEST_VIRUS_SCANNER_RESULT)
+                                 MOCK_ZIP_TRACE_TABLE, TEST_NHS_NUMBER)
+from tests.unit.helpers.data.test_documents import create_test_doc_store_refs
 
-MOCK_DOCUMENTS = [
-    Document(
-        "123456789", TEST_FILE_NAME, TEST_VIRUS_SCANNER_RESULT, TEST_DOCUMENT_LOCATION
-    ),
-    Document(
-        "123222222", TEST_FILE_NAME, TEST_VIRUS_SCANNER_RESULT, TEST_DOCUMENT_LOCATION
-    ),
-    Document(
-        "123456789", TEST_FILE_NAME, TEST_VIRUS_SCANNER_RESULT, TEST_DOCUMENT_LOCATION
-    ),
-]
-
+TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()
 MOCK_PRESIGNED_URL_RESPONSE = {
     "url": "https://ndr-dev-document-store.s3.amazonaws.com/",
     "fields": {
@@ -37,7 +24,10 @@ def test_create_document_manifest_presigned_url(set_env, mocker):
     mocker.patch("boto3.client")
 
     service = DocumentManifestService(
-        TEST_NHS_NUMBER, MOCK_DOCUMENTS, MOCK_ZIP_OUTPUT_BUCKET, MOCK_ZIP_TRACE_TABLE
+        TEST_NHS_NUMBER,
+        TEST_DOC_STORE_REFERENCES,
+        MOCK_ZIP_OUTPUT_BUCKET,
+        MOCK_ZIP_TRACE_TABLE,
     )
 
     mock_s3_service = mocker.patch.object(
@@ -60,26 +50,32 @@ def test_create_document_manifest_presigned_url(set_env, mocker):
 def test_download_documents_to_be_zipped_handles_duplicate_file_names(set_env, mocker):
     mocker.patch("boto3.client")
 
+    TEST_DOC_STORE_REFERENCES[0].file_name = "test.pdf"
+    TEST_DOC_STORE_REFERENCES[1].file_name = "test.pdf"
+    TEST_DOC_STORE_REFERENCES[2].file_name = "test.pdf"
+
     service = DocumentManifestService(
-        TEST_NHS_NUMBER, MOCK_DOCUMENTS, MOCK_ZIP_OUTPUT_BUCKET, MOCK_ZIP_TRACE_TABLE
+        TEST_NHS_NUMBER,
+        TEST_DOC_STORE_REFERENCES,
+        MOCK_ZIP_OUTPUT_BUCKET,
+        MOCK_ZIP_TRACE_TABLE,
     )
 
     service.download_documents_to_be_zipped()
 
-    document_one_name = MOCK_DOCUMENTS[0].file_name
-    document_two_name = MOCK_DOCUMENTS[1].file_name
-    document_three_name = MOCK_DOCUMENTS[2].file_name
-
-    assert document_one_name == "test.pdf"
-    assert document_two_name == "test(2).pdf"
-    assert document_three_name == "test(3).pdf"
+    assert TEST_DOC_STORE_REFERENCES[0].file_name == "test.pdf"
+    assert TEST_DOC_STORE_REFERENCES[1].file_name == "test(2).pdf"
+    assert TEST_DOC_STORE_REFERENCES[2].file_name == "test(3).pdf"
 
 
 def test_download_documents_to_be_zipped_calls_download_file(set_env, mocker):
     mocker.patch("boto3.client")
 
     service = DocumentManifestService(
-        TEST_NHS_NUMBER, MOCK_DOCUMENTS, MOCK_ZIP_OUTPUT_BUCKET, MOCK_ZIP_TRACE_TABLE
+        TEST_NHS_NUMBER,
+        TEST_DOC_STORE_REFERENCES,
+        MOCK_ZIP_OUTPUT_BUCKET,
+        MOCK_ZIP_TRACE_TABLE,
     )
     mock_s3_service_download_file = mocker.patch.object(
         service.s3_service, "download_file"
@@ -92,17 +88,12 @@ def test_download_documents_to_be_zipped_calls_download_file(set_env, mocker):
 
 def test_download_documents_to_be_zipped_creates_download_path(set_env, mocker):
     mocker.patch("boto3.client")
-    mock_document = [
-        Document(
-            "123456789",
-            TEST_FILE_NAME,
-            TEST_VIRUS_SCANNER_RESULT,
-            TEST_DOCUMENT_LOCATION,
-        )
-    ]
 
     service = DocumentManifestService(
-        TEST_NHS_NUMBER, mock_document, MOCK_ZIP_OUTPUT_BUCKET, MOCK_ZIP_TRACE_TABLE
+        TEST_NHS_NUMBER,
+        [TEST_DOC_STORE_REFERENCES[0]],
+        MOCK_ZIP_OUTPUT_BUCKET,
+        MOCK_ZIP_TRACE_TABLE,
     )
     mock_s3_service_download_file = mocker.patch.object(
         service.s3_service, "download_file"
@@ -111,10 +102,10 @@ def test_download_documents_to_be_zipped_creates_download_path(set_env, mocker):
     service.download_documents_to_be_zipped()
 
     expected_download_path = os.path.join(
-        service.temp_downloads_dir, MOCK_DOCUMENTS[0].file_name
+        service.temp_downloads_dir, TEST_DOC_STORE_REFERENCES[0].file_name
     )
 
-    document_file_key = MOCK_DOCUMENTS[0].file_key
+    document_file_key = TEST_DOC_STORE_REFERENCES[0].get_file_key()
 
     mock_s3_service_download_file.assert_called_with(
         MOCK_BUCKET, document_file_key, expected_download_path

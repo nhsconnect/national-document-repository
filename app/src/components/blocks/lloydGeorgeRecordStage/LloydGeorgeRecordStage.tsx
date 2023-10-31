@@ -6,6 +6,7 @@ import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
+import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 
 export type Props = {
     patientDetails: PatientDetails;
@@ -34,12 +35,8 @@ function LloydGeorgeRecordStage({
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 
-    const nhsNumber: String =
-        patientDetails?.nhsNumber.slice(0, 3) +
-        ' ' +
-        patientDetails?.nhsNumber.slice(3, 6) +
-        ' ' +
-        patientDetails?.nhsNumber.slice(6, 10);
+    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
     const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
@@ -62,7 +59,7 @@ function LloydGeorgeRecordStage({
         <div className="lloydgeorge_record-stage">
             {fullScreen && (
                 <BackLink
-                    data-cy="back-link"
+                    data-testid="back-link"
                     href="#"
                     onClick={() => {
                         setFullScreen(false);
@@ -72,17 +69,17 @@ function LloydGeorgeRecordStage({
                 </BackLink>
             )}
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
-                <p data-cy="patient-name">
+                <p data-testid="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
                 </p>
-                <p data-cy="patient-nhs-number">NHS number: {nhsNumber}</p>
-                <p data-cy="patient-dob">Date of birth: {dob}</p>
+                <p data-testid="patient-nhs-number">NHS number: {formattedNhsNumber}</p>
+                <p data-testid="patient-dob">Date of birth: {dob}</p>
             </div>
             {!fullScreen ? (
                 <>
                     <Card className="lloydgeorge_record-stage_header">
                         <Card.Content
-                            data-cy="pdf-card"
+                            data-testid="pdf-card"
                             className="lloydgeorge_record-stage_header-content"
                         >
                             <Card.Heading className="lloydgeorge_record-stage_header-content-label">
@@ -96,13 +93,13 @@ function LloydGeorgeRecordStage({
                             <Details expander open className="lloydgeorge_record-stage_expander">
                                 <Details.Summary
                                     style={{ display: 'inline-block' }}
-                                    data-cy="view-record-bin"
+                                    data-testid="view-record-bin"
                                 >
                                     View record
                                 </Details.Summary>
                                 <button
                                     className="lloydgeorge_record-stage_expander-button link-button"
-                                    data-cy="full-screen-btn"
+                                    data-testid="full-screen-btn"
                                     onClick={() => {
                                         setFullScreen(true);
                                     }}

@@ -3,13 +3,14 @@ from unittest.mock import call
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from handlers.document_manifest_by_nhs_number_handler import lambda_handler
-from tests.unit.helpers.data.test_documents import TEST_ARF_DOCS, TEST_LG_DOCS
+from tests.unit.helpers.data.test_documents import (
+    create_test_doc_store_refs, create_test_lloyd_george_doc_store_refs)
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_METADATA_FIELDS = [
     DocumentReferenceMetadataFields.FILE_NAME,
     DocumentReferenceMetadataFields.FILE_LOCATION,
-    DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT,
+    DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT,
 ]
 
 
@@ -17,7 +18,7 @@ def test_lambda_handler_returns_204_when_no_documents_returned_from_dynamo_respo
     mocker, set_env, valid_id_and_arf_doctype_event, context
 ):
     mock_document_query = mocker.patch(
-        "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
+        "services.document_service.DocumentService.fetch_available_document_references_by_type"
     )
     mock_document_query.return_value = []
 
@@ -34,7 +35,7 @@ def test_lambda_handler_returns_400_when_doc_type_invalid_response(
     mocker, set_env, valid_id_and_invalid_doctype_event, context
 ):
     mock_document_query = mocker.patch(
-        "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
+        "services.document_service.DocumentService.fetch_available_document_references_by_type"
     )
     mock_document_query.return_value = []
 
@@ -49,9 +50,9 @@ def test_lambda_handler_returns_400_when_doc_type_invalid_response(
 
 def manifest_service_side_effect(nhs_number, doc_types):
     if SupportedDocumentTypes.ARF.name in doc_types:
-        return [TEST_ARF_DOCS]
+        return create_test_doc_store_refs()
     if SupportedDocumentTypes.LG.name in doc_types:
-        return [TEST_LG_DOCS]
+        return create_test_lloyd_george_doc_store_refs()
     return []
 
 
@@ -61,7 +62,7 @@ def test_lambda_handler_valid_parameters_arf_doc_type_request_returns_200(
     expected_url = "test-url"
 
     mock_dynamo = mocker.patch(
-        "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
+        "services.document_service.DocumentService.fetch_available_document_references_by_type"
     )
     mock_dynamo.side_effect = manifest_service_side_effect
 
@@ -85,7 +86,7 @@ def test_lambda_handler_valid_parameters_lg_doc_type_request_returns_200(
     expected_url = "test-url"
 
     mock_dynamo = mocker.patch(
-        "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
+        "services.document_service.DocumentService.fetch_available_document_references_by_type"
     )
     mock_dynamo.side_effect = manifest_service_side_effect
 
@@ -109,7 +110,7 @@ def test_lambda_handler_valid_parameters_both_doc_type_request_returns_200(
     expected_url = "test-url"
 
     mock_dynamo = mocker.patch(
-        "services.manifest_dynamo_service.ManifestDynamoService.discover_uploaded_documents"
+        "services.document_service.DocumentService.fetch_available_document_references_by_type"
     )
     mock_dynamo.side_effect = manifest_service_side_effect
 
@@ -137,7 +138,7 @@ def test_lambda_handler_missing_environment_variables_returns_500(
     monkeypatch.delenv("DOCUMENT_STORE_DYNAMODB_NAME")
     expected = ApiGatewayResponse(
         500,
-        "An error occurred due to missing key: 'DOCUMENT_STORE_DYNAMODB_NAME'",
+        "An error occurred due to missing environment variable: 'DOCUMENT_STORE_DYNAMODB_NAME'",
         "GET",
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)
