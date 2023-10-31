@@ -58,3 +58,6 @@ class InvalidMessageException(Exception):
 
 class InvalidDocumentReferenceException(Exception):
     pass
+
+class PatientNotAuthorisedException(Exception):
+    pass

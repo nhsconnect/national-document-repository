@@ -2,13 +2,15 @@ import logging
 import os
 from json import JSONDecodeError
 
+import boto3
+import jwt
 from pydantic import ValidationError
 from services.mock_pds_service import MockPdsApiService
 from services.pds_api_service import PdsApiService
 from services.ssm_service import SSMService
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.exceptions import (InvalidResourceIdException,
-                              PatientNotFoundException, PdsErrorException)
+                              PatientNotFoundException, PdsErrorException, PatientNotAuthorisedException)
 from utils.lambda_response import ApiGatewayResponse
 
 logger = logging.getLogger()
@@ -30,10 +32,25 @@ def lambda_handler(event, context):
 
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
+        client = boto3.client("ssm")
+        ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
+        ssm_response = client.get_parameter(
+            Name=ssm_public_key_parameter_name, WithDecryption=True
+        )
+        public_key = ssm_response["Parameter"]["Value"]
+
+        decoded = jwt.decode(
+            event["authorizationToken"], public_key, algorithms=["RS256"]
+        )
+
+        user_ods_codes = [ods["ods_code"] for ods in decoded["organisations"]]
 
         logger.info("Retrieving patient details")
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
+        if patient_details.general_practice_ods not in user_ods_codes:
+            raise PatientNotAuthorisedException
+
         response = patient_details.model_dump_json(by_alias=True)
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
@@ -42,6 +59,12 @@ def lambda_handler(event, context):
         logger.error(f"PDS not found: {str(e)}")
         return ApiGatewayResponse(
             404, "Patient does not exist for given NHS number", "GET"
+        ).create_api_gateway_response()
+
+    except PatientNotAuthorisedException as e:
+        logger.error(f"PDS not authorised patient: {str(e)}")
+        return ApiGatewayResponse(
+            404, "Patient is outside of your access policy", "GET"
         ).create_api_gateway_response()
 
     except (InvalidResourceIdException, PdsErrorException) as e:
