@@ -19,8 +19,13 @@ class TokenHandlerSSMService(SSMService):
             "/auth/smartcard/role/pcse",
         ])
 
+        response = [ params["/auth/smartcard/role/gp_admin"],
+                     params["/auth/smartcard/role/gp_clinical"],
+                     params["/auth/smartcard/role/pcse"] ]
+        
         logger.info(f"smartcard role params: {params}")
-        return params
+        logger.info(f"smartcard role array: {response}")
+        return response
     
     def get_org_role_codes(self):
         logger.info("starting ssm request to retrieve required org roles codes")
@@ -28,8 +33,11 @@ class TokenHandlerSSMService(SSMService):
             "/auth/org/role_code/gpp",
         ])
 
+        response = [ params["/auth/org/role_code/gpp"] ]
+
         logger.info(f"role code params: {params}")
-        return params
+        logger.info(f"role code array: {response}")
+        return response
 
     def get_org_ods_codes(self):
         logger.info("starting ssm request to retrieve required org ods codes")
@@ -37,8 +45,11 @@ class TokenHandlerSSMService(SSMService):
             "/auth/org/ods_code/pcse",
         ])
 
+        response = [ params["/auth/org/ods_code/pcse"] ]
+
         logger.info(f"org ods params: {params}")
-        return params
+        logger.info(f"org ods array: {response}")
+        return response
 
     def get_jwt_private_key(self):
         logger.info("starting ssm request to retrieve NDR private key")
