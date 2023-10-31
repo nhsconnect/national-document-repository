@@ -12,6 +12,7 @@ logger.setLevel(logging.INFO)
 
 
 class OidcServiceForSmartcard(OidcService):
+
     def fetch_user_org_codes(
         self, access_token: str, id_token_claim_set: IdTokenClaimSet
     ) -> List[str]:
@@ -29,9 +30,45 @@ class OidcServiceForSmartcard(OidcService):
         logger.info(f"Selected role ID: {selected_role}")
 
         for role in nrbac_roles:
+            logger.info(f"Role: {role}")
             if role["person_roleid"] == selected_role:
                 return role["org_code"]
+        
+        logger.info("No oorg code found")
         return []
+
+    def fetch_user_role_code(
+        self, 
+        access_token: str, 
+        id_token_claim_set: IdTokenClaimSet, 
+        prefix_character: str
+    ) -> str:
+        
+        userinfo = self.fetch_userinfo(access_token)
+        logger.info(f"User info response: {userinfo}")
+
+        nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
+        logger.info(f"nrbac_roles: {nrbac_roles}")
+
+        selected_role = get_selected_roleid(id_token_claim_set)
+        logger.info(f"Selected role ID: {selected_role}")
+
+        role_codes = ""
+        for nrbac_role in nrbac_roles:
+            if nrbac_role["person_roleid"] == selected_role:
+                role_codes = nrbac_role["role_code"]
+                break
+    
+        if role_codes == "":
+            raise AuthorisationException("No role codes found for users selected role")
+        
+        role_codes_split = role_codes.split(":")
+
+        for role_code in role_codes_split:
+            if role_code[0].upper() == prefix_character.upper():
+                return role_code
+
+        raise AuthorisationException(f'Role codes have been found for the user but not with prefix {prefix_character.upper()}')
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         logger.info(f"Access token for user info request: {access_token}")
