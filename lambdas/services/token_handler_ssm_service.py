@@ -11,13 +11,24 @@ class TokenHandlerSSMService(SSMService):
     def __init__(self):
         super().__init__()
 
-    def get_role_codes(self):
-        logger.info("starting ssm request to retrieve required role codes")
+    def get_smartcard_role_codes(self):
+        logger.info("starting ssm request to retrieve required smartcard role codes")
         return self.get_ssm_parameters([
-            "ods_code_pcse",
-            "role_code_gpadmin",
-            "role_code_gpp_org",
-            "role_code_pcse",
+            "/auth/smartcard/role/gp_admin",
+            "/auth/smartcard/role/gp_clinical",
+            "/auth/smartcard/role/pcse",
+        ])
+    
+    def get_org_role_codes(self):
+        logger.info("starting ssm request to retrieve required smartcard role codes")
+        return self.get_ssm_parameters([
+            "/auth/org/role_code/gpp",
+        ])
+
+    def get_org_ods_codes(self):
+        logger.info("starting ssm request to retrieve required smartcard role codes")
+        return self.get_ssm_parameters([
+            "/auth/org/ods_code/pcse",
         ])
 
     def get_jwt_private_key(self):

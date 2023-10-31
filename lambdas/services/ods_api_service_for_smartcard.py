@@ -4,13 +4,13 @@ from typing import Dict, List, Optional
 from enums.permitted_role import PermittedRole
 from services.ods_api_service import OdsApiService, Organisation
 from utils.exceptions import TooManyOrgsException
+from services.token_handler_ssm_service import TokenHandlerSSMService
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-# TODO Move this to SSM
-PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE = "X4S4L"
-
+token_handler_ssm_service = TokenHandlerSSMService()
 
 class OdsApiServiceForSmartcard(OdsApiService):
     def parse_ods_response(self, org_data, role_code) -> dict:
@@ -70,11 +70,11 @@ def is_gpp_org(org_details):
     json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
 
     for json_role in json_roles:
-        if json_role["id"] in PermittedRole.list():
+        if json_role["id"] in token_handler_ssm_service.get_org_role_codes():
             return json_role["id"]
     return None
 
 def is_pcse_ods(ods_code):
-    if ods_code == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE: 
+    if ods_code == token_handler_ssm_service.get_org_ods_codes[0]: 
         return ods_code
     return None

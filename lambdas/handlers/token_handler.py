@@ -14,6 +14,8 @@ from services.ods_api_service_for_password import OdsApiServiceForPassword
 from services.ods_api_service_for_smartcard import OdsApiServiceForSmartcard
 from services.oidc_service_for_password import OidcServiceForPassword
 from services.oidc_service_for_smartcard import OidcServiceForSmartcard
+from services.token_handler_ssm_service import TokenHandlerSSMService
+
 from utils.exceptions import AuthorisationException, OrganisationNotFoundException
 from utils.lambda_response import ApiGatewayResponse
 
@@ -23,6 +25,8 @@ from enums.repository_role import RepositoryRole
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+token_handler_ssm_service = TokenHandlerSSMService()
 
 
 def lambda_handler(event, context):
@@ -116,81 +120,6 @@ def token_request(oidc_service, ods_api_service, event):
         ).create_api_gateway_response()
 
 
-# def token_request2(oidc_service, event):
-#     try:
-#         auth_code = event["queryStringParameters"]["code"]
-#         state = event["queryStringParameters"]["state"]
-#         if not (auth_code and state):
-#             return response_400_bad_request_for_missing_parameter()
-#     except (KeyError, TypeError):
-#         return response_400_bad_request_for_missing_parameter()
-#
-#     try:
-#         if not have_matching_state_value_in_record(state):
-#             return ApiGatewayResponse(
-#                 400,
-#                 f"Mismatching state values. Cannot find state {state} in record",
-#                 "GET",
-#             ).create_api_gateway_response()
-#
-#         logger.info("Fetching access token from OIDC Provider")
-#         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
-#
-#         # get selected_roleid from id_token_claimset
-#         selected_roleid = id_token_claim_set.selected_roleid
-#
-#         logger.info("Use the access token to fetch details of user's selected role")
-#         ods_code = oidc_service.fetch_user_org_codes(access_token, selected_roleid)
-#         if ods_code is None:
-#             return ApiGatewayResponse(500, "Unable to fathom user role", "GET")
-#
-#         is_gpp = OdsApiService.is_gpp_org(ods_code)
-#         is_pcse = ods_code == PCSE_ODS_CODE_TO_BE_PUT_IN_PARAM_STORE
-#
-#         session_id = create_login_session(id_token_claim_set)
-#
-#         if is_dev_environment():
-#             permitted_orgs_and_roles = OdsApiService.fetch_organisation_with_permitted_role(
-#                 oidc_service.fetch_users_org_code(access_token)
-#             )
-#             authorisation_token = issue_auth_token(
-#                 session_id, id_token_claim_set, permitted_orgs_and_roles
-#             )
-#             response = {
-#                 "organisations": permitted_orgs_and_roles,
-#                 "authorisation_token": authorisation_token,
-#             }
-#         else:
-#             response = ""
-#             if not (is_gpp or is_pcse):
-#                 logger.info("User's selected role is not for a GPP or PCSE")
-#                 raise AuthorisationException("Selected role invalid")
-#
-#     except AuthorisationException as error:
-#         logger.error(error)
-#         return ApiGatewayResponse(
-#             401, "Failed to authenticate user with OIDC service", "GET"
-#         ).create_api_gateway_response()
-#     except (ClientError, KeyError, TypeError) as error:
-#         logger.error(error)
-#         return ApiGatewayResponse(
-#             500, "Server error", "GET"
-#         ).create_api_gateway_response()
-#     except jwt.PyJWTError as error:
-#         logger.info(f"error while encoding JWT: {error}")
-#         return ApiGatewayResponse(
-#             500, "Server error", "GET"
-#         ).create_api_gateway_response()
-#     except OdsErrorException:
-#         return ApiGatewayResponse(
-#             500, "Failed to fetch organisation data from ODS", "GET"
-#         ).create_api_gateway_response()
-#
-#     return ApiGatewayResponse(
-#         200, json.dumps(response), "GET"
-#     ).create_api_gateway_response()
-
-
 def generate_repository_role(organisation: dict, smartcart_role: str):
 
     logger.info(f"Smartcard role: {smartcart_role}")
@@ -198,20 +127,21 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
     logger.info(f"PermittedSmartRole.GP_CLINICAL: {PermittedSmartRole.GP_CLINICAL.name}")
     logger.info(f"PermittedSmartRole.PCSE: {PermittedSmartRole.PCSE.name}")
 
+    
     match smartcart_role:
         case PermittedSmartRole.GP_ADMIN.value:
             logger.info("GP Admin: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, PermittedRole.GP.value):
+            if has_role_org_ods_code(organisation, TokenHandlerSSMService.get_org_role_codes()[0]):
                 return RepositoryRole.GP_ADMIN
             return RepositoryRole.NONE
         case PermittedSmartRole.GP_CLINICAL.value:
             logger.info("GP Clinical: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, PermittedRole.GP.value):
+            if has_role_org_ods_code(organisation, TokenHandlerSSMService.get_org_role_codes()[0]):
                 return RepositoryRole.GP_CLINICAL
             return RepositoryRole.NONE
         case PermittedSmartRole.PCSE.value:
             logger.info("PCSE: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, "X4S4L"):   #HERE
+            if has_role_org_ods_code(organisation, TokenHandlerSSMService.get_org_ods_codes()[0]):
                 return RepositoryRole.PCSE
             return RepositoryRole.NONE
         case _:
