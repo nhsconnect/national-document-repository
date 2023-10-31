@@ -21,7 +21,6 @@ class NHSDocumentReference:
         self.created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         self.s3_bucket_name = s3_bucket_name
         self.deleted = ""
-        self.ttl = ""
         self.virus_scanner_result = "Not Scanned"
         self.file_location = f"s3://{self.s3_bucket_name}/{self.s3_file_key}"
 
@@ -42,7 +41,6 @@ class NHSDocumentReference:
             DocumentReferenceMetadataFields.FILE_LOCATION.value: self.file_location,
             DocumentReferenceMetadataFields.CREATED.value: self.created,
             DocumentReferenceMetadataFields.DELETED.value: self.deleted,
-            DocumentReferenceMetadataFields.TTL.value: self.ttl,
             DocumentReferenceMetadataFields.CONTENT_TYPE.value: self.content_type,
             DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value: self.virus_scanner_result,
         }
@@ -60,7 +58,6 @@ class NHSDocumentReference:
             and self.file_name == other.file_name
             and self.created == other.created
             and self.deleted == other.deleted
-            and self.ttl == other.ttl
             and self.virus_scanner_result == other.virus_scanner_result
             and self.file_location == other.file_location
         )

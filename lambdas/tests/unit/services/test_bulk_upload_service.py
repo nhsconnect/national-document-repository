@@ -3,7 +3,7 @@ from botocore.exceptions import ClientError
 from enums.virus_scan_result import VirusScanResult
 from freezegun import freeze_time
 from services.bulk_upload_service import BulkUploadService
-from tests.unit.conftest import (MOCK_BULK_UPLOAD_DYNAMODB, MOCK_LG_BUCKET,
+from tests.unit.conftest import (MOCK_BULK_REPORT_TABLE_NAME, MOCK_LG_BUCKET,
                                  MOCK_LG_METADATA_SQS_QUEUE,
                                  MOCK_LG_STAGING_STORE_BUCKET,
                                  MOCK_LG_TABLE_NAME, TEST_OBJECT_KEY)
@@ -385,7 +385,7 @@ def test_report_upload_complete_add_record_to_dynamodb(set_env, mocker, mock_uui
             "UploadStatus": "complete",
         }
         service.dynamo_service.create_item.assert_any_call(
-            item=expected_dynamo_db_record, table_name=MOCK_BULK_UPLOAD_DYNAMODB
+            item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME
         )
 
 
@@ -410,5 +410,5 @@ def test_report_upload_failure_add_record_to_dynamodb(set_env, mocker, mock_uuid
             "FailureReason": mock_failure_reason,
         }
         service.dynamo_service.create_item.assert_any_call(
-            item=expected_dynamo_db_record, table_name=MOCK_BULK_UPLOAD_DYNAMODB
+            item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME
         )
