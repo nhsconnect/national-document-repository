@@ -216,6 +216,10 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
 
 
 def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
+    value = organisation["role_code"]
+    logger.info(f"ODS IS: {value.upper()}")
+    logger.info(f"ODS Check: {ods_code.upper()}")
+    
     if organisation["role_code"].upper() == ods_code.upper():
         return True;
     return False;
