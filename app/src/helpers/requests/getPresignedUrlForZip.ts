@@ -7,7 +7,7 @@ type Args = {
     nhsNumber: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
-    docType: DOCUMENT_TYPE | Array<DOCUMENT_TYPE>;
+    docType: DOCUMENT_TYPE;
 };
 
 type GetPresignedUrl = {
