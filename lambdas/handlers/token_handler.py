@@ -65,9 +65,8 @@ def token_request(oidc_service, ods_api_service, event):
         org_ods_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
         smartcard_role_code = oidc_service.fetch_user_role_code(access_token, id_token_claim_set, "R")
 
-        permitted_orgs_details = (
-            ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
-        )
+        permitted_orgs_details = ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
+        
 
         logger.info(f"permitted_orgs_details: {permitted_orgs_details}")
         logger.info(f"permitted_orgs_details keys: {permitted_orgs_details.keys()}")
@@ -217,10 +216,9 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
 
 
 def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
-    if organisation["ods_code"].upper() == ods_code.upper():
+    if organisation["role_code"].upper() == ods_code.upper():
         return True;
     return False;
-
 
 
 # TODO AKH Dynamo Service class
