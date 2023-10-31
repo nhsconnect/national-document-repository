@@ -69,7 +69,7 @@ def lambda_handler(event, context):
     policy.stage = stage
 
     path = "/" + _resource_name
-    is_valid_access = validate_access_policy(_resource_name, _http_verb, user_roles)
+    is_valid_access = validate_access_policy(path, _http_verb, user_roles)
     if is_valid_access:
         set_access_policy(_http_verb, path, user_roles, policy)
     else:
@@ -79,7 +79,7 @@ def lambda_handler(event, context):
     return auth_response
 
 
-def validate_access_policy(path, http_verb, user_roles):
+def validate_access_policy(http_verb, path, user_roles):
     logger.info("resource name: %s, http: %s" % (path, http_verb))
     match path:
         case "/DocumentDelete":
