@@ -197,20 +197,21 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
     logger.info(f"PermittedSmartRole.GP_ADMINrole: {PermittedSmartRole.GP_ADMIN.value}")
     logger.info(f"PermittedSmartRole.GP_CLINICAL: {PermittedSmartRole.GP_CLINICAL.name}")
     logger.info(f"PermittedSmartRole.PCSE: {PermittedSmartRole.PCSE.name}")
+
     match smartcart_role:
         case PermittedSmartRole.GP_ADMIN.value:
             logger.info("GP Admin: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, PermittedRole.GP):
+            if has_role_org_ods_code(organisation, PermittedRole.GP.value):
                 return RepositoryRole.GP_ADMIN
             return RepositoryRole.NONE
         case PermittedSmartRole.GP_CLINICAL.value:
             logger.info("GP Clinical: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, PermittedRole.GP):
+            if has_role_org_ods_code(organisation, PermittedRole.GP.value):
                 return RepositoryRole.GP_CLINICAL
             return RepositoryRole.NONE
         case PermittedSmartRole.PCSE.value:
             logger.info("PCSE: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, PermittedRole.PCSE):
+            if has_role_org_ods_code(organisation, PermittedRole.PCSE.value):
                 return RepositoryRole.PCSE
             return RepositoryRole.NONE
         case _:
