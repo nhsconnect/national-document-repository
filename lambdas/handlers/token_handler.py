@@ -44,16 +44,11 @@ def lambda_handler(event, _context):
         logger.info("Use the access token to fetch user's organisation codes")
         org_codes = oidc_service.fetch_user_org_codes(access_token)
 
-        # permitted_orgs_and_roles = OdsApiService.fetch_organisation_with_permitted_role(
-        #     org_codes
-        # )
-        test_org = {
-                'org_name':'PORTWAY LIFESTYLE CENTRE',
-                'ods_code': 'R8000',
-                'role': 'GP_CLINICAL',
-        }
+        permitted_orgs_and_roles = OdsApiService.fetch_organisation_with_permitted_role(
+            org_codes
+        )
         permitted_orgs_and_roles = [
-            test_org
+            permitted_orgs_and_roles
         ]
         if len(permitted_orgs_and_roles) == 0:
             logger.info("User has no valid organisations to log in")

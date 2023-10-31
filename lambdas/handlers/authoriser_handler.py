@@ -88,8 +88,7 @@ def validate_access_policy(http_verb, path, user_roles):
                               is False)
 
         case "/DocumentManifest":
-            allow_resource = (('LG' in path
-                               and PermittedRole.GP_CLINICAL.name in user_roles
+            allow_resource = ((PermittedRole.GP_CLINICAL.name in user_roles
                                and http_verb == HttpVerb.DELETE)
                               is False)
 
