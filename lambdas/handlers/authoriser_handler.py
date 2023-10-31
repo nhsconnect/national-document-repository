@@ -112,7 +112,8 @@ def validate_access_policy(http_verb, path, user_roles):
 def set_access_policy(http_verb, path, user_roles, policy):
     if (
             PermittedRole.DEV.name in user_roles
-            or PermittedRole.GP.name in user_roles
+            or PermittedRole.GP_ADMIN.name in user_roles
+            or PermittedRole.GP_CLINICAL.name in user_roles
             or PermittedRole.PCSE.name in user_roles
     ):
         policy.allowMethod(http_verb, path)
