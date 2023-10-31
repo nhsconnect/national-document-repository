@@ -67,11 +67,11 @@ def lambda_handler(event, context):
     policy.stage = stage
 
     path = "/" + _resource_name
-    is_valid_access = validate_access_policy(_http_verb, path, user_roles)
-    if is_valid_access:
-        set_access_policy(_http_verb, path, user_roles, policy)
-    else:
+    resource_denied = validate_access_policy(_http_verb, path, user_roles)
+    if resource_denied:
         policy.denyMethod(_http_verb, path)
+    else:
+        set_access_policy(_http_verb, path, user_roles, policy)
     auth_response = policy.build()
 
     return auth_response
@@ -81,23 +81,23 @@ def validate_access_policy(http_verb, path, user_roles):
     logger.info("Validating resource req: %s, http: %s" % (path, http_verb))
     match path:
         case "/DocumentDelete":
-            allow_resource = (PermittedRole.GP_CLINICAL.name in user_roles) is False
+            deny_resource = (PermittedRole.GP_CLINICAL.name in user_roles)
 
         case "/DocumentManifest":
-            allow_resource = (PermittedRole.GP_CLINICAL.name in user_roles) is False
+            deny_resource = (PermittedRole.GP_CLINICAL.name in user_roles)
 
         case "/DocumentReference":
-            allow_resource = (PermittedRole.GP_CLINICAL.name in user_roles) is False
+            deny_resource = (PermittedRole.GP_CLINICAL.name in user_roles)
 
         case "/SearchDocumentReferences":
-            allow_resource = (PermittedRole.PCSE.name in user_roles) is False
+            deny_resource = (PermittedRole.PCSE.name in user_roles)
 
         case _:
-            allow_resource = True
+            deny_resource = False
 
-    logger.info("Allow resource: %s" % allow_resource)
+    logger.info("Allow resource: %s" % bool(deny_resource) is False)
 
-    return bool(allow_resource)
+    return bool(deny_resource)
 
 
 def set_access_policy(http_verb, path, user_roles, policy):
