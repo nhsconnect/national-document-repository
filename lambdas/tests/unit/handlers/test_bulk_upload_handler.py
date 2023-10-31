@@ -1,6 +1,7 @@
 import pytest
 from handlers.bulk_upload_handler import lambda_handler
-from tests.unit.helpers.data.bulk_upload.test_data import TEST_EVENT_WITH_SQS_MESSAGES
+from tests.unit.helpers.data.bulk_upload.test_data import \
+    TEST_EVENT_WITH_SQS_MESSAGES
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 
