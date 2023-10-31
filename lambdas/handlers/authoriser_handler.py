@@ -67,7 +67,7 @@ def lambda_handler(event, context):
     policy.stage = stage
     
     path = "/" + _resource_name
-    is_valid_access = validate_access_policy(_http_verb, _resource_name, user_roles)
+    is_valid_access = validate_access_policy(_http_verb, path, user_roles)
     if is_valid_access:
         set_access_policy(_http_verb, path, user_roles, policy)
     else:
