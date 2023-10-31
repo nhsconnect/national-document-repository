@@ -45,13 +45,16 @@ def check_for_number_of_files_match_expected(file_name: str, total_files_number:
     regex_match_result = re.search(lg_number_regex, file_name)
     try:
         expected_number_of_files = int(regex_match_result.group()[2:])
-        if total_files_number < expected_number_of_files :
+        if total_files_number < expected_number_of_files:
             raise LGInvalidFilesException("There are missing file(s) in the request")
         elif total_files_number > expected_number_of_files:
-            raise LGInvalidFilesException("There are more files than the total number in file name")
+            raise LGInvalidFilesException(
+                "There are more files than the total number in file name"
+            )
     except (AttributeError, IndexError, ValueError):
-        raise LGInvalidFilesException("One or more of the files do not match naming convention")
-
+        raise LGInvalidFilesException(
+            "One or more of the files do not match naming convention"
+        )
 
 
 def validate_lg_files(file_list: list[NHSDocumentReference]):
@@ -138,9 +141,16 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         if patient_details.general_practice_ods != current_user_ods:
             raise LGInvalidFilesException("User is not allowed to access patient")
 
-    except (HTTPError, ValidationError, ClientError, ValueError) as e:
+    except (ValidationError, ClientError, ValueError) as e:
         logger.error(e)
         raise LGInvalidFilesException(e)
+    except HTTPError as e:
+        logger.error(e)
+        if "404" in str(e):
+            raise LGInvalidFilesException("Could not find the given patient on PDS")
+        else:
+            raise LGInvalidFilesException("Failed to retrieve patient data from PDS")
+
 
 
 def get_user_ods_code():

@@ -147,7 +147,7 @@ def test_files_for_different_patients():
     ]
     with pytest.raises(LGInvalidFilesException) as e:
         check_for_file_names_agrees_with_each_other(lg_file_list)
-        assert e == LGInvalidFilesException("File names does not match with each other")
+    assert str(e.value) == "File names does not match with each other"
 
 
 def test_validate_nhs_id_with_pds_service(mocker, mock_pds_call):
@@ -251,8 +251,9 @@ def test_patient_not_found_with_pds_service(mocker, mock_pds_call):
     mock_pds_call.return_value = response
     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
 
-    with pytest.raises(LGInvalidFilesException):
+    with pytest.raises(LGInvalidFilesException) as e:
         validate_with_pds_service(lg_file_list, "9000000009")
+    assert str(e.value) == "Could not find the given patient on PDS"
 
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
     mock_odc_code.assert_not_called()
@@ -268,8 +269,9 @@ def test_bad_request_with_pds_service(mocker, mock_pds_call):
     mock_pds_call.return_value = response
     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
 
-    with pytest.raises(LGInvalidFilesException):
+    with pytest.raises(LGInvalidFilesException) as e:
         validate_with_pds_service(lg_file_list, "9000000009")
+    assert str(e.value) == "Failed to retrieve patient data from PDS"
 
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
     mock_odc_code.assert_not_called()
