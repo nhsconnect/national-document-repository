@@ -32,7 +32,7 @@ class OidcServiceForSmartcard(OidcService):
         for role in nrbac_roles:
             logger.info(f"Role: {role}")
             if role["person_roleid"] == selected_role:
-                return role["org_code"]
+                return [role["org_code"]]
         
         logger.info("No oorg code found")
         return []
