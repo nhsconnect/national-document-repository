@@ -83,11 +83,11 @@ def token_request(oidc_service, ods_api_service, event):
         authorisation_token = issue_auth_token(
             session_id, id_token_claim_set, 
             permitted_orgs_details, 
-            smartcard_role_code, repository_role 
+            smartcard_role_code, repository_role.name 
         )
 
         response = {
-            "role" : str(repository_role),
+            "role" : repository_role.name,
             "authorisation_token": authorisation_token,
         }
 
@@ -195,21 +195,21 @@ def token_request(oidc_service, ods_api_service, event):
 def generate_repository_role(organisation: dict, smartcart_role: str):
 
     logger.info(f"Smartcard role: {smartcart_role}")
-    logger.info(f"PermittedSmartRole.GP_ADMINrole: {PermittedSmartRole.GP_ADMIN}")
-    logger.info(f"PermittedSmartRole.GP_CLINICAL: {PermittedSmartRole.GP_CLINICAL}")
-    logger.info(f"PermittedSmartRole.PCSE: {PermittedSmartRole.PCSE}")
+    logger.info(f"PermittedSmartRole.GP_ADMINrole: {PermittedSmartRole.GP_ADMIN.name}")
+    logger.info(f"PermittedSmartRole.GP_CLINICAL: {PermittedSmartRole.GP_CLINICAL.name}")
+    logger.info(f"PermittedSmartRole.PCSE: {PermittedSmartRole.PCSE.name}")
     match smartcart_role:
-        case PermittedSmartRole.GP_ADMIN:
+        case PermittedSmartRole.GP_ADMIN.name:
             logger.info("GP Admin: smartcard ODS identified")
             if has_role_org_ods_code(organisation, PermittedRole.GP):
                 return RepositoryRole.GP_ADMIN
             return RepositoryRole.NONE
-        case PermittedSmartRole.GP_CLINICAL:
+        case PermittedSmartRole.GP_CLINICAL.name:
             logger.info("GP Clinical: smartcard ODS identified")
             if has_role_org_ods_code(organisation, PermittedRole.GP):
                 return RepositoryRole.GP_CLINICAL
             return RepositoryRole.NONE
-        case PermittedSmartRole.PCSE:
+        case PermittedSmartRole.PCSE.name:
             logger.info("PCSE: smartcard ODS identified")
             if has_role_org_ods_code(organisation, PermittedRole.PCSE):
                 return RepositoryRole.PCSE
