@@ -194,6 +194,10 @@ def token_request(oidc_service, ods_api_service, event):
 
 def generate_repository_role(organisation: dict, smartcart_role: str):
 
+    logger.info(f"Smartcard role: {smartcart_role}")
+    logger.info(f"PermittedSmartRole.GP_ADMINrole: {PermittedSmartRole.GP_ADMIN}")
+    logger.info(f"PermittedSmartRole.GP_CLINICAL: {PermittedSmartRole.GP_CLINICAL}")
+    logger.info(f"PermittedSmartRole.PCSE: {PermittedSmartRole.PCSE}")
     match smartcart_role:
         case PermittedSmartRole.GP_ADMIN:
             logger.info("GP Admin: smartcard ODS identified")
@@ -219,7 +223,7 @@ def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
     value = organisation["role_code"]
     logger.info(f"ODS IS: {value.upper()}")
     logger.info(f"ODS Check: {ods_code.upper()}")
-    
+
     if organisation["role_code"].upper() == ods_code.upper():
         return True;
     return False;
