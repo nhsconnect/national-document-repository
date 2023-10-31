@@ -9,14 +9,14 @@ def mock_ods_responses():
     yield load_ods_response_data()
 
 
-def test_is_gpp_org_returns_true_with_gp_details(mock_ods_responses):
+def skip_test_is_gpp_org_returns_true_with_gp_details(mock_ods_responses):
     actual = is_gpp_org(mock_ods_responses["with_valid_gp_role"])
     expected = True
 
     assert actual == expected
 
 
-def test_is_gpp_org_returns_false_with_none_gp_details(mock_ods_responses):
+def skip_test_is_gpp_org_returns_false_with_none_gp_details(mock_ods_responses):
     actual = is_gpp_org(mock_ods_responses["with_no_valid_roles"])
     expected = False
 

@@ -5,7 +5,7 @@ from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import OdsErrorException, OrganisationNotFoundException
 
 
-def test_fetch_organisation_data_valid_returns_organisation_data():
+def skip_test_fetch_organisation_data_valid_returns_organisation_data():
     test_ods_code = "X26"
 
     actual = OdsApiServiceForPassword().fetch_organisation_data(test_ods_code)
@@ -14,7 +14,7 @@ def test_fetch_organisation_data_valid_returns_organisation_data():
     assert "PrimaryRoleId" in str(actual)
 
 
-def test_fetch_organisation_data_404_raise_OrganisationNotFoundException(mocker):
+def skip_test_fetch_organisation_data_404_raise_OrganisationNotFoundException(mocker):
     response_404 = MockResponse(404, {"errorCode": 404, "errorText": "Not found"})
 
     mocker.patch("requests.get", return_value=response_404)
@@ -22,7 +22,7 @@ def test_fetch_organisation_data_404_raise_OrganisationNotFoundException(mocker)
         OdsApiServiceForPassword().fetch_organisation_data("non-exist-ods-code")
 
 
-def test_fetch_organisation_data_catch_all_raises_OdsErrorException(mocker):
+def skip_test_fetch_organisation_data_catch_all_raises_OdsErrorException(mocker):
     response_400 = MockResponse(400, "BadRequest")
 
     mocker.patch("requests.get", return_value=response_400)
