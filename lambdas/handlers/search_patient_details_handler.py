@@ -46,12 +46,14 @@ def lambda_handler(event, context):
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]
         )
-
+        logger.info(decoded)
         user_ods_codes = [ods["ods_code"] for ods in decoded["organisations"]]
-
+        logger.info("User codes: %s" % user_ods_codes)
         logger.info("Retrieving patient details")
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
+
+        logger.info("Patient code: %s" % patient_details.general_practice_ods)
         if patient_details.general_practice_ods not in user_ods_codes:
             raise PatientNotAuthorisedException
 
