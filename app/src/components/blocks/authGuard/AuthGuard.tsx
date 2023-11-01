@@ -9,7 +9,9 @@ type Props = {
 function AuthGuard({ children }: Props) {
     const [session] = useSessionContext();
     const navigate = useNavigate();
+
     useEffect(() => {
+        console.log(session);
         if (!session.isLoggedIn) {
             navigate(routes.UNAUTHORISED);
         }

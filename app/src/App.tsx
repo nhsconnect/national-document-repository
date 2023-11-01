@@ -22,6 +22,7 @@ import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage
 import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
 import AuthErrorPage from './pages/authErrorPage/AuthErrorPage';
 import LloydGeorgeRecordPage from './pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import { AUTH_ROLE } from './types/generic/authRole';
 
 function App() {
     return (
@@ -48,11 +49,15 @@ function App() {
                                     }
                                 >
                                     <Route
-                                        element={<PatientSearchPage role={USER_ROLE.PCSE} />}
+                                        element={<PatientSearchPage role={AUTH_ROLE.PCSE} />}
                                         path={routes.DOWNLOAD_SEARCH}
                                     />
                                     <Route
-                                        element={<PatientSearchPage role={USER_ROLE.GP} />}
+                                        element={<PatientSearchPage role={AUTH_ROLE.GP_ADMIN} />}
+                                        path={routes.UPLOAD_SEARCH}
+                                    />
+                                    <Route
+                                        element={<PatientSearchPage role={AUTH_ROLE.GP_CLINICAL} />}
                                         path={routes.UPLOAD_SEARCH}
                                     />
 
@@ -65,11 +70,19 @@ function App() {
                                         }
                                     >
                                         <Route
-                                            element={<PatientResultPage role={USER_ROLE.PCSE} />}
+                                            element={<PatientResultPage role={AUTH_ROLE.PCSE} />}
                                             path={routes.DOWNLOAD_VERIFY}
                                         />
                                         <Route
-                                            element={<PatientResultPage role={USER_ROLE.GP} />}
+                                            element={
+                                                <PatientResultPage role={AUTH_ROLE.GP_ADMIN} />
+                                            }
+                                            path={routes.UPLOAD_VERIFY}
+                                        />
+                                        <Route
+                                            element={
+                                                <PatientResultPage role={AUTH_ROLE.GP_CLINICAL} />
+                                            }
                                             path={routes.UPLOAD_VERIFY}
                                         />
                                         <Route

@@ -8,16 +8,11 @@ import { PatientDetails } from '../../types/generic/patientDetails';
 import { SearchResult } from '../../types/generic/searchResult';
 import { UserAuth } from '../../types/blocks/userAuth';
 import { LloydGeorgeStitchResult } from '../requests/getLloydGeorgeRecord';
+import { AUTH_ROLE } from '../../types/generic/authRole';
 
 const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
     const auth: UserAuth = {
-        organisations: [
-            {
-                org_name: 'PORTWAY LIFESTYLE CENTRE',
-                ods_code: 'A470',
-                role: 'DEV',
-            },
-        ],
+        role: AUTH_ROLE.GP_ADMIN,
         authorisation_token: '111xxx222',
         ...userAuthOverride,
     };

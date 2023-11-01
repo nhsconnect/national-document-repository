@@ -1,12 +1,6 @@
+import { AUTH_ROLE } from '../generic/authRole';
+
 export type UserAuth = {
-    organisations: Array<Organisation>;
+    role: AUTH_ROLE;
     authorisation_token: string;
 };
-
-export type Organisation = {
-    org_name: string;
-    ods_code: string;
-    role: Role;
-};
-
-export type Role = 'DEV' | 'PCSE' | 'GP';

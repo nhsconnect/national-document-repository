@@ -8,14 +8,16 @@ import { usePatientDetailsContext } from '../../providers/patientProvider/Patien
 import BackButton from '../../components/generic/backButton/BackButton';
 import { FieldValues, useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
+import { AUTH_ROLE } from '../../types/generic/authRole';
 
 type Props = {
-    role: USER_ROLE;
+    role: AUTH_ROLE;
 };
 
 function PatientResultPage({ role }: Props) {
-    const userIsPCSE = role === USER_ROLE.PCSE;
-    const userIsGP = role === USER_ROLE.GP;
+    const userIsPCSE = role === AUTH_ROLE.PCSE;
+    const userIsGPAdmin = role === AUTH_ROLE.GP_ADMIN;
+    const userIsGPClinical = role === AUTH_ROLE.GP_CLINICAL;
     const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
@@ -24,7 +26,7 @@ function PatientResultPage({ role }: Props) {
     const { isDirty: isPatientStatusDirty } = getFieldState('patientStatus', formState);
 
     const submit = (fieldValues: FieldValues) => {
-        if (userIsGP) {
+        if (userIsGPAdmin || userIsGPClinical) {
             // Make PDS patient search request to upload documents to patient
             if (!isPatientStatusDirty) {
                 setInputError('Select a patient status');
@@ -75,7 +77,7 @@ function PatientResultPage({ role }: Props) {
             {patientDetails && <PatientSummary patientDetails={patientDetails} />}
 
             <form onSubmit={handleSubmit(submit)} style={{ marginTop: 60 }}>
-                {userIsGP && (
+                {(userIsGPAdmin || userIsGPClinical) && (
                     <>
                         <Fieldset>
                             <Fieldset.Legend>
