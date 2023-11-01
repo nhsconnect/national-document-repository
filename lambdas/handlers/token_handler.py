@@ -18,8 +18,6 @@ from services.token_handler_ssm_service import TokenHandlerSSMService
 
 from utils.exceptions import AuthorisationException, OrganisationNotFoundException, TooManyOrgsException
 from utils.lambda_response import ApiGatewayResponse
-
-from enums.permitted_smart_role import PermittedSmartRole
 from enums.repository_role import RepositoryRole
 
 logger = logging.getLogger()
@@ -127,17 +125,17 @@ def token_request(oidc_service, ods_api_service, event):
 def generate_repository_role(organisation: dict, smartcart_role: str):
     
     match smartcart_role:
-        case PermittedSmartRole.GP_ADMIN.value:
+        case token_handler_ssm_service.get_smartcard_role_gp_admin():
             logger.info("GP Admin: smartcard ODS identified")
             if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
                 return RepositoryRole.GP_ADMIN
             return RepositoryRole.NONE
-        case PermittedSmartRole.GP_CLINICAL.value:
+        case token_handler_ssm_service.get_smartcard_role_gp_clinical():
             logger.info("GP Clinical: smartcard ODS identified")
             if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
                 return RepositoryRole.GP_CLINICAL
             return RepositoryRole.NONE
-        case PermittedSmartRole.PCSE.value:
+        case token_handler_ssm_service.get_smartcard_role_pcse():
             logger.info("PCSE: smartcard ODS identified")
             if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_ods_codes()[0]):
                 return RepositoryRole.PCSE

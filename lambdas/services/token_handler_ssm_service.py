@@ -24,6 +24,33 @@ class TokenHandlerSSMService(SSMService):
                      params["/auth/smartcard/role/pcse"] ]
         
         return response
+
+    def get_smartcard_role_gp_admin(self):
+        logger.info("starting ssm request to retrieve required smartcard role code gp admin")
+        params = self.get_ssm_parameters([
+            "/auth/smartcard/role/gp_admin"
+        ])
+
+        response = [ params["/auth/smartcard/role/gp_admin"] ]
+        return response
+
+    def get_smartcard_role_gp_clinical(self):
+        logger.info("starting ssm request to retrieve required smartcard role code gp clinical")
+        params = self.get_ssm_parameters([
+            "/auth/smartcard/role/gp_clincal"
+        ])
+
+        response = [ params["/auth/smartcard/role/gp_clinical"] ]
+        return response
+
+    def get_smartcard_role_pcse(self):
+        logger.info("starting ssm request to retrieve required smartcard role code pcse")
+        params = self.get_ssm_parameters([
+            "/auth/smartcard/role/pcse"
+        ])
+
+        response = [ params["/auth/smartcard/role/pcse"] ]
+        return response
     
     def get_org_role_codes(self):
         logger.info("starting ssm request to retrieve required org roles codes")
