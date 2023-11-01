@@ -124,25 +124,29 @@ def token_request(oidc_service, ods_api_service, event):
 
 def generate_repository_role(organisation: dict, smartcart_role: str):
     
-    match smartcart_role:
-        case token_handler_ssm_service.get_smartcard_role_gp_admin():
-            logger.info("GP Admin: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
-                return RepositoryRole.GP_ADMIN
-            return RepositoryRole.NONE
-        case token_handler_ssm_service.get_smartcard_role_gp_clinical():
-            logger.info("GP Clinical: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
-                return RepositoryRole.GP_CLINICAL
-            return RepositoryRole.NONE
-        case token_handler_ssm_service.get_smartcard_role_pcse():
-            logger.info("PCSE: smartcard ODS identified")
-            if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_ods_codes()[0]):
-                return RepositoryRole.PCSE
-            return RepositoryRole.NONE
-        case _:
-            logger.info("Role: No smartcard role found")
-            return RepositoryRole.NONE
+    logger.info(f"Smartcard Role: {smartcart_role}")
+    logger.info(token_handler_ssm_service.get_smartcard_role_gp_admin())
+    
+    if token_handler_ssm_service.get_smartcard_role_gp_admin() == smartcart_role:
+        logger.info("GP Admin: smartcard ODS identified")
+        if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
+            return RepositoryRole.GP_ADMIN
+        return RepositoryRole.NONE
+    
+    if token_handler_ssm_service.get_smartcard_role_gp_clinical() == smartcart_role:
+        logger.info("GP Clinical: smartcard ODS identified")
+        if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
+            return RepositoryRole.GP_CLINICAL
+        return RepositoryRole.NONE
+    
+    if token_handler_ssm_service.get_smartcard_role_pcse() == smartcart_role:
+        logger.info("PCSE: smartcard ODS identified")
+        if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_ods_codes()[0]):
+            return RepositoryRole.PCSE
+        return RepositoryRole.NONE
+       
+    logger.info("Role: No smartcard role found")
+    return RepositoryRole.NONE
 
 
 def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
