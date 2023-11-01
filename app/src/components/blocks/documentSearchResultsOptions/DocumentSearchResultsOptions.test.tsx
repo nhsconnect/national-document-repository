@@ -4,7 +4,6 @@ import { buildPatientDetails, buildUserAuth } from '../../../helpers/test/testBu
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
-import PatientDetailsProvider from '../../../providers/patientProvider/PatientProvider';
 import DocumentSearchResultsOptions from './DocumentSearchResultsOptions';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
 import { PatientDetails } from '../../../types/generic/patientDetails';
@@ -14,6 +13,8 @@ jest.mock('axios');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const updateDownloadState = jest.fn();
+const mockPatientDetails = buildPatientDetails();
+const mockSetIsDeletingDocuments = jest.fn();
 
 describe('DocumentSearchResultsOptions', () => {
     beforeEach(() => {
@@ -29,15 +30,15 @@ describe('DocumentSearchResultsOptions', () => {
 
             expect(
                 screen.getByText(
-                    'Only permanently delete all documents for this patient if you have a valid reason to. For example, if the retention period of these documents has been reached.'
-                )
+                    'Only permanently delete all documents for this patient if you have a valid reason to. For example, if the retention period of these documents has been reached.',
+                ),
             ).toBeInTheDocument();
 
             expect(
-                screen.getByRole('button', { name: 'Download All Documents' })
+                screen.getByRole('button', { name: 'Download All Documents' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Delete All Documents' })
+                screen.getByRole('button', { name: 'Delete All Documents' }),
             ).toBeInTheDocument();
         });
 
@@ -56,7 +57,7 @@ describe('DocumentSearchResultsOptions', () => {
         it('renders success message when the download state is successful', async () => {
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.SUCCEEDED);
             expect(
-                screen.getByText('All documents have been successfully downloaded.')
+                screen.getByText('All documents have been successfully downloaded.'),
             ).toBeInTheDocument();
         });
 
@@ -74,10 +75,10 @@ describe('DocumentSearchResultsOptions', () => {
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
             expect(
-                screen.getByRole('button', { name: 'Download All Documents' })
+                screen.getByRole('button', { name: 'Download All Documents' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Delete All Documents' })
+                screen.getByRole('button', { name: 'Delete All Documents' }),
             ).toBeInTheDocument();
 
             userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
@@ -93,7 +94,7 @@ describe('DocumentSearchResultsOptions', () => {
             });
 
             expect(
-                screen.queryByRole('button', { name: 'Download All Documents' })
+                screen.queryByRole('button', { name: 'Download All Documents' }),
             ).not.toBeInTheDocument();
         });
 
@@ -114,26 +115,19 @@ describe('DocumentSearchResultsOptions', () => {
                 expect(updateDownloadState).toHaveBeenCalledWith(SUBMISSION_STATE.FAILED);
             });
         });
-    });
 
-    describe('Navigation', () => {
-        it('navigates to delete page', async () => {
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
-
-            renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL, {}, history);
-
-            expect(history.location.pathname).toBe('/example');
+        it('calls delete all documents function when Delete button is clicked', async () => {
+            renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
             userEvent.click(screen.getByRole('button', { name: 'Delete All Documents' }));
 
             await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.DELETE_DOCUMENTS);
+                expect(mockSetIsDeletingDocuments).toHaveBeenCalledWith(true);
             });
         });
+    });
 
+    describe('Navigation', () => {
         it('navigates to home page when API returns 403', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/example'],
@@ -168,7 +162,7 @@ const renderDocumentSearchResultsOptions = (
     history = createMemoryHistory({
         initialEntries: [homeRoute],
         initialIndex: 1,
-    })
+    }),
 ) => {
     const auth: Session = {
         auth: buildUserAuth(),
@@ -182,14 +176,15 @@ const renderDocumentSearchResultsOptions = (
     render(
         <ReactRouter.Router navigator={history} location={homeRoute}>
             <SessionProvider sessionOverride={auth}>
-                <PatientDetailsProvider patientDetails={patient}>
-                    <DocumentSearchResultsOptions
-                        nhsNumber={patient.nhsNumber}
-                        downloadState={downloadState}
-                        updateDownloadState={updateDownloadState}
-                    />
-                </PatientDetailsProvider>
+                <DocumentSearchResultsOptions
+                    nhsNumber={patient.nhsNumber}
+                    downloadState={downloadState}
+                    updateDownloadState={updateDownloadState}
+                    patientDetails={mockPatientDetails}
+                    numberOfFiles={7}
+                    setIsDeletingDocuments={mockSetIsDeletingDocuments}
+                />
             </SessionProvider>
-        </ReactRouter.Router>
+        </ReactRouter.Router>,
     );
 };

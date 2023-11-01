@@ -8,3 +8,4 @@ class SSMParameter(Enum):
     NHS_OAUTH_ENDPOINT = "/prs/dev/user-input/nhs-oauth-endpoint"
     PDS_API_ENDPOINT = "/prs/dev/user-input/pds-fhir-endpoint"
     PDS_API_ACCESS_TOKEN = "/prs/dev-ndr/pds-fhir-access-token"
+    GP_ODS_CODE = "/ndr/GP_ODS_code"

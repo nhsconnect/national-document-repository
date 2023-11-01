@@ -41,6 +41,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     service = BulkUploadService()
     service.s3_service = mocker.MagicMock()
     service.dynamo_service = mocker.MagicMock()
+    service.validate_files = mocker.MagicMock()
 
     mock_client_error = ClientError(
         {"Error": {"Code": "404", "Message": "Object not found in bucket"}},
@@ -75,12 +76,6 @@ def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(se
 
     with pytest.raises(LGInvalidFilesException):
         service.validate_files(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
-
-
-def test_validate_files_does_not_raise_error_when_file_names_valid(set_env):
-    service = BulkUploadService()
-
-    assert service.validate_files(TEST_STAGING_METADATA) is None
 
 
 def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid):

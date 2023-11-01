@@ -9,12 +9,14 @@ import { Link } from 'react-router-dom';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';
 import ProgressBar from '../../components/generic/progressBar/ProgressBar';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
-
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import DocumentSearchResultsOptions from '../../components/blocks/documentSearchResultsOptions/DocumentSearchResultsOptions';
 import { AxiosError } from 'axios';
 import getDocumentSearchResults from '../../helpers/requests/documentSearchResults';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
+import { USER_ROLE } from '../../types/generic/roles';
+import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 
 function DocumentSearchResultsPage() {
     const [patientDetails] = usePatientDetailsContext();
@@ -23,12 +25,15 @@ function DocumentSearchResultsPage() {
     const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.INITIAL);
     const [downloadState, setDownloadState] = useState(SUBMISSION_STATE.INITIAL);
+    const [isDeletingDocuments, setIsDeletingDocuments] = useState(false);
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
+
     const handleUpdateDownloadState = (newState: SUBMISSION_STATE) => {
         setDownloadState(newState);
     };
+
     const mounted = useRef(false);
     useEffect(() => {
         const onPageLoad = async () => {
@@ -61,12 +66,13 @@ function DocumentSearchResultsPage() {
         nhsNumber,
         setSearchResults,
         setSubmissionState,
+        isDeletingDocuments,
         navigate,
         baseUrl,
         baseHeaders,
     ]);
 
-    return (
+    return !isDeletingDocuments ? (
         <>
             <h1 id="download-page-title">Download electronic health records and attachments</h1>
 
@@ -81,13 +87,16 @@ function DocumentSearchResultsPage() {
 
             {submissionState === SUBMISSION_STATE.SUCCEEDED && (
                 <>
-                    {searchResults.length ? (
+                    {searchResults.length && patientDetails ? (
                         <>
                             <DocumentSearchResults searchResults={searchResults} />
                             <DocumentSearchResultsOptions
                                 nhsNumber={nhsNumber}
                                 downloadState={downloadState}
                                 updateDownloadState={handleUpdateDownloadState}
+                                numberOfFiles={searchResults.length}
+                                patientDetails={patientDetails}
+                                setIsDeletingDocuments={setIsDeletingDocuments}
                             />
                         </>
                     ) : (
@@ -116,6 +125,16 @@ function DocumentSearchResultsPage() {
                 </p>
             )}
         </>
+    ) : (
+        patientDetails && (
+            <DeleteDocumentsStage
+                numberOfFiles={searchResults.length}
+                patientDetails={patientDetails}
+                userType={USER_ROLE.PCSE}
+                setIsDeletingDocuments={setIsDeletingDocuments}
+                docType={DOCUMENT_TYPE.ALL}
+            />
+        )
     );
 }
 

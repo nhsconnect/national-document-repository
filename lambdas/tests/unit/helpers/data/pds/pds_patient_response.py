@@ -63,7 +63,7 @@ PDS_PATIENT = {
             "identifier": {
                 "system": "https://fhir.nhs.uk/Id/ods-organization-code",
                 "value": "Y12345",
-                "period": {"start": "2020-01-01", "end": "2021-12-31"},
+                "period": {"start": "2020-01-01"},
             },
         }
     ],
@@ -418,4 +418,109 @@ PDS_PATIENT_RESTRICTED = {
             ],
         }
     ],
+}
+PDS_PATIENT_WITHOUT_ACTIVE_GP = {
+    "resourceType": "Patient",
+    "id": "9000000009",
+    "meta": {
+        "versionId": "2",
+        "security": [
+            {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-Confidentiality",
+                "code": "U",
+                "display": "unrestricted",
+            }
+        ],
+    },
+    "name": [
+        {
+            "id": "123",
+            "use": "usual",
+            "period": {"start": "2020-01-01", "end": "2021-12-31"},
+            "given": ["Jane"],
+            "family": "Smith",
+            "prefix": ["Mrs"],
+            "suffix": ["MBE"],
+        },
+        {
+            "id": "1234",
+            "use": "other",
+            "period": {"start": "2020-01-01", "end": "2021-12-31"},
+            "given": ["Jim"],
+            "family": "Stevens",
+            "prefix": ["Mr"],
+            "suffix": ["MBE"],
+        },
+    ],
+    "gender": "female",
+    "birthDate": "2010-10-22",
+    "multipleBirthInteger": 1,
+    "deceasedDateTime": "2010-10-22T00:00:00+00:00",
+    "generalPractitioner": [],
+    "managingOrganization": {
+        "type": "Organization",
+        "identifier": {
+            "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+            "value": "Y12345",
+            "period": {"start": "2020-01-01", "end": "2021-12-31"},
+        },
+    },
+}
+
+PDS_PATIENT_WITH_GP_END_DATE = {
+    "resourceType": "Patient",
+    "id": "9000000009",
+    "meta": {
+        "versionId": "2",
+        "security": [
+            {
+                "system": "http://terminology.hl7.org/CodeSystem/v3-Confidentiality",
+                "code": "U",
+                "display": "unrestricted",
+            }
+        ],
+    },
+    "name": [
+        {
+            "id": "123",
+            "use": "usual",
+            "period": {"start": "2020-01-01", "end": "2021-12-31"},
+            "given": ["Jane"],
+            "family": "Smith",
+            "prefix": ["Mrs"],
+            "suffix": ["MBE"],
+        },
+        {
+            "id": "1234",
+            "use": "other",
+            "period": {"start": "2020-01-01", "end": "2021-12-31"},
+            "given": ["Jim"],
+            "family": "Stevens",
+            "prefix": ["Mr"],
+            "suffix": ["MBE"],
+        },
+    ],
+    "gender": "female",
+    "birthDate": "2010-10-22",
+    "multipleBirthInteger": 1,
+    "deceasedDateTime": "2010-10-22T00:00:00+00:00",
+    "generalPractitioner": [
+        {
+            "id": "254406A3",
+            "type": "Organization",
+            "identifier": {
+                "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+                "value": "Y12345",
+                "period": {"start": "2020-01-01", "end": "2021-12-31"},
+            },
+        }
+    ],
+    "managingOrganization": {
+        "type": "Organization",
+        "identifier": {
+            "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+            "value": "Y12345",
+            "period": {"start": "2020-01-01", "end": "2021-12-31"},
+        },
+    },
 }

@@ -26,7 +26,7 @@ def ensure_environment_variables(names: list[str]) -> Callable:
                     logger.info(f"missing env var: '{name}'")
                     return ApiGatewayResponse(
                         500,
-                        f"An error occurred due to missing key: '{name}'",
+                        f"An error occurred due to missing environment variable: '{name}'",
                         event["httpMethod"],
                     ).create_api_gateway_response()
 

@@ -5,13 +5,15 @@ from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from services.dynamo_service import DynamoDBService
+from models.document_reference import (DocumentReference,
+                                       DocumentReferenceSearchResult)
+from pydantic import ValidationError
+from services.document_service import DocumentService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event, validate_patient_id)
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
-from utils.utilities import camelize_dict
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -33,36 +35,27 @@ def lambda_handler(event, context):
             "GET",
         ).create_api_gateway_response()
 
-    dynamo_service = DynamoDBService()
+    document_service = DocumentService()
 
     try:
-        results = []
+        results: list[DocumentReference] = []
         for table_name in list_of_table_names:
             logger.info(f"Searching for results in {table_name}")
-            response = dynamo_service.query_with_requested_fields(
-                table_name=table_name,
-                index_name="NhsNumberIndex",
-                search_key="NhsNumber",
-                search_condition=nhs_number,
-                requested_fields=[
-                    DocumentReferenceMetadataFields.CREATED,
-                    DocumentReferenceMetadataFields.FILE_NAME,
-                    DocumentReferenceMetadataFields.VIRUS_SCAN_RESULT,
-                ],
-                filtered_fields={
-                    DocumentReferenceMetadataFields.DELETED.field_name: ""
-                },
+            documents = document_service.fetch_documents_from_table_with_filter(
+                nhs_number,
+                table_name,
+                attr_filter={DocumentReferenceMetadataFields.DELETED.value: ""},
             )
-            if response is None or ("Items" not in response):
-                logger.error(f"Unrecognised response from DynamoDB: {response!r}")
-                return ApiGatewayResponse(
-                    500,
-                    "Unrecognised response when searching for available documents",
-                    "GET",
-                ).create_api_gateway_response()
 
-            results += response["Items"]
+            results += documents
 
+    except ValidationError as e:
+        logger.info(e)
+        return ApiGatewayResponse(
+            500,
+            "Failed to parse document reference from from DynamoDb response",
+            "GET",
+        ).create_api_gateway_response()
     except InvalidResourceIdException:
         return ApiGatewayResponse(
             500, "No data was requested to be returned in query", "GET"
@@ -80,9 +73,20 @@ def lambda_handler(event, context):
             "GET",
         ).create_api_gateway_response()
 
-    response = [camelize_dict(result) for result in results]
+    try:
+        response = [
+            dict(DocumentReferenceSearchResult.model_validate(dict(result)))
+            for result in results
+        ]
+    except ValidationError as e:
+        logger.info(e)
+        return ApiGatewayResponse(
+            500,
+            "Failed to parse document reference search results",
+            "GET",
+        ).create_api_gateway_response()
 
-    if not results or not response:
+    if not response:
         return ApiGatewayResponse(
             204, json.dumps([]), "GET"
         ).create_api_gateway_response()
