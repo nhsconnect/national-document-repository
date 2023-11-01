@@ -98,6 +98,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 </a>
                 <ButtonLink
                     className="nhsuk-button nhsuk-button--secondary"
+                    data-testid="delete-all-documents-btn"
                     style={{ marginLeft: 72 }}
                     role="button"
                     onClick={deleteAllDocuments}

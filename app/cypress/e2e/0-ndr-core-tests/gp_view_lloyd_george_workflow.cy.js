@@ -12,8 +12,8 @@ describe('GP View Lloyd George Workflow', () => {
             statusCode: 200,
             body: searchPatientPayload,
         }).as('search');
-        cy.get('#nhs-number-input').type(searchPatientPayload.nhsNumber);
-        cy.get('#search-submit').click();
+        cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
+        cy.getByTestId('search-submit-btn').click();
         cy.wait('@search');
 
         // verify patient is active
@@ -65,7 +65,7 @@ describe('GP View Lloyd George Workflow', () => {
             assertEmptyLloydGeorgeCard();
         });
 
-        it('displays an empty Lloyd George card when the backend API call fails', () => {
+        it('displays an empty Lloyd George card when the Lloyd George Stitch API call fails', () => {
             cy.intercept('GET', '/LloydGeorgeStitch*', {
                 statusCode: 500,
             });
@@ -83,6 +83,7 @@ describe('GP View Lloyd George Workflow', () => {
                 statusCode: 200,
                 body: viewLloydGeorgePayload,
             }).as('lloydGeorgeStitch');
+
             cy.get('#verify-submit').click();
             cy.wait('@lloydGeorgeStitch');
         });
@@ -142,7 +143,7 @@ describe('GP View Lloyd George Workflow', () => {
         });
 
         // TODO - PRMDR-401 - implement error scenario in UI and amend assertions accordingly
-        it.skip('displays an error when the document manifest backend API call fails', () => {
+        it.skip('displays an error when the document manifest API call fails', () => {
             cy.intercept('GET', '/DocumentManifest*', {
                 statusCode: 500,
             }).as('documentManifest');
@@ -153,9 +154,110 @@ describe('GP View Lloyd George Workflow', () => {
             cy.wait('@documentManifest');
 
             // Assert
-            cy.contains(
-                'appropriate error for when the document manifest backend API call fails',
-            ).should('be.visible');
+            cy.contains('appropriate error for when the document manifest API call fails').should(
+                'be.visible',
+            );
+        });
+    });
+
+    context('Delete Lloyd George document', () => {
+        beforeEach(() => {
+            cy.intercept('GET', '/LloydGeorgeStitch*', {
+                statusCode: 200,
+                body: viewLloydGeorgePayload,
+            }).as('lloydGeorgeStitch');
+
+            cy.get('#verify-submit').click();
+            cy.wait('@lloydGeorgeStitch');
+
+            cy.getByTestId('actions-menu').click();
+            cy.getByTestId('delete-any-files-link').click();
+        });
+
+        it('allows a GP user to delete the Lloyd George document of an active patient', () => {
+            // assert delete confirmation page is as expected
+            cy.contains('Are you sure you want to permanently delete files for:').should(
+                'be.visible',
+            );
+            cy.contains('GivenName Surname').should('be.visible');
+            cy.contains('NHS number: 900 000 0009').should('be.visible');
+            cy.contains('Date of birth: 01 January 1970').should('be.visible');
+
+            cy.intercept(
+                'DELETE',
+                `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG`,
+                {
+                    statusCode: 200,
+                    body: 'Success',
+                },
+            ).as('documentDelete');
+
+            cy.getByTestId('yes-radio-btn').click();
+            cy.getByTestId('delete-submit-btn').click();
+
+            cy.wait('@documentDelete');
+
+            // assert delete success page is as expected
+            cy.contains('Deletion complete').should('be.visible');
+            cy.contains('12 files from the Lloyd George record of:').should('be.visible');
+            cy.contains('GivenName Surname').should('be.visible');
+            cy.contains('(NHS number: 900 000 0009)').should('be.visible');
+
+            cy.getByTestId('lg-return-btn').click();
+
+            // assert user is returned to view Lloyd George page
+            cy.contains('Lloyd George record').should('be.visible');
+            cy.contains('No documents are available').should('be.visible');
+            cy.getByTestId('pdf-card').should('be.visible');
+        });
+
+        it('returns user to view Lloyd George page on cancel of delete', () => {
+            // cancel delete
+            cy.getByTestId('no-radio-btn').click();
+            cy.getByTestId('delete-submit-btn').click();
+
+            // assert user is returned to view Lloyd George page
+            cy.contains('Lloyd George record').should('be.visible');
+            cy.getByTestId('pdf-card').should('be.visible');
+            cy.getByTestId('pdf-viewer').should('be.visible');
+        });
+
+        it('displays an error when the delete Lloyd George document API call fails', () => {
+            cy.intercept(
+                'DELETE',
+                `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG`,
+                {
+                    statusCode: 500,
+                    body: 'Failed to delete documents',
+                },
+            ).as('documentDelete');
+
+            cy.getByTestId('yes-radio-btn').click();
+            cy.getByTestId('delete-submit-btn').click();
+
+            cy.wait('@documentDelete');
+
+            // assert
+            cy.getByTestId('service-error').should('be.visible');
+        });
+
+        it('displays an error on delete attempt when no Lloyd George record exists for the patient', () => {
+            cy.intercept(
+                'DELETE',
+                `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG`,
+                {
+                    statusCode: 404,
+                    body: 'No documents available',
+                },
+            ).as('documentDelete');
+
+            cy.getByTestId('yes-radio-btn').click();
+            cy.getByTestId('delete-submit-btn').click();
+
+            cy.wait('@documentDelete');
+
+            // assert
+            cy.getByTestId('service-error').should('be.visible');
         });
     });
 

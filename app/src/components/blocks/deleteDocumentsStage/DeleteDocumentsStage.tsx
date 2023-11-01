@@ -132,6 +132,7 @@ function DeleteDocumentsStage({
                             inputRef={deleteDocsRef}
                             {...radioProps}
                             id="yes-radio-button"
+                            data-testid="yes-radio-btn"
                             defaultChecked
                         >
                             Yes
@@ -141,6 +142,7 @@ function DeleteDocumentsStage({
                             inputRef={deleteDocsRef}
                             {...radioProps}
                             id="no-radio-button"
+                            data-testid="no-radio-btn"
                         >
                             No
                         </Radios.Radio>
@@ -149,7 +151,7 @@ function DeleteDocumentsStage({
                 {deletionStage === SUBMISSION_STATE.PENDING ? (
                     <SpinnerButton id="delete-docs-spinner" status="Deleting..." disabled={true} />
                 ) : (
-                    <Button type="submit" id="lg-delete-submit">
+                    <Button type="submit" id="delete-submit-button" data-testid="delete-submit-btn">
                         Continue
                     </Button>
                 )}

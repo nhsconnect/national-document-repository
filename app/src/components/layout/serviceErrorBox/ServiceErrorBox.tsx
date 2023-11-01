@@ -14,6 +14,7 @@ const ServiceError = ({ message }: Props) => {
             role="alert"
             tabIndex={-1}
             id="service-error"
+            data-testid="service-error"
         >
             <ErrorSummary.Title id={serviceErrorSummaryId}>
                 Sorry, the service is currently unavailable.
