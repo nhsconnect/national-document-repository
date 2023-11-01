@@ -18,7 +18,7 @@ import boto3
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
-from enums.permitted_role import PermittedRole
+from enums.repository_role import RepositoryRole
 from models.auth_policy import AuthPolicy, HttpVerb
 from services.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
@@ -26,10 +26,8 @@ from utils.exceptions import AuthorisationException
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-
 def lambda_handler(event, context):
     try:
-        user_roles = []
         ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
 
         client = boto3.client("ssm")
@@ -47,7 +45,7 @@ def lambda_handler(event, context):
         current_session = find_login_session(ndr_session_id)
         validate_login_session(current_session, ndr_session_id)
 
-        user_roles = [org["role"] for org in decoded["organisations"]]
+        user_role = decoded["repository_role"]
 
     except AuthorisationException as e:
         logger.error(e)
@@ -70,12 +68,13 @@ def lambda_handler(event, context):
     policy.stage = stage
 
     # for now, allow all method for GP and DEV role, and allow only search document for PCSE
-    if PermittedRole.DEV.name in user_roles:
+    if RepositoryRole.GP_ADMIN.value in user_role:
         policy.allowAllMethods()
-    elif PermittedRole.GP.name in user_roles:
+    elif RepositoryRole.GP_CLINICAL.value in user_role:
         policy.allowAllMethods()
-    elif PermittedRole.PCSE.name in user_roles:
-        policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
+    elif RepositoryRole.PCSE.value in user_role:
+        policy.allowAllMethods()
+        # policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
     else:
         policy.denyAllMethods()
 
