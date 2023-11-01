@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import Component from './PatientResultPage';
-import { USER_ROLE } from '../../types/generic/roles';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 const meta = {

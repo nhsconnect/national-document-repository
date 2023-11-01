@@ -8,12 +8,10 @@ import boto3
 import jwt
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
+from lambdas.services.ods_api_service import OdsApiService
+from lambdas.services.oidc_service import OidcService
 from models.oidc_models import IdTokenClaimSet
 from services.dynamo_service import DynamoDBService
-from services.ods_api_service_for_password import OdsApiServiceForPassword
-from services.ods_api_service_for_smartcard import OdsApiServiceForSmartcard
-from services.oidc_service_for_password import OidcServiceForPassword
-from services.oidc_service_for_smartcard import OidcServiceForSmartcard
 from services.token_handler_ssm_service import TokenHandlerSSMService
 
 from utils.exceptions import AuthorisationException, OrganisationNotFoundException, TooManyOrgsException
@@ -27,19 +25,10 @@ token_handler_ssm_service = TokenHandlerSSMService()
 
 
 def lambda_handler(event, context):
-    if is_dev_environment():
-        oidc_service = OidcServiceForPassword()
-        ods_api_service = OdsApiServiceForPassword()
-    else:
-        oidc_service = OidcServiceForSmartcard()
-        ods_api_service = OdsApiServiceForSmartcard()
-    try:
-        return token_request(oidc_service, ods_api_service, event)
-    except Exception as e:
-        return ApiGatewayResponse(500, e, "GET")
 
+    oidc_service = OidcService()
+    ods_api_service = OdsApiService()
 
-def token_request(oidc_service, ods_api_service, event):
     try:
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
