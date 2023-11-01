@@ -13,7 +13,7 @@ from utils.exceptions import (
     InvalidResourceIdException,
     PatientNotFoundException,
     PdsErrorException,
-    PatientNotAuthorisedException,
+    UserNotAuthorisedException,
 )
 from utils.lambda_response import ApiGatewayResponse
 
@@ -55,7 +55,7 @@ def lambda_handler(event, context):
 
         logger.info("Patient code: %s" % patient_details.general_practice_ods)
         if patient_details.general_practice_ods not in user_ods_codes:
-            raise PatientNotAuthorisedException
+            raise UserNotAuthorisedException
 
         response = patient_details.model_dump_json(by_alias=True)
 
@@ -67,7 +67,7 @@ def lambda_handler(event, context):
             404, "Patient does not exist for given NHS number", "GET"
         ).create_api_gateway_response()
 
-    except PatientNotAuthorisedException as e:
+    except UserNotAuthorisedException as e:
         logger.error(f"PDS not authorised patient: {str(e)}")
         return ApiGatewayResponse(
             404, "Patient is outside of your access policy", "GET"
