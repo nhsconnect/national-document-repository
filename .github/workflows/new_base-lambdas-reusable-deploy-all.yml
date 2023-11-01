@@ -196,6 +196,20 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
+  deploy_report_bulk_upload_lambda:
+    name: Deploy report_bulk_upload_lambda
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: bulk_upload_report_handler
+      lambda_aws_name: BulkUploadReportLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+
   deploy_back_channel_logout_lambda:
     name: Deploy back_channel_logout_lambda
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
