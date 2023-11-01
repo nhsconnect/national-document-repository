@@ -154,7 +154,7 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
 
 
 def get_user_ods_code():
-    if os.getenv("PDS_FHIR_IS_STUBBED"):
+    if os.getenv("PDS_FHIR_IS_STUBBED") in ['True', 'true']:
         return "Y12345"
     else:
         ssm_service = SSMService()
