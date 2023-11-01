@@ -1,26 +1,16 @@
 import logging
-import os
 from json import JSONDecodeError
 
 from pydantic import ValidationError
-from services.mock_pds_service import MockPdsApiService
-from services.pds_api_service import PdsApiService
 from services.ssm_service import SSMService
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.exceptions import (InvalidResourceIdException,
                               PatientNotFoundException, PdsErrorException)
 from utils.lambda_response import ApiGatewayResponse
+from utils.utilities import get_pds_service
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
-
-def get_pds_service():
-    return (
-        PdsApiService
-        if (os.getenv("PDS_FHIR_IS_STUBBED") == "false")
-        else MockPdsApiService
-    )
 
 
 @validate_patient_id

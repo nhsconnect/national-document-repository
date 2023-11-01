@@ -1,5 +1,6 @@
 import datetime
 import logging
+import os
 import re
 from typing import Optional
 
@@ -153,5 +154,8 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
 
 
 def get_user_ods_code():
-    ssm_service = SSMService()
-    return ssm_service.get_ssm_parameter(SSMParameter.GP_ODS_CODE.value)
+    if os.getenv("PDS_FHIR_IS_STUBBED"):
+        return "Y12345"
+    else:
+        ssm_service = SSMService()
+        return ssm_service.get_ssm_parameter(SSMParameter.GP_ODS_CODE.value)
