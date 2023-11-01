@@ -2,7 +2,7 @@ import logging
 from typing import Dict, List, NamedTuple, Optional
 
 import requests
-from lambdas.services.token_handler_ssm_service import TokenHandlerSSMService
+from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.exceptions import OdsErrorException, OrganisationNotFoundException, TooManyOrgsException
 
 logger = logging.getLogger()
