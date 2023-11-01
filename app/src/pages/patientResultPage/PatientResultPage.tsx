@@ -8,16 +8,16 @@ import { usePatientDetailsContext } from '../../providers/patientProvider/Patien
 import BackButton from '../../components/generic/backButton/BackButton';
 import { FieldValues, useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
-import { AUTH_ROLE } from '../../types/generic/authRole';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 type Props = {
-    role: AUTH_ROLE;
+    role: REPOSITORY_ROLE;
 };
 
 function PatientResultPage({ role }: Props) {
-    const userIsPCSE = role === AUTH_ROLE.PCSE;
-    const userIsGPAdmin = role === AUTH_ROLE.GP_ADMIN;
-    const userIsGPClinical = role === AUTH_ROLE.GP_CLINICAL;
+    const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
+    const userIsGPAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
+    const userIsGPClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
     const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');

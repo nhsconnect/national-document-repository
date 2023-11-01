@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import Component from './PatientSearchPage';
 import { USER_ROLE } from '../../types/generic/roles';
-import { AUTH_ROLE } from '../../types/generic/authRole';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 const meta = {
     title: 'Pages/PatientSearchPage',
@@ -16,7 +16,7 @@ type Story = StoryObj<typeof meta>;
 
 export const PatientSearchPage: Story = {
     args: {
-        role: AUTH_ROLE.PCSE,
+        role: REPOSITORY_ROLE.PCSE,
     },
 };
 export default meta;

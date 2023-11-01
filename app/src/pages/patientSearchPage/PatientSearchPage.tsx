@@ -6,7 +6,7 @@ import { Button, Fieldset, Input } from 'nhsuk-react-components';
 import SpinnerButton from '../../components/generic/spinnerButton/SpinnerButton';
 import { InputRef } from '../../types/generic/inputRef';
 import { USER_ROLE } from '../../types/generic/roles';
-import { AUTH_ROLE } from '../../types/generic/authRole';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 import { useNavigate } from 'react-router';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
@@ -22,7 +22,7 @@ import { isMock } from '../../helpers/utils/isLocal';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 type Props = {
-    role: AUTH_ROLE;
+    role: REPOSITORY_ROLE;
 };
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
@@ -44,9 +44,9 @@ function PatientSearchPage({ role }: Props) {
         },
     });
     const navigate = useNavigate();
-    const userIsPCSE = role === AUTH_ROLE.PCSE;
-    const userIsGPAdmin = role === AUTH_ROLE.GP_ADMIN;
-    const userIsGPClinical = role === AUTH_ROLE.GP_CLINICAL;
+    const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
+    const userIsGPAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
+    const userIsGPClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
 
     const isError = (statusCode && statusCode >= 500) || !inputError;
     const baseUrl = useBaseAPIUrl();

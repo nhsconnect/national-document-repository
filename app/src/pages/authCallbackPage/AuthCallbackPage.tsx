@@ -9,7 +9,7 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { AxiosError } from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
-import { AUTH_ROLE } from '../../types/generic/authRole';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 type Props = {};
 
@@ -34,13 +34,13 @@ const AuthCallbackPage = (props: Props) => {
             });
 
             switch (auth.role) {
-                case AUTH_ROLE.GP_ADMIN:
+                case REPOSITORY_ROLE.GP_ADMIN:
                     navigate(routes.UPLOAD_SEARCH);
                     break;
-                case AUTH_ROLE.GP_CLINICAL:
+                case REPOSITORY_ROLE.GP_CLINICAL:
                     navigate(routes.UPLOAD_SEARCH);
                     break;
-                case AUTH_ROLE.PCSE:
+                case REPOSITORY_ROLE.PCSE:
                     navigate(routes.DOWNLOAD_SEARCH);
                     break;
                 default:
