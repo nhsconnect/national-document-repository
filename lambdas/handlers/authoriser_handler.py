@@ -73,7 +73,8 @@ def lambda_handler(event, context):
     elif RepositoryRole.GP_CLINICAL.value in user_role:
         policy.allowAllMethods()
     elif RepositoryRole.PCSE.value in user_role:
-        policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
+        policy.allowAllMethods()
+        # policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
     else:
         policy.denyAllMethods()
 
