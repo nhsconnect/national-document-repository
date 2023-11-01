@@ -11,7 +11,7 @@ class TokenHandlerSSMService(SSMService):
     def __init__(self):
         super().__init__()
 
-    def get_smartcard_role_codes(self):
+    def get_smartcard_role_codes(self) -> list[str]:
         logger.info("starting ssm request to retrieve required smartcard role codes")
         params = self.get_ssm_parameters([
             "/auth/smartcard/role/gp_admin",
@@ -25,34 +25,34 @@ class TokenHandlerSSMService(SSMService):
         
         return response
 
-    def get_smartcard_role_gp_admin(self):
+    def get_smartcard_role_gp_admin(self) -> str:
         logger.info("starting ssm request to retrieve required smartcard role code gp admin")
         params = self.get_ssm_parameters([
             "/auth/smartcard/role/gp_admin"
         ])
 
-        response = [ params["/auth/smartcard/role/gp_admin"] ]
+        response = params["/auth/smartcard/role/gp_admin"]
         return response
 
-    def get_smartcard_role_gp_clinical(self):
+    def get_smartcard_role_gp_clinical(self) -> str :
         logger.info("starting ssm request to retrieve required smartcard role code gp clinical")
         params = self.get_ssm_parameters([
             "/auth/smartcard/role/gp_clincal"
         ])
 
-        response = [ params["/auth/smartcard/role/gp_clinical"] ]
+        response = params["/auth/smartcard/role/gp_clinical"]
         return response
 
-    def get_smartcard_role_pcse(self):
+    def get_smartcard_role_pcse(self) -> str :
         logger.info("starting ssm request to retrieve required smartcard role code pcse")
         params = self.get_ssm_parameters([
             "/auth/smartcard/role/pcse"
         ])
 
-        response = [ params["/auth/smartcard/role/pcse"] ]
+        response = params["/auth/smartcard/role/pcse"]
         return response
     
-    def get_org_role_codes(self):
+    def get_org_role_codes(self)-> list[str]:
         logger.info("starting ssm request to retrieve required org roles codes")
         params = self.get_ssm_parameters([
             "/auth/org/role_code/gpp",
@@ -61,7 +61,7 @@ class TokenHandlerSSMService(SSMService):
         response = [ params["/auth/org/role_code/gpp"] ]
         return response
 
-    def get_org_ods_codes(self):
+    def get_org_ods_codes(self)-> list[str]:
         logger.info("starting ssm request to retrieve required org ods codes")
         params = self.get_ssm_parameters([
             "/auth/org/ods_code/pcse",
@@ -70,7 +70,7 @@ class TokenHandlerSSMService(SSMService):
         response = [ params["/auth/org/ods_code/pcse"] ]
         return response
 
-    def get_jwt_private_key(self):
+    def get_jwt_private_key(self)-> list[str]:
         logger.info("starting ssm request to retrieve NDR private key")
         return self.get_ssm_parameter(
             parameter_key="jwt_token_private_key", with_decryption=True
