@@ -6,7 +6,7 @@ const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 describe('GP View Lloyd George Workflow', () => {
     beforeEach(() => {
         // Arrange
-        cy.login('gp');
+        cy.login('GP_ADMIN');
 
         // Arrange - search patient
         cy.intercept('GET', '/SearchPatient*', {

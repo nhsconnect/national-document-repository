@@ -1,11 +1,11 @@
-import authPayload from '../../fixtures/requests/auth/GET_TokenRequest.json';
+import authPayload from '../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
 
 describe('authentication & authorisation', () => {
     const baseUrl = 'http://localhost:3000';
 
     context('session management', () => {
         it('sets session storage on login and clears session storage on logout', () => {
-            cy.login('gp');
+            cy.login('GP_ADMIN');
 
             assertSessionStorage({
                 auth: authPayload,

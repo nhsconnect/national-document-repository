@@ -3,7 +3,7 @@ const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 
 beforeEach(() => {
-    cy.login('gp');
+    cy.login('GP_ADMIN');
     navigateToUploadPage();
 });
 
