@@ -65,3 +65,16 @@ class S3Service:
 
     def delete_object(self, s3_bucket_name: str, file_key: str):
         return self.client.delete_object(Bucket=s3_bucket_name, Key=file_key)
+
+    def create_object_tag(
+        self, s3_bucket_name: str, file_key: str, tag_key: str, tag_value: str
+    ):
+        return self.client.put_object_tagging(
+            Bucket=s3_bucket_name,
+            Key=file_key,
+            Tagging={
+                "TagSet": [
+                    {"Key": tag_key, "Value": tag_value},
+                ]
+            },
+        )

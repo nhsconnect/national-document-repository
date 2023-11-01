@@ -133,3 +133,25 @@ def test_delete_object(mocker):
     service.delete_object(s3_bucket_name=MOCK_BUCKET, file_key=TEST_FILE_NAME)
 
     mock_delete_object.assert_called_once_with(Bucket=MOCK_BUCKET, Key=TEST_FILE_NAME)
+
+
+def test_create_object_tag(mocker):
+    mocker.patch("boto3.client")
+    service = S3Service()
+    mock_create_object_tag = mocker.patch.object(service.client, "put_object_tagging")
+
+    test_tag_key = "tag_key"
+    test_tag_value = "tag_name"
+
+    service.create_object_tag(
+        s3_bucket_name=MOCK_BUCKET,
+        file_key=TEST_FILE_NAME,
+        tag_key=test_tag_key,
+        tag_value=test_tag_value,
+    )
+
+    mock_create_object_tag.assert_called_once_with(
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_NAME,
+        Tagging={"TagSet": [{"Key": test_tag_key, "Value": test_tag_value}]},
+    )

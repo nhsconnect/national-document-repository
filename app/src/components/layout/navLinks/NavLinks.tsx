@@ -22,7 +22,7 @@ const NavLinks = () => {
             <Header.NavItem
                 role="link"
                 className="clickable"
-                data-cy="logout-btn"
+                data-testid="logout-btn"
                 onClick={(e) => nav(e, routes.LOGOUT)}
             >
                 Log Out

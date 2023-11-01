@@ -20,8 +20,8 @@ import './commands';
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
-Cypress.Commands.add('getCy', (selector, ...args) => {
-    return cy.get(`[data-cy=${selector}]`, ...args);
+Cypress.Commands.add('getByTestId', (selector, ...args) => {
+    return cy.get(`[data-testid=${selector}]`, ...args);
 });
 
 Cypress.Commands.add('login', (role) => {
@@ -44,12 +44,12 @@ declare global {
     namespace Cypress {
         interface Chainable {
             /**
-             * Get DOM element by data-cy attribute.
+             * Get DOM element by data-testid attribute.
              *
-             * @param {string} value - The value of the data-cy attribute of the target DOM element.
+             * @param {string} value - The value of the data-testid attribute of the target DOM element.
              * @return {HTMLElement} - Target DOM element.
              */
-            getCy(value: string): Chainable<Subject>;
+            getByTestId(value: string): Chainable<Subject>;
             /**
              * Mock user login via CIS2 and return to base URL.
              * @param {string} role - The user role to login with. Must be either 'gp' or 'pcse'

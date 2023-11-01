@@ -7,6 +7,7 @@ from requests import Response
 from services.pds_api_service import PdsApiService
 from tests.unit.helpers.data.pds.access_token_response import RESPONSE_TOKEN
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
+from tests.unit.helpers.mock_services import FakeSSMService
 from utils.exceptions import PdsErrorException
 
 
@@ -20,10 +21,8 @@ class FakeSSMService:
     def update_ssm_parameter(self, *arg, **kwargs):
         pass
 
-
 fake_ssm_service = FakeSSMService()
 pds_service = PdsApiService(fake_ssm_service)
-
 
 def test_request_new_token_is_call_with_correct_data(mocker):
     mock_jwt_token = "testtest"
@@ -192,7 +191,7 @@ def test_pds_request_valid_token(mocker):
     mocker.patch("uuid.uuid4", return_value="123412342")
     mock_post = mocker.patch("requests.get", return_value=response)
 
-    pds_service.pds_request(nshNumber="1111111111", retry_on_expired=True)
+    pds_service.pds_request(nhs_number="1111111111", retry_on_expired=True)
 
     mock_get_parameters.assert_called_once()
     mock_new_access_token.assert_not_called()
@@ -227,7 +226,7 @@ def test_pds_request_expired_token(mocker):
     mocker.patch("uuid.uuid4", return_value="123412342")
     mock_post = mocker.patch("requests.get", return_value=response)
 
-    actual = pds_service.pds_request(nshNumber="1111111111", retry_on_expired=True)
+    actual = pds_service.pds_request(nhs_number="1111111111", retry_on_expired=True)
 
     assert actual == response
     mock_get_parameters.assert_called_once()
@@ -267,7 +266,7 @@ def test_pds_request_valid_token_expired_response(mocker):
         "requests.get", side_effect=[first_response, second_response]
     )
 
-    actual = pds_service.pds_request(nshNumber="1111111111", retry_on_expired=True)
+    actual = pds_service.pds_request(nhs_number="1111111111", retry_on_expired=True)
 
     assert actual == second_response
     assert mock_get_parameters.call_count == 2
@@ -299,7 +298,7 @@ def test_pds_request_valid_token_expired_response_no_retry(mocker):
     mocker.patch("uuid.uuid4", return_value="123412342")
     mock_post = mocker.patch("requests.get", return_value=response)
 
-    actual = pds_service.pds_request(nshNumber="1111111111", retry_on_expired=False)
+    actual = pds_service.pds_request(nhs_number="1111111111", retry_on_expired=False)
 
     assert actual == response
     mock_get_parameters.assert_called_once()
@@ -322,7 +321,7 @@ def test_pds_request_raise_pds_error_exception(mocker):
         )
         mock_post = mocker.patch("requests.get")
 
-        pds_service.pds_request(nshNumber="1111111111", retry_on_expired=True)
+        pds_service.pds_request(nhs_number="1111111111", retry_on_expired=True)
 
         mock_get_parameters.assert_called_once()
         mock_new_access_token.assert_not_called()

@@ -8,7 +8,7 @@ const PdfViewer = ({ fileUrl }: Props) => {
         pdfObject.embed(fileUrl + '#toolbar=0', '#pdf-viewer');
     }, [fileUrl]);
 
-    return <div id="pdf-viewer" data-cy="pdf-viewer" style={{ height: 600 }}></div>;
+    return <div id="pdf-viewer" data-testid="pdf-viewer" style={{ height: 600 }}></div>;
 };
 
 export default PdfViewer;

@@ -28,5 +28,5 @@ class PatientSearch:
 
         raise PdsErrorException("Error when requesting patient from PDS")
 
-    def pds_request(self, nhsNumber: str, *args, **kwargs) -> Response:
+    def pds_request(self, nhs_number: str, *args, **kwargs) -> Response:
         pass

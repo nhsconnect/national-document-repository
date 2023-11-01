@@ -34,7 +34,7 @@ def test_lambda_handler_valid_id_returns_200(
     expected = {
         "body": '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22",'
         '"postalCode":"LS1 6AE","nhsNumber":"9000000009","superseded":false,'
-        '"restricted":false}',
+        '"restricted":false,"generalPracticeOds":""}',
         "headers": {
             "Access-Control-Allow-Methods": "GET",
             "Access-Control-Allow-Origin": "*",

@@ -19,7 +19,7 @@ def test_returns_500_when_env_vars_not_set():
     mock_token = "mock_token"
     expected = ApiGatewayResponse(
         500,
-        "An error occurred due to missing key: 'OIDC_CALLBACK_URL'",
+        "An error occurred due to missing environment variable: 'OIDC_CALLBACK_URL'",
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(build_event_from_token(mock_token), None)

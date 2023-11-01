@@ -84,7 +84,7 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                 });
 
-                const filename = `lloyd_george-patient-record-${nhsNumber}`;
+                const filename = `patient-record-${nhsNumber}`;
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
             } catch (e) {}
         };
@@ -124,7 +124,7 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
                                 data-testid={linkAttributes.url}
                                 ref={linkRef}
                                 href={linkAttributes.url}
-                                download={linkAttributes.filename}
+                                download
                             >
                                 Download Lloyd George Documents URL
                             </a>

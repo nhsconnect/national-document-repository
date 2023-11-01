@@ -131,7 +131,7 @@ class BulkUploadService:
     def rollback_transaction(self):
         try:
             for document_reference in self.dynamo_records_in_transaction:
-                primary_key_name = DocumentReferenceMetadataFields.ID.field_name
+                primary_key_name = DocumentReferenceMetadataFields.ID.value
                 primary_key_value = document_reference.id
                 deletion_key = {primary_key_name: primary_key_value}
                 self.dynamo_service.delete_item(

@@ -6,7 +6,7 @@ from boto3.dynamodb.conditions import Key
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.dynamo_service import DynamoDBService
 from tests.unit.conftest import MOCK_TABLE_NAME, TEST_NHS_NUMBER
-from tests.unit.helpers.data.dynamo_responses import MOCK_RESPONSE
+from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 
 
@@ -25,11 +25,14 @@ def test_lambda_handler_returns_items_from_dynamo(
 ):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
-        mock_dynamo_table.query.return_value = MOCK_RESPONSE
-        expected = MOCK_RESPONSE
+        mock_dynamo_table.query.return_value = MOCK_SEARCH_RESPONSE
+        expected = MOCK_SEARCH_RESPONSE
         search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
-        expected_projection = "#fileName,#created"
-        expected_expr_attr_names = {"#fileName": "FileName", "#created": "Created"}
+        expected_projection = "#FileName_attr,#Created_attr"
+        expected_expr_attr_names = {
+            "#FileName_attr": "FileName",
+            "#Created_attr": "Created",
+        }
 
         with patch.object(Key, "eq", return_value=search_key_obj):
             db_service = DynamoDBService()
@@ -39,8 +42,8 @@ def test_lambda_handler_returns_items_from_dynamo(
                 "NhsNumber",
                 TEST_NHS_NUMBER,
                 [
-                    DocumentReferenceMetadataFields.FILE_NAME,
-                    DocumentReferenceMetadataFields.CREATED,
+                    DocumentReferenceMetadataFields.FILE_NAME.value,
+                    DocumentReferenceMetadataFields.CREATED.value,
                 ],
             )
 
@@ -59,13 +62,16 @@ def test_lambda_handler_returns_items_from_dynamo_with_filter(
 ):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
-        mock_dynamo_table.query.return_value = MOCK_RESPONSE
-        expected = MOCK_RESPONSE
+        mock_dynamo_table.query.return_value = MOCK_SEARCH_RESPONSE
+        expected = MOCK_SEARCH_RESPONSE
         search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
-        expected_projection = "#fileName,#created"
-        expected_expr_attr_names = {"#fileName": "FileName", "#created": "Created"}
-        expected_filter = "attribute_not_exists(Deleted) OR Deleted = :deleted_value"
-        expected_attributes_values = {":deleted_value": ""}
+        expected_projection = "#FileName_attr,#Created_attr"
+        expected_expr_attr_names = {
+            "#FileName_attr": "FileName",
+            "#Created_attr": "Created",
+        }
+        expected_filter = "attribute_not_exists(Deleted) OR Deleted = :Deleted_val"
+        expected_attributes_values = {":Deleted_val": ""}
 
         with patch.object(Key, "eq", return_value=search_key_obj):
             db_service = DynamoDBService()
@@ -75,12 +81,10 @@ def test_lambda_handler_returns_items_from_dynamo_with_filter(
                 "NhsNumber",
                 TEST_NHS_NUMBER,
                 [
-                    DocumentReferenceMetadataFields.FILE_NAME,
-                    DocumentReferenceMetadataFields.CREATED,
+                    DocumentReferenceMetadataFields.FILE_NAME.value,
+                    DocumentReferenceMetadataFields.CREATED.value,
                 ],
-                filtered_fields={
-                    DocumentReferenceMetadataFields.DELETED.field_name: ""
-                },
+                filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
             )
 
             mock_dynamo_table.query.assert_called_with(
@@ -173,7 +177,60 @@ def test_DynamoDbException_raised_when_results_are_invalid(
                     "NhsNumber",
                     TEST_NHS_NUMBER,
                     [
-                        DocumentReferenceMetadataFields.FILE_NAME,
-                        DocumentReferenceMetadataFields.CREATED,
+                        DocumentReferenceMetadataFields.FILE_NAME.value,
+                        DocumentReferenceMetadataFields.CREATED.value,
                     ],
                 )
+
+
+def test_test_scan_table_no_args(mock_dynamo_table, mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.scan.return_value = []
+
+        db_service = DynamoDBService()
+        db_service.scan_table(MOCK_TABLE_NAME)
+        mock_dynamo_table.scan.assert_called_once()
+
+
+def test_test_scan_table_with_filter(mock_dynamo_table, mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.scan.return_value = []
+
+        db_service = DynamoDBService()
+        db_service.scan_table(MOCK_TABLE_NAME, filter_expression="filter_test")
+        mock_dynamo_table.scan.assert_called_with(FilterExpression="filter_test")
+
+
+def test_test_scan_table_with_start_key(mock_dynamo_table, mock_boto3_dynamo):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.scan.return_value = []
+
+        db_service = DynamoDBService()
+        db_service.scan_table(
+            MOCK_TABLE_NAME, exclusive_start_key={"key": "exclusive_start_key"}
+        )
+        mock_dynamo_table.scan.assert_called_with(
+            ExclusiveStartKey={"key": "exclusive_start_key"}
+        )
+
+
+def test_test_scan_table_with_start_key_and_filter(
+    mock_dynamo_table, mock_boto3_dynamo
+):
+    with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
+        mock_boto3_dynamo.Table.return_value = mock_dynamo_table
+        mock_dynamo_table.scan.return_value = []
+
+        db_service = DynamoDBService()
+        db_service.scan_table(
+            MOCK_TABLE_NAME,
+            exclusive_start_key={"key": "exclusive_start_key"},
+            filter_expression="filter_test",
+        )
+        mock_dynamo_table.scan.assert_called_with(
+            ExclusiveStartKey={"key": "exclusive_start_key"},
+            FilterExpression="filter_test",
+        )
