@@ -5,25 +5,17 @@ from unittest.mock import call
 
 from boto3.dynamodb.conditions import Attr
 from freezegun import freeze_time
-
-from handlers.bulk_upload_report_handler import (
-    get_times_for_scan,
-    write_items_to_csv,
-    get_dynamodb_report_items,
-    report_handler,
-    write_empty_report
-)
+from handlers.bulk_upload_report_handler import (get_dynamodb_report_items,
+                                                 get_times_for_scan,
+                                                 report_handler,
+                                                 write_empty_report,
+                                                 write_items_to_csv)
+from tests.unit.conftest import (MOCK_BULK_REPORT_TABLE_NAME,
+                                 MOCK_LG_STAGING_STORE_BUCKET)
 from tests.unit.helpers.data.dynamo_scan_response import (
-    MOCK_RESPONSE,
-    EXPECTED_RESPONSE,
-    MOCK_RESPONSE_WITH_LAST_KEY,
-    MOCK_EMPTY_RESPONSE,
-    UNEXPECTED_RESPONSE,
-)
-from tests.unit.conftest import (
-    MOCK_BULK_REPORT_TABLE_NAME,
-    MOCK_LG_STAGING_STORE_BUCKET,
-)
+    EXPECTED_RESPONSE, MOCK_EMPTY_RESPONSE, MOCK_RESPONSE,
+    MOCK_RESPONSE_WITH_LAST_KEY, UNEXPECTED_RESPONSE)
+
 
 @freeze_time("2012-01-14 7:20:01")
 def test_get_time_for_scan_after_7am():
@@ -69,6 +61,7 @@ def test_write_items_to_csv():
         for row, item in zip(csv_reader, items):
             assert row == item
     os.remove("test_file")
+
 
 def test_write_empty_file_to_txt():
     write_empty_report("test_file")

@@ -7,7 +7,8 @@ import pytest
 from enums.s3_lifecycle_tags import S3LifecycleDays, S3LifecycleTags
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
-from tests.unit.conftest import MOCK_TABLE_NAME
+from tests.unit.conftest import (MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME,
+                                 MOCK_TABLE_NAME, TEST_NHS_NUMBER)
 from tests.unit.helpers.data.dynamo_responses import (MOCK_EMPTY_RESPONSE,
                                                       MOCK_SEARCH_RESPONSE)
 
@@ -30,59 +31,74 @@ def nhs_number():
     return "9000000009"
 
 
-def test_returns_list_of_documents_when_results_are_returned(nhs_number):
-    expected_table = "expected_table_name"
-    os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = expected_table
-    os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = "no-table"
+def test_returns_list_of_lg_document_references_when_results_are_returned(
+    set_env, mocker
+):
+    mocker.patch("boto3.resource")
+    service = DocumentService()
 
-    with patch.object(boto3, "resource", return_value=MagicMock()) as mock_dynamo:
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-        mock_table.query.return_value = MOCK_SEARCH_RESPONSE
-        result = DocumentService().fetch_available_document_references_by_type(
-            nhs_number, "LG"
-        )
+    mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
+    mock_dynamo_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
 
-        mock_dynamo.return_value.Table.assert_called_with(expected_table)
+    result = service.fetch_available_document_references_by_type(TEST_NHS_NUMBER, "LG")
 
-        assert len(result) == 3
-        assert type(result[0]) == DocumentReference
+    mock_dynamo_table.assert_called_with(MOCK_LG_TABLE_NAME)
+
+    assert len(result) == 3
+    assert type(result[0]) == DocumentReference
 
 
-def test_only_retrieves_documents_from_lloyd_george_table(nhs_number):
-    expected_table = "expected_table_name"
-    os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = expected_table
-    os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = "no-table"
+def test_returns_list_of_arf_document_references_when_results_are_returned(
+    set_env, mocker
+):
+    mocker.patch("boto3.resource")
+    service = DocumentService()
 
-    with patch.object(boto3, "resource", return_value=MagicMock()) as mock_dynamo:
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-        mock_table.query.return_value = MOCK_EMPTY_RESPONSE
-        result = DocumentService().fetch_available_document_references_by_type(
-            nhs_number, "LG"
-        )
+    mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
+    mock_dynamo_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
 
-        mock_dynamo.return_value.Table.assert_called_with(expected_table)
+    result = service.fetch_available_document_references_by_type(TEST_NHS_NUMBER, "ARF")
 
-        assert len(result) == 0
+    mock_dynamo_table.assert_called_with(MOCK_ARF_TABLE_NAME)
+
+    assert len(result) == 3
+    assert type(result[0]) == DocumentReference
 
 
-def test_only_retrieves_documents_from_electronic_health_record_table(nhs_number):
-    expected_table = "expected_table_name"
-    os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = "no-table"
-    os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = expected_table
+def test_returns_list_of_both_type_document_references_when_results_are_returned(
+    set_env, mocker
+):
+    mocker.patch("boto3.resource")
+    service = DocumentService()
 
-    with patch.object(boto3, "resource", return_value=MagicMock()) as mock_dynamo:
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-        mock_table.query.return_value = MOCK_EMPTY_RESPONSE
-        result = DocumentService().fetch_available_document_references_by_type(
-            nhs_number, "ARF"
-        )
+    mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
+    mock_dynamo_table.return_value.query.side_effect = [
+        MOCK_SEARCH_RESPONSE,
+        MOCK_SEARCH_RESPONSE,
+    ]
 
-        mock_dynamo.return_value.Table.assert_called_with(expected_table)
+    result = service.fetch_available_document_references_by_type(TEST_NHS_NUMBER, "ALL")
 
-        assert len(result) == 0
+    assert mock_dynamo_table.call_count == 2
+
+    assert len(result) == 6
+    assert type(result[0]) == DocumentReference
+
+
+def test_returns_empty_list_of_lg_document_references_when_no_results_are_returned(
+    set_env, mocker
+):
+    mocker.patch("boto3.resource")
+    service = DocumentService()
+
+    mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
+    mock_dynamo_table.return_value.query.return_value = MOCK_EMPTY_RESPONSE
+
+    result = service.fetch_available_document_references_by_type(TEST_NHS_NUMBER, "LG")
+
+    mock_dynamo_table.assert_called_with(MOCK_LG_TABLE_NAME)
+
+    assert len(result) == 0
 
 
 def test_nothing_returned_when_invalid_doctype_supplied(nhs_number):

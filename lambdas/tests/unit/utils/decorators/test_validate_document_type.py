@@ -1,7 +1,9 @@
+import pytest
+from enums.supported_document_types import SupportedDocumentTypes
 from utils.lambda_response import ApiGatewayResponse
 
-from lambdas.utils.decorators.validate_document_type import \
-    validate_document_type
+from lambdas.utils.decorators.validate_document_type import (
+    extract_document_type, validate_document_type)
 
 
 @validate_document_type
@@ -93,3 +95,50 @@ def test_returns_400_response_when_doctype_field_not_in_event(
     actual = lambda_handler(valid_id_and_none_doctype_event, context)
 
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "LG, ARF",
+        "ARF,LG",
+        " ARF, LG",
+        "LG , ARF",
+    ],
+)
+def test_extract_document_type_both(value):
+    expected = SupportedDocumentTypes.ALL.value
+
+    actual = extract_document_type(value)
+
+    assert expected == actual
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "LG ",
+        " LG",
+    ],
+)
+def test_extract_document_type_lg(value):
+    expected = SupportedDocumentTypes.LG.value
+
+    actual = extract_document_type(value)
+
+    assert expected == actual
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "ARF ",
+        " ARF",
+    ],
+)
+def test_extract_document_type_arf(value):
+    expected = SupportedDocumentTypes.ARF.value
+
+    actual = extract_document_type(value)
+
+    assert expected == actual

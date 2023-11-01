@@ -97,7 +97,7 @@ def lambda_handler(event, context):
 
         document_reference: NHSDocumentReference
 
-        if document_type == SupportedDocumentTypes.LG:
+        if document_type == SupportedDocumentTypes.LG.value:
             document_reference = NHSDocumentReference(
                 nhs_number=nhs_number,
                 s3_bucket_name=lg_s3_bucket_name,
@@ -106,7 +106,7 @@ def lambda_handler(event, context):
                 file_name=document.fileName,
             )
             lg_documents.append(document_reference)
-        elif document_type == SupportedDocumentTypes.ARF:
+        elif document_type == SupportedDocumentTypes.ARF.value:
             document_reference = NHSDocumentReference(
                 nhs_number=nhs_number,
                 s3_bucket_name=arf_s3_bucket_name,
