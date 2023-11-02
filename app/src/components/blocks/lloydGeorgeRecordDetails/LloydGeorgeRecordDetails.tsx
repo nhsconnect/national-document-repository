@@ -50,11 +50,6 @@ function LloydGeorgeRecordDetails({
             key: 'delete-all-files-link',
             handler: () => setStage(LG_RECORD_STAGE.DELETE_ALL),
         },
-        {
-            label: 'Delete file',
-            key: 'delete-one-file-link',
-            handler: () => setStage(LG_RECORD_STAGE.DELETE_ONE),
-        },
     ];
 
     return (
