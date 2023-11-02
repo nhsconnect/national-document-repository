@@ -41,8 +41,11 @@ def lambda_handler(event, context):
         public_key_location = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
         public_key = ssm_service.get_ssm_parameter(public_key_location)
 
+        logger.info(public_key_location)
+        logger.info(public_key)
 
         token = event["headers"]["Authorization"]
+        logger.info(token)
         decoded = jwt.decode(
             token, public_key, algorithms=["RS256"]
         )
