@@ -59,7 +59,10 @@ def lambda_handler(event, context):
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
         
+
         gp_ods = patient_details.general_practice_ods
+        logging.info("User Codes: {user_ods_code}")
+        logging.info("GP ODS: {gp_ods}")
         if gp_ods is not user_ods_code:
             raise UserNotAuthorisedException
 
@@ -75,7 +78,7 @@ def lambda_handler(event, context):
     except UserNotAuthorisedException as e:
         logger.error(f"PDS not authorised patient: {str(e)}")
         return ApiGatewayResponse(
-            404, "Patient is outside of your access policy", "GET"
+            404, "Patient does not exist for given NHS number", "GET"
         ).create_api_gateway_response()
 
     except (InvalidResourceIdException, PdsErrorException) as e:
