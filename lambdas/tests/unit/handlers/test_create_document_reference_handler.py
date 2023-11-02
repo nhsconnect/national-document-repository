@@ -42,7 +42,7 @@ def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
     mock_supported_document_get_from_field_name.return_value = (
-        SupportedDocumentTypes.ARF
+        SupportedDocumentTypes.ARF.value
     )
 
     mocker.patch("services.dynamo_service.DynamoDBService.create_item")
@@ -67,7 +67,7 @@ def test_create_document_reference_valid_arf_type_returns_200(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
     mock_supported_document_get_from_field_name.return_value = (
-        SupportedDocumentTypes.ARF
+        SupportedDocumentTypes.ARF.value
     )
 
     mocker.patch("services.dynamo_service.DynamoDBService.create_item")
@@ -91,7 +91,9 @@ def test_create_document_reference_valid_lg_type_returns_200(
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
-    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
+    mock_supported_document_get_from_field_name.return_value = (
+        SupportedDocumentTypes.LG.value
+    )
     mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
@@ -115,7 +117,7 @@ def test_create_document_reference_valid_arf_type_uses_arf_s3_bucket(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
     mock_supported_document_get_from_field_name.return_value = (
-        SupportedDocumentTypes.ARF
+        SupportedDocumentTypes.ARF.value
     )
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
@@ -136,7 +138,7 @@ def test_create_document_reference_valid_arf_type_adds_nhs_number_as_s3_folder(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
     mock_supported_document_get_from_field_name.return_value = (
-        SupportedDocumentTypes.ARF
+        SupportedDocumentTypes.ARF.value
     )
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
@@ -163,7 +165,7 @@ def test_create_document_reference_valid_arf_type_uses_arf_dynamo_table(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
     mock_supported_document_get_from_field_name.return_value = (
-        SupportedDocumentTypes.ARF
+        SupportedDocumentTypes.ARF.value
     )
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
@@ -182,7 +184,9 @@ def test_create_document_reference_valid_lg_type_uses_lg_s3_bucket(
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
-    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
+    mock_supported_document_get_from_field_name.return_value = (
+        SupportedDocumentTypes.LG.value
+    )
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
@@ -203,7 +207,9 @@ def test_create_document_reference_valid_lg_type_uses_lg_dynamo_table(
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
-    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
+    mock_supported_document_get_from_field_name.return_value = (
+        SupportedDocumentTypes.LG.value
+    )
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
     )
@@ -226,7 +232,7 @@ def test_create_document_reference_arf_type_dynamo_ClientError_returns_500(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
     mock_supported_document_get_from_field_name.return_value = (
-        SupportedDocumentTypes.ARF
+        SupportedDocumentTypes.ARF.value
     )
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
@@ -250,7 +256,7 @@ def test_create_document_reference_arf_type_s3_ClientError_returns_500(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
     mock_supported_document_get_from_field_name.return_value = (
-        SupportedDocumentTypes.ARF
+        SupportedDocumentTypes.ARF.value
     )
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
@@ -278,7 +284,9 @@ def test_invalid_file_type_for_lg_return_400(set_env, context, mocker, event_bod
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
-    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
+    mock_supported_document_get_from_field_name.return_value = (
+        SupportedDocumentTypes.LG.value
+    )
     mocker.patch("services.dynamo_service.DynamoDBService.create_item")
     mock_presigned = mocker.patch(
         "services.s3_service.S3Service.create_document_presigned_url_handler"
@@ -324,7 +332,9 @@ def test_lambda_handler_missing_environment_variables_type_lg_returns_400(
     mock_supported_document_get_from_field_name = mocker.patch(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
-    mock_supported_document_get_from_field_name.return_value = SupportedDocumentTypes.LG
+    mock_supported_document_get_from_field_name.return_value = (
+        SupportedDocumentTypes.LG.value
+    )
     monkeypatch.delenv(environmentVariable)
     expected = ApiGatewayResponse(
         500,
@@ -343,7 +353,7 @@ def test_lambda_handler_missing_environment_variables_type_arf_returns_400(
         "enums.supported_document_types.SupportedDocumentTypes.get_from_field_name"
     )
     mock_supported_document_get_from_field_name.return_value = (
-        SupportedDocumentTypes.ARF
+        SupportedDocumentTypes.ARF.value
     )
     monkeypatch.delenv(environmentVariable)
     expected = ApiGatewayResponse(
