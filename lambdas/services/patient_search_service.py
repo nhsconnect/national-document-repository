@@ -1,4 +1,3 @@
-import logging
 from models.pds_models import Patient, PatientDetails
 from requests import Response
 from utils.exceptions import (InvalidResourceIdException,
@@ -16,7 +15,6 @@ class PatientSearch:
     def handle_response(self, response: Response, nhs_number: str) -> PatientDetails:
         if response.status_code == 200:
             patient = Patient.model_validate(response.json())
-            logging.info(f"Patient: {patient}")
             patient_details = patient.get_patient_details(nhs_number)
             return patient_details
 

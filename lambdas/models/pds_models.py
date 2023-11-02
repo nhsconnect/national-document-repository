@@ -112,7 +112,7 @@ class Patient(BaseModel):
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
-            generalPracticeOds=self.get_ods_code_for_gp()
+            # generalPracticeOds=self.get_ods_code_for_gp()
         )
         
         return PatientDetails
