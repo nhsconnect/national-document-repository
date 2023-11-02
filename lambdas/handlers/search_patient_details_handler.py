@@ -61,8 +61,8 @@ def lambda_handler(event, context):
         
 
         gp_ods = patient_details.general_practice_ods
-        logging.info("User Codes: {user_ods_code}")
-        logging.info("GP ODS: {gp_ods}")
+        logging.info(f"User Codes: {user_ods_code}")
+        logging.info(f"GP ODS: {gp_ods}")
         if gp_ods is not user_ods_code:
             raise UserNotAuthorisedException
 
