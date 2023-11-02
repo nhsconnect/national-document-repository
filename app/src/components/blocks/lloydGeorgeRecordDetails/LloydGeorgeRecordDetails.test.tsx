@@ -16,7 +16,6 @@ describe('LloydGeorgeRecordDetails', () => {
         { label: 'See all files', expectedStage: LG_RECORD_STAGE.SEE_ALL },
         { label: 'Download all files', expectedStage: LG_RECORD_STAGE.DOWNLOAD_ALL },
         { label: 'Delete all files', expectedStage: LG_RECORD_STAGE.DELETE_ALL },
-        { label: 'Delete file', expectedStage: LG_RECORD_STAGE.DELETE_ONE },
     ];
 
     beforeEach(() => {

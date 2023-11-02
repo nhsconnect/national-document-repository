@@ -17,7 +17,6 @@ export enum LG_RECORD_STAGE {
     DOWNLOAD_ALL = 1,
     SEE_ALL = 2,
     DELETE_ALL = 3,
-    DELETE_ONE = 4,
 }
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
