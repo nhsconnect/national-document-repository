@@ -63,7 +63,7 @@ def lambda_handler(event, context):
         gp_ods = patient_details.general_practice_ods
         logging.info(f"User Codes: {user_ods_code}")
         logging.info(f"GP ODS: {gp_ods}")
-        if gp_ods is not user_ods_code:
+        if gp_ods != user_ods_code:
             raise UserNotAuthorisedException
 
         response = patient_details.model_dump_json(by_alias=True)
