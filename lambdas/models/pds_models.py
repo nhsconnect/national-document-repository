@@ -112,6 +112,7 @@ class Patient(BaseModel):
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
+            general_practice_ods=self.get_ods_code_for_gp()
         )
 
     def get_minimum_patient_details(self, nhs_number) -> PatientDetails:
@@ -125,4 +126,5 @@ class Patient(BaseModel):
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
+            general_practice_ods=self.get_ods_code_for_gp()
         )
