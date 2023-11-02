@@ -42,10 +42,10 @@ def lambda_handler(event, context):
 
         logger.info("decoding token")
         decoded = jwt.decode(
-            event["authorizationToken"], public_key, algorithms=["RS256"]
+            event["Authorization"], public_key, algorithms=["RS256"]
         )
+
         logger.info(decoded)
-        
         user_ods_code = decoded["selected_organisation"]["org_ods_code"]
         
         logger.info("User codes: %s" % user_ods_code)
