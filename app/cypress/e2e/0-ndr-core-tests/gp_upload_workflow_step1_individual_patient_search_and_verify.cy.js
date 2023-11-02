@@ -17,7 +17,7 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
     };
 
     beforeEach(() => {
-        cy.login('gp');
+        cy.login('GP_ADMIN');
     });
 
     it('(Smoke test) shows patient upload screen when patient search is used by a GP and Inactive patient radio button is selected', () => {

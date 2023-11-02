@@ -18,7 +18,6 @@ import boto3
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
-from enums.permitted_role import PermittedRole
 from enums.repository_role import RepositoryRole
 from models.auth_policy import AuthPolicy
 from services.dynamo_service import DynamoDBService
@@ -29,7 +28,6 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-
 
 @ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
 def lambda_handler(event, context):
@@ -85,19 +83,19 @@ def validate_access_policy(http_verb, path, user_role):
     logger.info("Validating resource req: %s, http: %s" % (path, http_verb))
     match path:
         case "/DocumentDelete":
-            deny_resource = (user_role is PermittedRole.GP_CLINICAL.name or 
-                            user_role is PermittedRole.GP_ADMIN.name)
+            deny_resource = (user_role is RepositoryRole.GP_CLINICAL.value or 
+                            user_role is RepositoryRole.GP_ADMIN.value)
 
         case "/DocumentManifest":
-            deny_resource = (user_role is PermittedRole.GP_CLINICAL.name or 
-                            user_role is PermittedRole.GP_ADMIN.name)
+            deny_resource = (user_role is RepositoryRole.GP_CLINICAL.value or 
+                            user_role is RepositoryRole.GP_ADMIN.value)
 
         case "/DocumentReference":
-            deny_resource = (user_role is PermittedRole.GP_CLINICAL.name or 
-                            user_role is PermittedRole.GP_ADMIN.name)
+            deny_resource = (user_role is RepositoryRole.GP_CLINICAL.value or 
+                            user_role is RepositoryRole.GP_ADMIN.value)
 
         case "/SearchDocumentReferences":
-            deny_resource = user_role is PermittedRole.PCSE.name
+            deny_resource = user_role is RepositoryRole.PCSE.value
 
         case _:
             deny_resource = False
@@ -111,6 +109,14 @@ def set_access_policy(http_verb, path, user_role, policy):
     accepted_roles = tuple(item.value for item in RepositoryRole)
     if user_role in accepted_roles:
         policy.allowMethod(http_verb, path)
+    # for now, allow all method for GP and DEV role, and allow only search document for PCSE
+    if RepositoryRole.GP_ADMIN.value in user_role:
+        policy.allowAllMethods()
+    elif RepositoryRole.GP_CLINICAL.value in user_role:
+        policy.allowAllMethods()
+    elif RepositoryRole.PCSE.value in user_role:
+        policy.allowAllMethods()
+        # policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
     else:
         policy.denyMethod(http_verb, path)
 

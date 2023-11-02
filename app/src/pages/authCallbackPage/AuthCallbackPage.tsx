@@ -9,6 +9,7 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { AxiosError } from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 type Props = {};
 
@@ -23,14 +24,29 @@ const AuthCallbackPage = (props: Props) => {
                 auth: null,
                 isLoggedIn: false,
             });
+
             navigate(routes.AUTH_ERROR);
         };
         const handleSuccess = (auth: UserAuth) => {
             setSession({
                 auth: auth,
-                isLoggedIn: false,
+                isLoggedIn: true,
             });
-            navigate(routes.SELECT_ORG);
+
+            switch (auth.role) {
+                case REPOSITORY_ROLE.GP_ADMIN:
+                    navigate(routes.UPLOAD_SEARCH);
+                    break;
+                case REPOSITORY_ROLE.GP_CLINICAL:
+                    navigate(routes.UPLOAD_SEARCH);
+                    break;
+                case REPOSITORY_ROLE.PCSE:
+                    navigate(routes.DOWNLOAD_SEARCH);
+                    break;
+                default:
+                    navigate(routes.AUTH_ERROR);
+                    break;
+            }
         };
 
         const handleCallback = async (args: AuthTokenArgs) => {
