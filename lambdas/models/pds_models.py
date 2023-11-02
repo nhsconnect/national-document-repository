@@ -105,7 +105,7 @@ class Patient(BaseModel):
         raise ValueError("No active GP practice for the patient")
 
     def get_patient_details(self, nhs_number) -> PatientDetails:
-        PatientDetails = PatientDetails(
+        patient_details = PatientDetails(
             givenName=self.get_current_usual_name().given,
             familyName=self.get_current_usual_name().family,
             birthDate=self.birth_date,
