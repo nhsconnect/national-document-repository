@@ -59,7 +59,7 @@ def lambda_handler(event, context):
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
 
         patient_details_dict = patient_details.model_dump()
-        gp_ods = patient_details('general_practice_ods')
+        gp_ods = patient_details_dict('general_practice_ods')
         logger.info(f"Patient code: {gp_ods}")
         if gp_ods is not user_ods_code:
             raise UserNotAuthorisedException
