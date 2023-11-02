@@ -38,11 +38,13 @@ def lambda_handler(event, context):
     try:
         ssm_service = SSMService()
         nhs_number = event["queryStringParameters"]["patientId"]
-        public_key = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
+        public_key_location = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
+        public_key = ssm_service.get_ssm_parameter(public_key_location)
 
-        logger.info("decoding token")
+
+        token = event["headers"]["Authorization"]
         decoded = jwt.decode(
-            event["headers"]["Authorization"], public_key, algorithms=["RS256"]
+            token, public_key, algorithms=["RS256"]
         )
 
         logger.info(decoded)
