@@ -2,7 +2,7 @@ import pytest
 from handlers.bulk_upload_handler import lambda_handler
 from tests.unit.helpers.data.bulk_upload.test_data import \
     TEST_EVENT_WITH_SQS_MESSAGES
-from utils.lloyd_george_validator import LGInvalidFilesException
+from utils.exceptions import InvalidMessageException
 
 
 @pytest.fixture
@@ -22,13 +22,13 @@ def test_lambda_process_each_sqs_message_one_by_one(set_env, mocked_service):
         mocked_service.handle_sqs_message.assert_any_call(message)
 
 
-def test_lambda_continue_process_next_message_after_handled_validation_error(
+def test_lambda_continue_process_next_message_after_handled_error(
     set_env, mocked_service
 ):
-    # emulate that validation error happen at 2nd message
+    # emulate that unexpected error happen at 2nd message
     mocked_service.handle_sqs_message.side_effect = [
         None,
-        LGInvalidFilesException,
+        InvalidMessageException,
         None,
     ]
 
