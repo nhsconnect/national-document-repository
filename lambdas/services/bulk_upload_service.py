@@ -113,7 +113,7 @@ class BulkUploadService:
             logger.info(
                 f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}"
             )
-        except Exception as e:
+        except ClientError as e:
             logger.info(f"Got unexpected error during file transfer: {str(e)}")
             logger.info("Will try to rollback any change to database and bucket")
             self.rollback_transaction()
