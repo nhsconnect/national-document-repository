@@ -171,7 +171,7 @@ describe('GP View Lloyd George Workflow', () => {
             cy.wait('@lloydGeorgeStitch');
 
             cy.getByTestId('actions-menu').click();
-            cy.getByTestId('delete-any-files-link').click();
+            cy.getByTestId('delete-all-files-link').click();
         });
 
         it('allows a GP user to delete the Lloyd George document of an active patient', () => {
