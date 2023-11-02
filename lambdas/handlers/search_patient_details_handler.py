@@ -16,6 +16,7 @@ from utils.exceptions import (
     UserNotAuthorisedException,
 )
 from utils.lambda_response import ApiGatewayResponse
+from utils.decorators.ensure_env_var import ensure_environment_variables
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -28,21 +29,18 @@ def get_pds_service():
         else MockPdsApiService
     )
 
-
+@ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
 @validate_patient_id
 def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
     logger.info(event)
 
     try:
+        ssm_service = SSMService()
         nhs_number = event["queryStringParameters"]["patientId"]
-        client = boto3.client("ssm")
-        ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
-        ssm_response = client.get_parameter(
-            Name=ssm_public_key_parameter_name, WithDecryption=True
-        )
-        public_key = ssm_response["Parameter"]["Value"]
+        public_key = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
 
+        logger.info("decoding token")
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]
         )
