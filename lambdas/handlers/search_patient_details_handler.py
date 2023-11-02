@@ -58,15 +58,15 @@ def lambda_handler(event, context):
         logger.info("Retrieving patient details")
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
-
+        
         response = patient_details.model_dump_json(by_alias=True)
-        json_load = json.loads(response)
-        logger.info(f"json loads: {json_load}")
-        logger.info(f"json value: {json_load['general_practice_ods']}")
-        gp_ods = json_load['general_practice_ods']
+        # json_load = json.loads(response)
+        # logger.info(f"json loads: {json_load}")
+        # logger.info(f"json value: {json_load['general_practice_ods']}")
+        # gp_ods = json_load['general_practice_ods']
 
-        if gp_ods is not user_ods_code:
-            raise UserNotAuthorisedException
+        # if gp_ods is not user_ods_code:
+        #     raise UserNotAuthorisedException
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
 

@@ -1,4 +1,3 @@
-import logging
 from datetime import date
 from typing import Optional
 
@@ -98,10 +97,7 @@ class Patient(BaseModel):
     def get_ods_code_for_gp(self) -> str:
         for entry in self.general_practitioner:
             gp_end_date = entry.identifier.period.end
-            logging.info(f"GP Entry: {entry}")
             if not gp_end_date or gp_end_date >= date.today():
-                logging.info(f"GP Entry not expired, returning  {entry.identifier}")
-                logging.info(f"Value, returning value {entry.identifier.value}")
                 return entry.identifier.value
         raise ValueError("No active GP practice for the patient")
 
@@ -132,5 +128,4 @@ class Patient(BaseModel):
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
-            general_practice_ods=self.get_ods_code_for_gp()
         )
