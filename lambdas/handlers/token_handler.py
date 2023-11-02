@@ -177,7 +177,7 @@ def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
 def issue_auth_token(
     session_id: str,
     id_token_claim_set: IdTokenClaimSet,
-    permitted_orgs_and_roles: list[dict],
+    permitted_orgs_and_role: list[dict],
     smart_card_role: str,
     repository_role : RepositoryRole
 ) -> str:
@@ -198,14 +198,14 @@ def issue_auth_token(
         "exp": ndr_token_expiry_time,
         "iss": "nhs repo",
         "smart_card_role": smart_card_role,
-        "organisations": permitted_orgs_and_roles,
+        "selected_organisation": permitted_orgs_and_role,
         "repository_role": str(repository_role),
         "ndr_session_id": session_id,
     }
 
     logger.info("Token contents: ")
     logger.info(f"session_id: {session_id}")
-    logger.info(f"permitted_orgs_and_roles: {permitted_orgs_and_roles}")
+    logger.info(f"permitted_orgs_and_roles: {permitted_orgs_and_role}")
     logger.info(f"id_token_claim_set: {id_token_claim_set}")
     logger.info(f"ndr_token_content: {ndr_token_content}")
     logger.info(f"smartcard_role: {smart_card_role}")

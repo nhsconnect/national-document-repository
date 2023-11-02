@@ -45,14 +45,16 @@ def lambda_handler(event, context):
             event["authorizationToken"], public_key, algorithms=["RS256"]
         )
         logger.info(decoded)
-        user_ods_codes = [ods["ods_code"] for ods in decoded["organisations"]]
-        logger.info("User codes: %s" % user_ods_codes)
+        
+        user_ods_code = decoded["selected_organisation"]["org_ods_code"]
+        
+        logger.info("User codes: %s" % user_ods_code)
         logger.info("Retrieving patient details")
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
 
         logger.info("Patient code: %s" % patient_details.general_practice_ods)
-        if patient_details.general_practice_ods not in user_ods_codes:
+        if patient_details.general_practice_ods is not user_ods_code:
             raise UserNotAuthorisedException
 
         response = patient_details.model_dump_json(by_alias=True)
