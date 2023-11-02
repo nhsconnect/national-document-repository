@@ -1,10 +1,10 @@
 class ApiGatewayResponse:
-    def __init__(self, status_code, body, methods) -> None:
+    def __init__(self, status_code: int, body: str, methods: str) -> None:
         self.status_code = status_code
         self.body = body
         self.methods = methods
 
-    def create_api_gateway_response(self, headers=None) -> object:
+    def create_api_gateway_response(self, headers=None) -> dict:
         if headers is None:
             headers = {}
         return {

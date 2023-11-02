@@ -15,6 +15,9 @@ import ServiceError from '../../layout/serviceErrorBox/ServiceErrorBox';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
 import { USER_ROLE } from '../../../types/generic/roles';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
+import { AxiosError } from 'axios';
+import { routes } from '../../../types/generic/routes';
+import { useNavigate } from 'react-router-dom';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -45,6 +48,7 @@ function DeleteDocumentsStage({
     const [deletionStage, setDeletionStage] = useState(SUBMISSION_STATE.INITIAL);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
+    const navigate = useNavigate();
 
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
@@ -64,39 +68,29 @@ function DeleteDocumentsStage({
         </>
     );
 
-    const deleteDocumentsFor = (type: DOCUMENT_TYPE) =>
-        deleteAllDocuments({
-            docType: type,
-            nhsNumber: nhsNumber,
-            baseUrl,
-            baseHeaders,
-        });
-
     const handleYesOption = async () => {
         setDeletionStage(SUBMISSION_STATE.PENDING);
-        let documentPromises: Array<Promise<DeleteResponse>> = [];
 
-        if (docType === DOCUMENT_TYPE.LLOYD_GEORGE) {
-            documentPromises = [deleteDocumentsFor(DOCUMENT_TYPE.LLOYD_GEORGE)];
-        } else if (docType === DOCUMENT_TYPE.ALL) {
-            documentPromises = [
-                deleteDocumentsFor(DOCUMENT_TYPE.LLOYD_GEORGE),
-                deleteDocumentsFor(DOCUMENT_TYPE.ARF),
-            ];
-        }
         try {
-            Promise.all(documentPromises).then((responses) => {
-                const hasSucceeded = !responses.some((res) => res.status === 403);
-
-                if (hasSucceeded) {
-                    setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
-
-                    if (setDownloadStage) {
-                        setDownloadStage(DOWNLOAD_STAGE.FAILED);
-                    }
-                }
+            const response: DeleteResponse = await deleteAllDocuments({
+                docType: docType,
+                nhsNumber: nhsNumber,
+                baseUrl,
+                baseHeaders,
             });
+
+            if (response.status === 200) {
+                setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
+
+                if (setDownloadStage) {
+                    setDownloadStage(DOWNLOAD_STAGE.FAILED);
+                }
+            }
         } catch (e) {
+            const error = e as AxiosError;
+            if (error.response?.status === 403) {
+                navigate(routes.HOME);
+            }
             setDeletionStage(SUBMISSION_STATE.FAILED);
         }
     };

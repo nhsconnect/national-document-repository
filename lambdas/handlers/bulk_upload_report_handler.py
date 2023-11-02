@@ -5,7 +5,6 @@ import os
 
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
-
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.decorators.ensure_env_var import ensure_environment_variables
@@ -62,7 +61,7 @@ def get_dynamodb_report_items(
         bulk_upload_table_name, filter_expression=filter_time
     )
 
-    if not "Items" in db_response:
+    if "Items" not in db_response:
         return None
     items = db_response["Items"]
     while "LastEvaluatedKey" in db_response:

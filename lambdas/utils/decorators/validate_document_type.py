@@ -39,9 +39,33 @@ def validate_document_type(lambda_func: Callable):
     return interceptor
 
 
-def doc_type_is_valid(doc_types: str) -> bool:
-    doc_types_requested = doc_types.split(",")
+def doc_type_is_valid(value: str) -> bool:
+    doc_types_requested = value.replace(" ", "").split(",")
     for doc_type_requested in doc_types_requested:
         if SupportedDocumentTypes.get_from_field_name(doc_type_requested) is None:
             return False
     return True
+
+
+def extract_document_type(value: str) -> str:
+    doc_type = value.replace(" ", "")
+
+    if doc_type == SupportedDocumentTypes.LG.value:
+        return str(SupportedDocumentTypes.LG.value)
+    if doc_type == SupportedDocumentTypes.ARF.value:
+        return str(SupportedDocumentTypes.ARF.value)
+
+    doc_types_requested = doc_type.split(",")
+
+    doc_types = []
+    for doc_type in doc_types_requested:
+        if SupportedDocumentTypes.get_from_field_name(doc_type):
+            doc_types.append(doc_type)
+
+    doc_type_intersection = set(doc_types) | set(SupportedDocumentTypes.list_names())
+
+    if (
+        SupportedDocumentTypes.LG.value in doc_type_intersection
+        and SupportedDocumentTypes.ARF.value in doc_type_intersection
+    ):
+        return str(SupportedDocumentTypes.ALL.value)

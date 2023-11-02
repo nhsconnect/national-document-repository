@@ -13,7 +13,9 @@ import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorg
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import axios from 'axios/index';
 import { USER_ROLE } from '../../../types/generic/roles';
-import { BrowserRouter } from 'react-router-dom';
+import * as ReactRouter from 'react-router';
+import { createMemoryHistory } from 'history';
+import { routes } from '../../../types/generic/routes';
 
 jest.mock('axios');
 
@@ -42,7 +44,7 @@ describe('DeleteAllDocumentsStage', () => {
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('Are you sure you want to permanently delete files for:'),
+                    screen.getByText('Are you sure you want to permanently delete files for:')
                 ).toBeInTheDocument();
             });
 
@@ -95,7 +97,7 @@ describe('DeleteAllDocumentsStage', () => {
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('Are you sure you want to permanently delete files for:'),
+                    screen.getByText('Are you sure you want to permanently delete files for:')
                 ).toBeInTheDocument();
             });
 
@@ -137,11 +139,70 @@ describe('DeleteAllDocumentsStage', () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
             });
         });
+
+        it('renders a service error when service is down', async () => {
+            const errorResponse = {
+                response: {
+                    status: 500,
+                    message: 'Client Error.',
+                },
+            };
+            mockedAxios.delete.mockImplementation(() => Promise.reject(errorResponse));
+
+            renderComponent(USER_ROLE.PCSE, DOCUMENT_TYPE.ALL);
+
+            expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText('Sorry, the service is currently unavailable.')
+                ).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe('Navigation', () => {
+        it('navigates to home page when API call returns 403', async () => {
+            const history = createMemoryHistory({
+                initialEntries: ['/example'],
+                initialIndex: 1,
+            });
+
+            const errorResponse = {
+                response: {
+                    status: 403,
+                    message: 'Forbidden',
+                },
+            };
+            mockedAxios.delete.mockImplementation(() => Promise.reject(errorResponse));
+
+            renderComponent(USER_ROLE.PCSE, DOCUMENT_TYPE.ALL, history);
+
+            expect(history.location.pathname).toBe('/example');
+
+            expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await waitFor(() => {
+                expect(history.location.pathname).toBe(routes.HOME);
+            });
+        });
     });
 });
 
 const TestApp = (
-    props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'>,
+    props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'>
 ) => {
     return (
         <DeleteDocumentsStage
@@ -153,7 +214,15 @@ const TestApp = (
     );
 };
 
-const renderComponent = (userType: USER_ROLE, docType: DOCUMENT_TYPE) => {
+const homeRoute = '/example';
+const renderComponent = (
+    userType: USER_ROLE,
+    docType: DOCUMENT_TYPE,
+    history = createMemoryHistory({
+        initialEntries: [homeRoute],
+        initialIndex: 1,
+    })
+) => {
     const auth: Session = {
         auth: buildUserAuth(),
         isLoggedIn: true,
@@ -167,10 +236,10 @@ const renderComponent = (userType: USER_ROLE, docType: DOCUMENT_TYPE) => {
     };
 
     render(
-        <BrowserRouter>
+        <ReactRouter.Router navigator={history} location={homeRoute}>
             <SessionProvider sessionOverride={auth}>
                 <TestApp {...props} />
             </SessionProvider>
-        </BrowserRouter>,
+        </ReactRouter.Router>
     );
 };
