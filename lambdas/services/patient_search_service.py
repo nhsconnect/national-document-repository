@@ -18,9 +18,6 @@ class PatientSearch:
             patient = Patient.model_validate(response.json())
             logging.info(f"Patient: {patient}")
             patient_details = patient.get_patient_details(nhs_number)
-            logging.info(f"Patient Details: {patient_details.model_dump}")
-            logging.info(f"Patient Details: {patient_details.model_dump(True)}")
-            logging.info(f"Patient Details: {patient_details.model_dump['general_practice_ods']}")
             return patient_details
 
         if response.status_code == 404:

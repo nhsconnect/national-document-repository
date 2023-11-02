@@ -1,5 +1,6 @@
 import logging
 import os
+import json
 from json import JSONDecodeError
 
 import boto3
@@ -58,13 +59,14 @@ def lambda_handler(event, context):
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
 
-        patient_details_dict = patient_details.model_dump()
-        gp_ods = patient_details_dict('general_practice_ods')
-        logger.info(f"Patient code: {gp_ods}")
+        response = patient_details.model_dump_json(by_alias=True)
+        json_load = json.loads(response)
+        logger.info(f"json loads: {json_load}")
+        logger.info(f"json value: {json_load['general_practice_ods']}")
+        gp_ods = json_load['general_practice_ods']
+
         if gp_ods is not user_ods_code:
             raise UserNotAuthorisedException
-
-        response = patient_details.model_dump_json(by_alias=True)
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
 
