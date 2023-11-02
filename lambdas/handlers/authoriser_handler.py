@@ -23,15 +23,18 @@ from enums.repository_role import RepositoryRole
 from models.auth_policy import AuthPolicy
 from services.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
+from utils.decorators.ensure_env_var import ensure_environment_variables
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+@ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
 def lambda_handler(event, context):
     try:
         ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
         logger.info(event)
+
         client = boto3.client("ssm")
         ssm_response = client.get_parameter(
             Name=ssm_public_key_parameter_name, WithDecryption=True
@@ -82,13 +85,16 @@ def validate_access_policy(http_verb, path, user_role):
     logger.info("Validating resource req: %s, http: %s" % (path, http_verb))
     match path:
         case "/DocumentDelete":
-            deny_resource = user_role is PermittedRole.GP_CLINICAL.name
+            deny_resource = (user_role is PermittedRole.GP_CLINICAL.name or 
+                            user_role is PermittedRole.GP_ADMIN.name)
 
         case "/DocumentManifest":
-            deny_resource = user_role is PermittedRole.GP_CLINICAL.name
+            deny_resource = (user_role is PermittedRole.GP_CLINICAL.name or 
+                            user_role is PermittedRole.GP_ADMIN.name)
 
         case "/DocumentReference":
-            deny_resource = user_role is PermittedRole.GP_CLINICAL.name
+            deny_resource = (user_role is PermittedRole.GP_CLINICAL.name or 
+                            user_role is PermittedRole.GP_ADMIN.name)
 
         case "/SearchDocumentReferences":
             deny_resource = user_role is PermittedRole.PCSE.name
