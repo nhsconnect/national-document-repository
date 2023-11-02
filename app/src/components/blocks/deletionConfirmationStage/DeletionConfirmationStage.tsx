@@ -47,7 +47,7 @@ function DeletionConfirmationStage({ numberOfFiles, patientDetails, setStage, us
             </Card>
             <p style={{ marginTop: 40 }}>
                 {userType === USER_ROLE.GP ? (
-                    <ButtonLink onClick={handleClick}>
+                    <ButtonLink onClick={handleClick} data-testid="lg-return-btn">
                         Return to patient's Lloyd George record page
                     </ButtonLink>
                 ) : (
