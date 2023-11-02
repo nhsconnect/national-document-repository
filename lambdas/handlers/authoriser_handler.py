@@ -32,6 +32,8 @@ logger.setLevel(logging.INFO)
 @ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
 def lambda_handler(event, context):
     try:
+
+        logger.info(event)
         ssm_service = SSMService()
         ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
         logger.info(event)
