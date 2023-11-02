@@ -6,7 +6,8 @@ from pydantic import ValidationError
 from services.document_manifest_service import DocumentManifestService
 from services.document_service import DocumentService
 from utils.decorators.ensure_env_var import ensure_environment_variables
-from utils.decorators.validate_document_type import validate_document_type
+from utils.decorators.validate_document_type import (extract_document_type,
+                                                     validate_document_type)
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.exceptions import DynamoDbException, ManifestDownloadException
 from utils.lambda_response import ApiGatewayResponse
@@ -30,7 +31,7 @@ def lambda_handler(event, context):
 
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
-        doc_type = event["queryStringParameters"]["docType"]
+        doc_type = extract_document_type(event["queryStringParameters"]["docType"])
 
         zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
         zip_trace_table_name = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]

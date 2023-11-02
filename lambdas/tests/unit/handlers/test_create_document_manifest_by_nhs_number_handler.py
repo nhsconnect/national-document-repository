@@ -48,11 +48,13 @@ def test_lambda_handler_returns_400_when_doc_type_invalid_response(
     assert expected == actual
 
 
-def manifest_service_side_effect(nhs_number, doc_types):
-    if SupportedDocumentTypes.ARF.name in doc_types:
+def manifest_service_side_effect(nhs_number, doc_type):
+    if doc_type == SupportedDocumentTypes.ARF.value:
         return create_test_doc_store_refs()
-    if SupportedDocumentTypes.LG.name in doc_types:
+    if doc_type == SupportedDocumentTypes.LG.value:
         return create_test_lloyd_george_doc_store_refs()
+    if doc_type == SupportedDocumentTypes.ALL.value:
+        return create_test_doc_store_refs() + create_test_lloyd_george_doc_store_refs()
     return []
 
 
@@ -61,10 +63,10 @@ def test_lambda_handler_valid_parameters_arf_doc_type_request_returns_200(
 ):
     expected_url = "test-url"
 
-    mock_dynamo = mocker.patch(
+    mock_document_query = mocker.patch(
         "services.document_service.DocumentService.fetch_available_document_references_by_type"
     )
-    mock_dynamo.side_effect = manifest_service_side_effect
+    mock_document_query.side_effect = manifest_service_side_effect
 
     mock_doc_manifest_url = mocker.patch(
         "services.document_manifest_service.DocumentManifestService.create_document_manifest_presigned_url"
@@ -76,7 +78,7 @@ def test_lambda_handler_valid_parameters_arf_doc_type_request_returns_200(
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)
-    mock_dynamo.assert_called_once_with("9000000009", "ARF")
+    mock_document_query.assert_called_once_with("9000000009", "ARF")
     assert expected == actual
 
 
@@ -85,10 +87,10 @@ def test_lambda_handler_valid_parameters_lg_doc_type_request_returns_200(
 ):
     expected_url = "test-url"
 
-    mock_dynamo = mocker.patch(
+    mock_document_query = mocker.patch(
         "services.document_service.DocumentService.fetch_available_document_references_by_type"
     )
-    mock_dynamo.side_effect = manifest_service_side_effect
+    mock_document_query.side_effect = manifest_service_side_effect
 
     mock_doc_manifest_url = mocker.patch(
         "services.document_manifest_service.DocumentManifestService.create_document_manifest_presigned_url"
@@ -100,7 +102,7 @@ def test_lambda_handler_valid_parameters_lg_doc_type_request_returns_200(
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_lg_doctype_event, context)
-    mock_dynamo.assert_called_once_with("9000000009", "LG")
+    mock_document_query.assert_called_once_with("9000000009", "LG")
     assert expected == actual
 
 
@@ -109,10 +111,10 @@ def test_lambda_handler_valid_parameters_both_doc_type_request_returns_200(
 ):
     expected_url = "test-url"
 
-    mock_dynamo = mocker.patch(
+    mock_document_query = mocker.patch(
         "services.document_service.DocumentService.fetch_available_document_references_by_type"
     )
-    mock_dynamo.side_effect = manifest_service_side_effect
+    mock_document_query.side_effect = manifest_service_side_effect
 
     mock_doc_manifest_url = mocker.patch(
         "services.document_manifest_service.DocumentManifestService.create_document_manifest_presigned_url"
@@ -124,9 +126,9 @@ def test_lambda_handler_valid_parameters_both_doc_type_request_returns_200(
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_both_doctype_event, context)
-    mock_dynamo.assert_has_calls(
+    mock_document_query.assert_has_calls(
         [
-            call("9000000009", "LG,ARF"),
+            call("9000000009", "ALL"),
         ]
     )
     assert expected == actual
