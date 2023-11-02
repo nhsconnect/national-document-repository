@@ -42,7 +42,7 @@ def lambda_handler(event, context):
 
         logger.info("decoding token")
         decoded = jwt.decode(
-            event["Authorization"], public_key, algorithms=["RS256"]
+            event["headers"]["Authorization"], public_key, algorithms=["RS256"]
         )
 
         logger.info(decoded)
