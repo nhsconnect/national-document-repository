@@ -39,7 +39,7 @@ def lambda_handler(event, context):
         ssm_service = SSMService()
         nhs_number = event["queryStringParameters"]["patientId"]
         public_key_location = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
-        public_key = ssm_service.get_ssm_parameter(public_key_location)
+        public_key = ssm_service.get_ssm_parameter(public_key_location, True)
 
         logger.info(public_key_location)
         logger.info(public_key)
