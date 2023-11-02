@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 
 class SupportedDocumentTypes(Enum):
@@ -11,7 +12,7 @@ class SupportedDocumentTypes(Enum):
         return [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG]
 
     @staticmethod
-    def list_names() -> [str]:
+    def list_names() -> List[str]:
         return [str(doc_type.value) for doc_type in SupportedDocumentTypes.list()]
 
     @staticmethod

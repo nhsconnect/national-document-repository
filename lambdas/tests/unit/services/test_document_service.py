@@ -1,8 +1,5 @@
-import os
 from datetime import datetime, timedelta
-from unittest.mock import MagicMock, patch
 
-import boto3
 import pytest
 from enums.s3_lifecycle_tags import S3LifecycleDays, S3LifecycleTags
 from freezegun import freeze_time
@@ -40,12 +37,13 @@ def test_returns_list_of_lg_document_references_when_results_are_returned(
     mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
     mock_dynamo_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
 
-    result = service.fetch_available_document_references_by_type(TEST_NHS_NUMBER, "LG")
+    results = service.fetch_available_document_references_by_type(TEST_NHS_NUMBER, "LG")
 
     mock_dynamo_table.assert_called_with(MOCK_LG_TABLE_NAME)
 
-    assert len(result) == 3
-    assert type(result[0]) == DocumentReference
+    assert len(results) == 3
+    for result in results:
+        assert isinstance(result, DocumentReference)
 
 
 def test_returns_list_of_arf_document_references_when_results_are_returned(
@@ -57,12 +55,15 @@ def test_returns_list_of_arf_document_references_when_results_are_returned(
     mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
     mock_dynamo_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
 
-    result = service.fetch_available_document_references_by_type(TEST_NHS_NUMBER, "ARF")
+    results = service.fetch_available_document_references_by_type(
+        TEST_NHS_NUMBER, "ARF"
+    )
 
     mock_dynamo_table.assert_called_with(MOCK_ARF_TABLE_NAME)
 
-    assert len(result) == 3
-    assert type(result[0]) == DocumentReference
+    assert len(results) == 3
+    for result in results:
+        assert isinstance(result, DocumentReference)
 
 
 def test_returns_list_of_both_type_document_references_when_results_are_returned(
@@ -77,12 +78,38 @@ def test_returns_list_of_both_type_document_references_when_results_are_returned
         MOCK_SEARCH_RESPONSE,
     ]
 
-    result = service.fetch_available_document_references_by_type(TEST_NHS_NUMBER, "ALL")
+    results = service.fetch_available_document_references_by_type(
+        TEST_NHS_NUMBER, "ALL"
+    )
 
     assert mock_dynamo_table.call_count == 2
 
-    assert len(result) == 6
-    assert type(result[0]) == DocumentReference
+    assert len(results) == 6
+    for result in results:
+        assert isinstance(result, DocumentReference)
+
+
+def test_returns_list_of_both_type_document_references_when_only_one_result_is_returned(
+    set_env, mocker
+):
+    mocker.patch("boto3.resource")
+    service = DocumentService()
+
+    mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
+    mock_dynamo_table.return_value.query.side_effect = [
+        MOCK_SEARCH_RESPONSE,
+        MOCK_EMPTY_RESPONSE,
+    ]
+
+    results = service.fetch_available_document_references_by_type(
+        TEST_NHS_NUMBER, "ALL"
+    )
+
+    assert mock_dynamo_table.call_count == 2
+
+    assert len(results) == 3
+    for result in results:
+        assert isinstance(result, DocumentReference)
 
 
 def test_returns_empty_list_of_lg_document_references_when_no_results_are_returned(
@@ -101,19 +128,15 @@ def test_returns_empty_list_of_lg_document_references_when_no_results_are_return
     assert len(result) == 0
 
 
-def test_nothing_returned_when_invalid_doctype_supplied(nhs_number):
-    expected_table = "expected_table_name"
-    os.environ["LLOYD_GEORGE_DYNAMODB_NAME"] = "no-table"
-    os.environ["DOCUMENT_STORE_DYNAMODB_NAME"] = expected_table
+def test_returns_empty_list_when_invalid_doctype_supplied(set_env, mocker):
+    mocker.patch("boto3.resource")
+    service = DocumentService()
 
-    with patch.object(boto3, "resource", return_value=MagicMock()) as mock_dynamo:
-        mock_table = MagicMock()
-        mock_dynamo.return_value.Table.return_value = mock_table
-        result = DocumentService().fetch_available_document_references_by_type(
-            nhs_number, ""
-        )
+    result = service.fetch_available_document_references_by_type(
+        TEST_NHS_NUMBER, "INVALID"
+    )
 
-        assert len(result) == 0
+    assert len(result) == 0
 
 
 @freeze_time("2023-10-1 13:00:00")
