@@ -58,9 +58,8 @@ def lambda_handler(event, context):
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
 
-        logger.info(f"Patient details: {patient_details}")
-        logger.info(f"Patient code: {dict(patient_details)}")
-        logger.info(f"Patient code: {(patient_details.general_practice_ods())}")
+
+        logger.info(f"Patient code: {patient_details('general_practice_ods')}")
         if patient_details.general_practice_ods is not user_ods_code:
             raise UserNotAuthorisedException
 
