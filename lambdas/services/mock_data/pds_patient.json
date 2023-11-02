@@ -80,7 +80,7 @@
             "type": "Organization",
             "identifier": {
                 "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-                "value": "Y12345",
+                "value": "X4S4L",
                 "period": {
                     "start": "2020-01-01",
                     "end": "2021-12-31"
@@ -92,7 +92,7 @@
         "type": "Organization",
         "identifier": {
             "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-            "value": "Y12345",
+            "value": "X4S4L",
             "period": {
                 "start": "2020-01-01",
                 "end": "2021-12-31"
@@ -105,7 +105,7 @@
             "valueReference": {
                 "identifier": {
                     "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-                    "value": "Y12345"
+                    "value": "X4S4L"
                 }
             }
         },
@@ -114,7 +114,7 @@
             "valueReference": {
                 "identifier": {
                     "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-                    "value": "Y23456"
+                    "value": "X4S4L"
                 }
             }
         },
@@ -123,7 +123,7 @@
             "valueReference": {
                 "identifier": {
                     "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-                    "value": "Y34567"
+                    "value": "X4S4L"
                 }
             }
         },
