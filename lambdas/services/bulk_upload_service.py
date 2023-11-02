@@ -38,7 +38,9 @@ class BulkUploadService:
         self.invalid_queue_url = os.environ["INVALID_SQS_QUEUE_URL"]
         self.metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
         self.pdf_content_type = "application/pdf"
+
         self.dynamo_records_in_transaction: list[NHSDocumentReference] = []
+        self.source_bucket_files_in_transaction = []
         self.dest_bucket_files_in_transaction = []
 
     def handle_sqs_message(self, message: dict):
@@ -124,6 +126,12 @@ class BulkUploadService:
             )
             return
 
+        logger.info("Removing the files that we accepted from staging bucket...")
+        self.remove_ingested_file_from_source_bucket()
+
+        logger.info(
+            f"Completed file ingestion for patient {staging_metadata.nhs_number}"
+        )
         self.report_upload_complete(staging_metadata)
 
     def validate_files(self, staging_metadata: StagingMetadata):
@@ -184,6 +192,7 @@ class BulkUploadService:
 
     def init_transaction(self):
         self.dynamo_records_in_transaction = []
+        self.source_bucket_files_in_transaction = []
         self.dest_bucket_files_in_transaction = []
 
     def create_lg_records_and_copy_files(self, staging_metadata: StagingMetadata):
@@ -215,7 +224,14 @@ class BulkUploadService:
             dest_bucket=self.lg_bucket_name,
             dest_file_key=dest_file_key,
         )
+        self.source_bucket_files_in_transaction.append(source_file_key)
         self.dest_bucket_files_in_transaction.append(dest_file_key)
+
+    def remove_ingested_file_from_source_bucket(self):
+        for source_file_key in self.source_bucket_files_in_transaction:
+            self.s3_service.delete_object(
+                s3_bucket_name=self.staging_bucket_name, file_key=source_file_key
+            )
 
     def convert_to_document_reference(
         self, file_metadata: MetadataFile, nhs_number: str

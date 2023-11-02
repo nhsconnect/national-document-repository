@@ -1,3 +1,5 @@
+from unittest.mock import call
+
 import pytest
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import VirusScanResult
@@ -36,7 +38,7 @@ def mock_validate_files(mocker):
     yield mocker.patch.object(BulkUploadService, "validate_files")
 
 
-def test_handle_sqs_message_calls_create_lg_records_and_copy_files_for_happy_path(
+def test_handle_sqs_message_happy_path(
     set_env, mocker, mock_uuid, mock_check_virus_result, mock_validate_files
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -44,6 +46,9 @@ def test_handle_sqs_message_calls_create_lg_records_and_copy_files_for_happy_pat
     )
     mock_report_upload_complete = mocker.patch.object(
         BulkUploadService, "report_upload_complete"
+    )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        BulkUploadService, "remove_ingested_file_from_source_bucket"
     )
 
     mock_validate_files.return_value = None
@@ -54,6 +59,7 @@ def test_handle_sqs_message_calls_create_lg_records_and_copy_files_for_happy_pat
 
     mock_create_lg_records_and_copy_files.assert_called_with(TEST_STAGING_METADATA)
     mock_report_upload_complete.assert_called()
+    mock_remove_ingested_file_from_source_bucket.assert_called()
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
@@ -61,6 +67,9 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        BulkUploadService, "remove_ingested_file_from_source_bucket"
     )
     mock_report_upload_failure = mocker.patch.object(
         BulkUploadService, "report_upload_failure"
@@ -74,6 +83,8 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
     service.handle_sqs_message(message=TEST_SQS_MESSAGE_WITH_INVALID_FILENAME)
 
     mock_create_lg_records_and_copy_files.assert_not_called()
+    mock_remove_ingested_file_from_source_bucket.assert_not_called()
+
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA_WITH_INVALID_FILENAME, str(mocked_error)
     )
@@ -88,6 +99,9 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        BulkUploadService, "remove_ingested_file_from_source_bucket"
+    )
     mock_check_virus_result.side_effect = DocumentInfectedException
 
     service = BulkUploadService()
@@ -97,6 +111,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
         TEST_STAGING_METADATA, "One or more of the files failed virus scanner check"
     )
     mock_create_lg_records_and_copy_files.assert_not_called()
+    mock_remove_ingested_file_from_source_bucket.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_not_exist(
@@ -126,6 +141,9 @@ def test_handle_sqs_message_put_message_back_to_queue_when_virus_scan_result_not
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        BulkUploadService, "remove_ingested_file_from_source_bucket"
+    )
     mock_put_message_back_to_queue = mocker.patch.object(
         BulkUploadService, "put_message_back_to_queue"
     )
@@ -137,6 +155,7 @@ def test_handle_sqs_message_put_message_back_to_queue_when_virus_scan_result_not
 
     mock_report_upload_failure.assert_not_called()
     mock_create_lg_records_and_copy_files.assert_not_called()
+    mock_remove_ingested_file_from_source_bucket.assert_not_called()
 
 
 def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(
@@ -147,6 +166,9 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     )
     mock_report_upload_failure = mocker.patch.object(
         BulkUploadService, "report_upload_failure"
+    )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        BulkUploadService, "remove_ingested_file_from_source_bucket"
     )
     service = BulkUploadService()
     service.s3_service = mocker.MagicMock()
@@ -168,6 +190,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
         TEST_STAGING_METADATA,
         "Validation passed but error occurred during file transfer",
     )
+    mock_remove_ingested_file_from_source_bucket.assert_not_called()
 
 
 def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract_data_from_message(
@@ -321,6 +344,27 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid):
     assert service.dynamo_service.create_item.call_count == 3
 
 
+def test_create_lg_records_and_copy_files_keep_track_of_successfully_ingested_files(
+    set_env, mocker, mock_uuid
+):
+    service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+    service.dynamo_service = mocker.MagicMock()
+    service.convert_to_document_reference = mocker.MagicMock(
+        return_value=TEST_DOCUMENT_REFERENCE
+    )
+    expected = [
+        service.strip_leading_slash(file.file_path)
+        for file in TEST_STAGING_METADATA.files
+    ]
+
+    service.create_lg_records_and_copy_files(TEST_STAGING_METADATA)
+
+    actual = service.source_bucket_files_in_transaction
+
+    assert actual == expected
+
+
 def test_convert_to_document_reference(set_env, mock_uuid):
     service = BulkUploadService()
 
@@ -334,6 +378,26 @@ def test_convert_to_document_reference(set_env, mock_uuid):
     expected.created = "mock_timestamp"
 
     assert actual == expected
+
+
+def test_remove_ingested_file_from_source_bucket(set_env, mocker):
+    service = BulkUploadService()
+
+    service.s3_service = mocker.MagicMock()
+    mock_source_file_keys = [
+        "9000000009/1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+        "9000000009/2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+    ]
+    service.source_bucket_files_in_transaction = mock_source_file_keys
+
+    expected_deletion_calls = [
+        call(s3_bucket_name=MOCK_LG_STAGING_STORE_BUCKET, file_key=file_key)
+        for file_key in mock_source_file_keys
+    ]
+
+    service.remove_ingested_file_from_source_bucket()
+
+    service.s3_service.delete_object.assert_has_calls(expected_deletion_calls)
 
 
 def test_rollback_transaction(set_env, mocker, mock_uuid):
