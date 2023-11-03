@@ -58,6 +58,7 @@ def lambda_handler(event, context):
 
         gp_ods = patient_details.general_practice_ods
         logger.info(f"gp ods: {gp_ods}")
+        logger.info(f"length gp ods: {len(gp_ods)}")
         match user_role:
             case RepositoryRole.GP_ADMIN.value:
                 # If the GP Admin ods code is null then the patient is not registered.
@@ -73,7 +74,7 @@ def lambda_handler(event, context):
                 
             case RepositoryRole.PCSE:
                 # If there is a GP ODS field then the patient is registered, PCSE users should be denied access
-                if gp_ods.replace(" ", "") != "":
+                if len(gp_ods) > 0:
                     raise UserNotAuthorisedException
                 
             case _:
