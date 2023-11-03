@@ -1,16 +1,15 @@
+import json
 import os
+from logging import StreamHandler
 
 from services.sqs_service import SQSService
-from utils.exceptions import MissingEnvVarException
 
 
-class SensitiveAuditService(SQSService):
-    def __init__(self):
-        super().__init__()
-        try:
-            self.splunk_sqs_queue = os.environ["SPLUNK_SQS_QUEUE_URL"]
-        except KeyError:
-            raise MissingEnvVarException("Failed to initialise Splunk Service")
+class SensitiveAuditService(SQSService, StreamHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.splunk_sqs_queue = os.getenv('SPLUNK_SQS_QUEUE_URL')
 
-    def publish(self, message: str):
-        self.send_message(queue_url=self.splunk_sqs_queue, message_body=message)
+    def emit(self, record):
+        if self.splunk_sqs_queue:
+            self.send_message(queue_url=self.splunk_sqs_queue, message_body=self.format(record))

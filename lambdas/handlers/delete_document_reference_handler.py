@@ -10,11 +10,20 @@ from utils.decorators.validate_document_type import (extract_document_type,
                                                      validate_document_type)
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_response import ApiGatewayResponse
+from utils.logging_formatter import LoggingFormatter
+from services.sensitive_audit_service import SensitiveAuditService
+
+from utils.decorators.set_request_id import set_request_id_for_logging
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+formatter = LoggingFormatter()
+audit_handler = SensitiveAuditService()
+log_handler = logging.StreamHandler()
+log_handler.setFormatter(formatter)
+audit_handler.setFormatter(formatter)
 
-
+@set_request_id_for_logging
 @validate_patient_id
 @validate_document_type
 @ensure_environment_variables(
