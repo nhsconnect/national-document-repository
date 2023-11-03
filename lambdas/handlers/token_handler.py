@@ -21,6 +21,7 @@ from enums.repository_role import RepositoryRole
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 token_handler_ssm_service = TokenHandlerSSMService()
 
 
@@ -49,7 +50,6 @@ def lambda_handler(event, context):
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
         
         logger.info(f"Access token: {access_token}")
-        logger.info(f"ID token claim set:  {id_token_claim_set}")
 
         logger.info("Use the access token to fetch user's organisation and smartcard codes")
         org_ods_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
@@ -114,17 +114,16 @@ def lambda_handler(event, context):
 def generate_repository_role(organisation: dict, smartcart_role: str):
     
     logger.info(f"Smartcard Role: {smartcart_role}")
-    logger.info(token_handler_ssm_service.get_smartcard_role_gp_admin())
     
     if token_handler_ssm_service.get_smartcard_role_gp_admin() == smartcart_role:
         logger.info("GP Admin: smartcard ODS identified")
-        if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
+        if has_role_org_role_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
             return RepositoryRole.GP_ADMIN
         return RepositoryRole.NONE
     
     if token_handler_ssm_service.get_smartcard_role_gp_clinical() == smartcart_role:
         logger.info("GP Clinical: smartcard ODS identified")
-        if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
+        if has_role_org_role_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
             return RepositoryRole.GP_CLINICAL
         return RepositoryRole.NONE
     
@@ -138,8 +137,13 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
     return RepositoryRole.NONE
 
 
+def has_role_org_role_code(organisation: dict, role_code: str) -> bool:
+    if organisation["role_code"].upper() == role_code.upper():
+        return True;
+    return False;
+
 def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
-    if organisation["role_code"].upper() == ods_code.upper():
+    if organisation["org_ods_code"].upper() == ods_code.upper():
         return True;
     return False;
 
@@ -177,19 +181,12 @@ def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
 def issue_auth_token(
     session_id: str,
     id_token_claim_set: IdTokenClaimSet,
-    permitted_orgs_and_role: list[dict],
+    user_org_details: list[dict],
     smart_card_role: str,
     repository_role : RepositoryRole
 ) -> str:
 
-    ssm_client = boto3.client("ssm")
-    logger.info("Starting ssm request to retrieve NDR private key")
-    ssm_response = ssm_client.get_parameter(
-        Name="jwt_token_private_key", WithDecryption=True
-    )
-    logger.info("ending ssm request")
-
-    private_key = ssm_response["Parameter"]["Value"]
+    private_key = token_handler_ssm_service.get_jwt_private_key()
 
     thirty_minutes_later = time.time() + (60 * 30)
     ndr_token_expiry_time = min(thirty_minutes_later, id_token_claim_set.exp)
@@ -198,15 +195,14 @@ def issue_auth_token(
         "exp": ndr_token_expiry_time,
         "iss": "nhs repo",
         "smart_card_role": smart_card_role,
-        "selected_organisation": permitted_orgs_and_role,
+        "selected_organisation": user_org_details,
         "repository_role": str(repository_role),
         "ndr_session_id": session_id,
     }
 
     logger.info("Token contents: ")
     logger.info(f"session_id: {session_id}")
-    logger.info(f"permitted_orgs_and_roles: {permitted_orgs_and_role}")
-    logger.info(f"id_token_claim_set: {id_token_claim_set}")
+    logger.info(f"user_org_detailss: {user_org_details}")
     logger.info(f"ndr_token_content: {ndr_token_content}")
     logger.info(f"smartcard_role: {smart_card_role}")
     logger.info(f"repository_role: {str(repository_role)}")

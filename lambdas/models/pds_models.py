@@ -59,6 +59,7 @@ class PatientDetails(BaseModel):
     superseded: bool
     restricted: bool
     general_practice_ods: Optional[str] = ""
+    active: bool = False
 
 
 class Patient(BaseModel):
@@ -95,14 +96,18 @@ class Patient(BaseModel):
                 if entry.use.lower() == "home":
                     return entry
 
-    def get_ods_code_for_gp(self) -> str:
+    def get_active_ods_code_for_gp(self) -> str:
         for entry in self.general_practitioner:
             gp_end_date = entry.identifier.period.end
             logging.info(f"GP Entry: {entry}")
             if not gp_end_date or gp_end_date >= date.today():
                 logging.info(f"GP Entry not expired, returning value {entry.identifier}")
                 return entry.identifier.value
-        raise ValueError("No active GP practice for the patient")
+        return ""
+    
+    def get_is_active_status(self) -> bool:
+        gp_ods = self.get_active_ods_code_for_gp()
+        return gp_ods != ""
 
     def get_patient_details(self, nhs_number) -> PatientDetails:
         patient_details = PatientDetails(
@@ -115,17 +120,18 @@ class Patient(BaseModel):
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
-            general_practice_ods=self.get_ods_code_for_gp()
+            generalPracticeOds=self.get_active_ods_code_for_gp(),
+            active = self.get_is_active_status()
         )
         
-        return PatientDetails
+        return patient_details
 
     def get_minimum_patient_details(self, nhs_number) -> PatientDetails:
         return PatientDetails(
             givenName=self.get_current_usual_name().given,
             familyName=self.get_current_usual_name().family,
             birthDate=self.birth_date,
-            generalPracticeOds=self.get_ods_code_for_gp()
+            generalPracticeOds=self.get_active_ods_code_for_gp()
             if self.is_unrestricted()
             else "",
             nhsNumber=self.id,
