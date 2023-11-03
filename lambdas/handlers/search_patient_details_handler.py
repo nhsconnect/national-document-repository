@@ -73,7 +73,7 @@ def lambda_handler(event, context):
                 
             case RepositoryRole.PCSE:
                 # If there is a GP ODS field then the patient is registered, PCSE users should be denied access
-                if gp_ods != "":
+                if gp_ods is None or gp_ods.replace(" ", "") != "":
                     raise UserNotAuthorisedException
                 
             case _:
