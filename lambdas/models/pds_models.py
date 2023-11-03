@@ -58,7 +58,7 @@ class PatientDetails(BaseModel):
     superseded: bool
     restricted: bool
     general_practice_ods: Optional[str] = ""
-    active: str = False
+    active: bool = False
 
 
 class Patient(BaseModel):
