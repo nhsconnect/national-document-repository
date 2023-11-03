@@ -4,8 +4,7 @@ from models.pds_models import PatientDetails
 from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT, PDS_PATIENT_RESTRICTED, PDS_PATIENT_WITH_GP_END_DATE,
     PDS_PATIENT_WITHOUT_ACTIVE_GP)
-from tests.unit.helpers.data.pds.utils import (create_patient,create_restricted_patient,
-                                               create_unrestricted_patient
+from tests.unit.helpers.data.pds.utils import create_patient
 from utils.exceptions import InvalidResourceIdException
 from utils.utilities import validate_id
 

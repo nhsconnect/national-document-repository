@@ -19,23 +19,27 @@ import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
 from enums.repository_role import RepositoryRole
-from models.auth_policy import AuthPolicy, HttpVerb
+from models.auth_policy import AuthPolicy
 from services.dynamo_service import DynamoDBService
+from services.ssm_service import SSMService
 from utils.exceptions import AuthorisationException
+from utils.decorators.ensure_env_var import ensure_environment_variables
+
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+@ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
 def lambda_handler(event, context):
     try:
+
+        logger.info(event)
+        ssm_service = SSMService()
         ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
-
-        client = boto3.client("ssm")
-        ssm_response = client.get_parameter(
-            Name=ssm_public_key_parameter_name, WithDecryption=True
-        )
-        public_key = ssm_response["Parameter"]["Value"]
-
+        
+        token = event["authorizationToken"]
+        public_key  = ssm_service.get_ssm_parameter(ssm_public_key_parameter_name, True)
+       
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]
         )
@@ -44,9 +48,27 @@ def lambda_handler(event, context):
 
         current_session = find_login_session(ndr_session_id)
         validate_login_session(current_session, ndr_session_id)
-
         user_role = decoded["repository_role"]
 
+        principal_id = ""
+        _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
+        api_id, stage, _http_verb, _resource_name = api_gateway_arn.split("/")
+        
+        policy = AuthPolicy(principal_id, aws_account_id)
+        policy.restApiId = api_id
+        policy.region = region
+        policy.stage = stage
+
+        path = "/" + _resource_name
+        resource_denied = validate_access_policy(_http_verb, path, user_role)
+        if resource_denied:
+            policy.denyMethod(_http_verb, path)
+        else:
+            set_access_policy(_http_verb, path, user_role, policy)
+        auth_response = policy.build()
+
+        return auth_response
+    
     except AuthorisationException as e:
         logger.error(e)
         logger.error("failed to authenticate user")
@@ -58,15 +80,37 @@ def lambda_handler(event, context):
         logger.error(e)
         return deny_all_response(event)
 
-    principal_id = ""
-    _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
-    api_id, stage, _http_verb, _resource_name = api_gateway_arn.split("/")
 
-    policy = AuthPolicy(principal_id, aws_account_id)
-    policy.restApiId = api_id
-    policy.region = region
-    policy.stage = stage
+def validate_access_policy(http_verb, path, user_role):
+    logger.info("Validating resource req: %s, http: %s" % (path, http_verb))
+    match path:
+        case "/DocumentDelete":
+            deny_resource = (user_role is RepositoryRole.GP_CLINICAL.value or 
+                            user_role is RepositoryRole.GP_ADMIN.value)
 
+        case "/DocumentManifest":
+            deny_resource = (user_role is RepositoryRole.GP_CLINICAL.value or 
+                            user_role is RepositoryRole.GP_ADMIN.value)
+
+        case "/DocumentReference":
+            deny_resource = (user_role is RepositoryRole.GP_CLINICAL.value or 
+                            user_role is RepositoryRole.GP_ADMIN.value)
+
+        case "/SearchDocumentReferences":
+            deny_resource = user_role is RepositoryRole.PCSE.value
+
+        case _:
+            deny_resource = False
+
+    logger.info("Allow resource: %s" % bool(deny_resource) is False)
+
+    return bool(deny_resource)
+
+
+def set_access_policy(http_verb, path, user_role, policy):
+    accepted_roles = tuple(item.value for item in RepositoryRole)
+    if user_role in accepted_roles:
+        policy.allowMethod(http_verb, path)
     # for now, allow all method for GP and DEV role, and allow only search document for PCSE
     if RepositoryRole.GP_ADMIN.value in user_role:
         policy.allowAllMethods()
@@ -76,11 +120,7 @@ def lambda_handler(event, context):
         policy.allowAllMethods()
         # policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
     else:
-        policy.denyAllMethods()
-
-    auth_response = policy.build()
-
-    return auth_response
+        policy.denyMethod(http_verb, path)
 
 
 def deny_all_response(event):

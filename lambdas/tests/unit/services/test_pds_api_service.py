@@ -7,7 +7,6 @@ from requests import Response
 from services.pds_api_service import PdsApiService
 from tests.unit.helpers.data.pds.access_token_response import RESPONSE_TOKEN
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
-from tests.unit.helpers.mock_services import FakeSSMService
 from utils.exceptions import PdsErrorException
 
 
