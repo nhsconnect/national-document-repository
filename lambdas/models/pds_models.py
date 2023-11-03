@@ -58,6 +58,7 @@ class PatientDetails(BaseModel):
     superseded: bool
     restricted: bool
     general_practice_ods: Optional[str] = ""
+    active: str = False
 
 
 class Patient(BaseModel):
@@ -113,6 +114,8 @@ class Patient(BaseModel):
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
             generalPracticeOds=self.get_ods_code_for_gp()
+            active = self.general_practice_ods != ""
+
         )
         
         return patient_details
