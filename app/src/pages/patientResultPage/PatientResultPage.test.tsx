@@ -166,6 +166,28 @@ describe('PatientResultPage', () => {
             });
         });
 
+        it('Shows an error message if the active field is missing on the patient', async () => {
+            const history = createMemoryHistory({
+                initialEntries: ['/example'],
+                initialIndex: 1,
+            });
+
+            const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
+
+            renderPatientResultPage({ active: undefined }, uploadRole, history);
+            expect(history.location.pathname).toBe('/example');
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText('We cannot determine the active state of this patient'),
+                ).toBeInTheDocument();
+            });
+        });
+
         it('navigates to download page when user has verified download patient', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/example'],
