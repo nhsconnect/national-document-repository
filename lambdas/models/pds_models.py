@@ -100,7 +100,7 @@ class Patient(BaseModel):
             gp_end_date = entry.identifier.period.end
             if not gp_end_date or gp_end_date >= date.today():
                 return entry.identifier.value
-        raise ValueError("No active GP practice for the patient")
+        return ""
 
     def get_patient_details(self, nhs_number) -> PatientDetails:
         patient_details = PatientDetails(
