@@ -50,7 +50,6 @@ def lambda_handler(event, context):
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
         
         logger.info(f"Access token: {access_token}")
-        logger.info(f"ID token claim set:  {id_token_claim_set}")
 
         logger.info("Use the access token to fetch user's organisation and smartcard codes")
         org_ods_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
@@ -182,7 +181,7 @@ def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
 def issue_auth_token(
     session_id: str,
     id_token_claim_set: IdTokenClaimSet,
-    permitted_orgs_and_role: list[dict],
+    user_org_details: list[dict],
     smart_card_role: str,
     repository_role : RepositoryRole
 ) -> str:
@@ -196,15 +195,14 @@ def issue_auth_token(
         "exp": ndr_token_expiry_time,
         "iss": "nhs repo",
         "smart_card_role": smart_card_role,
-        "selected_organisation": permitted_orgs_and_role,
+        "selected_organisation": user_org_details,
         "repository_role": str(repository_role),
         "ndr_session_id": session_id,
     }
 
     logger.info("Token contents: ")
     logger.info(f"session_id: {session_id}")
-    logger.info(f"permitted_orgs_and_roles: {permitted_orgs_and_role}")
-    logger.info(f"id_token_claim_set: {id_token_claim_set}")
+    logger.info(f"user_org_detailss: {user_org_details}")
     logger.info(f"ndr_token_content: {ndr_token_content}")
     logger.info(f"smartcard_role: {smart_card_role}")
     logger.info(f"repository_role: {str(repository_role)}")

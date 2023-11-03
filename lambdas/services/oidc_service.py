@@ -69,8 +69,6 @@ class OidcService:
                 self.validate_and_decode_token(raw_id_token)
             )
 
-            logger.info(f"id_token_claims_set after parsing: {id_token_claims_set}")
-
             return access_token, id_token_claims_set
         except KeyError:
             raise AuthorisationException(
@@ -155,8 +153,6 @@ class OidcService:
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         logger.info(f"Access token for user info request: {access_token}")
-
-        # params={"scope": "nationalrbacaccess"},
 
         userinfo_response = requests.get(
             self._oidc_userinfo_url,
