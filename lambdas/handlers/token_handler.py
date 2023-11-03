@@ -131,7 +131,7 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
     
     if token_handler_ssm_service.get_smartcard_role_pcse() == smartcart_role:
         logger.info("PCSE: smartcard ODS identified")
-        if has_role_org_role_code(organisation, token_handler_ssm_service.get_org_ods_codes()[0]):
+        if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_ods_codes()[0]):
             return RepositoryRole.PCSE
         return RepositoryRole.NONE
        
