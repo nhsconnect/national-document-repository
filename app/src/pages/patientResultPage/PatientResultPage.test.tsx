@@ -62,12 +62,6 @@ describe('PatientResultPage', () => {
             ).toBeInTheDocument();
 
             expect(
-                screen.getByText('What is the current status of the patient?'),
-            ).toBeInTheDocument();
-            expect(screen.getByRole('radio', { name: 'Active patient' })).toBeInTheDocument();
-            expect(screen.getByRole('radio', { name: 'Inactive patient' })).toBeInTheDocument();
-
-            expect(
                 screen.getByText(
                     'Ensure these patient details match the records and attachments that you upload',
                 ),
@@ -141,11 +135,10 @@ describe('PatientResultPage', () => {
 
             const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
 
-            renderPatientResultPage({}, uploadRole, history);
+            renderPatientResultPage({ active: true }, uploadRole, history);
             expect(history.location.pathname).toBe('/example');
 
             act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Active patient' }));
                 userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
             });
 
@@ -162,15 +155,36 @@ describe('PatientResultPage', () => {
 
             const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
 
-            renderPatientResultPage({}, uploadRole, history);
+            renderPatientResultPage({ active: false }, uploadRole, history);
             expect(history.location.pathname).toBe('/example');
             act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Inactive patient' }));
                 userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
             });
 
             await waitFor(() => {
                 expect(history.location.pathname).toBe(routes.UPLOAD_DOCUMENTS);
+            });
+        });
+
+        it('Shows an error message if the active field is missing on the patient', async () => {
+            const history = createMemoryHistory({
+                initialEntries: ['/example'],
+                initialIndex: 1,
+            });
+
+            const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
+
+            renderPatientResultPage({ active: undefined }, uploadRole, history);
+            expect(history.location.pathname).toBe('/example');
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText('We cannot determine the active state of this patient'),
+                ).toBeInTheDocument();
             });
         });
 

@@ -28,13 +28,13 @@ function PatientResultPage({ role }: Props) {
     const submit = (fieldValues: FieldValues) => {
         if (userIsGPAdmin || userIsGPClinical) {
             // Make PDS patient search request to upload documents to patient
-            if (!isPatientStatusDirty) {
-                setInputError('Select a patient status');
+            if (typeof patientDetails?.active === 'undefined') {
+                setInputError('We cannot determine the active state of this patient');
                 return;
             }
-            if (fieldValues.patientStatus === 'active') {
+            if (patientDetails?.active) {
                 navigate(routes.LLOYD_GEORGE);
-            } else if (fieldValues.patientStatus === 'inactive') {
+            } else {
                 navigate(routes.UPLOAD_DOCUMENTS);
             }
         }
@@ -79,30 +79,6 @@ function PatientResultPage({ role }: Props) {
             <form onSubmit={handleSubmit(submit)} style={{ marginTop: 60 }}>
                 {(userIsGPAdmin || userIsGPClinical) && (
                     <>
-                        <Fieldset>
-                            <Fieldset.Legend>
-                                <h2>What is the current status of the patient?</h2>
-                            </Fieldset.Legend>
-                            <Radios id="patient-status" error={inputError}>
-                                <Radios.Radio
-                                    value="active"
-                                    inputRef={patientStatusRef}
-                                    {...radioProps}
-                                    id="active-radio-button"
-                                >
-                                    Active patient
-                                </Radios.Radio>
-                                <Radios.Radio
-                                    value="inactive"
-                                    inputRef={patientStatusRef}
-                                    {...radioProps}
-                                    id="inactive-radio-button"
-                                >
-                                    Inactive patient
-                                </Radios.Radio>
-                            </Radios>
-                        </Fieldset>
-
                         <p id="gp-message">
                             Ensure these patient details match the records and attachments that you
                             upload
