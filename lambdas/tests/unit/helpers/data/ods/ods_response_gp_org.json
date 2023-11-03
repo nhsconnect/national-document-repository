@@ -27,43 +27,7 @@
     "Roles": {
       "Role": [
         {
-          "id": "fake_role_code",
-          "uniqueRoleId": 401397,
-          "primaryRole": true,
-          "Date": [
-            {
-              "Type": "Operational",
-              "Start": "2020-10-01"
-            }
-          ],
-          "Status": "Active"
-        },
-        {
-          "id": "another_fake_role_code",
-          "uniqueRoleId": 401397,
-          "primaryRole": true,
-          "Date": [
-            {
-              "Type": "Operational",
-              "Start": "2020-10-01"
-            }
-          ],
-          "Status": "Active"
-        },
-        {
           "id": "RO76",
-          "uniqueRoleId": 401397,
-          "primaryRole": true,
-          "Date": [
-            {
-              "Type": "Operational",
-              "Start": "2020-10-01"
-            }
-          ],
-          "Status": "Active"
-        },
-        {
-          "id": "RO157",
           "uniqueRoleId": 401397,
           "primaryRole": true,
           "Date": [

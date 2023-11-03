@@ -5,10 +5,9 @@ def load_ods_response_data():
     mock_responses = {}
 
     test_cases = [
-        "with_valid_gp_role",
-        "with_valid_pcse_role",
-        "with_multiple_valid_roles",
-        "with_no_valid_roles",
+        "gp_org",
+        "ods_response_pcse_org",
+        "not_gp_or_pcse",
     ]
 
     for test_case in test_cases:
