@@ -103,7 +103,7 @@ class Patient(BaseModel):
         return ""
     
     def get_is_active_status(self) -> bool:
-        gp_ods = self.get_active_ods_code_for_gp(self)
+        gp_ods = self.get_active_ods_code_for_gp()
         return gp_ods != ""
 
     def get_patient_details(self, nhs_number) -> PatientDetails:
