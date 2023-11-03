@@ -21,6 +21,7 @@ from enums.repository_role import RepositoryRole
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
 token_handler_ssm_service = TokenHandlerSSMService()
 
 
@@ -118,19 +119,19 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
     
     if token_handler_ssm_service.get_smartcard_role_gp_admin() == smartcart_role:
         logger.info("GP Admin: smartcard ODS identified")
-        if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
+        if has_role_org_role_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
             return RepositoryRole.GP_ADMIN
         return RepositoryRole.NONE
     
     if token_handler_ssm_service.get_smartcard_role_gp_clinical() == smartcart_role:
         logger.info("GP Clinical: smartcard ODS identified")
-        if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
+        if has_role_org_role_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
             return RepositoryRole.GP_CLINICAL
         return RepositoryRole.NONE
     
     if token_handler_ssm_service.get_smartcard_role_pcse() == smartcart_role:
         logger.info("PCSE: smartcard ODS identified")
-        if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_ods_codes()[0]):
+        if has_role_org_role_code(organisation, token_handler_ssm_service.get_org_ods_codes()[0]):
             return RepositoryRole.PCSE
         return RepositoryRole.NONE
        
@@ -138,8 +139,13 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
     return RepositoryRole.NONE
 
 
+def has_role_org_role_code(organisation: dict, role_code: str) -> bool:
+    if organisation["role_code"].upper() == role_code.upper():
+        return True;
+    return False;
+
 def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
-    if organisation["role_code"].upper() == ods_code.upper():
+    if organisation["org_ods_code"].upper() == ods_code.upper():
         return True;
     return False;
 
@@ -182,14 +188,7 @@ def issue_auth_token(
     repository_role : RepositoryRole
 ) -> str:
 
-    ssm_client = boto3.client("ssm")
-    logger.info("Starting ssm request to retrieve NDR private key")
-    ssm_response = ssm_client.get_parameter(
-        Name="jwt_token_private_key", WithDecryption=True
-    )
-    logger.info("ending ssm request")
-
-    private_key = ssm_response["Parameter"]["Value"]
+    private_key = token_handler_ssm_service.get_jwt_private_key()
 
     thirty_minutes_later = time.time() + (60 * 30)
     ndr_token_expiry_time = min(thirty_minutes_later, id_token_claim_set.exp)

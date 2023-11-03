@@ -101,6 +101,10 @@ class Patient(BaseModel):
             if not gp_end_date or gp_end_date >= date.today():
                 return entry.identifier.value
         return ""
+    
+    def get_is_active_status(self) -> bool:
+        gp_ods = self.get_active_ods_code_for_gp(self)
+        return gp_ods != ""
 
     def get_patient_details(self, nhs_number) -> PatientDetails:
         patient_details = PatientDetails(
@@ -114,10 +118,9 @@ class Patient(BaseModel):
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
             generalPracticeOds=self.get_active_ods_code_for_gp(),
-            active = False
+            active = self.get_is_active_status()
         )
         
-        patient_details.active = patient_details.general_practice_ods != ""
         return patient_details
 
     def get_minimum_patient_details(self, nhs_number) -> PatientDetails:
