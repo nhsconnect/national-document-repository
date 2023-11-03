@@ -7,3 +7,7 @@ def to_camel(string: str) -> str:
 
 
 conf = ConfigDict(alias_generator=to_camel)
+
+
+def to_capitalized_camel(snake_case_string: str) -> str:
+    return inflection.camelize(snake_case_string, uppercase_first_letter=True)

@@ -1,6 +1,8 @@
+import pytest
 from services.s3_service import S3Service
 from tests.unit.conftest import (MOCK_BUCKET, TEST_FILE_KEY, TEST_FILE_NAME,
                                  TEST_NHS_NUMBER, TEST_OBJECT_KEY)
+from utils.exceptions import TagNotFoundException
 
 MOCK_PRESIGNED_POST_RESPONSE = {
     "url": "https://ndr-dev-document-store.s3.amazonaws.com/",
@@ -155,3 +157,55 @@ def test_create_object_tag(mocker):
         Key=TEST_FILE_NAME,
         Tagging={"TagSet": [{"Key": test_tag_key, "Value": test_tag_value}]},
     )
+
+
+def test_get_tag_value(mocker):
+    mocker.patch("boto3.client")
+    service = S3Service()
+    test_tag_key = "tag_key"
+    test_tag_value = "tag_name"
+
+    mock_response = {
+        "VersionId": "mock_version",
+        "TagSet": [
+            {"Key": test_tag_key, "Value": test_tag_value},
+            {"Key": "some_other_unrelated_tag", "Value": "abcd1234"},
+        ],
+    }
+
+    mock_get_object_tag = mocker.patch.object(
+        service.client, "get_object_tagging", return_value=mock_response
+    )
+
+    actual = service.get_tag_value(
+        s3_bucket_name=MOCK_BUCKET, file_key=TEST_FILE_NAME, tag_key=test_tag_key
+    )
+    expected = test_tag_value
+    assert actual == expected
+
+    mock_get_object_tag.assert_called_once_with(
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_NAME,
+    )
+
+
+def test_get_tag_value_raise_error_when_object_dont_have_the_specific_tag(mocker):
+    mocker.patch("boto3.client")
+    service = S3Service()
+    test_tag_key = "tag_key"
+
+    mock_response = {
+        "VersionId": "mock_version",
+        "TagSet": [
+            {"Key": "some_other_unrelated_tag", "Value": "abcd1234"},
+        ],
+    }
+
+    mocker.patch.object(
+        service.client, "get_object_tagging", return_value=mock_response
+    )
+
+    with pytest.raises(TagNotFoundException):
+        service.get_tag_value(
+            s3_bucket_name=MOCK_BUCKET, file_key=TEST_FILE_NAME, tag_key=test_tag_key
+        )

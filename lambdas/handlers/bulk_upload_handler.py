@@ -1,9 +1,7 @@
-import json
 import logging
-import os
 
+from botocore.exceptions import ClientError
 from services.bulk_upload_service import BulkUploadService
-from services.sqs_service import SQSService
 from utils.exceptions import InvalidMessageException
 from utils.lloyd_george_validator import LGInvalidFilesException
 
@@ -23,28 +21,14 @@ def lambda_handler(event, _context):
         try:
             logger.info(f"Processing message {index} of {len(event['Records'])}")
             bulk_upload_service.handle_sqs_message(message)
-        except (InvalidMessageException, LGInvalidFilesException) as error:
-            handle_invalid_message(invalid_message=message, error=error)
-
-
-def handle_invalid_message(invalid_message: dict, error=None):
-    # Currently we just send the invalid message to invalid queue.
-    # In future ticket, will change this to record errors in dynamo db
-    invalid_queue_url = os.environ["INVALID_SQS_QUEUE_URL"]
-    sqs_service = SQSService()
-
-    new_message = {"original_message": invalid_message["body"]}
-    if error:
-        new_message["error"] = str(error)
-
-    try:
-        nhs_number = invalid_message["messageAttributes"]["NhsNumber"]["stringValue"]
-    except KeyError:
-        nhs_number = ""
-
-    sqs_service.send_message_with_nhs_number_attr(
-        queue_url=invalid_queue_url,
-        message_body=json.dumps(new_message),
-        nhs_number=nhs_number,
-    )
-    logger.info(f"Sent message to invalid queue: {invalid_message}")
+        except (
+            ClientError,
+            InvalidMessageException,
+            LGInvalidFilesException,
+            KeyError,
+            TypeError,
+            AttributeError,
+        ) as error:
+            logger.info(f"Fail to process current message due to error: {error}")
+            logger.info("Continue on next message")
+    logger.info(f"Finished processing all {len(event['Records'])} messages")

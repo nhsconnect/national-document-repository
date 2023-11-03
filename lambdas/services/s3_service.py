@@ -3,6 +3,7 @@ from typing import Any, Mapping
 
 import boto3
 from botocore.client import Config as BotoConfig
+from utils.exceptions import TagNotFoundException
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -77,4 +78,17 @@ class S3Service:
                     {"Key": tag_key, "Value": tag_value},
                 ]
             },
+        )
+
+    def get_tag_value(self, s3_bucket_name: str, file_key: str, tag_key: str) -> str:
+        response = self.client.get_object_tagging(
+            Bucket=s3_bucket_name,
+            Key=file_key,
+        )
+        for key_value_pair in response["TagSet"]:
+            if key_value_pair["Key"] == tag_key:
+                return key_value_pair["Value"]
+
+        raise TagNotFoundException(
+            f"Object {file_key} doesn't have a tag of key {tag_key}"
         )

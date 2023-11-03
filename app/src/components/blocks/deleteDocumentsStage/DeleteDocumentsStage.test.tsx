@@ -44,7 +44,7 @@ describe('DeleteAllDocumentsStage', () => {
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('Are you sure you want to permanently delete files for:')
+                    screen.getByText('Are you sure you want to permanently delete files for:'),
                 ).toBeInTheDocument();
             });
 
@@ -97,7 +97,7 @@ describe('DeleteAllDocumentsStage', () => {
 
             await waitFor(async () => {
                 expect(
-                    screen.getByText('Are you sure you want to permanently delete files for:')
+                    screen.getByText('Are you sure you want to permanently delete files for:'),
                 ).toBeInTheDocument();
             });
 
@@ -161,7 +161,7 @@ describe('DeleteAllDocumentsStage', () => {
 
             await waitFor(() => {
                 expect(
-                    screen.getByText('Sorry, the service is currently unavailable.')
+                    screen.getByText('Sorry, the service is currently unavailable.'),
                 ).toBeInTheDocument();
             });
         });
@@ -202,7 +202,7 @@ describe('DeleteAllDocumentsStage', () => {
 });
 
 const TestApp = (
-    props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'>
+    props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'>,
 ) => {
     return (
         <DeleteDocumentsStage
@@ -221,7 +221,7 @@ const renderComponent = (
     history = createMemoryHistory({
         initialEntries: [homeRoute],
         initialIndex: 1,
-    })
+    }),
 ) => {
     const auth: Session = {
         auth: buildUserAuth(),
@@ -240,6 +240,6 @@ const renderComponent = (
             <SessionProvider sessionOverride={auth}>
                 <TestApp {...props} />
             </SessionProvider>
-        </ReactRouter.Router>
+        </ReactRouter.Router>,
     );
 };

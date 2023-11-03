@@ -54,3 +54,23 @@ class InvalidMessageException(Exception):
 
 class InvalidDocumentReferenceException(Exception):
     pass
+
+
+class VirusScanNoResultException(Exception):
+    pass
+
+
+class DocumentInfectedException(Exception):
+    pass
+
+
+class VirusScanFailedException(Exception):
+    pass
+
+
+class S3FileNotFoundException(Exception):
+    pass
+
+
+class TagNotFoundException(Exception):
+    pass
