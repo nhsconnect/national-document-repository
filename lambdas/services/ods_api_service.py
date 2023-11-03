@@ -1,12 +1,11 @@
-import logging
 from typing import Dict, List, NamedTuple, Optional
 
 import requests
 from enums.permitted_role import PermittedRole
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import OdsErrorException, OrganisationNotFoundException
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 class Organisation(NamedTuple):

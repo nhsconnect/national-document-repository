@@ -1,6 +1,7 @@
 from contextvars import ContextVar
 from typing import Any
 
+
 class RequestContext:
     def __init__(self) -> None:
         self._data = dict()
@@ -14,5 +15,6 @@ class RequestContext:
         context_var = self._data.get(__name)
         if type(context_var) == ContextVar:
             return context_var.get(None)
+
 
 request_context = RequestContext()

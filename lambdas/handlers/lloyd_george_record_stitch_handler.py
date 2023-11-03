@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import tempfile
 from urllib import parse
@@ -11,15 +10,17 @@ from pypdf.errors import PyPdfError
 from services.dynamo_service import DynamoDBService
 from services.pdf_stitch_service import stitch_pdf
 from services.s3_service import S3Service
+from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.validate_patient_id import (
-    extract_nhs_number_from_event, validate_patient_id)
+    extract_nhs_number_from_event,
+    validate_patient_id,
+)
 from utils.exceptions import DynamoDbException
 from utils.lambda_response import ApiGatewayResponse
 from utils.order_response_by_filenames import order_response_by_filenames
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 @validate_patient_id

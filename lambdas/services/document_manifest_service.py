@@ -1,4 +1,3 @@
-import logging
 import os
 import shutil
 import tempfile
@@ -9,10 +8,10 @@ from models.document_reference import DocumentReference
 from models.zip_trace import ZipTrace
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import ManifestDownloadException
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 class DocumentManifestService:

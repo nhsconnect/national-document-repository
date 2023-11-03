@@ -1,10 +1,10 @@
-import logging
 from uuid import uuid4
 
 from pypdf import PdfReader, PdfWriter
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+from utils.audit_logging_setup import LoggingService
+
+logger = LoggingService(__name__)
 
 
 def stitch_pdf(filenames: list[str]) -> str:

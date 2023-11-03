@@ -1,9 +1,4 @@
-import logging
-
 import inflection
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
 
 
 def create_expressions(requested_fields: list) -> tuple[str, dict]:

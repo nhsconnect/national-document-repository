@@ -10,8 +10,7 @@ class LoggingFormatter(logging.Formatter):
         d = {
             "correlation_id": request_context.request_id,
             "auth": request_context.authorization,
-
-            **record.__dict__.get('custom_args', {}),
-            "Message": s
+            **record.__dict__.get("custom_args", {}),
+            "Message": s,
         }
         return json.dumps(d)

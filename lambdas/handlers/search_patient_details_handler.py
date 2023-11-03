@@ -1,21 +1,23 @@
-import logging
-import os
 from json import JSONDecodeError
 
 from pydantic import ValidationError
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.validate_patient_id import validate_patient_id
-from utils.exceptions import (InvalidResourceIdException,
-                              PatientNotFoundException, PdsErrorException)
+from utils.exceptions import (
+    InvalidResourceIdException,
+    PatientNotFoundException,
+    PdsErrorException,
+)
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import get_pds_service
 
-from utils.decorators.set_request_id import set_request_id_for_logging
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 
 logger = LoggingService(__name__)
 
-@set_request_id_for_logging
+
+@set_request_context_for_logging
 @validate_patient_id
 def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
@@ -27,7 +29,9 @@ def lambda_handler(event, context):
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
         response = patient_details.model_dump_json(by_alias=True)
-        logger.audit_splunk_info("Searched for patient details",  {"nhsNumber": nhs_number})
+        logger.audit_splunk_info(
+            "Searched for patient details", {"nhsNumber": nhs_number}
+        )
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
 

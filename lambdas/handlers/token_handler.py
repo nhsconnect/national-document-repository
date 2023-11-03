@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import time
 import uuid
@@ -12,11 +11,11 @@ from models.oidc_models import IdTokenClaimSet
 from services.dynamo_service import DynamoDBService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
 from utils.lambda_response import ApiGatewayResponse
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 def lambda_handler(event, _context):

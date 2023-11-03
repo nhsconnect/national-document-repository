@@ -14,11 +14,11 @@ class SQSService:
             MessageBody=message_body,
         )
 
-    def send_message_with_attr(self, queue_url: str, message_body: str, attributes: dict):
+    def send_message_with_attr(
+        self, queue_url: str, message_body: str, attributes: dict
+    ):
         self.client.send_message(
-            QueueUrl=queue_url,
-            MessageBody=message_body,
-            MessageAttributes=attributes
+            QueueUrl=queue_url, MessageBody=message_body, MessageAttributes=attributes
         )
 
     def send_message_with_nhs_number_attr(

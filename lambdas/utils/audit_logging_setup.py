@@ -12,26 +12,28 @@ class LoggingService:
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
 
-        self.audit_logger = logging.getLogger('audit')
+        self.audit_logger = logging.getLogger("audit")
         self.audit_handler = SensitiveAuditService()
         self.formatter = LoggingFormatter()
         self.audit_handler.setFormatter(self.formatter)
         self.audit_logger.addHandler(self.audit_handler)
         self.audit_logger.setLevel(logging.INFO)
 
-    def audit_splunk_info(self, msg: str, args: dict = None):
-        logging.getLogger('audit.{}'.format(self.name))
-        message = msg + ' ' + json.dumps(args)
+    def audit_splunk_info(self, msg, args: dict = None):
+        logging.getLogger("audit.{}".format(self.name))
+        message = msg + " " + json.dumps(args)
         self.audit_logger.info(message, extra={"custom_args": args})
 
-    def audit_splunk_error(self, msg: str, args: dict = None):
-        logging.getLogger('audit.{}'.format(self.name))
-        message = msg + ' ' + json.dumps(args)
+    def audit_splunk_error(self, msg, args: dict = None):
+        logging.getLogger("audit.{}".format(self.name))
+        message = msg + " " + json.dumps(args)
         self.audit_logger.error(message, extra={"custom_args": args})
 
-    def info(self, message: str):
+    def info(self, message):
         self.logger.info(message)
 
-    def error(self, message: str):
-        self.logger.info(message)
+    def error(self, message):
+        self.logger.error(message)
 
+    def warning(self, message):
+        self.logger.warning(message)

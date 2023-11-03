@@ -1,12 +1,10 @@
-import logging
-
 from botocore.exceptions import ClientError
 from services.bulk_upload_service import BulkUploadService
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidMessageException
 from utils.lloyd_george_validator import LGInvalidFilesException
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 def lambda_handler(event, _context):

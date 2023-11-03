@@ -10,7 +10,6 @@ This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS O
 See the License for the specific language governing permissions and limitations under the License.
 """
 
-import logging
 import os
 import time
 
@@ -21,10 +20,10 @@ from boto3.dynamodb.conditions import Key
 from enums.permitted_role import PermittedRole
 from models.auth_policy import AuthPolicy, HttpVerb
 from services.dynamo_service import DynamoDBService
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 def lambda_handler(event, context):
@@ -105,7 +104,7 @@ def redact_id(session_id: str) -> str:
 
 
 def find_login_session(ndr_session_id):
-    logger.debug(
+    logger.info(
         f"Retrieving session for session ID ending in: f{redact_id(ndr_session_id)}"
     )
     session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]

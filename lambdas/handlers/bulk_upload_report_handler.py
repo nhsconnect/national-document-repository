@@ -1,6 +1,5 @@
 import csv
 import datetime
-import logging
 import os
 from typing import Optional
 
@@ -9,10 +8,10 @@ from botocore.exceptions import ClientError
 from models.bulk_upload_status import FieldNamesForBulkUploadReport
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
+from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 @ensure_environment_variables(
