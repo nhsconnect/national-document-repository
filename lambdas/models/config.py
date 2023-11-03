@@ -10,4 +10,4 @@ conf = ConfigDict(alias_generator=to_camel)
 
 
 def to_capwords(snake_case_string: str) -> str:
-    return "".join(x.capitalize() for x in snake_case_string.split("_"))
+    return inflection.camelize(snake_case_string, uppercase_first_letter=True)
