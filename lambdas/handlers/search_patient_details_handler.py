@@ -57,8 +57,7 @@ def lambda_handler(event, context):
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
 
         gp_ods = patient_details.general_practice_ods
-        logger.info(f"gp ods: {gp_ods}")
-        logger.info(f"length gp ods: {len(gp_ods)}")
+
         match user_role:
             case RepositoryRole.GP_ADMIN.value:
                 # If the GP Admin ods code is null then the patient is not registered.
@@ -72,9 +71,9 @@ def lambda_handler(event, context):
                 if gp_ods == "" or gp_ods != user_ods_code:
                     raise UserNotAuthorisedException
                 
-            case RepositoryRole.PCSE:
+            case RepositoryRole.PCSE.value:
                 # If there is a GP ODS field then the patient is registered, PCSE users should be denied access
-                if len(gp_ods) > 0:
+                if gp_ods != "":
                     raise UserNotAuthorisedException
                 
             case _:
