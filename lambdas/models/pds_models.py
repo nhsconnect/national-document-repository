@@ -99,9 +99,7 @@ class Patient(BaseModel):
     def get_active_ods_code_for_gp(self) -> str:
         for entry in self.general_practitioner:
             gp_end_date = entry.identifier.period.end
-            logging.info(f"GP Entry: {entry}")
             if not gp_end_date or gp_end_date >= date.today():
-                logging.info(f"GP Entry not expired, returning value {entry.identifier}")
                 return entry.identifier.value
         return ""
     

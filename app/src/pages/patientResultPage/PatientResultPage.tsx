@@ -32,7 +32,6 @@ function PatientResultPage({ role }: Props) {
                 setInputError('We cannot determine the active state of this patient');
                 return;
             }
-            console.log(patientDetails.active);
             if (patientDetails?.active) {
                 navigate(routes.LLOYD_GEORGE);
             } else {
