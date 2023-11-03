@@ -114,10 +114,10 @@ class Patient(BaseModel):
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
             generalPracticeOds=self.get_ods_code_for_gp(),
-            active = self.general_practice_ods != ""
-
+            active = False
         )
         
+        patient_details.active = patient_details.general_practice_ods != ""
         return patient_details
 
     def get_minimum_patient_details(self, nhs_number) -> PatientDetails:
