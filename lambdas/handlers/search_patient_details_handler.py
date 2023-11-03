@@ -57,7 +57,7 @@ def lambda_handler(event, context):
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
 
         gp_ods = patient_details.general_practice_ods
-
+        logger.info(f"gp ods: {gp_ods}")
         match user_role:
             case RepositoryRole.GP_ADMIN.value:
                 # If the GP Admin ods code is null then the patient is not registered.
