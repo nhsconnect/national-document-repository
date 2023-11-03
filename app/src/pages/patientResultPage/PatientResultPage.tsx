@@ -28,11 +28,12 @@ function PatientResultPage({ role }: Props) {
     const submit = (fieldValues: FieldValues) => {
         if (userIsGPAdmin || userIsGPClinical) {
             // Make PDS patient search request to upload documents to patient
-            if (typeof patientDetails?.superseded === 'undefined') {
+            if (typeof patientDetails?.active === 'undefined') {
                 setInputError('We cannot determine the active state of this patient');
                 return;
             }
-            if (patientDetails?.superseded) {
+            console.log(patientDetails.active);
+            if (patientDetails?.active) {
                 navigate(routes.LLOYD_GEORGE);
             } else {
                 navigate(routes.UPLOAD_DOCUMENTS);

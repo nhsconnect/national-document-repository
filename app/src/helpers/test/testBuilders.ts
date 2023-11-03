@@ -28,6 +28,7 @@ const buildPatientDetails = (patientDetailsOverride?: Partial<PatientDetails>) =
         postalCode: 'BS3 3NQ',
         superseded: false,
         restricted: false,
+        active: true,
         ...patientDetailsOverride,
     };
 
