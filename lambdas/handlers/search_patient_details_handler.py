@@ -18,6 +18,7 @@ from utils.exceptions import (
 )
 from utils.lambda_response import ApiGatewayResponse
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from enums.repository_role import RepositoryRole
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -42,29 +43,42 @@ def lambda_handler(event, context):
         public_key_location = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
         public_key = ssm_service.get_ssm_parameter(public_key_location, True)
 
-        logger.info(public_key_location)
-        logger.info(public_key)
-
         token = event["headers"]["Authorization"]
-        logger.info(token)
         decoded = jwt.decode(
             token, public_key, algorithms=["RS256"]
         )
 
         logger.info(decoded)
         user_ods_code = decoded["selected_organisation"]["org_ods_code"]
+        user_role = decoded["repository_role"]
         
-        logger.info("User codes: %s" % user_ods_code)
         logger.info("Retrieving patient details")
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
-        
 
         gp_ods = patient_details.general_practice_ods
-        logging.info(f"User Codes: {user_ods_code}")
-        logging.info(f"GP ODS: {gp_ods}")
-        if gp_ods != user_ods_code:
-            raise UserNotAuthorisedException
+
+        match user_role:
+            case RepositoryRole.GP_ADMIN.value:
+                # If the GP Admin ods code is null then the patient is not registered.
+                # The patient must be registered and registered to the users ODS practise
+                if gp_ods == "" or gp_ods != user_ods_code:
+                    raise UserNotAuthorisedException
+                
+            case RepositoryRole.GP_CLINICAL.value:
+                # If the GP Clinical ods code is null then the patient is not registered.
+                # The patient must be registered and registered to the users ODS practise
+                if gp_ods == "" or gp_ods != user_ods_code:
+                    raise UserNotAuthorisedException
+                
+            case RepositoryRole.PCSE:
+                # If there is a GP ODS field then the patient is registered, PCSE users should be denied access
+                if gp_ods != "":
+                    raise UserNotAuthorisedException
+                
+            case _:
+                raise UserNotAuthorisedException
+        
 
         response = patient_details.model_dump_json(by_alias=True)
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
