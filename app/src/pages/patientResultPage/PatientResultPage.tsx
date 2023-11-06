@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { USER_ROLE } from '../../types/generic/roles';
-import { Button, Fieldset, Radios, WarningCallout } from 'nhsuk-react-components';
+import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
@@ -21,9 +20,9 @@ function PatientResultPage({ role }: Props) {
     const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
-    const { register, handleSubmit, formState, getFieldState } = useForm();
-    const { ref: patientStatusRef, ...radioProps } = register('patientStatus');
-    const { isDirty: isPatientStatusDirty } = getFieldState('patientStatus', formState);
+    // const { register, handleSubmit, formState, getFieldState } = useForm();
+    // const { ref: patientStatusRef, ...radioProps } = register('patientStatus');
+    // const { isDirty: isPatientStatusDirty } = getFieldState('patientStatus', formState);
 
     const submit = (fieldValues: FieldValues) => {
         if (userIsGPAdmin || userIsGPClinical) {
