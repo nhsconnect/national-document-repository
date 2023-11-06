@@ -1,7 +1,6 @@
 from uuid import uuid4
 
 from pypdf import PdfReader, PdfWriter
-
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)

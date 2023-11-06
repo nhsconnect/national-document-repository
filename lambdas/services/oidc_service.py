@@ -7,7 +7,6 @@ import requests
 from models.oidc_models import AccessToken, IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
 from requests import Response
-
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
 
@@ -93,7 +92,7 @@ class OidcService:
         except jwt.exceptions.PyJWTError as err:
             logger.error(err)
             raise AuthorisationException("The given JWT is invalid or expired.")
-    
+
     def fetch_user_org_codes(
         self, access_token: str, id_token_claim_set: IdTokenClaimSet
     ) -> List[str]:
@@ -114,17 +113,16 @@ class OidcService:
             logger.info(f"Role: {role}")
             if role["person_roleid"] == selected_role:
                 return [role["org_code"]]
-        
+
         logger.info("No oorg code found")
         return []
 
     def fetch_user_role_code(
-        self, 
-        access_token: str, 
-        id_token_claim_set: IdTokenClaimSet, 
-        prefix_character: str
+        self,
+        access_token: str,
+        id_token_claim_set: IdTokenClaimSet,
+        prefix_character: str,
     ) -> str:
-        
         userinfo = self.fetch_userinfo(access_token)
         logger.info(f"User info response: {userinfo}")
 
@@ -139,17 +137,19 @@ class OidcService:
             if nrbac_role["person_roleid"] == selected_role:
                 role_codes = nrbac_role["role_code"]
                 break
-    
+
         if role_codes == "":
             raise AuthorisationException("No role codes found for users selected role")
-        
+
         role_codes_split = role_codes.split(":")
 
         for role_code in role_codes_split:
             if role_code[0].upper() == prefix_character.upper():
                 return role_code
 
-        raise AuthorisationException(f'Role codes have been found for the user but not with prefix {prefix_character.upper()}')
+        raise AuthorisationException(
+            f"Role codes have been found for the user but not with prefix {prefix_character.upper()}"
+        )
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         logger.info(f"Access token for user info request: {access_token}")
@@ -169,8 +169,8 @@ class OidcService:
                 f"{userinfo_response.content}"
             )
             raise AuthorisationException("Failed to retrieve userinfo")
-        
-     # TODO Move to SSM service, example in token_handler_ssm_service
+
+    # TODO Move to SSM service, example in token_handler_ssm_service
     @staticmethod
     def fetch_oidc_parameters():
         parameters_names = [
@@ -199,4 +199,3 @@ class OidcService:
 
 def get_selected_roleid(id_token_claim_set: IdTokenClaimSet):
     return id_token_claim_set.selected_roleid
-

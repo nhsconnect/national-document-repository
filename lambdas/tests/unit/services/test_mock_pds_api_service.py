@@ -30,8 +30,8 @@ def test_fetch_patient_details_valid_returns_PatientDetails(mocker):
         nhsNumber="9000000009",
         superseded=False,
         restricted=False,
-        generalPracticeOds='Y12345',
-        active=True
+        generalPracticeOds="Y12345",
+        active=True,
     )
 
     assert actual == expected

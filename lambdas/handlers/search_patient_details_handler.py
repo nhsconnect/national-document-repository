@@ -1,25 +1,22 @@
-from json import JSONDecodeError
 import os
+from json import JSONDecodeError
 
 import jwt
+from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.decorators.validate_patient_id import validate_patient_id
-from utils.exceptions import (
-    InvalidResourceIdException,
-    PatientNotFoundException,
-    PdsErrorException,
-    UserNotAuthorisedException,
-)
-from utils.lambda_response import ApiGatewayResponse
 from utils.decorators.ensure_env_var import ensure_environment_variables
-from enums.repository_role import RepositoryRole
+from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.decorators.validate_patient_id import validate_patient_id
+from utils.exceptions import (InvalidResourceIdException,
+                              PatientNotFoundException, PdsErrorException,
+                              UserNotAuthorisedException)
+from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import get_pds_service
 
-from utils.decorators.set_audit_arg import set_request_context_for_logging
-
 logger = LoggingService(__name__)
+
 
 @ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
 @set_request_context_for_logging
@@ -34,14 +31,12 @@ def lambda_handler(event, context):
         public_key = ssm_service.get_ssm_parameter(public_key_location, True)
 
         token = event["headers"]["Authorization"]
-        decoded = jwt.decode(
-            token, public_key, algorithms=["RS256"]
-        )
+        decoded = jwt.decode(token, public_key, algorithms=["RS256"])
 
         logger.info(decoded)
         user_ods_code = decoded["selected_organisation"]["org_ods_code"]
         user_role = decoded["repository_role"]
-        
+
         logger.info("Retrieving patient details")
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
@@ -50,7 +45,7 @@ def lambda_handler(event, context):
         logger.audit_splunk_info(
             "Searched for patient details", {"NHS Number": nhs_number}
         )
-        
+
         gp_ods = patient_details.general_practice_ods
 
         match user_role:
@@ -59,21 +54,20 @@ def lambda_handler(event, context):
                 # The patient must be registered and registered to the users ODS practise
                 if gp_ods == "" or gp_ods != user_ods_code:
                     raise UserNotAuthorisedException
-                
+
             case RepositoryRole.GP_CLINICAL.value:
                 # If the GP Clinical ods code is null then the patient is not registered.
                 # The patient must be registered and registered to the users ODS practise
                 if gp_ods == "" or gp_ods != user_ods_code:
                     raise UserNotAuthorisedException
-                
+
             case RepositoryRole.PCSE.value:
                 # If there is a GP ODS field then the patient is registered, PCSE users should be denied access
                 if gp_ods != "":
                     raise UserNotAuthorisedException
-                
+
             case _:
                 raise UserNotAuthorisedException
-        
 
         response = patient_details.model_dump_json(by_alias=True)
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
