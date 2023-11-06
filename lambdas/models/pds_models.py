@@ -59,7 +59,7 @@ class PatientDetails(BaseModel):
     superseded: bool
     restricted: bool
     general_practice_ods: Optional[str] = ""
-    active: bool = False
+    active: Optional[bool] = None
 
 
 class Patient(BaseModel):
@@ -105,7 +105,7 @@ class Patient(BaseModel):
     
     def get_is_active_status(self) -> bool:
         gp_ods = self.get_active_ods_code_for_gp()
-        return gp_ods != ""
+        return bool(gp_ods)
 
     def get_patient_details(self, nhs_number) -> PatientDetails:
         patient_details = PatientDetails(
@@ -119,7 +119,7 @@ class Patient(BaseModel):
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
             generalPracticeOds=self.get_active_ods_code_for_gp(),
-            active = self.get_is_active_status()
+            active=self.get_is_active_status()
         )
         
         return patient_details
@@ -135,5 +135,4 @@ class Patient(BaseModel):
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
-            general_practice_ods=self.get_ods_code_for_gp()
         )

@@ -25,6 +25,7 @@ def skip_test_lambda_handler_valid_id_returns_200(
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
 
+    mocker.patch("ssm_service.get_ssm_parameter")
     mocker.patch(
         "services.mock_pds_service.MockPdsApiService.pds_request",
         return_value=response,
@@ -35,7 +36,7 @@ def skip_test_lambda_handler_valid_id_returns_200(
     expected = {
         "body": '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22",'
         '"postalCode":"LS1 6AE","nhsNumber":"9000000009","superseded":false,'
-        '"restricted":false,"generalPracticeOds":""}',
+        '"restricted":false,"generalPracticeOds":"","active":false}',
         "headers": {
             "Access-Control-Allow-Methods": "GET",
             "Access-Control-Allow-Origin": "*",
