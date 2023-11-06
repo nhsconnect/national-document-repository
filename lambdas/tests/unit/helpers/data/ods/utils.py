@@ -6,7 +6,7 @@ def load_ods_response_data():
 
     test_cases = [
         "gp_org",
-        "ods_response_pcse_org",
+        "pcse_org",
         "not_gp_or_pcse",
     ]
 

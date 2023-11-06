@@ -5,7 +5,7 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from models.oidc_models import IdTokenClaimSet
-from services.oidc_service_for_password import OidcServiceForPassword
+from services.oidc_service import OidcService
 from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import AuthorisationException
 
@@ -23,13 +23,13 @@ MOCK_PARAMETERS = {
 @pytest.fixture
 def oidc_service(mocker):
     with patch.object(
-        OidcServiceForPassword, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
+        OidcService, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
     ):
-        oidc_service = OidcServiceForPassword()
+        oidc_service = OidcService()
         yield oidc_service
 
 
-def skip_test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
+def test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
     mock_access_token = "mock_access_token"
     mock_id_token = "mock_id_token"
     mock_cis2_response = MockResponse(
