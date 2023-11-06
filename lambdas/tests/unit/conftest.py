@@ -3,8 +3,6 @@ from unittest import mock
 
 import pytest
 
-from services.sensitive_audit_service import SensitiveAuditService
-
 REGION_NAME = "eu-west-2"
 
 MOCK_TABLE_NAME = "test-table"
@@ -64,5 +62,5 @@ def set_env(monkeypatch):
 
 @pytest.fixture(scope='session', autouse=True)
 def logger_mock():
-    with mock.patch('SensitiveAuditService.emit') as _fixture:
+    with mock.patch('utils.audit_logging_setup.SensitiveAuditService.emit') as _fixture:
         yield _fixture
