@@ -17,7 +17,7 @@ class Organisation(NamedTuple):
 
 class OdsApiService:
     # A service to fetch info from NHS Organisation Data Service (ODS) Organisation Reference Data (ORD) API
-    ORD_API_URL = "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations/"
+    ORD_API_URL = "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations"
 
     def fetch_organisation_data(self, ods_code: str):
         response = requests.get(f"{self.ORD_API_URL}/{ods_code}")
@@ -68,7 +68,7 @@ class OdsApiService:
         )
         return {}
     
-def parse_ods_response(org_data, role_code) -> dict: #is self needed?
+def parse_ods_response(org_data, role_code) -> dict:
 
     org_name = org_data["Organisation"]["Name"]
     logger.info(f"Organisation Name: {org_name}")

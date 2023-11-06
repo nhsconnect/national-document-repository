@@ -48,8 +48,6 @@ def lambda_handler(event, context):
 
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
-        
-        logger.info(f"Access token: {access_token}")
 
         logger.info("Use the access token to fetch user's organisation and smartcard codes")
         org_ods_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
