@@ -5,7 +5,7 @@ import { routes } from '../../types/generic/routes';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import BackButton from '../../components/generic/backButton/BackButton';
-import { FieldValues, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
