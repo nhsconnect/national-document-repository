@@ -41,7 +41,7 @@ def lambda_handler(event, _context):
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
 
         logger.info("Use the access token to fetch user's organisation codes")
-        org_codes = oidc_service.fetch_user_org_codes(access_token)
+        org_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
 
         permitted_orgs_and_roles = OdsApiService.fetch_organisation_with_permitted_role(
             org_codes
