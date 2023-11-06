@@ -42,6 +42,10 @@ def lambda_handler(_event, _context):
         logger.error(str(e))
     except ClientError as e:
         logger.error(str(e))
+        if "HeadObject" in str(e):
+            logger.error(
+                f'No metadata file could be found with the name "{METADATA_FILENAME}"'
+            )
 
 
 def download_metadata_from_s3(staging_bucket_name: str, metadata_filename: str):

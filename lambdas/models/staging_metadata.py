@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 METADATA_FILENAME = "metadata.csv"
 NHS_NUMBER_FIELD_NAME = "NHS-NO"
@@ -31,3 +31,11 @@ class StagingMetadata(BaseModel):
 
     nhs_number: str = Field(alias=NHS_NUMBER_FIELD_NAME)
     files: list[MetadataFile]
+
+    @field_validator("nhs_number")
+    @classmethod
+    def validate_nhs_number(cls, nhs_number: str) -> str:
+        if nhs_number.isdigit() and len(nhs_number) == 10:
+            return nhs_number
+
+        raise ValueError("NHS number must be a 10 digit number")
