@@ -7,13 +7,11 @@ import { routes } from './types/generic/routes';
 import Layout from './components/layout/Layout';
 import PatientDetailsProvider from './providers/patientProvider/PatientProvider';
 import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
-import RoleSelectPage from './pages/roleSelectPage/RoleSelectPage';
 import SessionProvider from './providers/sessionProvider/SessionProvider';
 import AuthCallbackPage from './pages/authCallbackPage/AuthCallbackPage';
 import NotFoundPage from './pages/notFoundPage/NotFoundPage';
 import UnauthorisedPage from './pages/unauthorisedPage/UnauthorisedPage';
 import AuthGuard from './components/blocks/authGuard/AuthGuard';
-import { USER_ROLE } from './types/generic/roles';
 import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
 import LogoutPage from './pages/logoutPage/LogoutPage';
 import PatientGuard from './components/blocks/patientGuard/PatientGuard';
@@ -39,7 +37,6 @@ function App() {
                                 <Route element={<AuthErrorPage />} path={routes.AUTH_ERROR} />
 
                                 <Route element={<AuthCallbackPage />} path={routes.AUTH_CALLBACK} />
-                                <Route element={<RoleSelectPage />} path={routes.SELECT_ORG} />
 
                                 <Route
                                     element={
