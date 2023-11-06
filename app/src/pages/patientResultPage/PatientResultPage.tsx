@@ -22,7 +22,7 @@ function PatientResultPage({ role }: Props) {
     const [inputError, setInputError] = useState('');
     const { handleSubmit } = useForm();
 
-    const submit = (fieldValues: FieldValues) => {
+    const submit = () => {
         if (userIsGPAdmin || userIsGPClinical) {
             // Make PDS patient search request to upload documents to patient
             if (typeof patientDetails?.active === 'undefined') {
