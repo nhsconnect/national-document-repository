@@ -60,7 +60,7 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
 
     except KeyError as e:
-        logger.error(f"Error parsing patientId from json: {str(e)}")
+        logger.error(f"Error parsing patientId from json: {str(e)}", e)
         return ApiGatewayResponse(
             400, "No NHS number found in request parameters.", "GET"
         ).create_api_gateway_response()
