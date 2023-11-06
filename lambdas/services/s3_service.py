@@ -2,7 +2,6 @@ from typing import Any, Mapping
 
 import boto3
 from botocore.client import Config as BotoConfig
-
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import TagNotFoundException
 

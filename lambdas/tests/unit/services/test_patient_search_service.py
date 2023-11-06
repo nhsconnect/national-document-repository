@@ -29,7 +29,7 @@ def test_handle_response_200_returns_PatientDetails():
         superseded=False,
         restricted=False,
         generalPracticeOds="Y12345",
-        active=True
+        active=True,
     )
 
     assert actual == expected

@@ -56,9 +56,7 @@ def mock_oidc_service(mocker):
 
 @pytest.fixture
 def mock_ods_api_service(mocker):
-    mock = mocker.patch(
-        "services.ods_api_service.OdsApiServiceForPassword"
-    )
+    mock = mocker.patch("services.ods_api_service.OdsApiServiceForPassword")
 
     mock.return_value.fetch_organisation_with_permitted_role.return_value = [
         {"org_name": "PORTWAY LIFESTYLE CENTRE", "ods_code": "A9A5A", "role": "DEV"}

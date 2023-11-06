@@ -46,7 +46,7 @@ def test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
         "sid": "fake_cis2_session_id",
         "sub": "fake_cis2_login_id",
         "exp": 1234567890,
-        "selected_roleid": "012345678901"
+        "selected_roleid": "012345678901",
     }
 
     mocker.patch("requests.post", return_value=mock_cis2_response)
@@ -141,14 +141,16 @@ def test_oidc_service_fetch_user_org_code(mocker, oidc_service):
         "sid": "fake_cis2_session_id",
         "sub": "fake_cis2_login_id",
         "exp": 1234567890,
-        "selected_roleid": role_id
+        "selected_roleid": role_id,
     }
 
     mock_response = MockResponse(status_code=200, json_data=mock_userinfo)
 
     mocker.patch("requests.get", return_value=mock_response)
 
-    actual = oidc_service.fetch_user_org_codes(mock_access_token, IdTokenClaimSet(**mock_decoded_claim_set))
+    actual = oidc_service.fetch_user_org_codes(
+        mock_access_token, IdTokenClaimSet(**mock_decoded_claim_set)
+    )
     assert actual[0] == expected_ods_code
 
 

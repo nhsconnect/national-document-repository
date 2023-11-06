@@ -21,22 +21,21 @@ from models.auth_policy import AuthPolicy
 from services.dynamo_service import DynamoDBService
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import AuthorisationException
 from utils.decorators.ensure_env_var import ensure_environment_variables
-
+from utils.exceptions import AuthorisationException
 
 logger = LoggingService(__name__)
+
 
 @ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
 def lambda_handler(event, context):
     try:
-
         logger.info(event)
         ssm_service = SSMService()
         ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
-        
-        public_key  = ssm_service.get_ssm_parameter(ssm_public_key_parameter_name, True)
-       
+
+        public_key = ssm_service.get_ssm_parameter(ssm_public_key_parameter_name, True)
+
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]
         )
@@ -50,7 +49,7 @@ def lambda_handler(event, context):
         principal_id = ""
         _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
         api_id, stage, _http_verb, _resource_name = api_gateway_arn.split("/")
-        
+
         policy = AuthPolicy(principal_id, aws_account_id)
         policy.restApiId = api_id
         policy.region = region
@@ -65,7 +64,7 @@ def lambda_handler(event, context):
         auth_response = policy.build()
 
         return auth_response
-    
+
     except AuthorisationException as e:
         logger.error(e)
         logger.error("failed to authenticate user")
@@ -82,16 +81,22 @@ def validate_access_policy(http_verb, path, user_role):
     logger.info("Validating resource req: %s, http: %s" % (path, http_verb))
     match path:
         case "/DocumentDelete":
-            deny_resource = (user_role is RepositoryRole.GP_CLINICAL.value or 
-                            user_role is RepositoryRole.GP_ADMIN.value)
+            deny_resource = (
+                user_role is RepositoryRole.GP_CLINICAL.value
+                or user_role is RepositoryRole.GP_ADMIN.value
+            )
 
         case "/DocumentManifest":
-            deny_resource = (user_role is RepositoryRole.GP_CLINICAL.value or 
-                            user_role is RepositoryRole.GP_ADMIN.value)
+            deny_resource = (
+                user_role is RepositoryRole.GP_CLINICAL.value
+                or user_role is RepositoryRole.GP_ADMIN.value
+            )
 
         case "/DocumentReference":
-            deny_resource = (user_role is RepositoryRole.GP_CLINICAL.value or 
-                            user_role is RepositoryRole.GP_ADMIN.value)
+            deny_resource = (
+                user_role is RepositoryRole.GP_CLINICAL.value
+                or user_role is RepositoryRole.GP_ADMIN.value
+            )
 
         case "/SearchDocumentReferences":
             deny_resource = user_role is RepositoryRole.PCSE.value

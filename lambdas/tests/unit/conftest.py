@@ -77,7 +77,8 @@ def set_env(monkeypatch):
     monkeypatch.setenv(MOCK_WORKSPACE_ENV_NAME, WORKSPACE)
     monkeypatch.setenv(MOCK_LG_BULK_UPLOAD_DYNAMO_ENV_NAME, MOCK_BULK_REPORT_TABLE_NAME)
 
-@pytest.fixture(scope='session', autouse=True)
+
+@pytest.fixture(scope="session", autouse=True)
 def logger_mock():
-    with mock.patch('utils.audit_logging_setup.SensitiveAuditService.emit') as _fixture:
+    with mock.patch("utils.audit_logging_setup.SensitiveAuditService.emit") as _fixture:
         yield _fixture

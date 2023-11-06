@@ -36,7 +36,7 @@ def test_get_unrestricted_patient_details():
         superseded=False,
         restricted=False,
         generalPracticeOds="Y12345",
-        active=True
+        active=True,
     )
 
     result = patient.get_patient_details(patient.id)
@@ -55,8 +55,8 @@ def test_get_restricted_patient_details():
         nhsNumber="9000000025",
         superseded=False,
         restricted=True,
-        generalPracticeOds='',
-        active=False
+        generalPracticeOds="",
+        active=False,
     )
 
     result = patient.get_patient_details(patient.id)

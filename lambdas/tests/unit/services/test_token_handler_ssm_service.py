@@ -89,9 +89,11 @@ def test_get_ssm_parameters(mocker):
     actual = service.get_smartcard_role_codes()
 
     mock_get_parameters.assert_called_once_with(
-        Names=["/auth/smartcard/role/gp_admin",
-               "/auth/smartcard/role/gp_clinical",
-               "/auth/smartcard/role/pcse"
-               ], WithDecryption=False
+        Names=[
+            "/auth/smartcard/role/gp_admin",
+            "/auth/smartcard/role/gp_clinical",
+            "/auth/smartcard/role/pcse",
+        ],
+        WithDecryption=False,
     )
     assert actual == expected

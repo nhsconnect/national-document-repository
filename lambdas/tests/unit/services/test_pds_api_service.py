@@ -20,8 +20,10 @@ class FakeSSMService:
     def update_ssm_parameter(self, *arg, **kwargs):
         pass
 
+
 fake_ssm_service = FakeSSMService()
 pds_service = PdsApiService(fake_ssm_service)
+
 
 def test_request_new_token_is_call_with_correct_data(mocker):
     mock_jwt_token = "testtest"
