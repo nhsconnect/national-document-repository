@@ -7,6 +7,7 @@ const patient = {
     postalCode: 'AA1 1AA',
     superseded: false,
     restricted: false,
+    active: false,
 };
 
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;

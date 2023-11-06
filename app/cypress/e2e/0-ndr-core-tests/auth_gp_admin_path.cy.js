@@ -7,6 +7,7 @@ const patient = {
     postalCode: 'AA1 1AA',
     superseded: false,
     restricted: false,
+    active: true,
 };
 
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
@@ -35,11 +36,10 @@ describe('assert GP_ADMIM workflow path', () => {
             cy.url().should('include', 'upload');
             cy.url().should('eq', baseUrl + '/search/upload/result');
 
-            cy.get('#inactive-radio-button').click();
             cy.get('#verify-submit').click();
 
-            cy.url().should('include', 'submit');
-            cy.url().should('eq', baseUrl + '/upload/submit');
+            cy.url().should('include', 'lloyd-george-record');
+            cy.url().should('eq', baseUrl + '/search/patient/lloyd-george-record');
         });
     });
 });

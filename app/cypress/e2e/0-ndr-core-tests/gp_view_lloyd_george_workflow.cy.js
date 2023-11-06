@@ -16,9 +16,6 @@ describe('GP View Lloyd George Workflow', () => {
         cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
         cy.getByTestId('search-submit-btn').click();
         cy.wait('@search');
-
-        // verify patient is active
-        cy.get('#active-radio-button').click();
     });
 
     context('View Lloyd George document', () => {

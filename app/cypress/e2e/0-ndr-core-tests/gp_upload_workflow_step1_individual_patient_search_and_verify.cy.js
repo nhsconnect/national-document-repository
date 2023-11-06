@@ -14,6 +14,7 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         postalCode: 'AA1 1AA',
         superseded: false,
         restricted: false,
+        active: false,
     };
 
     beforeEach(() => {
@@ -41,7 +42,6 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
             'have.text',
             'Ensure these patient details match the records and attachments that you upload',
         );
-        cy.get('#inactive-radio-button').click();
         cy.get('#verify-submit').click();
 
         cy.url().should('include', 'submit');
@@ -80,7 +80,6 @@ describe('GP Upload Workflow Step 1: Patient search and verify', () => {
         cy.get('#search-submit').click();
         cy.wait('@search');
 
-        cy.get('#inactive-radio-button').click();
         cy.get('#verify-submit').click();
 
         cy.url().should('include', 'submit');
