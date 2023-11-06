@@ -20,7 +20,7 @@ function PatientResultPage({ role }: Props) {
     const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
-    const { handleSubmit, formState } = useForm();
+    const { handleSubmit } = useForm();
 
     const submit = (fieldValues: FieldValues) => {
         if (userIsGPAdmin || userIsGPClinical) {
