@@ -12,6 +12,7 @@ from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 def patch_env_vars():
     env_vars = {
         "PDS_FHIR_IS_STUBBED": "1",
+        "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY": "mock_public_key",
     }
     with patch.dict(os.environ, env_vars):
         yield env_vars

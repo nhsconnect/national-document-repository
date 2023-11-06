@@ -35,6 +35,8 @@ def test_get_unrestricted_patient_details():
         nhsNumber="9000000009",
         superseded=False,
         restricted=False,
+        #general_practice_ods=["Y12345"],
+        #active=True
     )
 
     result = patient.get_patient_details(patient.id)

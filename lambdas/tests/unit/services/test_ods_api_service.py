@@ -1,5 +1,9 @@
+import json
+
 import pytest
 import requests
+from requests import Response
+
 from services.ods_api_service import OdsApiService, parse_ods_response
 from tests.unit.helpers.data.ods.utils import load_ods_response_data
 from tests.unit.helpers.mock_response import MockResponse
@@ -9,14 +13,17 @@ from utils.exceptions import OdsErrorException, OrganisationNotFoundException
 def test_fetch_organisation_data_returns_organisation_data(mocker):
     test_ods_code = "X26"
     ord_api_request_call_url = f"https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations/{test_ods_code}"
-    expected = "successfulJSONResponse : value"
-    response_200 = MockResponse(200, expected)
-    mock_api = mocker.patch(requests, "get", return_value=response_200)
+    expected = {"successfulJSONResponse" : "str"}
+    response = Response()
+    response.status_code = 200
+    response._content = json.dumps(expected).encode("utf-8")
+
+    mock_api = mocker.patch("requests.get", return_value=response)
 
     actual = OdsApiService.fetch_organisation_data(OdsApiService(), test_ods_code)
 
     assert actual == expected
-    assert mock_api.assert_called_with(ord_api_request_call_url) #fails saying never called?
+    mock_api.assert_called_with(ord_api_request_call_url)
 
 
 def test_fetch_organisation_data_404_raise_OrganisationNotFoundException(mocker):
