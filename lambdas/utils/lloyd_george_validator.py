@@ -1,5 +1,4 @@
 import datetime
-import logging
 import os
 import re
 from typing import Optional
@@ -11,10 +10,10 @@ from models.pds_models import Patient
 from pydantic import ValidationError
 from requests import HTTPError
 from services.ssm_service import SSMService
+from utils.audit_logging_setup import LoggingService
 from utils.utilities import get_pds_service
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 class LGInvalidFilesException(Exception):

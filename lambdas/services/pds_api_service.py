@@ -1,5 +1,4 @@
 import json
-import logging
 import time
 import uuid
 
@@ -9,10 +8,10 @@ from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
 from requests.models import HTTPError
 from services.patient_search_service import PatientSearch
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import PdsErrorException
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 class PdsApiService(PatientSearch):

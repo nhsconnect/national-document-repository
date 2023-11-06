@@ -1,20 +1,24 @@
-import logging
 import os
 
 from botocore.exceptions import ClientError
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from services.document_service import DocumentService
+from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
-from utils.decorators.validate_document_type import (extract_document_type,
-                                                     validate_document_type)
+from utils.decorators.validate_document_type import (
+    extract_document_type,
+    validate_document_type,
+)
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_response import ApiGatewayResponse
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+from utils.decorators.set_audit_arg import set_request_context_for_logging
+
+logger = LoggingService(__name__)
 
 
+@set_request_context_for_logging
 @validate_patient_id
 @validate_document_type
 @ensure_environment_variables(

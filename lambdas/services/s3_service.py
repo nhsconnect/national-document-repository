@@ -1,12 +1,12 @@
-import logging
 from typing import Any, Mapping
 
 import boto3
 from botocore.client import Config as BotoConfig
+
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import TagNotFoundException
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 class S3Service:

@@ -1,4 +1,3 @@
-import logging
 import os
 from datetime import datetime, timezone
 
@@ -8,9 +7,9 @@ from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
+from utils.audit_logging_setup import LoggingService
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 class DocumentService(DynamoDBService):

@@ -1,4 +1,5 @@
 import json
+from unittest import mock
 
 import pytest
 
@@ -58,3 +59,8 @@ def set_env(monkeypatch):
     monkeypatch.setenv(MOCK_LG_METADATA_SQS_QUEUE_ENV_NAME, MOCK_LG_METADATA_SQS_QUEUE)
     monkeypatch.setenv(MOCK_LG_INVALID_SQS_QUEUE_ENV_NAME, MOCK_LG_INVALID_SQS_QUEUE)
     monkeypatch.setenv(MOCK_LG_BULK_UPLOAD_DYNAMO_ENV_NAME, MOCK_BULK_REPORT_TABLE_NAME)
+
+@pytest.fixture(scope='session', autouse=True)
+def logger_mock():
+    with mock.patch('utils.audit_logging_setup.SensitiveAuditService.emit') as _fixture:
+        yield _fixture

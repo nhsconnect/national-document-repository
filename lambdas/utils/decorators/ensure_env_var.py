@@ -1,11 +1,10 @@
-import logging
 import os
 from typing import Callable
 
+from utils.audit_logging_setup import LoggingService
 from utils.lambda_response import ApiGatewayResponse
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 def ensure_environment_variables(names: list[str]) -> Callable:
