@@ -60,7 +60,7 @@ def lambda_handler(event, _context):
             "organisations": permitted_orgs_and_roles,
             "authorisation_token": authorisation_token,
         }
-
+        logger.audit_splunk_info("User logged in successfully")
     except AuthorisationException as error:
         logger.error(error)
         return ApiGatewayResponse(

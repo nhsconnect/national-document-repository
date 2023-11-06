@@ -30,7 +30,7 @@ def lambda_handler(event, context):
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
         response = patient_details.model_dump_json(by_alias=True)
         logger.audit_splunk_info(
-            "Searched for patient details", {"nhsNumber": nhs_number}
+            "Searched for patient details", {"NHS Number": nhs_number}
         )
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
