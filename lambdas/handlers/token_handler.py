@@ -6,17 +6,17 @@ import uuid
 import jwt
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-from services.ods_api_service import OdsApiService
-from services.oidc_service import OidcService
+from enums.repository_role import RepositoryRole
 from models.oidc_models import IdTokenClaimSet
 from services.dynamo_service import DynamoDBService
+from services.ods_api_service import OdsApiService
+from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
-
-from utils.exceptions import AuthorisationException, OrganisationNotFoundException, TooManyOrgsException
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import AuthorisationException
+from utils.exceptions import (AuthorisationException,
+                              OrganisationNotFoundException,
+                              TooManyOrgsException)
 from utils.lambda_response import ApiGatewayResponse
-from enums.repository_role import RepositoryRole
 
 logger = LoggingService(__name__)
 
@@ -25,7 +25,6 @@ token_handler_ssm_service = TokenHandlerSSMService()
 
 
 def lambda_handler(event, context):
-
     oidc_service = OidcService()
     ods_api_service = OdsApiService()
 
@@ -48,32 +47,46 @@ def lambda_handler(event, context):
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
 
-        logger.info("Use the access token to fetch user's organisation and smartcard codes")
-        org_ods_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
-        smartcard_role_code = oidc_service.fetch_user_role_code(access_token, id_token_claim_set, "R")
-        permitted_orgs_details = ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
-        
+        logger.info(
+            "Use the access token to fetch user's organisation and smartcard codes"
+        )
+        org_ods_codes = oidc_service.fetch_user_org_codes(
+            access_token, id_token_claim_set
+        )
+        smartcard_role_code = oidc_service.fetch_user_role_code(
+            access_token, id_token_claim_set, "R"
+        )
+        permitted_orgs_details = ods_api_service.fetch_organisation_with_permitted_role(
+            org_ods_codes
+        )
+
         logger.info(f"Permitted_orgs_details: {permitted_orgs_details}")
 
         if len(permitted_orgs_details.keys()) == 0:
             logger.info("User has no org to log in with")
-            raise AuthorisationException(f"{permitted_orgs_details.keys()} valid organisations for user")
+            raise AuthorisationException(
+                f"{permitted_orgs_details.keys()} valid organisations for user"
+            )
 
         session_id = create_login_session(id_token_claim_set)
 
         logger.info("Calculating repository role")
-        repository_role = generate_repository_role(permitted_orgs_details, smartcard_role_code)
+        repository_role = generate_repository_role(
+            permitted_orgs_details, smartcard_role_code
+        )
 
         logger.info("Creating authorisation token")
         authorisation_token = issue_auth_token(
-            session_id, id_token_claim_set, 
-            permitted_orgs_details, 
-            smartcard_role_code, repository_role.value
+            session_id,
+            id_token_claim_set,
+            permitted_orgs_details,
+            smartcard_role_code,
+            repository_role.value,
         )
 
         logger.info("Creating response")
         response = {
-            "role" : repository_role.value,
+            "role": repository_role.value,
             "authorisation_token": authorisation_token,
         }
 
@@ -102,46 +115,53 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(
             500, "Organisation does not exist for given ODS code", "GET"
         ).create_api_gateway_response()
-    except TooManyOrgsException as error:
+    except TooManyOrgsException:
         return ApiGatewayResponse(
             500, "No single organisation found for given ods codes", "GET"
         ).create_api_gateway_response()
 
+
 def generate_repository_role(organisation: dict, smartcart_role: str):
-    
     logger.info(f"Smartcard Role: {smartcart_role}")
-    
+
     if token_handler_ssm_service.get_smartcard_role_gp_admin() == smartcart_role:
         logger.info("GP Admin: smartcard ODS identified")
-        if has_role_org_role_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
+        if has_role_org_role_code(
+            organisation, token_handler_ssm_service.get_org_role_codes()[0]
+        ):
             return RepositoryRole.GP_ADMIN
         return RepositoryRole.NONE
-    
+
     if token_handler_ssm_service.get_smartcard_role_gp_clinical() == smartcart_role:
         logger.info("GP Clinical: smartcard ODS identified")
-        if has_role_org_role_code(organisation, token_handler_ssm_service.get_org_role_codes()[0]):
+        if has_role_org_role_code(
+            organisation, token_handler_ssm_service.get_org_role_codes()[0]
+        ):
             return RepositoryRole.GP_CLINICAL
         return RepositoryRole.NONE
-    
+
     if token_handler_ssm_service.get_smartcard_role_pcse() == smartcart_role:
         logger.info("PCSE: smartcard ODS identified")
-        if has_role_org_ods_code(organisation, token_handler_ssm_service.get_org_ods_codes()[0]):
+        if has_role_org_ods_code(
+            organisation, token_handler_ssm_service.get_org_ods_codes()[0]
+        ):
             return RepositoryRole.PCSE
         return RepositoryRole.NONE
-       
+
     logger.info("Role: No smartcard role found")
     return RepositoryRole.NONE
 
 
 def has_role_org_role_code(organisation: dict, role_code: str) -> bool:
     if organisation["role_code"].upper() == role_code.upper():
-        return True;
-    return False;
+        return True
+    return False
+
 
 def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
     if organisation["org_ods_code"].upper() == ods_code.upper():
-        return True;
-    return False;
+        return True
+    return False
 
 
 # TODO AKH Dynamo Service class
@@ -179,9 +199,8 @@ def issue_auth_token(
     id_token_claim_set: IdTokenClaimSet,
     user_org_details: list[dict],
     smart_card_role: str,
-    repository_role : RepositoryRole
+    repository_role: RepositoryRole,
 ) -> str:
-
     private_key = token_handler_ssm_service.get_jwt_private_key()
 
     thirty_minutes_later = time.time() + (60 * 30)
@@ -200,7 +219,7 @@ def issue_auth_token(
         authorisation_token = jwt.encode(
             ndr_token_content, private_key, algorithm="RS256"
         )
-    except Exception as e:
+    except Exception:
         raise AuthorisationException("Unable to create authorisation token")
 
     logger.info(f"encoded JWT: {authorisation_token}")
