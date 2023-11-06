@@ -13,7 +13,7 @@ class MockPdsApiService(PatientSearch):
         mock_pds_results: list[dict] = []
 
         try:
-            with open("services/mock_data/pds_patient.json") as f:
+            with open("services/mock_data/pds_patient_not_active.json") as f:
                 mock_pds_results.append(json.load(f))
 
             with open("services/mock_data/pds_patient_restricted.json") as f:

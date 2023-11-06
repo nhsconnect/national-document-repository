@@ -31,8 +31,19 @@ def prepare_redirect_response(web_application_client_class):
         url, _headers, _body = oidc_client.prepare_authorization_request(
             authorization_url=oidc_parameters["OIDC_AUTHORISE_URL"],
             redirect_url=os.environ["OIDC_CALLBACK_URL"],
-            scope=["openid", "profile", "nationalrbacaccess", "associatedorgs"],
+            scope=[
+                "openid",
+                "profile",
+                "nhsperson",
+                "nationalrbacaccess",
+                "selectedrole",
+            ],
+            prompt="login",
         )
+
+        logger.info(f"Login request URL: {url}")
+        logger.info(f"Headers request URL: {_headers}")
+        logger.info(f"Body request URL: {_body}")
 
         save_state_in_dynamo_db(oidc_client.state)
 
@@ -48,7 +59,7 @@ def prepare_redirect_response(web_application_client_class):
         return ApiGatewayResponse(
             500, "Server error", "GET"
         ).create_api_gateway_response()
-    return ApiGatewayResponse(302, "", "GET").create_api_gateway_response(
+    return ApiGatewayResponse(303, "", "GET").create_api_gateway_response(
         headers=location_header
     )
 

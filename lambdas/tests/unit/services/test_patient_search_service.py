@@ -11,7 +11,7 @@ from utils.exceptions import (InvalidResourceIdException,
 search_service = PatientSearch()
 
 
-def test_handle_response_200_returns_PatientDetails(mocker):
+def test_handle_response_200_returns_PatientDetails():
     nhs_number = "9000000025"
 
     response = Response()
@@ -28,6 +28,8 @@ def test_handle_response_200_returns_PatientDetails(mocker):
         nhsNumber="9000000009",
         superseded=False,
         restricted=False,
+        generalPracticeOds="Y12345",
+        active=True
     )
 
     assert actual == expected

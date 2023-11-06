@@ -7,13 +7,11 @@ import { routes } from './types/generic/routes';
 import Layout from './components/layout/Layout';
 import PatientDetailsProvider from './providers/patientProvider/PatientProvider';
 import { BrowserRouter as Router, Route, Routes, Outlet } from 'react-router-dom';
-import RoleSelectPage from './pages/roleSelectPage/RoleSelectPage';
 import SessionProvider from './providers/sessionProvider/SessionProvider';
 import AuthCallbackPage from './pages/authCallbackPage/AuthCallbackPage';
 import NotFoundPage from './pages/notFoundPage/NotFoundPage';
 import UnauthorisedPage from './pages/unauthorisedPage/UnauthorisedPage';
 import AuthGuard from './components/blocks/authGuard/AuthGuard';
-import { USER_ROLE } from './types/generic/roles';
 import PatientSearchPage from './pages/patientSearchPage/PatientSearchPage';
 import LogoutPage from './pages/logoutPage/LogoutPage';
 import PatientGuard from './components/blocks/patientGuard/PatientGuard';
@@ -22,6 +20,7 @@ import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage
 import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
 import AuthErrorPage from './pages/authErrorPage/AuthErrorPage';
 import LloydGeorgeRecordPage from './pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import { REPOSITORY_ROLE } from './types/generic/authRole';
 
 function App() {
     return (
@@ -38,7 +37,6 @@ function App() {
                                 <Route element={<AuthErrorPage />} path={routes.AUTH_ERROR} />
 
                                 <Route element={<AuthCallbackPage />} path={routes.AUTH_CALLBACK} />
-                                <Route element={<RoleSelectPage />} path={routes.SELECT_ORG} />
 
                                 <Route
                                     element={
@@ -48,11 +46,19 @@ function App() {
                                     }
                                 >
                                     <Route
-                                        element={<PatientSearchPage role={USER_ROLE.PCSE} />}
+                                        element={<PatientSearchPage role={REPOSITORY_ROLE.PCSE} />}
                                         path={routes.DOWNLOAD_SEARCH}
                                     />
                                     <Route
-                                        element={<PatientSearchPage role={USER_ROLE.GP} />}
+                                        element={
+                                            <PatientSearchPage role={REPOSITORY_ROLE.GP_ADMIN} />
+                                        }
+                                        path={routes.UPLOAD_SEARCH}
+                                    />
+                                    <Route
+                                        element={
+                                            <PatientSearchPage role={REPOSITORY_ROLE.GP_CLINICAL} />
+                                        }
                                         path={routes.UPLOAD_SEARCH}
                                     />
 
@@ -65,11 +71,25 @@ function App() {
                                         }
                                     >
                                         <Route
-                                            element={<PatientResultPage role={USER_ROLE.PCSE} />}
+                                            element={
+                                                <PatientResultPage role={REPOSITORY_ROLE.PCSE} />
+                                            }
                                             path={routes.DOWNLOAD_VERIFY}
                                         />
                                         <Route
-                                            element={<PatientResultPage role={USER_ROLE.GP} />}
+                                            element={
+                                                <PatientResultPage
+                                                    role={REPOSITORY_ROLE.GP_ADMIN}
+                                                />
+                                            }
+                                            path={routes.UPLOAD_VERIFY}
+                                        />
+                                        <Route
+                                            element={
+                                                <PatientResultPage
+                                                    role={REPOSITORY_ROLE.GP_CLINICAL}
+                                                />
+                                            }
                                             path={routes.UPLOAD_VERIFY}
                                         />
                                         <Route

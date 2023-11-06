@@ -6,8 +6,8 @@ describe('PCSE Download Workflow: Access and download found files', () => {
     const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 
     const roles = Object.freeze({
-        GP: 'gp',
-        PCSE: 'pcse',
+        GP: 'GP_ADMIN',
+        PCSE: 'PCSE',
     });
 
     const testPatient = '9000000009';
@@ -35,7 +35,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
     ];
 
     beforeEach(() => {
-        cy.login('pcse');
+        cy.login('PCSE');
     });
 
     const navigateToVerify = (role) => {

@@ -1,18 +1,29 @@
+import json
+
 import pytest
-from enums.permitted_role import PermittedRole
-from services.ods_api_service import OdsApiService
+import requests
+from requests import Response
+
+from services.ods_api_service import OdsApiService, parse_ods_response
 from tests.unit.helpers.data.ods.utils import load_ods_response_data
 from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import OdsErrorException, OrganisationNotFoundException
 
 
-def test_fetch_organisation_data_valid_returns_organisation_data():
+def test_fetch_organisation_data_returns_organisation_data(mocker):
     test_ods_code = "X26"
+    ord_api_request_call_url = f"https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations/{test_ods_code}"
+    expected = {"successfulJSONResponse" : "str"}
+    response = Response()
+    response.status_code = 200
+    response._content = json.dumps(expected).encode("utf-8")
 
-    actual = OdsApiService.fetch_organisation_data(test_ods_code)
+    mock_api = mocker.patch("requests.get", return_value=response)
 
-    assert "NHS ENGLAND - X26" in str(actual)
-    assert "PrimaryRoleId" in str(actual)
+    actual = OdsApiService.fetch_organisation_data(OdsApiService(), test_ods_code)
+
+    assert actual == expected
+    mock_api.assert_called_with(ord_api_request_call_url)
 
 
 def test_fetch_organisation_data_404_raise_OrganisationNotFoundException(mocker):
@@ -20,17 +31,16 @@ def test_fetch_organisation_data_404_raise_OrganisationNotFoundException(mocker)
 
     mocker.patch("requests.get", return_value=response_404)
     with pytest.raises(OrganisationNotFoundException):
-        OdsApiService.fetch_organisation_data("non-exist-ods-code")
+        OdsApiService.fetch_organisation_data(OdsApiService(), "non-existent-ods-code")
 
 
 def test_fetch_organisation_data_catch_all_raises_OdsErrorException(mocker):
     response_400 = MockResponse(400, "BadRequest")
 
     mocker.patch("requests.get", return_value=response_400)
-    invalid_ods_code = "!@?£?$?@?"
 
     with pytest.raises(OdsErrorException):
-        OdsApiService.fetch_organisation_data(invalid_ods_code)
+        OdsApiService.fetch_organisation_data(OdsApiService(), "bad-ods-code")
 
 
 @pytest.fixture()
@@ -38,46 +48,16 @@ def mock_ods_responses():
     # load test data from several json files and pass to below tests in a dict
     yield load_ods_response_data()
 
-
-def test_parse_ods_response_extract_organisation_with_permitted_gp_role(
+def test_parse_ods_response_extracts_data_and_includes_role_code_passed_as_arg(
     mock_ods_responses,
 ):
-    test_response = mock_ods_responses["with_valid_gp_role"]
+    test_response = mock_ods_responses["pcse_org"]
+    role_code = "this should be the role code and not the one in the mock data"
 
-    actual = OdsApiService.parse_ods_response(test_response)
-    expect = ("PORTWAY LIFESTYLE CENTRE", "A9A5A", PermittedRole.GP.name)
+    actual = parse_ods_response(test_response, role_code)
+    expected = {"name" : "Primary Care Support England", "org_ods_code" : "B9A5A", "role_code" : role_code}
 
-    assert actual == expect
-
-
-def test_parse_ods_response_extract_organisation_with_permitted_PCSE_role(
-    mock_ods_responses,
-):
-    test_response = mock_ods_responses["with_valid_pcse_role"]
-
-    actual = OdsApiService.parse_ods_response(test_response)
-    expect = ("Primary Care Support England", "B9A5A", PermittedRole.PCSE.name)
-
-    assert actual == expect
+    assert actual == expected
 
 
-def test_parse_ods_response_return_the_first_valid_role_if_more_than_one_exists(
-    mock_ods_responses,
-):
-    test_response = mock_ods_responses["with_multiple_valid_roles"]
-
-    actual = OdsApiService.parse_ods_response(test_response)
-    expect = ("PORTWAY LIFESTYLE CENTRE", "A9A5A", PermittedRole.GP.name)
-
-    assert actual == expect
-
-
-def test_parse_ods_response_should_return_none_if_no_valid_role_was_found(
-    mock_ods_responses,
-):
-    test_response = mock_ods_responses["with_no_valid_roles"]
-
-    actual = OdsApiService.parse_ods_response(test_response)
-    expect = None
-
-    assert actual == expect
+#TODO: fetch_organisation_with_permitted_role, find_and_get_gpp_org_code, find_and_get_pcse_ods

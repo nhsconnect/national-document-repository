@@ -5,7 +5,8 @@ const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 
 describe('GP View Lloyd George Workflow', () => {
     beforeEach(() => {
-        cy.login('gp');
+        // Arrange
+        cy.login('GP_ADMIN');
 
         // search patient
         cy.intercept('GET', '/SearchPatient*', {
@@ -15,9 +16,6 @@ describe('GP View Lloyd George Workflow', () => {
         cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
         cy.getByTestId('search-submit-btn').click();
         cy.wait('@search');
-
-        // verify patient is active
-        cy.get('#active-radio-button').click();
     });
 
     context('View Lloyd George document', () => {

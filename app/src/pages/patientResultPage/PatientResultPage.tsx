@@ -1,38 +1,37 @@
 import React, { useState } from 'react';
-import { USER_ROLE } from '../../types/generic/roles';
-import { Button, Fieldset, Radios, WarningCallout } from 'nhsuk-react-components';
+import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import BackButton from '../../components/generic/backButton/BackButton';
-import { FieldValues, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 type Props = {
-    role: USER_ROLE;
+    role: REPOSITORY_ROLE;
 };
 
 function PatientResultPage({ role }: Props) {
-    const userIsPCSE = role === USER_ROLE.PCSE;
-    const userIsGP = role === USER_ROLE.GP;
+    const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
+    const userIsGPAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
+    const userIsGPClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
     const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
-    const { register, handleSubmit, formState, getFieldState } = useForm();
-    const { ref: patientStatusRef, ...radioProps } = register('patientStatus');
-    const { isDirty: isPatientStatusDirty } = getFieldState('patientStatus', formState);
+    const { handleSubmit } = useForm();
 
-    const submit = (fieldValues: FieldValues) => {
-        if (userIsGP) {
+    const submit = () => {
+        if (userIsGPAdmin || userIsGPClinical) {
             // Make PDS patient search request to upload documents to patient
-            if (!isPatientStatusDirty) {
-                setInputError('Select a patient status');
+            if (typeof patientDetails?.active === 'undefined') {
+                setInputError('We cannot determine the active state of this patient');
                 return;
             }
-            if (fieldValues.patientStatus === 'active') {
+            if (patientDetails?.active) {
                 navigate(routes.LLOYD_GEORGE);
-            } else if (fieldValues.patientStatus === 'inactive') {
+            } else {
                 navigate(routes.UPLOAD_DOCUMENTS);
             }
         }
@@ -75,32 +74,8 @@ function PatientResultPage({ role }: Props) {
             {patientDetails && <PatientSummary patientDetails={patientDetails} />}
 
             <form onSubmit={handleSubmit(submit)} style={{ marginTop: 60 }}>
-                {userIsGP && (
+                {(userIsGPAdmin || userIsGPClinical) && (
                     <>
-                        <Fieldset>
-                            <Fieldset.Legend>
-                                <h2>What is the current status of the patient?</h2>
-                            </Fieldset.Legend>
-                            <Radios id="patient-status" error={inputError}>
-                                <Radios.Radio
-                                    value="active"
-                                    inputRef={patientStatusRef}
-                                    {...radioProps}
-                                    id="active-radio-button"
-                                >
-                                    Active patient
-                                </Radios.Radio>
-                                <Radios.Radio
-                                    value="inactive"
-                                    inputRef={patientStatusRef}
-                                    {...radioProps}
-                                    id="inactive-radio-button"
-                                >
-                                    Inactive patient
-                                </Radios.Radio>
-                            </Radios>
-                        </Fieldset>
-
                         <p id="gp-message">
                             Ensure these patient details match the records and attachments that you
                             upload

@@ -14,6 +14,10 @@ class AuthorisationException(Exception):
     pass
 
 
+class TooManyOrgsException(Exception):
+    pass
+
+
 class OrganisationNotFoundException(Exception):
     pass
 
@@ -51,26 +55,23 @@ class LGFileTypeException(ValueError):
 class InvalidMessageException(Exception):
     pass
 
-
 class InvalidDocumentReferenceException(Exception):
     pass
 
+class UserNotAuthorisedException(Exception):
+    pass
 
 class VirusScanNoResultException(Exception):
     pass
 
-
 class DocumentInfectedException(Exception):
     pass
-
 
 class VirusScanFailedException(Exception):
     pass
 
-
 class S3FileNotFoundException(Exception):
     pass
-
 
 class TagNotFoundException(Exception):
     pass

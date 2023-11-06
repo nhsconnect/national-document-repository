@@ -1,3 +1,4 @@
+import logging
 from models.pds_models import Patient, PatientDetails
 from requests import Response
 from utils.exceptions import (

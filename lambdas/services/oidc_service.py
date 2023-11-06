@@ -93,16 +93,74 @@ class OidcService:
         except jwt.exceptions.PyJWTError as err:
             logger.error(err)
             raise AuthorisationException("The given JWT is invalid or expired.")
-
-    def fetch_user_org_codes(self, access_token: str) -> List[str]:
+    
+    def fetch_user_org_codes(
+        self, access_token: str, id_token_claim_set: IdTokenClaimSet
+    ) -> List[str]:
         userinfo = self.fetch_userinfo(access_token)
-        return self.extract_org_codes(userinfo)
+
+        logger.info(f"User info response: {userinfo}")
+
+        nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
+
+        logger.info(f"nrbac_roles: {nrbac_roles}")
+
+        selected_role = get_selected_roleid(id_token_claim_set)
+
+        # logger.info(f"User's NRBAC roles: {nrbac_roles}")
+        logger.info(f"Selected role ID: {selected_role}")
+
+        for role in nrbac_roles:
+            logger.info(f"Role: {role}")
+            if role["person_roleid"] == selected_role:
+                return [role["org_code"]]
+        
+        logger.info("No oorg code found")
+        return []
+
+    def fetch_user_role_code(
+        self, 
+        access_token: str, 
+        id_token_claim_set: IdTokenClaimSet, 
+        prefix_character: str
+    ) -> str:
+        
+        userinfo = self.fetch_userinfo(access_token)
+        logger.info(f"User info response: {userinfo}")
+
+        nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
+        logger.info(f"nrbac_roles: {nrbac_roles}")
+
+        selected_role = get_selected_roleid(id_token_claim_set)
+        logger.info(f"Selected role ID: {selected_role}")
+
+        role_codes = ""
+        for nrbac_role in nrbac_roles:
+            if nrbac_role["person_roleid"] == selected_role:
+                role_codes = nrbac_role["role_code"]
+                break
+    
+        if role_codes == "":
+            raise AuthorisationException("No role codes found for users selected role")
+        
+        role_codes_split = role_codes.split(":")
+
+        for role_code in role_codes_split:
+            if role_code[0].upper() == prefix_character.upper():
+                return role_code
+
+        raise AuthorisationException(f'Role codes have been found for the user but not with prefix {prefix_character.upper()}')
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
+        logger.info(f"Access token for user info request: {access_token}")
+
         userinfo_response = requests.get(
             self._oidc_userinfo_url,
-            headers={"Authorization": f"Bearer {access_token}"},
+            headers={
+                "Authorization": f"Bearer {access_token}",
+            },
         )
+
         if userinfo_response.status_code == 200:
             return userinfo_response.json()
         else:
@@ -111,12 +169,10 @@ class OidcService:
                 f"{userinfo_response.content}"
             )
             raise AuthorisationException("Failed to retrieve userinfo")
-
-    def extract_org_codes(self, userinfo: Dict) -> List[str]:
-        nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
-        return [role["org_code"] for role in nrbac_roles if "org_code" in role]
-
-    def fetch_oidc_parameters(self):
+        
+     # TODO Move to SSM service, example in token_handler_ssm_service
+    @staticmethod
+    def fetch_oidc_parameters():
         parameters_names = [
             "OIDC_CLIENT_ID",
             "OIDC_CLIENT_SECRET",
@@ -139,3 +195,8 @@ class OidcService:
         oidc_parameters["OIDC_CALLBACK_URL"] = os.environ["OIDC_CALLBACK_URL"]
 
         return oidc_parameters
+
+
+def get_selected_roleid(id_token_claim_set: IdTokenClaimSet):
+    return id_token_claim_set.selected_roleid
+

@@ -46,6 +46,7 @@ def test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
         "sid": "fake_cis2_session_id",
         "sub": "fake_cis2_login_id",
         "exp": 1234567890,
+        "selected_roleid": "012345678901"
     }
 
     mocker.patch("requests.post", return_value=mock_cis2_response)
@@ -103,16 +104,18 @@ def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_id_
         oidc_service.fetch_tokens("test_auth_code")
 
 
-def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
-    mock_token = "fake_access_token"
+def test_oidc_service_fetch_user_org_code(mocker, oidc_service):
+    mock_access_token = "fake_access_token"
+    role_id = "500000000001"
+    expected_ods_code = "A9A5A"
     mock_userinfo = {
         "nhsid_useruid": "500000000000",
         "name": "TestUserOne Caius Mr",
         "nhsid_nrbac_roles": [
             {
                 "person_orgid": "500000000000",
-                "person_roleid": "500000000000",
-                "org_code": "A9A5A",
+                "person_roleid": role_id,
+                "org_code": expected_ods_code,
                 "role_name": '"Support":"Systems Support":"Systems Support Access Role"',
                 "role_code": "S8001:G8005:R8015",
             },
@@ -134,14 +137,19 @@ def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
         "sub": "500000000000",
     }
 
-    expected = ["A9A5A", "B9A5A"]
+    mock_decoded_claim_set = {
+        "sid": "fake_cis2_session_id",
+        "sub": "fake_cis2_login_id",
+        "exp": 1234567890,
+        "selected_roleid": role_id
+    }
 
     mock_response = MockResponse(status_code=200, json_data=mock_userinfo)
 
     mocker.patch("requests.get", return_value=mock_response)
 
-    actual = oidc_service.fetch_user_org_codes(mock_token)
-    assert actual == expected
+    actual = oidc_service.fetch_user_org_codes(mock_access_token, IdTokenClaimSet(**mock_decoded_claim_set))
+    assert actual[0] == expected_ods_code
 
 
 def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_invalid_access_token(
@@ -160,7 +168,7 @@ def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_inva
     mocker.patch("requests.get", return_value=mock_response)
 
     with pytest.raises(AuthorisationException):
-        oidc_service.fetch_user_org_codes(mock_token)
+        oidc_service.fetch_user_org_codes(mock_token, "not a real role")
 
 
 @pytest.fixture(name="mock_id_tokens", scope="session")
@@ -219,7 +227,7 @@ def test_oidc_service_validate_and_decode_token__validate_token_with_proper_keys
     assert actual == expect
 
 
-def test_oidc_service_validate_and_decode_token__raise_AuthorisationException_for_fake_id_token(
+def test_oidc_service_validate_and_decode_token_raise_AuthorisationException_for_fake_id_token(
     mock_id_tokens, oidc_service, mock_jwk_client
 ):
     counterfeit_id_token = mock_id_tokens["counterfeit_id_token"]
@@ -228,7 +236,7 @@ def test_oidc_service_validate_and_decode_token__raise_AuthorisationException_fo
         oidc_service.validate_and_decode_token(counterfeit_id_token)
 
 
-def test_oidc_service_validate_and_decode_token__raise_AuthorisationException_for_expired_id_token(
+def test_oidc_service_validate_and_decode_token_raise_AuthorisationException_for_expired_id_token(
     mock_id_tokens, oidc_service, mock_jwk_client
 ):
     expired_id_token = mock_id_tokens["expired_id_token"]

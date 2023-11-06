@@ -6,4 +6,5 @@ export type PatientDetails = {
     postalCode: string | null;
     superseded: boolean;
     restricted: boolean;
+    active: boolean;
 };

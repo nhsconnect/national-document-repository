@@ -3,7 +3,7 @@ const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 
 beforeEach(() => {
-    cy.login('gp');
+    cy.login('GP_ADMIN');
     navigateToUploadPage();
 });
 
@@ -20,6 +20,7 @@ const patient = {
     postalCode: 'AA1 1AA',
     superseded: false,
     restricted: false,
+    active: false,
 };
 
 const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
@@ -40,7 +41,6 @@ const navigateToUploadPage = () => {
     cy.get('#search-submit').click();
     cy.wait('@search');
 
-    cy.get('#inactive-radio-button').click();
     cy.get('#verify-submit').click();
 };
 

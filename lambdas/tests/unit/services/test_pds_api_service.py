@@ -7,12 +7,21 @@ from requests import Response
 from services.pds_api_service import PdsApiService
 from tests.unit.helpers.data.pds.access_token_response import RESPONSE_TOKEN
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
-from tests.unit.helpers.mock_services import FakeSSMService
 from utils.exceptions import PdsErrorException
+
+
+class FakeSSMService:
+    def __init__(self, *arg, **kwargs):
+        pass
+
+    def get_ssm_parameters(self, parameters_keys, *arg, **kwargs):
+        return {parameter: f"test_value_{parameter}" for parameter in parameters_keys}
+
+    def update_ssm_parameter(self, *arg, **kwargs):
+        pass
 
 fake_ssm_service = FakeSSMService()
 pds_service = PdsApiService(fake_ssm_service)
-
 
 def test_request_new_token_is_call_with_correct_data(mocker):
     mock_jwt_token = "testtest"

@@ -9,6 +9,7 @@ import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
 import { act } from 'react-dom/test-utils';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 describe('PatientResultPage', () => {
     afterEach(() => {
@@ -52,19 +53,13 @@ describe('PatientResultPage', () => {
         it('displays text specific to upload path if user has selected upload', async () => {
             const nhsNumber = '9000000000';
             const patientDetails = buildPatientDetails({ nhsNumber });
-            const uploadRole = USER_ROLE.GP;
+            const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
 
             renderPatientResultPage(patientDetails, uploadRole);
 
             expect(
                 screen.getByRole('heading', { name: 'Verify patient details' }),
             ).toBeInTheDocument();
-
-            expect(
-                screen.getByText('What is the current status of the patient?'),
-            ).toBeInTheDocument();
-            expect(screen.getByRole('radio', { name: 'Active patient' })).toBeInTheDocument();
-            expect(screen.getByRole('radio', { name: 'Inactive patient' })).toBeInTheDocument();
 
             expect(
                 screen.getByText(
@@ -76,7 +71,7 @@ describe('PatientResultPage', () => {
         it("doesn't display text specific to upload path if user has selected download", async () => {
             const nhsNumber = '9000000000';
             const patientDetails = buildPatientDetails({ nhsNumber });
-            const downloadRole = USER_ROLE.PCSE;
+            const downloadRole = REPOSITORY_ROLE.PCSE;
             renderPatientResultPage(patientDetails, downloadRole);
 
             expect(
@@ -138,13 +133,12 @@ describe('PatientResultPage', () => {
                 initialIndex: 1,
             });
 
-            const uploadRole = USER_ROLE.GP;
+            const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
 
-            renderPatientResultPage({}, uploadRole, history);
+            renderPatientResultPage({ active: true }, uploadRole, history);
             expect(history.location.pathname).toBe('/example');
 
             act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Active patient' }));
                 userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
             });
 
@@ -159,17 +153,38 @@ describe('PatientResultPage', () => {
                 initialIndex: 1,
             });
 
-            const uploadRole = USER_ROLE.GP;
+            const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
 
-            renderPatientResultPage({}, uploadRole, history);
+            renderPatientResultPage({ active: false }, uploadRole, history);
             expect(history.location.pathname).toBe('/example');
             act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'Inactive patient' }));
                 userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
             });
 
             await waitFor(() => {
                 expect(history.location.pathname).toBe(routes.UPLOAD_DOCUMENTS);
+            });
+        });
+
+        it('Shows an error message if the active field is missing on the patient', async () => {
+            const history = createMemoryHistory({
+                initialEntries: ['/example'],
+                initialIndex: 1,
+            });
+
+            const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
+
+            renderPatientResultPage({ active: undefined }, uploadRole, history);
+            expect(history.location.pathname).toBe('/example');
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText('We cannot determine the active state of this patient'),
+                ).toBeInTheDocument();
             });
         });
 
@@ -179,7 +194,7 @@ describe('PatientResultPage', () => {
                 initialIndex: 1,
             });
 
-            const downloadRole = USER_ROLE.PCSE;
+            const downloadRole = REPOSITORY_ROLE.PCSE;
 
             renderPatientResultPage({}, downloadRole, history);
             expect(history.location.pathname).toBe('/example');
@@ -196,7 +211,7 @@ describe('PatientResultPage', () => {
 const homeRoute = '/example';
 const renderPatientResultPage = (
     patientOverride: Partial<PatientDetails> = {},
-    role: USER_ROLE = USER_ROLE.PCSE,
+    role: REPOSITORY_ROLE = REPOSITORY_ROLE.PCSE,
     history = createMemoryHistory({
         initialEntries: [homeRoute],
         initialIndex: 1,

@@ -3,7 +3,7 @@ describe('home page', () => {
 
     context('logged in', () => {
         beforeEach(() => {
-            cy.login('gp');
+            cy.login('GP_ADMIN');
             cy.visit(baseUrl);
         });
 

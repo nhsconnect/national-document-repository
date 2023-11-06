@@ -52,7 +52,7 @@ describe('AuthCallbackPage', () => {
         expect(screen.getByRole('status')).toBeInTheDocument();
         expect(screen.getByText('Logging in...')).toBeInTheDocument();
         await waitFor(() => {
-            expect(history.location.pathname).toBe(routes.SELECT_ORG);
+            expect(history.location.pathname).toBe(routes.UPLOAD_SEARCH);
         });
     });
 
@@ -70,7 +70,7 @@ describe('AuthCallbackPage', () => {
         expect(history.location.pathname).toBe(currentPage);
 
         await waitFor(() => {
-            expect(history.location.pathname).toBe(routes.SELECT_ORG);
+            expect(history.location.pathname).toBe(routes.UPLOAD_SEARCH);
         });
     });
 

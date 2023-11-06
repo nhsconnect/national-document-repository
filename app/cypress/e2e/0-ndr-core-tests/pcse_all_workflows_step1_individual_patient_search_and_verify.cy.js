@@ -4,8 +4,8 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
     const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 
     const roles = Object.freeze({
-        GP: 'gp',
-        PCSE: 'pcse',
+        GP: 'GP_ADMIN',
+        PCSE: 'PCSE',
     });
 
     const noPatientError = 400;
@@ -20,6 +20,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         superseded: false,
         restricted: false,
     };
+
     beforeEach(() => {
         cy.visit(baseUrl);
     });
@@ -31,7 +32,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
                 body: patient,
             }).as('search');
         }
-        cy.login('pcse');
+        cy.login('PCSE');
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 
@@ -49,7 +50,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
     });
 
     it('shows the download documents page when download patient is verified', () => {
-        cy.login('pcse');
+        cy.login('PCSE');
         cy.intercept('GET', '/SearchPatient*', {
             statusCode: 200,
             body: patient,
@@ -72,7 +73,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
             }).as('search');
         }
 
-        cy.login('pcse');
+        cy.login('PCSE');
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 
@@ -93,7 +94,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
             }).as('search');
         }
 
-        cy.login('pcse');
+        cy.login('PCSE');
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 
@@ -114,7 +115,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
             }).as('search');
         }
 
-        cy.login('pcse');
+        cy.login('PCSE');
         cy.get('#nhs-number-input').click();
         cy.get('#nhs-number-input').type(testPatient);
 
