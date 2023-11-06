@@ -6,6 +6,7 @@ from services.document_manifest_service import DocumentManifestService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_document_type import (
     extract_document_type,
     validate_document_type,
@@ -17,6 +18,7 @@ from utils.lambda_response import ApiGatewayResponse
 logger = LoggingService(__name__)
 
 
+@set_request_context_for_logging
 @validate_patient_id
 @validate_document_type
 @ensure_environment_variables(
