@@ -10,11 +10,9 @@ type Args = {
     baseHeaders: AuthHeaders;
 };
 
-type GetDocumentSearchResultsResponse =
-    | {
-          data: Array<SearchResult>;
-      }
-    | undefined;
+export type GetDocumentSearchResultsResponse = {
+    data: Array<SearchResult>;
+};
 
 const getDocumentSearchResults = async ({ nhsNumber, baseUrl, baseHeaders }: Args) => {
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_SEARCH;
