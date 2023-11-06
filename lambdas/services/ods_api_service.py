@@ -53,14 +53,14 @@ class OdsApiService:
 
         if pcse_ods is not None: 
             logger.info(f"ODS code {ods_code} is a PCSE, returning org data")
-            response = self.parse_ods_response(org_data, "")
+            response = parse_ods_response(org_data, "")
             return response
         
         gpp_org = find_and_get_gpp_org_code(org_data)
 
         if gpp_org is not None: 
             logger.info(f"ODS code {ods_code} is a GPP, returning org data")
-            response = self.parse_ods_response(org_data, gpp_org)
+            response = parse_ods_response(org_data, gpp_org)
             return response
         
         logger.info(

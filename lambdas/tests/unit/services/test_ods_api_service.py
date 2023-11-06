@@ -1,5 +1,5 @@
 import pytest
-from services.ods_api_service import OdsApiService
+from services.ods_api_service import OdsApiService, parse_ods_response
 from tests.unit.helpers.data.ods.utils import load_ods_response_data
 from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import OdsErrorException, OrganisationNotFoundException
@@ -7,15 +7,15 @@ from utils.exceptions import OdsErrorException, OrganisationNotFoundException
 
 def test_fetch_organisation_data_valid_returns_organisation_data(mocker):
     test_ods_code = "X26"
-    ord_api_request_url = f"https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations/{test_ods_code}"
+    ord_api_request_call_url = f"https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations/{test_ods_code}"
     expected = """{"successfulJSONResponse"}"""
     response_200 = MockResponse(200, {expected})
     mock_api = mocker.patch("requests.get", return_value=response_200)
 
-    actual = OdsApiService.fetch_organisation_data(test_ods_code)
+    actual = OdsApiService.fetch_organisation_data(OdsApiService(), test_ods_code)
 
-    assert actual == expected
-    assert mock_api.assert_called_with(ord_api_request_url)
+    assert actual == expected #find out why actual is being passed back in a set
+    assert mock_api.assert_called_with(ord_api_request_call_url)
 
 
 def test_fetch_organisation_data_404_raise_OrganisationNotFoundException(mocker):
@@ -23,7 +23,7 @@ def test_fetch_organisation_data_404_raise_OrganisationNotFoundException(mocker)
 
     mocker.patch("requests.get", return_value=response_404)
     with pytest.raises(OrganisationNotFoundException):
-        OdsApiService.fetch_organisation_data("non-exist-ods-code")
+        OdsApiService.fetch_organisation_data(OdsApiService(), "non-exist-ods-code")
 
 
 def test_fetch_organisation_data_catch_all_raises_OdsErrorException(mocker):
@@ -32,7 +32,7 @@ def test_fetch_organisation_data_catch_all_raises_OdsErrorException(mocker):
     mocker.patch("requests.get", return_value=response_400)
 
     with pytest.raises(OdsErrorException):
-        OdsApiService.fetch_organisation_data("bad-ods-code")
+        OdsApiService.fetch_organisation_data(OdsApiService(), "bad-ods-code")
 
 
 @pytest.fixture()
@@ -43,12 +43,13 @@ def mock_ods_responses():
 def test_parse_ods_response_extracts_data_and_includes_role_code_passed_as_arg(
     mock_ods_responses,
 ):
-    test_response = mock_ods_responses["pcse_role"]
+    test_response = mock_ods_responses["pcse_org"]
     role_code = "this should be the role code and not the one in the mock data"
 
-    actual = OdsApiService.parse_ods_response(test_response, role_code)
-    expected = ("PORTWAY LIFESTYLE CENTRE", "A9A5A", role_code)
+    actual = parse_ods_response(test_response, role_code)
+    expected = {"name" : "Primary Care Support England", "org_ods_code" : "B9A5A", "role_code" : role_code}
 
     assert actual == expected
 
-    #TODO: fetch_organisation_with_permitted_role, find_and_get_gpp_org_code, find_and_get_pcse_ods
+
+#TODO: fetch_organisation_with_permitted_role, find_and_get_gpp_org_code, find_and_get_pcse_ods
