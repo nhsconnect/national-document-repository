@@ -16,7 +16,7 @@ MOCK_ROLE_CODE_RESPONSE = {
             "DataType": "string",
         },
         {
-            "Name": "role_code_gpadmin",
+            "Name": "/auth/smartcard/role/gp_admin",
             "Type": "String",
             "Value": "R0001",
             "Version": 123,
@@ -27,7 +27,7 @@ MOCK_ROLE_CODE_RESPONSE = {
             "DataType": "string",
         },
         {
-            "Name": "role_code_gpp_org",
+            "Name": "/auth/smartcard/role/gp_clinical",
             "Type": "String",
             "Value": "R0002",
             "Version": 123,
@@ -38,7 +38,7 @@ MOCK_ROLE_CODE_RESPONSE = {
             "DataType": "string",
         },
         {
-            "Name": "role_code_pcse",
+            "Name": "/auth/smartcard/role/pcse",
             "Type": "String",
             "Value": "R0003",
             "Version": 123,
@@ -84,20 +84,14 @@ def test_get_ssm_parameters(mocker):
     service = TokenHandlerSSMService()
     mock_get_parameters = mocker.patch.object(service.client, "get_parameters")
     mock_get_parameters.return_value = MOCK_ROLE_CODE_RESPONSE
-    actual = service.get_role_codes()
+    expected = ["R0001", "R0002", "R0003"]
 
-    expected = {
-        "ods_code_pcse": "X0123",
-        "role_code_gpadmin": "R0001",
-        "role_code_gpp_org": "R0002",
-        "role_code_pcse": "R0003"
-    }
+    actual = service.get_smartcard_role_codes()
 
     mock_get_parameters.assert_called_once_with(
-        Names=["ods_code_pcse",
-               "role_code_gpadmin",
-               "role_code_gpp_org",
-               "role_code_pcse"
+        Names=["/auth/smartcard/role/gp_admin",
+               "/auth/smartcard/role/gp_clinical",
+               "/auth/smartcard/role/pcse"
                ], WithDecryption=False
     )
     assert actual == expected

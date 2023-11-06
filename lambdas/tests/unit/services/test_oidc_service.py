@@ -5,7 +5,7 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from models.oidc_models import IdTokenClaimSet
-from services.oidc_service_for_password import OidcServiceForPassword
+from services.oidc_service import OidcService
 from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import AuthorisationException
 
@@ -23,13 +23,13 @@ MOCK_PARAMETERS = {
 @pytest.fixture
 def oidc_service(mocker):
     with patch.object(
-        OidcServiceForPassword, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
+        OidcService, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
     ):
-        oidc_service = OidcServiceForPassword()
+        oidc_service = OidcService()
         yield oidc_service
 
 
-def skip_test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
+def test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
     mock_access_token = "mock_access_token"
     mock_id_token = "mock_id_token"
     mock_cis2_response = MockResponse(
@@ -46,6 +46,7 @@ def skip_test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
         "sid": "fake_cis2_session_id",
         "sub": "fake_cis2_login_id",
         "exp": 1234567890,
+        "selected_roleid": "012345678901"
     }
 
     mocker.patch("requests.post", return_value=mock_cis2_response)
@@ -103,9 +104,10 @@ def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_id_
         oidc_service.fetch_tokens("test_auth_code")
 
 
-def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
-    mock_token = "fake_access_token"
+def test_oidc_service_fetch_user_org_code(mocker, oidc_service):
+    mock_access_token = "fake_access_token"
     role_id = "500000000001"
+    expected_ods_code = "A9A5A"
     mock_userinfo = {
         "nhsid_useruid": "500000000000",
         "name": "TestUserOne Caius Mr",
@@ -113,7 +115,7 @@ def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
             {
                 "person_orgid": "500000000000",
                 "person_roleid": role_id,
-                "org_code": "A9A5A",
+                "org_code": expected_ods_code,
                 "role_name": '"Support":"Systems Support":"Systems Support Access Role"',
                 "role_code": "S8001:G8005:R8015",
             },
@@ -135,14 +137,19 @@ def test_oidc_service_fetch_user_org_codes(mocker, oidc_service):
         "sub": "500000000000",
     }
 
-    expected = ["A9A5A", "B9A5A"]
+    mock_decoded_claim_set = {
+        "sid": "fake_cis2_session_id",
+        "sub": "fake_cis2_login_id",
+        "exp": 1234567890,
+        "selected_roleid": role_id
+    }
 
     mock_response = MockResponse(status_code=200, json_data=mock_userinfo)
 
     mocker.patch("requests.get", return_value=mock_response)
 
-    actual = oidc_service.fetch_user_org_codes(mock_token, role_id)
-    assert actual == expected
+    actual = oidc_service.fetch_user_org_codes(mock_access_token, IdTokenClaimSet(**mock_decoded_claim_set))
+    assert actual[0] == expected_ods_code
 
 
 def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_invalid_access_token(

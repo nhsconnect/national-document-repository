@@ -17,7 +17,7 @@ class Organisation(NamedTuple):
 
 class OdsApiService:
     # A service to fetch info from NHS Organisation Data Service (ODS) Organisation Reference Data (ORD) API
-    ORD_API_URL = "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations/"
+    ORD_API_URL = "https://directory.spineservices.nhs.uk/ORD/2-0-0/organisations"
 
     def fetch_organisation_data(self, ods_code: str):
         response = requests.get(f"{self.ORD_API_URL}/{ods_code}")
@@ -32,22 +32,6 @@ class OdsApiService:
                 f"Got error response from ODS API with ods code {ods_code}: {response}"
             )
             raise OdsErrorException("Failed to fetch organisation data from ODS")
-    
-    def parse_ods_response(self, org_data, role_code) -> dict:
-
-        org_name = org_data["Organisation"]["Name"]
-        logger.info(f"Organisation Name: {org_name}")
-
-        org_ods_code = org_data["Organisation"]["OrgId"]["extension"]
-        logger.info(f"Organisation Org Code: {org_ods_code}")
-
-        logger.info(f"Role code: {role_code}")
-        response_dictionary = { "name" : org_name, 
-                 "org_ods_code" : org_ods_code,
-                 "role_code" : role_code }
-        
-        return response_dictionary
-
 
     def fetch_organisation_with_permitted_role(
         self, ods_code_list: list[str]
@@ -66,25 +50,41 @@ class OdsApiService:
         logger.info(f"Org Data: {org_data}")
 
         pcse_ods = find_and_get_pcse_ods(ods_code)
-        gpp_org = find_and_get_gpp_org(org_data)
 
         if pcse_ods is not None: 
             logger.info(f"ODS code {ods_code} is a PCSE, returning org data")
-            response = self.parse_ods_response(org_data, "")
+            response = parse_ods_response(org_data, "")
             return response
+        
+        gpp_org = find_and_get_gpp_org_code(org_data)
 
         if gpp_org is not None: 
             logger.info(f"ODS code {ods_code} is a GPP, returning org data")
-            response = self.parse_ods_response(org_data, gpp_org)
+            response = parse_ods_response(org_data, gpp_org)
             return response
         
         logger.info(
             f"ODS code {ods_code} is not a GPP or PCSE, returning empty list"
         )
         return {}
+    
+def parse_ods_response(org_data, role_code) -> dict:
+
+    org_name = org_data["Organisation"]["Name"]
+    logger.info(f"Organisation Name: {org_name}")
+
+    org_ods_code = org_data["Organisation"]["OrgId"]["extension"]
+    logger.info(f"Organisation Org Code: {org_ods_code}")
+
+    logger.info(f"Role code: {role_code}")
+    response_dictionary = { "name" : org_name, 
+                "org_ods_code" : org_ods_code,
+                "role_code" : role_code }
+    
+    return response_dictionary
 
 
-def find_and_get_gpp_org(org_details):
+def find_and_get_gpp_org_code(org_details):
     logger.info("Checking GPP Roles")
     json_roles: List[Dict] = org_details["Organisation"]["Roles"]["Role"]
 

@@ -19,9 +19,9 @@ class TokenHandlerSSMService(SSMService):
             "/auth/smartcard/role/pcse",
         ])
 
-        response = [ params["/auth/smartcard/role/gp_admin"],
-                     params["/auth/smartcard/role/gp_clinical"],
-                     params["/auth/smartcard/role/pcse"] ]
+        response = [params["/auth/smartcard/role/gp_admin"],
+                    params["/auth/smartcard/role/gp_clinical"],
+                    params["/auth/smartcard/role/pcse"]]
         
         return response
 

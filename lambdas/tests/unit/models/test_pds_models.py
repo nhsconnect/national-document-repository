@@ -35,6 +35,8 @@ def test_get_unrestricted_patient_details():
         nhsNumber="9000000009",
         superseded=False,
         restricted=False,
+        generalPracticeOds="Y12345",
+        active=True
     )
 
     result = patient.get_patient_details(patient.id)
@@ -53,6 +55,8 @@ def test_get_restricted_patient_details():
         nhsNumber="9000000025",
         superseded=False,
         restricted=True,
+        generalPracticeOds='',
+        active=False
     )
 
     result = patient.get_patient_details(patient.id)
@@ -79,18 +83,20 @@ def test_get_minimum_patient_details():
 
 
 @freeze_time("2024-12-31")
-def test_raise_error_when_gp_end_date_indicates_inactive():
+def test_gp_ods_empty_when_gp_end_date_indicates_inactive():
     patient = create_patient(PDS_PATIENT_WITH_GP_END_DATE)
 
-    with pytest.raises(ValueError):
-        patient.get_minimum_patient_details(patient.id)
+    response = patient.get_minimum_patient_details(patient.id)
+
+    assert response.general_practice_ods == ""
 
 
 def test_raise_error_when_no_gp_in_response():
     patient = create_patient(PDS_PATIENT_WITHOUT_ACTIVE_GP)
 
-    with pytest.raises(ValueError):
-        patient.get_minimum_patient_details(patient.id)
+    response = patient.get_minimum_patient_details(patient.id)
+
+    assert response.general_practice_ods == ""
 
 
 @freeze_time("2021-12-31")

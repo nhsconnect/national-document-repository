@@ -2,7 +2,7 @@ import os
 
 import pytest
 from models.oidc_models import IdTokenClaimSet
-from services.oidc_service_for_password import OidcServiceForPassword
+from services.oidc_service import OidcService
 
 
 @pytest.fixture
@@ -33,10 +33,10 @@ def mock_aws_infras(mocker, set_env):
 
 @pytest.fixture
 def mock_oidc_service(mocker):
-    mocker.patch.object(OidcServiceForPassword, "__init__", return_value=None)
-    mocked_fetch_token = mocker.patch.object(OidcServiceForPassword, "fetch_tokens")
+    mocker.patch.object(OidcService, "__init__", return_value=None)
+    mocked_fetch_token = mocker.patch.object(OidcService, "fetch_tokens")
     mocked_fetch_user_org_codes = mocker.patch.object(
-        OidcServiceForPassword, "fetch_user_org_codes"
+        OidcService, "fetch_user_org_codes"
     )
 
     mocked_tokens = [
@@ -57,7 +57,7 @@ def mock_oidc_service(mocker):
 @pytest.fixture
 def mock_ods_api_service(mocker):
     mock = mocker.patch(
-        "services.ods_api_service_for_password.OdsApiServiceForPassword"
+        "services.ods_api_service.OdsApiServiceForPassword"
     )
 
     mock.return_value.fetch_organisation_with_permitted_role.return_value = [

@@ -1,9 +1,7 @@
 import logging
 import os
-import json
 from json import JSONDecodeError
 
-import boto3
 import jwt
 from pydantic import ValidationError
 from services.mock_pds_service import MockPdsApiService
