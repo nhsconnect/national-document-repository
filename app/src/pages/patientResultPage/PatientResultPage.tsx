@@ -20,9 +20,7 @@ function PatientResultPage({ role }: Props) {
     const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
-    // const { register, handleSubmit, formState, getFieldState } = useForm();
-    // const { ref: patientStatusRef, ...radioProps } = register('patientStatus');
-    // const { isDirty: isPatientStatusDirty } = getFieldState('patientStatus', formState);
+    const { handleSubmit, formState } = useForm();
 
     const submit = (fieldValues: FieldValues) => {
         if (userIsGPAdmin || userIsGPClinical) {
