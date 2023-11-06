@@ -64,5 +64,5 @@ def set_env(monkeypatch):
 
 @pytest.fixture(scope='session', autouse=True)
 def logger_mock():
-    with mock.patch.object(SensitiveAuditService, 'emit') as _fixture:
+    with mock.patch('SensitiveAuditService.emit') as _fixture:
         yield _fixture
