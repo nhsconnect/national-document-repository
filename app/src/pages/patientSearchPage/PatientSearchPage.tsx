@@ -5,7 +5,6 @@ import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { Button, Fieldset, Input } from 'nhsuk-react-components';
 import SpinnerButton from '../../components/generic/spinnerButton/SpinnerButton';
 import { InputRef } from '../../types/generic/inputRef';
-import { USER_ROLE } from '../../types/generic/roles';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 import { useNavigate } from 'react-router';
@@ -28,7 +27,6 @@ type Props = {
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
 function PatientSearchPage({ role }: Props) {
-    console.log('Here: ' + role);
     const [, setPatientDetails] = usePatientDetailsContext();
     const [submissionState, setSubmissionState] = useState<SEARCH_STATES>(SEARCH_STATES.IDLE);
     const [statusCode, setStatusCode] = useState<null | number>(null);
