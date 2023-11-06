@@ -10,11 +10,9 @@ This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS O
 See the License for the specific language governing permissions and limitations under the License.
 """
 
-import logging
 import os
 import time
 
-import boto3
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
@@ -22,12 +20,12 @@ from enums.repository_role import RepositoryRole
 from models.auth_policy import AuthPolicy
 from services.dynamo_service import DynamoDBService
 from services.ssm_service import SSMService
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
 from utils.decorators.ensure_env_var import ensure_environment_variables
 
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 @ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
 def lambda_handler(event, context):
@@ -37,7 +35,6 @@ def lambda_handler(event, context):
         ssm_service = SSMService()
         ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
         
-        token = event["authorizationToken"]
         public_key  = ssm_service.get_ssm_parameter(ssm_public_key_parameter_name, True)
        
         decoded = jwt.decode(
@@ -144,7 +141,7 @@ def redact_id(session_id: str) -> str:
 
 
 def find_login_session(ndr_session_id):
-    logger.debug(
+    logger.info(
         f"Retrieving session for session ID ending in: f{redact_id(ndr_session_id)}"
     )
     session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]

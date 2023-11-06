@@ -1,29 +1,23 @@
-import csv
 import os
 from datetime import datetime
 from unittest.mock import call
 
 from boto3.dynamodb.conditions import Attr
 from freezegun import freeze_time
-
-from handlers.bulk_upload_report_handler import (
-    get_times_for_scan,
-    write_items_to_csv,
-    get_dynamodb_report_items,
-    report_handler,
-    write_empty_report
-)
+from handlers.bulk_upload_report_handler import (get_dynamodb_report_items,
+                                                 get_times_for_scan,
+                                                 report_handler,
+                                                 write_empty_report,
+                                                 write_items_to_csv)
+from tests.unit.conftest import (MOCK_BULK_REPORT_TABLE_NAME,
+                                 MOCK_LG_STAGING_STORE_BUCKET)
+from tests.unit.helpers.data.bulk_upload.test_data import readfile
 from tests.unit.helpers.data.dynamo_scan_response import (
-    MOCK_RESPONSE,
-    EXPECTED_RESPONSE,
-    MOCK_RESPONSE_WITH_LAST_KEY,
-    MOCK_EMPTY_RESPONSE,
-    UNEXPECTED_RESPONSE,
-)
-from tests.unit.conftest import (
-    MOCK_BULK_REPORT_TABLE_NAME,
-    MOCK_LG_STAGING_STORE_BUCKET,
-)
+    EXPECTED_RESPONSE, MOCK_EMPTY_RESPONSE, MOCK_RESPONSE,
+    MOCK_RESPONSE_WITH_LAST_KEY, UNEXPECTED_RESPONSE)
+from tests.unit.models.test_bulk_upload_status import (
+    MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD)
+
 
 @freeze_time("2012-01-14 7:20:01")
 def test_get_time_for_scan_after_7am():
@@ -59,16 +53,17 @@ def test_get_time_for_scan_at_7am():
 
 
 def test_write_items_to_csv():
-    items = [{"id": "1", "key": "value"}, {"id": "2", "key": "value"}]
+    items = [MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD]
 
     write_items_to_csv(items, "test_file")
 
+    expected = readfile("expected_bulk_upload_report.csv")
+
     with open("test_file") as test_file:
-        csv_reader = csv.DictReader(test_file, delimiter=",")
-        assert csv_reader.fieldnames == list(items[0].keys())
-        for row, item in zip(csv_reader, items):
-            assert row == item
+        actual = test_file.read()
+        assert expected == actual
     os.remove("test_file")
+
 
 def test_write_empty_file_to_txt():
     write_empty_report("test_file")

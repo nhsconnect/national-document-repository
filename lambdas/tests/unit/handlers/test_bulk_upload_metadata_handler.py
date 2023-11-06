@@ -16,7 +16,11 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567891)
 
 MOCK_METADATA_CSV = "tests/unit/helpers/data/bulk_upload/metadata.csv"
-MOCK_INVALID_METADATA_CSV = "tests/unit/helpers/data/bulk_upload/metadata_invalid.csv"
+MOCK_INVALID_METADATA_CSV_FILES = [
+    "tests/unit/helpers/data/bulk_upload/metadata_invalid.csv",
+    "tests/unit/helpers/data/bulk_upload/metadata_invalid_empty_nhs_number.csv",
+    "tests/unit/helpers/data/bulk_upload/metadata_invalid_unexpected_comma.csv",
+]
 MOCK_TEMP_FOLDER = "tests/unit/helpers/data/bulk_upload"
 
 
@@ -49,10 +53,10 @@ def test_handler_log_error_when_fail_to_get_metadata_csv_from_s3(
     set_env, mock_s3_service, mock_sqs_service, caplog
 ):
     mock_s3_service.download_file.side_effect = ClientError(
-        {"Error": {"Code": "500", "Message": "file not exist in bucket"}},
-        "s3_get_object",
+        {"Error": {"Code": "403", "Message": "Forbidden"}},
+        "S3:HeadObject",
     )
-    expected_err_msg = "An error occurred (500) when calling the s3_get_object operation: file not exist in bucket"
+    expected_err_msg = 'No metadata file could be found with the name "metadata.csv"'
 
     lambda_handler(None, None)
 
@@ -65,17 +69,18 @@ def test_handler_log_error_when_fail_to_get_metadata_csv_from_s3(
 def test_handler_log_error_when_metadata_csv_is_invalid(
     set_env, mocker, mock_sqs_service, caplog
 ):
-    mocker.patch(
-        "handlers.bulk_upload_metadata_handler.download_metadata_from_s3",
-        return_value=MOCK_INVALID_METADATA_CSV,
-    )
+    for invalid_csv_file in MOCK_INVALID_METADATA_CSV_FILES:
+        mocker.patch(
+            "handlers.bulk_upload_metadata_handler.download_metadata_from_s3",
+            return_value=invalid_csv_file,
+        )
 
-    lambda_handler(None, None)
+        lambda_handler(None, None)
 
-    assert "validation errors for MetadataFile" in caplog.records[-1].message
-    assert caplog.records[-1].levelname == "ERROR"
+        assert "validation error" in caplog.records[-1].message
+        assert caplog.records[-1].levelname == "ERROR"
 
-    mock_sqs_service.send_message_with_nhs_number_attr.assert_not_called()
+        mock_sqs_service.send_message_with_nhs_number_attr.assert_not_called()
 
 
 def test_handler_log_error_when_failed_to_send_message_to_sqs(
@@ -138,8 +143,9 @@ def test_csv_to_staging_metadata():
 
 
 def test_csv_to_staging_metadata_raise_error_when_metadata_invalid():
-    with pytest.raises(ValidationError):
-        csv_to_staging_metadata(MOCK_INVALID_METADATA_CSV)
+    for invalid_csv_file in MOCK_INVALID_METADATA_CSV_FILES:
+        with pytest.raises(ValidationError):
+            csv_to_staging_metadata(invalid_csv_file)
 
 
 def test_send_metadata_to_sqs(mock_sqs_service):

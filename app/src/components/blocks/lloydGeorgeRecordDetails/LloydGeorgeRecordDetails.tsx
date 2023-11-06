@@ -46,14 +46,9 @@ function LloydGeorgeRecordDetails({
             handler: () => setStage(LG_RECORD_STAGE.DOWNLOAD_ALL),
         },
         {
-            label: 'Delete a selection of files',
-            key: 'delete-any-files-link',
-            handler: () => setStage(LG_RECORD_STAGE.DELETE_ANY),
-        },
-        {
-            label: 'Delete file',
-            key: 'delete-one-file-link',
-            handler: () => setStage(LG_RECORD_STAGE.DELETE_ONE),
+            label: 'Delete all files',
+            key: 'delete-all-files-link',
+            handler: () => setStage(LG_RECORD_STAGE.DELETE_ALL),
         },
     ];
 

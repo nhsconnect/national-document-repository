@@ -1,3 +1,5 @@
+import searchPatientPayload from '../../fixtures/requests/GET_SearchPatient.json';
+
 describe('PCSE Download Workflow: Access and download found files', () => {
     // env vars
     const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
@@ -42,9 +44,9 @@ describe('PCSE Download Workflow: Access and download found files', () => {
             body: patient,
         }).as('search');
 
-        cy.get('#nhs-number-input').click();
-        cy.get('#nhs-number-input').type(testPatient);
-        cy.get('#search-submit').click();
+        cy.getByTestId('nhs-number-input').click();
+        cy.getByTestId('nhs-number-input').type(testPatient);
+        cy.getByTestId('search-submit-btn').click();
         cy.wait('@search');
     };
 
@@ -240,5 +242,101 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.get('#start-again-link').should('exist');
         cy.get('#start-again-link').click();
         cy.url().should('eq', baseUrl);
+    });
+
+    context.only('delete all documents relating to a patient', () => {
+        beforeEach(() => {
+            cy.intercept('GET', '/SearchPatient*', {
+                statusCode: 200,
+                body: searchPatientPayload,
+            }).as('patientSearch');
+
+            cy.getByTestId('nhs-number-input').click();
+            cy.getByTestId('nhs-number-input').type(testPatient);
+            cy.getByTestId('search-submit-btn').click();
+            cy.wait('@patientSearch');
+
+            cy.intercept('GET', '/SearchDocumentReferences*', {
+                statusCode: 200,
+                body: searchDocumentReferencesResponse,
+            }).as('documentSearch');
+
+            cy.get('#verify-submit').click();
+
+            cy.wait('@documentSearch');
+        });
+
+        it('allows a PCSE user to delete all documents relating to a patient', () => {
+            cy.intercept(
+                'DELETE',
+                `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG,ARF`,
+                {
+                    statusCode: 200,
+                    body: 'Success',
+                },
+            ).as('documentDelete');
+
+            cy.getByTestId('delete-all-documents-btn').click();
+
+            cy.getByTestId('yes-radio-btn').click();
+            cy.getByTestId('delete-submit-btn').click();
+
+            cy.wait('@documentDelete');
+
+            // assert delete success page is as expected
+            cy.contains('Deletion complete').should('be.visible');
+            cy.contains('2 files from the record of:').should('be.visible');
+            cy.contains('GivenName Surname').should('be.visible');
+            cy.contains('(NHS number: 900 000 0009)').should('be.visible');
+        });
+
+        it('returns user to download documents page on cancel of delete', () => {
+            cy.getByTestId('delete-all-documents-btn').click();
+
+            // cancel delete
+            cy.getByTestId('no-radio-btn').click();
+            cy.getByTestId('delete-submit-btn').click();
+
+            // assert user is returned to download documents page
+            cy.contains('Download electronic health records and attachments').should('be.visible');
+        });
+
+        it('displays an error when the delete document API call fails', () => {
+            cy.intercept(
+                'DELETE',
+                `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG,ARF`,
+                {
+                    statusCode: 500,
+                    body: 'Failed to delete documents',
+                },
+            ).as('documentDelete');
+
+            cy.getByTestId('delete-all-documents-btn').click();
+
+            cy.getByTestId('yes-radio-btn').click();
+            cy.getByTestId('delete-submit-btn').click();
+
+            // assert
+            cy.getByTestId('service-error').should('be.visible');
+        });
+
+        it('displays an error on delete attempt when documents exist for the patient', () => {
+            cy.intercept(
+                'DELETE',
+                `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG,ARF`,
+                {
+                    statusCode: 404,
+                    body: 'No documents available',
+                },
+            ).as('documentDelete');
+
+            cy.getByTestId('delete-all-documents-btn').click();
+
+            cy.getByTestId('yes-radio-btn').click();
+            cy.getByTestId('delete-submit-btn').click();
+
+            // assert
+            cy.getByTestId('service-error').should('be.visible');
+        });
     });
 });

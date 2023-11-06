@@ -1,9 +1,7 @@
-import logging
-
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from utils.audit_logging_setup import LoggingService
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 # this method assume the input has a key FileName with the Lloyd George naming convention like this:

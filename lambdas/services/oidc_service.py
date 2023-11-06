@@ -1,4 +1,3 @@
-import logging
 import os
 from typing import Dict, List, Tuple
 
@@ -8,10 +7,11 @@ import requests
 from models.oidc_models import AccessToken, IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
 from requests import Response
+
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 class OidcService:

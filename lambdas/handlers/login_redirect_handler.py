@@ -1,4 +1,3 @@
-import logging
 import os
 import time
 
@@ -6,10 +5,10 @@ import boto3
 from botocore.exceptions import ClientError
 from oauthlib.oauth2 import InsecureTransportError, WebApplicationClient
 from services.dynamo_service import DynamoDBService
+from utils.audit_logging_setup import LoggingService
 from utils.lambda_response import ApiGatewayResponse
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 def lambda_handler(event, context):

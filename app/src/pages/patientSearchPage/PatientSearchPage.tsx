@@ -125,6 +125,7 @@ function PatientSearchPage({ role }: Props) {
                     </Fieldset.Legend>
                     <Input
                         id="nhs-number-input"
+                        data-testid="nhs-number-input"
                         label="Enter NHS number"
                         hint="A 10-digit number, for example, 485 777 3456"
                         type="text"
@@ -149,7 +150,7 @@ function PatientSearchPage({ role }: Props) {
                         disabled={true}
                     />
                 ) : (
-                    <Button type="submit" id="search-submit">
+                    <Button type="submit" id="search-submit" data-testid="search-submit-btn">
                         Search
                     </Button>
                 )}

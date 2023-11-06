@@ -1,4 +1,3 @@
-import logging
 import os
 from datetime import datetime, timezone
 
@@ -8,9 +7,9 @@ from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
+from utils.audit_logging_setup import LoggingService
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 class DocumentService(DynamoDBService):
@@ -19,29 +18,36 @@ class DocumentService(DynamoDBService):
         self.s3_service = S3Service()
 
     def fetch_available_document_references_by_type(
-        self, nhs_number: str, doc_types: str
+        self, nhs_number: str, doc_type: str
     ) -> list[DocumentReference]:
-        arf_documents = []
-        lg_documents = []
-
+        results: list[DocumentReference] = []
         delete_filter = {DocumentReferenceMetadataFields.DELETED.value: ""}
 
-        if SupportedDocumentTypes.ARF.name in doc_types:
-            logger.info("Retrieving ARF documents")
-            arf_documents = self.fetch_documents_from_table_with_filter(
+        if doc_type == SupportedDocumentTypes.ALL.value:
+            results = self.fetch_documents_from_table_with_filter(
                 nhs_number,
                 os.environ["DOCUMENT_STORE_DYNAMODB_NAME"],
                 attr_filter=delete_filter,
-            )
-        if SupportedDocumentTypes.LG.name in doc_types:
-            logger.info("Retrieving Lloyd George documents")
-            lg_documents = self.fetch_documents_from_table_with_filter(
+            ) + self.fetch_documents_from_table_with_filter(
                 nhs_number,
                 os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
                 attr_filter=delete_filter,
             )
 
-        return arf_documents + lg_documents
+        if doc_type == SupportedDocumentTypes.ARF.value:
+            results = self.fetch_documents_from_table_with_filter(
+                nhs_number,
+                os.environ["DOCUMENT_STORE_DYNAMODB_NAME"],
+                attr_filter=delete_filter,
+            )
+
+        if doc_type == SupportedDocumentTypes.LG.value:
+            results = self.fetch_documents_from_table_with_filter(
+                nhs_number,
+                os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
+                attr_filter=delete_filter,
+            )
+        return results
 
     def fetch_documents_from_table(
         self, nhs_number: str, table: str

@@ -1,13 +1,11 @@
 import json
-import logging
 import os
 import time
 import uuid
 
-import boto3
 import jwt
 from boto3.dynamodb.conditions import Key
-from botocore.exceptions import ClientError
+from package_lambdas_document_reference_search_handler.botocore.exceptions import ClientError
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from models.oidc_models import IdTokenClaimSet
@@ -15,11 +13,12 @@ from services.dynamo_service import DynamoDBService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 
 from utils.exceptions import AuthorisationException, OrganisationNotFoundException, TooManyOrgsException
+from utils.audit_logging_setup import LoggingService
+from utils.exceptions import AuthorisationException
 from utils.lambda_response import ApiGatewayResponse
 from enums.repository_role import RepositoryRole
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 token_handler_ssm_service = TokenHandlerSSMService()
@@ -78,6 +77,7 @@ def lambda_handler(event, context):
             "authorisation_token": authorisation_token,
         }
 
+        logger.audit_splunk_info("User logged in successfully")
         return ApiGatewayResponse(
             200, json.dumps(response), "GET"
         ).create_api_gateway_response()
@@ -106,8 +106,6 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(
             500, "No single organisation found for given ods codes", "GET"
         ).create_api_gateway_response()
-
-
 
 def generate_repository_role(organisation: dict, smartcart_role: str):
     

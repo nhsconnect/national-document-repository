@@ -1,20 +1,24 @@
-import logging
 import os
 
 from botocore.exceptions import ClientError
 from pydantic import ValidationError
 from services.document_manifest_service import DocumentManifestService
 from services.document_service import DocumentService
+from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
-from utils.decorators.validate_document_type import validate_document_type
+from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.decorators.validate_document_type import (
+    extract_document_type,
+    validate_document_type,
+)
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.exceptions import DynamoDbException, ManifestDownloadException
 from utils.lambda_response import ApiGatewayResponse
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
+@set_request_context_for_logging
 @validate_patient_id
 @validate_document_type
 @ensure_environment_variables(
@@ -30,7 +34,7 @@ def lambda_handler(event, context):
 
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
-        doc_type = event["queryStringParameters"]["docType"]
+        doc_type = extract_document_type(event["queryStringParameters"]["docType"])
 
         zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
         zip_trace_table_name = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
@@ -55,6 +59,9 @@ def lambda_handler(event, context):
         )
 
         response = document_manifest_service.create_document_manifest_presigned_url()
+        logger.audit_splunk_info(
+            "User has download Lloyd George records", {"NHS Number": nhs_number}
+        )
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
 

@@ -1,18 +1,21 @@
 import csv
-import logging
 import os
 import tempfile
 from typing import Iterable
 
 import pydantic
 from botocore.exceptions import ClientError
-from models.staging_metadata import (METADATA_FILENAME, NHS_NUMBER_FIELD_NAME,
-                                     MetadataFile, StagingMetadata)
+from models.staging_metadata import (
+    METADATA_FILENAME,
+    NHS_NUMBER_FIELD_NAME,
+    MetadataFile,
+    StagingMetadata,
+)
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
+from utils.audit_logging_setup import LoggingService
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 def lambda_handler(_event, _context):
@@ -42,6 +45,10 @@ def lambda_handler(_event, _context):
         logger.error(str(e))
     except ClientError as e:
         logger.error(str(e))
+        if "HeadObject" in str(e):
+            logger.error(
+                f'No metadata file could be found with the name "{METADATA_FILENAME}"'
+            )
 
 
 def download_metadata_from_s3(staging_bucket_name: str, metadata_filename: str):

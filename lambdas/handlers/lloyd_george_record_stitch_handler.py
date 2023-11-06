@@ -1,5 +1,4 @@
 import json
-import logging
 import os
 import tempfile
 from urllib import parse
@@ -11,17 +10,21 @@ from pypdf.errors import PyPdfError
 from services.dynamo_service import DynamoDBService
 from services.pdf_stitch_service import stitch_pdf
 from services.s3_service import S3Service
+from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import (
-    extract_nhs_number_from_event, validate_patient_id)
+    extract_nhs_number_from_event,
+    validate_patient_id,
+)
 from utils.exceptions import DynamoDbException
 from utils.lambda_response import ApiGatewayResponse
 from utils.order_response_by_filenames import order_response_by_filenames
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
+@set_request_context_for_logging
 @validate_patient_id
 @ensure_environment_variables(
     names=["LLOYD_GEORGE_DYNAMODB_NAME", "LLOYD_GEORGE_BUCKET_NAME"]
@@ -72,6 +75,9 @@ def lambda_handler(event, context):
                 "presign_url": presign_url,
                 "total_file_size_in_byte": total_file_size,
             }
+        )
+        logger.audit_splunk_info(
+            "User has viewed Lloyd George records", {"NHS Number": nhs_number}
         )
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
     except (ClientError, PyPdfError, FileNotFoundError) as e:

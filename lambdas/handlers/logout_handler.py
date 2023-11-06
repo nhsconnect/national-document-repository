@@ -1,14 +1,13 @@
-import logging
 import os
 
 import boto3
 import jwt
 from botocore.exceptions import ClientError
 from services.dynamo_service import DynamoDBService
+from utils.audit_logging_setup import LoggingService
 from utils.lambda_response import ApiGatewayResponse
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 def lambda_handler(event, context):

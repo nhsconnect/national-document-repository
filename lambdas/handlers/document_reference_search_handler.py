@@ -1,22 +1,22 @@
 import json
-import logging
 import os
 from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from models.document_reference import (DocumentReference,
-                                       DocumentReferenceSearchResult)
+from models.document_reference import DocumentReference, DocumentReferenceSearchResult
 from pydantic import ValidationError
 from services.document_service import DocumentService
+from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.validate_patient_id import (
-    extract_nhs_number_from_event, validate_patient_id)
+    extract_nhs_number_from_event,
+    validate_patient_id,
+)
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 @validate_patient_id

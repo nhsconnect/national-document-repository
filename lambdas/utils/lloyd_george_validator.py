@@ -1,5 +1,5 @@
 import datetime
-import logging
+import os
 import re
 from typing import Optional
 
@@ -9,11 +9,11 @@ from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient
 from pydantic import ValidationError
 from requests import HTTPError
-from services.pds_api_service import PdsApiService
 from services.ssm_service import SSMService
+from utils.audit_logging_setup import LoggingService
+from utils.utilities import get_pds_service
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 class LGInvalidFilesException(Exception):
@@ -42,11 +42,19 @@ def check_for_duplicate_files(file_list: list[str]):
 
 def check_for_number_of_files_match_expected(file_name: str, total_files_number: int):
     lg_number_regex = "of[0-9]+"
-    expected_number_of_files = re.search(lg_number_regex, file_name)
-    if expected_number_of_files and not expected_number_of_files.group()[2:] == str(
-        total_files_number
-    ):
-        raise LGInvalidFilesException("There are missing file(s) in the request")
+    regex_match_result = re.search(lg_number_regex, file_name)
+    try:
+        expected_number_of_files = int(regex_match_result.group()[2:])
+        if total_files_number < expected_number_of_files:
+            raise LGInvalidFilesException("There are missing file(s) in the request")
+        elif total_files_number > expected_number_of_files:
+            raise LGInvalidFilesException(
+                "There are more files than the total number in file name"
+            )
+    except (AttributeError, IndexError, ValueError):
+        raise LGInvalidFilesException(
+            "One or more of the files do not match naming convention"
+        )
 
 
 def validate_lg_files(file_list: list[NHSDocumentReference]):
@@ -110,7 +118,8 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         patient_name = file_name_info["patient_name"]
         date_of_birth = file_name_info["date_of_birth"]
 
-        pds_service = PdsApiService(SSMService())
+        pds_service_class = get_pds_service()
+        pds_service = pds_service_class(SSMService())
         pds_response = pds_service.pds_request(
             nhs_number=nhs_number, retry_on_expired=True
         )
@@ -132,11 +141,20 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         if patient_details.general_practice_ods != current_user_ods:
             raise LGInvalidFilesException("User is not allowed to access patient")
 
-    except (HTTPError, ValidationError, ClientError, ValueError) as e:
+    except (ValidationError, ClientError, ValueError) as e:
         logger.error(e)
         raise LGInvalidFilesException(e)
+    except HTTPError as e:
+        logger.error(e)
+        if "404" in str(e):
+            raise LGInvalidFilesException("Could not find the given patient on PDS")
+        else:
+            raise LGInvalidFilesException("Failed to retrieve patient data from PDS")
 
 
 def get_user_ods_code():
-    ssm_service = SSMService()
-    return ssm_service.get_ssm_parameter(SSMParameter.GP_ODS_CODE.value)
+    if os.getenv("PDS_FHIR_IS_STUBBED") in ["True", "true"]:
+        return "Y12345"
+    else:
+        ssm_service = SSMService()
+        return ssm_service.get_ssm_parameter(SSMParameter.GP_ODS_CODE.value)

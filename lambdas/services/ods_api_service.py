@@ -1,12 +1,12 @@
-import logging
 from typing import Dict, List, NamedTuple, Optional
 
 import requests
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.exceptions import OdsErrorException, OrganisationNotFoundException, TooManyOrgsException
+from utils.audit_logging_setup import LoggingService
+from utils.exceptions import OdsErrorException, OrganisationNotFoundException
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 token_handler_ssm_service = TokenHandlerSSMService()
 class Organisation(NamedTuple):
