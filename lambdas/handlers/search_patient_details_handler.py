@@ -1,4 +1,5 @@
 from json import JSONDecodeError
+import os
 
 import jwt
 from pydantic import ValidationError
@@ -9,28 +10,19 @@ from utils.exceptions import (
     InvalidResourceIdException,
     PatientNotFoundException,
     PdsErrorException,
-<<<<<<< HEAD
     UserNotAuthorisedException,
 )
 from utils.lambda_response import ApiGatewayResponse
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from enums.repository_role import RepositoryRole
-=======
-)
-from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import get_pds_service
->>>>>>> main
 
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 
 logger = LoggingService(__name__)
 
-<<<<<<< HEAD
 @ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
-=======
-
 @set_request_context_for_logging
->>>>>>> main
 @validate_patient_id
 def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
@@ -53,14 +45,12 @@ def lambda_handler(event, context):
         logger.info("Retrieving patient details")
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
-<<<<<<< HEAD
-=======
+
         response = patient_details.model_dump_json(by_alias=True)
         logger.audit_splunk_info(
             "Searched for patient details", {"NHS Number": nhs_number}
         )
->>>>>>> main
-
+        
         gp_ods = patient_details.general_practice_ods
 
         match user_role:
