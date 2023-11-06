@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios';
-import getDocumentSearchResults from './documentSearchResults';
+import getDocumentSearchResults from './getDocumentSearchResults';
 import { SearchResult } from '../../types/generic/searchResult';
 import { buildSearchResult } from '../test/testBuilders';
 

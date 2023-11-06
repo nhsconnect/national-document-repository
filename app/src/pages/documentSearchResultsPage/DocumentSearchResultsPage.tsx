@@ -12,7 +12,7 @@ import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBo
 import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import DocumentSearchResultsOptions from '../../components/blocks/documentSearchResultsOptions/DocumentSearchResultsOptions';
 import { AxiosError } from 'axios';
-import getDocumentSearchResults from '../../helpers/requests/documentSearchResults';
+import getDocumentSearchResults from '../../helpers/requests/getDocumentSearchResults';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
 import { USER_ROLE } from '../../types/generic/roles';
