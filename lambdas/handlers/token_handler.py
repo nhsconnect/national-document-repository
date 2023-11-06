@@ -44,9 +44,8 @@ def lambda_handler(event, _context):
         org_codes = oidc_service.fetch_user_org_codes(access_token, id_token_claim_set)
 
         logger.info(f"org codes: {org_codes}")
-        permitted_orgs_and_roles = OdsApiService.fetch_organisation_with_permitted_role(
-            org_codes
-        )
+        permitted_orgs_and_roles = OdsApiService.fetch_organisation_with_permitted_role(org_codes)
+        
         if len(permitted_orgs_and_roles) == 0:
             logger.info("User has no valid organisations to log in")
             raise AuthorisationException("No valid organisations for user")
