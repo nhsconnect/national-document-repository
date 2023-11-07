@@ -1,8 +1,10 @@
 from models.pds_models import Patient, PatientDetails
+from utils.audit_logging_setup import LoggingService
 from requests import Response
 from utils.exceptions import (InvalidResourceIdException,
                               PatientNotFoundException, PdsErrorException)
 
+logger = LoggingService(__name__)
 
 class PatientSearch:
     def fetch_patient_details(
@@ -13,6 +15,10 @@ class PatientSearch:
         return self.handle_response(response, nhs_number)
 
     def handle_response(self, response: Response, nhs_number: str) -> PatientDetails:
+
+        logger.info("Hit handle response")
+        logger.info(f"Status Code: {response.status_code}")
+        
         if response.status_code == 200:
             patient = Patient.model_validate(response.json())
             patient_details = patient.get_patient_details(nhs_number)

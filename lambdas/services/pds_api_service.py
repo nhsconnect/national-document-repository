@@ -20,6 +20,7 @@ class PdsApiService(PatientSearch):
 
     def pds_request(self, nhs_number: str, retry_on_expired: bool):
         try:
+            logger.info("Getting PDS API KEY")
             endpoint, access_token_response = self.get_parameters_for_pds_api_request()
             access_token_response = json.loads(access_token_response)
             access_token = access_token_response["access_token"]
@@ -52,18 +53,30 @@ class PdsApiService(PatientSearch):
     def get_new_access_token(self):
         logger.info("Getting new PDS access token")
         try:
+
+            logger.info("Getting new access token params")
             access_token_ssm_parameter = self.get_parameters_for_new_access_token()
+            logger.info("creating jwt")
             jwt_token = self.create_jwt_token_for_new_access_token_request(
                 access_token_ssm_parameter
             )
+            logger.info("getting nhs_oauth")
             nhs_oauth_endpoint = access_token_ssm_parameter[
                 SSMParameter.NHS_OAUTH_ENDPOINT.value
             ]
+
+            logger.info("get nhs oauth response")
             nhs_oauth_response = self.request_new_access_token(
                 jwt_token, nhs_oauth_endpoint
             )
+
+            logger.info("raise for status")
             nhs_oauth_response.raise_for_status()
+
+            logger.info("token access response")
             token_access_response = nhs_oauth_response.json()
+
+            logger.info("update access token")
             self.update_access_token_ssm(json.dumps(token_access_response))
         except HTTPError as e:
             logger.error(f"Issue while creating new access token: {e.response}")
@@ -100,11 +113,15 @@ class PdsApiService(PatientSearch):
     def create_jwt_token_for_new_access_token_request(
         self, access_token_ssm_parameters
     ):
+        logger.info("Getting nhs oauth")
         nhs_oauth_endpoint = access_token_ssm_parameters[
             SSMParameter.NHS_OAUTH_ENDPOINT.value
         ]
+        logger.info("Getting PDS KID")
         kid = access_token_ssm_parameters[SSMParameter.PDS_KID.value]
+        logger.info("Getting OAUTH KEY")
         nhs_key = access_token_ssm_parameters[SSMParameter.NHS_OAUTH_KEY.value]
+        logger.info("Getting PDS API KEY")
         pds_key = access_token_ssm_parameters[SSMParameter.PDS_API_KEY.value]
         payload = {
             "iss": nhs_key,
