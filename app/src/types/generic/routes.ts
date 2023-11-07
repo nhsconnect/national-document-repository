@@ -1,6 +1,5 @@
 export enum routes {
     HOME = '/',
-    SELECT_ORG = '/select-organisation',
     AUTH_CALLBACK = '/auth-callback',
     NOT_FOUND = '/*',
     UNAUTHORISED = '/unauthorised',

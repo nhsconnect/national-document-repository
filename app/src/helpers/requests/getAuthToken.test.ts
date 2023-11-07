@@ -29,14 +29,11 @@ describe('[GET] getDocumentSearchResults', () => {
         }
         expect(response).not.toHaveProperty('status');
         expect(response).toHaveProperty('authorisation_token');
-        expect(response).toHaveProperty('organisations');
+        expect(response).toHaveProperty('role');
 
         const data = response as UserAuth;
         expect(data.authorisation_token).toBe(mockAuth.authorisation_token);
-        expect(data.organisations).toBeInstanceOf(Array);
-        expect(data.organisations).toHaveLength(1);
-        expect(data.organisations[0]).toHaveProperty('role');
-        expect(data.organisations[0].role).toBe(mockAuth.organisations[0].role);
+        expect(data.role).toBe(mockAuth.role);
     });
 
     test('Document search results catches a 4XX response', async () => {
@@ -55,7 +52,7 @@ describe('[GET] getDocumentSearchResults', () => {
         }
 
         expect(response).not.toHaveProperty('authorisation_token');
-        expect(response).not.toHaveProperty('organisations');
+        expect(response).not.toHaveProperty('role');
         expect(response).toHaveProperty('status');
 
         const { status } = response as AxiosError;
@@ -78,7 +75,7 @@ describe('[GET] getDocumentSearchResults', () => {
         }
 
         expect(response).not.toHaveProperty('authorisation_token');
-        expect(response).not.toHaveProperty('organisations');
+        expect(response).not.toHaveProperty('role');
         expect(response).toHaveProperty('status');
 
         const { status } = response as AxiosError;

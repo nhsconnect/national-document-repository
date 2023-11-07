@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { USER_ROLE } from '../../types/generic/roles';
 import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import * as ReactRouter from 'react-router';
@@ -117,7 +116,7 @@ describe('PatientSearchPage', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to verify page when download patient is requested', async () => {
+        it('navigates to download journey when role is PCSE', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/example'],
                 initialIndex: 1,
@@ -137,24 +136,30 @@ describe('PatientSearchPage', () => {
             });
         });
 
-        it('navigates to verify page when upload patient is requested', async () => {
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "navigates to upload journey when role is '%s'",
+            async (role) => {
+                const history = createMemoryHistory({
+                    initialEntries: ['/example'],
+                    initialIndex: 1,
+                });
 
-            mockedAxios.get.mockImplementation(() =>
-                Promise.resolve({ data: buildPatientDetails() }),
-            );
-            renderPatientSearchPage({}, REPOSITORY_ROLE.GP_ADMIN, history);
-            expect(history.location.pathname).toBe('/example');
-            userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '9000000000');
-            userEvent.click(screen.getByRole('button', { name: 'Search' }));
+                mockedAxios.get.mockImplementation(() =>
+                    Promise.resolve({ data: buildPatientDetails() }),
+                );
+                renderPatientSearchPage({}, role, history);
+                expect(history.location.pathname).toBe('/example');
+                userEvent.type(
+                    screen.getByRole('textbox', { name: 'Enter NHS number' }),
+                    '9000000000',
+                );
+                userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
-            await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.UPLOAD_VERIFY);
-            });
-        });
+                await waitFor(() => {
+                    expect(history.location.pathname).toBe(routes.UPLOAD_VERIFY);
+                });
+            },
+        );
 
         it('navigates to start page when user is unauthorized to make request', async () => {
             const history = createMemoryHistory({
