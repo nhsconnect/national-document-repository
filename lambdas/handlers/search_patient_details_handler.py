@@ -23,7 +23,7 @@ logger = LoggingService(__name__)
 @validate_patient_id
 def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
-
+    logger.info(f"API Gateway event: {event}")
     try:
         ssm_service = SSMService()
         nhs_number = event["queryStringParameters"]["patientId"]
@@ -103,7 +103,7 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
 
     except KeyError as e:
-        logger.error(f"Error parsing patientId from json: {str(e)}", e)
+        logger.error(f"Error parsing patientId from json: {str(e)}")
         return ApiGatewayResponse(
             400, "No NHS number found in request parameters.", "GET"
         ).create_api_gateway_response()
