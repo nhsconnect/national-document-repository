@@ -12,16 +12,14 @@ class LoggingFormatter(logging.Formatter):
             auth = request_context.authorization
 
         s = super().format(record)
-        logging.info("Formatted to S")
-        logging.info(f"requestId: {request_context.request_id}")
-        logging.info(f"record: {record}")
-        logging.info(f"record dict: {record.__dict__}")
-        
         d = {
             "correlation_id": request_context.request_id,
-            "auth": auth
-            **record.__dict__.get("custom_args", {}),
-            "Message": s,
+            "auth": auth,
+            "Message": s
         }
+
+        if record.__dict__.get("custom_args", {}) is not None: 
+            d.update(record.__dict__.get("custom_args", {}))
+
         logging.info(f"d: {json.dumps(d)}")
         return json.dumps(d)
