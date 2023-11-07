@@ -28,7 +28,8 @@ class PdsApiService(PatientSearch):
                 + int(access_token_response["issued_at"]) / 1000
             )
             time_safety_margin_seconds = 10
-            if time.time() - access_token_expiration > time_safety_margin_seconds:
+            remaining_time_before_expiration = access_token_expiration - time.time()
+            if remaining_time_before_expiration < time_safety_margin_seconds:
                 access_token = self.get_new_access_token()
 
             x_request_id = str(uuid.uuid4())
