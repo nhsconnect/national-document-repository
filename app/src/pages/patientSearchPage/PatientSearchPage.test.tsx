@@ -9,13 +9,17 @@ import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import axios from 'axios';
 import { routes } from '../../types/generic/routes';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import useRole from '../../helpers/hooks/useRole';
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../helpers/hooks/useRole');
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedUseRole = useRole as jest.Mock;
 
-describe('PatientSearchPage', () => {
+describe.only('PatientSearchPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
     });
     afterEach(() => {
         jest.clearAllMocks();
@@ -122,8 +126,10 @@ describe('PatientSearchPage', () => {
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: buildPatientDetails() }),
             );
+            const role = REPOSITORY_ROLE.PCSE;
+            mockedUseRole.mockReturnValue(role);
 
-            renderPatientSearchPage({}, REPOSITORY_ROLE.PCSE, history);
+            renderPatientSearchPage({}, history);
             expect(history.location.pathname).toBe('/example');
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '9000000000');
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
@@ -138,13 +144,13 @@ describe('PatientSearchPage', () => {
             async (role) => {
                 const history = createMemoryHistory({
                     initialEntries: ['/example'],
-                    initialIndex: 1,
                 });
 
                 mockedAxios.get.mockImplementation(() =>
                     Promise.resolve({ data: buildPatientDetails() }),
                 );
-                renderPatientSearchPage({}, role, history);
+                mockedUseRole.mockReturnValue(role);
+                renderPatientSearchPage({}, history);
                 expect(history.location.pathname).toBe('/example');
                 userEvent.type(
                     screen.getByRole('textbox', { name: 'Enter NHS number' }),
@@ -170,7 +176,7 @@ describe('PatientSearchPage', () => {
 
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-            renderPatientSearchPage({}, REPOSITORY_ROLE.GP_ADMIN, history);
+            renderPatientSearchPage({}, history);
             expect(history.location.pathname).toBe('/example');
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '9000000000');
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
@@ -193,7 +199,7 @@ describe('PatientSearchPage', () => {
                 Promise.resolve({ data: buildPatientDetails() }),
             );
 
-            renderPatientSearchPage({}, REPOSITORY_ROLE.PCSE, history);
+            renderPatientSearchPage({}, history);
             expect(history.location.pathname).toBe('/example');
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), testNumber);
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
@@ -211,7 +217,7 @@ describe('PatientSearchPage', () => {
                 Promise.resolve({ data: buildPatientDetails() }),
             );
 
-            renderPatientSearchPage({}, REPOSITORY_ROLE.PCSE, history);
+            renderPatientSearchPage({}, history);
             expect(history.location.pathname).toBe('/example');
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), testNumber);
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
@@ -249,7 +255,6 @@ describe('PatientSearchPage', () => {
 const testRoute = '/example';
 const renderPatientSearchPage = (
     patientOverride: Partial<PatientDetails> = {},
-    role: REPOSITORY_ROLE = REPOSITORY_ROLE.PCSE,
     history = createMemoryHistory({
         initialEntries: [testRoute],
     }),
