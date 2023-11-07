@@ -19,4 +19,5 @@ class LoggingFormatter(logging.Formatter):
             **record.__dict__.get("custom_args", {}),
             "Message": s,
         }
+        logging.info(f"d: {json.dumps(d)}")
         return json.dumps(d)
