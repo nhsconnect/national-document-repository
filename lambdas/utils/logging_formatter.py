@@ -11,8 +11,12 @@ class LoggingFormatter(logging.Formatter):
         if request_context.authorization is not None:
             auth = request_context.authorization
 
-        logging.info(f"auth: {auth}")
         s = super().format(record)
+        logging.info("Formatted to S")
+        logging.info(f"requestId: {request_context.request_id}")
+        logging.info(f"record: {record}")
+        logging.info(f"record dict: {record.__dict__}")
+        
         d = {
             "correlation_id": request_context.request_id,
             "auth": auth
