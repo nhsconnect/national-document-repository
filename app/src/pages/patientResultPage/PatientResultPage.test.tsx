@@ -212,7 +212,7 @@ const renderPatientResultPage = (
     render(
         <ReactRouter.Router navigator={history} location={homeRoute}>
             <PatientDetailsProvider patientDetails={patient}>
-                <PatientResultPage role={role} />
+                <PatientResultPage />
             </PatientDetailsProvider>
         </ReactRouter.Router>,
     );

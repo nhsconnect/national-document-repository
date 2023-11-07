@@ -231,7 +231,6 @@ const renderComponent = (
     const props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'> = {
         patientDetails: mockPatientDetails,
         numberOfFiles: mockLgSearchResult.number_of_files,
-        userType,
         docType,
     };
 

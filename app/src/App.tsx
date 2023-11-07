@@ -20,7 +20,6 @@ import UploadDocumentsPage from './pages/uploadDocumentsPage/UploadDocumentsPage
 import DocumentSearchResultsPage from './pages/documentSearchResultsPage/DocumentSearchResultsPage';
 import AuthErrorPage from './pages/authErrorPage/AuthErrorPage';
 import LloydGeorgeRecordPage from './pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
-import { REPOSITORY_ROLE } from './types/generic/authRole';
 
 function App() {
     return (
@@ -45,22 +44,15 @@ function App() {
                                         </AuthGuard>
                                     }
                                 >
-                                    <Route
-                                        element={<PatientSearchPage role={REPOSITORY_ROLE.PCSE} />}
-                                        path={routes.DOWNLOAD_SEARCH}
-                                    />
-                                    <Route
-                                        element={
-                                            <PatientSearchPage role={REPOSITORY_ROLE.GP_ADMIN} />
-                                        }
-                                        path={routes.UPLOAD_SEARCH}
-                                    />
-                                    <Route
-                                        element={
-                                            <PatientSearchPage role={REPOSITORY_ROLE.GP_CLINICAL} />
-                                        }
-                                        path={routes.UPLOAD_SEARCH}
-                                    />
+                                    {[routes.DOWNLOAD_SEARCH, routes.UPLOAD_SEARCH].map(
+                                        (searchRoute) => (
+                                            <Route
+                                                key={searchRoute}
+                                                element={<PatientSearchPage />}
+                                                path={searchRoute}
+                                            />
+                                        ),
+                                    )}
 
                                     <Route element={<LogoutPage />} path={routes.LOGOUT} />
                                     <Route
@@ -70,28 +62,15 @@ function App() {
                                             </PatientGuard>
                                         }
                                     >
-                                        <Route
-                                            element={
-                                                <PatientResultPage role={REPOSITORY_ROLE.PCSE} />
-                                            }
-                                            path={routes.DOWNLOAD_VERIFY}
-                                        />
-                                        <Route
-                                            element={
-                                                <PatientResultPage
-                                                    role={REPOSITORY_ROLE.GP_ADMIN}
+                                        {[routes.DOWNLOAD_VERIFY, routes.UPLOAD_VERIFY].map(
+                                            (searchResultRoute) => (
+                                                <Route
+                                                    key={searchResultRoute}
+                                                    element={<PatientResultPage />}
+                                                    path={searchResultRoute}
                                                 />
-                                            }
-                                            path={routes.UPLOAD_VERIFY}
-                                        />
-                                        <Route
-                                            element={
-                                                <PatientResultPage
-                                                    role={REPOSITORY_ROLE.GP_CLINICAL}
-                                                />
-                                            }
-                                            path={routes.UPLOAD_VERIFY}
-                                        />
+                                            ),
+                                        )}
                                         <Route
                                             element={<LloydGeorgeRecordPage />}
                                             path={routes.LLOYD_GEORGE}

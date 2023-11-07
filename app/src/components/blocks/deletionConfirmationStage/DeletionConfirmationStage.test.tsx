@@ -144,7 +144,6 @@ const renderComponent = (
                     numberOfFiles={numberOfFiles}
                     patientDetails={mockPatientDetails}
                     setStage={mockSetStage}
-                    userType={userType}
                 />
             </SessionProvider>
         </ReactRouter.Router>,

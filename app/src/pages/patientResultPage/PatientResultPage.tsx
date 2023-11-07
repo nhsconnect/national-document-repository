@@ -8,12 +8,10 @@ import BackButton from '../../components/generic/backButton/BackButton';
 import { useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import useRole from '../../helpers/hooks/useRole';
 
-type Props = {
-    role: REPOSITORY_ROLE;
-};
-
-function PatientResultPage({ role }: Props) {
+function PatientResultPage() {
+    const role = useRole();
     const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
     const userIsGPAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
     const userIsGPClinical = role === REPOSITORY_ROLE.GP_CLINICAL;

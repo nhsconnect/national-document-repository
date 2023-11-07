@@ -262,7 +262,7 @@ const renderPatientSearchPage = (
     render(
         <ReactRouter.Router navigator={history} location={testRoute}>
             <PatientDetailsProvider patientDetails={needsPatient ? patient : undefined}>
-                <PatientSearchPage role={role} />
+                <PatientSearchPage />
             </PatientDetailsProvider>
         </ReactRouter.Router>,
     );
