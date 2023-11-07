@@ -8,9 +8,10 @@ class LoggingFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
 
         auth = "No Auth"
-        if request_context.authorization:
+        if request_context.authorization is None:
             auth = request_context.authorization
-            
+
+        logging.info(f"auth: {auth}")
         s = super().format(record)
         d = {
             "correlation_id": request_context.request_id,
