@@ -8,13 +8,14 @@ from utils.logging_formatter import LoggingFormatter
 class LoggingService:
     def __init__(self, name):
         self.name = name
-
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
 
         self.audit_logger = logging.getLogger("audit")
         self.audit_handler = SensitiveAuditService()
         self.formatter = LoggingFormatter()
+        logging.Formatter.format = self.formatter
+
         self.audit_handler.setFormatter(self.formatter)
         self.audit_logger.addHandler(self.audit_handler)
         self.audit_logger.setLevel(logging.INFO)
