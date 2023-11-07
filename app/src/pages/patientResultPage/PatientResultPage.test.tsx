@@ -1,6 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import PatientResultPage from './PatientResultPage';
-import { USER_ROLE } from '../../types/generic/roles';
 import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { PatientDetails } from '../../types/generic/patientDetails';
@@ -127,31 +126,8 @@ describe('PatientResultPage', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to LG record page when GP user selects Active patient and submits', async () => {
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
-
-            const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
-
-            renderPatientResultPage({ active: true }, uploadRole, history);
-            expect(history.location.pathname).toBe('/example');
-
-            act(() => {
-                userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
-            });
-
-            await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.LLOYD_GEORGE);
-            });
-        });
-
-        it('navigates to Upload docs page when GP user selects Inactive patient and submits', async () => {
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
+        it('navigates to Upload docs page after user selects Active patient when role is PCSE', async () => {
+            const history = createMemoryHistory({ initialEntries: ['/example'] });
 
             const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
 
@@ -166,11 +142,28 @@ describe('PatientResultPage', () => {
             });
         });
 
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "navigates to Lloyd George Record page after user selects Active patient when role is '%s'",
+            async (role) => {
+                const history = createMemoryHistory({ initialEntries: ['/example'] });
+
+                renderPatientResultPage({ active: true }, role, history);
+                expect(history.location.pathname).toBe('/example');
+
+                act(() => {
+                    userEvent.click(
+                        screen.getByRole('button', { name: 'Accept details are correct' }),
+                    );
+                });
+
+                await waitFor(() => {
+                    expect(history.location.pathname).toBe(routes.LLOYD_GEORGE);
+                });
+            },
+        );
+
         it('Shows an error message if the active field is missing on the patient', async () => {
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
+            const history = createMemoryHistory({ initialEntries: ['/example'] });
 
             const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
 
@@ -189,10 +182,7 @@ describe('PatientResultPage', () => {
         });
 
         it('navigates to download page when user has verified download patient', async () => {
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
+            const history = createMemoryHistory({ initialEntries: ['/example'] });
 
             const downloadRole = REPOSITORY_ROLE.PCSE;
 
@@ -212,10 +202,7 @@ const homeRoute = '/example';
 const renderPatientResultPage = (
     patientOverride: Partial<PatientDetails> = {},
     role: REPOSITORY_ROLE = REPOSITORY_ROLE.PCSE,
-    history = createMemoryHistory({
-        initialEntries: [homeRoute],
-        initialIndex: 1,
-    }),
+    history = createMemoryHistory({ initialEntries: ['/example'] }),
 ) => {
     const patient: PatientDetails = {
         ...buildPatientDetails(),

@@ -117,10 +117,7 @@ describe('PatientSearchPage', () => {
 
     describe('Navigation', () => {
         it('navigates to download journey when role is PCSE', async () => {
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
+            const history = createMemoryHistory({ initialEntries: ['/example'] });
 
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: buildPatientDetails() }),
@@ -162,10 +159,8 @@ describe('PatientSearchPage', () => {
         );
 
         it('navigates to start page when user is unauthorized to make request', async () => {
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
+            const history = createMemoryHistory({ initialEntries: ['/example'] });
+
             const errorResponse = {
                 response: {
                     status: 403,
@@ -210,10 +205,7 @@ describe('PatientSearchPage', () => {
 
         it('allows NHS number with dashes to be submitted', async () => {
             const testNumber = '900-000-0000';
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
+            const history = createMemoryHistory({ initialEntries: ['/example'] });
 
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: buildPatientDetails() }),
@@ -260,7 +252,6 @@ const renderPatientSearchPage = (
     role: REPOSITORY_ROLE = REPOSITORY_ROLE.PCSE,
     history = createMemoryHistory({
         initialEntries: [testRoute],
-        initialIndex: 1,
     }),
 ) => {
     const patient: PatientDetails = {
