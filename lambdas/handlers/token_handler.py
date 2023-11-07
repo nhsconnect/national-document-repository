@@ -17,13 +17,14 @@ from utils.exceptions import (AuthorisationException,
                               OrganisationNotFoundException,
                               TooManyOrgsException)
 from utils.lambda_response import ApiGatewayResponse
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 
 logger = LoggingService(__name__)
 
 
 token_handler_ssm_service = TokenHandlerSSMService()
 
-
+@set_request_context_for_logging
 def lambda_handler(event, context):
     oidc_service = OidcService()
     ods_api_service = OdsApiService()
@@ -90,7 +91,7 @@ def lambda_handler(event, context):
             "authorisation_token": authorisation_token,
         }
 
-        # logger.audit_splunk_info("User logged in successfully")
+        logger.audit_splunk_info("User logged in successfully")
         return ApiGatewayResponse(
             200, json.dumps(response), "GET"
         ).create_api_gateway_response()
