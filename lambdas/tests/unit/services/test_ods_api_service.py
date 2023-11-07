@@ -3,10 +3,10 @@ import json
 import pytest
 from requests import Response
 from services.ods_api_service import OdsApiService, parse_ods_response
+from services.token_handler_ssm_service import TokenHandlerSSMService
 from tests.unit.helpers.data.ods.utils import load_ods_response_data
 from tests.unit.helpers.mock_response import MockResponse
-from utils.exceptions import OdsErrorException, OrganisationNotFoundException
-
+from utils.exceptions import OdsErrorException, OrganisationNotFoundException, TooManyOrgsException
 
 def test_fetch_organisation_data_returns_organisation_data(mocker):
     test_ods_code = "X26"
@@ -56,7 +56,7 @@ def test_parse_ods_response_extracts_data_and_includes_role_code_passed_as_arg(
     actual = parse_ods_response(test_response, role_code)
     expected = {
         "name": "Primary Care Support England",
-        "org_ods_code": "B9A5A",
+        "org_ods_code": "X4S4L",
         "role_code": role_code,
     }
 
@@ -64,3 +64,50 @@ def test_parse_ods_response_extracts_data_and_includes_role_code_passed_as_arg(
 
 
 # TODO: fetch_organisation_with_permitted_role, find_and_get_gpp_org_code, find_and_get_pcse_ods
+
+def test_fetch_org_with_permitted_role_pcse(mock_ods_responses, mocker):
+    mocker.patch.object(OdsApiService, "fetch_organisation_data", return_value=mock_ods_responses["pcse_org"])
+    #mocker.patch.object(TokenHandlerSSMService, "get_org_role_codes", return_value="RO76")
+    mocker.patch.object(TokenHandlerSSMService, "get_org_ods_codes", return_value=["X4S4L"])
+    pcse_ods = "X4S4L"
+    expected = {
+        "name": "Primary Care Support England",
+        "org_ods_code": pcse_ods,
+        "role_code": "",
+    }
+
+    actual = OdsApiService.fetch_organisation_with_permitted_role(OdsApiService(), [pcse_ods])
+
+    assert expected == actual
+
+def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
+    mocker.patch.object(OdsApiService, "fetch_organisation_data", return_value=mock_ods_responses["gp_org"])
+    mocker.patch.object(TokenHandlerSSMService, "get_org_role_codes", return_value="RO76")
+    mocker.patch.object(TokenHandlerSSMService, "get_org_ods_codes", return_value=["X4S4L"])
+    gp_ods = "A9A5A"
+    expected = {
+        "name": "Mock GP Practice",
+        "org_ods_code": "A9A5A",
+        "role_code": "RO76",
+    }
+
+    actual = OdsApiService.fetch_organisation_with_permitted_role(OdsApiService(), [gp_ods])
+
+    assert expected == actual
+
+
+def test_fetch_org_with_permitted_role_returns_empty_list_when_not_gp_or_pcse(mock_ods_responses, mocker):
+    mocker.patch.object(OdsApiService, "fetch_organisation_data", return_value=mock_ods_responses["not_gp_or_pcse"])
+    mocker.patch.object(TokenHandlerSSMService, "get_org_role_codes", return_value="RO76")
+    mocker.patch.object(TokenHandlerSSMService, "get_org_ods_codes", return_value=["X4S4L"])
+    ods = "OD5"
+    expected = {}
+
+    actual = OdsApiService.fetch_organisation_with_permitted_role(OdsApiService(), [ods])
+
+    assert expected == actual
+
+
+def test_fetch_org_with_permitted_role_raises_exception_if_more_than_one_org_for_user(mock_ods_responses):
+    with pytest.raises(TooManyOrgsException):
+        OdsApiService.fetch_organisation_with_permitted_role(OdsApiService(), ["ods1", "ods2many"])
