@@ -169,15 +169,35 @@ def test_get_new_access_token_raise_PdsErrorException(mocker):
         mock_update_ssm.assert_not_called()
 
 
+def mock_pds_token_response_issued_at(timestamp_in_sec: float) -> dict:
+    response_token = {
+        "access_token": "Sr5PGv19wTEHJdDr2wx2f7IGd0cw",
+        "expires_in": "599",
+        "token_type": "Bearer",
+        "issued_at": str(int(timestamp_in_sec * 1000)),
+    }
+
+    return response_token
+
+
 def test_pds_request_valid_token(mocker):
     response = Response()
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
-    mock_api_request_parameters = ("api.test/endpoint/", json.dumps(RESPONSE_TOKEN))
+    mock_post = mocker.patch("requests.get", return_value=response)
+
+    time_now = 1600000000
+    mocker.patch("time.time", return_value=time_now)
+    mock_response_token = mock_pds_token_response_issued_at(time_now)
+
+    mock_api_request_parameters = (
+        "api.test/endpoint/",
+        json.dumps(mock_response_token),
+    )
     nhs_number = "1111111111"
     mock_url_endpoint = "api.test/endpoint/Patient/" + nhs_number
     mock_authorization_header = {
-        "Authorization": f"Bearer {RESPONSE_TOKEN['access_token']}",
+        "Authorization": f"Bearer {mock_response_token['access_token']}",
         "X-Request-ID": "123412342",
     }
 
@@ -185,9 +205,78 @@ def test_pds_request_valid_token(mocker):
         "services.pds_api_service.PdsApiService.get_parameters_for_pds_api_request",
         return_value=mock_api_request_parameters,
     )
-    mocker.patch("time.time", return_value=1600000000.953031)
     mock_new_access_token = mocker.patch(
         "services.pds_api_service.PdsApiService.get_new_access_token"
+    )
+    mocker.patch("uuid.uuid4", return_value="123412342")
+
+    pds_service.pds_request(nhs_number="1111111111", retry_on_expired=True)
+
+    mock_get_parameters.assert_called_once()
+    mock_new_access_token.assert_not_called()
+    mock_post.assert_called_with(
+        url=mock_url_endpoint, headers=mock_authorization_header
+    )
+
+
+def test_pds_request_not_refresh_token_if_more_than_10_seconds_before_expiry(mocker):
+    response = Response()
+    response.status_code = 200
+    response._content = json.dumps(PDS_PATIENT).encode("utf-8")
+    mocker.patch("requests.get", return_value=response)
+
+    time_now = 1600000000
+    mocker.patch("time.time", return_value=time_now)
+    mock_response_token = mock_pds_token_response_issued_at(time_now - 599 + 11)
+
+    mock_api_request_parameters = (
+        "api.test/endpoint/",
+        json.dumps(mock_response_token),
+    )
+
+    mock_get_parameters = mocker.patch(
+        "services.pds_api_service.PdsApiService.get_parameters_for_pds_api_request",
+        return_value=mock_api_request_parameters,
+    )
+    mock_new_access_token = mocker.patch(
+        "services.pds_api_service.PdsApiService.get_new_access_token"
+    )
+    mocker.patch("uuid.uuid4", return_value="123412342")
+
+    pds_service.pds_request(nhs_number="1111111111", retry_on_expired=True)
+
+    mock_get_parameters.assert_called_once()
+    mock_new_access_token.assert_not_called()
+
+
+def test_pds_request_refresh_token_9_seconds_before_expiration(mocker):
+    response = Response()
+    response.status_code = 200
+    response._content = json.dumps(PDS_PATIENT).encode("utf-8")
+
+    time_now = 1600000000
+    mocker.patch("time.time", return_value=time_now)
+    mock_response_token = mock_pds_token_response_issued_at(time_now - 599 + 9)
+    new_mock_access_token = "mock_access_token"
+
+    mock_api_request_parameters = (
+        "api.test/endpoint/",
+        json.dumps(mock_response_token),
+    )
+    nhs_number = "1111111111"
+    mock_url_endpoint = "api.test/endpoint/Patient/" + nhs_number
+    mock_authorization_header = {
+        "Authorization": f"Bearer {new_mock_access_token}",
+        "X-Request-ID": "123412342",
+    }
+
+    mock_get_parameters = mocker.patch(
+        "services.pds_api_service.PdsApiService.get_parameters_for_pds_api_request",
+        return_value=mock_api_request_parameters,
+    )
+    mock_new_access_token = mocker.patch(
+        "services.pds_api_service.PdsApiService.get_new_access_token",
+        return_value=new_mock_access_token,
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
     mock_post = mocker.patch("requests.get", return_value=response)
@@ -195,7 +284,48 @@ def test_pds_request_valid_token(mocker):
     pds_service.pds_request(nhs_number="1111111111", retry_on_expired=True)
 
     mock_get_parameters.assert_called_once()
-    mock_new_access_token.assert_not_called()
+    mock_new_access_token.assert_called_once()
+    mock_post.assert_called_with(
+        url=mock_url_endpoint, headers=mock_authorization_header
+    )
+
+
+def test_pds_request_refresh_token_if_already_expired(mocker):
+    response = Response()
+    response.status_code = 200
+    response._content = json.dumps(PDS_PATIENT).encode("utf-8")
+
+    time_now = 1600000000
+    mocker.patch("time.time", return_value=time_now)
+    mock_response_token = mock_pds_token_response_issued_at(time_now - 599)
+    new_mock_access_token = "mock_access_token"
+
+    mock_api_request_parameters = (
+        "api.test/endpoint/",
+        json.dumps(mock_response_token),
+    )
+    nhs_number = "1111111111"
+    mock_url_endpoint = "api.test/endpoint/Patient/" + nhs_number
+    mock_authorization_header = {
+        "Authorization": f"Bearer {new_mock_access_token}",
+        "X-Request-ID": "123412342",
+    }
+
+    mock_get_parameters = mocker.patch(
+        "services.pds_api_service.PdsApiService.get_parameters_for_pds_api_request",
+        return_value=mock_api_request_parameters,
+    )
+    mock_new_access_token = mocker.patch(
+        "services.pds_api_service.PdsApiService.get_new_access_token",
+        return_value=new_mock_access_token,
+    )
+    mocker.patch("uuid.uuid4", return_value="123412342")
+    mock_post = mocker.patch("requests.get", return_value=response)
+
+    pds_service.pds_request(nhs_number="1111111111", retry_on_expired=True)
+
+    mock_get_parameters.assert_called_once()
+    mock_new_access_token.assert_called_once()
     mock_post.assert_called_with(
         url=mock_url_endpoint, headers=mock_authorization_header
     )
