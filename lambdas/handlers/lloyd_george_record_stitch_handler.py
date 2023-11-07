@@ -74,9 +74,9 @@ def lambda_handler(event, context):
                 "total_file_size_in_byte": total_file_size,
             }
         )
-        logger.audit_splunk_info(
-            "User has viewed Lloyd George records", {"NHS Number": nhs_number}
-        )
+        # logger.audit_splunk_info(
+        #     "User has viewed Lloyd George records", {"NHS Number": nhs_number}
+        # )
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
     except (ClientError, PyPdfError, FileNotFoundError) as e:
         logger.error(e)

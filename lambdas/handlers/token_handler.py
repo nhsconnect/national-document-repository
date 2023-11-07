@@ -90,7 +90,7 @@ def lambda_handler(event, context):
             "authorisation_token": authorisation_token,
         }
 
-        logger.audit_splunk_info("User logged in successfully")
+        # logger.audit_splunk_info("User logged in successfully")
         return ApiGatewayResponse(
             200, json.dumps(response), "GET"
         ).create_api_gateway_response()
