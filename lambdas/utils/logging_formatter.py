@@ -21,5 +21,4 @@ class LoggingFormatter(logging.Formatter):
         if record.__dict__.get("custom_args", {}) is not None: 
             d.update(record.__dict__.get("custom_args", {}))
 
-        logging.info(f"d: {json.dumps(d)}")
         return json.dumps(d)
