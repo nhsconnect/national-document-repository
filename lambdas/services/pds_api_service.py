@@ -113,16 +113,19 @@ class PdsApiService(PatientSearch):
     def create_jwt_token_for_new_access_token_request(
         self, access_token_ssm_parameters
     ):
-        logger.info("Getting nhs oauth")
+        
         nhs_oauth_endpoint = access_token_ssm_parameters[
             SSMParameter.NHS_OAUTH_ENDPOINT.value
         ]
-        logger.info("Getting PDS KID")
+        logger.info(f"Getting nhs oauth: {nhs_oauth_endpoint}")
+        
         kid = access_token_ssm_parameters[SSMParameter.PDS_KID.value]
-        logger.info("Getting OAUTH KEY")
+        logger.info(f"Getting PDS KID: {kid}")
         nhs_key = access_token_ssm_parameters[SSMParameter.NHS_OAUTH_KEY.value]
-        logger.info("Getting PDS API KEY")
+        logger.info(f"Getting nhs key: {nhs_key}")
+        
         pds_key = access_token_ssm_parameters[SSMParameter.PDS_API_KEY.value]
+        logger.info(f"Getting pds_key: {pds_key}")
         payload = {
             "iss": nhs_key,
             "sub": nhs_key,
@@ -130,6 +133,7 @@ class PdsApiService(PatientSearch):
             "jti": str(uuid.uuid4()),
             "exp": int(time.time()) + 300,
         }
+        logger.info(f"payload: {payload}")
         return jwt.encode(payload, pds_key, algorithm="RS512", headers={"kid": kid})
 
     def request_new_access_token(self, jwt_token, nhs_oauth_endpoint):
