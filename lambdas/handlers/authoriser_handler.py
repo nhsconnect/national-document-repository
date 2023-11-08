@@ -83,8 +83,9 @@ def validate_access_policy(http_verb, path, user_role):
     logger.info(f"path: {path}")
     match path:
         case "/DocumentDelete":
+            logger.info("doc delete here")
             deny_resource = (
-                user_role is RepositoryRole.GP_CLINICAL.value
+                user_role == RepositoryRole.GP_CLINICAL.value
             )
 
         case "/DocumentManifest":
@@ -104,7 +105,9 @@ def validate_access_policy(http_verb, path, user_role):
         case _:
             deny_resource = False
 
+    logger.info(f"deny_resource: {deny_resource}")
     logger.info("Allow resource: %s" % bool(deny_resource) is False)
+
     return bool(deny_resource)
 
 
