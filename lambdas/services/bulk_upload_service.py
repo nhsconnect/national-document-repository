@@ -43,7 +43,7 @@ class BulkUploadService:
         self.dynamo_records_in_transaction: list[NHSDocumentReference] = []
         self.source_bucket_files_in_transaction = []
         self.dest_bucket_files_in_transaction = []
-        self.resolved_source_file_path = {}
+        self.file_path_cache = {}
 
     def handle_sqs_message(self, message: dict):
         try:
@@ -204,7 +204,7 @@ class BulkUploadService:
 
         if not contains_accent_char(sample_file_path):
             logger.info("No accented character detected in file path.")
-            self.resolved_source_file_path = {
+            self.file_path_cache = {
                 file.file_path: self.strip_leading_slash(file.file_path)
                 for file in staging_metadata.files
             }
@@ -235,13 +235,13 @@ class BulkUploadService:
                     f"Failed to access file {sample_file_path}"
                 )
 
-        self.resolved_source_file_path = resolved_file_paths
+        self.file_path_cache = resolved_file_paths
 
     def file_exist_in_staging_bucket(self, file_path: str) -> bool:
         return self.s3_service.file_exist_on_s3(self.staging_bucket_name, file_path)
 
     def get_source_file_key(self, file_path: str) -> str:
-        return self.resolved_source_file_path[file_path]
+        return self.file_path_cache[file_path]
 
     def create_lg_records_and_copy_files(self, staging_metadata: StagingMetadata):
         nhs_number = staging_metadata.nhs_number

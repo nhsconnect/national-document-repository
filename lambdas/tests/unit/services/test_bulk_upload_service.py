@@ -83,7 +83,6 @@ def set_up_mocks_for_non_ascii_files(
     )
 
     def mock_file_exist_on_s3(s3_bucket_name: str, file_key: str) -> bool:
-        print(file_key)
         return file_key in expected_s3_file_paths
 
     def mock_get_tag_value(s3_bucket_name: str, file_key: str, tag_key: str) -> str:
@@ -417,7 +416,7 @@ def test_resolve_source_file_path_when_filenames_dont_have_accented_chars(set_en
     }
 
     service.resolve_source_file_path(TEST_STAGING_METADATA)
-    actual = service.resolved_source_file_path
+    actual = service.file_path_cache
 
     assert actual == expected
 
@@ -451,7 +450,7 @@ def test_resolve_source_file_path_when_filenames_have_accented_chars(
         patient_name_in_metadata_file
     )
     service.resolve_source_file_path(test_staging_metadata)
-    actual = service.resolved_source_file_path
+    actual = service.file_path_cache
 
     assert actual == expected_cache
 

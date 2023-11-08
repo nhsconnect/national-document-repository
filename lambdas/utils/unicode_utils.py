@@ -14,11 +14,7 @@ def remove_accent_glyphs(input_str: str) -> str:
     Return the input string with all diacritical marks (= accent glyphs) removed.
     Characters like é will be replaced by e, and characters like æ will be simply removed.
     """
-    return (
-        unicodedata.normalize("NFD", input_str)
-        .encode("ASCII", "ignore")
-        .decode("utf-8")
-    )
+    return convert_to_nfd_form(input_str).encode("ASCII", "ignore").decode("utf-8")
 
 
 def contains_accent_char(input_str: str) -> bool:
@@ -32,8 +28,8 @@ def convert_to_nfc_form(input_str: str) -> str:
     """
     Convert a string to the NFC normalization form
 
-    >>> cafe_as_nfd_form = b'cafe\xcc\x81'.decode('utf8')   # 'café'
     >>> cafe_as_nfc_form = b'caf\xc3\xa9'.decode('utf8')   # 'café'
+    >>> cafe_as_nfd_form = b'cafe\xcc\x81'.decode('utf8')   # 'café'
 
     >>> convert_to_nfc_form(cafe_as_nfd_form) == cafe_as_nfc_form
     True
@@ -49,7 +45,7 @@ def convert_to_nfd_form(input_str: str) -> str:
     >>> cafe_as_nfc_form = b'caf\xc3\xa9'.decode('utf8')   # 'café'
     >>> cafe_as_nfd_form = b'cafe\xcc\x81'.decode('utf8')   # 'café'
 
-    >>> convert_to_nfc_form(cafe_as_nfc_form) == cafe_as_nfd_form
+    >>> convert_to_nfd_form(cafe_as_nfc_form) == cafe_as_nfd_form
     True
 
     """
