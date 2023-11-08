@@ -10,10 +10,11 @@ def set_request_context_for_logging(lambda_func: Callable) -> Callable:
         request_context.authorization = None
         if event.get("headers"):
             token = event.get("headers").get("Authorization")
-            decoded_token = jwt.decode(
-                token, algorithms=["RS256"], options={"verify_signature": False}
-            )
-            request_context.authorization = decoded_token
+            if token:
+                decoded_token = jwt.decode(
+                    token, algorithms=["RS256"], options={"verify_signature": False}
+                )
+                request_context.authorization = decoded_token
         return lambda_func(event, context)
 
     return interceptor
