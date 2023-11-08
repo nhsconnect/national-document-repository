@@ -90,6 +90,8 @@ def validate_access_policy(http_verb, path, user_role):
 
         case "/DocumentManifest":
             logger.info("doc manifest here")
+            logger.info(f"user role {user_role}")
+            logger.info(f"value {RepositoryRole.GP_CLINICAL.value}")
             deny_resource = (
                 user_role is RepositoryRole.GP_CLINICAL.value
             )
