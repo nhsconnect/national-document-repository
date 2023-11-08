@@ -16,7 +16,7 @@ jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUseRole = useRole as jest.Mock;
 
-describe.only('PatientSearchPage', () => {
+describe('PatientSearchPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);

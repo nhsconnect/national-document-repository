@@ -9,8 +9,16 @@ import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
 import { act } from 'react-dom/test-utils';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import useRole from '../../helpers/hooks/useRole';
+
+jest.mock('../../helpers/hooks/useRole');
+const mockedUseRole = useRole as jest.Mock;
 
 describe('PatientResultPage', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
+    });
     afterEach(() => {
         jest.clearAllMocks();
     });
@@ -49,29 +57,35 @@ describe('PatientResultPage', () => {
             expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
         });
 
-        it('displays text specific to upload path if user has selected upload', async () => {
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "displays text specific to upload path when user role is '%s'",
+            async (role) => {
+                const nhsNumber = '9000000000';
+                const patientDetails = buildPatientDetails({ nhsNumber });
+
+                mockedUseRole.mockReturnValue(role);
+
+                renderPatientResultPage(patientDetails);
+
+                expect(
+                    screen.getByRole('heading', { name: 'Verify patient details' }),
+                ).toBeInTheDocument();
+                expect(
+                    screen.getByText(
+                        'Ensure these patient details match the records and attachments that you upload',
+                    ),
+                ).toBeInTheDocument();
+            },
+        );
+
+        it("doesn't display text specific to upload path when user role is PCSE", async () => {
             const nhsNumber = '9000000000';
             const patientDetails = buildPatientDetails({ nhsNumber });
-            const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
 
-            renderPatientResultPage(patientDetails, uploadRole);
+            const role = REPOSITORY_ROLE.PCSE;
+            mockedUseRole.mockReturnValue(role);
 
-            expect(
-                screen.getByRole('heading', { name: 'Verify patient details' }),
-            ).toBeInTheDocument();
-
-            expect(
-                screen.getByText(
-                    'Ensure these patient details match the records and attachments that you upload',
-                ),
-            ).toBeInTheDocument();
-        });
-
-        it("doesn't display text specific to upload path if user has selected download", async () => {
-            const nhsNumber = '9000000000';
-            const patientDetails = buildPatientDetails({ nhsNumber });
-            const downloadRole = REPOSITORY_ROLE.PCSE;
-            renderPatientResultPage(patientDetails, downloadRole);
+            renderPatientResultPage(patientDetails);
 
             expect(
                 screen.getByRole('heading', { name: 'Verify patient details' }),
@@ -82,7 +96,6 @@ describe('PatientResultPage', () => {
             expect(
                 screen.queryByRole('radio', { name: 'Inactive patient' }),
             ).not.toBeInTheDocument();
-
             expect(
                 screen.queryByText(
                     'Ensure these patient details match the electronic health records and attachments you are about to upload.',
@@ -123,31 +136,66 @@ describe('PatientResultPage', () => {
                 ),
             ).toBeInTheDocument();
         });
-    });
-
-    describe('Navigation', () => {
-        it('navigates to Upload docs page after user selects Active patient when role is PCSE', async () => {
-            const history = createMemoryHistory({ initialEntries: ['/example'] });
-
-            const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
-
-            renderPatientResultPage({ active: false }, uploadRole, history);
-            expect(history.location.pathname).toBe('/example');
-            act(() => {
-                userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
-            });
-
-            await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.UPLOAD_DOCUMENTS);
-            });
-        });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
-            "navigates to Lloyd George Record page after user selects Active patient when role is '%s'",
+            "displays an error message if 'active' boolean is missing on the patient, when role is '%s'",
             async (role) => {
                 const history = createMemoryHistory({ initialEntries: ['/example'] });
 
-                renderPatientResultPage({ active: true }, role, history);
+                mockedUseRole.mockReturnValue(role);
+
+                renderPatientResultPage({ active: undefined }, history);
+                expect(history.location.pathname).toBe('/example');
+
+                act(() => {
+                    userEvent.click(
+                        screen.getByRole('button', {
+                            name: 'Accept details are correct',
+                        }),
+                    );
+                });
+
+                await waitFor(() => {
+                    expect(
+                        screen.getByText('We cannot determine the active state of this patient'),
+                    ).toBeInTheDocument();
+                });
+            },
+        );
+    });
+
+    describe('Navigation', () => {
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "navigates to Upload docs page after user selects Inactive patient when role is '%s'",
+            async (role) => {
+                const history = createMemoryHistory({
+                    initialEntries: ['/example'],
+                });
+
+                mockedUseRole.mockReturnValue(role);
+                renderPatientResultPage({ active: false }, history);
+                expect(history.location.pathname).toBe('/example');
+                act(() => {
+                    userEvent.click(
+                        screen.getByRole('button', {
+                            name: 'Accept details are correct',
+                        }),
+                    );
+                });
+
+                await waitFor(() => {
+                    expect(history.location.pathname).toBe(routes.UPLOAD_DOCUMENTS);
+                });
+            },
+        );
+
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "navigates to Lloyd George Record page after user selects Active patient, when role is '%s'",
+            async (role) => {
+                const history = createMemoryHistory({ initialEntries: ['/example'] });
+                mockedUseRole.mockReturnValue(role);
+
+                renderPatientResultPage({ active: true }, history);
                 expect(history.location.pathname).toBe('/example');
 
                 act(() => {
@@ -162,31 +210,13 @@ describe('PatientResultPage', () => {
             },
         );
 
-        it('Shows an error message if the active field is missing on the patient', async () => {
+        it('navigates to ARF Download page when user selects Verify patient, when role is PCSE', async () => {
             const history = createMemoryHistory({ initialEntries: ['/example'] });
 
-            const uploadRole = REPOSITORY_ROLE.GP_ADMIN;
+            const role = REPOSITORY_ROLE.PCSE;
+            mockedUseRole.mockReturnValue(role);
 
-            renderPatientResultPage({ active: undefined }, uploadRole, history);
-            expect(history.location.pathname).toBe('/example');
-
-            act(() => {
-                userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
-            });
-
-            await waitFor(() => {
-                expect(
-                    screen.getByText('We cannot determine the active state of this patient'),
-                ).toBeInTheDocument();
-            });
-        });
-
-        it('navigates to download page when user has verified download patient', async () => {
-            const history = createMemoryHistory({ initialEntries: ['/example'] });
-
-            const downloadRole = REPOSITORY_ROLE.PCSE;
-
-            renderPatientResultPage({}, downloadRole, history);
+            renderPatientResultPage({}, history);
             expect(history.location.pathname).toBe('/example');
 
             userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
@@ -201,7 +231,6 @@ describe('PatientResultPage', () => {
 const homeRoute = '/example';
 const renderPatientResultPage = (
     patientOverride: Partial<PatientDetails> = {},
-    role: REPOSITORY_ROLE = REPOSITORY_ROLE.PCSE,
     history = createMemoryHistory({ initialEntries: ['/example'] }),
 ) => {
     const patient: PatientDetails = {
