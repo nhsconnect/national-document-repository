@@ -1,4 +1,5 @@
 import pytest
+from botocore.exceptions import ClientError
 from services.s3_service import S3Service
 from tests.unit.conftest import (MOCK_BUCKET, TEST_FILE_KEY, TEST_FILE_NAME,
                                  TEST_NHS_NUMBER, TEST_OBJECT_KEY)
@@ -209,3 +210,84 @@ def test_get_tag_value_raise_error_when_object_dont_have_the_specific_tag(mocker
         service.get_tag_value(
             s3_bucket_name=MOCK_BUCKET, file_key=TEST_FILE_NAME, tag_key=test_tag_key
         )
+
+
+def test_file_exist_on_s3_return_true_if_object_exists(mocker):
+    mocker.patch("boto3.client")
+    service = S3Service()
+
+    mock_response = {
+        "ResponseMetadata": {
+            "RequestId": "mock_req",
+            "HostId": "",
+            "HTTPStatusCode": 200,
+            "HTTPHeaders": {},
+            "RetryAttempts": 0,
+        },
+        "ETag": '"eb2996dae99afd8308e4c97bdb6a4178"',
+        "ContentType": "application/pdf",
+        "Metadata": {},
+    }
+
+    mock_head_object = mocker.patch.object(
+        service.client, "head_object", return_value=mock_response
+    )
+
+    expected = True
+    actual = service.file_exist_on_s3(
+        s3_bucket_name=MOCK_BUCKET, file_key=TEST_FILE_NAME
+    )
+    assert actual == expected
+
+    mock_head_object.assert_called_once_with(
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_NAME,
+    )
+
+
+def test_file_exist_on_s3_return_false_if_object_does_not_exists(mocker):
+    mocker.patch("boto3.client")
+    service = S3Service()
+
+    mock_error = ClientError(
+        {"Error": {"Code": "403", "Message": "Forbidden"}},
+        "S3:HeadObject",
+    )
+
+    mock_head_object = mocker.patch.object(
+        service.client, "head_object", side_effect=mock_error
+    )
+
+    expected = False
+    actual = service.file_exist_on_s3(
+        s3_bucket_name=MOCK_BUCKET, file_key=TEST_FILE_NAME
+    )
+
+    assert actual == expected
+
+    mock_head_object.assert_called_once_with(
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_NAME,
+    )
+
+
+def test_file_exist_on_s3_raise_error_if_got_unexpected_error(mocker):
+    mocker.patch("boto3.client")
+    service = S3Service()
+
+    mock_error = ClientError(
+        {"Error": {"Code": "500", "Message": "Internal Server Error"}},
+        "S3:HeadObject",
+    )
+
+    mock_head_object = mocker.patch.object(
+        service.client, "head_object", side_effect=mock_error
+    )
+
+    with pytest.raises(ClientError):
+        service.file_exist_on_s3(s3_bucket_name=MOCK_BUCKET, file_key=TEST_FILE_NAME)
+
+    mock_head_object.assert_called_once_with(
+        Bucket=MOCK_BUCKET,
+        Key=TEST_FILE_NAME,
+    )
