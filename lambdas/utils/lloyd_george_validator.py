@@ -11,6 +11,8 @@ from pydantic import ValidationError
 from requests import HTTPError
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
+from utils.unicode_utils import (REGEX_PATIENT_NAME_PATTERN,
+                                 contains_accent_char)
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
@@ -28,7 +30,8 @@ def validate_lg_file_type(file_type: str):
 
 
 def validate_file_name(name: str):
-    lg_regex = r"[0-9]+of[0-9]+_Lloyd_George_Record_\[[A-Za-z À-ÿ\-]+]_\[[0-9]{10}]_\[\d\d-\d\d-\d\d\d\d].pdf"
+    nhs_number_pattern = "[0-9]{10}"
+    lg_regex = rf"[0-9]+of[0-9]+_Lloyd_George_Record_\[{REGEX_PATIENT_NAME_PATTERN}\]_\[{nhs_number_pattern}\]_\[\d\d-\d\d-\d\d\d\d].pdf"
     if not re.fullmatch(lg_regex, name):
         raise LGInvalidFilesException(
             "One or more of the files do not match naming convention"
@@ -85,7 +88,7 @@ def validate_lg_file_names(file_name_list: list[str], nhs_number: Optional[str] 
 def extract_info_from_filename(filename: str) -> dict:
     page_number = r"(?P<page_no>[1-9][0-9]*)"
     total_page_number = r"(?P<total_page_no>[1-9][0-9]*)"
-    patient_name = r"(?P<patient_name>[A-Za-z À-ÿ\-]+)"
+    patient_name = rf"(?P<patient_name>{REGEX_PATIENT_NAME_PATTERN})"
     nhs_number = r"(?P<nhs_number>\d{10})"
     date_of_birth = r"(?P<date_of_birth>\d\d-\d\d-\d\d\d\d)"
 
@@ -135,8 +138,16 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
             + " "
             + patient_details.family_name
         )
-        if patient_full_name != patient_name:
-            raise LGInvalidFilesException("Patient name does not match our records")
+
+        if contains_accent_char(patient_name):
+            logger.info(
+                "Bypassing name check as patient name contains accented character"
+            )
+        else:
+            logger.info("Verifying patient name against the record in PDS...")
+            if patient_full_name != patient_name:
+                raise LGInvalidFilesException("Patient name does not match our records")
+
         current_user_ods = get_user_ods_code()
         if patient_details.general_practice_ods != current_user_ods:
             raise LGInvalidFilesException("User is not allowed to access patient")

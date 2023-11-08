@@ -11,15 +11,15 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (
-    DocumentInfectedException,
-    InvalidMessageException,
-    S3FileNotFoundException,
-    TagNotFoundException,
-    VirusScanFailedException,
-    VirusScanNoResultException,
-)
-from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
+from utils.exceptions import (DocumentInfectedException,
+                              InvalidMessageException, S3FileNotFoundException,
+                              TagNotFoundException, VirusScanFailedException,
+                              VirusScanNoResultException)
+from utils.lloyd_george_validator import (LGInvalidFilesException,
+                                          extract_info_from_filename,
+                                          validate_lg_file_names)
+from utils.unicode_utils import (contains_accent_char,
+                                 find_possible_match_of_same_accent_string)
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -44,6 +44,7 @@ class BulkUploadService:
         self.dynamo_records_in_transaction: list[NHSDocumentReference] = []
         self.source_bucket_files_in_transaction = []
         self.dest_bucket_files_in_transaction = []
+        self.resolved_source_file_path = {}
 
     def handle_sqs_message(self, message: dict):
         try:
@@ -73,6 +74,8 @@ class BulkUploadService:
         logger.info("File validation complete. Checking virus scan results")
 
         try:
+            self.resolve_source_file_path(staging_metadata)
+
             logger.info("Running validation for virus scan results...")
             self.check_virus_result(staging_metadata)
         except VirusScanNoResultException as e:
@@ -147,7 +150,7 @@ class BulkUploadService:
 
     def check_virus_result(self, staging_metadata: StagingMetadata):
         for file_metadata in staging_metadata.files:
-            source_file_key = self.strip_leading_slash(file_metadata.file_path)
+            source_file_key = self.get_source_file_key(file_metadata.file_path)
             file_path = file_metadata.file_path
             try:
                 scan_result = self.s3_service.get_tag_value(
@@ -197,6 +200,74 @@ class BulkUploadService:
         self.source_bucket_files_in_transaction = []
         self.dest_bucket_files_in_transaction = []
 
+    def resolve_source_file_path(self, staging_metadata: StagingMetadata):
+        sample_file_path = staging_metadata.files[0].file_path
+
+        if not contains_accent_char(sample_file_path):
+            logger.info("No accented character detected in file path.")
+            self.resolved_source_file_path = {
+                file.file_path: self.strip_leading_slash(file.file_path)
+                for file in staging_metadata.files
+            }
+            return
+
+        logger.info("Detected accented character in file path.")
+        logger.info("Will take special steps to handle file names.")
+
+        file_prefix = os.path.dirname(self.strip_leading_slash(sample_file_path))
+
+        if not file_prefix:
+            logger.info(
+                "File name contains accented character but located in root directory."
+            )
+            logger.info(
+                "Will stop processing this case, as it involve searching the whole bucket for matches"
+            )
+            raise LGInvalidFilesException(
+                "Cannot process documents for patient as file name contain non-ascii characters"
+            )
+
+        if contains_accent_char(file_prefix):
+            logger.info("Detected accented character in file prefix (file directory).")
+            logger.info(
+                "Will stop processing this case, as it may involve checking against permutation of unknown size"
+            )
+            raise LGInvalidFilesException(
+                "Cannot process documents for patient as file directory contain non-ascii characters"
+            )
+
+        all_file_paths_for_patients = self.s3_service.list_objects_by_prefix(
+            s3_bucket_name=self.staging_bucket_name, prefix=file_prefix
+        )
+
+        actual_s3_file_path = find_possible_match_of_same_accent_string(
+            input_str=self.strip_leading_slash(sample_file_path),
+            list_of_candidates=all_file_paths_for_patients,
+        )
+        if not actual_s3_file_path:
+            logger.info(
+                "No file matching the provided file path was found on S3 bucket"
+            )
+            raise S3FileNotFoundException(f"Failed to access file {sample_file_path}")
+
+        base_file_name_in_metadata = os.path.basename(sample_file_path)
+        base_file_name_in_actual_s3 = os.path.basename(actual_s3_file_path)
+        patient_name_in_metadata = extract_info_from_filename(
+            base_file_name_in_metadata
+        )["patient_name"]
+        patient_name_in_actual_s3 = extract_info_from_filename(
+            base_file_name_in_actual_s3
+        )["patient_name"]
+
+        for file in staging_metadata.files:
+            actual_file_path_in_s3 = self.strip_leading_slash(file.file_path).replace(
+                patient_name_in_metadata, patient_name_in_actual_s3
+            )
+            self.resolved_source_file_path[file.file_path] = actual_file_path_in_s3
+
+    def get_source_file_key(self, file_path: str) -> str:
+        return self.resolved_source_file_path[file_path]
+
     def create_lg_records_and_copy_files(self, staging_metadata: StagingMetadata):
         nhs_number = staging_metadata.nhs_number
 
@@ -204,7 +275,7 @@ class BulkUploadService:
             document_reference = self.convert_to_document_reference(
                 file_metadata, nhs_number
             )
-            source_file_key = self.strip_leading_slash(file_metadata.file_path)
+            source_file_key = self.get_source_file_key(file_metadata.file_path)
             dest_file_key = document_reference.s3_file_key
             self.create_record_in_lg_dynamo_table(document_reference)
             self.copy_to_lg_bucket(

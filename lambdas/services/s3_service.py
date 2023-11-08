@@ -1,4 +1,4 @@
-from typing import Any, Mapping
+from typing import Any, List, Mapping
 
 import boto3
 from botocore.client import Config as BotoConfig
@@ -91,3 +91,20 @@ class S3Service:
         raise TagNotFoundException(
             f"Object {file_key} doesn't have a tag of key {tag_key}"
         )
+
+    def list_objects_by_prefix(self, s3_bucket_name: str, prefix: str) -> List[str]:
+        response = self.client.list_objects_v2(Bucket=s3_bucket_name, Prefix=prefix)
+        try:
+            if response["IsTruncated"] == "true":
+                logger.warning(
+                    f"Got more than 1000 results while searching for objects with given prefix {prefix}. "
+                    "Some results are not returned."
+                )
+
+            return [file_object["Key"] for file_object in response["Contents"]]
+        except KeyError as e:
+            logger.info(f"Got error while searching bucket content: {e}")
+            logger.info(
+                f"Bucket {s3_bucket_name} doesn't seem to contain any object with prefix {prefix}"
+            )
+            return []

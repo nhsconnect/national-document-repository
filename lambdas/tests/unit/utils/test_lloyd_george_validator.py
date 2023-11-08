@@ -41,14 +41,26 @@ def test_valid_file_name():
         assert False, "One or more of the files do not match naming convention"
 
 
-def test_valid_file_name_special_characters():
+@pytest.mark.parametrize(
+    "file_name",
+    [
+        "1of1_Lloyd_George_Record_[James O'Brien]_[1111111111]_[25-12-2019].pdf",
+        "1of1_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf",
+        "1of1_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf",  # same string in NFD form
+    ],
+    ids=[
+        "Patient name with apostrophe",
+        "Patient name with accented char in NFC code point",
+        "Patient name with accented char in NFD code point",
+    ],
+)
+def test_valid_file_name_special_characters(file_name):
     try:
-        file_name = (
-            "1of1_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf"
-        )
         validate_file_name(file_name)
     except LGInvalidFilesException:
-        assert False, "One or more of the files do not match naming convention"
+        assert (
+            False
+        ), "validate_file_name should be handle patient names with special characters"
 
 
 def test_files_with_duplication():
@@ -117,13 +129,11 @@ def test_files_without_missing_files():
 
 
 def test_extract_info_from_filename():
-    test_file_name = (
-        "123of456_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf"
-    )
+    test_file_name = "123of456_Lloyd_George_Record_[Joé Blöggês-Glüë O'Brien]_[1111111111]_[25-12-2019].pdf"
     expected = {
         "page_no": "123",
         "total_page_no": "456",
-        "patient_name": "Joé Blöggês-Glüë",
+        "patient_name": "Joé Blöggês-Glüë O'Brien",
         "nhs_number": "1111111111",
         "date_of_birth": "25-12-2019",
     }

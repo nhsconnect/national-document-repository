@@ -66,11 +66,26 @@ EXPECTED_SQS_MSG_FOR_PATIENT_1234567891 = readfile(
 )
 
 
-def make_valid_lg_file_names(total_number: int, nhs_number: str = "9000000009"):
+def make_valid_lg_file_names(
+    total_number: int, nhs_number: str = "9000000009", patient_name: str = "Jane Smith"
+):
     return [
-        f"{i}of{total_number}_Lloyd_George_Record_[Jane Smith]_[{nhs_number}]_[22-10-2010].pdf"
+        f"{i}of{total_number}_Lloyd_George_Record_[{patient_name}]_[{nhs_number}]_[22-10-2010].pdf"
         for i in range(1, total_number + 1)
     ]
+
+
+def make_s3_file_paths(file_names: list[str], nhs_number: str = "9000000009"):
+    return [f"{nhs_number}/{file_name}" for file_name in file_names]
+
+
+def build_test_staging_metadata_from_patient_name(
+    patient_name: str, nhs_number: str = "9000000009"
+) -> StagingMetadata:
+    file_names = make_valid_lg_file_names(
+        total_number=3, nhs_number=nhs_number, patient_name=patient_name
+    )
+    return build_test_staging_metadata(file_names=file_names, nhs_number=nhs_number)
 
 
 def build_test_staging_metadata(file_names: list[str], nhs_number: str = "9000000009"):
@@ -108,9 +123,16 @@ TEST_STAGING_METADATA = build_test_staging_metadata(make_valid_lg_file_names(3))
 TEST_SQS_MESSAGE = build_test_sqs_message(TEST_STAGING_METADATA)
 TEST_FILE_METADATA = TEST_STAGING_METADATA.files[0]
 
+TEST_VALID_FILE_NAMES_ON_S3 = make_valid_lg_file_names(3)
+TEST_VALID_FILE_NAMES_IN_METADATA = [
+    f"/{TEST_NHS_NUMBER_FOR_BULK_UPLOAD}/{file_name}"
+    for file_name in make_valid_lg_file_names(3)
+]
+
 TEST_STAGING_METADATA_WITH_INVALID_FILENAME = build_test_staging_metadata(
     [*make_valid_lg_file_names(2), "invalid_file_name.txt"]
 )
+
 
 TEST_DOCUMENT_REFERENCE = build_test_document_reference(make_valid_lg_file_names(3)[0])
 TEST_DOCUMENT_REFERENCE_LIST = [

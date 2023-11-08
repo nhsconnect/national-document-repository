@@ -29,6 +29,7 @@ def lambda_handler(event, _context):
             TypeError,
             AttributeError,
         ) as error:
-            logger.info(f"Fail to process current message due to error: {error}")
+            logger.error("Fail to process current message due to error:")
+            logger.error(error)
             logger.info("Continue on next message")
     logger.info(f"Finished processing all {len(event['Records'])} messages")
