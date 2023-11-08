@@ -82,8 +82,9 @@ def set_up_mocks_for_non_ascii_files(
         make_valid_lg_file_names(total_number=3, patient_name=patient_name_on_s3)
     )
 
-    def mock_list_objects_by_prefix(*_args, **_kwargs) -> list[str]:
-        return expected_s3_file_paths
+    def mock_file_exist_on_s3(s3_bucket_name: str, file_key: str) -> bool:
+        print(file_key)
+        return file_key in expected_s3_file_paths
 
     def mock_get_tag_value(s3_bucket_name: str, file_key: str, tag_key: str) -> str:
         if (
@@ -111,7 +112,7 @@ def set_up_mocks_for_non_ascii_files(
 
     service.s3_service.get_tag_value.side_effect = mock_get_tag_value
     service.s3_service.copy_across_bucket.side_effect = mock_copy_across_bucket
-    service.s3_service.list_objects_by_prefix.side_effect = mock_list_objects_by_prefix
+    service.s3_service.file_exist_on_s3.side_effect = mock_file_exist_on_s3
 
 
 @pytest.mark.parametrize(

@@ -16,10 +16,9 @@ from utils.exceptions import (DocumentInfectedException,
                               TagNotFoundException, VirusScanFailedException,
                               VirusScanNoResultException)
 from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          extract_info_from_filename,
                                           validate_lg_file_names)
-from utils.unicode_utils import (contains_accent_char,
-                                 find_possible_match_of_same_accent_string)
+from utils.unicode_utils import (contains_accent_char, convert_to_nfc_form,
+                                 convert_to_nfd_form)
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -214,56 +213,32 @@ class BulkUploadService:
         logger.info("Detected accented character in file path.")
         logger.info("Will take special steps to handle file names.")
 
-        file_prefix = os.path.dirname(self.strip_leading_slash(sample_file_path))
-
-        if not file_prefix:
-            logger.info(
-                "File name contains accented character but located in root directory."
-            )
-            logger.info(
-                "Will stop processing this case, as it involve searching the whole bucket for matches"
-            )
-            raise LGInvalidFilesException(
-                "Cannot process documents for patient as file name contain non-ascii characters"
-            )
-
-        if contains_accent_char(file_prefix):
-            logger.info("Detected accented character in file prefix (file directory).")
-            logger.info(
-                "Will stop processing this case, as it may involve checking against permutation of unknown size"
-            )
-            raise LGInvalidFilesException(
-                "Cannot process documents for patient as file directory contain non-ascii characters"
-            )
-
-        all_file_paths_for_patients = self.s3_service.list_objects_by_prefix(
-            s3_bucket_name=self.staging_bucket_name, prefix=file_prefix
-        )
-
-        actual_s3_file_path = find_possible_match_of_same_accent_string(
-            input_str=self.strip_leading_slash(sample_file_path),
-            list_of_candidates=all_file_paths_for_patients,
-        )
-        if not actual_s3_file_path:
-            logger.info(
-                "No file matching the provided file path was found on S3 bucket"
-            )
-            raise S3FileNotFoundException(f"Failed to access file {sample_file_path}")
-
-        base_file_name_in_metadata = os.path.basename(sample_file_path)
-        base_file_name_in_actual_s3 = os.path.basename(actual_s3_file_path)
-        patient_name_in_metadata = extract_info_from_filename(
-            base_file_name_in_metadata
-        )["patient_name"]
-        patient_name_in_actual_s3 = extract_info_from_filename(
-            base_file_name_in_actual_s3
-        )["patient_name"]
-
+        resolved_file_paths = {}
         for file in staging_metadata.files:
-            actual_file_path_in_s3 = self.strip_leading_slash(file.file_path).replace(
-                patient_name_in_metadata, patient_name_in_actual_s3
+            file_path_in_metadata = file.file_path
+            file_path_without_leading_slash = self.strip_leading_slash(
+                file_path_in_metadata
             )
-            self.resolved_source_file_path[file.file_path] = actual_file_path_in_s3
+            file_path_in_nfc_form = convert_to_nfc_form(file_path_without_leading_slash)
+            file_path_in_nfd_form = convert_to_nfd_form(file_path_without_leading_slash)
+
+            if self.file_exist_in_staging_bucket(file_path_in_nfc_form):
+                resolved_file_paths[file_path_in_metadata] = file_path_in_nfc_form
+            elif self.file_exist_in_staging_bucket(file_path_in_nfd_form):
+                resolved_file_paths[file_path_in_metadata] = file_path_in_nfd_form
+            else:
+                logger.info(
+                    "No file matching the provided file path was found on S3 bucket"
+                )
+                logger.info("Please check whether files are named correctly")
+                raise S3FileNotFoundException(
+                    f"Failed to access file {sample_file_path}"
+                )
+
+        self.resolved_source_file_path = resolved_file_paths
+
+    def file_exist_in_staging_bucket(self, file_path: str) -> bool:
+        return self.s3_service.file_exist_on_s3(self.staging_bucket_name, file_path)
 
     def get_source_file_key(self, file_path: str) -> str:
         return self.resolved_source_file_path[file_path]

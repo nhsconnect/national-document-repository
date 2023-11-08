@@ -1,10 +1,13 @@
 import re
 
 import pytest
-from utils.unicode_utils import (REGEX_PATIENT_NAME_PATTERN,
-                                 contains_accent_char,
-                                 find_possible_match_of_same_accent_string,
-                                 remove_accent_glyphs)
+from utils.unicode_utils import (
+    REGEX_PATIENT_NAME_PATTERN,
+    contains_accent_char,
+    convert_to_nfc_form,
+    convert_to_nfd_form,
+    remove_accent_glyphs,
+)
 
 NAME_WITH_ACCENT_NFC_FORM = "Évèlynêë François Ågāřdñ"
 NAME_WITH_ACCENT_NFD_FORM = "Évèlynêë François Ågāřdñ"
@@ -40,49 +43,30 @@ def test_contains_accent_char(input_str, expected):
     assert actual == expected
 
 
-def test_find_possible_match_of_same_accent_string__match_same_normalization_form():
-    input_str = NAME_WITH_ACCENT_NFC_FORM
-    candidates = [
-        NAME_WITHOUT_ACCENT_CHARS,
-        NAME_WITHOUT_ACCENT_CHARS.upper(),
-        NAME_WITH_ACCENT_NFC_FORM,
-        "unrelated_string",
-    ]
-    expected = NAME_WITH_ACCENT_NFC_FORM
-
-    actual = find_possible_match_of_same_accent_string(input_str, candidates)
-
-    assert actual == expected
-
-
-def test_find_possible_match_of_same_accent_string__match_different_normalization_form():
-    input_str = NAME_WITH_ACCENT_NFD_FORM
-    candidates = [
-        NAME_WITHOUT_ACCENT_CHARS,
-        NAME_WITHOUT_ACCENT_CHARS.upper(),
-        "unrelated_string",
-        NAME_WITH_ACCENT_NFC_FORM,
-        "another_unrelated_string",
-    ]
-    expected = NAME_WITH_ACCENT_NFC_FORM
-
-    actual = find_possible_match_of_same_accent_string(input_str, candidates)
+@pytest.mark.parametrize(
+    ["input_str", "expected"],
+    [
+        (NAME_WITH_ACCENT_NFC_FORM, NAME_WITH_ACCENT_NFC_FORM),
+        (NAME_WITH_ACCENT_NFD_FORM, NAME_WITH_ACCENT_NFC_FORM),
+        (NAME_WITHOUT_ACCENT_CHARS, NAME_WITHOUT_ACCENT_CHARS),
+    ],
+)
+def test_convert_to_nfc_form(input_str, expected):
+    actual = convert_to_nfc_form(input_str)
 
     assert actual == expected
 
 
-def test_find_possible_match_of_same_accent_string__return_none_if_no_match_was_found():
-    input_str = NAME_WITH_ACCENT_NFD_FORM
-    candidates = [
-        "unrelated_string",
-        NAME_WITHOUT_ACCENT_CHARS,
-        NAME_WITH_ACCENT_NFD_FORM.upper(),
-        NAME_WITHOUT_ACCENT_CHARS.upper(),
-        "another_unrelated_string",
-    ]
-    expected = None
-
-    actual = find_possible_match_of_same_accent_string(input_str, candidates)
+@pytest.mark.parametrize(
+    ["input_str", "expected"],
+    [
+        (NAME_WITH_ACCENT_NFC_FORM, NAME_WITH_ACCENT_NFD_FORM),
+        (NAME_WITH_ACCENT_NFD_FORM, NAME_WITH_ACCENT_NFD_FORM),
+        (NAME_WITHOUT_ACCENT_CHARS, NAME_WITHOUT_ACCENT_CHARS),
+    ],
+)
+def test_convert_to_nfd_form(input_str, expected):
+    actual = convert_to_nfd_form(input_str)
 
     assert actual == expected
 
