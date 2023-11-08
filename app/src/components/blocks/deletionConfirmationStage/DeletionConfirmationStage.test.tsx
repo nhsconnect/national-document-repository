@@ -1,18 +1,17 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
-import {
-    buildLgSearchResult,
-    buildPatientDetails,
-    buildUserAuth,
-} from '../../../helpers/test/testBuilders';
+import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
 import DeletionConfirmationStage from './DeletionConfirmationStage';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
-import { USER_ROLE } from '../../../types/generic/roles';
 import * as ReactRouter from 'react-router';
 import { createMemoryHistory } from 'history';
 import { routes } from '../../../types/generic/routes';
+import useRole from '../../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+
+jest.mock('../../../helpers/hooks/useRole');
+const mockedUseRole = useRole as jest.Mock;
 
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
@@ -22,63 +21,42 @@ describe('DeletionConfirmationStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
     });
-
     afterEach(() => {
         jest.clearAllMocks();
     });
 
-    describe('GP USER', () => {
-        it('renders the page with patient details', async () => {
-            const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
-            const numberOfFiles = mockLgSearchResult.number_of_files;
+    describe('Rendering', () => {
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "renders the page with Lloyd George patient details when user role is '%s'",
+            async (role) => {
+                const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
+                const numberOfFiles = mockLgSearchResult.number_of_files;
 
-            renderComponent(USER_ROLE.GP, numberOfFiles);
+                mockedUseRole.mockReturnValue(role);
+                renderComponent(numberOfFiles);
 
-            await waitFor(async () => {
-                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
-            });
+                await waitFor(async () => {
+                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                });
 
-            expect(
-                screen.getByText(`${numberOfFiles} files from the Lloyd George record of:`),
-            ).toBeInTheDocument();
-            expect(screen.getByText(patientName)).toBeInTheDocument();
-            expect(screen.getByText(/NHS number/)).toBeInTheDocument();
-            expect(
-                screen.getByRole('button', {
-                    name: "Return to patient's Lloyd George record page",
-                }),
-            ).toBeInTheDocument();
-        });
-
-        it('sets stage back to LgRecordStage when button is clicked', async () => {
-            const numberOfFiles = mockLgSearchResult.number_of_files;
-
-            renderComponent(USER_ROLE.GP, numberOfFiles);
-
-            await waitFor(async () => {
-                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
-            });
-
-            act(() => {
-                userEvent.click(
+                expect(
+                    screen.getByText(`${numberOfFiles} files from the Lloyd George record of:`),
+                ).toBeInTheDocument();
+                expect(screen.getByText(patientName)).toBeInTheDocument();
+                expect(screen.getByText(/NHS number/)).toBeInTheDocument();
+                expect(
                     screen.getByRole('button', {
                         name: "Return to patient's Lloyd George record page",
                     }),
-                );
-            });
-
-            await waitFor(() => {
-                expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
-            });
-        });
-    });
-
-    describe('PCSE USER', () => {
-        it('renders the page with patient details', async () => {
+                ).toBeInTheDocument();
+            },
+        );
+        it('renders the page with ARF patient details, when user role is PCSE', async () => {
             const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
             const numberOfFiles = 1;
 
-            renderComponent(USER_ROLE.PCSE, numberOfFiles);
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
+            renderComponent(numberOfFiles);
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -96,15 +74,118 @@ describe('DeletionConfirmationStage', () => {
             ).toBeInTheDocument();
         });
 
-        it('navigates to Home page when link is clicked', async () => {
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "renders the return to Lloyd George Record button, when user role is '%s'",
+            async (role) => {
+                const numberOfFiles = mockLgSearchResult.number_of_files;
+                mockedUseRole.mockReturnValue(role);
+
+                renderComponent(numberOfFiles);
+
+                await waitFor(async () => {
+                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                });
+
+                expect(
+                    screen.getByRole('button', {
+                        name: "Return to patient's Lloyd George record page",
+                    }),
+                ).toBeInTheDocument();
+            },
+        );
+
+        it('does not render the return to Lloyd George Record button, when user role is PCSE', async () => {
+            const numberOfFiles = mockLgSearchResult.number_of_files;
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
+
+            renderComponent(numberOfFiles);
+
+            await waitFor(async () => {
+                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+            });
+
+            expect(
+                screen.queryByRole('button', {
+                    name: "Return to patient's Lloyd George record page",
+                }),
+            ).not.toBeInTheDocument();
+        });
+
+        it('renders the Start Again button, when user role is PCSE', async () => {
+            const numberOfFiles = 7;
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
+
+            renderComponent(numberOfFiles);
+
+            await waitFor(async () => {
+                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+            });
+
+            expect(
+                screen.getByRole('link', {
+                    name: 'Start Again',
+                }),
+            ).toBeInTheDocument();
+        });
+
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "does not render the Start Again button, when user role is '%s'",
+            async (role) => {
+                const numberOfFiles = 7;
+                mockedUseRole.mockReturnValue(role);
+
+                renderComponent(numberOfFiles);
+
+                await waitFor(async () => {
+                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                });
+
+                expect(
+                    screen.queryByRole('link', {
+                        name: 'Start Again',
+                    }),
+                ).not.toBeInTheDocument();
+            },
+        );
+
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "displays the LgRecordStage when return button is clicked, when user role is '%s'",
+            async (role) => {
+                const numberOfFiles = mockLgSearchResult.number_of_files;
+                mockedUseRole.mockReturnValue(role);
+
+                renderComponent(numberOfFiles);
+
+                await waitFor(async () => {
+                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                });
+
+                act(() => {
+                    userEvent.click(
+                        screen.getByRole('button', {
+                            name: "Return to patient's Lloyd George record page",
+                        }),
+                    );
+                });
+
+                await waitFor(() => {
+                    expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
+                });
+            },
+        );
+    });
+
+    describe('Navigation', () => {
+        it('navigates to Home page when link is clicked when user role is PCSE', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/'],
                 initialIndex: 0,
             });
 
             const numberOfFiles = 7;
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            renderComponent(USER_ROLE.PCSE, numberOfFiles, history);
+            renderComponent(numberOfFiles, history);
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -126,26 +207,19 @@ describe('DeletionConfirmationStage', () => {
 });
 
 const renderComponent = (
-    userType: USER_ROLE,
     numberOfFiles: number,
     history = createMemoryHistory({
         initialEntries: ['/'],
         initialIndex: 0,
     }),
 ) => {
-    const auth: Session = {
-        auth: buildUserAuth(),
-        isLoggedIn: true,
-    };
     render(
         <ReactRouter.Router navigator={history} location={'/'}>
-            <SessionProvider sessionOverride={auth}>
-                <DeletionConfirmationStage
-                    numberOfFiles={numberOfFiles}
-                    patientDetails={mockPatientDetails}
-                    setStage={mockSetStage}
-                />
-            </SessionProvider>
+            <DeletionConfirmationStage
+                numberOfFiles={numberOfFiles}
+                patientDetails={mockPatientDetails}
+                setStage={mockSetStage}
+            />
         </ReactRouter.Router>,
     );
 };
