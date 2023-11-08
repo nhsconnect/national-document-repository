@@ -80,7 +80,7 @@ def lambda_handler(event, context):
 def validate_access_policy(http_verb, path, user_role):
     logger.info("Validating resource req: %s, http: %s" % (path, http_verb))
 
-    logger.info(f"path: {path}")
+    logger.info(f"Path: {path}")
     match path:
         case "/DocumentDelete":
             deny_resource = (
@@ -93,7 +93,6 @@ def validate_access_policy(http_verb, path, user_role):
             )
 
         case "/DocumentReference":
-            logger.info("doc reference here")
             deny_resource = (
                 user_role == RepositoryRole.GP_CLINICAL.value
             )
@@ -160,7 +159,6 @@ def find_login_session(ndr_session_id):
         current_session = query_response["Items"][0]
         return current_session
     except (KeyError, IndexError) as error:
-        logger.info(error)
         raise AuthorisationException(
             f"Unable to find session for session ID ending in: {redact_id(ndr_session_id)}"
         )
