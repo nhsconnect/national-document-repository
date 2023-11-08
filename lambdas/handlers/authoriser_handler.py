@@ -93,17 +93,17 @@ def validate_access_policy(http_verb, path, user_role):
             logger.info(f"user role {user_role}")
             logger.info(f"value {RepositoryRole.GP_CLINICAL.value}")
             deny_resource = (
-                user_role is RepositoryRole.GP_CLINICAL.value
+                user_role == RepositoryRole.GP_CLINICAL.value
             )
 
         case "/DocumentReference":
             logger.info("doc reference here")
             deny_resource = (
-                user_role is RepositoryRole.GP_CLINICAL.value
+                user_role == RepositoryRole.GP_CLINICAL.value
             )
 
         case "/SearchDocumentReferences":
-            deny_resource = user_role is RepositoryRole.PCSE.value
+            deny_resource = user_role == RepositoryRole.PCSE.value
 
         case _:
             deny_resource = False
