@@ -79,23 +79,25 @@ def lambda_handler(event, context):
 
 def validate_access_policy(http_verb, path, user_role):
     logger.info("Validating resource req: %s, http: %s" % (path, http_verb))
+
+    logger.info(f"path: {path}")
     match path:
         case "/DocumentDelete":
+            logger.info("doc delete here")
             deny_resource = (
                 user_role is RepositoryRole.GP_CLINICAL.value
-                or user_role is RepositoryRole.GP_ADMIN.value
             )
 
         case "/DocumentManifest":
+            logger.info("doc manifest here")
             deny_resource = (
                 user_role is RepositoryRole.GP_CLINICAL.value
-                or user_role is RepositoryRole.GP_ADMIN.value
             )
 
         case "/DocumentReference":
+            logger.info("doc reference here")
             deny_resource = (
                 user_role is RepositoryRole.GP_CLINICAL.value
-                or user_role is RepositoryRole.GP_ADMIN.value
             )
 
         case "/SearchDocumentReferences":
