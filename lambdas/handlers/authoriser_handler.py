@@ -108,7 +108,7 @@ def validate_access_policy(http_verb, path, user_role):
         case _:
             deny_resource = False
 
-    logger.innfo(f"deny_resource: {deny_resource}")
+    logger.info(f"deny_resource: {deny_resource}")
     logger.info("Allow resource: %s" % bool(deny_resource) is False)
 
     return bool(deny_resource)
