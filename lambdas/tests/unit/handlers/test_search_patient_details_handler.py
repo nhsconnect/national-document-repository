@@ -5,6 +5,8 @@ from unittest.mock import patch
 import pytest
 from handlers.search_patient_details_handler import lambda_handler
 from requests.models import Response
+
+from services.ssm_service import SSMService
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 
 
@@ -18,14 +20,17 @@ def patch_env_vars():
         yield env_vars
 
 
-def skip_test_lambda_handler_valid_id_returns_200(
+def test_lambda_handler_valid_id_returns_200(
     valid_id_event, context, mocker, patch_env_vars
 ):
     response = Response()
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
 
-    mocker.patch("ssm_service.get_ssm_parameter")
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="mock_public_key")
+    mocker.patch("jwt.decode", return_value={"selected_organisation": {"org_ods_code": "ODS"},
+                                             "repository_role": "user_role"})
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="1")
     mocker.patch(
         "services.mock_pds_service.MockPdsApiService.pds_request",
         return_value=response,
@@ -76,7 +81,7 @@ def test_lambda_handler_invalid_id_returns_400(
     assert expected == actual
 
 
-def skip_test_lambda_handler_valid_id_not_in_pds_returns_404(
+def test_lambda_handler_valid_id_not_in_pds_returns_404(
     valid_id_event, context, mocker, patch_env_vars
 ):
     response = Response()

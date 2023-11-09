@@ -1,11 +1,16 @@
 import time
+import json
 from unittest.mock import patch
+from typing import Tuple
 
 import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
-from models.oidc_models import IdTokenClaimSet
-from services.oidc_service import OidcService
+from requests import Response
+
+import services
+from models.oidc_models import IdTokenClaimSet, AccessToken
+from services.oidc_service import OidcService, get_selected_roleid
 from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import AuthorisationException
 
@@ -28,8 +33,43 @@ def oidc_service(mocker):
         oidc_service = OidcService()
         yield oidc_service
 
+@pytest.fixture
+def mock_userinfo():
+    role_id = "500000000001"
+    org_code = "A9A5A"
+    role_code = "R8015"
+    mock_userinfo = {
+        "nhsid_useruid": "500000000000",
+        "name": "TestUserOne Caius Mr",
+        "nhsid_nrbac_roles": [
+            {
+                "person_orgid": "500000000000",
+                "person_roleid": role_id,
+                "org_code": org_code,
+                "role_name": '"Support":"Systems Support":"Systems Support Access Role"',
+                "role_code": "S8001:G8005:"+role_code,
+            },
+            {
+                "person_orgid": "500000000000",
+                "person_roleid": "500000000000",
+                "org_code": "B9A5A",
+                "role_name": '"Primary Care Support England":"Systems Support Access Role"',
+                "role_code": "S8001:G8005:R8015",
+            },
+        ],
+        "given_name": "Caius",
+        "family_name": "TestUserOne",
+        "uid": "500000000000",
+        "nhsid_user_orgs": [
+            {"org_name": "NHSID DEV", "org_code": "A9A5A"},
+            {"org_name": "Primary Care Support England", "org_code": "B9A5A"},
+        ],
+        "sub": "500000000000",
+    }
+    yield {"role_id": role_id, "role_code": role_code, "org_code": org_code, "user_info":  mock_userinfo}
 
-def test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
+
+def test_fetch_tokens_successfully(mocker, oidc_service):
     mock_access_token = "mock_access_token"
     mock_id_token = "mock_id_token"
     mock_cis2_response = MockResponse(
@@ -62,7 +102,7 @@ def test_oidc_service_fetch_tokens_successfully(mocker, oidc_service):
     mocked_id_token_validation.assert_called_with(mock_id_token)
 
 
-def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_auth_code(
+def test_fetch_tokens_raises_AuthorisationException_for_invalid_auth_code(
     mocker, oidc_service
 ):
     mocker.patch(
@@ -80,7 +120,7 @@ def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_aut
         oidc_service.fetch_tokens("invalid_auth_code")
 
 
-def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_id_token(
+def test_fetch_tokens_raises_AuthorisationException_for_invalid_id_token(
     mocker, oidc_service
 ):
     mock_access_token = "mock_access_token"
@@ -104,57 +144,27 @@ def test_oidc_service_fetch_tokens_raises_AuthorisationException_for_invalid_id_
         oidc_service.fetch_tokens("test_auth_code")
 
 
-def test_oidc_service_fetch_user_org_code(mocker, oidc_service):
+def test_fetch_user_org_code(mocker, oidc_service, mock_userinfo):
     mock_access_token = "fake_access_token"
-    role_id = "500000000001"
-    expected_ods_code = "A9A5A"
-    mock_userinfo = {
-        "nhsid_useruid": "500000000000",
-        "name": "TestUserOne Caius Mr",
-        "nhsid_nrbac_roles": [
-            {
-                "person_orgid": "500000000000",
-                "person_roleid": role_id,
-                "org_code": expected_ods_code,
-                "role_name": '"Support":"Systems Support":"Systems Support Access Role"',
-                "role_code": "S8001:G8005:R8015",
-            },
-            {
-                "person_orgid": "500000000000",
-                "person_roleid": "500000000000",
-                "org_code": "B9A5A",
-                "role_name": '"Primary Care Support England":"Systems Support Access Role"',
-                "role_code": "S8001:G8005:R8015",
-            },
-        ],
-        "given_name": "Caius",
-        "family_name": "TestUserOne",
-        "uid": "500000000000",
-        "nhsid_user_orgs": [
-            {"org_name": "NHSID DEV", "org_code": "A9A5A"},
-            {"org_name": "Primary Care Support England", "org_code": "B9A5A"},
-        ],
-        "sub": "500000000000",
-    }
 
     mock_decoded_claim_set = {
         "sid": "fake_cis2_session_id",
         "sub": "fake_cis2_login_id",
         "exp": 1234567890,
-        "selected_roleid": role_id,
+        "selected_roleid": mock_userinfo["role_id"],
     }
 
-    mock_response = MockResponse(status_code=200, json_data=mock_userinfo)
+    mock_response = MockResponse(status_code=200, json_data=mock_userinfo["user_info"])
 
     mocker.patch("requests.get", return_value=mock_response)
 
     actual = oidc_service.fetch_user_org_codes(
         mock_access_token, IdTokenClaimSet(**mock_decoded_claim_set)
     )
-    assert actual[0] == expected_ods_code
+    assert actual[0] == mock_userinfo["org_code"]
 
 
-def test_oidc_service_fetch_user_org_codes_raise_AuthorisationException_for_invalid_access_token(
+def test_fetch_user_org_codes_raise_AuthorisationException_for_invalid_access_token(
     mocker, oidc_service
 ):
     mock_token = "fake_access_token"
@@ -218,7 +228,7 @@ def mock_jwk_client(mocker, mock_id_tokens):
     yield
 
 
-def test_oidc_service_validate_and_decode_token__validate_token_with_proper_keys(
+def test_validate_and_decode_token__validate_token_with_proper_keys(
     mock_id_tokens, oidc_service, mock_jwk_client
 ):
     id_token = mock_id_tokens["valid_id_token"]
@@ -229,7 +239,7 @@ def test_oidc_service_validate_and_decode_token__validate_token_with_proper_keys
     assert actual == expect
 
 
-def test_oidc_service_validate_and_decode_token_raise_AuthorisationException_for_fake_id_token(
+def test_validate_and_decode_token_raise_AuthorisationException_for_fake_id_token(
     mock_id_tokens, oidc_service, mock_jwk_client
 ):
     counterfeit_id_token = mock_id_tokens["counterfeit_id_token"]
@@ -245,3 +255,96 @@ def test_oidc_service_validate_and_decode_token_raise_AuthorisationException_for
 
     with pytest.raises(AuthorisationException):
         oidc_service.validate_and_decode_token(expired_id_token)
+
+def test_parse_fetch_tokens_response(mocker, oidc_service, mock_id_tokens):
+    mock_access_token = "mock_access_token"
+    mock_id_token = "mock_id_token"
+    mock_cis2_response = Response()
+    mock_cis2_response.status_code = 200
+    mock_cis2_response._content = json.dumps({
+            "access_token": mock_access_token,
+            "scope": "openid",
+            "id_token": mock_id_token,
+            "token_type": "Bearer",
+            "expires_in": 3599,
+        }).encode("utf-8")
+
+    mock_decoded_token = {"token_field": "mock_content"}
+    mock_decoder = mocker.patch.object(OidcService, "validate_and_decode_token", return_value=mock_decoded_token)
+    mock_id_token_claimset = mocker.patch.object(IdTokenClaimSet, "model_validate", return_value=mock_id_token)
+
+    actual_access_token, actual_id_token_claims_set = oidc_service.parse_fetch_tokens_response(mock_cis2_response)
+
+    assert actual_access_token == mock_access_token
+    assert actual_id_token_claims_set == mock_id_token
+    mock_decoder.assert_called_with(mock_id_token)
+    mock_id_token_claimset.assert_called_with(mock_decoded_token)
+
+
+def test_fetch_tokens_response_throws_authorisation_exception_when_access_token_is_missing(oidc_service):
+    mock_cis2_response = Response()
+    mock_cis2_response.status_code = 200
+    mock_cis2_response._content = json.dumps({
+        "scope": "openid",
+        "token_type": "Bearer",
+        "expires_in": 3599,
+    }).encode("utf-8")
+
+    with pytest.raises(AuthorisationException):
+        oidc_service.parse_fetch_tokens_response(mock_cis2_response)
+
+
+def test_fetch_user_role_code(oidc_service, mock_userinfo, mock_id_tokens, mocker):
+    mock_access_token = "access_token"
+    mock_claim_set = "mock_claim_set"
+    prefix_char = 'R'
+
+    mocker.patch.object(OidcService, "fetch_userinfo", return_value=mock_userinfo["user_info"])
+    mocker.patch("services.oidc_service.get_selected_roleid", return_value=mock_userinfo["role_id"])
+
+    actual = oidc_service.fetch_user_role_code(mock_access_token, mock_claim_set, prefix_char)
+
+    assert actual == mock_userinfo["role_code"]
+
+
+def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes(oidc_service, mock_userinfo, mock_id_tokens, mocker):
+    mock_access_token = "access_token"
+    mock_claim_set = "mock_claim_set"
+    prefix_char = 'R'
+
+    mocker.patch.object(OidcService, "fetch_userinfo", return_value=mock_userinfo["user_info"])
+    mocker.patch("services.oidc_service.get_selected_roleid", return_value="not_in_data")
+
+    with pytest.raises(AuthorisationException):
+        oidc_service.fetch_user_role_code(mock_access_token, mock_claim_set, prefix_char)
+
+
+def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes_with_specified_prefix(oidc_service, mock_userinfo, mock_id_tokens, mocker):
+    mock_access_token = "access_token"
+    mock_claim_set = "mock_claim_set"
+    prefix_char = 'invalid_prefix'
+
+    mocker.patch.object(OidcService, "fetch_userinfo", return_value=mock_userinfo["user_info"])
+    mocker.patch("services.oidc_service.get_selected_roleid", return_value=mock_userinfo["role_id"])
+
+    with pytest.raises(AuthorisationException):
+        oidc_service.fetch_user_role_code(mock_access_token, mock_claim_set, prefix_char)
+
+
+def test_fetch_user_info(oidc_service, mocker, mock_userinfo):
+    mock_response = MockResponse(status_code=200, json_data=mock_userinfo["user_info"])
+    mock_userinfo_endpoint = mocker.patch("requests.get", return_value=mock_response)
+    mock_token = "access_token"
+    actual = oidc_service.fetch_userinfo(mock_token)
+
+    assert actual == mock_userinfo["user_info"]
+
+def test_fetch_user_info_throws_exception_for_non_200_response(oidc_service, mocker):
+    mock_response = MockResponse(status_code=400, json_data="")
+    mocker.patch("requests.get", return_value=mock_response)
+
+    with pytest.raises(AuthorisationException):
+        oidc_service.fetch_userinfo("access_token")
+
+
+#TODO fetch_user_info, get_selected_roleid

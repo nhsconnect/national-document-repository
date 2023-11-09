@@ -8,6 +8,7 @@ def valid_id_event():
     api_gateway_proxy_event = {
         "httpMethod": "GET",
         "queryStringParameters": {"patientId": "9000000009"},
+        "headers": {"Authorization": "mock_token"}
     }
     return api_gateway_proxy_event
 
