@@ -19,15 +19,13 @@ import { PatientDetails } from '../../types/generic/patientDetails';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { isMock } from '../../helpers/utils/isLocal';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-
-type Props = {
-    role: REPOSITORY_ROLE;
-};
+import useRole from '../../helpers/hooks/useRole';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
-function PatientSearchPage({ role }: Props) {
+function PatientSearchPage() {
     const [, setPatientDetails] = usePatientDetailsContext();
+    const role = useRole();
     const [submissionState, setSubmissionState] = useState<SEARCH_STATES>(SEARCH_STATES.IDLE);
     const [statusCode, setStatusCode] = useState<null | number>(null);
     const [inputError, setInputError] = useState<null | string>(null);

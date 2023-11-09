@@ -13,11 +13,12 @@ import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 import ServiceError from '../../layout/serviceErrorBox/ServiceErrorBox';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
-import { USER_ROLE } from '../../../types/generic/roles';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { AxiosError } from 'axios';
 import { routes } from '../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
+import useRole from '../../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -25,7 +26,6 @@ export type Props = {
     patientDetails: PatientDetails;
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     setIsDeletingDocuments?: Dispatch<SetStateAction<boolean>>;
-    userType: USER_ROLE;
     setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
@@ -40,9 +40,9 @@ function DeleteDocumentsStage({
     patientDetails,
     setStage,
     setIsDeletingDocuments,
-    userType,
     setDownloadStage,
 }: Props) {
+    const role = useRole();
     const { register, handleSubmit } = useForm();
     const { ref: deleteDocsRef, ...radioProps } = register('deleteDocs');
     const [deletionStage, setDeletionStage] = useState(SUBMISSION_STATE.INITIAL);
@@ -96,9 +96,10 @@ function DeleteDocumentsStage({
     };
 
     const handleNoOption = () => {
-        if (userType === USER_ROLE.GP && setStage) {
+        const isGp = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
+        if (isGp && setStage) {
             setStage(LG_RECORD_STAGE.RECORD);
-        } else if (userType === USER_ROLE.PCSE && setIsDeletingDocuments) {
+        } else if (role === REPOSITORY_ROLE.PCSE && setIsDeletingDocuments) {
             setIsDeletingDocuments(false);
         }
     };
@@ -156,7 +157,6 @@ function DeleteDocumentsStage({
             numberOfFiles={numberOfFiles}
             patientDetails={patientDetails}
             setStage={setStage}
-            userType={userType}
         />
     );
 }

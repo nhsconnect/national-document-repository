@@ -7,6 +7,9 @@ import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
 
 function RoleSelectPage() {
+    /**
+     * [DEPRECATED] Removed from routing
+     */
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
     const [session, setSession] = useSessionContext();
