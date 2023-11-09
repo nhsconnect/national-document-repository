@@ -19,4 +19,17 @@ describe('PatientSummary', () => {
         expect(screen.getByText(mockDetails.familyName)).toBeInTheDocument();
         //expect(screen.getByText(mockDetails.givenName)).toBeInTheDocument()
     });
+
+    it('renders multiple given names with correct spacing', () => {
+        const mockDetails = buildPatientDetails({
+            familyName: 'Jones',
+            nhsNumber: '0000222000',
+            givenName: ['Comfort', 'Zulu'],
+        });
+
+        render(<PatientSummary patientDetails={mockDetails} />);
+
+        const expectedGivenName = 'Comfort Zulu';
+        expect(screen.getByText(expectedGivenName)).toBeInTheDocument();
+    });
 });
