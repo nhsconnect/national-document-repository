@@ -29,6 +29,7 @@ describe('PatientSummary', () => {
 
         render(<PatientSummary patientDetails={mockDetails} />);
 
+        // Using hard coded expected value instead of duplicating the expected logic
         const expectedGivenName = 'Comfort Zulu';
         expect(screen.getByText(expectedGivenName)).toBeInTheDocument();
     });
