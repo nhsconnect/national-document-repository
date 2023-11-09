@@ -1,3 +1,5 @@
+import { REPOSITORY_ROLE } from './authRole';
+
 export enum routes {
     HOME = '/',
     AUTH_CALLBACK = '/auth-callback',
@@ -10,7 +12,6 @@ export enum routes {
     DOWNLOAD_SEARCH = '/search/patient',
     DOWNLOAD_VERIFY = '/search/patient/result',
     DOWNLOAD_DOCUMENTS = '/search/results',
-    DELETE_DOCUMENTS = '/search/results/delete',
 
     LLOYD_GEORGE = '/search/patient/lloyd-george-record',
 
@@ -18,3 +19,15 @@ export enum routes {
     UPLOAD_VERIFY = '/search/upload/result',
     UPLOAD_DOCUMENTS = '/upload/submit',
 }
+
+export enum ROUTE_GUARD {
+    AUTH = 0,
+    ROLE = 1,
+    PATIENT = 2,
+}
+
+export type route = {
+    page: JSX.Element;
+    guards?: Array<ROUTE_GUARD>;
+    unauthorized?: Array<REPOSITORY_ROLE>;
+};
