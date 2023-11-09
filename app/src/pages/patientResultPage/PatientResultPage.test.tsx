@@ -8,7 +8,7 @@ import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
 import { act } from 'react-dom/test-utils';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 
 jest.mock('../../helpers/hooks/useRole');
@@ -30,32 +30,36 @@ describe('PatientResultPage', () => {
             expect(screen.getByText('Verify patient details')).toBeInTheDocument();
         });
 
-        it('displays the patient details page when patient data is found', async () => {
-            const nhsNumber = '9000000000';
-            const familyName = 'Smith';
-            const patientDetails = buildPatientDetails({ familyName, nhsNumber });
+        it.each(authorisedRoles)(
+            "displays the patient details page when patient data is found when user role is '%s'",
+            async (role) => {
+                const nhsNumber = '9000000000';
+                const familyName = 'Smith';
+                const patientDetails = buildPatientDetails({ familyName, nhsNumber });
+                mockedUseRole.mockReturnValue(role);
 
-            renderPatientResultPage(patientDetails);
+                renderPatientResultPage(patientDetails);
 
-            expect(
-                screen.getByRole('heading', { name: 'Verify patient details' }),
-            ).toBeInTheDocument();
-            expect(screen.getByText(familyName)).toBeInTheDocument();
-            expect(
-                screen.getByRole('button', { name: 'Accept details are correct' }),
-            ).toBeInTheDocument();
-            expect(screen.getByText(/If patient details are incorrect/)).toBeInTheDocument();
+                expect(
+                    screen.getByRole('heading', { name: 'Verify patient details' }),
+                ).toBeInTheDocument();
+                expect(screen.getByText(familyName)).toBeInTheDocument();
+                expect(
+                    screen.getByRole('button', { name: 'Accept details are correct' }),
+                ).toBeInTheDocument();
+                expect(screen.getByText(/If patient details are incorrect/)).toBeInTheDocument();
 
-            const nationalServiceDeskLink = screen.getByRole('link', {
-                name: /National Service Desk/,
-            });
+                const nationalServiceDeskLink = screen.getByRole('link', {
+                    name: /National Service Desk/,
+                });
 
-            expect(nationalServiceDeskLink).toHaveAttribute(
-                'href',
-                'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
-            );
-            expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
-        });
+                expect(nationalServiceDeskLink).toHaveAttribute(
+                    'href',
+                    'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
+                );
+                expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
+            },
+        );
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "displays text specific to upload path when user role is '%s'",
@@ -103,6 +107,32 @@ describe('PatientResultPage', () => {
             ).not.toBeInTheDocument();
         });
 
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+            "displays an error message if 'active' boolean is missing on the patient, when role is '%s'",
+            async (role) => {
+                const history = createMemoryHistory({ initialEntries: ['/example'] });
+
+                mockedUseRole.mockReturnValue(role);
+
+                renderPatientResultPage({ active: undefined }, history);
+                expect(history.location.pathname).toBe('/example');
+
+                act(() => {
+                    userEvent.click(
+                        screen.getByRole('button', {
+                            name: 'Accept details are correct',
+                        }),
+                    );
+                });
+
+                await waitFor(() => {
+                    expect(
+                        screen.getByText('We cannot determine the active state of this patient'),
+                    ).toBeInTheDocument();
+                });
+            },
+        );
+
         it('displays a message when NHS number is superseded', async () => {
             const nhsNumber = '9000000012';
             const patientDetails = buildPatientDetails({ superseded: true, nhsNumber });
@@ -136,32 +166,6 @@ describe('PatientResultPage', () => {
                 ),
             ).toBeInTheDocument();
         });
-
-        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
-            "displays an error message if 'active' boolean is missing on the patient, when role is '%s'",
-            async (role) => {
-                const history = createMemoryHistory({ initialEntries: ['/example'] });
-
-                mockedUseRole.mockReturnValue(role);
-
-                renderPatientResultPage({ active: undefined }, history);
-                expect(history.location.pathname).toBe('/example');
-
-                act(() => {
-                    userEvent.click(
-                        screen.getByRole('button', {
-                            name: 'Accept details are correct',
-                        }),
-                    );
-                });
-
-                await waitFor(() => {
-                    expect(
-                        screen.getByText('We cannot determine the active state of this patient'),
-                    ).toBeInTheDocument();
-                });
-            },
-        );
     });
 
     describe('Navigation', () => {

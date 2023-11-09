@@ -8,7 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import axios from 'axios';
 import { routes } from '../../types/generic/routes';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useRole');
@@ -26,36 +26,50 @@ describe('PatientSearchPage', () => {
     });
 
     describe('Rendering', () => {
-        it('displays component with patient details', () => {
-            renderPatientSearchPage();
-            expect(screen.getByText('Search for patient')).toBeInTheDocument();
-            expect(screen.getByRole('textbox', { name: 'Enter NHS number' })).toBeInTheDocument();
-            expect(
-                screen.getByText('A 10-digit number, for example, 485 777 3456'),
-            ).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
-        });
+        it.each(authorisedRoles)(
+            "renders the page with patient search form when user role is '%s'",
+            async (role) => {
+                mockedUseRole.mockReturnValue(role);
 
-        it('displays a loading spinner when the patients details are being requested', async () => {
-            mockedAxios.get.mockImplementation(async () => {
-                await new Promise((resolve) => {
-                    setTimeout(() => {
-                        // To delay the mock request, and give a chance for the spinner to appear
-                        resolve(null);
-                    }, 500);
+                renderPatientSearchPage();
+                expect(screen.getByText('Search for patient')).toBeInTheDocument();
+                expect(
+                    screen.getByRole('textbox', { name: 'Enter NHS number' }),
+                ).toBeInTheDocument();
+                expect(
+                    screen.getByText('A 10-digit number, for example, 485 777 3456'),
+                ).toBeInTheDocument();
+                expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+            },
+        );
+        it.each(authorisedRoles)(
+            "rdisplays a loading spinner when the patients details are being requested when user role is '%s'",
+            async (role) => {
+                mockedUseRole.mockReturnValue(role);
+
+                mockedAxios.get.mockImplementation(async () => {
+                    await new Promise((resolve) => {
+                        setTimeout(() => {
+                            // To delay the mock request, and give a chance for the spinner to appear
+                            resolve(null);
+                        }, 500);
+                    });
+                    return Promise.resolve({ data: buildPatientDetails() });
                 });
-                return Promise.resolve({ data: buildPatientDetails() });
-            });
 
-            renderPatientSearchPage();
+                renderPatientSearchPage();
 
-            userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '9000000009');
-            userEvent.click(screen.getByRole('button', { name: 'Search' }));
+                userEvent.type(
+                    screen.getByRole('textbox', { name: 'Enter NHS number' }),
+                    '9000000009',
+                );
+                userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
-            await waitFor(() => {
-                expect(screen.getByRole('SpinnerButton')).toBeInTheDocument();
-            });
-        });
+                await waitFor(() => {
+                    expect(screen.getByRole('SpinnerButton')).toBeInTheDocument();
+                });
+            },
+        );
 
         it('displays an input error when user attempts to submit an invalid NHS number', async () => {
             renderPatientSearchPage();

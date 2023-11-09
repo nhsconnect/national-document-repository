@@ -1,10 +1,8 @@
 import { render, screen } from '@testing-library/react';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from './useRole';
 import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
 import { buildUserAuth } from '../test/testBuilders';
-
-const repositoryRoles = Object.values(REPOSITORY_ROLE);
 
 describe('useRole', () => {
     beforeEach(() => {
@@ -15,7 +13,7 @@ describe('useRole', () => {
         jest.clearAllMocks();
     });
 
-    it.each(repositoryRoles)(
+    it.each(authorisedRoles)(
         "returns a role when there is an authorised session for user role '%s'",
         async (role) => {
             renderHook(role);

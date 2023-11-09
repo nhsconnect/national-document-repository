@@ -10,7 +10,7 @@ import axios from 'axios/index';
 import * as ReactRouter from 'react-router';
 import { createMemoryHistory } from 'history';
 import useRole from '../../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import { REPOSITORY_ROLE, authorisedRoles } from '../../../types/generic/authRole';
 import { routes } from '../../../types/generic/routes';
 
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
@@ -36,7 +36,7 @@ describe('DeleteDocumentsStage', () => {
     });
 
     describe('Render', () => {
-        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL, REPOSITORY_ROLE.PCSE])(
+        it.each(authorisedRoles)(
             "renders the page with patient details when user role is '%s'",
             async (role) => {
                 const patientName = `${mockPatientDetails.givenName} ${mockPatientDetails.familyName}`;
