@@ -18,6 +18,10 @@ import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownloadComplete';
 const FakeProgress = require('fake-progress');
 
+/**
+ * TODO: REMOVE GP CLINICAL FROM COMPONENT & TESTS
+ *
+ */
 export type Props = {
     numberOfFiles: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;

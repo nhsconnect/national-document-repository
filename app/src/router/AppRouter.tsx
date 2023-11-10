@@ -1,20 +1,21 @@
-import AuthCallbackPage from '../pages/authCallbackPage/AuthCallbackPage';
-import AuthErrorPage from '../pages/authErrorPage/AuthErrorPage';
-import DocumentSearchResultsPage from '../pages/documentSearchResultsPage/DocumentSearchResultsPage';
+import React from 'react';
+import { BrowserRouter as Router, Routes as Switch, Route, Outlet } from 'react-router-dom';
+import Layout from '../components/layout/Layout';
+import { ROUTE_GUARD, route, routes } from '../types/generic/routes';
 import HomePage from '../pages/homePage/HomePage';
-import LloydGeorgeRecordPage from '../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
-import LogoutPage from '../pages/logoutPage/LogoutPage';
+import AuthCallbackPage from '../pages/authCallbackPage/AuthCallbackPage';
 import NotFoundPage from '../pages/notFoundPage/NotFoundPage';
-import PatientResultPage from '../pages/patientResultPage/PatientResultPage';
-import PatientSearchPage from '../pages/patientSearchPage/PatientSearchPage';
+import AuthErrorPage from '../pages/authErrorPage/AuthErrorPage';
 import UnauthorisedPage from '../pages/unauthorisedPage/UnauthorisedPage';
+import LogoutPage from '../pages/logoutPage/LogoutPage';
+import PatientSearchPage from '../pages/patientSearchPage/PatientSearchPage';
+import PatientResultPage from '../pages/patientResultPage/PatientResultPage';
 import UploadDocumentsPage from '../pages/uploadDocumentsPage/UploadDocumentsPage';
-import { ROUTE_GUARD, routes, route } from '../types/generic/routes';
-import { Routes as Switch, Route, Outlet } from 'react-router-dom';
+import DocumentSearchResultsPage from '../pages/documentSearchResultsPage/DocumentSearchResultsPage';
+import LloydGeorgeRecordPage from '../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import AuthGuard from './guards/authGuard/AuthGuard';
-import PatientGuard from './guards/patientGuard/PatientGuard';
 import RoleGuard from './guards/roleGuard/RoleGuard';
-
+import PatientGuard from './guards/patientGuard/PatientGuard';
 const {
     HOME,
     AUTH_CALLBACK,
@@ -30,7 +31,6 @@ const {
     UPLOAD_VERIFY,
     UPLOAD_DOCUMENTS,
 } = routes;
-
 type Routes = {
     [key in routes]: route;
 };
@@ -158,4 +158,14 @@ const AppRoutes = () => {
     );
 };
 
-export default AppRoutes;
+const AppRouter = () => {
+    return (
+        <Router>
+            <Layout>
+                <AppRoutes />
+            </Layout>
+        </Router>
+    );
+};
+
+export default AppRouter;

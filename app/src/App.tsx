@@ -4,7 +4,7 @@ import ConfigProvider from './providers/configProvider/ConfigProvider';
 import config from './config';
 import PatientDetailsProvider from './providers/patientProvider/PatientProvider';
 import SessionProvider from './providers/sessionProvider/SessionProvider';
-import AppRouter from './router/Router';
+import AppRouter from './router/AppRouter';
 
 function App() {
     return (

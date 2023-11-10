@@ -15,6 +15,10 @@ export type Props = {
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
+/**
+ * TODO: REMOVE GP CLINICAL FROM COMPONENT & TESTS
+ */
+
 function DeletionConfirmationStage({ numberOfFiles, patientDetails, setStage }: Props) {
     const navigate = useNavigate();
     const nhsNumber: string = patientDetails?.nhsNumber || '';

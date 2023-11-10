@@ -5,6 +5,8 @@ import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorg
 import { useOnClickOutside } from 'usehooks-ts';
 import { Card } from 'nhsuk-react-components';
 import { Link } from 'react-router-dom';
+import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import useRole from '../../../helpers/hooks/useRole';
 
 export type Props = {
     lastUpdated: string;
@@ -17,6 +19,7 @@ type PdfActionLink = {
     label: string;
     key: string;
     handler: () => void;
+    unauthorised?: Array<REPOSITORY_ROLE>;
 };
 function LloydGeorgeRecordDetails({
     lastUpdated,
@@ -26,7 +29,7 @@ function LloydGeorgeRecordDetails({
 }: Props) {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
-
+    const role = useRole();
     const handleMoreActions = () => {
         setShowActionsMenu(!showActionsMenu);
     };
@@ -44,11 +47,13 @@ function LloydGeorgeRecordDetails({
             label: 'Download all files',
             key: 'download-all-files-link',
             handler: () => setStage(LG_RECORD_STAGE.DOWNLOAD_ALL),
+            unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
         },
         {
             label: 'Delete all files',
             key: 'delete-all-files-link',
             handler: () => setStage(LG_RECORD_STAGE.DELETE_ALL),
+            unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
         },
     ];
 
@@ -92,19 +97,21 @@ function LloydGeorgeRecordDetails({
                         <Card className="lloydgeorge_record-details_actions-menu">
                             <Card.Content>
                                 <ol>
-                                    {actionLinks.map((link) => (
-                                        <li key={link.key} data-testid={link.key}>
-                                            <Link
-                                                to="#"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    link.handler();
-                                                }}
-                                            >
-                                                {link.label}
-                                            </Link>
-                                        </li>
-                                    ))}
+                                    {actionLinks.map((link) =>
+                                        role && !link.unauthorised?.includes(role) ? (
+                                            <li key={link.key} data-testid={link.key}>
+                                                <Link
+                                                    to="#"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        link.handler();
+                                                    }}
+                                                >
+                                                    {link.label}
+                                                </Link>
+                                            </li>
+                                        ) : null,
+                                    )}
                                 </ol>
                             </Card.Content>
                         </Card>
