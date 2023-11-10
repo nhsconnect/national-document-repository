@@ -20,14 +20,17 @@ export enum routes {
     UPLOAD_DOCUMENTS = '/upload/submit',
 }
 
-export enum ROUTE_GUARD {
-    AUTH = 0,
-    ROLE = 1,
-    PATIENT = 2,
+export enum ROUTE_TYPE {
+    // No guard
+    PUBLIC = 0,
+    // Auth route guard
+    PRIVATE = 1,
+    // All route guards
+    APP = 2,
 }
 
 export type route = {
     page: JSX.Element;
-    guards?: Array<ROUTE_GUARD>;
+    type: ROUTE_TYPE;
     unauthorized?: Array<REPOSITORY_ROLE>;
 };

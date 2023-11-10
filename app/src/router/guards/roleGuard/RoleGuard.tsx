@@ -3,7 +3,7 @@ import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { routes } from '../../../types/generic/routes';
-import { routeMap } from '../../AppRoutes';
+import { routeMap } from '../../AppRouter';
 
 type Props = {
     children: ReactNode;
