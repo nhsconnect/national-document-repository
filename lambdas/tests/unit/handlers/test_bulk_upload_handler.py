@@ -12,8 +12,8 @@ def mocked_service(mocker):
     yield mocked_service
 
 
-def test_lambda_process_each_sqs_message_one_by_one(set_env, mocked_service):
-    lambda_handler(TEST_EVENT_WITH_SQS_MESSAGES, None)
+def test_lambda_process_each_sqs_message_one_by_one(set_env, mocked_service, context):
+    lambda_handler(TEST_EVENT_WITH_SQS_MESSAGES, context)
 
     assert mocked_service.handle_sqs_message.call_count == len(
         TEST_EVENT_WITH_SQS_MESSAGES["Records"]
@@ -23,7 +23,7 @@ def test_lambda_process_each_sqs_message_one_by_one(set_env, mocked_service):
 
 
 def test_lambda_continue_process_next_message_after_handled_error(
-    set_env, mocked_service
+    set_env, mocked_service, context
 ):
     # emulate that unexpected error happen at 2nd message
     mocked_service.handle_sqs_message.side_effect = [
@@ -32,7 +32,7 @@ def test_lambda_continue_process_next_message_after_handled_error(
         None,
     ]
 
-    lambda_handler(TEST_EVENT_WITH_SQS_MESSAGES, None)
+    lambda_handler(TEST_EVENT_WITH_SQS_MESSAGES, context)
 
     mocked_service.handle_sqs_message.assert_called_with(
         TEST_EVENT_WITH_SQS_MESSAGES["Records"][2]

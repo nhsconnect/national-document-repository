@@ -4,14 +4,20 @@ import time
 import boto3
 from botocore.exceptions import ClientError
 from oauthlib.oauth2 import InsecureTransportError, WebApplicationClient
+
+from enums.logging_app_interaction import LoggingAppInteraction
 from services.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.lambda_response import ApiGatewayResponse
+from utils.request_context import request_context
 
 logger = LoggingService(__name__)
 
 
+@set_request_context_for_logging
 def lambda_handler(event, context):
+    request_context.app_interaction = LoggingAppInteraction.LOGIN.value
     return prepare_redirect_response(WebApplicationClient)
 
 
@@ -41,21 +47,23 @@ def prepare_redirect_response(web_application_client_class):
             prompt="login",
         )
 
-        logger.info(f"Login request URL: {url}")
-        logger.info(f"Headers request URL: {_headers}")
-        logger.info(f"Body request URL: {_body}")
-
         save_state_in_dynamo_db(oidc_client.state)
-
         location_header = {"Location": url}
+        logger.info(
+            "User was successfully redirect to CIS2", {"Result": "Successful redirect"}
+        )
 
     except ClientError as e:
-        logger.error(f"Error getting using aws client: {e}")
+        logger.error(
+            f"Error getting using aws client: {e}", {"Result": "Unsuccessful redirect"}
+        )
         return ApiGatewayResponse(
             500, "Server error", "GET"
         ).create_api_gateway_response()
     except InsecureTransportError as e:
-        logger.error(f"Error preparing auth request: {e}")
+        logger.error(
+            f"Error preparing auth request: {e}", {"Result": "Unsuccessful redirect"}
+        )
         return ApiGatewayResponse(
             500, "Server error", "GET"
         ).create_api_gateway_response()

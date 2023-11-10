@@ -10,10 +10,12 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 
 logger = LoggingService(__name__)
 
 
+@set_request_context_for_logging
 @ensure_environment_variables(
     names=[
         "STAGING_STORE_BUCKET_NAME",

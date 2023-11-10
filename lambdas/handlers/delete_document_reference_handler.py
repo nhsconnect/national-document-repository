@@ -1,16 +1,21 @@
 import os
 
 from botocore.exceptions import ClientError
+
+from enums.logging_app_interaction import LoggingAppInteraction
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.decorators.validate_document_type import (extract_document_type,
-                                                     validate_document_type)
+from utils.decorators.validate_document_type import (
+    extract_document_type,
+    validate_document_type,
+)
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_response import ApiGatewayResponse
+from utils.request_context import request_context
 
 logger = LoggingService(__name__)
 
@@ -25,9 +30,10 @@ logger = LoggingService(__name__)
     ]
 )
 def lambda_handler(event, context):
+    request_context.app_interaction = LoggingAppInteraction.DELETE_RECORD.value
     nhs_number = event["queryStringParameters"]["patientId"]
     doc_type = extract_document_type(event["queryStringParameters"]["docType"])
-
+    request_context.patient_nhs_no = nhs_number
     document_service = DocumentService()
 
     try:
@@ -62,7 +68,7 @@ def lambda_handler(event, context):
             )
 
     except ClientError as e:
-        logger.info(str(e))
+        logger.info(str(e), {"Result": f"Unsuccessful deletion due to {str(e)}"})
         return ApiGatewayResponse(
             500, "Failed to delete documents", "DELETE"
         ).create_api_gateway_response()
@@ -91,5 +97,7 @@ def handle_delete(
         document_references=results,
         type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
     )
-
+    logger.info(
+        "Documents were deleted successfully", {"Result": f"Successful deletion"}
+    )
     return ApiGatewayResponse(200, "Success", "DELETE").create_api_gateway_response()

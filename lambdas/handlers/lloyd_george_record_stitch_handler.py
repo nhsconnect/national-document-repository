@@ -5,6 +5,8 @@ from urllib import parse
 from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
+
+from enums.logging_app_interaction import LoggingAppInteraction
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from pypdf.errors import PyPdfError
 from services.dynamo_service import DynamoDBService
@@ -14,10 +16,13 @@ from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import (
-    extract_nhs_number_from_event, validate_patient_id)
+    extract_nhs_number_from_event,
+    validate_patient_id,
+)
 from utils.exceptions import DynamoDbException
 from utils.lambda_response import ApiGatewayResponse
 from utils.order_response_by_filenames import order_response_by_filenames
+from utils.request_context import request_context
 
 logger = LoggingService(__name__)
 
@@ -28,7 +33,9 @@ logger = LoggingService(__name__)
     names=["LLOYD_GEORGE_DYNAMODB_NAME", "LLOYD_GEORGE_BUCKET_NAME"]
 )
 def lambda_handler(event, context):
+    request_context.app_interaction = LoggingAppInteraction.VIEW_LG_RECORD.value
     nhs_number = extract_nhs_number_from_event(event)
+    request_context.patient_nhs_no = nhs_number
     lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
     lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
 
@@ -48,7 +55,7 @@ def lambda_handler(event, context):
             lloyd_george_bucket_name, ordered_lg_records, s3_service
         )
     except (ClientError, DynamoDbException) as e:
-        logger.error(e)
+        logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
         return ApiGatewayResponse(
             500, f"Unable to retrieve documents for patient {nhs_number}", "GET"
         ).create_api_gateway_response()
@@ -75,11 +82,11 @@ def lambda_handler(event, context):
             }
         )
         logger.audit_splunk_info(
-            "User has viewed Lloyd George records", {"NHS Number": nhs_number}
+            "User has viewed Lloyd George records", {"Result": "Successful viewing LG"}
         )
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
     except (ClientError, PyPdfError, FileNotFoundError) as e:
-        logger.error(e)
+        logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
         return ApiGatewayResponse(
             500,
             "Unable to return stitched pdf file due to internal error",
@@ -107,11 +114,15 @@ def get_lloyd_george_records_for_patient(
             filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
         )
         if response is None or ("Items" not in response):
-            logger.error(f"Unrecognised response from DynamoDB: {response}")
+            logger.error(
+                f"Unrecognised response from DynamoDB: {response}",
+                {
+                    "Result": "Unsuccessful viewing LG due to Unrecognised response from DynamoDB"
+                },
+            )
             raise DynamoDbException("Unrecognised response from DynamoDB")
         return response
-    except ClientError as e:
-        logger.error(e)
+    except ClientError:
         raise DynamoDbException("Unexpected error when getting Lloyd George record")
 
 

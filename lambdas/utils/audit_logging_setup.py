@@ -14,36 +14,41 @@ class LoggingService:
         self.audit_logger = logging.getLogger("audit")
         self.audit_handler = SensitiveAuditService()
         self.formatter = LoggingFormatter()
-        logging.Formatter.format = self.formatter
+        logging.Formatter.format = self.formatter.format
 
-        self.audit_handler.setFormatter(self.formatter)
         self.audit_logger.addHandler(self.audit_handler)
         self.audit_logger.setLevel(logging.INFO)
 
     def audit_splunk_info(self, msg, args: dict = None):
         logging.getLogger("audit.{}".format(self.name))
-        message = msg + " " + json.dumps(args)
-        self.audit_logger.info(message, extra={"custom_args": args})
+        self.audit_logger.info(msg, extra={"custom_args": args})
 
-    def audit_splunk_error(self, msg, args: dict = None):
+    def audit_splunk_error(self, msg, custom_args: dict = None, **kwargs):
         logging.getLogger("audit.{}".format(self.name))
-        message = msg + " " + json.dumps(args)
-        self.audit_logger.error(message, extra={"custom_args": args})
+        self.audit_logger.error(msg, extra={"custom_args": custom_args})
 
-    def info(self, message, *args, **kwargs):
-        self.logger.info(message, *args, **kwargs)
+    def info(self, message, custom_args: dict = None, *args, **kwargs):
+        self.logger.info(message, extra={"custom_args": custom_args}, *args, **kwargs)
 
-    def error(self, message, *args, **kwargs):
-        self.logger.error(message, *args, **kwargs)
+    def error(self, message, custom_args: dict = None, *args, **kwargs):
+        self.logger.error(message, extra={"custom_args": custom_args}, *args, **kwargs)
 
-    def warning(self, message, *args, **kwargs):
-        self.logger.warning(message, *args, **kwargs)
+    def warning(self, message, custom_args: dict = None, *args, **kwargs):
+        self.logger.warning(
+            message, extra={"custom_args": custom_args}, *args, **kwargs
+        )
 
-    def debug(self, message, *args, **kwargs):
-        self.logger.debug(message, *args, **kwargs)
+    def debug(self, message, custom_args: dict = None, *args, **kwargs):
+        self.logger.debug(message, extra={"custom_args": custom_args}, *args, **kwargs)
 
-    def exception(self, message, *args, exc_info=True, **kwargs):
-        self.logger.exception(message, *args, exc_info, **kwargs)
+    def exception(
+        self, message, custom_args: dict = None, *args, exc_info=True, **kwargs
+    ):
+        self.logger.exception(
+            message, exc_info, extra={"custom_args": custom_args}, *args, **kwargs
+        )
 
-    def critical(self, message, *args, **kwargs):
-        self.logger.critical(message, *args, **kwargs)
+    def critical(self, message, custom_args: dict = None, *args, **kwargs):
+        self.logger.critical(
+            message, extra={"custom_args": custom_args}, *args, **kwargs
+        )
