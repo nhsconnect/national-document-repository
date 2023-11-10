@@ -2,6 +2,8 @@ import { useEffect, type ReactNode } from 'react';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
+import { routes } from '../../../types/generic/routes';
+import { routeMap } from '../../appRoutes';
 
 type Props = {
     children: ReactNode;
@@ -12,11 +14,14 @@ function RoleGuard({ children }: Props) {
     const navigate = useNavigate();
     const location = useLocation();
     useEffect(() => {
-        console.log(location.pathname);
-        //     if (!patient) {
-        //         navigate(routes.UNAUTHORISED);
-        //     }
-    }, [role, location]);
+        const routeKey = location.pathname as keyof typeof routeMap;
+        const { unauthorized } = routeMap[routeKey];
+        const denyResource =
+            !!unauthorized && Array.isArray(unauthorized) && unauthorized.includes(role);
+        if (denyResource) {
+            navigate(routes.UNAUTHORISED);
+        }
+    }, [role, location, navigate]);
     return <>{children}</>;
 }
 
