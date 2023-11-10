@@ -97,9 +97,6 @@ def validate_access_policy(http_verb, path, user_role):
                 user_role == RepositoryRole.GP_CLINICAL.value
             )
 
-        case "/SearchDocumentReferences":
-            deny_resource = user_role == RepositoryRole.PCSE.value
-
         case _:
             deny_resource = False
 
