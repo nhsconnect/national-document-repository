@@ -84,7 +84,7 @@ def validate_access_policy(http_verb, path, user_role):
     match path:
         case "/DocumentDelete":
             deny_resource = (
-                user_role is RepositoryRole.GP_CLINICAL.value
+                user_role == RepositoryRole.GP_CLINICAL.value
             )
 
         case "/DocumentManifest":
