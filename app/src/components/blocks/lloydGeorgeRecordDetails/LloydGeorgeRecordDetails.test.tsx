@@ -7,18 +7,42 @@ import * as ReactRouter from 'react-router';
 import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
-const mockPdf = buildLgSearchResult();
+import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import useRole from '../../../helpers/hooks/useRole';
+jest.mock('../../../helpers/hooks/useRole');
 
+const mockPdf = buildLgSearchResult();
 const mockSetStaqe = jest.fn();
+const mockedUseRole = useRole as jest.Mock;
 
 describe('LloydGeorgeRecordDetails', () => {
-    const actionLinkStrings = [
+    const actionLinks = [
         { label: 'See all files', expectedStage: LG_RECORD_STAGE.SEE_ALL },
-        { label: 'Download all files', expectedStage: LG_RECORD_STAGE.DOWNLOAD_ALL },
-        { label: 'Delete all files', expectedStage: LG_RECORD_STAGE.DELETE_ALL },
+        {
+            label: 'Download all files',
+            expectedStage: LG_RECORD_STAGE.DOWNLOAD_ALL,
+        },
+        {
+            label: 'Delete all files',
+            expectedStage: LG_RECORD_STAGE.DELETE_ALL,
+        },
+    ];
+
+    const actionLinksAuth = [
+        {
+            label: 'Download all files',
+            expectedStage: LG_RECORD_STAGE.DOWNLOAD_ALL,
+            unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        },
+        {
+            label: 'Delete all files',
+            expectedStage: LG_RECORD_STAGE.DELETE_ALL,
+            unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        },
     ];
 
     beforeEach(() => {
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
         process.env.REACT_APP_ENVIRONMENT = 'jest';
     });
     afterEach(() => {
@@ -41,7 +65,7 @@ describe('LloydGeorgeRecordDetails', () => {
 
         expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
         expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-        actionLinkStrings.forEach((action) => {
+        actionLinks.forEach((action) => {
             expect(screen.queryByText(action.label)).not.toBeInTheDocument();
         });
 
@@ -49,14 +73,28 @@ describe('LloydGeorgeRecordDetails', () => {
             userEvent.click(screen.getByTestId('actions-menu'));
         });
         await waitFor(async () => {
-            actionLinkStrings.forEach((action) => {
+            actionLinks.forEach((action) => {
                 expect(screen.getByText(action.label)).toBeInTheDocument();
             });
         });
     });
 
-    it.each(actionLinkStrings)(
-        "navigates to a required stage when action '%s' is clicked",
+    it.each(actionLinks)("renders actionLink '$label'", async (action) => {
+        renderComponent();
+
+        expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
+        expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
+
+        act(() => {
+            userEvent.click(screen.getByTestId('actions-menu'));
+        });
+        await waitFor(async () => {
+            expect(screen.getByText(action.label)).toBeInTheDocument();
+        });
+    });
+
+    it.each(actionLinks)(
+        "navigates to expected stage when action '$label' is clicked",
         async (action) => {
             renderComponent();
 
@@ -75,6 +113,25 @@ describe('LloydGeorgeRecordDetails', () => {
             });
             await waitFor(async () => {
                 expect(mockSetStaqe).toHaveBeenCalledWith(action.expectedStage);
+            });
+        },
+    );
+
+    it.each(actionLinksAuth)(
+        "does not render actionLink '$label' if role is unauthorised",
+        async (action) => {
+            mockedUseRole.mockReturnValue(action.unauthorised[0]);
+
+            renderComponent();
+
+            expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
+            expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByTestId('actions-menu'));
+            });
+            await waitFor(async () => {
+                expect(screen.queryByText(action.label)).not.toBeInTheDocument();
             });
         },
     );
