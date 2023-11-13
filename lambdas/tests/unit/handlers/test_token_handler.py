@@ -240,9 +240,13 @@ def test_lambda_handler_respond_with_401_when_user_dont_have_a_valid_role_to_log
         "queryStringParameters": {"code": "test_auth_code", "state": "test_state"}
     }
 
+    class PermittedOrgs:
+        def keys(self):
+            return []
+
     mocker.patch(
-        "services.ods_api_service_for_password.OdsApiServiceForPassword.fetch_organisation_with_permitted_role"
-    ).return_value = []
+        "services.ods_api_service.OdsApiService.fetch_organisation_with_permitted_role"
+    ).return_value = PermittedOrgs()
 
     expected = ApiGatewayResponse(
         401, "Failed to authenticate user with OIDC service", "GET"
@@ -265,7 +269,7 @@ def test_lambda_handler_respond_with_500_when_encounter_boto3_error(
     )
 
     mock_oidc = mocker.patch(
-        "services.oidc_service_for_password.OidcServiceForPassword.fetch_oidc_parameters"
+        "services.oidc_service.OidcService.fetch_oidc_parameters"
     )
     mock_oidc.return_value = {
         "OIDC_CLIENT_ID": "client-id",
