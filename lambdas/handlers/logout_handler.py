@@ -17,14 +17,21 @@ logger = LoggingService(__name__)
 @set_request_context_for_logging
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
-    return logout_handler()
+    token = None
+    if event.get("headers"):
+        token = event.get("headers").get("Authorization")
+    return logout_handler(token)
 
 
-def logout_handler():
+def logout_handler(token):
     try:
-        if request_context.authorization is None:
-            raise jwt.PyJWTError
-        session_id = request_context.authorization["ndr_session_id"]
+        ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
+        ssm_response = get_ssm_parameter(key=ssm_public_key_parameter_name)
+        jwt_class = jwt
+        public_key = ssm_response["Parameter"]["Value"]
+        logger.info("decoding token")
+        decoded_token = decode_token(jwt_class=jwt_class, token=token, key=public_key)
+        session_id = decoded_token["ndr_session_id"]
         remove_session_from_dynamo_db(session_id)
 
     except ClientError as e:
