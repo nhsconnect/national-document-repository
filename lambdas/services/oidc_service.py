@@ -113,7 +113,7 @@ class OidcService:
             if role["person_roleid"] == selected_role:
                 return [role["org_code"]]
 
-        logger.info("No oorg code found")
+        logger.info("No org code found")
         return []
 
     def fetch_user_role_code(

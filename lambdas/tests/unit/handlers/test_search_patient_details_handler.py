@@ -21,27 +21,27 @@ def patch_env_vars():
 
 
 def test_lambda_handler_valid_id_returns_200(
-    valid_id_event, context, mocker, patch_env_vars
+        valid_id_event_with_auth_header, context, mocker, patch_env_vars
 ):
     response = Response()
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
 
     mocker.patch.object(SSMService, "get_ssm_parameter", return_value="mock_public_key")
-    mocker.patch("jwt.decode", return_value={"selected_organisation": {"org_ods_code": "ODS"},
-                                             "repository_role": "user_role"})
+    mocker.patch("jwt.decode", return_value={"selected_organisation": {"org_ods_code": "Y12345"},
+                                             "repository_role": "GP_ADMIN"})
     mocker.patch.object(SSMService, "get_ssm_parameter", return_value="1")
     mocker.patch(
         "services.mock_pds_service.MockPdsApiService.pds_request",
         return_value=response,
     )
 
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_with_auth_header, context)
 
     expected = {
         "body": '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22",'
         '"postalCode":"LS1 6AE","nhsNumber":"9000000009","superseded":false,'
-        '"restricted":false,"generalPracticeOds":"","active":false}',
+        '"restricted":false,"generalPracticeOds":"Y12345","active":true}',
         "headers": {
             "Access-Control-Allow-Methods": "GET",
             "Access-Control-Allow-Origin": "*",
@@ -82,7 +82,7 @@ def test_lambda_handler_invalid_id_returns_400(
 
 
 def test_lambda_handler_valid_id_not_in_pds_returns_404(
-    valid_id_event, context, mocker, patch_env_vars
+        valid_id_event_with_auth_header, context, mocker, patch_env_vars
 ):
     response = Response()
     response.status_code = 404
@@ -91,8 +91,10 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
         "services.mock_pds_service.MockPdsApiService.pds_request",
         return_value=response,
     )
+    mocker.patch("jwt.decode", return_value={"selected_organisation": {"org_ods_code": "ODS"},
+                                             "repository_role": "user_role"})
 
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_with_auth_header, context)
 
     expected = {
         "body": "Patient does not exist for given NHS number",

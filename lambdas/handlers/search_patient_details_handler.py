@@ -13,6 +13,7 @@ from utils.exceptions import (InvalidResourceIdException,
                               PatientNotFoundException, PdsErrorException,
                               UserNotAuthorisedException)
 from utils.lambda_response import ApiGatewayResponse
+from utils.request_context import request_context
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
@@ -25,17 +26,11 @@ def lambda_handler(event, context):
     logger.info("API Gateway event received - processing starts")
 
     try:
-        ssm_service = SSMService()
+
         nhs_number = event["queryStringParameters"]["patientId"]
-        public_key_location = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
-        public_key = ssm_service.get_ssm_parameter(public_key_location, True)
 
-        token = event["headers"]["Authorization"]
-        decoded = jwt.decode(token, public_key, algorithms=["RS256"])
-
-        logger.info(decoded)
-        user_ods_code = decoded["selected_organisation"]["org_ods_code"]
-        user_role = decoded["repository_role"]
+        user_ods_code = request_context.authorization["selected_organisation"]["org_ods_code"]
+        user_role = request_context.authorization["repository_role"]
 
         logger.info("Retrieving patient details")
         pds_api_service = get_pds_service()(SSMService())
