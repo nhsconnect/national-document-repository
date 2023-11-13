@@ -70,22 +70,22 @@ export const routeMap: Routes = {
     [DOWNLOAD_SEARCH]: {
         page: <PatientSearchPage />,
         type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
+        unauthorized: [REPOSITORY_ROLE.PCSE],
     },
     [UPLOAD_SEARCH]: {
         page: <PatientSearchPage />,
         type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
+        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
     },
     [DOWNLOAD_VERIFY]: {
         page: <PatientResultPage />,
         type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
+        unauthorized: [REPOSITORY_ROLE.PCSE],
     },
     [UPLOAD_VERIFY]: {
         page: <PatientResultPage />,
         type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
+        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
     },
     [UPLOAD_DOCUMENTS]: {
         page: <UploadDocumentsPage />,

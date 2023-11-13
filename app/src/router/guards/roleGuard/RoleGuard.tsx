@@ -16,8 +16,9 @@ function RoleGuard({ children }: Props) {
     useEffect(() => {
         const routeKey = location.pathname as keyof typeof routeMap;
         const { unauthorized } = routeMap[routeKey];
-        const denyResource =
-            !!unauthorized && Array.isArray(unauthorized) && unauthorized.includes(role);
+        const denyResource = Array.isArray(unauthorized) && unauthorized.includes(role);
+        console.log(unauthorized);
+        console.log('DENY RESOURCE?:', denyResource);
         if (denyResource) {
             navigate(routes.UNAUTHORISED);
         }
