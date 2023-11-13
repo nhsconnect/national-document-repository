@@ -66,7 +66,7 @@ def mock_oidc_service(mocker, mock_userinfo):
     mocked_fetch_user_role_code.return_value = "R8008"
 
     yield {
-        "fetch_tokens": mocked_fetch_token,
+        "fetch_token": mocked_fetch_token,
         "fetch_user_org_codes": mocked_fetch_user_org_codes,
         "fetch_user_role_code": mocked_fetch_user_role_code,
         "fetch_user_info": mocked_fetch_user_info
@@ -139,7 +139,7 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
 
     assert actual == expected
 
-    mock_oidc_service["fetch_tokens"].expect_called_with(auth_code)
+    mock_oidc_service["fetch_token"].expect_called_with(auth_code)
 
 
 def test_lambda_handler_respond_with_400_if_state_or_auth_code_missing(

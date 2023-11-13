@@ -100,7 +100,7 @@ def lambda_handler(event, context):
     except AuthorisationException as error:
         logger.error(error)
         return ApiGatewayResponse(
-            401, f"Failed to authenticate user with OIDC service: {error}", "GET"
+            401, f"Failed to authenticate user with OIDC service", "GET"
         ).create_api_gateway_response()
     except (ClientError, KeyError, TypeError) as error:
         logger.error(error)
