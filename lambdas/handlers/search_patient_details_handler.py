@@ -77,7 +77,7 @@ def lambda_handler(event, context):
 
     except UserNotAuthorisedException as e:
         logger.error(
-            f"PDS not authorised patient: {str(e)}",
+            f"PDS Error: User not authorised: {str(e)}",
             {"Result": "Patient found, User not authorised to view patient"},
         )
         return ApiGatewayResponse(

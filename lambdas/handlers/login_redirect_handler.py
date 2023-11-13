@@ -50,12 +50,12 @@ def prepare_redirect_response(web_application_client_class):
         save_state_in_dynamo_db(oidc_client.state)
         location_header = {"Location": url}
         logger.info(
-            "User was successfully redirect to CIS2", {"Result": "Successful redirect"}
+            "User was successfully redirected to CIS2", {"Result": "Successful redirect"}
         )
 
     except ClientError as e:
         logger.error(
-            f"Error getting using aws client: {e}", {"Result": "Unsuccessful redirect"}
+            f"Error getting aws client: {e}", {"Result": "Unsuccessful redirect"}
         )
         return ApiGatewayResponse(
             500, "Server error", "GET"

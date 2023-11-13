@@ -66,7 +66,7 @@ def lambda_handler(event, context):
 
         response = document_manifest_service.create_document_manifest_presigned_url()
         logger.audit_splunk_info(
-            "User has download Lloyd George records", {"Result": "Successful download"}
+            "User has downloaded Lloyd George records", {"Result": "Successful download"}
         )
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
