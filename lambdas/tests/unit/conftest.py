@@ -100,3 +100,39 @@ def set_env(monkeypatch):
 def logger_mock():
     with mock.patch("utils.audit_logging_setup.SensitiveAuditService.emit") as _fixture:
         yield _fixture
+
+
+@pytest.fixture
+def mock_userinfo():
+    role_id = "500000000001"
+    org_code = "A9A5A"
+    role_code = "R8015"
+    mock_userinfo = {
+        "nhsid_useruid": "500000000000",
+        "name": "TestUserOne Caius Mr",
+        "nhsid_nrbac_roles": [
+            {
+                "person_orgid": "500000000000",
+                "person_roleid": role_id,
+                "org_code": org_code,
+                "role_name": '"Support":"Systems Support":"Systems Support Access Role"',
+                "role_code": "S8001:G8005:" + role_code,
+            },
+            {
+                "person_orgid": "500000000000",
+                "person_roleid": "500000000000",
+                "org_code": "B9A5A",
+                "role_name": '"Primary Care Support England":"Systems Support Access Role"',
+                "role_code": "S8001:G8005:R8015",
+            },
+        ],
+        "given_name": "Caius",
+        "family_name": "TestUserOne",
+        "uid": "500000000000",
+        "nhsid_user_orgs": [
+            {"org_name": "NHSID DEV", "org_code": "A9A5A"},
+            {"org_name": "Primary Care Support England", "org_code": "B9A5A"},
+        ],
+        "sub": "500000000000",
+    }
+    yield {"role_id": role_id, "role_code": role_code, "org_code": org_code, "user_info": mock_userinfo}

@@ -42,7 +42,7 @@ def mock_aws_infras(mocker, set_env):
 
 
 @pytest.fixture
-def mock_oidc_service(mocker):
+def mock_oidc_service(mocker, mock_userinfo):
     mocker.patch.object(OidcService, "__init__", return_value=None)
     mocked_fetch_token = mocker.patch.object(OidcService, "fetch_tokens")
     mocked_fetch_user_org_codes = mocker.patch.object(
@@ -58,10 +58,14 @@ def mock_oidc_service(mocker):
     mocked_fetch_token.return_value = mocked_tokens
     mocked_fetch_user_org_codes.return_value = ["mock_ods_code1"]
 
+    mocked_fetch_user_info = mocker.patch.object(OidcService, "fetch_userinfo")
+    mocked_fetch_user_info.return_value = mock_userinfo
+
     yield {
         "fetch_tokens": mocked_fetch_token,
         "fetch_user_org_codes": mocked_fetch_user_org_codes,
-        "fetch_user_role_code": "R8008"
+        "fetch_user_role_code": "R8008",
+        "fetch_user_info": mocked_fetch_user_info
     }
 
 
