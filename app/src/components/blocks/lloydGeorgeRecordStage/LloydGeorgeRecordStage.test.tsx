@@ -11,6 +11,8 @@ import { act } from 'react-dom/test-utils';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 
+jest.mock('../../../helpers/hooks/useRole');
+
 describe('LloydGeorgeRecordStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
