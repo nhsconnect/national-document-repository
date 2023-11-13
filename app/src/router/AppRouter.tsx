@@ -16,6 +16,7 @@ import LloydGeorgeRecordPage from '../pages/lloydGeorgeRecordPage/LloydGeorgeRec
 import AuthGuard from './guards/authGuard/AuthGuard';
 import PatientGuard from './guards/patientGuard/PatientGuard';
 import { REPOSITORY_ROLE } from '../types/generic/authRole';
+import RoleGuard from './guards/roleGuard/RoleGuard';
 const {
     HOME,
     AUTH_CALLBACK,
@@ -68,146 +69,84 @@ export const routeMap: Routes = {
     // App guard routes
     [DOWNLOAD_SEARCH]: {
         page: <PatientSearchPage />,
-        type: ROUTE_TYPE.APP,
+        type: ROUTE_TYPE.PRIVATE,
         unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
     },
     [UPLOAD_SEARCH]: {
         page: <PatientSearchPage />,
-        type: ROUTE_TYPE.APP,
+        type: ROUTE_TYPE.PRIVATE,
         unauthorized: [REPOSITORY_ROLE.PCSE],
     },
     [DOWNLOAD_VERIFY]: {
         page: <PatientResultPage />,
-        type: ROUTE_TYPE.APP,
+        type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
     },
     [UPLOAD_VERIFY]: {
         page: <PatientResultPage />,
-        type: ROUTE_TYPE.APP,
+        type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.PCSE],
     },
     [UPLOAD_DOCUMENTS]: {
         page: <UploadDocumentsPage />,
-        type: ROUTE_TYPE.APP,
+        type: ROUTE_TYPE.PATIENT,
     },
     [DOWNLOAD_DOCUMENTS]: {
         page: <DocumentSearchResultsPage />,
-        type: ROUTE_TYPE.APP,
+        type: ROUTE_TYPE.PATIENT,
     },
     [LLOYD_GEORGE]: {
         page: <LloydGeorgeRecordPage />,
-        type: ROUTE_TYPE.APP,
+        type: ROUTE_TYPE.PATIENT,
     },
 };
 
-// const AppRoutes = () => {
-//     let unusedPaths = Object.keys(routeMap);
-//     const appRoutesArr = Object.entries(routeMap);
-//     const publicRoutes = appRoutesArr.map(([path, route]) => {
-//         if (!route.guards && unusedPaths.includes(path)) {
-//             unusedPaths = unusedPaths.filter((p) => p !== path);
-//             return <Route key={path} path={path} element={route.page} />;
-//         }
-//     });
-//     const patientRoutes = appRoutesArr.map(([path, route]) => {
-//         if (
-//             route.guards &&
-//             route.guards.includes(ROUTE_GUARD.PATIENT) &&
-//             unusedPaths.includes(path)
-//         ) {
-//             unusedPaths = unusedPaths.filter((p) => p !== path);
-//             return <Route key={path} path={path} element={route.page} />;
-//         }
-//     });
-//     const roleRoutes = appRoutesArr.map(([path, route]) => {
-//         if (route.guards && route.guards.includes(ROUTE_GUARD.ROLE) && unusedPaths.includes(path)) {
-//             unusedPaths = unusedPaths.filter((p) => p !== path);
-//             return <Route key={path} path={path} element={route.page} />;
-//         }
-//     });
-//     const privateRoutes = appRoutesArr.map(([path, route]) => {
-//         if (route.guards && route.guards.includes(ROUTE_GUARD.AUTH) && unusedPaths.includes(path)) {
-//             unusedPaths = unusedPaths.filter((p) => p !== path);
-//             return <Route key={path} path={path} element={route.page} />;
-//         }
-//     });
-//     return (
-//         <Switch>
-//             {publicRoutes}
-//             <Route
-//                 element={
-//                     <AuthGuard>
-//                         <Outlet />
-//                     </AuthGuard>
-//                 }
-//             >
-//                 {privateRoutes}
-//                 <Route
-//                     element={
-//                         <RoleGuard>
-//                             <PatientGuard>
-//                                 <Outlet />
-//                             </PatientGuard>
-//                         </RoleGuard>
-//                     }
-//                 >
-//                     {roleRoutes}
-//                     {patientRoutes}
-//                 </Route>
-//             </Route>
-//         </Switch>
-//     );
-// };
+const createRoutesFromType = (routeType: ROUTE_TYPE) =>
+    Object.entries(routeMap).reduce(
+        (acc, [path, route]) =>
+            route.type === routeType
+                ? [...acc, <Route key={path} path={path} element={route.page} />]
+                : acc,
+        [] as Array<JSX.Element>,
+    );
 
-const PrevRoutes = () => (
-    <Switch>
-        <Route element={<HomePage />} path={routes.HOME} />
+const AppRoutes = () => {
+    const publicRoutes = createRoutesFromType(ROUTE_TYPE.PUBLIC);
+    const privateRoutes = createRoutesFromType(ROUTE_TYPE.PRIVATE);
+    const patientRoutes = createRoutesFromType(ROUTE_TYPE.PATIENT);
 
-        <Route element={<NotFoundPage />} path={routes.NOT_FOUND} />
-        <Route element={<UnauthorisedPage />} path={routes.UNAUTHORISED} />
-        <Route element={<AuthErrorPage />} path={routes.AUTH_ERROR} />
-
-        <Route element={<AuthCallbackPage />} path={routes.AUTH_CALLBACK} />
-
-        <Route
-            element={
-                <AuthGuard>
-                    <Outlet />
-                </AuthGuard>
-            }
-        >
-            {[routes.DOWNLOAD_SEARCH, routes.UPLOAD_SEARCH].map((searchRoute) => (
-                <Route key={searchRoute} element={<PatientSearchPage />} path={searchRoute} />
-            ))}
-
-            <Route element={<LogoutPage />} path={routes.LOGOUT} />
+    return (
+        <Switch>
+            {publicRoutes}
             <Route
                 element={
-                    <PatientGuard>
-                        <Outlet />
-                    </PatientGuard>
+                    <RoleGuard>
+                        <AuthGuard>
+                            <Outlet />
+                        </AuthGuard>
+                    </RoleGuard>
                 }
             >
-                {[routes.DOWNLOAD_VERIFY, routes.UPLOAD_VERIFY].map((searchResultRoute) => (
-                    <Route
-                        key={searchResultRoute}
-                        element={<PatientResultPage />}
-                        path={searchResultRoute}
-                    />
-                ))}
-                <Route element={<LloydGeorgeRecordPage />} path={routes.LLOYD_GEORGE} />
-                <Route element={<UploadDocumentsPage />} path={routes.UPLOAD_DOCUMENTS} />
-                <Route element={<DocumentSearchResultsPage />} path={routes.DOWNLOAD_DOCUMENTS} />
+                {privateRoutes}
+                <Route
+                    element={
+                        <PatientGuard>
+                            <Outlet />
+                        </PatientGuard>
+                    }
+                >
+                    {patientRoutes}
+                </Route>
             </Route>
-        </Route>
-    </Switch>
-);
+        </Switch>
+    );
+};
 
 const AppRouter = () => {
     return (
         <Router>
             <Layout>
-                <PrevRoutes />
+                <AppRoutes />
             </Layout>
         </Router>
     );

@@ -26,7 +26,7 @@ export enum ROUTE_TYPE {
     // Auth route guard
     PRIVATE = 1,
     // All route guards
-    APP = 2,
+    PATIENT = 2,
 }
 
 export type route = {
