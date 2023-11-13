@@ -64,7 +64,7 @@ def build_decoded_token_for_role(role: str) -> dict:
     return {
         "exp": time.time() + 60,
         "iss": "nhs repo",
-        "smart_card_role":"temp_mock_role",
+        "smart_card_role": "temp_mock_role",
         "selected_organisation":
             {"name": "PORTWAY LIFESTYLE CENTRE", "org_ods_code": "A9A5A", "role": "temp_role"},
         "repository_role": role,
@@ -88,14 +88,14 @@ def mock_jwt_decode(mocker):
 
 
 def test_valid_gp_admin_token_return_allow_policy(
-    mock_ssm, mock_session_table, mock_jwt_decode
+        mock_ssm, mock_session_table, mock_jwt_decode
 ):
     expected_allow_policy = {
         "Statement": [
             {
                 "Action": "execute-api:Invoke",
                 "Effect": "Allow",
-                "Resource": [f"{MOCK_METHOD_ARN_PREFIX}/*/*"],
+                "Resource": [f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences"],
             }
         ],
         "Version": "2012-10-17",
@@ -104,7 +104,35 @@ def test_valid_gp_admin_token_return_allow_policy(
     auth_token = "valid_gp_admin_token"
     test_event = {
         "authorizationToken": auth_token,
-        "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
+        "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences",
+    }
+
+    response = lambda_handler(event=test_event, context=None)
+
+    mock_jwt_decode.assert_called_with(
+        auth_token, TEST_PUBLIC_KEY, algorithms=["RS256"]
+    )
+    assert response["policyDocument"] == expected_allow_policy
+
+
+def test_valid_gp_admin_token_return_deny_when_accessing_forbidden_resource(
+        mock_ssm, mock_session_table, mock_jwt_decode
+):
+    expected_allow_policy = {
+        "Statement": [
+            {
+                "Action": "execute-api:Invoke",
+                "Effect": "Deny",
+                "Resource": [f"{MOCK_METHOD_ARN_PREFIX}/GET/DocumentManifest"],
+            }
+        ],
+        "Version": "2012-10-17",
+    }
+
+    auth_token = "valid_gp_admin_token"
+    test_event = {
+        "authorizationToken": auth_token,
+        "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/DocumentManifest",
     }
 
     response = lambda_handler(event=test_event, context=None)
@@ -116,7 +144,7 @@ def test_valid_gp_admin_token_return_allow_policy(
 
 
 def test_valid_pcse_token_return_allow_policy(
-    mock_ssm, mock_session_table, mock_jwt_decode
+        mock_ssm, mock_session_table, mock_jwt_decode
 ):
     expected_allow_policy = {
         "Statement": [
@@ -142,8 +170,35 @@ def test_valid_pcse_token_return_allow_policy(
     assert response["policyDocument"] == expected_allow_policy
 
 
+def test_valid_pcse_token_return_deny_policy_when_accessing_forbidden_resource(
+        mock_ssm, mock_session_table, mock_jwt_decode
+):
+    expected_allow_policy = {
+        "Statement": [
+            {
+                "Action": "execute-api:Invoke",
+                "Effect": "Deny",
+                "Resource": [f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences"],
+            }
+        ],
+        "Version": "2012-10-17",
+    }
+
+    test_event = {
+        "authorizationToken": "valid_pcse_token",
+        "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences",
+    }
+
+    response = lambda_handler(test_event, context=None)
+
+    mock_jwt_decode.assert_called_with(
+        "valid_pcse_token", TEST_PUBLIC_KEY, algorithms=["RS256"]
+    )
+    assert response["policyDocument"] == expected_allow_policy
+
+
 def test_return_deny_policy_when_no_session_found(
-    mock_ssm, mock_session_table, mock_jwt_decode
+        mock_ssm, mock_session_table, mock_jwt_decode
 ):
     mock_session_table.query.return_value = {"Count": 0, "Items": []}
 
@@ -158,7 +213,7 @@ def test_return_deny_policy_when_no_session_found(
 
 
 def test_return_deny_policy_when_user_session_is_expired(
-    mock_ssm, mock_session_table, mock_jwt_decode
+        mock_ssm, mock_session_table, mock_jwt_decode
 ):
     one_minute_ago = time.time() - 60
     expired_session = {

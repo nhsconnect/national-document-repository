@@ -114,13 +114,12 @@ def set_access_policy(http_verb, path, user_role, policy):
     if user_role in accepted_roles:
         policy.allowMethod(http_verb, path)
     # for now, allow all method for GP and DEV role, and allow only search document for PCSE
-    if RepositoryRole.GP_ADMIN.value in user_role:
+    elif RepositoryRole.GP_ADMIN.value in user_role:
         policy.allowAllMethods()
     elif RepositoryRole.GP_CLINICAL.value in user_role:
         policy.allowAllMethods()
     elif RepositoryRole.PCSE.value in user_role:
         policy.allowAllMethods()
-        # policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
     else:
         policy.denyMethod(http_verb, path)
 
