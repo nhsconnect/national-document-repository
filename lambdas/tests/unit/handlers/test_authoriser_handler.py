@@ -5,7 +5,7 @@ from unittest.mock import patch
 import jwt
 import pytest
 from enums.repository_role import RepositoryRole
-from handlers.authoriser_handler import lambda_handler
+from handlers.authoriser_handler import lambda_handler, validate_access_policy
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:fake_arn:fake_api_endpoint/dev"
 TEST_PUBLIC_KEY = "test_public_key"
@@ -156,6 +156,78 @@ def test_return_deny_policy_when_no_session_found(
 
     assert response["policyDocument"] == DENY_ALL_POLICY
 
+############### GP Admin user allow/deny ###############
+
+def test_validate_access_policy_returns_true_for_gp_admin_on_document_delete():
+    expected = True
+    actual = validate_access_policy("mock_verb", "/DocumentDelete", RepositoryRole.GP_ADMIN.value)
+    assert expected == actual
+
+def test_validate_access_policy_returns_true_for_gp_admin_on_document_manifest():
+    expected = True
+    actual = validate_access_policy("mock_verb", "/DocumentManifest", RepositoryRole.GP_ADMIN.value)
+    assert expected == actual
+
+def test_validate_access_policy_returns_true_for_gp_admin_on_document_reference():
+    expected = True
+    actual = validate_access_policy("mock_verb", "/DocumentReference", RepositoryRole.GP_ADMIN.value)
+    assert expected == actual
+
+def test_validate_access_policy_returns_false_for_gp_admin_on_document_search():
+    expected = False
+    actual = validate_access_policy("mock_verb", "/SearchDocumentReferences", RepositoryRole.GP_ADMIN.value)
+    assert expected == actual
+
+############### GP Clinical user allow/deny ###############
+
+def test_validate_access_policy_returns_true_for_gp_clinical_on_document_delete():
+    expected = True
+    actual = validate_access_policy("mock_verb", "/DocumentDelete", RepositoryRole.GP_CLINICAL.value)
+    assert expected == actual
+
+def test_validate_access_policy_returns_true_for_gp_clinical_on_document_manifest():
+    expected = True
+    actual = validate_access_policy("mock_verb", "/DocumentManifest", RepositoryRole.GP_CLINICAL.value)
+    assert expected == actual
+
+def test_validate_access_policy_returns_true_for_gp_clinical_on_document_reference():
+    expected = True
+    actual = validate_access_policy("mock_verb", "/DocumentReference", RepositoryRole.GP_CLINICAL.value)
+    assert expected == actual
+
+def test_validate_access_policy_returns_false_for_gp_clinical_on_document_search():
+    expected = False
+    actual = validate_access_policy("mock_verb", "/SearchDocumentReferences", RepositoryRole.GP_CLINICAL.value)
+    assert expected == actual
+
+############### PCSE user allow/deny ###############
+
+def test_validate_access_policy_returns_false_for_pcse_on_document_delete():
+    expected = False
+    actual = validate_access_policy("mock_verb", "/DocumentDelete", RepositoryRole.PCSE.value)
+    assert expected == actual
+
+def test_validate_access_policy_returns_false_for_pcse_on_document_manifest():
+    expected = False
+    actual = validate_access_policy("mock_verb", "/DocumentManifest", RepositoryRole.PCSE.value)
+    assert expected == actual
+
+def test_validate_access_policy_returns_false_for_pcse_on_document_reference():
+    expected = False
+    actual = validate_access_policy("mock_verb", "/DocumentReference", RepositoryRole.PCSE.value)
+    assert expected == actual
+
+def test_validate_access_policy_returns_true_for_pcse_on_document_search():
+    expected = True
+    actual = validate_access_policy("mock_verb", "/SearchDocumentReferences", RepositoryRole.PCSE.value)
+    assert expected == actual
+
+############### Unhappy paths ###############
+
+def test_validate_access_policy_returns_false_for_unrecognised_path():
+    expected = False
+    actual = validate_access_policy("mock_verb", "not_a_reconised_path", RepositoryRole.PCSE.value)
+    assert expected == actual
 
 def test_return_deny_policy_when_user_session_is_expired(
     mock_ssm, mock_session_table, mock_jwt_decode
