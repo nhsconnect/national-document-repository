@@ -9,6 +9,7 @@ from botocore.exceptions import ClientError
 from enums.repository_role import RepositoryRole
 from handlers.token_handler import lambda_handler
 from models.oidc_models import IdTokenClaimSet
+from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
@@ -61,10 +62,13 @@ def mock_oidc_service(mocker, mock_userinfo):
     mocked_fetch_user_info = mocker.patch.object(OidcService, "fetch_userinfo")
     mocked_fetch_user_info.return_value = mock_userinfo
 
+    mocked_fetch_user_role_code = mocker.patch.object(OidcService, "fetch_user_role_code")
+    mocked_fetch_user_role_code.return_value = "R8008"
+
     yield {
         "fetch_tokens": mocked_fetch_token,
         "fetch_user_org_codes": mocked_fetch_user_org_codes,
-        "fetch_user_role_code": "R8008",
+        "fetch_user_role_code": mocked_fetch_user_role_code,
         "fetch_user_info": mocked_fetch_user_info
     }
 
@@ -81,13 +85,15 @@ def mock_context():
 
 @pytest.fixture
 def mock_ods_api_service(mocker):
-    mock = mocker.patch("services.ods_api_service.OdsApiService")
 
-    mock.return_value.fetch_organisation_with_permitted_role.return_value = {
+    return_val = {
         "name": "PORTWAY LIFESTYLE CENTRE",
         "org_ods_code": "A9A5A",
         "role_code": "RO76",
     }
+
+    mock = mocker.patch.object(OdsApiService, "fetch_organisation_with_permitted_role", return_value=return_val)
+
     yield mock
 
 
@@ -113,7 +119,7 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
 ):
     mocker.patch("handlers.token_handler.create_login_session", return_value="new_item_session_id")
     mocker.patch("handlers.token_handler.generate_repository_role", return_value=RepositoryRole.PCSE)
-    mocker.patch("handlers.token_handler.issue_auth_token", return_value="UUID")
+    mocker.patch("handlers.token_handler.issue_auth_token", return_value="mock_ndr_auth_token")
 
     auth_code = "auth_code"
     test_event = {
@@ -122,7 +128,7 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
     }
 
     expected_response_body = {
-        "role": "GP_ADMIN",
+        "role": "PCSE",
         "authorisation_token": "mock_ndr_auth_token",
     }
     expected = ApiGatewayResponse(
