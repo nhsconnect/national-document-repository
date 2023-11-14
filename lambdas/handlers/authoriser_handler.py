@@ -15,7 +15,6 @@ import time
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
-
 from enums.logging_app_interaction import LoggingAppInteraction
 from enums.repository_role import RepositoryRole
 from models.auth_policy import AuthPolicy
@@ -88,19 +87,13 @@ def validate_access_policy(http_verb, path, user_role):
     logger.info(f"Path: {path}")
     match path:
         case "/DocumentDelete":
-            deny_resource = (
-                user_role == RepositoryRole.GP_CLINICAL.value
-            )
+            deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
 
         case "/DocumentManifest":
-            deny_resource = (
-                user_role == RepositoryRole.GP_CLINICAL.value
-            )
+            deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
 
         case "/DocumentReference":
-            deny_resource = (
-                user_role == RepositoryRole.GP_CLINICAL.value
-            )
+            deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
 
         case _:
             deny_resource = False

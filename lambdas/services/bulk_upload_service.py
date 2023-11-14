@@ -11,15 +11,12 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (
-    DocumentInfectedException,
-    InvalidMessageException,
-    S3FileNotFoundException,
-    TagNotFoundException,
-    VirusScanFailedException,
-    VirusScanNoResultException,
-)
-from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
+from utils.exceptions import (DocumentInfectedException,
+                              InvalidMessageException, S3FileNotFoundException,
+                              TagNotFoundException, VirusScanFailedException,
+                              VirusScanNoResultException)
+from utils.lloyd_george_validator import (LGInvalidFilesException,
+                                          validate_lg_file_names)
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -241,13 +238,15 @@ class BulkUploadService:
         reference_id = create_reference_id()
         file_name = os.path.basename(file_metadata.file_path)
 
-        return NHSDocumentReference(
+        document_reference = NHSDocumentReference(
             nhs_number=nhs_number,
             content_type=self.pdf_content_type,
             file_name=file_name,
             reference_id=reference_id,
             s3_bucket_name=self.lg_bucket_name,
         )
+        document_reference.set_virus_scanner_result(VirusScanResult.CLEAN)
+        return document_reference
 
     def rollback_transaction(self):
         try:

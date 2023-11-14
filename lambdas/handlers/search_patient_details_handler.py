@@ -7,12 +7,9 @@ from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import validate_patient_id
-from utils.exceptions import (
-    InvalidResourceIdException,
-    PatientNotFoundException,
-    PdsErrorException,
-    UserNotAuthorisedException,
-)
+from utils.exceptions import (InvalidResourceIdException,
+                              PatientNotFoundException, PdsErrorException,
+                              UserNotAuthorisedException)
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 from utils.utilities import get_pds_service

@@ -3,9 +3,8 @@ import time
 
 import boto3
 from botocore.exceptions import ClientError
-from oauthlib.oauth2 import InsecureTransportError, WebApplicationClient
-
 from enums.logging_app_interaction import LoggingAppInteraction
+from oauthlib.oauth2 import InsecureTransportError, WebApplicationClient
 from services.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.set_audit_arg import set_request_context_for_logging
@@ -50,7 +49,8 @@ def prepare_redirect_response(web_application_client_class):
         save_state_in_dynamo_db(oidc_client.state)
         location_header = {"Location": url}
         logger.info(
-            "User was successfully redirected to CIS2", {"Result": "Successful redirect"}
+            "User was successfully redirected to CIS2",
+            {"Result": "Successful redirect"},
         )
 
     except ClientError as e:
