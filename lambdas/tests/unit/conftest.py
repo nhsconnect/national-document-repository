@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 from unittest import mock
 
 import pytest
@@ -79,6 +80,28 @@ def set_env(monkeypatch):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def logger_mock():
+def logger_mocker():
     with mock.patch("utils.audit_logging_setup.SensitiveAuditService.emit") as _fixture:
         yield _fixture
+
+
+@pytest.fixture
+def event():
+    api_gateway_proxy_event = {
+        "httpMethod": "GET",
+        "headers": {"Authorization": "test_token"},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def context():
+    @dataclass
+    class LambdaContext:
+        function_name: str = "test"
+        aws_request_id: str = "88888888-4444-4444-4444-121212121212"
+        invoked_function_arn: str = (
+            "arn:aws:lambda:eu-west-1:123456789101:function:test"
+        )
+
+    return LambdaContext()

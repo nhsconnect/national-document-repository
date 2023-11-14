@@ -6,6 +6,8 @@ import uuid
 import jwt
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
+
+from enums.logging_app_interaction import LoggingAppInteraction
 from enums.repository_role import RepositoryRole
 from models.oidc_models import IdTokenClaimSet
 from services.dynamo_service import DynamoDBService
@@ -13,19 +15,24 @@ from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (AuthorisationException,
-                              OrganisationNotFoundException,
-                              TooManyOrgsException)
+from utils.exceptions import (
+    AuthorisationException,
+    OrganisationNotFoundException,
+    TooManyOrgsException,
+)
 from utils.lambda_response import ApiGatewayResponse
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.request_context import request_context
 
 logger = LoggingService(__name__)
 
-
 token_handler_ssm_service = TokenHandlerSSMService()
+
 
 @set_request_context_for_logging
 def lambda_handler(event, context):
+    request_context.app_interaction = LoggingAppInteraction.LOGIN.value
+
     oidc_service = OidcService()
     ods_api_service = OdsApiService()
 
@@ -54,7 +61,7 @@ def lambda_handler(event, context):
         org_ods_codes = oidc_service.fetch_user_org_codes(
             access_token, id_token_claim_set
         )
-        smartcard_role_code = oidc_service.fetch_user_role_code(
+        smartcard_role_code, user_id = oidc_service.fetch_user_role_code(
             access_token, id_token_claim_set, "R"
         )
         permitted_orgs_details = ods_api_service.fetch_organisation_with_permitted_role(
@@ -83,6 +90,7 @@ def lambda_handler(event, context):
             permitted_orgs_details,
             smartcard_role_code,
             repository_role.value,
+            user_id,
         )
 
         logger.info("Creating response")
@@ -91,28 +99,33 @@ def lambda_handler(event, context):
             "authorisation_token": authorisation_token,
         }
 
-        logger.audit_splunk_info("User logged in successfully")
+        logger.audit_splunk_info(
+            "User logged in successfully", {"Result": "Successful login"}
+        )
         return ApiGatewayResponse(
             200, json.dumps(response), "GET"
         ).create_api_gateway_response()
 
     except AuthorisationException as error:
-        logger.error(error)
+        logger.error(error, {"Result": "Unauthorised"})
         return ApiGatewayResponse(
             401, "Failed to authenticate user with OIDC service", "GET"
         ).create_api_gateway_response()
     except (ClientError, KeyError, TypeError) as error:
-        logger.error(error)
+        logger.error(error, {"Result": "Unauthorised"})
         return ApiGatewayResponse(
             500, "Server error", "GET"
         ).create_api_gateway_response()
     except jwt.PyJWTError as error:
-        logger.info(f"error while encoding JWT: {error}")
+        logger.info(f"error while encoding JWT: {error}", {"Result": "Unauthorised"})
         return ApiGatewayResponse(
             500, "Server error", "GET"
         ).create_api_gateway_response()
     except OrganisationNotFoundException as error:
-        logger.info(f"Organisation does not exist for given ODS code: {error}")
+        logger.info(
+            f"Organisation does not exist for given ODS code: {error}",
+            {"Result": "Unauthorised"},
+        )
         return ApiGatewayResponse(
             500, "Organisation does not exist for given ODS code", "GET"
         ).create_api_gateway_response()
@@ -201,6 +214,7 @@ def issue_auth_token(
     user_org_details: list[dict],
     smart_card_role: str,
     repository_role: RepositoryRole,
+    user_id: str,
 ) -> str:
     private_key = token_handler_ssm_service.get_jwt_private_key()
 
@@ -214,6 +228,7 @@ def issue_auth_token(
         "selected_organisation": user_org_details,
         "repository_role": str(repository_role),
         "ndr_session_id": session_id,
+        "nhs_user_id": user_id,
     }
 
     try:

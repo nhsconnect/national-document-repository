@@ -14,7 +14,7 @@ def order_response_by_filenames(dynamodb_response: list[dict]) -> list[dict]:
     if len(dynamodb_response) != extract_total_pages(
         dynamodb_response[0][filename_key]
     ):
-        logger.warning("Some pages of the Lloyd George document appear missing")
+        logger.warning("Some pages of the Lloyd George document appear to be missing")
     return sorted_response
 
 

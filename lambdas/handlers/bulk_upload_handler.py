@@ -1,12 +1,14 @@
 from botocore.exceptions import ClientError
 from services.bulk_upload_service import BulkUploadService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import InvalidMessageException
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 logger = LoggingService(__name__)
 
 
+@set_request_context_for_logging
 def lambda_handler(event, _context):
     logger.info("Received event. Starting bulk upload process")
     bulk_upload_service = BulkUploadService()

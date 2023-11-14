@@ -5,15 +5,21 @@ from typing import Iterable
 
 import pydantic
 from botocore.exceptions import ClientError
-from models.staging_metadata import (METADATA_FILENAME, NHS_NUMBER_FIELD_NAME,
-                                     MetadataFile, StagingMetadata)
+from models.staging_metadata import (
+    METADATA_FILENAME,
+    NHS_NUMBER_FIELD_NAME,
+    MetadataFile,
+    StagingMetadata,
+)
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 
 logger = LoggingService(__name__)
 
 
+@set_request_context_for_logging
 def lambda_handler(_event, _context):
     try:
         logger.info("Starting metadata reading process")
