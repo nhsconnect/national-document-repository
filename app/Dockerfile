@@ -17,4 +17,4 @@ COPY --from=builder /app/build .
 WORKDIR /etc/nginx
 COPY --from=builder ./app/docker/nginx.conf .
 EXPOSE 80
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["nginx", "-g", "--with-stream_ssl_preread_module", "daemon off;"]
