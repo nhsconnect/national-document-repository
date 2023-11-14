@@ -151,7 +151,7 @@ def test_valid_pcse_token_return_allow_policy(
             {
                 "Action": "execute-api:Invoke",
                 "Effect": "Allow",
-                "Resource": [f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences"],
+                "Resource": [f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient"],
             }
         ],
         "Version": "2012-10-17",
