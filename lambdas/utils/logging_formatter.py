@@ -9,7 +9,9 @@ class LoggingFormatter(logging.Formatter):
         auth = getattr(request_context, "authorization", "No Auth")
         request_id = getattr(request_context, "request_id", "No Request")
         patient_nhs_no = getattr(request_context, "patient_nhs_no", "No NHS number")
-        app_interaction = getattr(request_context, "app_interaction", "Missing app interaction")
+        app_interaction = getattr(
+            request_context, "app_interaction", "Missing app interaction"
+        )
 
         log_content = {
             "Message": record.getMessage(),
