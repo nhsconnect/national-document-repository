@@ -130,8 +130,9 @@ def mock_userinfo():
     role_id = "500000000001"
     org_code = "A9A5A"
     role_code = "R8015"
+    user_id = "500000000000"
     mock_userinfo = {
-        "nhsid_useruid": "500000000000",
+        "nhsid_useruid": user_id,
         "name": "TestUserOne Caius Mr",
         "nhsid_nrbac_roles": [
             {
@@ -158,4 +159,4 @@ def mock_userinfo():
         ],
         "sub": "500000000000",
     }
-    yield {"role_id": role_id, "role_code": role_code, "org_code": org_code, "user_info": mock_userinfo}
+    yield {"role_id": role_id, "role_code": role_code, "org_code": org_code, "user_id": user_id, "user_info": mock_userinfo}

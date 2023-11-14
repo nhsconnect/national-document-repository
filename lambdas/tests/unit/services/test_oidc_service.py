@@ -266,9 +266,11 @@ def test_fetch_user_role_code(oidc_service, mock_userinfo, mock_id_tokens, mocke
     mocker.patch.object(OidcService, "fetch_userinfo", return_value=mock_userinfo["user_info"])
     mocker.patch("services.oidc_service.get_selected_roleid", return_value=mock_userinfo["role_id"])
 
+    expected = (mock_userinfo["role_code"], mock_userinfo["user_id"])
+
     actual = oidc_service.fetch_user_role_code(mock_access_token, mock_claim_set, prefix_char)
 
-    assert actual == mock_userinfo["role_code"]
+    assert actual == expected
 
 
 def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes(oidc_service, mock_userinfo, mock_id_tokens,
@@ -313,4 +315,3 @@ def test_fetch_user_info_throws_exception_for_non_200_response(oidc_service, moc
     with pytest.raises(AuthorisationException):
         oidc_service.fetch_userinfo("access_token")
 
-# TODO fetch_user_info, get_selected_roleid
