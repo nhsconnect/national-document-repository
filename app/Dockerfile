@@ -10,7 +10,7 @@ RUN npm install --legacy-peer-deps
 RUN npm run build
 
 # Host the App
-FROM ekn0ir/nginx-stream
+FROM tekn0ir/nginx-stream
 
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
