@@ -63,7 +63,7 @@ def mock_oidc_service(mocker, mock_userinfo):
     mocked_fetch_user_info.return_value = mock_userinfo
 
     mocked_fetch_user_role_code = mocker.patch.object(OidcService, "fetch_user_role_code")
-    mocked_fetch_user_role_code.return_value = "R8008"
+    mocked_fetch_user_role_code.return_value = ("R8008", "500000000000")
 
     yield {
         "fetch_token": mocked_fetch_token,
