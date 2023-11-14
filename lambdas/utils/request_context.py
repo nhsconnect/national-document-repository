@@ -15,6 +15,7 @@ class RequestContext:
         context_var = self._data.get(__name)
         if type(context_var) == ContextVar:
             return context_var.get(None)
+        return None
 
 
 request_context = RequestContext()

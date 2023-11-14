@@ -65,5 +65,5 @@ def test_warning_message_logged_when_some_pages_missing(caplog):
     with caplog.at_level(logging.INFO):
         order_response_by_filenames(dynamo_response_missing_page_10_to_12)
 
-    assert caplog.records[-1].message == "Some pages of the Lloyd George document appear missing"  # fmt: skip
+    assert caplog.records[-1].msg == "Some pages of the Lloyd George document appear to be missing"  # fmt: skip
     assert caplog.records[-1].levelname == "WARNING"

@@ -15,14 +15,14 @@ def mock_oidc_service(mocker):
     yield mock_oidc_service
 
 
-def test_returns_500_when_env_vars_not_set():
+def test_returns_500_when_env_vars_not_set(context):
     mock_token = "mock_token"
     expected = ApiGatewayResponse(
         500,
         "An error occurred due to missing environment variable: 'OIDC_CALLBACK_URL'",
         "POST",
     ).create_api_gateway_response()
-    actual = lambda_handler(build_event_from_token(mock_token), None)
+    actual = lambda_handler(build_event_from_token(mock_token), context)
 
     assert actual == expected
 
@@ -65,7 +65,7 @@ def test_back_channel_logout_handler_missing_jwt_returns_400(
 
 
 def test_back_channel_logout_handler_jwt_without_session_id_returns_400(
-    mock_oidc_service, monkeypatch
+    mock_oidc_service, monkeypatch, context
 ):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
@@ -78,14 +78,14 @@ def test_back_channel_logout_handler_jwt_without_session_id_returns_400(
         400, """{ "error":"No sid field in decoded token"}""", "POST"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(build_event_from_token(mock_token), None)
+    actual = lambda_handler(build_event_from_token(mock_token), context)
 
     assert expected == actual
     mock_oidc_service.asset_called_with(mock_token)
 
 
 def test_back_channel_logout_handler_invalid_jwt_returns_400(
-    mock_oidc_service, monkeypatch
+    mock_oidc_service, monkeypatch, context
 ):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
@@ -96,14 +96,14 @@ def test_back_channel_logout_handler_invalid_jwt_returns_400(
         400, """{ "error":"JWT was invalid"}""", "POST"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(build_event_from_token(mock_token), None)
+    actual = lambda_handler(build_event_from_token(mock_token), context)
 
     assert expected == actual
     mock_oidc_service.asset_called_with(mock_token)
 
 
 def test_back_channel_logout_handler_boto_error_returns_500(
-    mocker, mock_oidc_service, monkeypatch
+    mocker, mock_oidc_service, monkeypatch, context
 ):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "mock_url")
     monkeypatch.setenv("AUTH_DYNAMODB_NAME", "mock_dynamo_name")
@@ -122,7 +122,7 @@ def test_back_channel_logout_handler_boto_error_returns_500(
         500, """{ "error":"Internal error logging user out"}""", "POST"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(build_event_from_token(mock_token), None)
+    actual = lambda_handler(build_event_from_token(mock_token), context)
 
     assert expected == actual
     mock_oidc_service.asset_called_with(mock_token)

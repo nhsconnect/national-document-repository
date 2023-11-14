@@ -3,12 +3,12 @@ import LgDownloadAllStage, { Props } from './LloydGeorgeDownloadAllStage';
 import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
 import { createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router';
-import SessionProvider from '../../../providers/sessionProvider/SessionProvider';
 import axios from 'axios';
-import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
-jest.mock('axios');
+import userEvent from '@testing-library/user-event';
 
+jest.mock('axios');
+jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
@@ -49,6 +49,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
     });
 
     it('renders download complete on zip success', async () => {
+        window.HTMLAnchorElement.prototype.click = jest.fn();
         mockedAxios.get.mockImplementation(() => Promise.resolve({ data: mockPdf.presign_url }));
 
         jest.useFakeTimers();
@@ -68,10 +69,15 @@ describe('LloydGeorgeDownloadAllStage', () => {
         expect(screen.queryByText('0% downloaded...')).not.toBeInTheDocument();
 
         expect(screen.getByTestId(mockPdf.presign_url)).toBeInTheDocument();
+        const urlLink = screen.getByTestId(mockPdf.presign_url);
 
-        act(() => {
-            userEvent.click(screen.getByTestId(mockPdf.presign_url));
+        urlLink.addEventListener('click', (e) => {
+            e.preventDefault();
         });
+        act(() => {
+            userEvent.click(urlLink);
+        });
+
         await waitFor(async () => {
             expect(screen.queryByText('Downloading documents')).not.toBeInTheDocument();
         });
@@ -85,11 +91,9 @@ const TestApp = (props: Omit<Props, 'setStage'>) => {
         initialIndex: 0,
     });
     return (
-        <SessionProvider>
-            <ReactRouter.Router navigator={history} location={history.location}>
-                <LgDownloadAllStage {...props} setStage={mockSetStage} />
-            </ReactRouter.Router>
-        </SessionProvider>
+        <ReactRouter.Router navigator={history} location={history.location}>
+            <LgDownloadAllStage {...props} setStage={mockSetStage} />
+        </ReactRouter.Router>
     );
 };
 

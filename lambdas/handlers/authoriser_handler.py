@@ -4,29 +4,34 @@ import time
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
+
+from enums.logging_app_interaction import LoggingAppInteraction
 from enums.repository_role import RepositoryRole
 from models.auth_policy import AuthPolicy
 from services.dynamo_service import DynamoDBService
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import AuthorisationException
+from utils.request_context import request_context
 
 logger = LoggingService(__name__)
 
 
+@set_request_context_for_logging
 @ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
 def lambda_handler(event, context):
     try:
-        logger.info(event)
-
+        logger.info(f"Authoriser handler triggered: event")
+        request_context.app_interaction = LoggingAppInteraction.LOGIN.value
         ssm_service = SSMService()
         public_key = ssm_service.get_ssm_parameter(os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"], True)
 
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]
         )
-
+        request_context.authorization = decoded
         ndr_session_id = decoded["ndr_session_id"]
         current_session = find_login_session(ndr_session_id)
         validate_login_session(current_session, ndr_session_id)
@@ -70,27 +75,23 @@ def lambda_handler(event, context):
 
 def validate_access_policy(http_verb, path, user_role):
     logger.info("Validating resource req: %s, http: %s" % (path, http_verb))
+
+    logger.info(f"Path: {path}")
     match path:
         case "/DocumentDelete":
             deny_resource = (
-                    user_role is RepositoryRole.GP_CLINICAL.value
-                    or user_role is RepositoryRole.GP_ADMIN.value
+                user_role == RepositoryRole.GP_CLINICAL.value
             )
 
         case "/DocumentManifest":
             deny_resource = (
-                    user_role is RepositoryRole.GP_CLINICAL.value
-                    or user_role is RepositoryRole.GP_ADMIN.value
+                user_role == RepositoryRole.GP_CLINICAL.value
             )
 
         case "/DocumentReference":
             deny_resource = (
-                    user_role is RepositoryRole.GP_CLINICAL.value
-                    or user_role is RepositoryRole.GP_ADMIN.value
+                user_role == RepositoryRole.GP_CLINICAL.value
             )
-
-        case "/SearchDocumentReferences":
-            deny_resource = user_role is RepositoryRole.PCSE.value
 
         case _:
             deny_resource = False
@@ -134,8 +135,7 @@ def find_login_session(ndr_session_id):
     try:
         current_session = query_response["Items"][0]
         return current_session
-    except (KeyError, IndexError) as error:
-        logger.info(error)
+    except (KeyError, IndexError):
         raise AuthorisationException(
             f"Unable to find session for session ID ending in: {redact_id(ndr_session_id)}"
         )

@@ -225,7 +225,7 @@ def test_check_virus_result_raise_no_error_when_all_files_are_clean(
     service.check_virus_result(TEST_STAGING_METADATA)
 
     expected_log = f"Verified that all documents for patient {TEST_STAGING_METADATA.nhs_number} are clean."
-    actual_log = caplog.records[-1].message
+    actual_log = caplog.records[-1].msg
     assert actual_log == expected_log
 
 

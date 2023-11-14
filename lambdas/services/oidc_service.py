@@ -121,10 +121,10 @@ class OidcService:
         access_token: str,
         id_token_claim_set: IdTokenClaimSet,
         prefix_character: str,
-    ) -> str:
+    ) -> tuple:
         userinfo = self.fetch_userinfo(access_token)
         logger.info(f"User info response: {userinfo}")
-
+        user_id = userinfo.get("nhsid_useruid", None)
         nrbac_roles = userinfo.get("nhsid_nrbac_roles", [])
         logger.info(f"nrbac_roles: {nrbac_roles}")
 
@@ -144,7 +144,7 @@ class OidcService:
 
         for role_code in role_codes_split:
             if role_code[0].upper() == prefix_character.upper():
-                return role_code
+                return role_code, user_id
 
         raise AuthorisationException(
             f"Role codes have been found for the user but not with prefix {prefix_character.upper()}"
