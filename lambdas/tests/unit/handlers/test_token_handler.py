@@ -74,16 +74,6 @@ def mock_oidc_service(mocker, mock_userinfo):
 
 
 @pytest.fixture
-def mock_context():
-    class Context:
-        pass
-
-    context = Context()
-    context.aws_request_id = 'fake_aws_request_id'
-    return context
-
-
-@pytest.fixture
 def mock_ods_api_service(mocker):
 
     return_val = {

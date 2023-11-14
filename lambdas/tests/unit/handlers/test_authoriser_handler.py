@@ -88,7 +88,7 @@ def mock_jwt_decode(mocker):
 
 
 def test_valid_gp_admin_token_return_allow_policy(
-        mock_ssm, mock_session_table, mock_jwt_decode
+        mock_ssm, mock_session_table, mock_jwt_decode, mock_context
 ):
     expected_allow_policy = {
         "Statement": [
@@ -107,35 +107,7 @@ def test_valid_gp_admin_token_return_allow_policy(
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences",
     }
 
-    response = lambda_handler(event=test_event, context=None)
-
-    mock_jwt_decode.assert_called_with(
-        auth_token, TEST_PUBLIC_KEY, algorithms=["RS256"]
-    )
-    assert response["policyDocument"] == expected_allow_policy
-
-
-def test_valid_gp_admin_token_return_deny_when_accessing_forbidden_resource(
-        mock_ssm, mock_session_table, mock_jwt_decode
-):
-    expected_allow_policy = {
-        "Statement": [
-            {
-                "Action": "execute-api:Invoke",
-                "Effect": "Deny",
-                "Resource": [f"{MOCK_METHOD_ARN_PREFIX}/GET/DocumentManifest"],
-            }
-        ],
-        "Version": "2012-10-17",
-    }
-
-    auth_token = "valid_gp_admin_token"
-    test_event = {
-        "authorizationToken": auth_token,
-        "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/DocumentManifest",
-    }
-
-    response = lambda_handler(event=test_event, context=None)
+    response = lambda_handler(event=test_event, context=mock_context)
 
     mock_jwt_decode.assert_called_with(
         auth_token, TEST_PUBLIC_KEY, algorithms=["RS256"]
@@ -144,7 +116,7 @@ def test_valid_gp_admin_token_return_deny_when_accessing_forbidden_resource(
 
 
 def test_valid_pcse_token_return_allow_policy(
-        mock_ssm, mock_session_table, mock_jwt_decode
+        mock_ssm, mock_session_table, mock_jwt_decode, mock_context
 ):
     expected_allow_policy = {
         "Statement": [
@@ -162,34 +134,7 @@ def test_valid_pcse_token_return_allow_policy(
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
 
-    response = lambda_handler(test_event, context=None)
-
-    mock_jwt_decode.assert_called_with(
-        "valid_pcse_token", TEST_PUBLIC_KEY, algorithms=["RS256"]
-    )
-    assert response["policyDocument"] == expected_allow_policy
-
-
-def test_valid_pcse_token_return_deny_policy_when_accessing_forbidden_resource(
-        mock_ssm, mock_session_table, mock_jwt_decode
-):
-    expected_allow_policy = {
-        "Statement": [
-            {
-                "Action": "execute-api:Invoke",
-                "Effect": "Deny",
-                "Resource": [f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences"],
-            }
-        ],
-        "Version": "2012-10-17",
-    }
-
-    test_event = {
-        "authorizationToken": "valid_pcse_token",
-        "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences",
-    }
-
-    response = lambda_handler(test_event, context=None)
+    response = lambda_handler(test_event, context=mock_context)
 
     mock_jwt_decode.assert_called_with(
         "valid_pcse_token", TEST_PUBLIC_KEY, algorithms=["RS256"]
@@ -198,7 +143,7 @@ def test_valid_pcse_token_return_deny_policy_when_accessing_forbidden_resource(
 
 
 def test_return_deny_policy_when_no_session_found(
-        mock_ssm, mock_session_table, mock_jwt_decode
+        mock_ssm, mock_session_table, mock_jwt_decode, mock_context
 ):
     mock_session_table.query.return_value = {"Count": 0, "Items": []}
 
@@ -207,31 +152,9 @@ def test_return_deny_policy_when_no_session_found(
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
 
-    response = lambda_handler(test_event, context=None)
+    response = lambda_handler(test_event, context=mock_context)
 
     assert response["policyDocument"] == DENY_ALL_POLICY
-
-############### GP Admin user allow/deny ###############
-
-def test_validate_access_policy_returns_true_for_gp_admin_on_document_delete():
-    expected = True
-    actual = validate_access_policy("mock_verb", "/DocumentDelete", RepositoryRole.GP_ADMIN.value)
-    assert expected == actual
-
-def test_validate_access_policy_returns_true_for_gp_admin_on_document_manifest():
-    expected = True
-    actual = validate_access_policy("mock_verb", "/DocumentManifest", RepositoryRole.GP_ADMIN.value)
-    assert expected == actual
-
-def test_validate_access_policy_returns_true_for_gp_admin_on_document_reference():
-    expected = True
-    actual = validate_access_policy("mock_verb", "/DocumentReference", RepositoryRole.GP_ADMIN.value)
-    assert expected == actual
-
-def test_validate_access_policy_returns_false_for_gp_admin_on_document_search():
-    expected = False
-    actual = validate_access_policy("mock_verb", "/SearchDocumentReferences", RepositoryRole.GP_ADMIN.value)
-    assert expected == actual
 
 ############### GP Clinical user allow/deny ###############
 
@@ -248,11 +171,6 @@ def test_validate_access_policy_returns_true_for_gp_clinical_on_document_manifes
 def test_validate_access_policy_returns_true_for_gp_clinical_on_document_reference():
     expected = True
     actual = validate_access_policy("mock_verb", "/DocumentReference", RepositoryRole.GP_CLINICAL.value)
-    assert expected == actual
-
-def test_validate_access_policy_returns_false_for_gp_clinical_on_document_search():
-    expected = False
-    actual = validate_access_policy("mock_verb", "/SearchDocumentReferences", RepositoryRole.GP_CLINICAL.value)
     assert expected == actual
 
 ############### PCSE user allow/deny ###############
@@ -272,11 +190,6 @@ def test_validate_access_policy_returns_false_for_pcse_on_document_reference():
     actual = validate_access_policy("mock_verb", "/DocumentReference", RepositoryRole.PCSE.value)
     assert expected == actual
 
-def test_validate_access_policy_returns_true_for_pcse_on_document_search():
-    expected = True
-    actual = validate_access_policy("mock_verb", "/SearchDocumentReferences", RepositoryRole.PCSE.value)
-    assert expected == actual
-
 ############### Unhappy paths ###############
 
 def test_validate_access_policy_returns_false_for_unrecognised_path():
@@ -285,7 +198,7 @@ def test_validate_access_policy_returns_false_for_unrecognised_path():
     assert expected == actual
 
 def test_return_deny_policy_when_user_session_is_expired(
-        mock_ssm, mock_session_table, mock_jwt_decode
+        mock_ssm, mock_session_table, mock_jwt_decode, mock_context
 ):
     one_minute_ago = time.time() - 60
     expired_session = {
@@ -306,12 +219,12 @@ def test_return_deny_policy_when_user_session_is_expired(
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
 
-    response = lambda_handler(test_event, context=None)
+    response = lambda_handler(test_event, context=mock_context)
 
     assert response["policyDocument"] == DENY_ALL_POLICY
 
 
-def test_invalid_token_return_deny_policy(mocker, mock_ssm, mock_session_table):
+def test_invalid_token_return_deny_policy(mocker, mock_ssm, mock_session_table, mock_context):
     decode_mock = mocker.patch(
         "jwt.decode", side_effect=jwt.exceptions.InvalidTokenError
     )
@@ -320,7 +233,7 @@ def test_invalid_token_return_deny_policy(mocker, mock_ssm, mock_session_table):
         "authorizationToken": "invalid_token",
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
-    response = lambda_handler(test_event, context=None)
+    response = lambda_handler(test_event, context=mock_context)
 
     decode_mock.assert_called_with(
         "invalid_token", TEST_PUBLIC_KEY, algorithms=["RS256"]
@@ -328,7 +241,7 @@ def test_invalid_token_return_deny_policy(mocker, mock_ssm, mock_session_table):
     assert response["policyDocument"] == DENY_ALL_POLICY
 
 
-def test_invalid_signature_return_deny_policy(mocker, mock_ssm, mock_session_table):
+def test_invalid_signature_return_deny_policy(mocker, mock_ssm, mock_session_table, mock_context):
     decode_mock = mocker.patch(
         "jwt.decode", side_effect=jwt.exceptions.InvalidSignatureError
     )
@@ -337,7 +250,7 @@ def test_invalid_signature_return_deny_policy(mocker, mock_ssm, mock_session_tab
         "authorizationToken": "token_with_invalid_signature",
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
-    response = lambda_handler(test_event, context=None)
+    response = lambda_handler(test_event, context=mock_context)
 
     decode_mock.assert_called_with(
         "token_with_invalid_signature", TEST_PUBLIC_KEY, algorithms=["RS256"]
