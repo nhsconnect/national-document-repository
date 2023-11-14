@@ -24,7 +24,7 @@ sed $SEDOPTION "s/%BUILD_ENV%/${BUILD_ENV}/" .env
 sed $SEDOPTION "s/%IMAGE_VERSION%/${IMAGE_VERSION}/" .env
 
 
-sed $SEDOPTION "s/%DOC_STORE_API_ENDPOINT%@${ENDPOINT_DOC_STORE_API}/g" docker/nginx.conf
+sed $SEDOPTION "s/%DOC_STORE_API_ENDPOINT%/${ENDPOINT_DOC_STORE_API}/g" docker/nginx.conf
 sed $SEDOPTION "s/%BUILD_ENV%/${BUILD_ENV}/g" docker/nginx.conf
 
 echo "var transformation completed"
