@@ -22,7 +22,10 @@ sed $SEDOPTION "s/%AWS_REGION%/${AWS_REGION}/" .env
 sed $SEDOPTION "s/%OIDC_PROVIDER_ID%/${OIDC_PROVIDER_ID}/" .env
 sed $SEDOPTION "s/%BUILD_ENV%/${BUILD_ENV}/" .env
 sed $SEDOPTION "s/%IMAGE_VERSION%/${IMAGE_VERSION}/" .env
-sed $SEDOPTION "s@%DOC_STORE_API_ENDPOINT%@${ENDPOINT_DOC_STORE_API}@" app/docker/nginx.conf
+
+
+sed $SEDOPTION "s@%DOC_STORE_API_ENDPOINT%@${ENDPOINT_DOC_STORE_API}@" docker/nginx.conf
+sed $SEDOPTION "s/%BUILD_ENV%/${BUILD_ENV}/" docker/nginx.conf
 
 echo "var transformation completed"
 
