@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import LgRecordDetails, { Props, actionLinks } from './LloydGeorgeRecordDetails';
+import LgRecordDetails, { Props } from './LloydGeorgeRecordDetails';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import * as ReactRouter from 'react-router';
@@ -8,6 +8,7 @@ import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useRole from '../../../helpers/hooks/useRole';
+import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
 jest.mock('../../../helpers/hooks/useRole');
 
 const mockPdf = buildLgSearchResult();

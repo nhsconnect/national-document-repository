@@ -3,7 +3,6 @@ import { FieldValues, useForm } from 'react-hook-form';
 import { Button, Fieldset, Radios } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { PatientDetails } from '../../../types/generic/patientDetails';
-import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import DeletionConfirmationStage from '../deletionConfirmationStage/DeletionConfirmationStage';
 import deleteAllDocuments, { DeleteResponse } from '../../../helpers/requests/deleteAllDocuments';
 import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
@@ -19,6 +18,7 @@ import { routes } from '../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
 /**
  * TODO: REMOVE GP CLINICAL FROM COMPONENT & TESTS

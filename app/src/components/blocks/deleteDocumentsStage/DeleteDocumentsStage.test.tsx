@@ -4,7 +4,6 @@ import DeleteDocumentsStage, { Props } from './DeleteDocumentsStage';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import axios from 'axios/index';
 import * as ReactRouter from 'react-router';
@@ -12,6 +11,7 @@ import { createMemoryHistory } from 'history';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../../types/generic/authRole';
 import { routes } from '../../../types/generic/routes';
+import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../helpers/hooks/useRole');
