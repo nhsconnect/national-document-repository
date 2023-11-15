@@ -60,23 +60,20 @@ describe('DeleteDocumentsStage', () => {
             },
         );
 
-        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
-            "renders LgRecordStage when No is selected and Continue clicked, when user role is '%s'",
-            async (role) => {
-                mockedUseRole.mockReturnValue(role);
+        it('renders DocumentSearchResults when No is selected and Continue clicked, when user role is GP Admin', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
-                renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
 
-                act(() => {
-                    userEvent.click(screen.getByRole('radio', { name: 'No' }));
-                    userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-                });
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'No' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
 
-                await waitFor(() => {
-                    expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
-                });
-            },
-        );
+            await waitFor(() => {
+                expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
+            });
+        });
 
         it('renders DocumentSearchResults when No is selected and Continue clicked, when user role is PCSE', async () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
@@ -93,7 +90,22 @@ describe('DeleteDocumentsStage', () => {
             });
         });
 
-        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL, REPOSITORY_ROLE.PCSE])(
+        it('does not render a view DocumentSearchResults when No is selected and Continue clicked, when user role is GP Clinical', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'No' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await waitFor(() => {
+                expect(mockSetStage).toHaveBeenCalledTimes(0);
+            });
+        });
+
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE])(
             "renders DeletionConfirmationStage when the Yes is selected and Continue clicked, when user role is '%s'",
             async (role) => {
                 mockedAxios.delete.mockReturnValue(
@@ -116,6 +128,25 @@ describe('DeleteDocumentsStage', () => {
                 });
             },
         );
+
+        it('does not render DeletionConfirmationStage when the Yes is selected, Continue clicked, and user role is GP Clinical', async () => {
+            mockedAxios.delete.mockReturnValue(Promise.resolve({ status: 200, data: 'Success' }));
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+
+            expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await waitFor(() => {
+                expect(screen.queryByText('Deletion complete')).not.toBeInTheDocument();
+            });
+        });
 
         it('renders a service error when service is down', async () => {
             const errorResponse = {

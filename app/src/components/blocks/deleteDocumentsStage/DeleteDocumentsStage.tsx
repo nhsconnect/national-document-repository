@@ -108,10 +108,13 @@ function DeleteDocumentsStage({
     };
 
     const submit = async (fieldValues: FieldValues) => {
-        if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.YES) {
-            await handleYesOption();
-        } else if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.NO) {
-            handleNoOption();
+        const allowedRoles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE];
+        if (role && allowedRoles.includes(role)) {
+            if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.YES) {
+                await handleYesOption();
+            } else if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.NO) {
+                handleNoOption();
+            }
         }
     };
 
