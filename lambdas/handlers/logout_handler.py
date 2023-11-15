@@ -19,11 +19,8 @@ def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
     token = None
     if event.get("headers"):
-        headers = event.get("headers")
-        logger.info(f"headers = {headers}")
-        token = event.get("headers").get("Authorization")
-        byte_token = str.encode(token)
-    return logout_handler(byte_token)
+        token = str.encode(event.get("headers").get("Authorization"))
+    return logout_handler(token)
 
 
 def logout_handler(token):
@@ -32,7 +29,7 @@ def logout_handler(token):
         ssm_response = get_ssm_parameter(key=ssm_public_key_parameter_name)
         jwt_class = jwt
         public_key = ssm_response["Parameter"]["Value"]
-        logger.info(f"decoding token: {token}")
+        logger.info(f"decoding token")
         decoded_token = decode_token(jwt_class=jwt_class, token=token, key=public_key)
         session_id = decoded_token["ndr_session_id"]
         remove_session_from_dynamo_db(session_id)
