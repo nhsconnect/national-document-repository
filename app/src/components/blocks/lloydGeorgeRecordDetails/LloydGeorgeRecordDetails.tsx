@@ -18,9 +18,30 @@ export type Props = {
 type PdfActionLink = {
     label: string;
     key: string;
-    handler: () => void;
+    stage: LG_RECORD_STAGE;
     unauthorised?: Array<REPOSITORY_ROLE>;
 };
+
+export const actionLinks: Array<PdfActionLink> = [
+    {
+        label: 'See all files',
+        key: 'see-all-files-link',
+        stage: LG_RECORD_STAGE.SEE_ALL,
+    },
+    {
+        label: 'Download all files',
+        key: 'download-all-files-link',
+        stage: LG_RECORD_STAGE.DOWNLOAD_ALL,
+        unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+    },
+    {
+        label: 'Delete all files',
+        key: 'delete-all-files-link',
+        stage: LG_RECORD_STAGE.DELETE_ALL,
+        unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+    },
+];
+
 function LloydGeorgeRecordDetails({
     lastUpdated,
     numberOfFiles,
@@ -36,27 +57,6 @@ function LloydGeorgeRecordDetails({
     useOnClickOutside(actionsRef, (e) => {
         setShowActionsMenu(false);
     });
-
-    const actionLinks: Array<PdfActionLink> = [
-        {
-            label: 'See all files',
-            key: 'see-all-files-link',
-            handler: () => setStage(LG_RECORD_STAGE.SEE_ALL),
-        },
-        {
-            label: 'Download all files',
-            key: 'download-all-files-link',
-            handler: () => setStage(LG_RECORD_STAGE.DOWNLOAD_ALL),
-            unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-        },
-        {
-            label: 'Delete all files',
-            key: 'delete-all-files-link',
-            handler: () => setStage(LG_RECORD_STAGE.DELETE_ALL),
-            unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-        },
-    ];
-
     return (
         <div className="lloydgeorge_record-details">
             <div className="lloydgeorge_record-details_details">
@@ -104,7 +104,7 @@ function LloydGeorgeRecordDetails({
                                                     to="#"
                                                     onClick={(e) => {
                                                         e.preventDefault();
-                                                        link.handler();
+                                                        setStage(link.stage);
                                                     }}
                                                 >
                                                     {link.label}

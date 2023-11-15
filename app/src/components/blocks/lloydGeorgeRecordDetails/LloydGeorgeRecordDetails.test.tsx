@@ -1,6 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import LgRecordDetails, { Props } from './LloydGeorgeRecordDetails';
-import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import LgRecordDetails, { Props, actionLinks } from './LloydGeorgeRecordDetails';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import * as ReactRouter from 'react-router';
@@ -16,31 +15,6 @@ const mockSetStaqe = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
 
 describe('LloydGeorgeRecordDetails', () => {
-    const actionLinks = [
-        { label: 'See all files', expectedStage: LG_RECORD_STAGE.SEE_ALL },
-        {
-            label: 'Download all files',
-            expectedStage: LG_RECORD_STAGE.DOWNLOAD_ALL,
-        },
-        {
-            label: 'Delete all files',
-            expectedStage: LG_RECORD_STAGE.DELETE_ALL,
-        },
-    ];
-
-    const actionLinksAuth = [
-        {
-            label: 'Download all files',
-            expectedStage: LG_RECORD_STAGE.DOWNLOAD_ALL,
-            unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-        },
-        {
-            label: 'Delete all files',
-            expectedStage: LG_RECORD_STAGE.DELETE_ALL,
-            unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-        },
-    ];
-
     beforeEach(() => {
         mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -112,15 +86,18 @@ describe('LloydGeorgeRecordDetails', () => {
                 userEvent.click(screen.getByText(action.label));
             });
             await waitFor(async () => {
-                expect(mockSetStaqe).toHaveBeenCalledWith(action.expectedStage);
+                expect(mockSetStaqe).toHaveBeenCalledWith(action.stage);
             });
         },
     );
 
-    it.each(actionLinksAuth)(
+    const unauthorisedLinks = actionLinks.filter((a) => Array.isArray(a.unauthorised));
+
+    it.each(unauthorisedLinks)(
         "does not render actionLink '$label' if role is unauthorised",
         async (action) => {
-            mockedUseRole.mockReturnValue(action.unauthorised[0]);
+            const [unauthorisedRole] = action.unauthorised ?? [REPOSITORY_ROLE.GP_CLINICAL];
+            mockedUseRole.mockReturnValue(unauthorisedRole);
 
             renderComponent();
 
