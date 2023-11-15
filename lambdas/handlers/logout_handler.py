@@ -21,7 +21,7 @@ def lambda_handler(event, context):
     if event.get("headers"):
         headers = event.get("headers")
         logger.info(f"headers = {headers}")
-        token = event.get("headers").get("x-auth")
+        token = event.get("headers").get("Authorization")
         byte_token = str.encode(token)
     return logout_handler(byte_token)
 
