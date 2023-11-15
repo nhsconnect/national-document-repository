@@ -23,96 +23,108 @@ describe('LloydGeorgeRecordDetails', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
+    describe('Rendering', () => {
+        it('renders the record details component', () => {
+            renderComponent();
 
-    it('renders the record details component', () => {
-        renderComponent();
-
-        expect(screen.getByText(`Last updated: ${mockPdf.last_updated}`)).toBeInTheDocument();
-        expect(screen.getByText(`${mockPdf.number_of_files} files`)).toBeInTheDocument();
-        expect(
-            screen.getByText(`File size: ${formatFileSize(mockPdf.total_file_size_in_byte)}`),
-        ).toBeInTheDocument();
-        expect(screen.getByText('File format: PDF')).toBeInTheDocument();
-    });
-
-    it('renders record details actions menu', async () => {
-        renderComponent();
-
-        expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-        expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-        actionLinks.forEach((action) => {
-            expect(screen.queryByText(action.label)).not.toBeInTheDocument();
+            expect(screen.getByText(`Last updated: ${mockPdf.last_updated}`)).toBeInTheDocument();
+            expect(screen.getByText(`${mockPdf.number_of_files} files`)).toBeInTheDocument();
+            expect(
+                screen.getByText(`File size: ${formatFileSize(mockPdf.total_file_size_in_byte)}`),
+            ).toBeInTheDocument();
+            expect(screen.getByText('File format: PDF')).toBeInTheDocument();
         });
 
-        act(() => {
-            userEvent.click(screen.getByTestId('actions-menu'));
-        });
-        await waitFor(async () => {
+        it('renders record details actions menu', async () => {
+            renderComponent();
+
+            expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
+            expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
             actionLinks.forEach((action) => {
-                expect(screen.getByText(action.label)).toBeInTheDocument();
-            });
-        });
-    });
-
-    it.each(actionLinks)("renders actionLink '$label'", async (action) => {
-        renderComponent();
-
-        expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-        expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-
-        act(() => {
-            userEvent.click(screen.getByTestId('actions-menu'));
-        });
-        await waitFor(async () => {
-            expect(screen.getByText(action.label)).toBeInTheDocument();
-        });
-    });
-
-    it.each(actionLinks)(
-        "navigates to expected stage when action '$label' is clicked",
-        async (action) => {
-            renderComponent();
-
-            expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-            expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-
-            act(() => {
-                userEvent.click(screen.getByTestId('actions-menu'));
-            });
-            await waitFor(async () => {
-                expect(screen.getByText(action.label)).toBeInTheDocument();
-            });
-
-            act(() => {
-                userEvent.click(screen.getByText(action.label));
-            });
-            await waitFor(async () => {
-                expect(mockSetStaqe).toHaveBeenCalledWith(action.stage);
-            });
-        },
-    );
-
-    const unauthorisedLinks = actionLinks.filter((a) => Array.isArray(a.unauthorised));
-
-    it.each(unauthorisedLinks)(
-        "does not render actionLink '$label' if role is unauthorised",
-        async (action) => {
-            const [unauthorisedRole] = action.unauthorised ?? [REPOSITORY_ROLE.GP_CLINICAL];
-            mockedUseRole.mockReturnValue(unauthorisedRole);
-
-            renderComponent();
-
-            expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-            expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-
-            act(() => {
-                userEvent.click(screen.getByTestId('actions-menu'));
-            });
-            await waitFor(async () => {
                 expect(screen.queryByText(action.label)).not.toBeInTheDocument();
             });
-        },
-    );
+
+            act(() => {
+                userEvent.click(screen.getByTestId('actions-menu'));
+            });
+            await waitFor(async () => {
+                actionLinks.forEach((action) => {
+                    expect(screen.getByText(action.label)).toBeInTheDocument();
+                });
+            });
+        });
+
+        it.each(actionLinks)("renders actionLink '$label'", async (action) => {
+            renderComponent();
+
+            expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
+            expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByTestId('actions-menu'));
+            });
+            await waitFor(async () => {
+                expect(screen.getByText(action.label)).toBeInTheDocument();
+            });
+        });
+    });
+
+    describe('Navigation', () => {
+        it.each(actionLinks)(
+            "navigates to '$stage' when action '$label' is clicked",
+            async (action) => {
+                renderComponent();
+
+                expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
+                expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
+
+                act(() => {
+                    userEvent.click(screen.getByTestId('actions-menu'));
+                });
+                await waitFor(async () => {
+                    expect(screen.getByText(action.label)).toBeInTheDocument();
+                });
+
+                act(() => {
+                    userEvent.click(screen.getByText(action.label));
+                });
+                await waitFor(async () => {
+                    expect(mockSetStaqe).toHaveBeenCalledWith(action.stage);
+                });
+            },
+        );
+    });
+
+    describe('Unauthorised', () => {
+        const unauthorisedLinks = actionLinks.filter((a) => Array.isArray(a.unauthorised));
+
+        it.each(unauthorisedLinks)(
+            "does not render actionLink '$label' if role is unauthorised",
+            async (action) => {
+                const [unauthorisedRole] = action.unauthorised ?? [];
+                mockedUseRole.mockReturnValue(unauthorisedRole);
+
+                renderComponent();
+
+                expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
+                expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
+
+                act(() => {
+                    userEvent.click(screen.getByTestId('actions-menu'));
+                });
+                await waitFor(async () => {
+                    expect(screen.queryByText(action.label)).not.toBeInTheDocument();
+                });
+            },
+        );
+
+        it.each(unauthorisedLinks)(
+            "does not render actionLink '$label' for GP Clinical Role",
+            async (action) => {
+                expect(action.unauthorised).toContain(REPOSITORY_ROLE.GP_CLINICAL);
+            },
+        );
+    });
 });
 
 const TestApp = (props: Omit<Props, 'setStage'>) => {

@@ -100,8 +100,7 @@ function DeleteDocumentsStage({
     };
 
     const handleNoOption = () => {
-        const isGp = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
-        if (isGp && setStage) {
+        if (role === REPOSITORY_ROLE.GP_ADMIN && setStage) {
             setStage(LG_RECORD_STAGE.RECORD);
         } else if (role === REPOSITORY_ROLE.PCSE && setIsDeletingDocuments) {
             setIsDeletingDocuments(false);
