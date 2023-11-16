@@ -4,6 +4,8 @@ import jwt
 import pytest
 from enums.repository_role import RepositoryRole
 from handlers.authoriser_handler import lambda_handler, validate_access_policy
+from services.dynamo_service import DynamoDBService
+from services.ssm_service import SSMService
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:fake_arn:fake_api_endpoint/dev"
 TEST_PUBLIC_KEY = "test_public_key"
@@ -21,18 +23,11 @@ DENY_ALL_POLICY = {
 
 @pytest.fixture()
 def mock_ssm(set_env, mocker):
-    mock_ssm_client = mocker.patch("boto3.client")
-    mock_ssm_client.return_value.get_parameter.return_value = {
-        "Parameter": {"Value": TEST_PUBLIC_KEY}
-    }
+    mocker.patch.object(SSMService, "get_ssm_parameter", return_value=TEST_PUBLIC_KEY)
 
 
 @pytest.fixture()
-def mock_session_table(mocker):
-    mock_table = mocker.MagicMock()
-    mock_dynamo = mocker.patch("boto3.resource")
-    mock_dynamo.return_value.Table.return_value = mock_table
-
+def mock_dynamo(mocker):
     valid_session_record = {
         "Count": 1,
         "Items": [
@@ -44,8 +39,9 @@ def mock_session_table(mocker):
             }
         ],
     }
-    mock_table.query.return_value = valid_session_record
-    yield mock_table
+    dynamo_service = mocker.patch.object(DynamoDBService, "simple_query")
+    dynamo_service.return_value = valid_session_record
+    yield dynamo_service
 
 
 def build_decoded_token_for_role(role: str) -> dict:
@@ -79,7 +75,7 @@ def mock_jwt_decode(mocker):
 
 
 def test_valid_gp_admin_token_return_allow_policy(
-    mock_ssm, mock_session_table, mock_jwt_decode, context
+    mock_ssm, mock_dynamo, mock_jwt_decode, context
 ):
     expected_allow_policy = {
         "Statement": [
@@ -107,7 +103,7 @@ def test_valid_gp_admin_token_return_allow_policy(
 
 
 def test_valid_pcse_token_return_allow_policy(
-    mock_ssm, mock_session_table, mock_jwt_decode, context
+    mock_ssm, mock_dynamo, mock_jwt_decode, context
 ):
     expected_allow_policy = {
         "Statement": [
@@ -134,9 +130,9 @@ def test_valid_pcse_token_return_allow_policy(
 
 
 def test_return_deny_policy_when_no_session_found(
-    mock_ssm, mock_session_table, mock_jwt_decode, context
+    mock_ssm, mock_dynamo, mock_jwt_decode, context
 ):
-    mock_session_table.query.return_value = {"Count": 0, "Items": []}
+    mock_dynamo.return_value = {"Count": 0, "Items": []}
 
     test_event = {
         "authorizationToken": "valid_pcse_token",
@@ -214,7 +210,7 @@ def test_validate_access_policy_returns_false_for_unrecognised_path():
 
 
 def test_return_deny_policy_when_user_session_is_expired(
-    mock_ssm, mock_session_table, mock_jwt_decode, context
+    mock_ssm, mock_dynamo, mock_jwt_decode, context
 ):
     one_minute_ago = time.time() - 60
     expired_session = {
@@ -228,7 +224,7 @@ def test_return_deny_policy_when_user_session_is_expired(
             }
         ],
     }
-    mock_session_table.query.return_value = expired_session
+    mock_dynamo.return_value = expired_session
 
     test_event = {
         "authorizationToken": "valid_pcse_token",
@@ -240,9 +236,7 @@ def test_return_deny_policy_when_user_session_is_expired(
     assert response["policyDocument"] == DENY_ALL_POLICY
 
 
-def test_invalid_token_return_deny_policy(
-    mocker, mock_ssm, mock_session_table, context
-):
+def test_invalid_token_return_deny_policy(mocker, mock_ssm, mock_dynamo, context):
     decode_mock = mocker.patch(
         "jwt.decode", side_effect=jwt.exceptions.InvalidTokenError
     )
@@ -259,9 +253,7 @@ def test_invalid_token_return_deny_policy(
     assert response["policyDocument"] == DENY_ALL_POLICY
 
 
-def test_invalid_signature_return_deny_policy(
-    mocker, mock_ssm, mock_session_table, context
-):
+def test_invalid_signature_return_deny_policy(mocker, mock_ssm, mock_dynamo, context):
     decode_mock = mocker.patch(
         "jwt.decode", side_effect=jwt.exceptions.InvalidSignatureError
     )

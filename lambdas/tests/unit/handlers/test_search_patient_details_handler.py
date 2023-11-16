@@ -26,7 +26,9 @@ def test_lambda_handler_valid_id_returns_200(
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
 
-    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="mock_public_key")
+    mocker.patch.object(
+        SSMService, "get_ssm_parameter", side_effect=["mock_public_key", "1"]
+    )
     mocker.patch(
         "jwt.decode",
         return_value={
@@ -34,7 +36,6 @@ def test_lambda_handler_valid_id_returns_200(
             "repository_role": "GP_ADMIN",
         },
     )
-    mocker.patch.object(SSMService, "get_ssm_parameter", return_value="1")
     mocker.patch(
         "services.mock_pds_service.MockPdsApiService.pds_request",
         return_value=response,
