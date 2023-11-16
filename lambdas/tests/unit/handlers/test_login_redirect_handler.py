@@ -23,9 +23,7 @@ class FakeWebAppClient:
         return RETURN_URL, "", ""
 
 
-def test_prepare_redirect_response_return_303_with_correct_headers(
-    mocker, monkeypatch
-):
+def test_prepare_redirect_response_return_303_with_correct_headers(mocker, monkeypatch):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "https://www.testexample.com")
     mock_dynamo_service = mocker.patch(
         "handlers.login_redirect_handler.save_state_in_dynamo_db"

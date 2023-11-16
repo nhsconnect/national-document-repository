@@ -1,10 +1,20 @@
+"""
+This code has been modified from AWS blueprint. Below is the original license:
+Copyright 2015-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+Licensed under the Apache License, Version 2.0 (the "License").
+You may not use this file except in compliance with the License. A copy of the License is located at
+     http://aws.amazon.com/apache2.0/
+or in the "license" file accompanying this file.
+This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.
+"""
+
 import os
 import time
 
 import botocore.exceptions
 import jwt
 from boto3.dynamodb.conditions import Key
-
 from enums.logging_app_interaction import LoggingAppInteraction
 from enums.repository_role import RepositoryRole
 from models.auth_policy import AuthPolicy
@@ -23,10 +33,13 @@ logger = LoggingService(__name__)
 @ensure_environment_variables(names=["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"])
 def lambda_handler(event, context):
     try:
-        logger.info(f"Authoriser handler triggered: event")
         request_context.app_interaction = LoggingAppInteraction.LOGIN.value
+        logger.info("Authoriser handler triggered: event")
+
         ssm_service = SSMService()
-        public_key = ssm_service.get_ssm_parameter(os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"], True)
+        public_key = ssm_service.get_ssm_parameter(
+            os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"], True
+        )
 
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]
@@ -79,19 +92,13 @@ def validate_access_policy(http_verb, path, user_role):
     logger.info(f"Path: {path}")
     match path:
         case "/DocumentDelete":
-            deny_resource = (
-                user_role == RepositoryRole.GP_CLINICAL.value
-            )
+            deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
 
         case "/DocumentManifest":
-            deny_resource = (
-                user_role == RepositoryRole.GP_CLINICAL.value
-            )
+            deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
 
         case "/DocumentReference":
-            deny_resource = (
-                user_role == RepositoryRole.GP_CLINICAL.value
-            )
+            deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
 
         case _:
             deny_resource = False

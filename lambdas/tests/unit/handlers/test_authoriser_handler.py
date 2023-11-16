@@ -65,8 +65,11 @@ def build_decoded_token_for_role(role: str) -> dict:
         "exp": time.time() + 60,
         "iss": "nhs repo",
         "smart_card_role": "temp_mock_role",
-        "selected_organisation":
-            {"name": "PORTWAY LIFESTYLE CENTRE", "org_ods_code": "A9A5A", "role": "temp_role"},
+        "selected_organisation": {
+            "name": "PORTWAY LIFESTYLE CENTRE",
+            "org_ods_code": "A9A5A",
+            "role": "temp_role",
+        },
         "repository_role": role,
         "ndr_session_id": "test_session_id",
     }
@@ -88,7 +91,7 @@ def mock_jwt_decode(mocker):
 
 
 def test_valid_gp_admin_token_return_allow_policy(
-        mock_ssm, mock_session_table, mock_jwt_decode, mock_context
+    mock_ssm, mock_session_table, mock_jwt_decode, mock_context
 ):
     expected_allow_policy = {
         "Statement": [
@@ -116,7 +119,7 @@ def test_valid_gp_admin_token_return_allow_policy(
 
 
 def test_valid_pcse_token_return_allow_policy(
-        mock_ssm, mock_session_table, mock_jwt_decode, mock_context
+    mock_ssm, mock_session_table, mock_jwt_decode, mock_context
 ):
     expected_allow_policy = {
         "Statement": [
@@ -143,7 +146,7 @@ def test_valid_pcse_token_return_allow_policy(
 
 
 def test_return_deny_policy_when_no_session_found(
-        mock_ssm, mock_session_table, mock_jwt_decode, mock_context
+    mock_ssm, mock_session_table, mock_jwt_decode, mock_context
 ):
     mock_session_table.query.return_value = {"Count": 0, "Items": []}
 
@@ -156,49 +159,74 @@ def test_return_deny_policy_when_no_session_found(
 
     assert response["policyDocument"] == DENY_ALL_POLICY
 
+
 ############### GP Clinical user allow/deny ###############
+
 
 def test_validate_access_policy_returns_true_for_gp_clinical_on_document_delete():
     expected = True
-    actual = validate_access_policy("mock_verb", "/DocumentDelete", RepositoryRole.GP_CLINICAL.value)
+    actual = validate_access_policy(
+        "mock_verb", "/DocumentDelete", RepositoryRole.GP_CLINICAL.value
+    )
     assert expected == actual
+
 
 def test_validate_access_policy_returns_true_for_gp_clinical_on_document_manifest():
     expected = True
-    actual = validate_access_policy("mock_verb", "/DocumentManifest", RepositoryRole.GP_CLINICAL.value)
+    actual = validate_access_policy(
+        "mock_verb", "/DocumentManifest", RepositoryRole.GP_CLINICAL.value
+    )
     assert expected == actual
+
 
 def test_validate_access_policy_returns_true_for_gp_clinical_on_document_reference():
     expected = True
-    actual = validate_access_policy("mock_verb", "/DocumentReference", RepositoryRole.GP_CLINICAL.value)
+    actual = validate_access_policy(
+        "mock_verb", "/DocumentReference", RepositoryRole.GP_CLINICAL.value
+    )
     assert expected == actual
+
 
 ############### PCSE user allow/deny ###############
 
+
 def test_validate_access_policy_returns_false_for_pcse_on_document_delete():
     expected = False
-    actual = validate_access_policy("mock_verb", "/DocumentDelete", RepositoryRole.PCSE.value)
+    actual = validate_access_policy(
+        "mock_verb", "/DocumentDelete", RepositoryRole.PCSE.value
+    )
     assert expected == actual
+
 
 def test_validate_access_policy_returns_false_for_pcse_on_document_manifest():
     expected = False
-    actual = validate_access_policy("mock_verb", "/DocumentManifest", RepositoryRole.PCSE.value)
+    actual = validate_access_policy(
+        "mock_verb", "/DocumentManifest", RepositoryRole.PCSE.value
+    )
     assert expected == actual
+
 
 def test_validate_access_policy_returns_false_for_pcse_on_document_reference():
     expected = False
-    actual = validate_access_policy("mock_verb", "/DocumentReference", RepositoryRole.PCSE.value)
+    actual = validate_access_policy(
+        "mock_verb", "/DocumentReference", RepositoryRole.PCSE.value
+    )
     assert expected == actual
+
 
 ############### Unhappy paths ###############
 
+
 def test_validate_access_policy_returns_false_for_unrecognised_path():
     expected = False
-    actual = validate_access_policy("mock_verb", "not_a_reconised_path", RepositoryRole.PCSE.value)
+    actual = validate_access_policy(
+        "mock_verb", "not_a_reconised_path", RepositoryRole.PCSE.value
+    )
     assert expected == actual
 
+
 def test_return_deny_policy_when_user_session_is_expired(
-        mock_ssm, mock_session_table, mock_jwt_decode, mock_context
+    mock_ssm, mock_session_table, mock_jwt_decode, mock_context
 ):
     one_minute_ago = time.time() - 60
     expired_session = {
@@ -224,7 +252,9 @@ def test_return_deny_policy_when_user_session_is_expired(
     assert response["policyDocument"] == DENY_ALL_POLICY
 
 
-def test_invalid_token_return_deny_policy(mocker, mock_ssm, mock_session_table, mock_context):
+def test_invalid_token_return_deny_policy(
+    mocker, mock_ssm, mock_session_table, mock_context
+):
     decode_mock = mocker.patch(
         "jwt.decode", side_effect=jwt.exceptions.InvalidTokenError
     )
@@ -241,7 +271,9 @@ def test_invalid_token_return_deny_policy(mocker, mock_ssm, mock_session_table, 
     assert response["policyDocument"] == DENY_ALL_POLICY
 
 
-def test_invalid_signature_return_deny_policy(mocker, mock_ssm, mock_session_table, mock_context):
+def test_invalid_signature_return_deny_policy(
+    mocker, mock_ssm, mock_session_table, mock_context
+):
     decode_mock = mocker.patch(
         "jwt.decode", side_effect=jwt.exceptions.InvalidSignatureError
     )

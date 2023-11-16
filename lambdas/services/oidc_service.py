@@ -66,7 +66,9 @@ class OidcService:
 
             decoded_token = self.validate_and_decode_token(raw_id_token)
 
-            id_token_claims_set: IdTokenClaimSet = IdTokenClaimSet.model_validate(decoded_token)
+            id_token_claims_set: IdTokenClaimSet = IdTokenClaimSet.model_validate(
+                decoded_token
+            )
 
             return access_token, id_token_claims_set
         except KeyError:

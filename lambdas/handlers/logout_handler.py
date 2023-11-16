@@ -3,7 +3,6 @@ import os
 import boto3
 import jwt
 from botocore.exceptions import ClientError
-
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
@@ -29,7 +28,7 @@ def logout_handler(token):
         ssm_response = get_ssm_parameter(key=ssm_public_key_parameter_name)
         jwt_class = jwt
         public_key = ssm_response["Parameter"]["Value"]
-        logger.info(f"decoding token")
+        logger.info("decoding token")
         decoded_token = decode_token(jwt_class=jwt_class, token=token, key=public_key)
         session_id = decoded_token["ndr_session_id"]
         remove_session_from_dynamo_db(session_id)

@@ -159,4 +159,10 @@ def mock_userinfo():
         ],
         "sub": "500000000000",
     }
-    yield {"role_id": role_id, "role_code": role_code, "org_code": org_code, "user_id": user_id, "user_info": mock_userinfo}
+    yield {
+        "role_id": role_id,
+        "role_code": role_code,
+        "org_code": org_code,
+        "user_id": user_id,
+        "user_info": mock_userinfo,
+    }

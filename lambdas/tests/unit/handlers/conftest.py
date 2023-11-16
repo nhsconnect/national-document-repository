@@ -6,18 +6,20 @@ def valid_id_event_without_auth_header():
     api_gateway_proxy_event = {
         "httpMethod": "GET",
         "queryStringParameters": {"patientId": "9000000009"},
-        "headers": {}
+        "headers": {},
     }
     return api_gateway_proxy_event
+
 
 @pytest.fixture
 def valid_id_event_with_auth_header():
     api_gateway_proxy_event = {
         "httpMethod": "GET",
         "queryStringParameters": {"patientId": "9000000009"},
-        "headers": {"Authorization": "mock_token"}
+        "headers": {"Authorization": "mock_token"},
     }
     return api_gateway_proxy_event
+
 
 @pytest.fixture
 def valid_id_and_both_doctype_event():
@@ -79,5 +81,5 @@ def mock_context():
         pass
 
     context = Context()
-    context.aws_request_id = 'fake_aws_request_id'
+    context.aws_request_id = "fake_aws_request_id"
     return context

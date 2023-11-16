@@ -13,7 +13,7 @@ from utils.lambda_response import ApiGatewayResponse
 
 
 def test_respond_200_with_presign_url(
-        valid_id_event_without_auth_header,
+    valid_id_event_without_auth_header,
     context,
     set_env,
     mock_dynamo_db,
@@ -123,7 +123,7 @@ def test_respond_500_throws_error_when_fail_to_download_lloyd_george_file(
 
 
 def test_respond_404_throws_error_when_no_lloyd_george_for_patient_in_record(
-        valid_id_event_without_auth_header, context, set_env, mock_dynamo_db
+    valid_id_event_without_auth_header, context, set_env, mock_dynamo_db
 ):
     mock_dynamo_db.return_value = MOCK_LG_DYNAMODB_RESPONSE_NO_RECORD
     actual = lambda_handler(valid_id_event_without_auth_header, context)
@@ -134,7 +134,12 @@ def test_respond_404_throws_error_when_no_lloyd_george_for_patient_in_record(
 
 
 def test_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
-        valid_id_event_without_auth_header, context, set_env, mock_dynamo_db, mock_s3, mock_stitch_pdf
+    valid_id_event_without_auth_header,
+    context,
+    set_env,
+    mock_dynamo_db,
+    mock_s3,
+    mock_stitch_pdf,
 ):
     mock_stitch_pdf.side_effect = pypdf.errors.ParseError
 

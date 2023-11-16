@@ -1,8 +1,8 @@
 from botocore.exceptions import ClientError
 from handlers.logout_handler import lambda_handler
 from jwt.exceptions import PyJWTError
-
-from tests.unit.helpers.ssm_responses import MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE
+from tests.unit.helpers.ssm_responses import \
+    MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
 
 
@@ -48,6 +48,7 @@ def test_logout_handler_invalid_jwt_returns_400(mocker, monkeypatch, context):
     assert expected == actual
     mock_token_validator.asset_called_with(mock_token)
     mock_ssm_service.assert_called_once()
+
 
 def test_logout_handler_jwt_without_ndr_session_id_returns_400(
     mocker, monkeypatch, context

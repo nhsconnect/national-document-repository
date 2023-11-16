@@ -9,4 +9,4 @@ class RepositoryRole(Enum):
 
     @staticmethod
     def list():
-        return tuple(item.value for item in RepositoryRole)
+        return [str(item.value) for item in RepositoryRole]

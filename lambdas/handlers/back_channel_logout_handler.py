@@ -2,7 +2,6 @@ import json
 import os
 
 from botocore.exceptions import ClientError
-
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.dynamo_service import DynamoDBService
 from services.oidc_service import OidcService
