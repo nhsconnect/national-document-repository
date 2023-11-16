@@ -12,7 +12,10 @@ const BackButton = () => {
 
     const onBack = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
-        if (location.pathname.includes('/search')) {
+        if (
+            location.pathname.includes('/search/upload') ||
+            location.pathname.includes('/search/patient')
+        ) {
             window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
         } else {
             navigate(-1);
