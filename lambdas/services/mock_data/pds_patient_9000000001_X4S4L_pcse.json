@@ -1,10 +1,10 @@
 {
     "resourceType": "Patient",
-    "id": "9000000009",
+    "id": "9000000001",
     "identifier": [
         {
             "system": "https://fhir.nhs.uk/Id/nhs-number",
-            "value": "9000000009",
+            "value": "9000000001",
             "extension": [
                 {
                     "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NHSNumberVerificationStatus",
@@ -83,7 +83,7 @@
                 "value": "X4S4L",
                 "period": {
                     "start": "2020-01-01",
-                    "end": "2025-12-31"
+                    "end": "2020-12-31"
                 }
             }
         }
