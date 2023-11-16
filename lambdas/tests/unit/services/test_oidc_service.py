@@ -275,10 +275,10 @@ def test_fetch_user_role_code(oidc_service, mock_userinfo, mock_id_tokens, mocke
     mock_claim_set = "mock_claim_set"
     prefix_char = "R"
 
-    mocker.patch.object(
+    mock_fetch_userinfo = mocker.patch.object(
         OidcService, "fetch_userinfo", return_value=mock_userinfo["user_info"]
     )
-    mocker.patch(
+    mock_oidc_get_selected_role = mocker.patch(
         "services.oidc_service.get_selected_roleid",
         return_value=mock_userinfo["role_id"],
     )
@@ -290,6 +290,8 @@ def test_fetch_user_role_code(oidc_service, mock_userinfo, mock_id_tokens, mocke
     )
 
     assert actual == expected
+    mock_fetch_userinfo.assert_called_once()
+    mock_oidc_get_selected_role.assert_called_once()
 
 
 def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes(
@@ -299,10 +301,10 @@ def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes(
     mock_claim_set = "mock_claim_set"
     prefix_char = "R"
 
-    mocker.patch.object(
+    mock_fetch_userinfo = mocker.patch.object(
         OidcService, "fetch_userinfo", return_value=mock_userinfo["user_info"]
     )
-    mocker.patch(
+    mock_oidc_get_selected_role = mocker.patch(
         "services.oidc_service.get_selected_roleid", return_value="not_in_data"
     )
 
@@ -310,6 +312,9 @@ def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes(
         oidc_service.fetch_user_role_code(
             mock_access_token, mock_claim_set, prefix_char
         )
+
+    mock_fetch_userinfo.assert_called_once()
+    mock_oidc_get_selected_role.assert_called_once()
 
 
 def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes_with_specified_prefix(
@@ -319,10 +324,10 @@ def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes_with_specif
     mock_claim_set = "mock_claim_set"
     prefix_char = "invalid_prefix"
 
-    mocker.patch.object(
+    mock_fetch_userinfo = mocker.patch.object(
         OidcService, "fetch_userinfo", return_value=mock_userinfo["user_info"]
     )
-    mocker.patch(
+    mock_oidc_get_selected_role = mocker.patch(
         "services.oidc_service.get_selected_roleid",
         return_value=mock_userinfo["role_id"],
     )
@@ -331,6 +336,9 @@ def test_fetch_user_role_code_raises_auth_exception_if_no_role_codes_with_specif
         oidc_service.fetch_user_role_code(
             mock_access_token, mock_claim_set, prefix_char
         )
+
+    mock_fetch_userinfo.assert_called_once()
+    mock_oidc_get_selected_role.assert_called_once()
 
 
 def test_fetch_user_info(oidc_service, mocker, mock_userinfo):
