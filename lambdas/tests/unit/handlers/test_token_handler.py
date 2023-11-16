@@ -110,7 +110,7 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
     mock_jwt_encode,
     mock_logging_service,
     mocker,
-    mock_context,
+    context,
 ):
     mocker.patch(
         "handlers.token_handler.create_login_session",
@@ -138,7 +138,7 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
         200, json.dumps(expected_response_body), "GET"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(test_event, mock_context)
+    actual = lambda_handler(test_event, context)
 
     assert actual == expected
 
@@ -146,7 +146,7 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
 
 
 def test_lambda_handler_respond_with_400_if_state_or_auth_code_missing(
-    mock_oidc_service, mock_aws_infras, set_env, mock_context
+    mock_oidc_service, mock_aws_infras, set_env, context
 ):
     expected = ApiGatewayResponse(
         400, "Please supply an authorisation code and state", "GET"
@@ -177,7 +177,7 @@ def test_lambda_handler_respond_with_400_if_state_or_auth_code_missing(
     ]
 
     for test_event in all_test_cases:
-        actual = lambda_handler(test_event, mock_context)
+        actual = lambda_handler(test_event, context)
 
         assert actual == expected
         mock_oidc_service["fetch_token"].assert_not_called()
@@ -191,7 +191,7 @@ def test_lambda_handler_respond_with_401_when_auth_code_is_invalid(
     mock_ods_api_service,
     mock_jwt_encode,
     set_env,
-    mock_context,
+    context,
 ):
     mock_oidc_service["fetch_token"].side_effect = AuthorisationException
 
@@ -203,7 +203,7 @@ def test_lambda_handler_respond_with_401_when_auth_code_is_invalid(
         401, "Failed to authenticate user with OIDC service", "GET"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(test_event, mock_context)
+    actual = lambda_handler(test_event, context)
 
     assert actual == expected
 
@@ -212,7 +212,7 @@ def test_lambda_handler_respond_with_401_when_auth_code_is_invalid(
 
 
 def test_lambda_handler_respond_with_400_when_given_state_not_found_in_state_table(
-    mock_aws_infras, mock_oidc_service, set_env, mock_context
+    mock_aws_infras, mock_oidc_service, set_env, context
 ):
     invalid_state = "state_not_exist_in_dynamo_db"
     test_event = {
@@ -227,7 +227,7 @@ def test_lambda_handler_respond_with_400_when_given_state_not_found_in_state_tab
         "GET",
     ).create_api_gateway_response()
 
-    actual = lambda_handler(test_event, mock_context)
+    actual = lambda_handler(test_event, context)
 
     assert actual == expected
 
@@ -242,7 +242,7 @@ def test_lambda_handler_respond_with_401_when_user_dont_have_a_valid_role_to_log
     # mock_ods_api_service,
     mock_jwt_encode,
     mocker,
-    mock_context,
+    context,
 ):
     test_event = {
         "queryStringParameters": {"code": "test_auth_code", "state": "test_state"}
@@ -260,14 +260,14 @@ def test_lambda_handler_respond_with_401_when_user_dont_have_a_valid_role_to_log
         401, "Failed to authenticate user with OIDC service", "GET"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(test_event, mock_context)
+    actual = lambda_handler(test_event, context)
 
     assert actual == expected
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
 def test_lambda_handler_respond_with_500_when_encounter_boto3_error(
-    mock_aws_infras, set_env, mocker, mock_context
+    mock_aws_infras, set_env, mocker, context
 ):
     test_event = {
         "queryStringParameters": {"code": "test_auth_code", "state": "test_state"}
@@ -291,7 +291,7 @@ def test_lambda_handler_respond_with_500_when_encounter_boto3_error(
         500, "Server error", "GET"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(test_event, mock_context)
+    actual = lambda_handler(test_event, context)
 
     assert actual == expected
 
@@ -302,7 +302,7 @@ def test_lambda_handler_respond_with_500_when_encounter_pyjwt_encode_error(
     mock_ods_api_service,
     mock_jwt_encode,
     set_env,
-    mock_context,
+    context,
     mocker,
 ):
     test_event = {
@@ -315,6 +315,6 @@ def test_lambda_handler_respond_with_500_when_encounter_pyjwt_encode_error(
         500, "Server error", "GET"
     ).create_api_gateway_response()
     with patch.object(OidcService, "fetch_tokens", side_effect=jwt_error):
-        actual = lambda_handler(test_event, mock_context)
+        actual = lambda_handler(test_event, context)
 
     assert actual == expected

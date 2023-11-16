@@ -10,5 +10,7 @@ def test_repository_role_list_returns_all_roles():
     assert RepositoryRole.NONE.value in roles
 
 
-def test_repository_role_list_returns_all_roles_as_list():
-    assert isinstance(RepositoryRole.list(), list)
+def test_repository_role_list_returns_all_roles_as_list_of_string():
+    roles = RepositoryRole.list()
+    assert isinstance(roles, list)
+    assert isinstance(roles[0], str)

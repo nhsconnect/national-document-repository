@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import List
 
 
 class RepositoryRole(Enum):
@@ -8,5 +9,5 @@ class RepositoryRole(Enum):
     NONE = "NONE"
 
     @staticmethod
-    def list():
+    def list() -> List[str]:
         return [str(item.value) for item in RepositoryRole]

@@ -34,7 +34,7 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     try:
         request_context.app_interaction = LoggingAppInteraction.LOGIN.value
-        logger.info("Authoriser handler triggered: event")
+        logger.info("Authoriser handler triggered")
 
         ssm_service = SSMService()
         public_key = ssm_service.get_ssm_parameter(

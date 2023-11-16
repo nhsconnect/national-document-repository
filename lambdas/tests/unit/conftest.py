@@ -65,6 +65,9 @@ OIDC_CLIENT_SECRET = "client-secret-shhhhhh"
 WORKSPACE = "dev"
 JWT_PUBLIC_KEY = "mock_public_key"
 
+SSM_PARAM_JWT_TOKEN_PUBLIC_KEY_ENV_NAME = "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"
+SSM_PARAM_JWT_TOKEN_PUBLIC_KEY = "test_jwt_token_public_key"
+
 
 @pytest.fixture
 def set_env(monkeypatch):
@@ -95,6 +98,9 @@ def set_env(monkeypatch):
     monkeypatch.setenv(MOCK_OIDC_JWKS_URL_ENV_NAME, OIDC_JWKS_URL)
     monkeypatch.setenv(MOCK_OIDC_CLIENT_SECRET_ENV_NAME, OIDC_CLIENT_SECRET)
     monkeypatch.setenv(MOCK_JWT_PUBLIC_KEY_NAME, JWT_PUBLIC_KEY)
+    monkeypatch.setenv(
+        SSM_PARAM_JWT_TOKEN_PUBLIC_KEY_ENV_NAME, SSM_PARAM_JWT_TOKEN_PUBLIC_KEY
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)

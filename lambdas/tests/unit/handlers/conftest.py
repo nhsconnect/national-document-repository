@@ -73,13 +73,3 @@ def missing_id_event():
         "queryStringParameters": {"invalid": ""},
     }
     return api_gateway_proxy_event
-
-
-@pytest.fixture
-def mock_context():
-    class Context:
-        pass
-
-    context = Context()
-    context.aws_request_id = "fake_aws_request_id"
-    return context

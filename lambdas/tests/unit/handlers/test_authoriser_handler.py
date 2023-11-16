@@ -1,6 +1,4 @@
-import os
 import time
-from unittest.mock import patch
 
 import jwt
 import pytest
@@ -21,18 +19,8 @@ DENY_ALL_POLICY = {
 }
 
 
-@pytest.fixture
-def patch_env_vars():
-    env_vars = {
-        "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY": "test_jwt_token_public_key",
-        "AUTH_SESSION_TABLE_NAME": "test_session_table",
-    }
-    with patch.dict(os.environ, env_vars):
-        yield env_vars
-
-
 @pytest.fixture()
-def mock_ssm(patch_env_vars, mocker):
+def mock_ssm(set_env, mocker):
     mock_ssm_client = mocker.patch("boto3.client")
     mock_ssm_client.return_value.get_parameter.return_value = {
         "Parameter": {"Value": TEST_PUBLIC_KEY}
@@ -91,7 +79,7 @@ def mock_jwt_decode(mocker):
 
 
 def test_valid_gp_admin_token_return_allow_policy(
-    mock_ssm, mock_session_table, mock_jwt_decode, mock_context
+    mock_ssm, mock_session_table, mock_jwt_decode, context
 ):
     expected_allow_policy = {
         "Statement": [
@@ -110,7 +98,7 @@ def test_valid_gp_admin_token_return_allow_policy(
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchDocumentReferences",
     }
 
-    response = lambda_handler(event=test_event, context=mock_context)
+    response = lambda_handler(event=test_event, context=context)
 
     mock_jwt_decode.assert_called_with(
         auth_token, TEST_PUBLIC_KEY, algorithms=["RS256"]
@@ -119,7 +107,7 @@ def test_valid_gp_admin_token_return_allow_policy(
 
 
 def test_valid_pcse_token_return_allow_policy(
-    mock_ssm, mock_session_table, mock_jwt_decode, mock_context
+    mock_ssm, mock_session_table, mock_jwt_decode, context
 ):
     expected_allow_policy = {
         "Statement": [
@@ -137,7 +125,7 @@ def test_valid_pcse_token_return_allow_policy(
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
 
-    response = lambda_handler(test_event, context=mock_context)
+    response = lambda_handler(test_event, context=context)
 
     mock_jwt_decode.assert_called_with(
         "valid_pcse_token", TEST_PUBLIC_KEY, algorithms=["RS256"]
@@ -146,7 +134,7 @@ def test_valid_pcse_token_return_allow_policy(
 
 
 def test_return_deny_policy_when_no_session_found(
-    mock_ssm, mock_session_table, mock_jwt_decode, mock_context
+    mock_ssm, mock_session_table, mock_jwt_decode, context
 ):
     mock_session_table.query.return_value = {"Count": 0, "Items": []}
 
@@ -155,7 +143,7 @@ def test_return_deny_policy_when_no_session_found(
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
 
-    response = lambda_handler(test_event, context=mock_context)
+    response = lambda_handler(test_event, context=context)
 
     assert response["policyDocument"] == DENY_ALL_POLICY
 
@@ -226,7 +214,7 @@ def test_validate_access_policy_returns_false_for_unrecognised_path():
 
 
 def test_return_deny_policy_when_user_session_is_expired(
-    mock_ssm, mock_session_table, mock_jwt_decode, mock_context
+    mock_ssm, mock_session_table, mock_jwt_decode, context
 ):
     one_minute_ago = time.time() - 60
     expired_session = {
@@ -247,13 +235,13 @@ def test_return_deny_policy_when_user_session_is_expired(
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
 
-    response = lambda_handler(test_event, context=mock_context)
+    response = lambda_handler(test_event, context=context)
 
     assert response["policyDocument"] == DENY_ALL_POLICY
 
 
 def test_invalid_token_return_deny_policy(
-    mocker, mock_ssm, mock_session_table, mock_context
+    mocker, mock_ssm, mock_session_table, context
 ):
     decode_mock = mocker.patch(
         "jwt.decode", side_effect=jwt.exceptions.InvalidTokenError
@@ -263,7 +251,7 @@ def test_invalid_token_return_deny_policy(
         "authorizationToken": "invalid_token",
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
-    response = lambda_handler(test_event, context=mock_context)
+    response = lambda_handler(test_event, context=context)
 
     decode_mock.assert_called_with(
         "invalid_token", TEST_PUBLIC_KEY, algorithms=["RS256"]
@@ -272,7 +260,7 @@ def test_invalid_token_return_deny_policy(
 
 
 def test_invalid_signature_return_deny_policy(
-    mocker, mock_ssm, mock_session_table, mock_context
+    mocker, mock_ssm, mock_session_table, context
 ):
     decode_mock = mocker.patch(
         "jwt.decode", side_effect=jwt.exceptions.InvalidSignatureError
@@ -282,7 +270,7 @@ def test_invalid_signature_return_deny_policy(
         "authorizationToken": "token_with_invalid_signature",
         "methodArn": f"{MOCK_METHOD_ARN_PREFIX}/GET/SearchPatient",
     }
-    response = lambda_handler(test_event, context=mock_context)
+    response = lambda_handler(test_event, context=context)
 
     decode_mock.assert_called_with(
         "token_with_invalid_signature", TEST_PUBLIC_KEY, algorithms=["RS256"]
