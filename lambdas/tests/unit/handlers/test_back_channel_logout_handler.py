@@ -1,4 +1,3 @@
-import json
 
 import pytest
 from botocore.exceptions import ClientError
@@ -130,5 +129,5 @@ def test_back_channel_logout_handler_boto_error_returns_500(
 
 
 def build_event_from_token(token: str) -> dict:
-    body_string = {"logout_token": token}
-    return {"httpMethod": "POST", "body": json.dumps(body_string)}
+    body_string = f"logout_token={token}"
+    return {"httpMethod": "POST", "body": body_string}

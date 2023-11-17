@@ -1,5 +1,5 @@
-import json
 import os
+from urllib.parse import parse_qs
 
 from botocore.exceptions import ClientError
 from enums.logging_app_interaction import LoggingAppInteraction
@@ -22,9 +22,14 @@ def lambda_handler(event, context):
 
     logger.info(f"incoming event {event}")
     try:
-        body = json.loads(event["body"])
-        token = body["logout_token"]
-    except KeyError as e:
+        body = parse_qs(event["body"])
+        token = body["logout_token"][0]
+    except (KeyError, IndexError) as e:
+        logger.error(e)
+        logger.error(
+            f"An error occurred due to missing key: {str(e)}",
+            {"Result": "Unsuccessful logout"},
+        )
         return ApiGatewayResponse(
             400, f"An error occurred due to missing key: {str(e)}", "POST"
         ).create_api_gateway_response()
