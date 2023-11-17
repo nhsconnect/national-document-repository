@@ -1,13 +1,15 @@
+import os
 from typing import Callable
 
-import os
-import logging
-
+from utils.audit_logging_setup import LoggingService
 from utils.error_testing_utils import check_manual_error_conditions
+
+logger = LoggingService(__name__)
+
 
 def override_error_check(lambda_func: Callable):
     """A decorator for lambda handler.
-    Interceptor to identiy if any manual error throwing has been enabled for testing purposes.
+    Interceptor to identify if any manual error throwing has been enabled for testing purposes.
     This should always return to the initial handler call if the conditions are not meet to trigger
     a manual error
 
@@ -20,27 +22,22 @@ def override_error_check(lambda_func: Callable):
     disabled_workspaces = ["pre-prod", "prod"]
 
     def interceptor(event, context):
-        try:
-            workspace = os.environ["WORKSPACE"]
-            error_override = os.environ["ERROR_TRIGGER"]
+        workspace = os.getenv("WORKSPACE")
+        error_override = os.getenv("ERROR_TRIGGER")
 
-            logging.info(f"workspace: {workspace}")
-            logging.info(f"error_override: {error_override}")
+        logger.info(f"workspace: {workspace}")
+        logger.info(f"error_override: {error_override}")
 
-            # fail fast if workspace is invalid 
-            if workspace == None or workspace in disabled_workspaces:
-                return lambda_func(event, context)
-            
-            logging.info("HERE 1")
-            # fail fast if error trigger is not set
-            if error_override is None or error_override == "":
-                return lambda_func(event, context)
-                
-            logging.info("HERE 2")
-            
-            check_manual_error_conditions(error_override)
-
-        except :
+        # fail fast if workspace is invalid
+        if workspace is None or workspace in disabled_workspaces:
             return lambda_func(event, context)
+
+        # fail fast if error trigger is not set
+        if error_override is None or error_override == "":
+            return lambda_func(event, context)
+
+        check_manual_error_conditions(error_override)
+
+        return lambda_func(event, context)
 
     return interceptor

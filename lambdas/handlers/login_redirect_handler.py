@@ -7,10 +7,10 @@ from enums.logging_app_interaction import LoggingAppInteraction
 from oauthlib.oauth2 import InsecureTransportError, WebApplicationClient
 from services.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
-from utils.decorators.override_error_check import override_error_check
 
 logger = LoggingService(__name__)
 

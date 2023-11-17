@@ -10,8 +10,8 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
-from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.override_error_check import override_error_check
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 
 logger = LoggingService(__name__)
 

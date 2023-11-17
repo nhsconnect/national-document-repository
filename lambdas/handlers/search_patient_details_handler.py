@@ -5,6 +5,7 @@ from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.exceptions import (InvalidResourceIdException,
@@ -13,7 +14,6 @@ from utils.exceptions import (InvalidResourceIdException,
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 from utils.utilities import get_pds_service
-from utils.decorators.override_error_check import override_error_check
 
 logger = LoggingService(__name__)
 
