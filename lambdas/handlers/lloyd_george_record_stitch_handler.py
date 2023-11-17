@@ -14,6 +14,7 @@ from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event, validate_patient_id)
 from utils.exceptions import DynamoDbException
@@ -26,6 +27,7 @@ logger = LoggingService(__name__)
 
 @set_request_context_for_logging
 @validate_patient_id
+@override_error_check
 @ensure_environment_variables(
     names=["LLOYD_GEORGE_DYNAMODB_NAME", "LLOYD_GEORGE_BUCKET_NAME"]
 )
@@ -35,10 +37,6 @@ def lambda_handler(event, context):
     request_context.patient_nhs_no = nhs_number
     lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
     lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
-
-    memoryBreakString = 'dajkfnanflkeamflkmwalkfmlwamflkwamlfkmwalmfwfkaklfsma;lfm;lewmaf;wlam'
-    for x in range(1000000000000000000):
-        memoryBreakString = memoryBreakString + memoryBreakString
 
     try:
         response = get_lloyd_george_records_for_patient(
