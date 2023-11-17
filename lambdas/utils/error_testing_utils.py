@@ -25,8 +25,8 @@ def trigger_timeout_error():
 
 
 def trigger_400():
-    return ApiGatewayResponse(400, "", "POST").create_api_gateway_response()
+    return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
 
 def trigger_500():
-    return ApiGatewayResponse(500, "", "POST").create_api_gateway_response()
+    return ApiGatewayResponse(500, "", "GET").create_api_gateway_response()
