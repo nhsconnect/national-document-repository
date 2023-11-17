@@ -2,10 +2,21 @@ import pytest
 
 
 @pytest.fixture
-def valid_id_event():
+def valid_id_event_without_auth_header():
     api_gateway_proxy_event = {
         "httpMethod": "GET",
         "queryStringParameters": {"patientId": "9000000009"},
+        "headers": {},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def valid_id_event_with_auth_header():
+    api_gateway_proxy_event = {
+        "httpMethod": "GET",
+        "queryStringParameters": {"patientId": "9000000009"},
+        "headers": {"Authorization": "mock_token"},
     }
     return api_gateway_proxy_event
 

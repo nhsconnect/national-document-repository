@@ -64,8 +64,10 @@ class OidcService:
             access_token: AccessToken = response_content["access_token"]
             raw_id_token = response_content["id_token"]
 
+            decoded_token = self.validate_and_decode_token(raw_id_token)
+
             id_token_claims_set: IdTokenClaimSet = IdTokenClaimSet.model_validate(
-                self.validate_and_decode_token(raw_id_token)
+                decoded_token
             )
 
             return access_token, id_token_claims_set
@@ -106,7 +108,6 @@ class OidcService:
 
         selected_role = get_selected_roleid(id_token_claim_set)
 
-        # logger.info(f"User's NRBAC roles: {nrbac_roles}")
         logger.info(f"Selected role ID: {selected_role}")
 
         for role in nrbac_roles:

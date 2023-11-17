@@ -10,7 +10,7 @@ from utils.lambda_response import ApiGatewayResponse
 
 
 def test_lambda_handler_returns_items_from_dynamo_returns_200(
-    set_env, valid_id_event, context, mocker
+    set_env, valid_id_event_without_auth_header, context, mocker
 ):
     mock_dynamo = mocker.patch(
         "services.dynamo_service.DynamoDBService.query_with_requested_fields"
@@ -21,13 +21,13 @@ def test_lambda_handler_returns_items_from_dynamo_returns_200(
         200, json.dumps(EXPECTED_RESPONSE * 2), "GET"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_without_auth_header, context)
 
     assert expected == actual
 
 
 def test_lambda_handler_returns_items_from_doc_store_only_returns_200(
-    set_env, valid_id_event, context, mocker
+    set_env, valid_id_event_without_auth_header, context, mocker
 ):
     mock_dynamo = mocker.patch(
         "services.dynamo_service.DynamoDBService.query_with_requested_fields"
@@ -38,13 +38,13 @@ def test_lambda_handler_returns_items_from_doc_store_only_returns_200(
         200, json.dumps(EXPECTED_RESPONSE), "GET"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_without_auth_header, context)
 
     assert expected == actual
 
 
 def test_lambda_handler_when_dynamo_returns_no_records_returns_204(
-    set_env, valid_id_event, context, mocker
+    set_env, valid_id_event_without_auth_header, context, mocker
 ):
     mock_dynamo = mocker.patch(
         "services.dynamo_service.DynamoDBService.query_with_requested_fields"
@@ -53,13 +53,13 @@ def test_lambda_handler_when_dynamo_returns_no_records_returns_204(
 
     expected = ApiGatewayResponse(204, "[]", "GET").create_api_gateway_response()
 
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_without_auth_header, context)
 
     assert expected == actual
 
 
 def test_lambda_handler_raises_DynamoDbException_returns_500(
-    set_env, valid_id_event, context, mocker
+    set_env, valid_id_event_without_auth_header, context, mocker
 ):
     mock_dynamo = mocker.patch(
         "services.dynamo_service.DynamoDBService.query_with_requested_fields"
@@ -71,12 +71,12 @@ def test_lambda_handler_raises_DynamoDbException_returns_500(
         "An error occurred when searching for available documents",
         "GET",
     ).create_api_gateway_response()
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_without_auth_header, context)
     assert expected == actual
 
 
 def test_lambda_handler_raises_ClientError_returns_500(
-    set_env, valid_id_event, context, mocker
+    set_env, valid_id_event_without_auth_header, context, mocker
 ):
     mock_dynamo = mocker.patch(
         "services.dynamo_service.DynamoDBService.query_with_requested_fields"
@@ -91,12 +91,12 @@ def test_lambda_handler_raises_ClientError_returns_500(
         "An error occurred when searching for available documents",
         "GET",
     ).create_api_gateway_response()
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_without_auth_header, context)
     assert expected == actual
 
 
 def test_lambda_handler_raises_InvalidResourceIdException_returns_500(
-    set_env, valid_id_event, context, mocker
+    set_env, valid_id_event_without_auth_header, context, mocker
 ):
     exception = InvalidResourceIdException
 
@@ -108,7 +108,7 @@ def test_lambda_handler_raises_InvalidResourceIdException_returns_500(
     expected = ApiGatewayResponse(
         500, "No data was requested to be returned in query", "GET"
     ).create_api_gateway_response()
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_without_auth_header, context)
     assert expected == actual
 
 
@@ -133,12 +133,12 @@ def test_lambda_handler_when_id_not_supplied_returns_400(
 
 
 def test_lambda_handler_when_dynamo_tables_env_variable_not_supplied_then_return_400_response(
-    valid_id_event, context
+    valid_id_event_without_auth_header, context
 ):
     expected = ApiGatewayResponse(
         500,
         "An error occurred due to missing environment variable: 'DYNAMODB_TABLE_LIST'",
         "GET",
     ).create_api_gateway_response()
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_without_auth_header, context)
     assert expected == actual

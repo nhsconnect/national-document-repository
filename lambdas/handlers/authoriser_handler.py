@@ -34,39 +34,44 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     try:
         request_context.app_interaction = LoggingAppInteraction.LOGIN.value
+        logger.info("Authoriser handler triggered")
 
         ssm_service = SSMService()
-        ssm_public_key_parameter_name = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
-
-        public_key = ssm_service.get_ssm_parameter(ssm_public_key_parameter_name, True)
+        public_key = ssm_service.get_ssm_parameter(
+            os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"], True
+        )
 
         decoded = jwt.decode(
             event["authorizationToken"], public_key, algorithms=["RS256"]
         )
         request_context.authorization = decoded
         ndr_session_id = decoded["ndr_session_id"]
-
         current_session = find_login_session(ndr_session_id)
         validate_login_session(current_session, ndr_session_id)
-        user_role = decoded["repository_role"]
 
+        user_role = decoded["repository_role"]
         principal_id = ""
         _, _, _, region, aws_account_id, api_gateway_arn = event["methodArn"].split(":")
         api_id, stage, _http_verb, _resource_name = api_gateway_arn.split("/")
+        path = "/" + _resource_name
 
         policy = AuthPolicy(principal_id, aws_account_id)
         policy.restApiId = api_id
         policy.region = region
         policy.stage = stage
 
-        path = "/" + _resource_name
         resource_denied = validate_access_policy(_http_verb, path, user_role)
+
         if resource_denied:
             policy.denyMethod(_http_verb, path)
         else:
-            set_access_policy(_http_verb, path, user_role, policy)
-        auth_response = policy.build()
+            accepted_roles = RepositoryRole.list()
+            if user_role in accepted_roles:
+                policy.allowMethod(_http_verb, path)
+            else:
+                policy.denyMethod(_http_verb, path)
 
+        auth_response = policy.build()
         return auth_response
 
     except AuthorisationException as e:
@@ -101,22 +106,6 @@ def validate_access_policy(http_verb, path, user_role):
     logger.info("Allow resource: %s" % bool(deny_resource) is False)
 
     return bool(deny_resource)
-
-
-def set_access_policy(http_verb, path, user_role, policy):
-    accepted_roles = tuple(item.value for item in RepositoryRole)
-    if user_role in accepted_roles:
-        policy.allowMethod(http_verb, path)
-    # for now, allow all method for GP and DEV role, and allow only search document for PCSE
-    if RepositoryRole.GP_ADMIN.value in user_role:
-        policy.allowAllMethods()
-    elif RepositoryRole.GP_CLINICAL.value in user_role:
-        policy.allowAllMethods()
-    elif RepositoryRole.PCSE.value in user_role:
-        policy.allowAllMethods()
-        # policy.allowMethod(HttpVerb.GET, "/SearchDocumentReferences")
-    else:
-        policy.denyMethod(http_verb, path)
 
 
 def deny_all_response(event):
