@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import BackButton from './BackButton';
 import { routes } from '../../../types/generic/routes';
 import { endpoints } from '../../../types/generic/endpoints';
+import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 
 describe('BackButton', () => {
     it('navigates to previous page when clicking the back buttonand not on the search pages', async () => {
@@ -27,7 +28,7 @@ describe('BackButton', () => {
     });
 
     it('calls the login handler when clicking the back button on the upload search page', async () => {
-        const test_location_prefix = 'http://test';
+        const test_location_prefix = useBaseAPIUrl();
 
         const history = createMemoryHistory({
             initialEntries: ['/', '/example'],
@@ -57,7 +58,7 @@ describe('BackButton', () => {
     });
 
     it('calls the login handler when clicking the back button on the download search page', async () => {
-        const test_location_prefix = 'http://test';
+        const test_location_prefix = useBaseAPIUrl();
 
         const history = createMemoryHistory({
             initialEntries: ['/', '/example'],
