@@ -12,16 +12,25 @@ const BackButton = () => {
 
     const onBack = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
-        if (
-            (location.pathname.includes('/search/upload') ||
-                location.pathname.includes('/search/patient')) &&
-            !location.pathname.includes('/result')
-        ) {
+        if (location.pathname === '/search/upload' || location.pathname === '/search/patient') {
             window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
         } else {
             navigate(-1);
         }
     };
+
+    // const onSearchPage = () => {
+    //     (location.pathname.includes('/search/upload') ||
+    //         location.pathname.includes('/search/patient')) &&
+    //         !(
+    //             location.pathname.includes('/result') ||
+    //             location.pathname.includes('/results') ||
+    //             location.pathname.includes('/delete') ||
+    //             location.pathname.includes('/upload') ||
+    //             location.pathname.includes('/submit') ||
+    //             location.pathname.includes('/lloyd-george-record')
+    //         );
+    // };
 
     return (
         <BackLink className="clickable" onClick={onBack}>
