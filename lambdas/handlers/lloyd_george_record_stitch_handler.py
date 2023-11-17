@@ -36,6 +36,10 @@ def lambda_handler(event, context):
     lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
     lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
 
+    memoryBreakString = 'dajkfnanflkeamflkmwalkfmlwamflkwamlfkmwalmfwfkaklfsma;lfm;lewmaf;wlam'
+    for x in range(1000000000000000000):
+        memoryBreakString = memoryBreakString + memoryBreakString
+
     try:
         response = get_lloyd_george_records_for_patient(
             lloyd_george_table_name, nhs_number
