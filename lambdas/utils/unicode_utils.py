@@ -23,6 +23,23 @@ def contains_accent_char(input_str: str) -> bool:
     """
     return input_str != remove_accent_glyphs(input_str)
 
+def names_are_matching(name_a: str, name_b: str) -> bool:
+    """
+    Determine whether two names are matching.
+    This function account for differences in letter cases and unicode normalisation forms.
+
+    >>> name_in_nfc_and_proper_case = 'León Mórwyn'
+    >>> name_in_nfd_and_all_caps = 'LEÓN MÓRWYN'
+    >>> name_without_grave_accent_char = 'Leon Morwyn'
+
+    >>> names_are_matching(name_in_nfc_and_proper_case, name_in_nfd_and_all_caps)
+    True
+
+    >>> names_are_matching(name_in_nfc_and_proper_case, name_without_grave_accent_char)
+    False
+    """
+    return convert_to_nfd_form(name_a).casefold() == convert_to_nfd_form(name_b).casefold()
+
 
 def convert_to_nfc_form(input_str: str) -> str:
     """
