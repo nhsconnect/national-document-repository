@@ -109,13 +109,15 @@ def build_test_sqs_message(staging_metadata: StagingMetadata):
 
 
 def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"):
-    return NHSDocumentReference(
+    doc_ref = NHSDocumentReference(
         nhs_number=nhs_number,
         content_type="application/pdf",
         file_name=file_name,
         reference_id=TEST_OBJECT_KEY,
         s3_bucket_name=MOCK_LG_BUCKET,
     )
+    doc_ref.virus_scanner_result = "Clean"
+    return doc_ref
 
 
 TEST_NHS_NUMBER_FOR_BULK_UPLOAD = "9000000009"

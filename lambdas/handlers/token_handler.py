@@ -6,7 +6,6 @@ import uuid
 import jwt
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-
 from enums.logging_app_interaction import LoggingAppInteraction
 from enums.repository_role import RepositoryRole
 from models.oidc_models import IdTokenClaimSet
@@ -15,13 +14,11 @@ from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (
-    AuthorisationException,
-    OrganisationNotFoundException,
-    TooManyOrgsException,
-)
-from utils.lambda_response import ApiGatewayResponse
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.exceptions import (AuthorisationException,
+                              OrganisationNotFoundException,
+                              TooManyOrgsException)
+from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
 logger = LoggingService(__name__)

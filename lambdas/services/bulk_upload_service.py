@@ -287,13 +287,15 @@ class BulkUploadService:
         reference_id = create_reference_id()
         file_name = os.path.basename(file_metadata.file_path)
 
-        return NHSDocumentReference(
+        document_reference = NHSDocumentReference(
             nhs_number=nhs_number,
             content_type=self.pdf_content_type,
             file_name=file_name,
             reference_id=reference_id,
             s3_bucket_name=self.lg_bucket_name,
         )
+        document_reference.set_virus_scanner_result(VirusScanResult.CLEAN)
+        return document_reference
 
     def rollback_transaction(self):
         try:

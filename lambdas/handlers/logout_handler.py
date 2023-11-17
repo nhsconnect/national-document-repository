@@ -3,7 +3,6 @@ import os
 import boto3
 import jwt
 from botocore.exceptions import ClientError
-
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService

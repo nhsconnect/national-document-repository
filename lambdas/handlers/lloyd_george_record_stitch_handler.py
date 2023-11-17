@@ -5,7 +5,6 @@ from urllib import parse
 from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
-
 from enums.logging_app_interaction import LoggingAppInteraction
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from pypdf.errors import PyPdfError
@@ -16,9 +15,7 @@ from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import (
-    extract_nhs_number_from_event,
-    validate_patient_id,
-)
+    extract_nhs_number_from_event, validate_patient_id)
 from utils.exceptions import DynamoDbException
 from utils.lambda_response import ApiGatewayResponse
 from utils.order_response_by_filenames import order_response_by_filenames

@@ -1,7 +1,6 @@
 from typing import Callable
 
 import jwt
-
 from utils.request_context import request_context
 
 

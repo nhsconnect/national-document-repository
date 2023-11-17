@@ -1,7 +1,6 @@
 from unittest.mock import MagicMock
 
 from jwt import PyJWTError
-
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.request_context import request_context
 
