@@ -38,6 +38,4 @@ def override_error_check(lambda_func: Callable):
 
         check_manual_error_conditions(error_override)
 
-        return lambda_func(event, context)
-
     return interceptor
