@@ -1,11 +1,11 @@
 import json
 import os
 
-def check_manual_error_conditions(type: str, env: str):
+def check_manual_error_conditions(type: str):
     if type == "TIMEOUT":
         trigger_timeout_error()
     if type == "MEMORY":
-        trigger_memory_error
+        trigger_memory_error()
 
 
 def trigger_memory_error(): 

@@ -1,6 +1,8 @@
 from typing import Callable
 
 import os
+import logging
+
 from utils.error_testing_utils import check_manual_error_conditions
 
 def override_error_check(lambda_func: Callable):
@@ -22,14 +24,20 @@ def override_error_check(lambda_func: Callable):
             workspace = os.environ["WORKSPACE"]
             error_override = os.environ["ERROR_TRIGGER"]
 
+            logging.info(f"workspace: {workspace}")
+            logging.info(f"error_override: {error_override}")
+
             # fail fast if workspace is invalid 
             if workspace == None or workspace in disabled_workspaces:
                 return lambda_func(event, context)
             
+            logging.info("HERE 1")
             # fail fast if error trigger is not set
             if error_override is None or error_override == "":
                 return lambda_func(event, context)
                 
+            logging.info("HERE 2")
+            
             check_manual_error_conditions(error_override)
 
         except :
