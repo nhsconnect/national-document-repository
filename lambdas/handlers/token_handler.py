@@ -20,6 +20,7 @@ from utils.exceptions import (AuthorisationException,
                               TooManyOrgsException)
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
+from utils.decorators.override_error_check import override_error_check
 
 logger = LoggingService(__name__)
 
@@ -27,6 +28,7 @@ token_handler_ssm_service = TokenHandlerSSMService()
 
 
 @set_request_context_for_logging
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
 

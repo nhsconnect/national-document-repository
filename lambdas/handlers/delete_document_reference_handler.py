@@ -13,6 +13,7 @@ from utils.decorators.validate_document_type import (extract_document_type,
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
+from utils.decorators.override_error_check import override_error_check
 
 logger = LoggingService(__name__)
 
@@ -26,6 +27,7 @@ logger = LoggingService(__name__)
         "LLOYD_GEORGE_DYNAMODB_NAME",
     ]
 )
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.DELETE_RECORD.value
     nhs_number = event["queryStringParameters"]["patientId"]

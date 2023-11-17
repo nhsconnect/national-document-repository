@@ -14,6 +14,7 @@ from utils.decorators.validate_patient_id import validate_patient_id
 from utils.exceptions import DynamoDbException, ManifestDownloadException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
+from utils.decorators.override_error_check import override_error_check
 
 logger = LoggingService(__name__)
 
@@ -29,6 +30,7 @@ logger = LoggingService(__name__)
         "ZIPPED_STORE_DYNAMODB_NAME",
     ]
 )
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.DOWNLOAD_RECORD.value
 

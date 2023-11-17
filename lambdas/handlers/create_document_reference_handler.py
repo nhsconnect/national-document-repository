@@ -20,6 +20,7 @@ from utils.lloyd_george_validator import (LGInvalidFilesException,
                                           validate_lg_files)
 from utils.request_context import request_context
 from utils.utilities import create_reference_id, validate_id
+from utils.decorators.override_error_check import override_error_check
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -35,6 +36,7 @@ logger = LoggingService(__name__)
         "DOCUMENT_STORE_DYNAMODB_NAME",
     ]
 )
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.UPLOAD_RECORD.value
 

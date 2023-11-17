@@ -10,11 +10,13 @@ from utils.audit_logging_setup import LoggingService
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
+from utils.decorators.override_error_check import override_error_check
 
 logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
     return prepare_redirect_response(WebApplicationClient)

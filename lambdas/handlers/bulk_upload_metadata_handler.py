@@ -11,11 +11,13 @@ from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.decorators.override_error_check import override_error_check
 
 logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
+@override_error_check
 def lambda_handler(_event, _context):
     try:
         logger.info("Starting metadata reading process")

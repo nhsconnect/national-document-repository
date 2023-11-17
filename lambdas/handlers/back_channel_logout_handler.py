@@ -11,12 +11,14 @@ from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import AuthorisationException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
+from utils.decorators.override_error_check import override_error_check
 
 logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
 @ensure_environment_variables(names=["OIDC_CALLBACK_URL", "AUTH_DYNAMODB_NAME"])
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
 

@@ -13,12 +13,14 @@ from utils.exceptions import (InvalidResourceIdException,
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 from utils.utilities import get_pds_service
+from utils.decorators.override_error_check import override_error_check
 
 logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
 @validate_patient_id
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.PATIENT_SEARCH.value
 
