@@ -1,8 +1,7 @@
 from typing import Callable
 
 import os
-from utils.error_testing_utils import error_testing_utils
-from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.error_testing_utils import check_manual_error_conditions
 
 def override_error_check(lambda_func: Callable):
     """A decorator for lambda handler.
@@ -31,7 +30,7 @@ def override_error_check(lambda_func: Callable):
             if error_override is None or error_override == "":
                 return lambda_func(event, context)
                 
-            error_testing_utils.check_manual_error_conditions(error_override)
+            check_manual_error_conditions(error_override)
 
         except :
             return lambda_func(event, context)
