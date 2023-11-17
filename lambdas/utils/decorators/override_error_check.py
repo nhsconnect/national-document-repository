@@ -36,6 +36,6 @@ def override_error_check(lambda_func: Callable):
         if error_override is None or error_override == "":
             return lambda_func(event, context)
 
-        check_manual_error_conditions(error_override)
+        return check_manual_error_conditions(error_override, event["httpMethod"])
 
     return interceptor
