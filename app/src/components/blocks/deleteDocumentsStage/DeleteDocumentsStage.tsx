@@ -3,7 +3,6 @@ import { FieldValues, useForm } from 'react-hook-form';
 import { Button, Fieldset, Radios } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { PatientDetails } from '../../../types/generic/patientDetails';
-import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import DeletionConfirmationStage from '../deletionConfirmationStage/DeletionConfirmationStage';
 import deleteAllDocuments, { DeleteResponse } from '../../../helpers/requests/deleteAllDocuments';
 import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
@@ -19,6 +18,7 @@ import { routes } from '../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -96,8 +96,7 @@ function DeleteDocumentsStage({
     };
 
     const handleNoOption = () => {
-        const isGp = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
-        if (isGp && setStage) {
+        if (role === REPOSITORY_ROLE.GP_ADMIN && setStage) {
             setStage(LG_RECORD_STAGE.RECORD);
         } else if (role === REPOSITORY_ROLE.PCSE && setIsDeletingDocuments) {
             setIsDeletingDocuments(false);
@@ -105,10 +104,13 @@ function DeleteDocumentsStage({
     };
 
     const submit = async (fieldValues: FieldValues) => {
-        if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.YES) {
-            await handleYesOption();
-        } else if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.NO) {
-            handleNoOption();
+        const allowedRoles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE];
+        if (role && allowedRoles.includes(role)) {
+            if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.YES) {
+                await handleYesOption();
+            } else if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.NO) {
+                handleNoOption();
+            }
         }
     };
 

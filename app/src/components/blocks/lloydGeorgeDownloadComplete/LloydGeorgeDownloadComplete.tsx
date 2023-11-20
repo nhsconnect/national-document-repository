@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import { Button, Card } from 'nhsuk-react-components';
-import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
 export type Props = {
     patientDetails: PatientDetails;

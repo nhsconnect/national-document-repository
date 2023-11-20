@@ -10,13 +10,8 @@ import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import LloydGeorgeRecordStage from '../../components/blocks/lloydGeorgeRecordStage/LloydGeorgeRecordStage';
 import LloydGeorgeDownloadAllStage from '../../components/blocks/lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
+import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 
-export enum LG_RECORD_STAGE {
-    RECORD = 0,
-    DOWNLOAD_ALL = 1,
-    SEE_ALL = 2,
-    DELETE_ALL = 3,
-}
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();
     const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
