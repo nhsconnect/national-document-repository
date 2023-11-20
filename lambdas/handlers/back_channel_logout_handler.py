@@ -80,10 +80,12 @@ def remove_session_from_dynamo_db(sid):
     if "Items" in db_response:
         items = db_response["Items"]
         
-        while "NDRSessionId" in items:
-            logger.info(f'ndr session id {db_response["NDRSessionId"]}')
-            dynamodb_service.delete_item(
-                key={"NDRSessionId": db_response["NDRSessionId"]}, table_name=dynamodb_name
-            )
+        logger.info(f'item 0: {items[0]}')
+        ndr_session_id = items[0]["NDRSessionId"]
+        logger.info(f'ndrSessionId: {ndr_session_id}')
+        
+        dynamodb_service.delete_item(
+            key={"NDRSessionId": ndr_session_id }, table_name=dynamodb_name
+        )
 
-    logger.info(f"Session removed: {sid}", {"Result": "Successful logout"})
+    logger.info(f"Session removed for sid: {sid} and NDRSessionId {ndr_session_id }", {"Result": "Successful logout"})
