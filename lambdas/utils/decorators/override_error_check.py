@@ -25,9 +25,6 @@ def override_error_check(lambda_func: Callable):
         workspace = os.getenv("WORKSPACE")
         error_override = os.getenv("ERROR_TRIGGER")
 
-        logger.info(f"workspace: {workspace}")
-        logger.info(f"error_override: {error_override}")
-
         # fail fast if workspace is invalid
         if workspace is None or workspace in disabled_workspaces:
             return lambda_func(event, context)
@@ -37,7 +34,7 @@ def override_error_check(lambda_func: Callable):
             return lambda_func(event, context)
 
         response = check_manual_error_conditions(error_override, event["httpMethod"])
-        logger.info(f"response: {response}")
+
         return response
 
     return interceptor

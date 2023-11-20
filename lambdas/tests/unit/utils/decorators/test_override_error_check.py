@@ -21,3 +21,12 @@ def test_respond_with_400_when_error_trigger_is_400(
 
     assert actual == expected
     actual_lambda_logic.assert_not_called()
+
+
+def test_respond_with_200_when_env_vars_not_set(valid_id_event, context):
+    expected = "200 OK"
+
+    actual = lambda_handler(valid_id_event, context)
+
+    assert actual == expected
+    actual_lambda_logic.assert_called_once()
