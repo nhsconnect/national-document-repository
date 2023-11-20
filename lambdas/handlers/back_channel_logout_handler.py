@@ -76,14 +76,10 @@ def remove_session_from_dynamo_db(sid):
         dynamodb_name, filter_expression=filter_sid
     )
 
-    logger.info(f'db response {db_response}')
     if "Items" in db_response:
         items = db_response["Items"]
-        
-        logger.info(f'item 0: {items[0]}')
         ndr_session_id = items[0]["NDRSessionId"]
-        logger.info(f'ndrSessionId: {ndr_session_id}')
-        
+
         dynamodb_service.delete_item(
             key={"NDRSessionId": ndr_session_id }, table_name=dynamodb_name
         )
