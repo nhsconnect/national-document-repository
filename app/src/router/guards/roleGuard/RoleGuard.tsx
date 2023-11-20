@@ -1,24 +1,23 @@
 import { useEffect, type ReactNode } from 'react';
-import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { routes } from '../../../types/generic/routes';
 import { routeMap } from '../../AppRouter';
+import useRole from '../../../helpers/hooks/useRole';
 
 type Props = {
     children: ReactNode;
 };
 
 function RoleGuard({ children }: Props) {
-    const role = REPOSITORY_ROLE.PCSE;
+    const role = useRole();
     const navigate = useNavigate();
     const location = useLocation();
     useEffect(() => {
         const routeKey = location.pathname as keyof typeof routeMap;
         const { unauthorized } = routeMap[routeKey];
-        const denyResource = Array.isArray(unauthorized) && unauthorized.includes(role);
-        console.log(unauthorized);
-        console.log('DENY RESOURCE?:', denyResource);
+        const denyResource = Array.isArray(unauthorized) && role && unauthorized.includes(role);
+
         if (denyResource) {
             navigate(routes.UNAUTHORISED);
         }

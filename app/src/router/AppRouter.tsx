@@ -70,34 +70,37 @@ export const routeMap: Routes = {
     [DOWNLOAD_SEARCH]: {
         page: <PatientSearchPage />,
         type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
+        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
     },
     [UPLOAD_SEARCH]: {
         page: <PatientSearchPage />,
         type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
+        unauthorized: [REPOSITORY_ROLE.PCSE],
     },
     [DOWNLOAD_VERIFY]: {
         page: <PatientResultPage />,
         type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
+        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
     },
     [UPLOAD_VERIFY]: {
         page: <PatientResultPage />,
         type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
+        unauthorized: [REPOSITORY_ROLE.PCSE],
     },
     [UPLOAD_DOCUMENTS]: {
         page: <UploadDocumentsPage />,
         type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.PCSE],
     },
     [DOWNLOAD_DOCUMENTS]: {
         page: <DocumentSearchResultsPage />,
         type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
     },
     [LLOYD_GEORGE]: {
         page: <LloydGeorgeRecordPage />,
         type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.PCSE],
     },
 };
 
