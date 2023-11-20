@@ -1,5 +1,5 @@
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
-import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import LgDownloadComplete, { Props } from './LloydGeorgeDownloadComplete';
 import { render, screen, waitFor } from '@testing-library/react';
