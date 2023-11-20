@@ -1,7 +1,7 @@
 from utils.lambda_response import ApiGatewayResponse
 
 
-def check_manual_error_conditions(error_type: str, http_method: str):
+def check_manual_error_conditions(error_type: str, http_method: str = "GET"):
     if error_type == "TIMEOUT":
         trigger_timeout_error()
     if error_type == "MEMORY":
@@ -25,7 +25,9 @@ def trigger_timeout_error():
 
 
 def trigger_400(http_method):
-    return ApiGatewayResponse(400, "", http_method).create_api_gateway_response()
+    response = ApiGatewayResponse(400, "", http_method).create_api_gateway_response()
+
+    return response
 
 
 def trigger_500(http_method):
