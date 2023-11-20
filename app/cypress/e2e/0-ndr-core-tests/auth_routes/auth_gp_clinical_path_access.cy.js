@@ -13,7 +13,7 @@ const patient = {
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 
-describe('assert GP_ADMIM workflow path', () => {
+describe('assert GP_CLINICAL user has access to the GP_CLINICAL workflow path', () => {
     const baseUrl = 'http://localhost:3000';
 
     context('session management', () => {
@@ -25,7 +25,7 @@ describe('assert GP_ADMIM workflow path', () => {
                 }).as('search');
             }
 
-            cy.login('GP_ADMIN');
+            cy.login('GP_CLINICAL');
             cy.url().should('eq', baseUrl + '/search/upload');
 
             cy.get('#nhs-number-input').click();
