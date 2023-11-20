@@ -20,10 +20,6 @@ import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
-/**
- * TODO: REMOVE GP CLINICAL FROM COMPONENT & TESTS
- */
-
 export type Props = {
     docType: DOCUMENT_TYPE;
     numberOfFiles: number;
