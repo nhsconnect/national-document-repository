@@ -12,10 +12,15 @@ const patient = {
 
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+const forbiddenRoutes = [
+    '/search/patient/lloyd-george-record',
+    '/search/upload',
+    '/search/upload/result',
+    '/upload/submit',
+];
+const authUnauthorisedRoute = '/unauthorised';
 
-describe('assert PCSE workflow path', () => {
-    const baseUrl = 'http://localhost:3000';
-
+describe('assert PCSE user has access to the PCSE workflow path ', () => {
     context('session management', () => {
         it('sets session storage on login and checks starting url route', () => {
             if (!smokeTest) {
@@ -35,7 +40,7 @@ describe('assert PCSE workflow path', () => {
             cy.wait('@search');
 
             cy.get('#verify-submit').click();
-            cy.url().should('eq', baseUrl + '/search/results');
+            cy.url().should('eq', baseUrl + 'search/results');
         });
     });
 });

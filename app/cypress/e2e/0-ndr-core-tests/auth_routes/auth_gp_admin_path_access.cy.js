@@ -11,7 +11,9 @@ const patient = {
 };
 
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
-const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000';
+
+const forbiddenRoutes = ['/search/patient', '/search/patient/result', '/search/results'];
 
 describe('assert GP_ADMIN user has access to the GP_ADMIM workflow path', () => {
     const baseUrl = 'http://localhost:3000';
