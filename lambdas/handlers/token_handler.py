@@ -14,6 +14,7 @@ from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import (AuthorisationException,
                               OrganisationNotFoundException,
@@ -27,6 +28,7 @@ token_handler_ssm_service = TokenHandlerSSMService()
 
 
 @set_request_context_for_logging
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
 

@@ -7,6 +7,7 @@ from enums.supported_document_types import SupportedDocumentTypes
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_document_type import (extract_document_type,
                                                      validate_document_type)
@@ -26,6 +27,7 @@ logger = LoggingService(__name__)
         "LLOYD_GEORGE_DYNAMODB_NAME",
     ]
 )
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.DELETE_RECORD.value
     nhs_number = event["queryStringParameters"]["patientId"]
