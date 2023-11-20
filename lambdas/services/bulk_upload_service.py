@@ -11,12 +11,15 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException, S3FileNotFoundException,
-                              TagNotFoundException, VirusScanFailedException,
-                              VirusScanNoResultException)
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names)
+from utils.exceptions import (
+    DocumentInfectedException,
+    InvalidMessageException,
+    S3FileNotFoundException,
+    TagNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+)
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -112,10 +115,14 @@ class BulkUploadService:
         try:
             self.create_lg_records_and_copy_files(staging_metadata)
             logger.info(
-                f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}"
+                f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
+                {"Result": "Successful upload"},
             )
         except ClientError as e:
-            logger.info(f"Got unexpected error during file transfer: {str(e)}")
+            logger.info(
+                f"Got unexpected error during file transfer: {str(e)}",
+                {"Result": "Unsuccessful upload"},
+            )
             logger.info("Will try to rollback any change to database and bucket")
             self.rollback_transaction()
 
@@ -129,7 +136,8 @@ class BulkUploadService:
         self.remove_ingested_file_from_source_bucket()
 
         logger.info(
-            f"Completed file ingestion for patient {staging_metadata.nhs_number}"
+            f"Completed file ingestion for patient {staging_metadata.nhs_number}",
+            {"Result": "Successful upload"},
         )
         self.report_upload_complete(staging_metadata)
 
