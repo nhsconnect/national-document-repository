@@ -19,11 +19,8 @@ def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
     token = None
     headers = event.get("headers")
-    logger.info(f"Headers: {headers}")
-                
     if headers:
         token = headers["x-auth"]
-        logger.info(f"Token found: {token}")
     return logout_handler(token)
 
 
