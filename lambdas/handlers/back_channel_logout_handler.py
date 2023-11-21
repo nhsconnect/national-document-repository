@@ -1,6 +1,7 @@
-import json
 import os
+from urllib.parse import parse_qs
 
+from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.dynamo_service import DynamoDBService
@@ -24,9 +25,14 @@ def lambda_handler(event, context):
 
     logger.info(f"incoming event {event}")
     try:
-        body = json.loads(event["body"])
-        token = body["logout_token"]
-    except KeyError as e:
+        body = parse_qs(event["body"])
+        token = body["logout_token"][0]
+    except (KeyError, IndexError) as e:
+        logger.error(e)
+        logger.error(
+            f"An error occurred due to missing key: {str(e)}",
+            {"Result": "Unsuccessful logout"},
+        )
         return ApiGatewayResponse(
             400, f"An error occurred due to missing key: {str(e)}", "POST"
         ).create_api_gateway_response()
@@ -37,8 +43,8 @@ def logout_handler(token):
     try:
         oidc_service = OidcService()
         decoded_token = oidc_service.validate_and_decode_token(token)
-        session_id = decoded_token["sid"]
-        remove_session_from_dynamo_db(session_id)
+        sid = decoded_token["sid"]
+        remove_session_from_dynamo_db(sid)
 
     except ClientError as e:
         logger.error(f"Error logging out user: {e}", {"Result": "Unsuccessful logout"})
@@ -63,10 +69,21 @@ def logout_handler(token):
     return ApiGatewayResponse(200, "", "POST").create_api_gateway_response()
 
 
-def remove_session_from_dynamo_db(session_id):
+def remove_session_from_dynamo_db(sid):
     dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
     dynamodb_service = DynamoDBService()
-    dynamodb_service.delete_item(
-        key={"NDRSessionId": session_id}, table_name=dynamodb_name
+    
+    filter_sid = Attr("sid").eq(sid)
+    db_response = dynamodb_service.scan_table(
+        dynamodb_name, filter_expression=filter_sid
     )
-    logger.info(f"Session removed: {session_id}", {"Result": "Successful logout"})
+
+    if "Items" in db_response:
+        items = db_response["Items"]
+        ndr_session_id = items[0]["NDRSessionId"]
+
+        dynamodb_service.delete_item(
+            key={"NDRSessionId": ndr_session_id }, table_name=dynamodb_name
+        )
+
+    logger.info(f"Session removed for sid: {sid} and NDRSessionId {ndr_session_id }", {"Result": "Successful logout"})
