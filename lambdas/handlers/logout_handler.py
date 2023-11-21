@@ -2,6 +2,7 @@ import os
 
 import boto3
 import jwt
+import json
 from botocore.exceptions import ClientError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.dynamo_service import DynamoDBService
@@ -19,8 +20,9 @@ def lambda_handler(event, context):
     token = None
     headers = event.get("headers")
     logger.info(f"Headers: {headers}")
+    logger.info(f"Headers dump": {json.dump(headers)})
     if headers:
-        token = headers.get("x-auth")
+        token = json.dump(headers)["x-auth"]
         logger.info(f"Token found: {token}")
     return logout_handler(token)
 
