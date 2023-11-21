@@ -34,11 +34,11 @@ test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
 
 test-unit-coverage:
-	cd ./lambdas
-	coverage run --source=. --omit=tests/* -m pytest -v tests && coverage report && coverage html
+	cd ./lambdas && ./venv/bin/python3 -m pytest --cov=. --cov-report xml:coverage.xml
 
 test-unit-coverage-html:
-	cd ./lambdas && ./venv/bin/python3 -m pytest --cov=. --cov-report xml:coverage.xml
+	cd ./lambdas
+	coverage run --source=. --omit=tests/* -m pytest -v tests && coverage report && coverage html
 
 test-unit-collect:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/ --collect-only
