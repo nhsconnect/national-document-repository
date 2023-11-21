@@ -10,8 +10,8 @@ import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import SelectStage from '../../components/blocks/selectStage/SelectStage';
 import UploadingStage from '../../components/blocks/uploadingStage/UploadingStage';
 import CompleteStage from '../../components/blocks/completeStage/CompleteStage';
-import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import usePatient from '../../helpers/hooks/usePatient';
 
 type Props = {};
 
@@ -20,7 +20,7 @@ function UploadDocumentsPage(props: Props) {
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-    const [patientDetails] = usePatientDetailsContext();
+    const patientDetails = usePatient();
 
     const setDocumentState = (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => {
         setDocuments((prevDocuments) => {

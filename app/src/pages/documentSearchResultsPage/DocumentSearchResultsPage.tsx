@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/documentSearchResults/DocumentSearchResults';
@@ -16,9 +15,10 @@ import getDocumentSearchResults from '../../helpers/requests/getDocumentSearchRe
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
+import usePatient from '../../helpers/hooks/usePatient';
 
 function DocumentSearchResultsPage() {
-    const [patientDetails] = usePatientDetailsContext();
+    const patientDetails = usePatient();
 
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);

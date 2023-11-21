@@ -3,19 +3,19 @@ import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
-import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import BackButton from '../../components/generic/backButton/BackButton';
 import { useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
+import usePatient from '../../helpers/hooks/usePatient';
 
 function PatientResultPage() {
     const role = useRole();
+    const patientDetails = usePatient();
     const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
     const userIsGPAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
     const userIsGPClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
-    const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
     const { handleSubmit } = useForm();
