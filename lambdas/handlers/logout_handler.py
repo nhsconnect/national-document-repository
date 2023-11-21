@@ -17,6 +17,8 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
     token = None
+    headers = event.get("headers")
+    logger.info(f"Headers: {headers}")
     if event.get("headers"):
         token = event.get("headers").get("X-Auth")
         logger.info(f"Token found: {token}")
