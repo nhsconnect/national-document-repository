@@ -165,12 +165,12 @@ def test_lambda_handler_when_id_not_supplied_returns_400(
 
 
 def test_lambda_handler_returns_400_when_doc_type_not_supplied(
-    set_env, valid_id_event, context
+    set_env, valid_id_event_without_auth_header, context
 ):
     expected = ApiGatewayResponse(
         400, "An error occurred due to missing key: 'docType'", "GET"
     ).create_api_gateway_response()
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_without_auth_header, context)
     assert expected == actual
 
 

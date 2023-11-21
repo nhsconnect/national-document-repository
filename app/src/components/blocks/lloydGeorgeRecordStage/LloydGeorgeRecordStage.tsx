@@ -4,9 +4,9 @@ import { BackLink, Card, Details } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
-import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
+import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
 export type Props = {
     patientDetails: PatientDetails;

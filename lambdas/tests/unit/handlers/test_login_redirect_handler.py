@@ -23,9 +23,7 @@ class FakeWebAppClient:
         return RETURN_URL, "", ""
 
 
-def skip_test_prepare_redirect_response_return_302_with_correct_headers(
-    mocker, monkeypatch
-):
+def test_prepare_redirect_response_return_303_with_correct_headers(mocker, monkeypatch):
     monkeypatch.setenv("OIDC_CALLBACK_URL", "https://www.testexample.com")
     mock_dynamo_service = mocker.patch(
         "handlers.login_redirect_handler.save_state_in_dynamo_db"
@@ -38,7 +36,7 @@ def skip_test_prepare_redirect_response_return_302_with_correct_headers(
     response = login_redirect_handler.prepare_redirect_response(FakeWebAppClient)
     location_header = {"Location": RETURN_URL}
 
-    expected = ApiGatewayResponse(302, "", "GET").create_api_gateway_response(
+    expected = ApiGatewayResponse(303, "", "GET").create_api_gateway_response(
         headers=location_header
     )
 

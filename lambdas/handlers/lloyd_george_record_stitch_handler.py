@@ -13,6 +13,7 @@ from services.pdf_stitch_service import stitch_pdf
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event, validate_patient_id)
@@ -26,6 +27,7 @@ logger = LoggingService(__name__)
 
 @set_request_context_for_logging
 @validate_patient_id
+@override_error_check
 @ensure_environment_variables(
     names=["LLOYD_GEORGE_DYNAMODB_NAME", "LLOYD_GEORGE_BUCKET_NAME"]
 )

@@ -13,6 +13,7 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
@@ -35,6 +36,7 @@ logger = LoggingService(__name__)
         "DOCUMENT_STORE_DYNAMODB_NAME",
     ]
 )
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.UPLOAD_RECORD.value
 

@@ -5,17 +5,23 @@ from typing import Iterable
 
 import pydantic
 from botocore.exceptions import ClientError
-from models.staging_metadata import (METADATA_FILENAME, NHS_NUMBER_FIELD_NAME,
-                                     MetadataFile, StagingMetadata)
+from models.staging_metadata import (
+    METADATA_FILENAME,
+    NHS_NUMBER_FIELD_NAME,
+    MetadataFile,
+    StagingMetadata,
+)
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 
 logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
+@override_error_check
 def lambda_handler(_event, _context):
     try:
         logger.info("Starting metadata reading process")
@@ -36,16 +42,19 @@ def lambda_handler(_event, _context):
 
         logger.info("Sent bulk upload metadata to sqs queue")
     except pydantic.ValidationError as e:
-        logger.info("Failed to parse metadata.csv")
+        logger.info(
+            "Failed to parse metadata.csv", {"Result": "Unsuccessful bulk upload"}
+        )
         logger.error(str(e))
     except KeyError as e:
-        logger.info("Failed due to missing key")
+        logger.info("Failed due to missing key", {"Result": "Unsuccessful bulk upload"})
         logger.error(str(e))
     except ClientError as e:
         logger.error(str(e))
         if "HeadObject" in str(e):
             logger.error(
-                f'No metadata file could be found with the name "{METADATA_FILENAME}"'
+                f'No metadata file could be found with the name "{METADATA_FILENAME}"',
+                {"Result": "Unsuccessful bulk upload"},
             )
 
 

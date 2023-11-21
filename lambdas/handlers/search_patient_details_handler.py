@@ -5,6 +5,7 @@ from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.exceptions import (InvalidResourceIdException,
@@ -19,6 +20,7 @@ logger = LoggingService(__name__)
 
 @set_request_context_for_logging
 @validate_patient_id
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.PATIENT_SEARCH.value
 

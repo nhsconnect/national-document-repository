@@ -92,3 +92,9 @@ def valid_id_and_none_doctype_event():
         "queryStringParameters": {"patientId": "9000000009", "docType": None},
     }
     return api_gateway_proxy_event
+
+
+@pytest.fixture
+def error_override_env_vars(monkeypatch):
+    monkeypatch.setenv("WORKSPACE", "ndra")
+    monkeypatch.setenv("ERROR_TRIGGER", "400")
