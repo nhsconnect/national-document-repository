@@ -71,7 +71,7 @@ function LloydGeorgeRecordDetails({
                             <Card.Content>
                                 <ol>
                                     {actionLinks.map((link) =>
-                                        !link.unauthorised?.includes(role) ? (
+                                        role && !link.unauthorised?.includes(role) ? (
                                             <li key={link.key} data-testid={link.key}>
                                                 <Link
                                                     to="#"

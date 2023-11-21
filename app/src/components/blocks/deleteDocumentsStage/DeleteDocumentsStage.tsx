@@ -105,7 +105,7 @@ function DeleteDocumentsStage({
 
     const submit = async (fieldValues: FieldValues) => {
         const allowedRoles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE];
-        if (allowedRoles.includes(role)) {
+        if (role && allowedRoles.includes(role)) {
             if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.YES) {
                 await handleYesOption();
             } else if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.NO) {
