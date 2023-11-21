@@ -2,6 +2,11 @@ import { usePatientDetailsContext } from '../../providers/patientProvider/Patien
 
 function usePatient() {
     const [patient] = usePatientDetailsContext();
+
+    if (!patient) {
+        throw Error('Patient context has not been set!');
+    }
+
     return patient;
 }
 

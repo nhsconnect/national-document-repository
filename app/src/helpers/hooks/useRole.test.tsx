@@ -22,8 +22,9 @@ describe('useRole', () => {
     );
 
     it('returns null when there is no session', () => {
-        renderHook();
-        expect(screen.getByText(`ROLE: null`)).toBeInTheDocument();
+        expect(() => {
+            renderHook();
+        }).toThrow('Session context has not been set!');
     });
 });
 

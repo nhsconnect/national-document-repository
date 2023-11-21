@@ -3,8 +3,11 @@ import { useSessionContext } from '../../providers/sessionProvider/SessionProvid
 function useRole() {
     const [session] = useSessionContext();
 
-    const role = session.auth ? session.auth.role : null;
-    return role;
+    if (!session.auth) {
+        throw Error('Session context has not been set!');
+    }
+
+    return session.auth.role;
 }
 
 export default useRole;
