@@ -1,6 +1,6 @@
 import pytest
 from utils.exceptions import InvalidResourceIdException
-from utils.utilities import camelize_dict, validate_id
+from utils.utilities import camelize_dict, validate_id, redact_id_to_last_4_chars
 
 
 def test_validate_id_with_valid_id_returns_true():
@@ -26,3 +26,11 @@ def test_decapitalise_keys():
     actual = camelize_dict(test_dict)
 
     assert actual == expected
+
+def test_redact_id():
+    mock_session_id = "1234532532432"
+    expected = "2432"
+
+    actual = redact_id_to_last_4_chars(mock_session_id)
+
+    assert expected == actual
