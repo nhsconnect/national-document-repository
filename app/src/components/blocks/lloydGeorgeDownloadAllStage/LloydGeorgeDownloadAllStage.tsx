@@ -10,12 +10,12 @@ import React, {
 import { Card } from 'nhsuk-react-components';
 import { Link } from 'react-router-dom';
 import { PatientDetails } from '../../../types/generic/patientDetails';
-import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownloadComplete';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 const FakeProgress = require('fake-progress');
 
 export type Props = {

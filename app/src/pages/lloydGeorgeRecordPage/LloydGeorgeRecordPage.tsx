@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import { useNavigate } from 'react-router';
-import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
@@ -11,6 +10,7 @@ import LloydGeorgeRecordStage from '../../components/blocks/lloydGeorgeRecordSta
 import LloydGeorgeDownloadAllStage from '../../components/blocks/lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 function LloydGeorgeRecordPage() {
     const [patientDetails] = usePatientDetailsContext();

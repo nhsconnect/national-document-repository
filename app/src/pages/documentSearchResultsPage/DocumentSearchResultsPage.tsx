@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';
 import ProgressBar from '../../components/generic/progressBar/ProgressBar';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
-import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import DocumentSearchResultsOptions from '../../components/blocks/documentSearchResultsOptions/DocumentSearchResultsOptions';
 import { AxiosError } from 'axios';
 import getDocumentSearchResults from '../../helpers/requests/getDocumentSearchResults';
@@ -16,6 +15,7 @@ import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import usePatient from '../../helpers/hooks/usePatient';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();

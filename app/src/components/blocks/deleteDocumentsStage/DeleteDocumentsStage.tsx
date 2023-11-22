@@ -5,7 +5,6 @@ import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { PatientDetails } from '../../../types/generic/patientDetails';
 import DeletionConfirmationStage from '../deletionConfirmationStage/DeletionConfirmationStage';
 import deleteAllDocuments, { DeleteResponse } from '../../../helpers/requests/deleteAllDocuments';
-import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
@@ -19,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 
 export type Props = {
     docType: DOCUMENT_TYPE;

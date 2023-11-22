@@ -12,7 +12,6 @@ import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBo
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import getPatientDetails from '../../helpers/requests/getPatientDetails';
 import { SEARCH_STATES } from '../../types/pages/patientSearchPage';
-import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import BackButton from '../../components/generic/backButton/BackButton';
 import { AxiosError } from 'axios';
 import { PatientDetails } from '../../types/generic/patientDetails';
@@ -20,6 +19,7 @@ import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { isMock } from '../../helpers/utils/isLocal';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import useRole from '../../helpers/hooks/useRole';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 

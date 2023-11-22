@@ -6,12 +6,12 @@ import {
     UploadDocument,
 } from '../../types/pages/UploadDocumentsPage/types';
 import uploadDocument from '../../helpers/requests/uploadDocument';
-import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import SelectStage from '../../components/blocks/selectStage/SelectStage';
 import UploadingStage from '../../components/blocks/uploadingStage/UploadingStage';
 import CompleteStage from '../../components/blocks/completeStage/CompleteStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import usePatient from '../../helpers/hooks/usePatient';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 type Props = {};
 

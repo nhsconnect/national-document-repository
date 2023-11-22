@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import type { MouseEvent } from 'react';
 import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
-import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import Spinner from '../../components/generic/spinner/Spinner';
 import { routes } from '../../types/generic/routes';
 import { endpoints } from '../../types/generic/endpoints';
 import { isLocal } from '../../helpers/utils/isLocal';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 type Props = {};
 

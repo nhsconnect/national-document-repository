@@ -5,11 +5,11 @@ import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage
 import { useNavigate } from 'react-router-dom';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { AxiosError } from 'axios';
-import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import { PatientDetails } from '../../../types/generic/patientDetails';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 
 type Props = {
     nhsNumber: string;
