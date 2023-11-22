@@ -54,8 +54,7 @@ def lambda_handler(event, context):
             policy.denyMethod(_http_verb, path)
 
     except AuthorisationException as e:
-        logger.error(e)
-        logger.error("failed to authenticate user")
+        logger.error(f"failed to authenticate user due to: {e}")
         policy.denyAllMethods()
 
     auth_response = policy.build()

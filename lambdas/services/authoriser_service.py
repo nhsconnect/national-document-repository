@@ -53,8 +53,7 @@ class AuthoriserService:
             return allow_policy
 
         except (KeyError, IndexError) as e:
-            logger.error(e)
-            raise AuthorisationException
+            raise AuthorisationException(e)
 
     def deny_access_policy(self, user_role):
         logger.info(
