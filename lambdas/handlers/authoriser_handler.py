@@ -49,13 +49,13 @@ def lambda_handler(event, context):
             ssm_jwt_public_key_parameter, auth_token
         )
         if is_allow_policy:
-            policy.allowMethod(_http_verb, path)
+            policy.allow_method(_http_verb, path)
         else:
-            policy.denyMethod(_http_verb, path)
+            policy.deny_method(_http_verb, path)
 
     except AuthorisationException as e:
         logger.error(f"failed to authenticate user due to: {e}")
-        policy.denyAllMethods()
+        policy.deny_all_methods()
 
     auth_response = policy.build()
     return auth_response
