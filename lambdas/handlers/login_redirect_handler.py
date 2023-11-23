@@ -75,7 +75,7 @@ def prepare_redirect_response(web_application_client_class):
 
 
 def save_state_in_dynamo_db(state):
-    dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
+    dynamodb_name = os.getenv["AUTH_DYNAMODB_NAME"]
     dynamodb_service = DynamoDBService()
     ten_minutes = 60 * 10
     ttl = round(time.time()) + ten_minutes
