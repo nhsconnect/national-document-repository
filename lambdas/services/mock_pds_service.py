@@ -1,4 +1,6 @@
 import json
+import os
+import random
 
 from requests import Response
 from services.patient_search_service import PatientSearch
@@ -11,6 +13,10 @@ class MockPdsApiService(PatientSearch):
 
     def pds_request(self, nhs_number: str, *args, **kwargs) -> Response:
         mock_pds_results: list[dict] = []
+
+        if os.getenv("MOCK_PDS_TOO_MANY_REQUESTS_ERROR") == "true":
+            if random.random() < 0.333:
+                return self.too_many_requests_response()
 
         try:
             with open("services/mock_data/pds_patient_9000000001_X4S4L_pcse.json") as f:
@@ -40,4 +46,10 @@ class MockPdsApiService(PatientSearch):
         else:
             response.status_code = 404
 
+        return response
+
+    def too_many_requests_response(self) -> Response:
+        response = Response()
+        response.status_code = 429
+        response._content = b'Too Many Requests'
         return response
