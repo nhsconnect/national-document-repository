@@ -48,6 +48,8 @@ def prepare_redirect_response(web_application_client_class):
             prompt="login",
         )
 
+        logger.info(oidc_client.state)
+
         save_state_in_dynamo_db(oidc_client.state)
         location_header = {"Location": url}
         logger.info(
