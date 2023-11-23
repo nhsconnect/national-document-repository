@@ -185,7 +185,11 @@ def have_matching_state_value_in_record(state: str) -> bool:
     query_response = db_service.simple_query(
         table_name=state_table_name, key_condition_expression=Key("State").eq(state)
     )
-    return "Count" in query_response and query_response["Count"] > 0
+
+    logger.info(query_response)
+
+    return "Count" in query_response and query_response["Count"] == 1
+
 
 
 # TODO AKH Dynamo Service class
