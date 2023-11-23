@@ -32,7 +32,7 @@ def lambda_handler(event, context):
     logger.info("Authoriser handler triggered")
     ssm_jwt_public_key_parameter = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
     auth_token = event.get("authorizationToken")
-    principal_id = ""
+    principal_id = context.authorizer.principalId
     if event.get("methodArn") is None:
         return {"Error": "methodArn is not defined"}
     _, _, _, region, aws_account_id, api_gateway_arn = event.get("methodArn").split(":")
