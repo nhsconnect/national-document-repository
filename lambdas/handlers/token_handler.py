@@ -51,6 +51,8 @@ def lambda_handler(event, context):
                 "GET",
             ).create_api_gateway_response()
 
+        remove_used_state(state)
+
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
 
@@ -190,6 +192,11 @@ def have_matching_state_value_in_record(state: str) -> bool:
 
     return "Count" in query_response and query_response["Count"] == 1
 
+
+def remove_used_state(state):
+    state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
+    db_service = DynamoDBService()
+    db_service.delete_item(state_table_name, state)
 
 
 # TODO AKH Dynamo Service class
