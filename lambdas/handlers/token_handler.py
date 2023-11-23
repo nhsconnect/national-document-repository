@@ -196,7 +196,8 @@ def have_matching_state_value_in_record(state: str) -> bool:
 def remove_used_state(state):
     state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
     db_service = DynamoDBService()
-    db_service.delete_item(state_table_name, state)
+    deletion_key = {"State": state}
+    db_service.delete_item(table_name=state_table_name, key=deletion_key)
 
 
 # TODO AKH Dynamo Service class
