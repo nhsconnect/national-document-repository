@@ -47,7 +47,7 @@ def logout_handler(token):
             f"error while decoding JWT: {e}", {"Result": "Unsuccessful logout"}
         )
         return ApiGatewayResponse(
-            400, "Invalid x-auth header", "GET"
+            400, "Invalid Authorization header", "GET"
         ).create_api_gateway_response()
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 
