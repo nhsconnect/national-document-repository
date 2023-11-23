@@ -131,7 +131,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
     )
 
 
-def test_handle_sqs_message_put_message_back_to_queue_when_virus_scan_result_not_available(
+def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_result_not_available(
     set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result
 ):
     mock_check_virus_result.side_effect = VirusScanNoResultException
@@ -144,14 +144,14 @@ def test_handle_sqs_message_put_message_back_to_queue_when_virus_scan_result_not
     mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
         BulkUploadService, "remove_ingested_file_from_source_bucket"
     )
-    mock_put_message_back_to_queue = mocker.patch.object(
-        BulkUploadService, "put_message_back_to_queue"
+    mock_put_staging_metadata_back_to_queue = mocker.patch.object(
+        BulkUploadService, "put_staging_metadata_back_to_queue"
     )
 
     service = BulkUploadService()
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
-    mock_put_message_back_to_queue.assert_called_with(TEST_STAGING_METADATA)
+    mock_put_staging_metadata_back_to_queue.assert_called_with(TEST_STAGING_METADATA)
 
     mock_report_upload_failure.assert_not_called()
     mock_create_lg_records_and_copy_files.assert_not_called()
@@ -301,11 +301,11 @@ def test_check_virus_result_raise_VirusScanFailedException_for_special_cases(
             service.check_virus_result(TEST_STAGING_METADATA)
 
 
-def test_put_message_back_to_queue(set_env, mocker):
+def test_put_staging_metadata_back_to_queue(set_env, mocker):
     service = BulkUploadService()
     service.sqs_service = mocker.MagicMock()
 
-    service.put_message_back_to_queue(TEST_STAGING_METADATA)
+    service.put_staging_metadata_back_to_queue(TEST_STAGING_METADATA)
 
     service.sqs_service.send_message_with_nhs_number_attr.assert_called_with(
         queue_url=MOCK_LG_METADATA_SQS_QUEUE,

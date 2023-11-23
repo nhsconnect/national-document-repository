@@ -11,12 +11,16 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException, S3FileNotFoundException,
-                              TagNotFoundException, VirusScanFailedException,
-                              VirusScanNoResultException)
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names)
+from utils.exceptions import (
+    DocumentInfectedException,
+    InvalidMessageException,
+    S3FileNotFoundException,
+    TagNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+    PdsTooManyRequestsException,
+)
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -57,6 +61,11 @@ class BulkUploadService:
         try:
             logger.info("Running validation for file names...")
             self.validate_files(staging_metadata)
+        except PdsTooManyRequestsException as error:
+            logger.info(
+                "Cannot validate patient due to PDS responded with Too Many Requests"
+            )
+            raise error
         except LGInvalidFilesException as error:
             logger.info(
                 f"Detected invalid file name related to patient number: {staging_metadata.nhs_number}"
@@ -77,7 +86,7 @@ class BulkUploadService:
             logger.info(
                 f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
             )
-            self.put_message_back_to_queue(staging_metadata)
+            self.put_staging_metadata_back_to_queue(staging_metadata)
             return
         except (VirusScanFailedException, DocumentInfectedException) as e:
             logger.info(e)
@@ -186,7 +195,7 @@ class BulkUploadService:
             f"Verified that all documents for patient {staging_metadata.nhs_number} are clean."
         )
 
-    def put_message_back_to_queue(self, staging_metadata: StagingMetadata):
+    def put_staging_metadata_back_to_queue(self, staging_metadata: StagingMetadata):
         self.sqs_service.send_message_with_nhs_number_attr(
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
