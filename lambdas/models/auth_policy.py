@@ -36,9 +36,8 @@ class AuthPolicy(object):
     region = os.getenv("AWS_DEFAULT_REGION", "eu-west-2")
     stage = "dev"
 
-    def __init__(self, principal, aws_account_id):
+    def __init__(self, aws_account_id):
         self.aws_account_id = aws_account_id
-        self.principal_id = principal
         self.allow_methods = []
         self.deny_methods = []
 
