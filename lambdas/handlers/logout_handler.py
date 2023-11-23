@@ -21,7 +21,6 @@ def lambda_handler(event, context):
     token = None
     headers = event.get("headers")
     if headers:
-        print(headers)
         token = headers["Authorization"]
     return logout_handler(token)
 
