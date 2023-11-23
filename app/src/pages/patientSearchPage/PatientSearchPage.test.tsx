@@ -1,8 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
 import { PatientDetails } from '../../types/generic/patientDetails';
-import * as ReactRouter from 'react-router';
-import { createMemoryHistory } from 'history';
 import PatientSearchPage, { incorrectFormatMessage } from './PatientSearchPage';
 import userEvent from '@testing-library/user-event';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
@@ -10,9 +8,14 @@ import axios from 'axios';
 import { routes } from '../../types/generic/routes';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
+
+const mockedUseNavigate = jest.fn();
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useRole');
 jest.mock('axios');
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUseRole = useRole as jest.Mock;
 
@@ -135,37 +138,29 @@ describe('PatientSearchPage', () => {
 
     describe('Navigation', () => {
         it('navigates to download journey when role is PCSE', async () => {
-            const history = createMemoryHistory({ initialEntries: ['/example'] });
-
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: buildPatientDetails() }),
             );
             const role = REPOSITORY_ROLE.PCSE;
             mockedUseRole.mockReturnValue(role);
 
-            renderPatientSearchPage({}, history);
-            expect(history.location.pathname).toBe('/example');
+            renderPatientSearchPage();
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '9000000000');
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
             await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.DOWNLOAD_VERIFY);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.DOWNLOAD_VERIFY);
             });
         });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "navigates to upload journey when role is '%s'",
             async (role) => {
-                const history = createMemoryHistory({
-                    initialEntries: ['/example'],
-                });
-
                 mockedAxios.get.mockImplementation(() =>
                     Promise.resolve({ data: buildPatientDetails() }),
                 );
                 mockedUseRole.mockReturnValue(role);
-                renderPatientSearchPage({}, history);
-                expect(history.location.pathname).toBe('/example');
+                renderPatientSearchPage();
                 userEvent.type(
                     screen.getByRole('textbox', { name: 'Enter NHS number' }),
                     '9000000000',
@@ -173,14 +168,12 @@ describe('PatientSearchPage', () => {
                 userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
                 await waitFor(() => {
-                    expect(history.location.pathname).toBe(routes.UPLOAD_VERIFY);
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UPLOAD_VERIFY);
                 });
             },
         );
 
         it('navigates to start page when user is unauthorized to make request', async () => {
-            const history = createMemoryHistory({ initialEntries: ['/example'] });
-
             const errorResponse = {
                 response: {
                     status: 403,
@@ -190,13 +183,12 @@ describe('PatientSearchPage', () => {
 
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-            renderPatientSearchPage({}, history);
-            expect(history.location.pathname).toBe('/example');
+            renderPatientSearchPage();
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '9000000000');
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
             await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.HOME);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
             });
         });
     });
@@ -204,40 +196,33 @@ describe('PatientSearchPage', () => {
     describe('Validation', () => {
         it('allows NHS number with spaces to be submitted', async () => {
             const testNumber = '900 000 0000';
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
 
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: buildPatientDetails() }),
             );
 
-            renderPatientSearchPage({}, history);
-            expect(history.location.pathname).toBe('/example');
+            renderPatientSearchPage();
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), testNumber);
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
             await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.DOWNLOAD_VERIFY);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.DOWNLOAD_VERIFY);
             });
         });
 
         it('allows NHS number with dashes to be submitted', async () => {
             const testNumber = '900-000-0000';
-            const history = createMemoryHistory({ initialEntries: ['/example'] });
 
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: buildPatientDetails() }),
             );
 
-            renderPatientSearchPage({}, history);
-            expect(history.location.pathname).toBe('/example');
+            renderPatientSearchPage();
             userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), testNumber);
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
             await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.DOWNLOAD_VERIFY);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.DOWNLOAD_VERIFY);
             });
         });
 
@@ -266,23 +251,11 @@ describe('PatientSearchPage', () => {
     });
 });
 
-const testRoute = '/example';
-const renderPatientSearchPage = (
-    patientOverride: Partial<PatientDetails> = {},
-    history = createMemoryHistory({
-        initialEntries: [testRoute],
-    }),
-) => {
-    const patient: PatientDetails = {
-        ...buildPatientDetails(),
-        ...patientOverride,
-    };
-    const needsPatient = !!Object.keys(patientOverride).length;
+const renderPatientSearchPage = () => {
+    const patient: PatientDetails = buildPatientDetails();
     render(
-        <ReactRouter.Router navigator={history} location={testRoute}>
-            <PatientDetailsProvider patientDetails={needsPatient ? patient : undefined}>
-                <PatientSearchPage />
-            </PatientDetailsProvider>
-        </ReactRouter.Router>,
+        <PatientDetailsProvider patientDetails={patient}>
+            <PatientSearchPage />
+        </PatientDetailsProvider>,
     );
 };
