@@ -7,7 +7,7 @@ from requests import Response
 from services.pds_api_service import PdsApiService
 from tests.unit.helpers.data.pds.access_token_response import RESPONSE_TOKEN
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
-from utils.exceptions import PdsErrorException
+from utils.exceptions import PdsErrorException, PdsTooManyRequestsException
 
 
 class FakeSSMService:
@@ -498,3 +498,27 @@ def test_pds_request_raise_pds_error_exception(mocker):
         mock_get_parameters.assert_called_once()
         mock_new_access_token.assert_not_called()
         mock_post.assert_not_called()
+
+
+def test_pds_request_raise_exception_when_getting_429_too_many_requests_response(
+    mocker,
+):
+    mock_response = Response()
+    mock_response.status_code = 429
+    mock_response._content = b"Too Many Requests"
+
+    time_now = 1600000000
+    mock_response_token = mock_pds_token_response_issued_at(time_now)
+    mock_api_request_parameters = (
+        "api.test/endpoint/",
+        json.dumps(mock_response_token),
+    )
+    mocker.patch("services.pds_api_service.PdsApiService.get_new_access_token")
+    mocker.patch(
+        "services.pds_api_service.PdsApiService.get_parameters_for_pds_api_request",
+        return_value=mock_api_request_parameters,
+    )
+    mocker.patch("requests.get", return_value=mock_response)
+
+    with pytest.raises(PdsTooManyRequestsException):
+        pds_service.pds_request(nhs_number="1111111111", retry_on_expired=True)
