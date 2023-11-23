@@ -74,7 +74,7 @@ class AuthoriserService:
             case _:
                 deny_resource = False
 
-        logger.info("Allow resource: %s" % bool(deny_resource) is False)
+        logger.info("Allow resource: %s" % bool(deny_resource))
 
         return bool(deny_resource)
 
