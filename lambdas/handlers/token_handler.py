@@ -45,9 +45,10 @@ def lambda_handler(event, context):
 
     try:
         if not have_matching_state_value_in_record(state):
+            logger.info(f"Mismatching state values. Cannot find state {state} in record")
             return ApiGatewayResponse(
                 400,
-                f"Mismatching state values. Cannot find state {state} in record",
+                "Failed to authenticate user",
                 "GET",
             ).create_api_gateway_response()
 
@@ -187,8 +188,6 @@ def have_matching_state_value_in_record(state: str) -> bool:
     query_response = db_service.simple_query(
         table_name=state_table_name, key_condition_expression=Key("State").eq(state)
     )
-
-    logger.info(query_response)
 
     return "Count" in query_response and query_response["Count"] == 1
 
