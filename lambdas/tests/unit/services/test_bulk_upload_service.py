@@ -314,6 +314,18 @@ def test_put_staging_metadata_back_to_queue(set_env, mocker):
         delay_seconds=60 * 5,
     )
 
+def test_put_sqs_message_back_to_queue(set_env, mocker):
+    service = BulkUploadService()
+    service.sqs_service = mocker.MagicMock()
+
+    service.put_sqs_message_back_to_queue(TEST_SQS_MESSAGE)
+
+    service.sqs_service.send_message_with_nhs_number_attr.assert_called_with(
+        queue_url=MOCK_LG_METADATA_SQS_QUEUE,
+        message_body=TEST_SQS_MESSAGE['body'],
+        nhs_number=TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
+        delay_seconds=60 * 5,
+    )
 
 def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid):
     service = BulkUploadService()

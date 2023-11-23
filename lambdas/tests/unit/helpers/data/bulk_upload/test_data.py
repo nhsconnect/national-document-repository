@@ -93,6 +93,12 @@ def build_test_sqs_message(staging_metadata: StagingMetadata):
     }
 
 
+def build_test_sqs_message_from_nhs_number(nhs_number: str) -> dict:
+    file_names = make_valid_lg_file_names(total_number=3, nhs_number=nhs_number)
+    staging_metadata = build_test_staging_metadata(file_names=file_names, nhs_number=nhs_number)
+    return build_test_sqs_message(staging_metadata)
+
+
 def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"):
     doc_ref = NHSDocumentReference(
         nhs_number=nhs_number,
@@ -130,5 +136,11 @@ TEST_EVENT_WITH_SQS_MESSAGES = {
         TEST_SQS_MESSAGE,
         TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
         TEST_SQS_MESSAGE,
+    ]
+}
+
+TEST_EVENT_WITH_10_SQS_MESSAGES = {
+    "Records": [
+        build_test_sqs_message_from_nhs_number(str(nhs_number)) for nhs_number in range(9_000_000_000, 9_000_000_010)
     ]
 }

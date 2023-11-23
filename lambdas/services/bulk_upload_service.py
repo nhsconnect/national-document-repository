@@ -203,6 +203,19 @@ class BulkUploadService:
             delay_seconds=60 * 5,
         )
 
+    def put_sqs_message_back_to_queue(self, sqs_message: dict):
+        try:
+            nhs_number = sqs_message['messageAttributes']['NhsNumber']['stringValue']
+        except KeyError:
+            nhs_number = ""
+
+        self.sqs_service.send_message_with_nhs_number_attr(
+            queue_url=self.metadata_queue_url,
+            message_body=sqs_message['body'],
+            nhs_number=nhs_number,
+            delay_seconds=60 * 5,
+        )
+
     def init_transaction(self):
         self.dynamo_records_in_transaction = []
         self.source_bucket_files_in_transaction = []

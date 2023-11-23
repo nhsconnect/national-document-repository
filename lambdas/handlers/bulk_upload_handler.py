@@ -26,11 +26,12 @@ def lambda_handler(event, _context):
         except PdsTooManyRequestsException as error:
             logger.error(error)
             logger.info("Cannot process for now due to PDS rate limit reached.")
-            logger.info("Will put all remaining patients of this back to sqs queue")
+            logger.info("All remaining messages in this batch will be returned to sqs queue to retry later.")
 
             all_unprocessed_message = event["Records"][index - 1 :]
             for unprocessed_message in all_unprocessed_message:
                 bulk_upload_service.put_sqs_message_back_to_queue(unprocessed_message)
+            return
         except (
             ClientError,
             InvalidMessageException,
