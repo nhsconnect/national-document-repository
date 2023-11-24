@@ -19,7 +19,7 @@ logger = LoggingService(__name__)
 @set_request_context_for_logging
 @override_error_check
 @ensure_environment_variables(
-    names=["OIDC_CLIENT_ID", "OIDC_AUTHORISE_URL", "OIDC_CALLBACK_URL", "AUTH_DYNAMODB_NAME"]
+    names=["AUTH_DYNAMODB_NAME"]
 )
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
