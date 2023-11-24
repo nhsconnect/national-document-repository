@@ -51,6 +51,16 @@ def test_valid_file_name_special_characters():
         assert False, "One or more of the files do not match naming convention"
 
 
+def test_valid_file_name_with_apostrophe():
+    try:
+        file_name = (
+            "1of1_Lloyd_George_Record_[Joé Blöggê's-Glüë]_[1111111111]_[25-12-2019].pdf"
+        )
+        validate_file_name(file_name)
+    except LGInvalidFilesException:
+        assert False, "One or more of the files do not match naming convention"
+
+
 def test_files_with_duplication():
     with pytest.raises(LGInvalidFilesException):
         lg_file_list = [
