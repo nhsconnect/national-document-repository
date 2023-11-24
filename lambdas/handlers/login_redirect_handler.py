@@ -7,6 +7,7 @@ from enums.logging_app_interaction import LoggingAppInteraction
 from oauthlib.oauth2 import InsecureTransportError, WebApplicationClient
 from services.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.lambda_response import ApiGatewayResponse
@@ -17,6 +18,9 @@ logger = LoggingService(__name__)
 
 @set_request_context_for_logging
 @override_error_check
+@ensure_environment_variables(
+    names=["OIDC_CLIENT_ID", "OIDC_AUTHORISE_URL", "OIDC_CALLBACK_URL", "AUTH_DYNAMODB_NAME"]
+)
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
     return prepare_redirect_response(WebApplicationClient)
@@ -75,7 +79,7 @@ def prepare_redirect_response(web_application_client_class):
 
 
 def save_state_in_dynamo_db(state):
-    dynamodb_name = os.getenv["AUTH_DYNAMODB_NAME"]
+    dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
     dynamodb_service = DynamoDBService()
     ten_minutes = 60 * 10
     ttl = round(time.time()) + ten_minutes
