@@ -208,10 +208,10 @@ class BulkUploadService:
             )
             source_file_key = self.strip_leading_slash(file_metadata.file_path)
             dest_file_key = document_reference.s3_file_key
-            self.create_record_in_lg_dynamo_table(document_reference)
             self.copy_to_lg_bucket(
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
+            self.create_record_in_lg_dynamo_table(document_reference)
 
     def create_record_in_lg_dynamo_table(
         self, document_reference: NHSDocumentReference
