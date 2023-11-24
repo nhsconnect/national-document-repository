@@ -140,6 +140,9 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         )
 
         if contains_accent_char(patient_name):
+            # TODO: Remove this if branch and check patient name even if contain accent char.
+            # Convert the name from PDS to NFC form by "Le\u00c3\u00b3n ".encode('latin-1').decode('utf8'),
+            # then use `names_are_matching` in unicode_util to compare the names.
             logger.info(
                 "Bypassing name check as patient name contains accented character"
             )
