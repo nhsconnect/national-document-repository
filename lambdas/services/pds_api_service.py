@@ -9,7 +9,7 @@ from enums.pds_ssm_parameters import SSMParameter
 from requests.models import HTTPError
 from services.patient_search_service import PatientSearch
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import PdsErrorException, PdsTooManyRequestsException
+from utils.exceptions import PdsErrorException
 
 logger = LoggingService(__name__)
 

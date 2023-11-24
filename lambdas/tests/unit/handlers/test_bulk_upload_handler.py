@@ -1,10 +1,9 @@
 import pytest
 from handlers.bulk_upload_handler import lambda_handler
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    TEST_EVENT_WITH_SQS_MESSAGES,
-    TEST_EVENT_WITH_10_SQS_MESSAGES,
-)
-from utils.exceptions import InvalidMessageException, PdsTooManyRequestsException
+    TEST_EVENT_WITH_10_SQS_MESSAGES, TEST_EVENT_WITH_SQS_MESSAGES)
+from utils.exceptions import (InvalidMessageException,
+                              PdsTooManyRequestsException)
 
 
 @pytest.fixture
@@ -50,8 +49,8 @@ def test_lambda_handler_handle_pds_too_many_requests_exception(
     mocked_service.handle_sqs_message.side_effect = (
         [None] * 6 + [PdsTooManyRequestsException] + [None] * 3
     )
-    expected_handled_messages = TEST_EVENT_WITH_10_SQS_MESSAGES['Records'][0:6]
-    expected_unhandled_message = TEST_EVENT_WITH_10_SQS_MESSAGES['Records'][6:]
+    expected_handled_messages = TEST_EVENT_WITH_10_SQS_MESSAGES["Records"][0:6]
+    expected_unhandled_message = TEST_EVENT_WITH_10_SQS_MESSAGES["Records"][6:]
 
     lambda_handler(TEST_EVENT_WITH_10_SQS_MESSAGES, context)
 

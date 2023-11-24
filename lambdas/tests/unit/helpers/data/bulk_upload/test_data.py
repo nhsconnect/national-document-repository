@@ -95,7 +95,9 @@ def build_test_sqs_message(staging_metadata: StagingMetadata):
 
 def build_test_sqs_message_from_nhs_number(nhs_number: str) -> dict:
     file_names = make_valid_lg_file_names(total_number=3, nhs_number=nhs_number)
-    staging_metadata = build_test_staging_metadata(file_names=file_names, nhs_number=nhs_number)
+    staging_metadata = build_test_staging_metadata(
+        file_names=file_names, nhs_number=nhs_number
+    )
     return build_test_sqs_message(staging_metadata)
 
 
@@ -141,6 +143,7 @@ TEST_EVENT_WITH_SQS_MESSAGES = {
 
 TEST_EVENT_WITH_10_SQS_MESSAGES = {
     "Records": [
-        build_test_sqs_message_from_nhs_number(str(nhs_number)) for nhs_number in range(9_000_000_000, 9_000_000_010)
+        build_test_sqs_message_from_nhs_number(str(nhs_number))
+        for nhs_number in range(9_000_000_000, 9_000_000_010)
     ]
 }

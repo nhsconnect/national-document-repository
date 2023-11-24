@@ -3,7 +3,8 @@ from services.bulk_upload_service import BulkUploadService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.exceptions import InvalidMessageException, PdsTooManyRequestsException
+from utils.exceptions import (InvalidMessageException,
+                              PdsTooManyRequestsException)
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 logger = LoggingService(__name__)
@@ -26,7 +27,9 @@ def lambda_handler(event, _context):
         except PdsTooManyRequestsException as error:
             logger.error(error)
             logger.info("Cannot process for now due to PDS rate limit reached.")
-            logger.info("All remaining messages in this batch will be returned to sqs queue to retry later.")
+            logger.info(
+                "All remaining messages in this batch will be returned to sqs queue to retry later."
+            )
 
             all_unprocessed_message = event["Records"][index - 1 :]
             for unprocessed_message in all_unprocessed_message:

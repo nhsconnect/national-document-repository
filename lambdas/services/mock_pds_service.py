@@ -51,5 +51,5 @@ class MockPdsApiService(PatientSearch):
     def too_many_requests_response(self) -> Response:
         response = Response()
         response.status_code = 429
-        response._content = b'Too Many Requests'
+        response._content = b"Too Many Requests"
         return response
