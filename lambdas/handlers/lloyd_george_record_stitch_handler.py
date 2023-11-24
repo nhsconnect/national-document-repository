@@ -193,7 +193,7 @@ def upload_stitched_lg_record_and_retrieve_presign_url(
         "ContentType": "application/pdf",
     }
     s3_service.upload_file_stream_with_extra_args(
-        file_name=stitched_lg_record,
+        file_stream=stitched_lg_record,
         s3_bucket_name=upload_bucket_name,
         file_key=filename_on_bucket,
         extra_args=extra_args,
