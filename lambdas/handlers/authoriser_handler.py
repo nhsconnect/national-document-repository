@@ -22,6 +22,7 @@ from utils.exceptions import AuthorisationException
 from utils.request_context import request_context
 
 logger = LoggingService(__name__)
+authoriser_service = AuthoriserService()
 
 
 @set_request_context_for_logging
@@ -43,7 +44,6 @@ def lambda_handler(event, context):
     policy.region = region
     policy.stage = stage
     try:
-        authoriser_service = AuthoriserService()
         logger.info("Validating resource req: %s, http: %s" % (path, _http_verb))
         is_allow_policy = authoriser_service.auth_request(
             path, ssm_jwt_public_key_parameter, auth_token
