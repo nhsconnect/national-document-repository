@@ -59,7 +59,7 @@ function UploadDocumentsPage(props: Props) {
             />
         );
     } else if (stage === UPLOAD_STAGE.Uploading && patientDetails) {
-        return <UploadingStage patientDetails={patientDetails} documents={documents} />;
+        return <UploadingStage documents={documents} />;
     } else if (stage === UPLOAD_STAGE.Complete && patientDetails) {
         return <CompleteStage patientDetails={patientDetails} documents={documents} />;
     }

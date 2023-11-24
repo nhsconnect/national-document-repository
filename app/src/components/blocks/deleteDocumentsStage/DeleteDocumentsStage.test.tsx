@@ -6,16 +6,21 @@ import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import axios from 'axios/index';
-import * as ReactRouter from 'react-router';
-import { createMemoryHistory } from 'history';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../../types/generic/authRole';
 import { routes } from '../../../types/generic/routes';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
+jest.mock('../deletionConfirmationStage/DeletionConfirmationStage', () => () => (
+    <div>Deletion complete</div>
+));
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../helpers/hooks/useRole');
 jest.mock('axios');
+const mockedUseNavigate = jest.fn();
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
 const mockedUseRole = useRole as jest.Mock;
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
@@ -178,11 +183,6 @@ describe('DeleteDocumentsStage', () => {
 
 describe('Navigation', () => {
     it('navigates to home page when API call returns 403', async () => {
-        const history = createMemoryHistory({
-            initialEntries: ['/example'],
-            initialIndex: 1,
-        });
-
         const errorResponse = {
             response: {
                 status: 403,
@@ -192,9 +192,7 @@ describe('Navigation', () => {
         mockedAxios.delete.mockImplementation(() => Promise.reject(errorResponse));
         mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-        renderComponent(DOCUMENT_TYPE.ALL, history);
-
-        expect(history.location.pathname).toBe('/example');
+        renderComponent(DOCUMENT_TYPE.ALL);
 
         expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
@@ -205,18 +203,12 @@ describe('Navigation', () => {
         });
 
         await waitFor(() => {
-            expect(history.location.pathname).toBe(routes.HOME);
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
         });
     });
 });
 
-const homeRoute = '/example';
-const renderComponent = (
-    docType: DOCUMENT_TYPE,
-    history = createMemoryHistory({
-        initialEntries: [homeRoute],
-    }),
-) => {
+const renderComponent = (docType: DOCUMENT_TYPE) => {
     const props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'> = {
         patientDetails: mockPatientDetails,
         numberOfFiles: mockLgSearchResult.number_of_files,
@@ -224,13 +216,11 @@ const renderComponent = (
     };
 
     render(
-        <ReactRouter.Router navigator={history} location={homeRoute}>
-            <DeleteDocumentsStage
-                {...props}
-                setStage={mockSetStage}
-                setIsDeletingDocuments={mockSetIsDeletingDocuments}
-                setDownloadStage={mockSetDownloadStage}
-            />
-        </ReactRouter.Router>,
+        <DeleteDocumentsStage
+            {...props}
+            setStage={mockSetStage}
+            setIsDeletingDocuments={mockSetIsDeletingDocuments}
+            setDownloadStage={mockSetDownloadStage}
+        />,
     );
 };

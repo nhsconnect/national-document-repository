@@ -3,18 +3,26 @@ import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/
 import DeletionConfirmationStage from './DeletionConfirmationStage';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import * as ReactRouter from 'react-router';
-import { createMemoryHistory } from 'history';
 import { routes } from '../../../types/generic/routes';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
-jest.mock('../../../helpers/hooks/useRole');
-const mockedUseRole = useRole as jest.Mock;
+import { LinkProps } from 'react-router-dom';
 
+jest.mock('../../../helpers/hooks/useRole');
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} role="link" />,
+}));
+
+const mockedUseRole = useRole as jest.Mock;
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
 const mockSetStage = jest.fn();
+const mockedUseNavigate = jest.fn();
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
 
 describe('DeletionConfirmationStage', () => {
     beforeEach(() => {
@@ -32,7 +40,13 @@ describe('DeletionConfirmationStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
 
                 mockedUseRole.mockReturnValue(role);
-                renderComponent(numberOfFiles);
+                render(
+                    <DeletionConfirmationStage
+                        numberOfFiles={numberOfFiles}
+                        patientDetails={mockPatientDetails}
+                        setStage={mockSetStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -55,22 +69,26 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = 1;
 
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
-            renderComponent(numberOfFiles);
+            render(
+                <DeletionConfirmationStage
+                    numberOfFiles={numberOfFiles}
+                    patientDetails={mockPatientDetails}
+                    setStage={mockSetStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
             });
 
             expect(
+                screen.queryByText(`${numberOfFiles} files from the Lloyd George record of:`),
+            ).not.toBeInTheDocument();
+            expect(
                 screen.getByText(`${numberOfFiles} file from the record of:`),
             ).toBeInTheDocument();
             expect(screen.getByText(patientName)).toBeInTheDocument();
             expect(screen.getByText(/NHS number/)).toBeInTheDocument();
-            expect(
-                screen.getByRole('link', {
-                    name: 'Start Again',
-                }),
-            ).toBeInTheDocument();
         });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
@@ -79,7 +97,13 @@ describe('DeletionConfirmationStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
 
-                renderComponent(numberOfFiles);
+                render(
+                    <DeletionConfirmationStage
+                        numberOfFiles={numberOfFiles}
+                        patientDetails={mockPatientDetails}
+                        setStage={mockSetStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -97,7 +121,13 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = mockLgSearchResult.number_of_files;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            renderComponent(numberOfFiles);
+            render(
+                <DeletionConfirmationStage
+                    numberOfFiles={numberOfFiles}
+                    patientDetails={mockPatientDetails}
+                    setStage={mockSetStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -114,7 +144,13 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            renderComponent(numberOfFiles);
+            render(
+                <DeletionConfirmationStage
+                    numberOfFiles={numberOfFiles}
+                    patientDetails={mockPatientDetails}
+                    setStage={mockSetStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -133,7 +169,13 @@ describe('DeletionConfirmationStage', () => {
                 const numberOfFiles = 7;
                 mockedUseRole.mockReturnValue(role);
 
-                renderComponent(numberOfFiles);
+                render(
+                    <DeletionConfirmationStage
+                        numberOfFiles={numberOfFiles}
+                        patientDetails={mockPatientDetails}
+                        setStage={mockSetStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -153,7 +195,13 @@ describe('DeletionConfirmationStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
 
-                renderComponent(numberOfFiles);
+                render(
+                    <DeletionConfirmationStage
+                        numberOfFiles={numberOfFiles}
+                        patientDetails={mockPatientDetails}
+                        setStage={mockSetStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -176,49 +224,28 @@ describe('DeletionConfirmationStage', () => {
 
     describe('Navigation', () => {
         it('navigates to Home page when link is clicked when user role is PCSE', async () => {
-            const history = createMemoryHistory({
-                initialEntries: ['/'],
-                initialIndex: 0,
-            });
-
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            renderComponent(numberOfFiles, history);
+            render(
+                <DeletionConfirmationStage
+                    numberOfFiles={numberOfFiles}
+                    patientDetails={mockPatientDetails}
+                    setStage={mockSetStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
             });
 
             act(() => {
-                userEvent.click(
-                    screen.getByRole('link', {
-                        name: 'Start Again',
-                    }),
-                );
+                userEvent.click(screen.getByRole('link'));
             });
 
             await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.HOME);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
             });
         });
     });
 });
-
-const renderComponent = (
-    numberOfFiles: number,
-    history = createMemoryHistory({
-        initialEntries: ['/'],
-        initialIndex: 0,
-    }),
-) => {
-    render(
-        <ReactRouter.Router navigator={history} location={'/'}>
-            <DeletionConfirmationStage
-                numberOfFiles={numberOfFiles}
-                patientDetails={mockPatientDetails}
-                setStage={mockSetStage}
-            />
-        </ReactRouter.Router>,
-    );
-};
