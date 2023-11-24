@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
-import { useNavigate } from 'react-router';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
@@ -11,15 +9,15 @@ import LloydGeorgeDownloadAllStage from '../../components/blocks/lloydGeorgeDown
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import usePatient from '../../helpers/hooks/usePatient';
 
 function LloydGeorgeRecordPage() {
-    const [patientDetails] = usePatientDetailsContext();
+    const patientDetails = usePatient();
     const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
     const [numberOfFiles, setNumberOfFiles] = useState(0);
     const [totalFileSizeInByte, setTotalFileSizeInByte] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
     const [lloydGeorgeUrl, setLloydGeorgeUrl] = useState('');
-    const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
@@ -56,7 +54,6 @@ function LloydGeorgeRecordPage() {
         patientDetails,
         baseUrl,
         baseHeaders,
-        navigate,
         setDownloadStage,
         setLloydGeorgeUrl,
         setLastUpdated,

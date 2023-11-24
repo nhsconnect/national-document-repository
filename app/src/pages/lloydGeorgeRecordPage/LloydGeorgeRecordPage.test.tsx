@@ -1,25 +1,23 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
-import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
-import {
-    buildPatientDetails,
-    buildLgSearchResult,
-    buildUserAuth,
-} from '../../helpers/test/testBuilders';
+import { buildPatientDetails, buildLgSearchResult } from '../../helpers/test/testBuilders';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import axios from 'axios';
-import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
 import formatFileSize from '../../helpers/utils/formatFileSize';
+import usePatient from '../../helpers/hooks/usePatient';
 
 jest.mock('axios');
-jest.mock('react-router');
-
+jest.mock('../../helpers/hooks/usePatient');
+jest.mock('../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../helpers/hooks/useBaseAPIUrl');
+jest.mock('../../helpers/hooks/useRole');
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockPatientDetails = buildPatientDetails();
-
+const mockedUsePatient = usePatient as jest.Mock;
 describe('LloydGeorgeRecordPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatientDetails);
     });
 
     afterEach(() => {
@@ -31,7 +29,7 @@ describe('LloydGeorgeRecordPage', () => {
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
-        renderPage();
+        render(<LloydGeorgeRecordPage />);
 
         await waitFor(async () => {
             expect(screen.getByText(patientName)).toBeInTheDocument();
@@ -41,7 +39,7 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     it('renders initial lg record view', async () => {
-        renderPage();
+        render(<LloydGeorgeRecordPage />);
         await waitFor(async () => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
@@ -57,7 +55,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-        renderPage();
+        render(<LloydGeorgeRecordPage />);
 
         await waitFor(async () => {
             expect(screen.getByText('No documents are available')).toBeInTheDocument();
@@ -69,7 +67,7 @@ describe('LloydGeorgeRecordPage', () => {
     it('displays Loading... until the pdf is fetched', async () => {
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
-        renderPage();
+        render(<LloydGeorgeRecordPage />);
 
         await waitFor(async () => {
             expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -80,7 +78,7 @@ describe('LloydGeorgeRecordPage', () => {
         const lgResult = buildLgSearchResult();
         mockAxios.get.mockReturnValue(Promise.resolve({ data: lgResult }));
 
-        renderPage();
+        render(<LloydGeorgeRecordPage />);
 
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
@@ -98,17 +96,3 @@ describe('LloydGeorgeRecordPage', () => {
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
     });
 });
-
-const renderPage = () => {
-    const auth: Session = {
-        auth: buildUserAuth(),
-        isLoggedIn: true,
-    };
-    render(
-        <SessionProvider sessionOverride={auth}>
-            <PatientDetailsProvider patientDetails={mockPatientDetails}>
-                <LloydGeorgeRecordPage />
-            </PatientDetailsProvider>
-        </SessionProvider>,
-    );
-};
