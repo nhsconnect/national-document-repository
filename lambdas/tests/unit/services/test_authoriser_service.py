@@ -1,5 +1,4 @@
 import pytest
-
 from enums.repository_role import RepositoryRole
 from services.authoriser_service import AuthoriserService
 from services.dynamo_service import DynamoDBService
@@ -84,22 +83,26 @@ def mock_jwt_decode(mocker):
 
 
 @pytest.mark.parametrize(
-    "test_path",
-    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference"]
+    "test_path", ["/DocumentManifest", "/DocumentDelete", "/DocumentReference"]
 )
-def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(test_path,
-                                                                  mock_auth_service: AuthoriserService,
-                                                                  ):
+def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(
+    test_path,
+    mock_auth_service: AuthoriserService,
+):
     expected = True
-    actual = mock_auth_service.deny_access_policy(test_path, RepositoryRole.GP_CLINICAL.value)
+    actual = mock_auth_service.deny_access_policy(
+        test_path, RepositoryRole.GP_CLINICAL.value
+    )
     assert expected == actual
 
 
 def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
-        mock_auth_service: AuthoriserService,
+    mock_auth_service: AuthoriserService,
 ):
     expected = False
-    actual = mock_auth_service.deny_access_policy("/SearchPatient", RepositoryRole.GP_CLINICAL.value)
+    actual = mock_auth_service.deny_access_policy(
+        "/SearchPatient", RepositoryRole.GP_CLINICAL.value
+    )
     assert expected == actual
 
 
@@ -108,11 +111,12 @@ def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
 
 @pytest.mark.parametrize(
     "test_path",
-    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "/SearchPatient"]
+    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "/SearchPatient"],
 )
-def test_deny_access_policy_returns_false_for_pcse_on_all_paths(test_path,
-                                                                mock_auth_service: AuthoriserService,
-                                                                ):
+def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
+    test_path,
+    mock_auth_service: AuthoriserService,
+):
     expected = False
     actual = mock_auth_service.deny_access_policy(test_path, RepositoryRole.PCSE.value)
     assert expected == actual
@@ -120,7 +124,7 @@ def test_deny_access_policy_returns_false_for_pcse_on_all_paths(test_path,
 
 ############### Unhappy paths ###############
 def test_deny_access_policy_returns_false_for_unrecognised_path(
-        mock_auth_service: AuthoriserService,
+    mock_auth_service: AuthoriserService,
 ):
     expected = False
 
@@ -137,7 +141,7 @@ def test_find_login_session(set_env, mock_dynamo, mock_auth_service: AuthoriserS
 
 
 def test_find_login_session_raises_auth_exception(
-        mocker, set_env, mock_auth_service: AuthoriserService
+    mocker, set_env, mock_auth_service: AuthoriserService
 ):
     invalid_session_record = {
         "Count": 1,
@@ -164,9 +168,9 @@ def test_validate_login_expired_session(mocker, mock_auth_service: AuthoriserSer
 
 
 @pytest.mark.parametrize("path_test", ["/DocumentManifest"])
-def test_valid_gp_admin_token_returns_allow_policy_true(path_test,
-                                                        mock_jwt_decode, mocker, mock_auth_service: AuthoriserService
-                                                        ):
+def test_valid_gp_admin_token_returns_allow_policy_true(
+    path_test, mock_jwt_decode, mocker, mock_auth_service: AuthoriserService
+):
     auth_token = "valid_gp_admin_token"
 
     mock_find_login_session = mocker.patch(
@@ -195,10 +199,7 @@ def test_valid_gp_admin_token_returns_allow_policy_true(path_test,
 
 @pytest.mark.parametrize("test_path", ["/SearchPatient"])
 def test_valid_pcse_token_return_allow_policy_true(
-        test_path,
-        mocker,
-        mock_jwt_decode,
-        mock_auth_service: AuthoriserService
+    test_path, mocker, mock_jwt_decode, mock_auth_service: AuthoriserService
 ):
     auth_token = "valid_pcse_token"
 
@@ -227,10 +228,7 @@ def test_valid_pcse_token_return_allow_policy_true(
 
 @pytest.mark.parametrize("test_path", ["/SearchPatient"])
 def test_return_deny_policy_when_no_session_found(
-        test_path,
-        mocker,
-        mock_jwt_decode,
-        mock_auth_service: AuthoriserService
+    test_path, mocker, mock_jwt_decode, mock_auth_service: AuthoriserService
 ):
     auth_token = "valid_pcse_token"
 
@@ -245,7 +243,7 @@ def test_return_deny_policy_when_no_session_found(
         "services.authoriser_service.AuthoriserService.deny_access_policy"
     )
     with pytest.raises(AuthorisationException):
-        mock_auth_service.auth_request(test_path,"test public key", auth_token)
+        mock_auth_service.auth_request(test_path, "test public key", auth_token)
 
         mock_jwt_decode.assert_called_with(
             auth_token=auth_token, ssm_public_key_parameter="test public key"
@@ -260,10 +258,10 @@ def test_return_deny_policy_when_no_session_found(
 
 @pytest.mark.parametrize("test_path", ["/SearchPatient"])
 def test_raise_exception_when_user_session_is_expired(
-        test_path,
-        mocker,
-        mock_auth_service: AuthoriserService,
-        mock_jwt_decode,
+    test_path,
+    mocker,
+    mock_auth_service: AuthoriserService,
+    mock_jwt_decode,
 ):
     auth_token = "valid_pcse_token"
 
@@ -291,7 +289,7 @@ def test_raise_exception_when_user_session_is_expired(
 
 @pytest.mark.parametrize("test_path", ["/SearchPatient"])
 def test_invalid_token__raise_exception(
-        test_path, mocker, mock_jwt_decode, mock_auth_service: AuthoriserService
+    test_path, mocker, mock_jwt_decode, mock_auth_service: AuthoriserService
 ):
     auth_token = "invalid_token"
 

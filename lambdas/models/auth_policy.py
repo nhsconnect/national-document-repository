@@ -105,7 +105,10 @@ class AuthPolicy(object):
             statement = self._get_empty_statement(effect)
 
             for cur_method in methods:
-                if cur_method["conditions"] is None or len(cur_method["conditions"]) == 0:
+                if (
+                    cur_method["conditions"] is None
+                    or len(cur_method["conditions"]) == 0
+                ):
                     statement["Resource"].append(cur_method["resourceArn"])
                 else:
                     conditional_statement = self._get_empty_statement(effect)
@@ -141,7 +144,7 @@ class AuthPolicy(object):
         one statement for Allow and one statement for Deny.
         Methods that includes conditions will have their own statement in the policy."""
         if (self.allow_methods is None or len(self.allow_methods) == 0) and (
-                self.deny_methods is None or len(self.deny_methods) == 0
+            self.deny_methods is None or len(self.deny_methods) == 0
         ):
             raise NameError("No statements defined for the policy")
 

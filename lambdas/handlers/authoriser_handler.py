@@ -44,9 +44,7 @@ def lambda_handler(event, context):
     policy.stage = stage
     try:
         authoriser_service = AuthoriserService()
-        logger.info(
-            "Validating resource req: %s, http: %s" % (path, _http_verb)
-        )
+        logger.info("Validating resource req: %s, http: %s" % (path, _http_verb))
         is_allow_policy = authoriser_service.auth_request(
             path, ssm_jwt_public_key_parameter, auth_token
         )

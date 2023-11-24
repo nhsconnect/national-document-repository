@@ -2,7 +2,6 @@ import os
 import time
 
 from boto3.dynamodb.conditions import Key
-
 from enums.repository_role import RepositoryRole
 from services.dynamo_service import DynamoDBService
 from services.ssm_service import SSMService
