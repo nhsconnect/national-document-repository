@@ -4,7 +4,6 @@ import time
 from boto3.dynamodb.conditions import Key
 from enums.repository_role import RepositoryRole
 from services.dynamo_service import DynamoDBService
-from services.ssm_service import SSMService
 from services.token_service import TokenService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
@@ -13,17 +12,18 @@ from utils.utilities import redact_id_to_last_4_chars
 
 logger = LoggingService(__name__)
 
+token_service = TokenService()
+
 
 class AuthoriserService:
     def __init__(
         self,
     ):
         self.redact_session_id = ""
-        self.token_service = TokenService(SSMService())
 
     def auth_request(self, path, ssm_jwt_public_key_parameter, auth_token):
         try:
-            decoded_token = self.token_service.get_public_key_and_decode_auth_token(
+            decoded_token = token_service.get_public_key_and_decode_auth_token(
                 auth_token=auth_token,
                 ssm_public_key_parameter=ssm_jwt_public_key_parameter,
             )
