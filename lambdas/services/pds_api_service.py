@@ -43,11 +43,7 @@ class PdsApiService(PatientSearch):
             pds_response = requests.get(url=url_endpoint, headers=authorization_header)
             if pds_response.status_code == 401 and retry_on_expired:
                 return self.pds_request(nhs_number, retry_on_expired=False)
-            elif pds_response.status_code == 429:
-                logger.error("Got 429 Too Many Requests error from PDS.")
-                raise PdsTooManyRequestsException(
-                    "Failed to perform search due to too many requests"
-                )
+
             return pds_response
 
         except ClientError as e:
