@@ -18,15 +18,11 @@ logger = LoggingService(__name__)
 class AuthoriserService:
     def __init__(
         self,
-        path,
-        _http_verb,
     ):
-        self.path = path
-        self._http_verb = _http_verb
         self.redact_session_id = ""
         self.token_service = TokenService(SSMService())
 
-    def auth_request(self, ssm_jwt_public_key_parameter, auth_token):
+    def auth_request(self, path, ssm_jwt_public_key_parameter, auth_token):
         try:
             decoded_token = self.token_service.get_public_key_and_decode_auth_token(
                 auth_token=auth_token,
@@ -43,7 +39,7 @@ class AuthoriserService:
             current_session = self.find_login_session(ndr_session_id)
             self.validate_login_session(float(current_session["TimeToExist"]))
 
-            resource_denied = self.deny_access_policy(user_role)
+            resource_denied = self.deny_access_policy(path, user_role)
             allow_policy = False
 
             if not resource_denied:
@@ -55,13 +51,10 @@ class AuthoriserService:
         except (KeyError, IndexError) as e:
             raise AuthorisationException(e)
 
-    def deny_access_policy(self, user_role):
-        logger.info(
-            "Validating resource req: %s, http: %s" % (self.path, self._http_verb)
-        )
-
-        logger.info(f"Path: {self.path}")
-        match self.path:
+    @staticmethod
+    def deny_access_policy(path, user_role):
+        logger.info(f"Path: {path}")
+        match path:
             case "/DocumentDelete":
                 deny_resource = user_role == RepositoryRole.GP_CLINICAL.value
 
@@ -74,7 +67,7 @@ class AuthoriserService:
             case _:
                 deny_resource = False
 
-        logger.info("Allow resource: %s" %(not deny_resource))
+        logger.info("Allow resource: %s" % (not deny_resource))
 
         return bool(deny_resource)
 

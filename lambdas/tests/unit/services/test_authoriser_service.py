@@ -5,7 +5,6 @@ from services.authoriser_service import AuthoriserService
 from services.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
 
-
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:74747474747474:<<restApiId>/dev"
 TEST_PUBLIC_KEY = "test_public_key"
 DENY_ALL_POLICY = {
@@ -28,8 +27,8 @@ MOCK_CURRENT_SESSION = {
 
 
 @pytest.fixture(scope="function")
-def mock_auth_service(request):
-    mock_test_auth_service = AuthoriserService(request.param, "GET")
+def mock_auth_service():
+    mock_test_auth_service = AuthoriserService()
     yield mock_test_auth_service
 
 
@@ -85,24 +84,22 @@ def mock_jwt_decode(mocker):
 
 
 @pytest.mark.parametrize(
-    "mock_auth_service",
-    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference"],
-    indirect=True,
+    "test_path",
+    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference"]
 )
-def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(
-    mock_auth_service: AuthoriserService,
-):
+def test_deny_access_policy_returns_true_for_gp_clinical_on_paths(test_path,
+                                                                  mock_auth_service: AuthoriserService,
+                                                                  ):
     expected = True
-    actual = mock_auth_service.deny_access_policy(RepositoryRole.GP_CLINICAL.value)
+    actual = mock_auth_service.deny_access_policy(test_path, RepositoryRole.GP_CLINICAL.value)
     assert expected == actual
 
 
-@pytest.mark.parametrize("mock_auth_service", ["/SearchPatient"], indirect=True)
 def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
-    mock_auth_service: AuthoriserService,
+        mock_auth_service: AuthoriserService,
 ):
     expected = False
-    actual = mock_auth_service.deny_access_policy(RepositoryRole.GP_CLINICAL.value)
+    actual = mock_auth_service.deny_access_policy("/SearchPatient", RepositoryRole.GP_CLINICAL.value)
     assert expected == actual
 
 
@@ -110,35 +107,28 @@ def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
 
 
 @pytest.mark.parametrize(
-    "mock_auth_service",
-    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "/SearchPatient"],
-    indirect=True,
+    "test_path",
+    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "/SearchPatient"]
 )
-def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
-    mock_auth_service: AuthoriserService,
-):
+def test_deny_access_policy_returns_false_for_pcse_on_all_paths(test_path,
+                                                                mock_auth_service: AuthoriserService,
+                                                                ):
     expected = False
-    actual = mock_auth_service.deny_access_policy(RepositoryRole.PCSE.value)
+    actual = mock_auth_service.deny_access_policy(test_path, RepositoryRole.PCSE.value)
     assert expected == actual
 
 
 ############### Unhappy paths ###############
-@pytest.mark.parametrize("mock_auth_service", ["/test"], indirect=True)
 def test_deny_access_policy_returns_false_for_unrecognised_path(
-    mock_auth_service: AuthoriserService,
+        mock_auth_service: AuthoriserService,
 ):
     expected = False
 
-    actual = mock_auth_service.deny_access_policy(RepositoryRole.PCSE.value)
+    actual = mock_auth_service.deny_access_policy("/test", RepositoryRole.PCSE.value)
 
     assert expected == actual
 
 
-@pytest.mark.parametrize(
-    "mock_auth_service",
-    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference"],
-    indirect=True,
-)
 def test_find_login_session(set_env, mock_dynamo, mock_auth_service: AuthoriserService):
     expected = MOCK_CURRENT_SESSION
     actual = mock_auth_service.find_login_session(MOCK_SESSION_ID)
@@ -146,13 +136,8 @@ def test_find_login_session(set_env, mock_dynamo, mock_auth_service: AuthoriserS
     assert expected == actual
 
 
-@pytest.mark.parametrize(
-    "mock_auth_service",
-    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference"],
-    indirect=True,
-)
 def test_find_login_session_raises_auth_exception(
-    mocker, set_env, mock_auth_service: AuthoriserService
+        mocker, set_env, mock_auth_service: AuthoriserService
 ):
     invalid_session_record = {
         "Count": 1,
@@ -164,11 +149,6 @@ def test_find_login_session_raises_auth_exception(
         mock_auth_service.find_login_session("test session id")
 
 
-@pytest.mark.parametrize(
-    "mock_auth_service",
-    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference"],
-    indirect=True,
-)
 def test_validate_login_session(mocker, mock_auth_service: AuthoriserService):
     mocker.patch("time.time", return_value=2400000)
     try:
@@ -177,21 +157,16 @@ def test_validate_login_session(mocker, mock_auth_service: AuthoriserService):
         assert False, "test"
 
 
-@pytest.mark.parametrize(
-    "mock_auth_service",
-    ["/DocumentManifest", "/DocumentDelete", "/DocumentReference"],
-    indirect=True,
-)
 def test_validate_login_expired_session(mocker, mock_auth_service: AuthoriserService):
     mocker.patch("time.time", return_value=2400000)
     with pytest.raises(AuthorisationException):
         mock_auth_service.validate_login_session(session_expiry_time=1400000)
 
 
-@pytest.mark.parametrize("mock_auth_service", ["/DocumentManifest"], indirect=True)
-def test_valid_gp_admin_token_returns_allow_policy_true(
-    mock_jwt_decode, mocker, mock_auth_service: AuthoriserService
-):
+@pytest.mark.parametrize("path_test", ["/DocumentManifest"])
+def test_valid_gp_admin_token_returns_allow_policy_true(path_test,
+                                                        mock_jwt_decode, mocker, mock_auth_service: AuthoriserService
+                                                        ):
     auth_token = "valid_gp_admin_token"
 
     mock_find_login_session = mocker.patch(
@@ -207,20 +182,23 @@ def test_valid_gp_admin_token_returns_allow_policy_true(
         return_value=False,
     )
 
-    response = mock_auth_service.auth_request("test public key", auth_token)
+    response = mock_auth_service.auth_request(path_test, "test public key", auth_token)
 
     mock_jwt_decode.assert_called_with(
         auth_token=auth_token, ssm_public_key_parameter="test public key"
     )
-    assert response == True
+    assert response
     mock_find_login_session.assert_called_once()
     mock_validate_login_session.assert_called_once()
     mock_deny_access_policy.assert_called_once()
 
 
-@pytest.mark.parametrize("mock_auth_service", ["/SearchPatient"], indirect=True)
+@pytest.mark.parametrize("test_path", ["/SearchPatient"])
 def test_valid_pcse_token_return_allow_policy_true(
-    mocker, mock_jwt_decode, mock_auth_service: AuthoriserService
+        test_path,
+        mocker,
+        mock_jwt_decode,
+        mock_auth_service: AuthoriserService
 ):
     auth_token = "valid_pcse_token"
 
@@ -236,7 +214,7 @@ def test_valid_pcse_token_return_allow_policy_true(
         return_value=False,
     )
 
-    response = mock_auth_service.auth_request("test public key", auth_token)
+    response = mock_auth_service.auth_request(test_path, "test public key", auth_token)
 
     mock_jwt_decode.assert_called_with(
         auth_token=auth_token, ssm_public_key_parameter="test public key"
@@ -247,9 +225,12 @@ def test_valid_pcse_token_return_allow_policy_true(
     mock_deny_access_policy.assert_called_once()
 
 
-@pytest.mark.parametrize("mock_auth_service", ["/SearchPatient"], indirect=True)
+@pytest.mark.parametrize("test_path", ["/SearchPatient"])
 def test_return_deny_policy_when_no_session_found(
-    mocker, mock_jwt_decode, mock_auth_service: AuthoriserService
+        test_path,
+        mocker,
+        mock_jwt_decode,
+        mock_auth_service: AuthoriserService
 ):
     auth_token = "valid_pcse_token"
 
@@ -264,7 +245,7 @@ def test_return_deny_policy_when_no_session_found(
         "services.authoriser_service.AuthoriserService.deny_access_policy"
     )
     with pytest.raises(AuthorisationException):
-        mock_auth_service.auth_request("test public key", auth_token)
+        mock_auth_service.auth_request(test_path,"test public key", auth_token)
 
         mock_jwt_decode.assert_called_with(
             auth_token=auth_token, ssm_public_key_parameter="test public key"
@@ -277,11 +258,12 @@ def test_return_deny_policy_when_no_session_found(
 ############### GP Clinical user allow/deny ###############
 
 
-@pytest.mark.parametrize("mock_auth_service", ["/SearchPatient"], indirect=True)
+@pytest.mark.parametrize("test_path", ["/SearchPatient"])
 def test_raise_exception_when_user_session_is_expired(
-    mocker,
-    mock_auth_service: AuthoriserService,
-    mock_jwt_decode,
+        test_path,
+        mocker,
+        mock_auth_service: AuthoriserService,
+        mock_jwt_decode,
 ):
     auth_token = "valid_pcse_token"
 
@@ -297,7 +279,7 @@ def test_raise_exception_when_user_session_is_expired(
         "services.authoriser_service.AuthoriserService.deny_access_policy"
     )
     with pytest.raises(AuthorisationException):
-        mock_auth_service.auth_request("test public key", auth_token)
+        mock_auth_service.auth_request(test_path, "test public key", auth_token)
 
     mock_jwt_decode.assert_called_with(
         auth_token=auth_token, ssm_public_key_parameter="test public key"
@@ -307,9 +289,9 @@ def test_raise_exception_when_user_session_is_expired(
     mock_deny_access_policy.assert_not_called()
 
 
-@pytest.mark.parametrize("mock_auth_service", ["/SearchPatient"], indirect=True)
+@pytest.mark.parametrize("test_path", ["/SearchPatient"])
 def test_invalid_token__raise_exception(
-    mocker, mock_jwt_decode, mock_auth_service: AuthoriserService
+        test_path, mocker, mock_jwt_decode, mock_auth_service: AuthoriserService
 ):
     auth_token = "invalid_token"
 
@@ -323,7 +305,7 @@ def test_invalid_token__raise_exception(
         "services.authoriser_service.AuthoriserService.deny_access_policy"
     )
     with pytest.raises(AuthorisationException):
-        mock_auth_service.auth_request("test public key", auth_token)
+        mock_auth_service.auth_request(test_path, "test public key", auth_token)
 
     mock_jwt_decode.assert_called_with(
         auth_token=auth_token, ssm_public_key_parameter="test public key"
