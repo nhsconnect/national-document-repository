@@ -1,4 +1,5 @@
 from uuid import uuid4
+import io
 
 from PyPDF2 import PdfReader, PdfWriter
 from utils.audit_logging_setup import LoggingService
@@ -16,8 +17,9 @@ def stitch_pdf(filenames: list[str]) -> str:
     output_filename = f"/tmp/{str(uuid4())}.pdf"
 
     logger.info(f"Writting files as pdf: {filename}")
-    merger.write(output_filename)
-    return output_filename
+    response_bytes_stream = io.BytesIO()
+    merger.write(response_bytes_stream)
+    return output_filename, response_bytes_stream
 
 
 def count_page_number(filename: str) -> int:
