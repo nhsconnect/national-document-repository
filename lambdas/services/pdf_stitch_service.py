@@ -11,8 +11,11 @@ def stitch_pdf(filenames: list[str]) -> str:
     # Using /tmp/ as it is the only writable location on lambdas.
     merger = PdfWriter()
     for filename in filenames:
+        logger.info(f"Adding file contents to pds writter for: {filename}")
         merger.append(filename)
     output_filename = f"/tmp/{str(uuid4())}.pdf"
+
+    logger.info(f"Writting files as pdf: {filename}")
     merger.write(output_filename)
     return output_filename
 

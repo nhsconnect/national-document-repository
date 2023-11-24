@@ -39,6 +39,8 @@ def lambda_handler(event, context):
     lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
 
     try:
+
+        logger.info(f"Getting Lloyd George Docs for patient {nhs_number}")
         response = get_lloyd_george_records_for_patient(
             lloyd_george_table_name, nhs_number
         )
@@ -47,9 +49,12 @@ def lambda_handler(event, context):
                 404, f"Lloyd george record not found for patient {nhs_number}", "GET"
             ).create_api_gateway_response()
 
+        logger.info(f"Ordering filenames")
         ordered_lg_records = order_response_by_filenames(response["Items"])
 
         s3_service = S3Service()
+
+        logger.info(f"Downloading files")
         all_lg_parts = download_lloyd_george_files(
             lloyd_george_bucket_name, ordered_lg_records, s3_service
         )
@@ -61,11 +66,17 @@ def lambda_handler(event, context):
 
     try:
         filename_for_stitched_file = make_filename_for_stitched_file(response["Items"])
+
+        logger.info(f"Sitching Starting")
         stitched_lg_record = stitch_pdf(all_lg_parts)
+
+        logger.info(f"Sitching ended")
 
         number_of_files = len(response["Items"])
         last_updated = get_most_recent_created_date(response["Items"])
         total_file_size = get_total_file_size(all_lg_parts)
+
+        logger.info("uploading new file to s3")
         presign_url = upload_stitched_lg_record_and_retrieve_presign_url(
             stitched_lg_record=stitched_lg_record,
             filename_on_bucket=f"{nhs_number}/{filename_for_stitched_file}",
