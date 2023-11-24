@@ -200,6 +200,7 @@ class BulkUploadService:
     def put_staging_metadata_back_to_queue(self, staging_metadata: StagingMetadata):
         request_context.patient_nhs_no = staging_metadata.nhs_number
 
+        logger.info("Returning message to sqs queue...")
         self.sqs_service.send_message_with_nhs_number_attr(
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
@@ -214,6 +215,7 @@ class BulkUploadService:
         except KeyError:
             nhs_number = ""
 
+        logger.info("Returning message to sqs queue...")
         self.sqs_service.send_message_with_nhs_number_attr(
             queue_url=self.metadata_queue_url,
             message_body=sqs_message["body"],
