@@ -45,3 +45,7 @@ def get_pds_service():
         if (os.getenv("PDS_FHIR_IS_STUBBED") == "false")
         else MockPdsApiService
     )
+
+
+def redact_id_to_last_4_chars(str_id: str) -> str:
+    return str_id[-4:]
