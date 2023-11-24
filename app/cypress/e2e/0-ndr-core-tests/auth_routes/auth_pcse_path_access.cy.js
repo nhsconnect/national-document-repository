@@ -13,12 +13,11 @@ const patient = {
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 const forbiddenRoutes = [
-    '/search/patient/lloyd-george-record',
-    '/search/upload',
-    '/search/upload/result',
-    '/upload/submit',
+    'search/patient/lloyd-george-record',
+    'search/upload',
+    'search/upload/result',
+    'upload/submit',
 ];
-const authUnauthorisedRoute = '/unauthorised';
 
 describe('assert PCSE user has access to the PCSE workflow path ', () => {
     context('session management', () => {
@@ -32,7 +31,7 @@ describe('assert PCSE user has access to the PCSE workflow path ', () => {
 
             cy.login('PCSE');
 
-            cy.url().should('eq', baseUrl + '/search/patient');
+            cy.url().should('eq', baseUrl + 'search/patient');
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
@@ -41,6 +40,18 @@ describe('assert PCSE user has access to the PCSE workflow path ', () => {
 
             cy.get('#verify-submit').click();
             cy.url().should('eq', baseUrl + 'search/results');
+        });
+    });
+});
+
+describe('assert PCSE role cannot access expected forbidden routes', () => {
+    context('forbidden routes', () => {
+        forbiddenRoutes.forEach((forbiddenRoute) => {
+            it('assert PCSE cannot access route ' + forbiddenRoute, () => {
+                cy.login('PCSE');
+                cy.visit(baseUrl + forbiddenRoute);
+                cy.url().should('include', 'unauthorised');
+            });
         });
     });
 });
