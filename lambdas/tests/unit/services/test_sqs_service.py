@@ -20,6 +20,7 @@ def test_send_message_with_nhs_number_attr(set_env, mocker):
     )
 
     service.send_message_with_nhs_number_attr(
+        group_id="test_group_id",
         queue_url=MOCK_LG_METADATA_SQS_QUEUE,
         message_body=test_message_body,
         nhs_number=TEST_NHS_NUMBER,
@@ -32,4 +33,5 @@ def test_send_message_with_nhs_number_attr(set_env, mocker):
         },
         MessageBody=test_message_body,
         DelaySeconds=0,
+        MessageGroupId="test_group_id"
     )

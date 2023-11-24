@@ -8,10 +8,11 @@ class SQSService:
         self.client = boto3.client("sqs", config=config)
         super().__init__(*args, **kwargs)
 
-    def send_message(self, queue_url: str, message_body: str):
+    def send_message_fifo(self, queue_url: str, message_body: str, group_id = str):
         self.client.send_message(
             QueueUrl=queue_url,
             MessageBody=message_body,
+            MessageGroupId=group_id
         )
 
     def send_message_with_attr(
@@ -27,6 +28,8 @@ class SQSService:
         message_body: str,
         nhs_number: str,
         delay_seconds: int = 0,
+        group_id = str,
+
     ):
         self.client.send_message(
             QueueUrl=queue_url,
@@ -35,4 +38,5 @@ class SQSService:
             },
             MessageBody=message_body,
             DelaySeconds=delay_seconds,
+            MessageGroupId=group_id
         )
