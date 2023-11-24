@@ -223,7 +223,7 @@ def test_lambda_handler_respond_with_400_when_given_state_not_found_in_state_tab
 
     expected = ApiGatewayResponse(
         400,
-        f"Mismatching state values. Cannot find state {invalid_state} in record",
+        "Failed to authenticate user",
         "GET",
     ).create_api_gateway_response()
 
