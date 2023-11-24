@@ -60,7 +60,9 @@ class S3Service:
         file_key: str,
         extra_args: Mapping[str, Any],
     ):
-        return self.client.upload_file(file_stream.getValue(), s3_bucket_name, file_key, extra_args)
+        logger.info(file_stream)
+        file_stream.seek(0)
+        return self.client.write_get_object_response(file_stream.getValue(), s3_bucket_name, file_key, extra_args)
 
     def copy_across_bucket(
         self,
