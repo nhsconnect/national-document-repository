@@ -68,7 +68,7 @@ def lambda_handler(event, context):
         filename_for_stitched_file = make_filename_for_stitched_file(response["Items"])
 
         logger.info(f"Sitching Starting")
-        stitched_lg_record = stitch_pdf(all_lg_parts)
+        stitched_lg_record, pdf_writter = stitch_pdf(all_lg_parts)
 
         logger.info(f"Sitching ended")
 
@@ -78,7 +78,7 @@ def lambda_handler(event, context):
 
         logger.info("uploading new file to s3")
         presign_url = upload_stitched_lg_record_and_retrieve_presign_url(
-            stitched_lg_record=stitched_lg_record,
+            stitched_lg_record=pdf_writter,
             filename_on_bucket=f"{nhs_number}/{filename_for_stitched_file}",
             upload_bucket_name=lloyd_george_bucket_name,
             s3_service=s3_service,
@@ -179,7 +179,7 @@ def get_total_file_size(filepaths: list[str]) -> int:
 
 
 def upload_stitched_lg_record_and_retrieve_presign_url(
-    stitched_lg_record: str,
+    stitched_lg_record: any,
     filename_on_bucket: str,
     upload_bucket_name: str,
     s3_service: S3Service,
@@ -192,7 +192,7 @@ def upload_stitched_lg_record_and_retrieve_presign_url(
         "ContentDisposition": "inline",
         "ContentType": "application/pdf",
     }
-    s3_service.upload_file_with_extra_args(
+    s3_service.upload_file_stream_with_extra_args(
         file_name=stitched_lg_record,
         s3_bucket_name=upload_bucket_name,
         file_key=filename_on_bucket,
