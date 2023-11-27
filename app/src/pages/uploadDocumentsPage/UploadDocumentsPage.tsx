@@ -51,17 +51,11 @@ function UploadDocumentsPage(props: Props) {
     };
 
     if (stage === UPLOAD_STAGE.Selecting && patientDetails) {
-        return (
-            <SelectStage
-                patientDetails={patientDetails}
-                uploadDocuments={uploadDocuments}
-                setDocuments={setDocuments}
-            />
-        );
+        return <SelectStage uploadDocuments={uploadDocuments} setDocuments={setDocuments} />;
     } else if (stage === UPLOAD_STAGE.Uploading && patientDetails) {
         return <UploadingStage documents={documents} />;
     } else if (stage === UPLOAD_STAGE.Complete && patientDetails) {
-        return <CompleteStage patientDetails={patientDetails} documents={documents} />;
+        return <CompleteStage documents={documents} />;
     }
     return null;
 }

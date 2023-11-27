@@ -94,7 +94,6 @@ function DocumentSearchResultsPage() {
                                 downloadState={downloadState}
                                 updateDownloadState={handleUpdateDownloadState}
                                 numberOfFiles={searchResults.length}
-                                patientDetails={patientDetails}
                                 setIsDeletingDocuments={setIsDeletingDocuments}
                             />
                         </>
