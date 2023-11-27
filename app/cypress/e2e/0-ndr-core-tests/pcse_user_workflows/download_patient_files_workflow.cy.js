@@ -212,7 +212,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         cy.url().should('eq', baseUrl);
     });
 
-    context('delete all documents relating to a patient', () => {
+    context('Delete all documents relating to a patient', () => {
         beforeEach(() => {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,

@@ -3,7 +3,7 @@ import authPayload from '../../../fixtures/requests/auth/GET_TokenRequest_GP_ADM
 describe('Authentication & Authorisation', () => {
     const baseUrl = 'http://localhost:3000';
 
-    context('session management is handled correctly', () => {
+    context('Session management is handled correctly', () => {
         it('sets session storage on login and clears session storage on logout', () => {
             cy.login('GP_ADMIN');
 

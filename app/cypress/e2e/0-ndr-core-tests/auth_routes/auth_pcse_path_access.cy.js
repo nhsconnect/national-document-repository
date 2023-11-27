@@ -19,7 +19,7 @@ const forbiddenRoutes = [
     'upload/submit',
 ];
 
-describe('PCSE user role has access to the expected GP_ADMIM workflow paths', () => {
+describe('PCSE user role has access to the expected GP_ADMIN workflow paths', () => {
     context('PCSE role has access to expected routes', () => {
         it('PCSE role has access to Download View', () => {
             if (!smokeTest) {
