@@ -9,9 +9,7 @@ class SQSService:
         super().__init__(*args, **kwargs)
 
     def send_message_standard(self, queue_url: str, message_body: str):
-        self.client.send_message(
-            QueueUrl=queue_url, MessageBody=message_body
-        )
+        self.client.send_message(QueueUrl=queue_url, MessageBody=message_body)
 
     def send_message_with_attr(
         self, queue_url: str, message_body: str, attributes: dict

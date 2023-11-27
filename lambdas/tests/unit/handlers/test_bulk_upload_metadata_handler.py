@@ -54,7 +54,9 @@ def test_lambda_send_metadata_to_sqs_queue(
             nhs_number="1234567891",
         ),
     ]
-    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(expected_calls)
+    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
+        expected_calls
+    )
 
 
 def test_handler_log_error_when_fail_to_get_metadata_csv_from_s3(
@@ -176,7 +178,9 @@ def test_send_metadata_to_sqs(mocker, mock_sqs_service):
             group_id="bulk_upload_123412342",
         ),
     ]
-    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(expected_calls)
+    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
+        expected_calls
+    )
     assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
 
 
