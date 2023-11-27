@@ -5,9 +5,21 @@ import userEvent from '@testing-library/user-event';
 import BackButton from './BackButton';
 import { routes } from '../../../types/generic/routes';
 import { endpoints } from '../../../types/generic/endpoints';
-import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+
+jest.mock('../../../helpers/hooks/useBaseAPIUrl');
+const mockUseBaseAPIUrl = useBaseAPIUrl as jest.Mock;
+const testUrl = '/test';
 
 describe('BackButton', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockUseBaseAPIUrl.mockReturnValue(testUrl);
+    });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('navigates to previous page when clicking the back buttonand not on the search pages', async () => {
         const history = createMemoryHistory({
             initialEntries: ['/', '/example'],
@@ -28,8 +40,6 @@ describe('BackButton', () => {
     });
 
     it('calls the login handler when clicking the back button on the upload search page', async () => {
-        const test_location_prefix = useBaseAPIUrl();
-
         const history = createMemoryHistory({
             initialEntries: ['/', '/example'],
             initialIndex: 1,
@@ -53,13 +63,11 @@ describe('BackButton', () => {
         userEvent.click(screen.getByText('Back'));
 
         await waitFor(() => {
-            expect(window.location.replace).toBeCalledWith(test_location_prefix + endpoints.LOGIN);
+            expect(window.location.replace).toBeCalledWith(testUrl + endpoints.LOGIN);
         });
     });
 
     it('calls the login handler when clicking the back button on the download search page', async () => {
-        const test_location_prefix = useBaseAPIUrl();
-
         const history = createMemoryHistory({
             initialEntries: ['/', '/example'],
             initialIndex: 1,
@@ -83,7 +91,7 @@ describe('BackButton', () => {
         userEvent.click(screen.getByText('Back'));
 
         await waitFor(() => {
-            expect(window.location.replace).toBeCalledWith(test_location_prefix + endpoints.LOGIN);
+            expect(window.location.replace).toBeCalledWith(testUrl + endpoints.LOGIN);
         });
     });
 });
