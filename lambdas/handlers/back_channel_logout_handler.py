@@ -72,7 +72,7 @@ def logout_handler(token):
 def remove_session_from_dynamo_db(sid):
     dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
     dynamodb_service = DynamoDBService()
-    
+
     filter_sid = Attr("sid").eq(sid)
     db_response = dynamodb_service.scan_table(
         dynamodb_name, filter_expression=filter_sid
@@ -83,7 +83,10 @@ def remove_session_from_dynamo_db(sid):
         ndr_session_id = items[0]["NDRSessionId"]
 
         dynamodb_service.delete_item(
-            key={"NDRSessionId": ndr_session_id }, table_name=dynamodb_name
+            key={"NDRSessionId": ndr_session_id}, table_name=dynamodb_name
         )
 
-    logger.info(f"Session removed for sid: {sid} and NDRSessionId {ndr_session_id }", {"Result": "Successful logout"})
+    logger.info(
+        f"Session removed for sid: {sid} and NDRSessionId {ndr_session_id }",
+        {"Result": "Successful logout"},
+    )
