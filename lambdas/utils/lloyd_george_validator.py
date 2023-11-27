@@ -4,6 +4,7 @@ import re
 from typing import Optional
 
 from botocore.exceptions import ClientError
+
 from enums.pds_ssm_parameters import SSMParameter
 from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient

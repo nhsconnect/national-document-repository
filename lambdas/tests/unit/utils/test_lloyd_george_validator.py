@@ -114,6 +114,19 @@ def test_files_list_with_invalid_name():
         check_for_number_of_files_match_expected(lg_file_list[0], len(lg_file_list))
     assert str(e.value) == "One or more of the files do not match naming convention"
 
+def test_file_name_with_apostrophe_as_name():
+    """
+    This is an edge case which currently passes.
+    As part of prmdr-520 it was decided that it was acceptable to have an apostrophe accepted as a name
+    This is because patient names will only ever come from PDS
+    """
+    try:
+        file_name = (
+            "1of1_Lloyd_George_Record_[']_[1111111111]_[25-12-2019].pdf"
+        )
+        validate_file_name(file_name)
+    except LGInvalidFilesException:
+        assert False, "One or more of the files do not match naming convention"
 
 def test_files_without_missing_files():
     try:
