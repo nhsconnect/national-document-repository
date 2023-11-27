@@ -14,6 +14,7 @@ class ApiGatewayResponse:
                 "Content-Type": "application/fhir+json",
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": self.methods,
+                "Strict-Transport-Security": "max-age=63072000",
                 **headers,
             },
             "body": self.body,

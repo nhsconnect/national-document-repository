@@ -53,7 +53,7 @@ jobs:
         run: |
           make test-unit-coverage
           cd ./lambdas
-          sed -i "s@filename=\"@filename=\"lambda/@" coverage.xml
+          sed -i "s@filename=\"@filename=\"lambdas/@" coverage.xml
           cd ..
 
       - name: SonarCloud Scan

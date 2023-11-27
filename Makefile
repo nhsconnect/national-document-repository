@@ -36,6 +36,10 @@ test-unit:
 test-unit-coverage:
 	cd ./lambdas && ./venv/bin/python3 -m pytest --cov=. --cov-report xml:coverage.xml
 
+test-unit-coverage-html:
+	cd ./lambdas
+	coverage run --source=. --omit=tests/* -m pytest -v tests && coverage report && coverage html
+
 test-unit-collect:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/ --collect-only
 
@@ -94,6 +98,9 @@ build-env-check:
 
 docker-up:
 	docker-compose -f ./app/docker-compose.yml up -d
+
+docker-up-rebuild:
+	docker-compose -f ./app/docker-compose.yml up -d --build --force-recreate
 
 docker-down:
 	docker-compose -f ./app/docker-compose.yml down

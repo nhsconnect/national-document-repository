@@ -46,7 +46,7 @@ describe('PatientSearchPage', () => {
             },
         );
         it.each(authorisedRoles)(
-            "rdisplays a loading spinner when the patients details are being requested when user role is '%s'",
+            "displays a loading spinner when the patients details are being requested when user role is '%s'",
             async (role) => {
                 mockedUseRole.mockReturnValue(role);
 

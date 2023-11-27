@@ -10,7 +10,7 @@ RUN npm install --legacy-peer-deps
 RUN npm run build
 
 # Host the App
-FROM nginx:1.19.0
+FROM nginx:latest
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
 COPY --from=builder /app/build .

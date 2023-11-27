@@ -19,8 +19,9 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
     token = None
-    if event.get("headers"):
-        token = event.get("headers").get("Authorization")
+    headers = event.get("headers")
+    if headers:
+        token = headers["Authorization"]
     return logout_handler(token)
 
 
@@ -45,7 +46,7 @@ def logout_handler(token):
             f"error while decoding JWT: {e}", {"Result": "Unsuccessful logout"}
         )
         return ApiGatewayResponse(
-            400, "Invalid x-auth header", "GET"
+            400, "Invalid Authorization header", "GET"
         ).create_api_gateway_response()
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 

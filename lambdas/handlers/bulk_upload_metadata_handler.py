@@ -1,6 +1,7 @@
 import csv
 import os
 import tempfile
+import uuid
 from typing import Iterable
 
 import pydantic
@@ -38,7 +39,7 @@ def lambda_handler(_event, _context):
         staging_metadata_list = csv_to_staging_metadata(metadata_file)
 
         logger.info("Finished parsing metadata")
-        send_metadata_to_sqs(staging_metadata_list, metadata_queue_url)
+        send_metadata_to_fifo_sqs(staging_metadata_list, metadata_queue_url)
 
         logger.info("Sent bulk upload metadata to sqs queue")
     except pydantic.ValidationError as e:
@@ -89,17 +90,19 @@ def csv_to_staging_metadata(csv_file_path: str) -> list[StagingMetadata]:
     ]
 
 
-def send_metadata_to_sqs(
+def send_metadata_to_fifo_sqs(
     staging_metadata_list: list[StagingMetadata], metadata_queue_url: str
 ) -> None:
     sqs_service = SQSService()
+    sqs_group_id = f"bulk_upload_{uuid.uuid4()}"
 
     for staging_metadata in staging_metadata_list:
         nhs_number = staging_metadata.nhs_number
         logger.info(f"Sending metadata for patientId: {nhs_number}")
 
-        sqs_service.send_message_with_nhs_number_attr(
+        sqs_service.send_message_with_nhs_number_attr_fifo(
             queue_url=metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=nhs_number,
+            group_id=sqs_group_id,
         )

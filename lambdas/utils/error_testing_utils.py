@@ -15,14 +15,14 @@ def check_manual_error_conditions(error_type: str, http_method: str = "GET"):
 # no unit test as don't want to slow down test suite, tested in AWS
 def trigger_memory_error():
     memory_break_string = "string_length_to_double_each_iteration"
-    for x in range(1000000000000000000000000000000000):
+    for _ in range(1000000000000000000000000000000000):
         memory_break_string = memory_break_string + memory_break_string
 
 
 # no unit test as don't want to slow down test suite, tested in AWS
 def trigger_timeout_error():
     memory_break_string = "string_to_set_each_iteration"
-    for x in range(1000000000000000000000000000000000):
+    for _ in range(1000000000000000000000000000000000):
         memory_break_string = memory_break_string
 
 
