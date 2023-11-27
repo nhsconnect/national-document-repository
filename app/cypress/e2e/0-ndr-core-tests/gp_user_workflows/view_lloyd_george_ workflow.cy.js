@@ -4,7 +4,7 @@ import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.j
 const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
 
-describe('View Lloyd George record has a GP role', () => {
+describe('GP Workflow: View Lloyd George record', () => {
     const assertEmptyLloydGeorgeCard = () => {
         cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
         cy.getByTestId('pdf-card').should('include.text', 'No documents are available');

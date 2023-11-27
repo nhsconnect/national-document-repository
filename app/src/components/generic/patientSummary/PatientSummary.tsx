@@ -23,7 +23,7 @@ const PatientSummary = ({ patientDetails }: Props) => {
             <SummaryList.Row>
                 <SummaryList.Key>First name</SummaryList.Key>
                 <SummaryList.Value id="patient-summary-given-name">
-                    {patientDetails?.givenName?.map((name) => `${name} `)}
+                    {patientDetails?.givenName?.map((name) => `${name}`)}
                 </SummaryList.Value>
             </SummaryList.Row>
             <SummaryList.Row>

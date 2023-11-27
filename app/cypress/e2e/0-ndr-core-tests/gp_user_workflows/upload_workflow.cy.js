@@ -84,7 +84,7 @@ const uploadedFileNames = {
 
 const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
 
-describe('Upload Workflow: Upload docs and verify', () => {
+describe('GP Workflow: Upload docs and verify', () => {
     gpRoles.forEach((role) => {
         beforeEach(() => {
             cy.login(role);

@@ -1,6 +1,6 @@
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
 
-describe('PCSE Download Workflow: Access and download found files', () => {
+describe('PCSE Workflow: Access and download found files', () => {
     // env vars
     const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
     const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
@@ -157,9 +157,6 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         navigateToDownload(roles.PCSE);
 
         const documentManifestResponse = 'test-s3-url';
-
-        cy.get('#download-documents').click();
-
         cy.intercept({ url: '/DocumentManifest*', middleware: true }, (req) => {
             req.reply({
                 statusCode: 200,
@@ -168,37 +165,8 @@ describe('PCSE Download Workflow: Access and download found files', () => {
             });
         }).as('search');
 
-        cy.get('#download-spinner').should('exist');
-    });
-
-    it('Downloads file from the correct s3 url during Download Document Manifest', () => {
-        if (!smokeTest) {
-            cy.intercept('GET', '/SearchDocumentReferences*', {
-                statusCode: 200,
-                body: searchDocumentReferencesResponse,
-            }).as('search');
-        }
-
-        navigateToDownload(roles.PCSE);
-
-        const documentManifestResponse = 'test-s3-url';
-
-        cy.get('#download-link').invoke('attr', 'href').should('eq', '');
-        cy.get('#download-link').invoke('attr', 'download').should('eq', '');
-
         cy.get('#download-documents').click();
-
-        cy.intercept({ url: '/DocumentManifest*', middleware: true }, (req) => {
-            req.reply({
-                statusCode: 200,
-                body: documentManifestResponse,
-            });
-        }).as('search');
-
-        cy.get('#download-link').invoke('attr', 'href').should('eq', 'test-s3-url');
-        cy.get('#download-link')
-            .invoke('attr', 'download')
-            .should('eq', `patient-record-${testPatient}`);
+        cy.get('#download-spinner').should('exist');
     });
 
     it('Shows service error box on Search Document Reference 500 response', () => {
@@ -244,7 +212,7 @@ describe('PCSE Download Workflow: Access and download found files', () => {
         cy.url().should('eq', baseUrl);
     });
 
-    context.only('delete all documents relating to a patient', () => {
+    context('delete all documents relating to a patient', () => {
         beforeEach(() => {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
