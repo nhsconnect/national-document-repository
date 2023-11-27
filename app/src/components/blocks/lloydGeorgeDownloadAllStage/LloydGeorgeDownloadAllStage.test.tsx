@@ -6,10 +6,15 @@ import * as ReactRouter from 'react-router';
 import axios from 'axios';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
+import usePatient from '../../../helpers/hooks/usePatient';
 
 jest.mock('axios');
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../helpers/hooks/usePatient');
+
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedUsePatient = usePatient as jest.Mock;
+
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
 const mockSetStage = jest.fn();
@@ -17,6 +22,7 @@ const mockSetStage = jest.fn();
 describe('LloydGeorgeDownloadAllStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatient);
     });
     afterEach(() => {
         jest.clearAllMocks();
@@ -100,7 +106,6 @@ const TestApp = (props: Omit<Props, 'setStage'>) => {
 const renderComponent = (propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage'> = {
         numberOfFiles: mockPdf.number_of_files,
-        patientDetails: mockPatient,
         ...propsOverride,
     };
 

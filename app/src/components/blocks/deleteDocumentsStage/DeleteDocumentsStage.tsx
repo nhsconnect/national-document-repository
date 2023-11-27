@@ -2,7 +2,6 @@ import React, { Dispatch, SetStateAction, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 import { Button, Fieldset, Radios } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
-import { PatientDetails } from '../../../types/generic/patientDetails';
 import DeletionConfirmationStage from '../deletionConfirmationStage/DeletionConfirmationStage';
 import deleteAllDocuments, { DeleteResponse } from '../../../helpers/requests/deleteAllDocuments';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
@@ -19,11 +18,11 @@ import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+import usePatient from '../../../helpers/hooks/usePatient';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
     numberOfFiles: number;
-    patientDetails: PatientDetails;
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     setIsDeletingDocuments?: Dispatch<SetStateAction<boolean>>;
     setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
@@ -37,11 +36,11 @@ enum DELETE_DOCUMENTS_OPTION {
 function DeleteDocumentsStage({
     docType,
     numberOfFiles,
-    patientDetails,
     setStage,
     setIsDeletingDocuments,
     setDownloadStage,
 }: Props) {
+    const patientDetails = usePatient();
     const role = useRole();
     const { register, handleSubmit } = useForm();
     const { ref: deleteDocsRef, ...radioProps } = register('deleteDocs');
@@ -155,11 +154,7 @@ function DeleteDocumentsStage({
             </form>
         </>
     ) : (
-        <DeletionConfirmationStage
-            numberOfFiles={numberOfFiles}
-            patientDetails={patientDetails}
-            setStage={setStage}
-        />
+        <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={setStage} />
     );
 }
 export default DeleteDocumentsStage;

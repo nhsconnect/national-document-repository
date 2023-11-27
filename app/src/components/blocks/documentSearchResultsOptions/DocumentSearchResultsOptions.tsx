@@ -8,7 +8,6 @@ import { AxiosError } from 'axios';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
-import { PatientDetails } from '../../../types/generic/patientDetails';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 
 type Props = {
@@ -16,7 +15,6 @@ type Props = {
     downloadState: string;
     updateDownloadState: (newState: SUBMISSION_STATE) => void;
     numberOfFiles: number;
-    patientDetails: PatientDetails;
     setIsDeletingDocuments: Dispatch<SetStateAction<boolean>>;
 };
 

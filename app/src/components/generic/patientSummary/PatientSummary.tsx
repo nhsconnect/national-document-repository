@@ -1,11 +1,10 @@
 import React from 'react';
 import { SummaryList } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
-import { PatientDetails } from '../../../types/generic/patientDetails';
+import usePatient from '../../../helpers/hooks/usePatient';
 
-type Props = { patientDetails: PatientDetails };
-
-const PatientSummary = ({ patientDetails }: Props) => {
+const PatientSummary = () => {
+    const patientDetails = usePatient();
     return (
         <SummaryList id="patient-summary">
             <SummaryList.Row>
@@ -29,7 +28,7 @@ const PatientSummary = ({ patientDetails }: Props) => {
             <SummaryList.Row>
                 <SummaryList.Key>Date of birth</SummaryList.Key>
                 <SummaryList.Value id="patient-summary-date-of-birth">
-                    {getFormattedDate(new Date(patientDetails?.birthDate))}
+                    {getFormattedDate(new Date(patientDetails?.birthDate ?? ''))}
                 </SummaryList.Value>
             </SummaryList.Row>
             <SummaryList.Row>

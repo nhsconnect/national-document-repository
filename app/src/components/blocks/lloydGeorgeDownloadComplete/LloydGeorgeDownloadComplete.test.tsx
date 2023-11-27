@@ -1,16 +1,28 @@
+import usePatient from '../../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
-import { PatientDetails } from '../../../types/generic/patientDetails';
-import LgDownloadComplete, { Props } from './LloydGeorgeDownloadComplete';
+import LgDownloadComplete from './LloydGeorgeDownloadComplete';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
 
+jest.mock('../../../helpers/hooks/usePatient');
+
 const mockSetStage = jest.fn();
 const mockPatient = buildPatientDetails();
+const mockedUsePatient = usePatient as jest.Mock;
+
 describe('LloydGeorgeDownloadComplete', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatient);
+    });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('renders the component', () => {
-        renderComponent(mockPatient);
+        render(<LgDownloadComplete setStage={mockSetStage} />);
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
         expect(screen.getByText('Documents from the Lloyd George record of:')).toBeInTheDocument();
@@ -23,7 +35,7 @@ describe('LloydGeorgeDownloadComplete', () => {
     });
 
     it('updates the download stage view when return to medical records is clicked', async () => {
-        renderComponent(mockPatient);
+        render(<LgDownloadComplete setStage={mockSetStage} />);
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
         expect(screen.getByText('Documents from the Lloyd George record of:')).toBeInTheDocument();
@@ -45,11 +57,3 @@ describe('LloydGeorgeDownloadComplete', () => {
         });
     });
 });
-
-const TestApp = ({ patientDetails }: Omit<Props, 'setStage'>) => {
-    return <LgDownloadComplete patientDetails={patientDetails} setStage={mockSetStage} />;
-};
-
-const renderComponent = (patientDetails: PatientDetails) => {
-    render(<TestApp patientDetails={patientDetails} />);
-};

@@ -1,5 +1,4 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-import { PatientDetails } from '../../../types/generic/patientDetails';
 import { BackLink, Card, Details } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
@@ -7,9 +6,9 @@ import PdfViewer from '../../generic/pdfViewer/PdfViewer';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import usePatient from '../../../helpers/hooks/usePatient';
 
 export type Props = {
-    patientDetails: PatientDetails;
     downloadStage: DOWNLOAD_STAGE;
     lloydGeorgeUrl: string;
     lastUpdated: string;
@@ -20,7 +19,6 @@ export type Props = {
 };
 
 function LloydGeorgeRecordStage({
-    patientDetails,
     downloadStage,
     lloydGeorgeUrl,
     lastUpdated,
@@ -30,7 +28,7 @@ function LloydGeorgeRecordStage({
     stage,
 }: Props) {
     const [fullScreen, setFullScreen] = useState(false);
-
+    const patientDetails = usePatient();
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';

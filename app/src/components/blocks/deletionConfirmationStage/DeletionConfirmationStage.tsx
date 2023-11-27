@@ -1,6 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
-import { PatientDetails } from '../../../types/generic/patientDetails';
 import { routes } from '../../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
@@ -8,15 +7,16 @@ import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import usePatient from '../../../helpers/hooks/usePatient';
 
 export type Props = {
     numberOfFiles: number;
-    patientDetails: PatientDetails;
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-function DeletionConfirmationStage({ numberOfFiles, patientDetails, setStage }: Props) {
+function DeletionConfirmationStage({ numberOfFiles, setStage }: Props) {
     const navigate = useNavigate();
+    const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const role = useRole();

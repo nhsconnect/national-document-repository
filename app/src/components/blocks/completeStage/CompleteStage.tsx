@@ -3,18 +3,16 @@ import { Button } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { UploadDocument } from '../../../types/pages/UploadDocumentsPage/types';
 import UploadSummary from '../uploadSummary/UploadSummary';
-import { PatientDetails } from '../../../types/generic/patientDetails';
 interface Props {
     documents: Array<UploadDocument>;
-    patientDetails: PatientDetails;
 }
 
-function CompleteStage({ documents, patientDetails }: Props) {
+function CompleteStage({ documents }: Props) {
     const navigate = useNavigate();
 
     return (
         <>
-            <UploadSummary patientDetails={patientDetails} documents={documents} />
+            <UploadSummary documents={documents} />
             <p style={{ fontWeight: '600' }}>
                 If you want to upload another patient&apos;s health record
             </p>

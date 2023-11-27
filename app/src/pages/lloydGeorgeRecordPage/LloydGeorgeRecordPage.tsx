@@ -64,40 +64,28 @@ function LloydGeorgeRecordPage() {
     switch (stage) {
         case LG_RECORD_STAGE.RECORD:
             return (
-                patientDetails && (
-                    <LloydGeorgeRecordStage
-                        numberOfFiles={numberOfFiles}
-                        totalFileSizeInByte={totalFileSizeInByte}
-                        lastUpdated={lastUpdated}
-                        lloydGeorgeUrl={lloydGeorgeUrl}
-                        patientDetails={patientDetails}
-                        downloadStage={downloadStage}
-                        setStage={setStage}
-                        stage={stage}
-                    />
-                )
+                <LloydGeorgeRecordStage
+                    numberOfFiles={numberOfFiles}
+                    totalFileSizeInByte={totalFileSizeInByte}
+                    lastUpdated={lastUpdated}
+                    lloydGeorgeUrl={lloydGeorgeUrl}
+                    downloadStage={downloadStage}
+                    setStage={setStage}
+                    stage={stage}
+                />
             );
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
             return (
-                patientDetails && (
-                    <LloydGeorgeDownloadAllStage
-                        numberOfFiles={numberOfFiles}
-                        setStage={setStage}
-                        patientDetails={patientDetails}
-                    />
-                )
+                <LloydGeorgeDownloadAllStage numberOfFiles={numberOfFiles} setStage={setStage} />
             );
         case LG_RECORD_STAGE.DELETE_ALL:
             return (
-                patientDetails && (
-                    <DeleteDocumentsStage
-                        docType={DOCUMENT_TYPE.LLOYD_GEORGE}
-                        numberOfFiles={numberOfFiles}
-                        patientDetails={patientDetails}
-                        setStage={setStage}
-                        setDownloadStage={setDownloadStage}
-                    />
-                )
+                <DeleteDocumentsStage
+                    docType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                    numberOfFiles={numberOfFiles}
+                    setStage={setStage}
+                    setDownloadStage={setDownloadStage}
+                />
             );
         default:
             return <div></div>;

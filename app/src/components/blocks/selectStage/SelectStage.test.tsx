@@ -9,15 +9,26 @@ import userEvent from '@testing-library/user-event';
 import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../../types/pages/UploadDocumentsPage/types';
 import { act } from 'react-dom/test-utils';
 import { PatientDetails } from '../../../types/generic/patientDetails';
+import usePatient from '../../../helpers/hooks/usePatient';
 
 jest.mock('../../../helpers/utils/toFileList', () => ({
     __esModule: true,
     default: () => [],
 }));
-
+jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('react-router');
+const mockedUsePatient = usePatient as jest.Mock;
+const mockPatient = buildPatientDetails();
 
 describe('<UploadDocumentsPage />', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatient);
+    });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     describe('upload documents with an NHS number', () => {
         const documentOne = buildTextFile('one', 100);
         const documentTwo = buildTextFile('two', 200);

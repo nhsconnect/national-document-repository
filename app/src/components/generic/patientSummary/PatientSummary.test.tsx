@@ -1,8 +1,15 @@
+import usePatient from '../../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import PatientSummary from './PatientSummary';
 import { render, screen } from '@testing-library/react';
 
+jest.mock('../../../helpers/hooks/usePatient');
+const mockedUsePatient = usePatient as jest.Mock;
+
 describe('PatientSummary', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+    });
     afterEach(() => {
         jest.clearAllMocks();
     });
@@ -13,7 +20,8 @@ describe('PatientSummary', () => {
             nhsNumber: '0000222000',
         });
 
-        render(<PatientSummary patientDetails={mockDetails} />);
+        mockedUsePatient.mockReturnValue(mockDetails);
+        render(<PatientSummary />);
 
         expect(screen.getByText(mockDetails.nhsNumber)).toBeInTheDocument();
         expect(screen.getByText(mockDetails.familyName)).toBeInTheDocument();
@@ -27,7 +35,8 @@ describe('PatientSummary', () => {
             givenName: ['Comfort', 'Zulu'],
         });
 
-        render(<PatientSummary patientDetails={mockDetails} />);
+        mockedUsePatient.mockReturnValue(mockDetails);
+        render(<PatientSummary />);
 
         // Using hard coded expected value instead of duplicating the expected logic
         const expectedGivenName = 'Comfort Zulu';

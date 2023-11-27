@@ -10,19 +10,23 @@ import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../../types/generic/authRole';
 import { routes } from '../../../types/generic/routes';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import usePatient from '../../../helpers/hooks/usePatient';
 
 jest.mock('../deletionConfirmationStage/DeletionConfirmationStage', () => () => (
     <div>Deletion complete</div>
 ));
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../helpers/hooks/useRole');
+jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('axios');
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
+
 const mockedUseRole = useRole as jest.Mock;
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedUsePatient = usePatient as jest.Mock;
 
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
@@ -34,6 +38,7 @@ const mockSetDownloadStage = jest.fn();
 describe('DeleteDocumentsStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatientDetails);
     });
 
     afterEach(() => {
@@ -210,7 +215,6 @@ describe('Navigation', () => {
 
 const renderComponent = (docType: DOCUMENT_TYPE) => {
     const props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'> = {
-        patientDetails: mockPatientDetails,
         numberOfFiles: mockLgSearchResult.number_of_files,
         docType,
     };

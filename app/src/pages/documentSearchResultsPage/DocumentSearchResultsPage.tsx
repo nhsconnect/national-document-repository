@@ -78,7 +78,7 @@ function DocumentSearchResultsPage() {
             {(submissionState === SUBMISSION_STATE.FAILED ||
                 downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
 
-            {patientDetails && <PatientSummary patientDetails={patientDetails} />}
+            {<PatientSummary />}
 
             {submissionState === SUBMISSION_STATE.PENDING && (
                 <ProgressBar status="Loading..."></ProgressBar>
@@ -125,14 +125,11 @@ function DocumentSearchResultsPage() {
             )}
         </>
     ) : (
-        patientDetails && (
-            <DeleteDocumentsStage
-                numberOfFiles={searchResults.length}
-                patientDetails={patientDetails}
-                setIsDeletingDocuments={setIsDeletingDocuments}
-                docType={DOCUMENT_TYPE.ALL}
-            />
-        )
+        <DeleteDocumentsStage
+            numberOfFiles={searchResults.length}
+            setIsDeletingDocuments={setIsDeletingDocuments}
+            docType={DOCUMENT_TYPE.ALL}
+        />
     );
 }
 

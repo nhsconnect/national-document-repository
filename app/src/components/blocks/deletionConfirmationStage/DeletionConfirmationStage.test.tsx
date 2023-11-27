@@ -8,25 +8,31 @@ import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { LinkProps } from 'react-router-dom';
+import usePatient from '../../../helpers/hooks/usePatient';
 
 jest.mock('../../../helpers/hooks/useRole');
+jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
+    useNavigate: () => jest.fn(),
 }));
-
-const mockedUseRole = useRole as jest.Mock;
-const mockPatientDetails = buildPatientDetails();
-const mockLgSearchResult = buildLgSearchResult();
-const mockSetStage = jest.fn();
-const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 
+const mockedUseRole = useRole as jest.Mock;
+const mockedUsePatient = usePatient as jest.Mock;
+
+const mockPatientDetails = buildPatientDetails();
+const mockLgSearchResult = buildLgSearchResult();
+const mockSetStage = jest.fn();
+const mockedUseNavigate = jest.fn();
+
 describe('DeletionConfirmationStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatientDetails);
     });
     afterEach(() => {
         jest.clearAllMocks();
@@ -43,7 +49,6 @@ describe('DeletionConfirmationStage', () => {
                 render(
                     <DeletionConfirmationStage
                         numberOfFiles={numberOfFiles}
-                        patientDetails={mockPatientDetails}
                         setStage={mockSetStage}
                     />,
                 );
@@ -70,11 +75,7 @@ describe('DeletionConfirmationStage', () => {
 
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
             render(
-                <DeletionConfirmationStage
-                    numberOfFiles={numberOfFiles}
-                    patientDetails={mockPatientDetails}
-                    setStage={mockSetStage}
-                />,
+                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
             );
 
             await waitFor(async () => {
@@ -100,7 +101,6 @@ describe('DeletionConfirmationStage', () => {
                 render(
                     <DeletionConfirmationStage
                         numberOfFiles={numberOfFiles}
-                        patientDetails={mockPatientDetails}
                         setStage={mockSetStage}
                     />,
                 );
@@ -122,11 +122,7 @@ describe('DeletionConfirmationStage', () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
             render(
-                <DeletionConfirmationStage
-                    numberOfFiles={numberOfFiles}
-                    patientDetails={mockPatientDetails}
-                    setStage={mockSetStage}
-                />,
+                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
             );
 
             await waitFor(async () => {
@@ -145,11 +141,7 @@ describe('DeletionConfirmationStage', () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
             render(
-                <DeletionConfirmationStage
-                    numberOfFiles={numberOfFiles}
-                    patientDetails={mockPatientDetails}
-                    setStage={mockSetStage}
-                />,
+                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
             );
 
             await waitFor(async () => {
@@ -172,7 +164,6 @@ describe('DeletionConfirmationStage', () => {
                 render(
                     <DeletionConfirmationStage
                         numberOfFiles={numberOfFiles}
-                        patientDetails={mockPatientDetails}
                         setStage={mockSetStage}
                     />,
                 );
@@ -198,7 +189,6 @@ describe('DeletionConfirmationStage', () => {
                 render(
                     <DeletionConfirmationStage
                         numberOfFiles={numberOfFiles}
-                        patientDetails={mockPatientDetails}
                         setStage={mockSetStage}
                     />,
                 );
@@ -228,11 +218,7 @@ describe('DeletionConfirmationStage', () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
             render(
-                <DeletionConfirmationStage
-                    numberOfFiles={numberOfFiles}
-                    patientDetails={mockPatientDetails}
-                    setStage={mockSetStage}
-                />,
+                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
             );
 
             await waitFor(async () => {

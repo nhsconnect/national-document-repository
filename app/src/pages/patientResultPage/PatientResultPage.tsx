@@ -40,7 +40,8 @@ function PatientResultPage() {
             navigate(routes.DOWNLOAD_DOCUMENTS);
         }
     };
-
+    const showWarning = patientDetails?.superseded || patientDetails?.restricted;
+    const isGp = userIsGPAdmin || userIsGPClinical;
     return (
         <div style={{ maxWidth: 730 }}>
             <BackButton />
@@ -54,7 +55,7 @@ function PatientResultPage() {
             )}
             <h1>Verify patient details</h1>
 
-            {patientDetails && (patientDetails.superseded || patientDetails.restricted) && (
+            {showWarning && (
                 <WarningCallout>
                     <WarningCallout.Label headingLevel="h2">Information</WarningCallout.Label>
                     {patientDetails.superseded && (
@@ -69,10 +70,10 @@ function PatientResultPage() {
                 </WarningCallout>
             )}
 
-            {patientDetails && <PatientSummary patientDetails={patientDetails} />}
+            <PatientSummary />
 
             <form onSubmit={handleSubmit(submit)} style={{ marginTop: 60 }}>
-                {(userIsGPAdmin || userIsGPClinical) && (
+                {isGp && (
                     <>
                         <p id="gp-message">
                             Ensure these patient details match the records and attachments that you

@@ -180,7 +180,6 @@ const renderDocumentSearchResultsOptions = (
                     nhsNumber={patient.nhsNumber}
                     downloadState={downloadState}
                     updateDownloadState={updateDownloadState}
-                    patientDetails={mockPatientDetails}
                     numberOfFiles={7}
                     setIsDeletingDocuments={mockSetIsDeletingDocuments}
                 />
