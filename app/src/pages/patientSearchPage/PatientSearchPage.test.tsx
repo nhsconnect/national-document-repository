@@ -15,6 +15,7 @@ jest.mock('../../helpers/hooks/useRole');
 jest.mock('axios');
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
+    useLocation: () => jest.fn(),
 }));
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUseRole = useRole as jest.Mock;
