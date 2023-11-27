@@ -1,9 +1,9 @@
 import authPayload from '../../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
 
-describe('authentication & authorisation', () => {
+describe('Authentication & Authorisation', () => {
     const baseUrl = 'http://localhost:3000';
 
-    context('session management', () => {
+    context('session management is handled correctly', () => {
         it('sets session storage on login and clears session storage on logout', () => {
             cy.login('GP_ADMIN');
 
@@ -36,7 +36,7 @@ describe('authentication & authorisation', () => {
         };
     });
 
-    context('route access', () => {
+    context('Unauthorised accesses checking when no user is logged in', () => {
         const unauthorisedRoutes = [
             '/search/patient',
             '/search/patient/result',

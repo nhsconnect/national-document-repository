@@ -19,9 +19,9 @@ const forbiddenRoutes = [
     'upload/submit',
 ];
 
-describe('assert PCSE user has access to the PCSE workflow path ', () => {
-    context('session management', () => {
-        it('sets session storage on login and checks starting url route', () => {
+describe('PCSE user role has access to the expected GP_ADMIM workflow paths', () => {
+    context('PCSE role has access to expected routes', () => {
+        it('PCSE role has access to Download View', () => {
             if (!smokeTest) {
                 cy.intercept('GET', '/SearchPatient*', {
                     statusCode: 200,
@@ -44,10 +44,10 @@ describe('assert PCSE user has access to the PCSE workflow path ', () => {
     });
 });
 
-describe('assert PCSE role cannot access expected forbidden routes', () => {
-    context('forbidden routes', () => {
+describe('PCSE user role cannot access expected forbidden routes', () => {
+    context('PCSE role has no access to forbidden routes', () => {
         forbiddenRoutes.forEach((forbiddenRoute) => {
-            it('assert PCSE cannot access route ' + forbiddenRoute, () => {
+            it('PCSE role cannot access route' + forbiddenRoute, () => {
                 cy.login('PCSE');
                 cy.visit(baseUrl + forbiddenRoute);
                 cy.url().should('include', 'unauthorised');
