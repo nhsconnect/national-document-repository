@@ -63,7 +63,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         cy.get('#patient-summary-family-name').should('have.text', patient.familyName);
 
         const givenName = patient.givenName[0];
-        cy.get('#patient-summary-given-name').should('have.text', givenName);
+        cy.get('#patient-summary-given-name').should('have.text', givenName + ' ');
         cy.get('#patient-summary-date-of-birth').should(
             'have.text',
             patient.birthDate.toLocaleDateString('en-GB', {
