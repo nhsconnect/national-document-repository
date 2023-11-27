@@ -1,4 +1,3 @@
-
 from botocore.exceptions import ClientError
 from services.bulk_upload_report_service import BulkUploadReportService
 from services.dynamo_service import DynamoDBService
@@ -21,10 +20,9 @@ bulk_upload_report_service = BulkUploadReportService()
 )
 @override_error_check
 def lambda_handler(event, context):
-    db_service_class = DynamoDBService
-    s3_service_class = S3Service
+    db_service = DynamoDBService()
+    s3_service = S3Service()
     try:
-        bulk_upload_report_service.report_handler(db_service_class, s3_service_class)
+        bulk_upload_report_service.report_handler(db_service, s3_service)
     except ClientError as e:
-        logger.error("Report creation failed")
-        logger.error(e.response)
+        logger.error(f"Report creation failed due to: {e.response}")

@@ -2,7 +2,6 @@ import os
 from datetime import datetime
 from unittest.mock import call
 
-import pytest
 from boto3.dynamodb.conditions import Attr
 from freezegun import freeze_time
 from services.bulk_upload_report_service import BulkUploadReportService
@@ -16,64 +15,52 @@ from tests.unit.models.test_bulk_upload_status import (
     MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD)
 
 
-@pytest.fixture(scope="function")
-def mock_bulk_upload_report_service():
-    mock_bulk_upload_report_service = BulkUploadReportService()
-    yield mock_bulk_upload_report_service
-
-
 @freeze_time("2012-01-14 7:20:01")
-def test_get_time_for_scan_after_7am(
-    mock_bulk_upload_report_service: BulkUploadReportService,
-):
+def test_get_time_for_scan_after_7am():
     expected_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
     expected_start_report_time = datetime(2012, 1, 13, 7, 0, 0, 0)
 
     (
         actual_start_time,
         actual_end_time,
-    ) = mock_bulk_upload_report_service.get_times_for_scan()
+    ) = BulkUploadReportService().get_times_for_scan()
 
     assert expected_start_report_time == actual_start_time
     assert expected_end_report_time == actual_end_time
 
 
 @freeze_time("2012-01-14 6:59:59")
-def test_get_time_for_scan_before_7am(
-    mock_bulk_upload_report_service: BulkUploadReportService,
-):
+def test_get_time_for_scan_before_7am():
     expected_end_report_time = datetime(2012, 1, 13, 7, 0, 0, 0)
     expected_start_report_time = datetime(2012, 1, 12, 7, 0, 0, 0)
 
     (
         actual_start_time,
         actual_end_time,
-    ) = mock_bulk_upload_report_service.get_times_for_scan()
+    ) = BulkUploadReportService().get_times_for_scan()
 
     assert expected_start_report_time == actual_start_time
     assert expected_end_report_time == actual_end_time
 
 
 @freeze_time("2012-01-14 7:00:00")
-def test_get_time_for_scan_at_7am(
-    mock_bulk_upload_report_service: BulkUploadReportService,
-):
+def test_get_time_for_scan_at_7am():
     expected_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
     expected_start_report_time = datetime(2012, 1, 13, 7, 0, 0, 0)
 
     (
         actual_start_time,
         actual_end_time,
-    ) = mock_bulk_upload_report_service.get_times_for_scan()
+    ) = BulkUploadReportService().get_times_for_scan()
 
     assert expected_start_report_time == actual_start_time
     assert expected_end_report_time == actual_end_time
 
 
-def test_write_items_to_csv(mock_bulk_upload_report_service: BulkUploadReportService):
+def test_write_items_to_csv():
     items = [MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD]
 
-    mock_bulk_upload_report_service.write_items_to_csv(items, "test_file")
+    BulkUploadReportService().write_items_to_csv(items, "test_file")
 
     expected = readfile("expected_bulk_upload_report.csv")
 
@@ -83,10 +70,8 @@ def test_write_items_to_csv(mock_bulk_upload_report_service: BulkUploadReportSer
     os.remove("test_file")
 
 
-def test_write_empty_file_to_txt(
-    mock_bulk_upload_report_service: BulkUploadReportService,
-):
-    mock_bulk_upload_report_service.write_empty_report("test_file")
+def test_write_empty_file_to_txt():
+    BulkUploadReportService().write_empty_report("test_file")
 
     with open("test_file") as test_file:
         file_content = test_file.read()
@@ -94,9 +79,7 @@ def test_write_empty_file_to_txt(
     os.remove("test_file")
 
 
-def test_get_dynamo_data_2_calls(
-    mocker, set_env, mock_bulk_upload_report_service: BulkUploadReportService
-):
+def test_get_dynamo_data_2_calls(mocker, set_env):
     db_service = mocker.MagicMock()
     mock_start_time = 1688395630
     mock_end_time = 1688195630
@@ -105,7 +88,7 @@ def test_get_dynamo_data_2_calls(
     )
     mock_last_key = {"FileName": "Screenshot 2023-08-15 at 16.17.56.png"}
     db_service.scan_table.side_effect = [MOCK_RESPONSE_WITH_LAST_KEY, MOCK_RESPONSE]
-    actual = mock_bulk_upload_report_service.get_dynamodb_report_items(
+    actual = BulkUploadReportService().get_dynamodb_report_items(
         db_service, mock_start_time, mock_end_time
     )
     assert actual == EXPECTED_RESPONSE * 2
@@ -121,9 +104,7 @@ def test_get_dynamo_data_2_calls(
     db_service.scan_table.assert_has_calls(calls)
 
 
-def test_get_dynamo_data_with_no_start_key(
-    mocker, set_env, mock_bulk_upload_report_service: BulkUploadReportService
-):
+def test_get_dynamo_data_with_no_start_key(mocker, set_env):
     db_service = mocker.MagicMock()
     mock_start_time = 1688395630
     mock_end_time = 1688195630
@@ -131,7 +112,7 @@ def test_get_dynamo_data_with_no_start_key(
         mock_end_time
     )
     db_service.scan_table.side_effect = [MOCK_RESPONSE]
-    actual = mock_bulk_upload_report_service.get_dynamodb_report_items(
+    actual = BulkUploadReportService().get_dynamodb_report_items(
         db_service, mock_start_time, mock_end_time
     )
     assert actual == EXPECTED_RESPONSE
@@ -141,38 +122,31 @@ def test_get_dynamo_data_with_no_start_key(
     )
 
 
-def test_get_dynamo_data_with_no_items(
-    mocker, set_env, mock_bulk_upload_report_service: BulkUploadReportService
-):
+def test_get_dynamo_data_with_no_items(mocker, set_env):
     db_service = mocker.MagicMock()
     mock_start_time = 1688395630
     mock_end_time = 1688195630
     db_service.scan_table.side_effect = [MOCK_EMPTY_RESPONSE]
-    actual = mock_bulk_upload_report_service.get_dynamodb_report_items(
+    actual = BulkUploadReportService().get_dynamodb_report_items(
         db_service, mock_start_time, mock_end_time
     )
     assert actual == []
     db_service.scan_table.assert_called_once()
 
 
-def test_get_dynamo_data_with_bad_response(
-    mocker, set_env, mock_bulk_upload_report_service: BulkUploadReportService
-):
+def test_get_dynamo_data_with_bad_response(mocker, set_env):
     db_service = mocker.MagicMock()
     mock_start_time = 1688395630
     mock_end_time = 1688195630
     db_service.scan_table.side_effect = [UNEXPECTED_RESPONSE]
-    actual = mock_bulk_upload_report_service.get_dynamodb_report_items(
+    actual = BulkUploadReportService().get_dynamodb_report_items(
         db_service, mock_start_time, mock_end_time
     )
     assert actual is None
     db_service.scan_table.assert_called_once()
 
 
-def test_report_handler_no_items_return(
-    mocker, set_env, mock_bulk_upload_report_service: BulkUploadReportService
-):
-    mock_db_service_class = mocker.patch("services.dynamo_service.DynamoDBService")
+def test_report_handler_no_items_return(mocker, set_env):
     mock_db_service = mocker.MagicMock()
     mock_s3_service = mocker.MagicMock()
     mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
@@ -190,9 +164,7 @@ def test_report_handler_no_items_return(
         return_value=[],
     )
 
-    mock_bulk_upload_report_service.report_handler(
-        mock_db_service_class, mock_s3_service
-    )
+    BulkUploadReportService().report_handler(mock_db_service, mock_s3_service)
 
     mock_get_time.assert_called_once()
     mock_get_db.assert_called_once()
@@ -209,9 +181,7 @@ def test_report_handler_no_items_return(
     )
 
 
-def test_report_handler_with_items(
-    mocker, set_env, mock_bulk_upload_report_service: BulkUploadReportService
-):
+def test_report_handler_with_items(mocker, set_env):
     mock_db_service = mocker.MagicMock()
     mock_s3_service = mocker.MagicMock()
     mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
@@ -232,7 +202,7 @@ def test_report_handler_with_items(
         "services.bulk_upload_report_service.BulkUploadReportService.write_items_to_csv"
     )
 
-    mock_bulk_upload_report_service.report_handler(mock_db_service, mock_s3_service)
+    BulkUploadReportService().report_handler(mock_db_service, mock_s3_service)
 
     mock_get_time.assert_called_once()
     mock_get_db.assert_called_once()

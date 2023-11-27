@@ -11,9 +11,7 @@ logger = LoggingService(__name__)
 
 
 class BulkUploadReportService:
-    def report_handler(self, db_service_class, s3_service_class):
-        db_service = db_service_class()
-        s3_service = s3_service_class()
+    def report_handler(self, db_service, s3_service):
         staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
         start_time, end_time = self.get_times_for_scan()
         report_data = self.get_dynamodb_report_items(
