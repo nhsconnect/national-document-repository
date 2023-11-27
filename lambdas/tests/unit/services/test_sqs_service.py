@@ -19,7 +19,7 @@ def test_send_message_with_nhs_number_attr(set_env, mocker):
         {"NHS-NO": "1234567890", "files": ["file1.pdf", "file2.pdf"]}
     )
 
-    service.send_message_with_nhs_number_attr(
+    service.send_message_with_nhs_number_attr_fifo(
         group_id="test_group_id",
         queue_url=MOCK_LG_METADATA_SQS_QUEUE,
         message_body=test_message_body,

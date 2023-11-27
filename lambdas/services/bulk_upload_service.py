@@ -191,7 +191,7 @@ class BulkUploadService:
         )
 
     def put_message_back_to_queue(self, staging_metadata: StagingMetadata):
-        self.sqs_service.send_message_with_nhs_number_attr(
+        self.sqs_service.send_message_with_nhs_number_attr_fifo(
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=staging_metadata.nhs_number,

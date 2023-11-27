@@ -38,7 +38,7 @@ def test_lambda_send_metadata_to_sqs_queue(
 
     lambda_handler(event, context)
 
-    assert mock_sqs_service.send_message_with_nhs_number_attr.call_count == 2
+    assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
 
     expected_calls = [
         call(
@@ -54,7 +54,7 @@ def test_lambda_send_metadata_to_sqs_queue(
             nhs_number="1234567891",
         ),
     ]
-    mock_sqs_service.send_message_with_nhs_number_attr.assert_has_calls(expected_calls)
+    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(expected_calls)
 
 
 def test_handler_log_error_when_fail_to_get_metadata_csv_from_s3(
@@ -71,7 +71,7 @@ def test_handler_log_error_when_fail_to_get_metadata_csv_from_s3(
     assert caplog.records[-1].msg == expected_err_msg
     assert caplog.records[-1].levelname == "ERROR"
 
-    mock_sqs_service.send_message_with_nhs_number_attr.assert_not_called()
+    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
 def test_handler_log_error_when_metadata_csv_is_invalid(
@@ -88,13 +88,13 @@ def test_handler_log_error_when_metadata_csv_is_invalid(
         assert "validation error" in caplog.records[-1].msg
         assert caplog.records[-1].levelname == "ERROR"
 
-        mock_sqs_service.send_message_with_nhs_number_attr.assert_not_called()
+        mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
 def test_handler_log_error_when_failed_to_send_message_to_sqs(
     set_env, mock_s3_service, mock_sqs_service, mock_tempfile, caplog, event, context
 ):
-    mock_sqs_service.send_message_with_nhs_number_attr.side_effect = ClientError(
+    mock_sqs_service.send_message_with_nhs_number_attr_fifo.side_effect = ClientError(
         {
             "Error": {
                 "Code": "AWS.SimpleQueueService.NonExistentQueue",
@@ -176,12 +176,12 @@ def test_send_metadata_to_sqs(mocker, mock_sqs_service):
             group_id="bulk_upload_123412342",
         ),
     ]
-    mock_sqs_service.send_message_with_nhs_number_attr.assert_has_calls(expected_calls)
-    assert mock_sqs_service.send_message_with_nhs_number_attr.call_count == 2
+    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(expected_calls)
+    assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
 
 
 def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(mock_sqs_service):
-    mock_sqs_service.send_message_with_nhs_number_attr.side_effect = ClientError(
+    mock_sqs_service.send_message_with_nhs_number_attr_fifo.side_effect = ClientError(
         {
             "Error": {
                 "Code": "AWS.SimpleQueueService.NonExistentQueue",
