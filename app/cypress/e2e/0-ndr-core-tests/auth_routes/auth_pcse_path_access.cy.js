@@ -7,15 +7,19 @@ const patient = {
     postalCode: 'AA1 1AA',
     superseded: false,
     restricted: false,
-    active: true,
+    active: false,
 };
 
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+const forbiddenRoutes = [
+    'search/patient/lloyd-george-record',
+    'search/upload',
+    'search/upload/result',
+    'upload/submit',
+];
 
-describe('assert GP_CLINICAL workflow path', () => {
-    const baseUrl = 'http://localhost:3000';
-
+describe('assert PCSE user has access to the PCSE workflow path ', () => {
     context('session management', () => {
         it('sets session storage on login and checks starting url route', () => {
             if (!smokeTest) {
@@ -25,21 +29,29 @@ describe('assert GP_CLINICAL workflow path', () => {
                 }).as('search');
             }
 
-            cy.login('GP_CLINICAL');
-            cy.url().should('eq', baseUrl + '/search/upload');
+            cy.login('PCSE');
+
+            cy.url().should('eq', baseUrl + 'search/patient');
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
             cy.get('#search-submit').click();
             cy.wait('@search');
 
-            cy.url().should('include', 'upload');
-            cy.url().should('eq', baseUrl + '/search/upload/result');
-
             cy.get('#verify-submit').click();
+            cy.url().should('eq', baseUrl + 'search/results');
+        });
+    });
+});
 
-            cy.url().should('include', 'lloyd-george-record');
-            cy.url().should('eq', baseUrl + '/search/patient/lloyd-george-record');
+describe('assert PCSE role cannot access expected forbidden routes', () => {
+    context('forbidden routes', () => {
+        forbiddenRoutes.forEach((forbiddenRoute) => {
+            it('assert PCSE cannot access route ' + forbiddenRoute, () => {
+                cy.login('PCSE');
+                cy.visit(baseUrl + forbiddenRoute);
+                cy.url().should('include', 'unauthorised');
+            });
         });
     });
 });

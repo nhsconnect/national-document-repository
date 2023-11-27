@@ -1,4 +1,4 @@
-import authPayload from '../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
+import authPayload from '../../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
 
 describe('authentication & authorisation', () => {
     const baseUrl = 'http://localhost:3000';
