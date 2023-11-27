@@ -12,12 +12,15 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException, S3FileNotFoundException,
-                              TagNotFoundException, VirusScanFailedException,
-                              VirusScanNoResultException)
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names)
+from utils.exceptions import (
+    DocumentInfectedException,
+    InvalidMessageException,
+    S3FileNotFoundException,
+    TagNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+)
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -193,7 +196,7 @@ class BulkUploadService:
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=staging_metadata.nhs_number,
             delay_seconds=60 * 5,
-            group_id= f"back_to_queue_bulk_upload_{uuid.uuid4()}"
+            group_id=f"back_to_queue_bulk_upload_{uuid.uuid4()}",
         )
 
     def init_transaction(self):

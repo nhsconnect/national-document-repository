@@ -5,19 +5,32 @@ from botocore.exceptions import ClientError
 from enums.virus_scan_result import VirusScanResult
 from freezegun import freeze_time
 from services.bulk_upload_service import BulkUploadService
-from tests.unit.conftest import (MOCK_BULK_REPORT_TABLE_NAME, MOCK_LG_BUCKET,
-                                 MOCK_LG_METADATA_SQS_QUEUE,
-                                 MOCK_LG_STAGING_STORE_BUCKET,
-                                 MOCK_LG_TABLE_NAME, TEST_OBJECT_KEY)
+from tests.unit.conftest import (
+    MOCK_BULK_REPORT_TABLE_NAME,
+    MOCK_LG_BUCKET,
+    MOCK_LG_METADATA_SQS_QUEUE,
+    MOCK_LG_STAGING_STORE_BUCKET,
+    MOCK_LG_TABLE_NAME,
+    TEST_OBJECT_KEY,
+)
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    TEST_DOCUMENT_REFERENCE, TEST_DOCUMENT_REFERENCE_LIST, TEST_FILE_METADATA,
-    TEST_NHS_NUMBER_FOR_BULK_UPLOAD, TEST_SQS_MESSAGE,
-    TEST_SQS_MESSAGE_WITH_INVALID_FILENAME, TEST_STAGING_METADATA,
-    TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
-from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException, S3FileNotFoundException,
-                              TagNotFoundException, VirusScanFailedException,
-                              VirusScanNoResultException)
+    TEST_DOCUMENT_REFERENCE,
+    TEST_DOCUMENT_REFERENCE_LIST,
+    TEST_FILE_METADATA,
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
+    TEST_SQS_MESSAGE,
+    TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
+    TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
+)
+from utils.exceptions import (
+    DocumentInfectedException,
+    InvalidMessageException,
+    S3FileNotFoundException,
+    TagNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+)
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 

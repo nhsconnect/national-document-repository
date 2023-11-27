@@ -3,17 +3,20 @@ from unittest.mock import call
 
 import pytest
 from botocore.exceptions import ClientError
-from handlers.bulk_upload_metadata_handler import (csv_to_staging_metadata,
-                                                   download_metadata_from_s3,
-                                                   lambda_handler,
-                                                   send_metadata_to_fifo_sqs)
+from handlers.bulk_upload_metadata_handler import (
+    csv_to_staging_metadata,
+    download_metadata_from_s3,
+    lambda_handler,
+    send_metadata_to_fifo_sqs,
+)
 from models.staging_metadata import METADATA_FILENAME
 from pydantic import ValidationError
-from tests.unit.conftest import (MOCK_LG_METADATA_SQS_QUEUE,
-                                 MOCK_LG_STAGING_STORE_BUCKET)
+from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, MOCK_LG_STAGING_STORE_BUCKET
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    EXPECTED_PARSED_METADATA, EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
-    EXPECTED_SQS_MSG_FOR_PATIENT_1234567891)
+    EXPECTED_PARSED_METADATA,
+    EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
+    EXPECTED_SQS_MSG_FOR_PATIENT_1234567891,
+)
 
 MOCK_METADATA_CSV = "tests/unit/helpers/data/bulk_upload/metadata.csv"
 MOCK_INVALID_METADATA_CSV_FILES = [
@@ -159,19 +162,18 @@ def test_send_metadata_to_sqs(mocker, mock_sqs_service):
 
     send_metadata_to_fifo_sqs(mock_parsed_metadata, MOCK_LG_METADATA_SQS_QUEUE)
 
-
     expected_calls = [
         call(
             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
             nhs_number="1234567890",
-            group_id="bulk_upload_123412342"
+            group_id="bulk_upload_123412342",
         ),
         call(
             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
             message_body=EXPECTED_SQS_MSG_FOR_PATIENT_1234567891,
             nhs_number="1234567891",
-            group_id="bulk_upload_123412342"
+            group_id="bulk_upload_123412342",
         ),
     ]
     mock_sqs_service.send_message_with_nhs_number_attr.assert_has_calls(expected_calls)

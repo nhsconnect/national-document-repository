@@ -6,8 +6,12 @@ from typing import Iterable
 
 import pydantic
 from botocore.exceptions import ClientError
-from models.staging_metadata import (METADATA_FILENAME, NHS_NUMBER_FIELD_NAME,
-                                     MetadataFile, StagingMetadata)
+from models.staging_metadata import (
+    METADATA_FILENAME,
+    NHS_NUMBER_FIELD_NAME,
+    MetadataFile,
+    StagingMetadata,
+)
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
@@ -100,5 +104,5 @@ def send_metadata_to_fifo_sqs(
             queue_url=metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=nhs_number,
-            group_id=sqs_group_id
+            group_id=sqs_group_id,
         )

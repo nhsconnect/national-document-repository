@@ -33,5 +33,5 @@ def test_send_message_with_nhs_number_attr(set_env, mocker):
         },
         MessageBody=test_message_body,
         DelaySeconds=0,
-        MessageGroupId="test_group_id"
+        MessageGroupId="test_group_id",
     )

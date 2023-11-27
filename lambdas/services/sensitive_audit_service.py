@@ -18,6 +18,7 @@ class SensitiveAuditService(StreamHandler):
             if self.sqs_client is None:
                 self.sqs_client = SQSService()
             self.sqs_client.send_message_fifo(
-                queue_url=self.splunk_sqs_queue, message_body=self.format(record), group_id=sqs_group_id
-
+                queue_url=self.splunk_sqs_queue,
+                message_body=self.format(record),
+                group_id=sqs_group_id,
             )
