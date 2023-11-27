@@ -1,4 +1,3 @@
-
 import pytest
 from botocore.exceptions import ClientError
 from handlers.back_channel_logout_handler import lambda_handler
