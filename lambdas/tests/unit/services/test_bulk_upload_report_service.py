@@ -172,6 +172,7 @@ def test_get_dynamo_data_with_bad_response(
 def test_report_handler_no_items_return(
     mocker, set_env, mock_bulk_upload_report_service: BulkUploadReportService
 ):
+    mock_db_service_class = mocker.patch("services.dynamo_service.DynamoDBService")
     mock_db_service = mocker.MagicMock()
     mock_s3_service = mocker.MagicMock()
     mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
@@ -189,7 +190,9 @@ def test_report_handler_no_items_return(
         return_value=[],
     )
 
-    mock_bulk_upload_report_service.report_handler(mock_db_service, mock_s3_service)
+    mock_bulk_upload_report_service.report_handler(
+        mock_db_service_class, mock_s3_service
+    )
 
     mock_get_time.assert_called_once()
     mock_get_db.assert_called_once()
