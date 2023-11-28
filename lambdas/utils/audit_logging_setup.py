@@ -5,18 +5,23 @@ from utils.logging_formatter import LoggingFormatter
 
 
 class LoggingService:
+
+    audit_logger = None
+
     def __init__(self, name):
         self.name = name
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.INFO)
-
-        self.audit_logger = logging.getLogger("audit")
-        self.audit_handler = SensitiveAuditService()
+        self.configure_audit_logger()
         self.formatter = LoggingFormatter()
         logging.Formatter.format = self.formatter.format
 
-        self.audit_logger.addHandler(self.audit_handler)
-        self.audit_logger.setLevel(logging.INFO)
+    def configure_audit_logger(self):
+        if self.__class__.audit_logger is None:
+            self.__class__.audit_logger = logging.getLogger("audit")
+            audit_handler = SensitiveAuditService()
+            self.__class__.audit_logger.addHandler(audit_handler)
+            self.__class__.audit_logger.setLevel(logging.INFO)
 
     def audit_splunk_info(self, msg, args: dict = None):
         logging.getLogger("audit.{}".format(self.name))

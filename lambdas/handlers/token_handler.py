@@ -14,6 +14,7 @@ from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import (AuthorisationException,
@@ -29,6 +30,9 @@ token_handler_ssm_service = TokenHandlerSSMService()
 
 @set_request_context_for_logging
 @override_error_check
+@ensure_environment_variables(
+    names=["AUTH_STATE_TABLE_NAME", "AUTH_SESSION_TABLE_NAME"]
+)
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
 
@@ -45,11 +49,14 @@ def lambda_handler(event, context):
 
     try:
         if not have_matching_state_value_in_record(state):
+            logger.info(f"Mismatching state values. Cannot find state {state} in record")
             return ApiGatewayResponse(
                 400,
-                f"Mismatching state values. Cannot find state {state} in record",
+                "Failed to authenticate user",
                 "GET",
             ).create_api_gateway_response()
+
+        remove_used_state(state)
 
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
@@ -185,7 +192,15 @@ def have_matching_state_value_in_record(state: str) -> bool:
     query_response = db_service.simple_query(
         table_name=state_table_name, key_condition_expression=Key("State").eq(state)
     )
-    return "Count" in query_response and query_response["Count"] > 0
+
+    return "Count" in query_response and query_response["Count"] == 1
+
+
+def remove_used_state(state):
+    state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
+    db_service = DynamoDBService()
+    deletion_key = {"State": state}
+    db_service.delete_item(table_name=state_table_name, key=deletion_key)
 
 
 # TODO AKH Dynamo Service class

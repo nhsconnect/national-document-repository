@@ -1,4 +1,5 @@
 import os
+import uuid
 
 import pydantic
 from botocore.exceptions import ClientError
@@ -11,15 +12,17 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException,
-                              PdsTooManyRequestsException,
-                              S3FileNotFoundException, TagNotFoundException,
-                              VirusScanFailedException,
-                              VirusScanNoResultException)
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names)
 from utils.request_context import request_context
+from utils.exceptions import (
+    PdsTooManyRequestsException,
+    DocumentInfectedException,
+    InvalidMessageException,
+    S3FileNotFoundException,
+    TagNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+)
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -68,9 +71,9 @@ class BulkUploadService:
             raise error
         except LGInvalidFilesException as error:
             logger.info(
-                f"Detected invalid file name related to patient number: {staging_metadata.nhs_number}"
+                f"Detected invalid file name related to patient number: {staging_metadata.nhs_number}. Will stop "
+                f"processing Lloyd George record for this patient "
             )
-            logger.info("Will stop processing Lloyd George record for this patient")
 
             failure_reason = str(error)
             self.report_upload_failure(staging_metadata, failure_reason)
@@ -195,15 +198,21 @@ class BulkUploadService:
             f"Verified that all documents for patient {staging_metadata.nhs_number} are clean."
         )
 
+<<<<<<< HEAD
     def put_staging_metadata_back_to_queue(self, staging_metadata: StagingMetadata):
         request_context.patient_nhs_no = staging_metadata.nhs_number
 
         logger.info("Returning message to sqs queue...")
         self.sqs_service.send_message_with_nhs_number_attr(
+=======
+    def put_message_back_to_queue(self, staging_metadata: StagingMetadata):
+        self.sqs_service.send_message_with_nhs_number_attr_fifo(
+>>>>>>> main
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=staging_metadata.nhs_number,
             delay_seconds=60 * 5,
+            group_id=f"back_to_queue_bulk_upload_{uuid.uuid4()}",
         )
 
     def put_sqs_message_back_to_queue(self, sqs_message: dict):
@@ -235,10 +244,10 @@ class BulkUploadService:
             )
             source_file_key = self.strip_leading_slash(file_metadata.file_path)
             dest_file_key = document_reference.s3_file_key
-            self.create_record_in_lg_dynamo_table(document_reference)
             self.copy_to_lg_bucket(
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
+            self.create_record_in_lg_dynamo_table(document_reference)
 
     def create_record_in_lg_dynamo_table(
         self, document_reference: NHSDocumentReference

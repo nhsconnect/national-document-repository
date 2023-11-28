@@ -29,7 +29,7 @@ def validate_lg_file_type(file_type: str):
 
 
 def validate_file_name(name: str):
-    lg_regex = r"[0-9]+of[0-9]+_Lloyd_George_Record_\[[A-Za-z À-ÿ\-]+]_\[[0-9]{10}]_\[\d\d-\d\d-\d\d\d\d].pdf"
+    lg_regex = r"[0-9]+of[0-9]+_Lloyd_George_Record_\[[A-Za-z À-ÿ\-']+]_\[[0-9]{10}]_\[\d\d-\d\d-\d\d\d\d].pdf"
     if not re.fullmatch(lg_regex, name):
         raise LGInvalidFilesException(
             "One or more of the files do not match naming convention"
@@ -86,7 +86,7 @@ def validate_lg_file_names(file_name_list: list[str], nhs_number: Optional[str] 
 def extract_info_from_filename(filename: str) -> dict:
     page_number = r"(?P<page_no>[1-9][0-9]*)"
     total_page_number = r"(?P<total_page_no>[1-9][0-9]*)"
-    patient_name = r"(?P<patient_name>[A-Za-z À-ÿ\-]+)"
+    patient_name = r"(?P<patient_name>[A-Za-z À-ÿ\-']+)"
     nhs_number = r"(?P<nhs_number>\d{10})"
     date_of_birth = r"(?P<date_of_birth>\d\d-\d\d-\d\d\d\d)"
 

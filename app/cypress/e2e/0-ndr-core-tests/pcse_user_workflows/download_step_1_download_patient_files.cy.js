@@ -1,4 +1,4 @@
-import searchPatientPayload from '../../fixtures/requests/GET_SearchPatient.json';
+import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
 
 describe('PCSE Download Workflow: Access and download found files', () => {
     // env vars
