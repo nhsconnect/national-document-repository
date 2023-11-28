@@ -10,12 +10,12 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { LinkProps } from 'react-router-dom';
 import usePatient from '../../../helpers/hooks/usePatient';
 
+const mockedUseNavigate = jest.fn();
 jest.mock('../../../helpers/hooks/useRole');
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
-    useNavigate: () => jest.fn(),
 }));
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
@@ -27,7 +27,6 @@ const mockedUsePatient = usePatient as jest.Mock;
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
 const mockSetStage = jest.fn();
-const mockedUseNavigate = jest.fn();
 
 describe('DeletionConfirmationStage', () => {
     beforeEach(() => {
