@@ -10,6 +10,10 @@ class PdsErrorException(Exception):
     pass
 
 
+class PdsTooManyRequestsException(Exception):
+    pass
+
+
 class AuthorisationException(Exception):
     pass
 

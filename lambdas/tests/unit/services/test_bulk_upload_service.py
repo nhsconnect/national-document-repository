@@ -5,32 +5,19 @@ from botocore.exceptions import ClientError
 from enums.virus_scan_result import VirusScanResult
 from freezegun import freeze_time
 from services.bulk_upload_service import BulkUploadService
-from tests.unit.conftest import (
-    MOCK_BULK_REPORT_TABLE_NAME,
-    MOCK_LG_BUCKET,
-    MOCK_LG_METADATA_SQS_QUEUE,
-    MOCK_LG_STAGING_STORE_BUCKET,
-    MOCK_LG_TABLE_NAME,
-    TEST_OBJECT_KEY,
-)
+from tests.unit.conftest import (MOCK_BULK_REPORT_TABLE_NAME, MOCK_LG_BUCKET,
+                                 MOCK_LG_METADATA_SQS_QUEUE,
+                                 MOCK_LG_STAGING_STORE_BUCKET,
+                                 MOCK_LG_TABLE_NAME, TEST_OBJECT_KEY)
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    TEST_DOCUMENT_REFERENCE,
-    TEST_DOCUMENT_REFERENCE_LIST,
-    TEST_FILE_METADATA,
-    TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
-    TEST_SQS_MESSAGE,
-    TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
-    TEST_STAGING_METADATA,
-    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
-)
-from utils.exceptions import (
-    DocumentInfectedException,
-    InvalidMessageException,
-    S3FileNotFoundException,
-    TagNotFoundException,
-    VirusScanFailedException,
-    VirusScanNoResultException,
-)
+    TEST_DOCUMENT_REFERENCE, TEST_DOCUMENT_REFERENCE_LIST, TEST_FILE_METADATA,
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD, TEST_SQS_MESSAGE,
+    TEST_SQS_MESSAGE_WITH_INVALID_FILENAME, TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+from utils.exceptions import (DocumentInfectedException,
+                              InvalidMessageException, S3FileNotFoundException,
+                              TagNotFoundException, VirusScanFailedException,
+                              VirusScanNoResultException)
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 
@@ -144,7 +131,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
     )
 
 
-def test_handle_sqs_message_put_message_back_to_queue_when_virus_scan_result_not_available(
+def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_result_not_available(
     set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result
 ):
     mock_check_virus_result.side_effect = VirusScanNoResultException
@@ -157,14 +144,14 @@ def test_handle_sqs_message_put_message_back_to_queue_when_virus_scan_result_not
     mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
         BulkUploadService, "remove_ingested_file_from_source_bucket"
     )
-    mock_put_message_back_to_queue = mocker.patch.object(
-        BulkUploadService, "put_message_back_to_queue"
+    mock_put_staging_metadata_back_to_queue = mocker.patch.object(
+        BulkUploadService, "put_staging_metadata_back_to_queue"
     )
 
     service = BulkUploadService()
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
-    mock_put_message_back_to_queue.assert_called_with(TEST_STAGING_METADATA)
+    mock_put_staging_metadata_back_to_queue.assert_called_with(TEST_STAGING_METADATA)
 
     mock_report_upload_failure.assert_not_called()
     mock_create_lg_records_and_copy_files.assert_not_called()
@@ -314,18 +301,32 @@ def test_check_virus_result_raise_VirusScanFailedException_for_special_cases(
             service.check_virus_result(TEST_STAGING_METADATA)
 
 
-def test_put_message_back_to_queue(set_env, mocker):
+def test_put_staging_metadata_back_to_queue(set_env, mocker):
     service = BulkUploadService()
     service.sqs_service = mocker.MagicMock()
     mocker.patch("uuid.uuid4", return_value="123412342")
 
-    service.put_message_back_to_queue(TEST_STAGING_METADATA)
+    service.put_staging_metadata_back_to_queue(TEST_STAGING_METADATA)
 
     service.sqs_service.send_message_with_nhs_number_attr_fifo.assert_called_with(
         group_id="back_to_queue_bulk_upload_123412342",
         queue_url=MOCK_LG_METADATA_SQS_QUEUE,
         message_body=TEST_STAGING_METADATA.model_dump_json(by_alias=True),
         nhs_number=TEST_STAGING_METADATA.nhs_number,
+        delay_seconds=60 * 5,
+    )
+
+
+def test_put_sqs_message_back_to_queue(set_env, mocker):
+    service = BulkUploadService()
+    service.sqs_service = mocker.MagicMock()
+
+    service.put_sqs_message_back_to_queue(TEST_SQS_MESSAGE)
+
+    service.sqs_service.send_message_with_nhs_number_attr_fifo.assert_called_with(
+        queue_url=MOCK_LG_METADATA_SQS_QUEUE,
+        message_body=TEST_SQS_MESSAGE["body"],
+        nhs_number=TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
         delay_seconds=60 * 5,
     )
 

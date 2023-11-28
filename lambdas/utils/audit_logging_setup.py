@@ -5,7 +5,6 @@ from utils.logging_formatter import LoggingFormatter
 
 
 class LoggingService:
-
     audit_logger = None
 
     def __init__(self, name):
