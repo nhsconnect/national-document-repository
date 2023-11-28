@@ -1,10 +1,10 @@
 import csv
 import datetime
 import os
-from botocore.exceptions import ClientError
-
 from typing import Optional
+
 from boto3.dynamodb.conditions import Attr
+from botocore.exceptions import ClientError
 from models.bulk_upload_status import FieldNamesForBulkUploadReport
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
@@ -24,7 +24,7 @@ class BulkUploadReportService:
             staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
             start_time, end_time = self.get_times_for_scan()
             report_data = self.get_dynamodb_report_items(
-                self.db_service, int(start_time.timestamp()), int(end_time.timestamp())
+                int(start_time.timestamp()), int(end_time.timestamp())
             )
             if report_data:
                 file_name = (
@@ -45,7 +45,9 @@ class BulkUploadReportService:
         except ClientError as e:
             raise BulkUploadReportException(f"Report creation failed due to: {e}")
 
-    def get_dynamodb_report_items(self, start_timestamp: int, end_timestamp: int) -> Optional[list]:
+    def get_dynamodb_report_items(
+        self, start_timestamp: int, end_timestamp: int
+    ) -> Optional[list]:
         logger.info("Starting Scan on DynamoDB table")
         bulk_upload_table_name = os.getenv("BULK_UPLOAD_DYNAMODB_NAME")
         filter_time = Attr("Timestamp").gt(start_timestamp) & Attr("Timestamp").lt(
