@@ -12,7 +12,7 @@ from requests import HTTPError
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.unicode_utils import (REGEX_PATIENT_NAME_PATTERN,
-                                 contains_accent_char)
+                                 contains_accent_char, names_are_matching)
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
@@ -138,18 +138,10 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
             + " "
             + patient_details.family_name
         )
+        logger.info("Verifying patient name against the record in PDS...")
 
-        if contains_accent_char(patient_name):
-            # TODO: Remove this if branch and check patient name even if contain accent char.
-            # Convert the name from PDS to NFC form by "Le\u00c3\u00b3n ".encode('latin-1').decode('utf8'),
-            # then use `names_are_matching` in unicode_util to compare the names.
-            logger.info(
-                "Bypassing name check as patient name contains accented character"
-            )
-        else:
-            logger.info("Verifying patient name against the record in PDS...")
-            if patient_full_name != patient_name:
-                raise LGInvalidFilesException("Patient name does not match our records")
+        if patient_full_name != patient_name or not names_are_matching(patient_name, patient_full_name):
+            raise LGInvalidFilesException("Patient name does not match our records")
 
         current_user_ods = get_user_ods_code()
         if patient_details.general_practice_ods != current_user_ods:
