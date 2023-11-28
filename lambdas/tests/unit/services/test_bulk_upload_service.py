@@ -410,7 +410,6 @@ def test_put_message_back_to_queue(set_env, mocker):
         queue_url=MOCK_LG_METADATA_SQS_QUEUE,
         message_body=TEST_STAGING_METADATA.model_dump_json(by_alias=True),
         nhs_number=TEST_STAGING_METADATA.nhs_number,
-        delay_seconds=60 * 5,
     )
 
 

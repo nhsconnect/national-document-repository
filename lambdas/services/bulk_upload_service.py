@@ -201,7 +201,6 @@ class BulkUploadService:
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=staging_metadata.nhs_number,
-            delay_seconds=60 * 5,
             group_id=f"back_to_queue_bulk_upload_{uuid.uuid4()}",
         )
 
