@@ -82,3 +82,7 @@ class S3FileNotFoundException(Exception):
 
 class TagNotFoundException(Exception):
     pass
+
+
+class BulkUploadReportException(Exception):
+    pass
