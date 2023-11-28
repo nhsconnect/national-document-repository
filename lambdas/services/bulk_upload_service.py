@@ -12,17 +12,15 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
+from utils.exceptions import (DocumentInfectedException,
+                              InvalidMessageException,
+                              PdsTooManyRequestsException,
+                              S3FileNotFoundException, TagNotFoundException,
+                              VirusScanFailedException,
+                              VirusScanNoResultException)
+from utils.lloyd_george_validator import (LGInvalidFilesException,
+                                          validate_lg_file_names)
 from utils.request_context import request_context
-from utils.exceptions import (
-    PdsTooManyRequestsException,
-    DocumentInfectedException,
-    InvalidMessageException,
-    S3FileNotFoundException,
-    TagNotFoundException,
-    VirusScanFailedException,
-    VirusScanNoResultException,
-)
-from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -198,7 +196,6 @@ class BulkUploadService:
             f"Verified that all documents for patient {staging_metadata.nhs_number} are clean."
         )
 
-
     def put_staging_metadata_back_to_queue(self, staging_metadata: StagingMetadata):
         request_context.patient_nhs_no = staging_metadata.nhs_number
 
@@ -219,7 +216,7 @@ class BulkUploadService:
             nhs_number = ""
 
         logger.info("Returning message to sqs queue...")
-        self.sqs_service.send_message_with_nhs_number_attr(
+        self.sqs_service.send_message_with_nhs_number_attr_fifo(
             queue_url=self.metadata_queue_url,
             message_body=sqs_message["body"],
             nhs_number=nhs_number,
