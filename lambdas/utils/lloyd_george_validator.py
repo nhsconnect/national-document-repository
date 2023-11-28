@@ -147,9 +147,7 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         )
         logger.info("Verifying patient name against the record in PDS...")
 
-        if patient_full_name != patient_name or not names_are_matching(
-            patient_name, patient_full_name
-        ):
+        if not names_are_matching(patient_name, patient_full_name):
             raise LGInvalidFilesException("Patient name does not match our records")
 
         current_user_ods = get_user_ods_code()
