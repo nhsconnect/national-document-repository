@@ -1,18 +1,14 @@
 import { render, screen } from '@testing-library/react';
-import * as ReactRouter from 'react-router';
-import { createMemoryHistory } from 'history';
 import NotFoundPage from './NotFoundPage';
+import { LinkProps } from 'react-router-dom';
+
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} role="link" />,
+}));
 describe('NotFoundPage', () => {
     it('renders unauthorised message', () => {
-        const history = createMemoryHistory({
-            initialEntries: ['/'],
-            initialIndex: 0,
-        });
-        render(
-            <ReactRouter.Router navigator={history} location={history.location}>
-                <NotFoundPage />
-            </ReactRouter.Router>,
-        );
+        render(<NotFoundPage />);
         expect(screen.getByText('Page not found')).toBeInTheDocument();
     });
 });

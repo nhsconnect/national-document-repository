@@ -1,19 +1,14 @@
 import { render, screen } from '@testing-library/react';
-import * as ReactRouter from 'react-router';
-import { createMemoryHistory } from 'history';
 import AuthErrorPage from './AuthErrorPage';
+import { LinkProps } from 'react-router-dom';
 
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} role="link" />,
+}));
 describe('AuthErrorPage', () => {
     it('renders unauthorised message', () => {
-        const history = createMemoryHistory({
-            initialEntries: ['/'],
-            initialIndex: 0,
-        });
-        render(
-            <ReactRouter.Router navigator={history} location={history.location}>
-                <AuthErrorPage />
-            </ReactRouter.Router>,
-        );
+        render(<AuthErrorPage />);
         expect(screen.getByText('You have been logged out')).toBeInTheDocument();
     });
 });
