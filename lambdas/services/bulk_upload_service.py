@@ -198,16 +198,12 @@ class BulkUploadService:
             f"Verified that all documents for patient {staging_metadata.nhs_number} are clean."
         )
 
-<<<<<<< HEAD
+
     def put_staging_metadata_back_to_queue(self, staging_metadata: StagingMetadata):
         request_context.patient_nhs_no = staging_metadata.nhs_number
 
         logger.info("Returning message to sqs queue...")
-        self.sqs_service.send_message_with_nhs_number_attr(
-=======
-    def put_message_back_to_queue(self, staging_metadata: StagingMetadata):
         self.sqs_service.send_message_with_nhs_number_attr_fifo(
->>>>>>> main
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=staging_metadata.nhs_number,
