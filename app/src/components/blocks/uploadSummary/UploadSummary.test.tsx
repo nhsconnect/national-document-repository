@@ -203,7 +203,6 @@ describe('UploadSummary', () => {
 const renderUploadSummary = (propsOverride: Partial<Props>) => {
     const props: Props = {
         documents: [],
-        patientDetails: buildPatientDetails(),
         ...propsOverride,
     };
 
