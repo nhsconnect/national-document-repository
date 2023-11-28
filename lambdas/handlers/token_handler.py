@@ -49,7 +49,9 @@ def lambda_handler(event, context):
 
     try:
         if not have_matching_state_value_in_record(state):
-            logger.info(f"Mismatching state values. Cannot find state {state} in record")
+            logger.info(
+                f"Mismatching state values. Cannot find state {state} in record"
+            )
             return ApiGatewayResponse(
                 400,
                 "Failed to authenticate user",

@@ -4,6 +4,7 @@ import pytest
 from botocore.exceptions import ClientError
 from requests import Response
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
+from utils.exceptions import PdsTooManyRequestsException
 from utils.lloyd_george_validator import (
     LGInvalidFilesException, check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
@@ -316,6 +317,26 @@ def test_raise_client_error_from_ssm_with_pds_service(mocker, mock_pds_call):
 
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
     mock_odc_code.assert_called_once()
+
+
+def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
+    mocker, mock_pds_call
+):
+    response = Response()
+    response.status_code = 429
+    response._content = b"Too Many Requests"
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+    ]
+    mock_pds_call.return_value = response
+
+    mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
+
+    with pytest.raises(PdsTooManyRequestsException):
+        validate_with_pds_service(lg_file_list, "9000000009")
+
+    mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
 
 
 @pytest.fixture

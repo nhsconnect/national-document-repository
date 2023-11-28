@@ -43,6 +43,7 @@ class PdsApiService(PatientSearch):
             pds_response = requests.get(url=url_endpoint, headers=authorization_header)
             if pds_response.status_code == 401 and retry_on_expired:
                 return self.pds_request(nhs_number, retry_on_expired=False)
+
             return pds_response
 
         except ClientError as e:
