@@ -69,10 +69,9 @@ def test_get_time_for_scan_at_7am(bulk_upload_report_service):
 
 def test_write_items_to_csv(bulk_upload_report_service):
     items = [MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD]
+    expected = readfile("expected_bulk_upload_report.csv")
 
     bulk_upload_report_service.write_items_to_csv(items, "test_file")
-
-    expected = readfile("expected_bulk_upload_report.csv")
 
     with open("test_file") as test_file:
         actual = test_file.read()
@@ -179,7 +178,7 @@ def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_serv
         return_value=[],
     )
 
-    bulk_upload_report_service.report_handler()
+    response = bulk_upload_report_service.report_handler()
 
     mock_get_time.assert_called_once()
     mock_get_db.assert_called_once()
@@ -193,6 +192,9 @@ def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_serv
         file_key=f"reports/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
+    assert response.status == 200
+    assert response.message == "Bulk upload report creation successful"
+    assert response.errors == []
 
 
 def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
@@ -214,7 +216,7 @@ def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
         "services.bulk_upload_report_service.BulkUploadReportService.write_items_to_csv"
     )
 
-    bulk_upload_report_service.report_handler()
+    response = bulk_upload_report_service.report_handler()
 
     mock_get_time.assert_called_once()
     mock_get_db.assert_called_once()
@@ -230,6 +232,9 @@ def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
         file_key=f"reports/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
+    assert response.status == 200
+    assert response.message == "Bulk upload report creation successful"
+    assert response.errors == []
 
 
 def test_report_handler_handles_s3_client_error(set_env, bulk_upload_report_service):
@@ -241,3 +246,18 @@ def test_report_handler_handles_s3_client_error(set_env, bulk_upload_report_serv
     assert response.status == 400
     assert response.message == "Bulk upload report creation failed"
     assert response.errors[0].type == "S3 Client"
+
+
+def test_report_handler_handles_dynamo_client_error(
+    mocker, set_env, bulk_upload_report_service
+):
+    mock_get_dynamo_items = mocker.patch.object(
+        bulk_upload_report_service, "get_dynamodb_report_items"
+    )
+    mock_get_dynamo_items.side_effect = ClientError({}, "dynamo error")
+
+    response = bulk_upload_report_service.report_handler()
+
+    assert response.status == 400
+    assert response.message == "Bulk upload report creation failed"
+    assert response.errors[0].type == "Dynamo Client"
