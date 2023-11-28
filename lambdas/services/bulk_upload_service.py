@@ -3,6 +3,7 @@ import uuid
 
 import pydantic
 from botocore.exceptions import ClientError
+
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from models.bulk_upload_status import FailedUpload, SuccessfulUpload
@@ -12,18 +13,17 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-
+from utils.exceptions import (DocumentInfectedException,
+                              InvalidMessageException,
+                              PdsTooManyRequestsException,
+                              S3FileNotFoundException, TagNotFoundException,
+                              VirusScanFailedException,
+                              VirusScanNoResultException)
+from utils.lloyd_george_validator import (LGInvalidFilesException,
+                                          validate_lg_file_names)
+from utils.request_context import request_context
 from utils.unicode_utils import (contains_accent_char, convert_to_nfc_form,
                                  convert_to_nfd_form)
-from utils.exceptions import (
-    DocumentInfectedException,
-    InvalidMessageException,
-    S3FileNotFoundException,
-    TagNotFoundException,
-    VirusScanFailedException,
-    VirusScanNoResultException,
-)
-from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -63,8 +63,14 @@ class BulkUploadService:
             raise InvalidMessageException(str(e))
 
         try:
+            request_context.patient_nhs_no = staging_metadata.nhs_number
             logger.info("Running validation for file names...")
             self.validate_files(staging_metadata)
+        except PdsTooManyRequestsException as error:
+            logger.info(
+                "Cannot validate patient due to PDS responded with Too Many Requests"
+            )
+            raise error
         except LGInvalidFilesException as error:
             logger.info(
                 f"Detected invalid file name related to patient number: {staging_metadata.nhs_number}. Will stop "
@@ -87,7 +93,7 @@ class BulkUploadService:
             logger.info(
                 f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
             )
-            self.put_message_back_to_queue(staging_metadata)
+            self.put_staging_metadata_back_to_queue(staging_metadata)
             return
         except (VirusScanFailedException, DocumentInfectedException) as e:
             logger.info(e)
@@ -196,12 +202,29 @@ class BulkUploadService:
             f"Verified that all documents for patient {staging_metadata.nhs_number} are clean."
         )
 
-    def put_message_back_to_queue(self, staging_metadata: StagingMetadata):
+    def put_staging_metadata_back_to_queue(self, staging_metadata: StagingMetadata):
+        request_context.patient_nhs_no = staging_metadata.nhs_number
+
+        logger.info("Returning message to sqs queue...")
         self.sqs_service.send_message_with_nhs_number_attr_fifo(
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=staging_metadata.nhs_number,
             group_id=f"back_to_queue_bulk_upload_{uuid.uuid4()}",
+        )
+
+    def put_sqs_message_back_to_queue(self, sqs_message: dict):
+        try:
+            nhs_number = sqs_message["messageAttributes"]["NhsNumber"]["stringValue"]
+            request_context.patient_nhs_no = nhs_number
+        except KeyError:
+            nhs_number = ""
+
+        logger.info("Returning message to sqs queue...")
+        self.sqs_service.send_message_with_nhs_number_attr_fifo(
+            queue_url=self.metadata_queue_url,
+            message_body=sqs_message["body"],
+            nhs_number=nhs_number,
         )
 
     def init_transaction(self):

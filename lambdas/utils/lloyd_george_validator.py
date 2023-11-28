@@ -12,6 +12,7 @@ from requests import HTTPError
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.unicode_utils import (REGEX_PATIENT_NAME_PATTERN, names_are_matching)
+from utils.exceptions import PdsTooManyRequestsException
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
@@ -125,6 +126,13 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         pds_response = pds_service.pds_request(
             nhs_number=nhs_number, retry_on_expired=True
         )
+
+        if pds_response.status_code == 429:
+            logger.error("Got 429 Too Many Requests error from PDS.")
+            raise PdsTooManyRequestsException(
+                "Failed to validate filename against PDS record due to too many requests"
+            )
+
         pds_response.raise_for_status()
         patient = Patient.model_validate(pds_response.json())
         patient_details = patient.get_minimum_patient_details(nhs_number)
