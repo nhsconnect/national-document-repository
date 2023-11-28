@@ -53,7 +53,9 @@ def test_contains_accent_char(input_str, expected):
         (NAME_WITH_ACCENT_NFD_FORM, NAME_WITHOUT_ACCENT_CHARS, False),
     ],
 )
-def test_names_are_matching_handles_different_normalisation_forms(name_a, name_b, expected):
+def test_names_are_matching_handles_different_normalisation_forms(
+    name_a, name_b, expected
+):
     actual = names_are_matching(name_a, name_b)
 
     assert actual == expected

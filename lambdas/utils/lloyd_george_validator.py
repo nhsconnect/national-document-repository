@@ -11,7 +11,7 @@ from pydantic import ValidationError
 from requests import HTTPError
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.unicode_utils import (REGEX_PATIENT_NAME_PATTERN, names_are_matching)
+from utils.unicode_utils import REGEX_PATIENT_NAME_PATTERN, names_are_matching
 from utils.exceptions import PdsTooManyRequestsException
 from utils.utilities import get_pds_service
 
@@ -147,7 +147,9 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         )
         logger.info("Verifying patient name against the record in PDS...")
 
-        if patient_full_name != patient_name or not names_are_matching(patient_name, patient_full_name):
+        if patient_full_name != patient_name or not names_are_matching(
+            patient_name, patient_full_name
+        ):
             raise LGInvalidFilesException("Patient name does not match our records")
 
         current_user_ods = get_user_ods_code()
