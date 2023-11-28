@@ -15,7 +15,6 @@ from tests.unit.helpers.data.dynamo_scan_response import (
     MOCK_RESPONSE_WITH_LAST_KEY, UNEXPECTED_RESPONSE)
 from tests.unit.models.test_bulk_upload_status import (
     MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD)
-from utils.exceptions import BulkUploadReportException
 
 
 @pytest.fixture()
@@ -233,8 +232,12 @@ def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
     )
 
 
-def test_report_handler_throws_client_error(set_env, bulk_upload_report_service):
-    bulk_upload_report_service.s3_service.upload_file.side_effect = ClientError({}, "")
+def test_report_handler_handles_s3_client_error(set_env, bulk_upload_report_service):
+    bulk_upload_report_service.s3_service.upload_file.side_effect = ClientError(
+        {}, "s3 error"
+    )
+    response = bulk_upload_report_service.report_handler()
 
-    with pytest.raises(BulkUploadReportException):
-        bulk_upload_report_service.report_handler()
+    assert response.status == 400
+    assert response.message == "Bulk upload report creation failed"
+    assert response.errors[0].type == "S3 Client"
