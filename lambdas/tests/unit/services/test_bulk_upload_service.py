@@ -5,12 +5,15 @@ from botocore.exceptions import ClientError
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
 from services.bulk_upload_service import BulkUploadService
-from tests.unit.conftest import (MOCK_BULK_REPORT_TABLE_NAME, MOCK_LG_BUCKET,
-                                 MOCK_LG_METADATA_SQS_QUEUE,
-                                 MOCK_LG_STAGING_STORE_BUCKET,
-                                 MOCK_LG_TABLE_NAME, TEST_OBJECT_KEY)
-from tests.unit.helpers.data.bulk_upload.test_data import (
-    TEST_DOCUMENT_REFERENCE, TEST_DOCUMENT_REFERENCE_LIST, TEST_FILE_METADATA,
+from tests.unit.conftest import (
+    MOCK_BULK_REPORT_TABLE_NAME,
+    MOCK_LG_BUCKET,
+    MOCK_LG_METADATA_SQS_QUEUE,
+    MOCK_LG_STAGING_STORE_BUCKET,
+    MOCK_LG_TABLE_NAME,
+    TEST_OBJECT_KEY,
+)
+from tests.unit.helpers.data.bulk_upload.test_data import (TEST_DOCUMENT_REFERENCE, TEST_DOCUMENT_REFERENCE_LIST, TEST_FILE_METADATA,
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD, TEST_SQS_MESSAGE,
     TEST_SQS_MESSAGE_WITH_INVALID_FILENAME, TEST_STAGING_METADATA,
     TEST_STAGING_METADATA_WITH_INVALID_FILENAME, build_test_sqs_message,
@@ -22,6 +25,7 @@ from utils.exceptions import (DocumentInfectedException,
                               InvalidMessageException, S3FileNotFoundException,
                               TagNotFoundException, VirusScanFailedException,
                               VirusScanNoResultException)
+
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 
@@ -397,10 +401,12 @@ def test_check_virus_result_raise_VirusScanFailedException_for_special_cases(
 def test_put_message_back_to_queue(set_env, mocker):
     service = BulkUploadService()
     service.sqs_service = mocker.MagicMock()
+    mocker.patch("uuid.uuid4", return_value="123412342")
 
     service.put_message_back_to_queue(TEST_STAGING_METADATA)
 
-    service.sqs_service.send_message_with_nhs_number_attr.assert_called_with(
+    service.sqs_service.send_message_with_nhs_number_attr_fifo.assert_called_with(
+        group_id="back_to_queue_bulk_upload_123412342",
         queue_url=MOCK_LG_METADATA_SQS_QUEUE,
         message_body=TEST_STAGING_METADATA.model_dump_json(by_alias=True),
         nhs_number=TEST_STAGING_METADATA.nhs_number,

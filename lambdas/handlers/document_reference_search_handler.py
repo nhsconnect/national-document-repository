@@ -11,6 +11,7 @@ from pydantic import ValidationError
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event, validate_patient_id)
@@ -24,6 +25,7 @@ logger = LoggingService(__name__)
 @set_request_context_for_logging
 @validate_patient_id
 @ensure_environment_variables(names=["DYNAMODB_TABLE_LIST"])
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.VIEW_PATIENT.value
     nhs_number = extract_nhs_number_from_event(event)

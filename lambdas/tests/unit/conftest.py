@@ -26,8 +26,14 @@ MOCK_LG_BULK_UPLOAD_DYNAMO_ENV_NAME = "BULK_UPLOAD_DYNAMODB_NAME"
 MOCK_AUTH_STATE_TABLE_NAME_ENV_NAME = "AUTH_STATE_TABLE_NAME"
 MOCK_AUTH_SESSION_TABLE_NAME_ENV_NAME = "AUTH_SESSION_TABLE_NAME"
 MOCK_OIDC_CALLBACK_URL_ENV_NAME = "OIDC_CALLBACK_URL"
+MOCK_OIDC_ISSUER_URL_ENV_NAME = "OIDC_ISSUER_URL"
+MOCK_OIDC_TOKEN_URL_ENV_NAME = "OIDC_TOKEN_URL"
+MOCK_OIDC_USER_INFO_URL_ENV_NAME = "OIDC_USER_INFO_URL"
+MOCK_OIDC_JWKS_URL_ENV_NAME = "OIDC_JWKS_URL"
 MOCK_OIDC_CLIENT_ID_ENV_NAME = "OIDC_CLIENT_ID"
+MOCK_OIDC_CLIENT_SECRET_ENV_NAME = "OIDC_CLIENT_SECRET"
 MOCK_WORKSPACE_ENV_NAME = "WORKSPACE"
+MOCK_JWT_PUBLIC_KEY_NAME = "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"
 
 MOCK_ARF_TABLE_NAME = "test_arf_dynamoDB_table"
 MOCK_LG_TABLE_NAME = "test_lg_dynamoDB_table"
@@ -50,8 +56,17 @@ TEST_DOCUMENT_LOCATION = f"s3://{MOCK_BUCKET}/{TEST_OBJECT_KEY}"
 AUTH_STATE_TABLE_NAME = "test_state_table"
 AUTH_SESSION_TABLE_NAME = "test_session_table"
 OIDC_CALLBACK_URL = "https://fake-url.com"
+OIDC_ISSUER_URL = "https://fake-url.com"
+OIDC_TOKEN_URL = "https://fake-url.com"
+OIDC_USER_INFO_URL = "https://fake-url.com"
+OIDC_JWKS_URL = "https://fake-url.com"
 OIDC_CLIENT_ID = "client-id"
+OIDC_CLIENT_SECRET = "client-secret-shhhhhh"
 WORKSPACE = "dev"
+JWT_PUBLIC_KEY = "mock_public_key"
+
+SSM_PARAM_JWT_TOKEN_PUBLIC_KEY_ENV_NAME = "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"
+SSM_PARAM_JWT_TOKEN_PUBLIC_KEY = "test_jwt_token_public_key"
 
 
 @pytest.fixture
@@ -77,6 +92,15 @@ def set_env(monkeypatch):
     monkeypatch.setenv(MOCK_OIDC_CLIENT_ID_ENV_NAME, OIDC_CLIENT_ID)
     monkeypatch.setenv(MOCK_WORKSPACE_ENV_NAME, WORKSPACE)
     monkeypatch.setenv(MOCK_LG_BULK_UPLOAD_DYNAMO_ENV_NAME, MOCK_BULK_REPORT_TABLE_NAME)
+    monkeypatch.setenv(MOCK_OIDC_ISSUER_URL_ENV_NAME, OIDC_USER_INFO_URL)
+    monkeypatch.setenv(MOCK_OIDC_TOKEN_URL_ENV_NAME, OIDC_TOKEN_URL)
+    monkeypatch.setenv(MOCK_OIDC_USER_INFO_URL_ENV_NAME, OIDC_USER_INFO_URL)
+    monkeypatch.setenv(MOCK_OIDC_JWKS_URL_ENV_NAME, OIDC_JWKS_URL)
+    monkeypatch.setenv(MOCK_OIDC_CLIENT_SECRET_ENV_NAME, OIDC_CLIENT_SECRET)
+    monkeypatch.setenv(MOCK_JWT_PUBLIC_KEY_NAME, JWT_PUBLIC_KEY)
+    monkeypatch.setenv(
+        SSM_PARAM_JWT_TOKEN_PUBLIC_KEY_ENV_NAME, SSM_PARAM_JWT_TOKEN_PUBLIC_KEY
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -105,3 +129,46 @@ def context():
         )
 
     return LambdaContext()
+
+
+@pytest.fixture
+def mock_userinfo():
+    role_id = "500000000001"
+    org_code = "A9A5A"
+    role_code = "R8015"
+    user_id = "500000000000"
+    mock_userinfo = {
+        "nhsid_useruid": user_id,
+        "name": "TestUserOne Caius Mr",
+        "nhsid_nrbac_roles": [
+            {
+                "person_orgid": "500000000000",
+                "person_roleid": role_id,
+                "org_code": org_code,
+                "role_name": '"Support":"Systems Support":"Systems Support Access Role"',
+                "role_code": "S8001:G8005:" + role_code,
+            },
+            {
+                "person_orgid": "500000000000",
+                "person_roleid": "500000000000",
+                "org_code": "B9A5A",
+                "role_name": '"Primary Care Support England":"Systems Support Access Role"',
+                "role_code": "S8001:G8005:R8015",
+            },
+        ],
+        "given_name": "Caius",
+        "family_name": "TestUserOne",
+        "uid": "500000000000",
+        "nhsid_user_orgs": [
+            {"org_name": "NHSID DEV", "org_code": "A9A5A"},
+            {"org_name": "Primary Care Support England", "org_code": "B9A5A"},
+        ],
+        "sub": "500000000000",
+    }
+    yield {
+        "role_id": role_id,
+        "role_code": role_code,
+        "org_code": org_code,
+        "user_id": user_id,
+        "user_info": mock_userinfo,
+    }

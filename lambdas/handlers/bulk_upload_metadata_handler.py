@@ -1,21 +1,28 @@
 import csv
 import os
 import tempfile
+import uuid
 from typing import Iterable
 
 import pydantic
 from botocore.exceptions import ClientError
-from models.staging_metadata import (METADATA_FILENAME, NHS_NUMBER_FIELD_NAME,
-                                     MetadataFile, StagingMetadata)
+from models.staging_metadata import (
+    METADATA_FILENAME,
+    NHS_NUMBER_FIELD_NAME,
+    MetadataFile,
+    StagingMetadata,
+)
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 
 logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
+@override_error_check
 def lambda_handler(_event, _context):
     try:
         logger.info("Starting metadata reading process")
@@ -32,20 +39,23 @@ def lambda_handler(_event, _context):
         staging_metadata_list = csv_to_staging_metadata(metadata_file)
 
         logger.info("Finished parsing metadata")
-        send_metadata_to_sqs(staging_metadata_list, metadata_queue_url)
+        send_metadata_to_fifo_sqs(staging_metadata_list, metadata_queue_url)
 
         logger.info("Sent bulk upload metadata to sqs queue")
     except pydantic.ValidationError as e:
-        logger.info("Failed to parse metadata.csv")
+        logger.info(
+            "Failed to parse metadata.csv", {"Result": "Unsuccessful bulk upload"}
+        )
         logger.error(str(e))
     except KeyError as e:
-        logger.info("Failed due to missing key")
+        logger.info("Failed due to missing key", {"Result": "Unsuccessful bulk upload"})
         logger.error(str(e))
     except ClientError as e:
         logger.error(str(e))
         if "HeadObject" in str(e):
             logger.error(
-                f'No metadata file could be found with the name "{METADATA_FILENAME}"'
+                f'No metadata file could be found with the name "{METADATA_FILENAME}"',
+                {"Result": "Unsuccessful bulk upload"},
             )
 
 
@@ -80,17 +90,19 @@ def csv_to_staging_metadata(csv_file_path: str) -> list[StagingMetadata]:
     ]
 
 
-def send_metadata_to_sqs(
+def send_metadata_to_fifo_sqs(
     staging_metadata_list: list[StagingMetadata], metadata_queue_url: str
 ) -> None:
     sqs_service = SQSService()
+    sqs_group_id = f"bulk_upload_{uuid.uuid4()}"
 
     for staging_metadata in staging_metadata_list:
         nhs_number = staging_metadata.nhs_number
         logger.info(f"Sending metadata for patientId: {nhs_number}")
 
-        sqs_service.send_message_with_nhs_number_attr(
+        sqs_service.send_message_with_nhs_number_attr_fifo(
             queue_url=metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=nhs_number,
+            group_id=sqs_group_id,
         )

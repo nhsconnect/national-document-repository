@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -14,11 +15,13 @@ logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
+@override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
     token = None
-    if event.get("headers"):
-        token = event.get("headers").get("Authorization")
+    headers = event.get("headers")
+    if headers:
+        token = headers["Authorization"]
     return logout_handler(token)
 
 
@@ -43,7 +46,7 @@ def logout_handler(token):
             f"error while decoding JWT: {e}", {"Result": "Unsuccessful logout"}
         )
         return ApiGatewayResponse(
-            400, "Invalid x-auth header", "GET"
+            400, "Invalid Authorization header", "GET"
         ).create_api_gateway_response()
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 

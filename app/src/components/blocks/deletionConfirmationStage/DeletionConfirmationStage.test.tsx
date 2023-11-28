@@ -3,13 +3,12 @@ import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/
 import DeletionConfirmationStage from './DeletionConfirmationStage';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import { LG_RECORD_STAGE } from '../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import * as ReactRouter from 'react-router';
 import { createMemoryHistory } from 'history';
 import { routes } from '../../../types/generic/routes';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
-
+import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 jest.mock('../../../helpers/hooks/useRole');
 const mockedUseRole = useRole as jest.Mock;
 

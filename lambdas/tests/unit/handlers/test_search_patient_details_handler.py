@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 from handlers.search_patient_details_handler import lambda_handler
 from requests.models import Response
+from services.ssm_service import SSMService
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 
 
@@ -18,29 +19,39 @@ def patch_env_vars():
         yield env_vars
 
 
-def skip_test_lambda_handler_valid_id_returns_200(
-    valid_id_event, context, mocker, patch_env_vars
+def test_lambda_handler_valid_id_returns_200(
+    valid_id_event_with_auth_header, context, mocker, patch_env_vars
 ):
     response = Response()
     response.status_code = 200
     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
 
-    mocker.patch("ssm_service.get_ssm_parameter")
+    mocker.patch.object(
+        SSMService, "get_ssm_parameter", side_effect=["mock_public_key", "1"]
+    )
+    mocker.patch(
+        "jwt.decode",
+        return_value={
+            "selected_organisation": {"org_ods_code": "Y12345"},
+            "repository_role": "GP_ADMIN",
+        },
+    )
     mocker.patch(
         "services.mock_pds_service.MockPdsApiService.pds_request",
         return_value=response,
     )
 
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_with_auth_header, context)
 
     expected = {
         "body": '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22",'
         '"postalCode":"LS1 6AE","nhsNumber":"9000000009","superseded":false,'
-        '"restricted":false,"generalPracticeOds":"","active":false}',
+        '"restricted":false,"generalPracticeOds":"Y12345","active":true}',
         "headers": {
             "Access-Control-Allow-Methods": "GET",
             "Access-Control-Allow-Origin": "*",
             "Content-Type": "application/fhir+json",
+            "Strict-Transport-Security": "max-age=63072000",
         },
         "isBase64Encoded": False,
         "statusCode": 200,
@@ -68,6 +79,7 @@ def test_lambda_handler_invalid_id_returns_400(
             "Content-Type": "application/fhir+json",
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET",
+            "Strict-Transport-Security": "max-age=63072000",
         },
         "isBase64Encoded": False,
         "statusCode": 400,
@@ -76,8 +88,8 @@ def test_lambda_handler_invalid_id_returns_400(
     assert expected == actual
 
 
-def skip_test_lambda_handler_valid_id_not_in_pds_returns_404(
-    valid_id_event, context, mocker, patch_env_vars
+def test_lambda_handler_valid_id_not_in_pds_returns_404(
+    valid_id_event_with_auth_header, context, mocker, patch_env_vars
 ):
     response = Response()
     response.status_code = 404
@@ -86,8 +98,15 @@ def skip_test_lambda_handler_valid_id_not_in_pds_returns_404(
         "services.mock_pds_service.MockPdsApiService.pds_request",
         return_value=response,
     )
+    mocker.patch(
+        "jwt.decode",
+        return_value={
+            "selected_organisation": {"org_ods_code": "ODS"},
+            "repository_role": "user_role",
+        },
+    )
 
-    actual = lambda_handler(valid_id_event, context)
+    actual = lambda_handler(valid_id_event_with_auth_header, context)
 
     expected = {
         "body": "Patient does not exist for given NHS number",
@@ -95,6 +114,7 @@ def skip_test_lambda_handler_valid_id_not_in_pds_returns_404(
             "Content-Type": "application/fhir+json",
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET",
+            "Strict-Transport-Security": "max-age=63072000",
         },
         "isBase64Encoded": False,
         "statusCode": 404,
@@ -114,6 +134,7 @@ def test_lambda_handler_missing_id_in_query_params_returns_400(
             "Content-Type": "application/fhir+json",
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Methods": "GET",
+            "Strict-Transport-Security": "max-age=63072000",
         },
         "isBase64Encoded": False,
         "statusCode": 400,

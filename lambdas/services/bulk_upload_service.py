@@ -1,4 +1,5 @@
 import os
+import uuid
 
 import pydantic
 from botocore.exceptions import ClientError
@@ -11,14 +12,18 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException, S3FileNotFoundException,
-                              TagNotFoundException, VirusScanFailedException,
-                              VirusScanNoResultException)
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names)
+
 from utils.unicode_utils import (contains_accent_char, convert_to_nfc_form,
                                  convert_to_nfd_form)
+from utils.exceptions import (
+    DocumentInfectedException,
+    InvalidMessageException,
+    S3FileNotFoundException,
+    TagNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+)
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -62,9 +67,9 @@ class BulkUploadService:
             self.validate_files(staging_metadata)
         except LGInvalidFilesException as error:
             logger.info(
-                f"Detected invalid file name related to patient number: {staging_metadata.nhs_number}"
+                f"Detected invalid file name related to patient number: {staging_metadata.nhs_number}. Will stop "
+                f"processing Lloyd George record for this patient "
             )
-            logger.info("Will stop processing Lloyd George record for this patient")
 
             failure_reason = str(error)
             self.report_upload_failure(staging_metadata, failure_reason)
@@ -117,10 +122,14 @@ class BulkUploadService:
         try:
             self.create_lg_records_and_copy_files(staging_metadata)
             logger.info(
-                f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}"
+                f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
+                {"Result": "Successful upload"},
             )
         except ClientError as e:
-            logger.info(f"Got unexpected error during file transfer: {str(e)}")
+            logger.info(
+                f"Got unexpected error during file transfer: {str(e)}",
+                {"Result": "Unsuccessful upload"},
+            )
             logger.info("Will try to rollback any change to database and bucket")
             self.rollback_transaction()
 
@@ -134,7 +143,8 @@ class BulkUploadService:
         self.remove_ingested_file_from_source_bucket()
 
         logger.info(
-            f"Completed file ingestion for patient {staging_metadata.nhs_number}"
+            f"Completed file ingestion for patient {staging_metadata.nhs_number}",
+            {"Result": "Successful upload"},
         )
         self.report_upload_complete(staging_metadata)
 
@@ -187,11 +197,12 @@ class BulkUploadService:
         )
 
     def put_message_back_to_queue(self, staging_metadata: StagingMetadata):
-        self.sqs_service.send_message_with_nhs_number_attr(
+        self.sqs_service.send_message_with_nhs_number_attr_fifo(
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=staging_metadata.nhs_number,
             delay_seconds=60 * 5,
+            group_id=f"back_to_queue_bulk_upload_{uuid.uuid4()}",
         )
 
     def init_transaction(self):
@@ -252,10 +263,10 @@ class BulkUploadService:
             )
             source_file_key = self.get_source_file_key(file_metadata.file_path)
             dest_file_key = document_reference.s3_file_key
-            self.create_record_in_lg_dynamo_table(document_reference)
             self.copy_to_lg_bucket(
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
+            self.create_record_in_lg_dynamo_table(document_reference)
 
     def create_record_in_lg_dynamo_table(
         self, document_reference: NHSDocumentReference
