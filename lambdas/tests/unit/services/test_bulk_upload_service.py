@@ -152,6 +152,36 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
     assert service.s3_service.copy_across_bucket.call_count == 3
 
 
+
+def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_already_in_repo(
+    set_env, mocker, mock_uuid, mock_validate_files
+):
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        BulkUploadService, "remove_ingested_file_from_source_bucket"
+    )
+    mock_report_upload_failure = mocker.patch.object(
+        BulkUploadService, "report_upload_failure"
+    )
+
+    mocked_error = PatientAlreadyExistException(
+        "Lloyd George already exists for patient, upload cancelled."
+    )
+    mock_validate_files.side_effect = mocked_error
+
+    service = BulkUploadService()
+    service.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    mock_create_lg_records_and_copy_files.assert_not_called()
+    mock_remove_ingested_file_from_source_bucket.assert_not_called()
+
+    mock_report_upload_failure.assert_called_with(
+        TEST_STAGING_METADATA, str(mocked_error)
+    )
+
+
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
     set_env, mocker, mock_uuid, mock_validate_files
 ):
