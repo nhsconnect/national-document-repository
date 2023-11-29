@@ -12,15 +12,17 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException,
-                              PatientAlreadyExistException,
-                              PdsTooManyRequestsException,
-                              S3FileNotFoundException, TagNotFoundException,
-                              VirusScanFailedException,
-                              VirusScanNoResultException)
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names)
+from utils.exceptions import (
+    DocumentInfectedException,
+    InvalidMessageException,
+    PatientAlreadyExistException,
+    PdsTooManyRequestsException,
+    S3FileNotFoundException,
+    TagNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+)
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
 from utils.request_context import request_context
 from utils.unicode_utils import (contains_accent_char, convert_to_nfc_form,
                                  convert_to_nfd_form)
@@ -74,8 +76,9 @@ class BulkUploadService:
         except (LGInvalidFilesException, PatientAlreadyExistException) as error:
             logger.info(
                 f"Detected issue related to patient number: {staging_metadata.nhs_number}. "
-                f"Will stop processing Lloyd George record for this patient."
             )
+            logger.error(error)
+            logger.info("Will stop processing Lloyd George record for this patient.")
 
             failure_reason = str(error)
             self.report_upload_failure(staging_metadata, failure_reason)
