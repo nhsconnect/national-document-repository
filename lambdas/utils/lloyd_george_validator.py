@@ -94,10 +94,7 @@ def validate_lg_file_names(file_name_list: list[str], nhs_number: str):
     check_for_file_names_agrees_with_each_other(file_name_list)
 
     # Check file names match with the nhs number in metadata.csv
-    validate_with_pds_service(
-        file_name_list,
-        nhs_number,
-    )
+    validate_with_pds_service(file_name_list, nhs_number)
 
 
 def extract_info_from_filename(filename: str) -> dict:
