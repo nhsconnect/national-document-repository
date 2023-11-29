@@ -75,7 +75,7 @@ class BulkUploadService:
             raise error
         except (LGInvalidFilesException, PatientAlreadyExistException) as error:
             logger.info(
-                f"Detected issue related to patient number: {staging_metadata.nhs_number}. "
+                f"Detected issue related to patient number: {staging_metadata.nhs_number}"
             )
             logger.error(error)
             logger.info("Will stop processing Lloyd George record for this patient.")
