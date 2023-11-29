@@ -46,7 +46,7 @@ function HomePage(props: Props) {
                 Start now
             </ButtonLink>
             <h3>Get support with the service</h3>
-            Contact the{' '}
+            {'Contact the '}
             <a
                 href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
                 target="_blank"
@@ -54,7 +54,7 @@ function HomePage(props: Props) {
             >
                 NHS National Service Desk
             </a>
-            if there is an issue with this service or call 0300 303 5678
+            {' if there is an issue with this service or call 0300 303 5678'}
             {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
                 process.env.REACT_APP_ENVIRONMENT === 'development' ||
                 process.env.REACT_APP_ENVIRONMENT === 'test') && (

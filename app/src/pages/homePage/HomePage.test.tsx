@@ -17,47 +17,61 @@ describe('StartPage', () => {
 
         expect(
             screen.getByRole('heading', {
-                name: 'Inactive Patient Record Administration',
+                name: 'Access and store digital GP records',
             }),
         ).toBeInTheDocument();
     });
 
-    it('renders service info', () => {
+    it('renders home page content', () => {
         const mockNavigate = jest.fn();
         const mockUseNavigate = jest.fn();
         mockNavigate.mockImplementation(() => mockUseNavigate);
 
-        render(<HomePage />);
+        const contentStrings = [
+            'This service gives you access to Lloyd George digital health records.',
+            'You can use this service if you are:',
+            'part of a GP practise and need to view, download or remove a patient record',
+            'managing records on behalf of NHS England and need to download a patient record',
+            'Not every patient will have a digital record available.',
+            'Before You Start',
+            "You'll be asked for:",
+            'your NHS smartcard',
+            'patient details including their name, date of birth and NHS number',
+        ];
 
-        expect(screen.getByText(/When a patient is inactive/)).toBeInTheDocument();
-        expect(screen.getByText(/General Practice Staff/)).toBeInTheDocument();
-        expect(screen.getByText(/PCSE should use this service/)).toBeInTheDocument();
+        render(<HomePage />);
+        contentStrings.forEach((s) => {
+            expect(screen.getByText(s)).toBeInTheDocument();
+        });
+        expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
+        expect(
+            screen.getByRole('link', {
+                name: /NHS National Service Desk/i,
+            }),
+        ).toBeInTheDocument();
+        expect(
+            screen.getByText(/if there is an issue with this service or call 0300 303 5678/i),
+        ).toBeInTheDocument();
     });
 
-    it('renders service issue guidance with a link to service desk that opens in a new tab', () => {
+    it('renders a service link that takes you to service help-desk in a new tab', () => {
         const mockUseNavigate = jest.fn();
         mockNavigate.mockImplementation(() => mockUseNavigate);
 
         render(<HomePage />);
 
-        expect(screen.getByText(/If there is an issue/)).toBeInTheDocument();
+        expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
         const nationalServiceDeskLink = screen.getByRole('link', {
-            name: /National Service Desk/,
+            name: /NHS National Service Desk/i,
         });
+        expect(
+            screen.getByText(/if there is an issue with this service or call 0300 303 5678/i),
+        ).toBeInTheDocument();
+
         expect(nationalServiceDeskLink).toHaveAttribute(
             'href',
             'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
         );
         expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
-    });
-
-    it("renders a 'Before you start' section", () => {
-        const mockUseNavigate = jest.fn();
-        mockNavigate.mockImplementation(() => mockUseNavigate);
-
-        render(<HomePage />);
-
-        expect(screen.getByRole('heading', { name: 'Before You Start' })).toBeInTheDocument();
-        expect(screen.getByText(/valid NHS smartcard/)).toBeInTheDocument();
     });
 });
