@@ -4,9 +4,7 @@ import os
 from typing import Optional
 
 from boto3.dynamodb.conditions import Attr
-from botocore.exceptions import ClientError
 from models.bulk_upload_status import FieldNamesForBulkUploadReport
-from models.lambda_response import LambdaResponse, LambdaResponseError
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -15,25 +13,16 @@ logger = LoggingService(__name__)
 
 
 class BulkUploadReportService:
-    def __init__(self):
-        self.db_service = DynamoDBService()
-        self.s3_service = S3Service()
+    db_service = DynamoDBService()
+    s3_service = S3Service()
 
-    def report_handler(self) -> LambdaResponse:
+    def report_handler(self):
         staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
         start_time, end_time = self.get_times_for_scan()
 
-        try:
-            report_data = self.get_dynamodb_report_items(
-                int(start_time.timestamp()), int(end_time.timestamp())
-            )
-        except ClientError as e:
-            logger.error(str(e))
-            return LambdaResponse(
-                status=400,
-                message="Bulk upload report creation failed",
-                errors=[LambdaResponseError(type="Dynamo Client", message=str(e))],
-            )
+        report_data = self.get_dynamodb_report_items(
+            int(start_time.timestamp()), int(end_time.timestamp())
+        )
 
         if report_data:
             file_name = (
@@ -48,22 +37,10 @@ class BulkUploadReportService:
 
         logger.info("Uploading new report file to S3")
 
-        try:
-            self.s3_service.upload_file(
-                s3_bucket_name=staging_bucket_name,
-                file_key=f"reports/{file_name}",
-                file_name=f"/tmp/{file_name}",
-            )
-        except ClientError as e:
-            logger.error(str(e))
-            return LambdaResponse(
-                status=400,
-                message="Bulk upload report creation failed",
-                errors=[LambdaResponseError(type="S3 Client", message=str(e))],
-            )
-
-        return LambdaResponse(
-            status=200, message="Bulk upload report creation successful"
+        self.s3_service.upload_file(
+            s3_bucket_name=staging_bucket_name,
+            file_key=f"reports/{file_name}",
+            file_name=f"/tmp/{file_name}",
         )
 
     def get_dynamodb_report_items(
@@ -102,7 +79,7 @@ class BulkUploadReportService:
                 dict_writer_object.writerow(item)
 
     @staticmethod
-    def get_times_for_scan():
+    def get_times_for_scan() -> tuple[datetime, datetime]:
         current_time = datetime.datetime.now()
         end_report_time = datetime.time(7, 00, 00, 0)
         today_date = datetime.datetime.today()
