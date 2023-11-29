@@ -19,8 +19,10 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
 from tests.unit.utils.test_unicode_utils import (NAME_WITH_ACCENT_NFC_FORM,
                                                  NAME_WITH_ACCENT_NFD_FORM)
 from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException, S3FileNotFoundException,
-                              TagNotFoundException, VirusScanFailedException,
+                              InvalidMessageException,
+                              PatientAlreadyExistException,
+                              S3FileNotFoundException, TagNotFoundException,
+                              VirusScanFailedException,
                               VirusScanNoResultException)
 from utils.lloyd_george_validator import LGInvalidFilesException
 
@@ -296,7 +298,26 @@ def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract
     mock_create_lg_records_and_copy_files.assert_not_called()
 
 
-def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(set_env):
+def test_validate_files_propagate_PatientAlreadyExistException_when_patient_record_already_in_repo(
+    set_env, mocker
+):
+    mocker.patch(
+        "utils.lloyd_george_validator.check_for_patient_already_exist_in_repo",
+        side_effect=PatientAlreadyExistException,
+    )
+    service = BulkUploadService()
+
+    with pytest.raises(PatientAlreadyExistException):
+        service.validate_files(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+
+
+def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(
+    set_env, mocker
+):
+    mocker.patch(
+        "utils.lloyd_george_validator.check_for_patient_already_exist_in_repo",
+        return_value=None,
+    )
     service = BulkUploadService()
 
     with pytest.raises(LGInvalidFilesException):

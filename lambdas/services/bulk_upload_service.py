@@ -14,6 +14,7 @@ from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (DocumentInfectedException,
                               InvalidMessageException,
+                              PatientAlreadyExistException,
                               PdsTooManyRequestsException,
                               S3FileNotFoundException, TagNotFoundException,
                               VirusScanFailedException,
@@ -70,10 +71,10 @@ class BulkUploadService:
                 "Cannot validate patient due to PDS responded with Too Many Requests"
             )
             raise error
-        except LGInvalidFilesException as error:
+        except (LGInvalidFilesException, PatientAlreadyExistException) as error:
             logger.info(
-                f"Detected invalid file name related to patient number: {staging_metadata.nhs_number}. Will stop "
-                f"processing Lloyd George record for this patient "
+                f"Detected issue related to patient number: {staging_metadata.nhs_number}. "
+                f"Will stop processing Lloyd George record for this patient."
             )
 
             failure_reason = str(error)

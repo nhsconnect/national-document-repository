@@ -3,12 +3,17 @@ import json
 import pytest
 from botocore.exceptions import ClientError
 from requests import Response
+from services.document_service import DocumentService
+from tests.unit.conftest import MOCK_LG_TABLE_NAME, TEST_NHS_NUMBER
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
-from utils.exceptions import PdsTooManyRequestsException
+from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
+from utils.exceptions import (PatientAlreadyExistException,
+                              PdsTooManyRequestsException)
 from utils.lloyd_george_validator import (
     LGInvalidFilesException, check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
-    check_for_number_of_files_match_expected, extract_info_from_filename,
+    check_for_number_of_files_match_expected,
+    check_for_patient_already_exist_in_repo, extract_info_from_filename,
     validate_file_name, validate_lg_file_type, validate_with_pds_service)
 
 
@@ -370,6 +375,38 @@ def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
 
 
+def test_check_for_patient_already_exist_in_repo_return_none_when_patient_record_not_exist(
+    set_env, mock_fetch_documents_from_table
+):
+    mock_fetch_documents_from_table.return_value = []
+    expected = None
+    actual = check_for_patient_already_exist_in_repo(TEST_NHS_NUMBER)
+
+    assert actual == expected
+
+    mock_fetch_documents_from_table.assert_called_with(
+        TEST_NHS_NUMBER, MOCK_LG_TABLE_NAME
+    )
+
+
+def test_check_check_for_patient_already_exist_in_repo_raise_exception_when_patient_record_already_exist(
+    set_env, mock_fetch_documents_from_table
+):
+    mock_fetch_documents_from_table.return_value = [MOCK_DOCUMENT_REFERENCE]
+
+    with pytest.raises(PatientAlreadyExistException):
+        check_for_patient_already_exist_in_repo(TEST_NHS_NUMBER)
+
+    mock_fetch_documents_from_table.assert_called_with(
+        TEST_NHS_NUMBER, MOCK_LG_TABLE_NAME
+    )
+
+
 @pytest.fixture
 def mock_pds_call(mocker):
     yield mocker.patch("services.mock_pds_service.MockPdsApiService.pds_request")
+
+
+@pytest.fixture
+def mock_fetch_documents_from_table(mocker):
+    yield mocker.patch.object(DocumentService, "fetch_documents_from_table")

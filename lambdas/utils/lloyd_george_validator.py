@@ -1,7 +1,6 @@
 import datetime
 import os
 import re
-from typing import Optional
 
 from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
@@ -9,9 +8,11 @@ from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient
 from pydantic import ValidationError
 from requests import HTTPError
+from services.document_service import DocumentService
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import PdsTooManyRequestsException
+from utils.exceptions import (PatientAlreadyExistException,
+                              PdsTooManyRequestsException)
 from utils.unicode_utils import REGEX_PATIENT_NAME_PATTERN, names_are_matching
 from utils.utilities import get_pds_service
 
@@ -60,6 +61,19 @@ def check_for_number_of_files_match_expected(file_name: str, total_files_number:
         )
 
 
+def check_for_patient_already_exist_in_repo(nhs_number: str):
+    lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+    document_service = DocumentService()
+    documents_found = document_service.fetch_documents_from_table(
+        nhs_number,
+        lloyd_george_table_name,
+    )
+    if documents_found:
+        raise PatientAlreadyExistException(
+            "Lloyd George already exists for patient, upload cancelled."
+        )
+
+
 def validate_lg_files(file_list: list[NHSDocumentReference]):
     files_name_list = []
     for doc in file_list:
@@ -70,19 +84,20 @@ def validate_lg_files(file_list: list[NHSDocumentReference]):
     check_for_duplicate_files(files_name_list)
 
 
-def validate_lg_file_names(file_name_list: list[str], nhs_number: Optional[str] = None):
+def validate_lg_file_names(file_name_list: list[str], nhs_number: str):
+    check_for_patient_already_exist_in_repo(nhs_number)
+
     for file_name in file_name_list:
         check_for_number_of_files_match_expected(file_name, len(file_name_list))
         validate_file_name(file_name)
     check_for_duplicate_files(file_name_list)
     check_for_file_names_agrees_with_each_other(file_name_list)
 
-    if nhs_number:
-        # Check file names match with the nhs number in metadata.csv
-        validate_with_pds_service(
-            file_name_list,
-            nhs_number,
-        )
+    # Check file names match with the nhs number in metadata.csv
+    validate_with_pds_service(
+        file_name_list,
+        nhs_number,
+    )
 
 
 def extract_info_from_filename(filename: str) -> dict:
