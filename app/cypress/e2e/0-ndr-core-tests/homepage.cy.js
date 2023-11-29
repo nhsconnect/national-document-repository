@@ -41,7 +41,7 @@ describe('home page', () => {
             cy.get('.nhsuk-header__transactional-service-name').children().should('have.length', 1);
             cy.get('.nhsuk-header__transactional-service-name--link').should(
                 'have.text',
-                'Inactive Patient Record Administration',
+                'Access and store digital GP records',
             );
 
             cy.get('.nhsuk-header__navigation').should('have.length', 0);
@@ -51,7 +51,7 @@ describe('home page', () => {
         it('displays correct page title on home page', () => {
             cy.get('.app-homepage-content h1').should(
                 'have.text',
-                'Inactive Patient Record Administration',
+                'Access and store digital GP records',
             );
         });
 

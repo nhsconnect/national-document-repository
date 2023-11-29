@@ -35,7 +35,7 @@ describe('Header', () => {
 
             expect(history.location.pathname).toBe('/example');
 
-            userEvent.click(screen.getByText('Inactive Patient Record Administration'));
+            userEvent.click(screen.getByText('Access and store digital GP records'));
 
             await waitFor(() => {
                 expect(history.location.pathname).toBe('/');
