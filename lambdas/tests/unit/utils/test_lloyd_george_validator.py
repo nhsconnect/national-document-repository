@@ -7,7 +7,7 @@ from services.document_service import DocumentService
 from tests.unit.conftest import MOCK_LG_TABLE_NAME, TEST_NHS_NUMBER
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
-from utils.exceptions import (PatientAlreadyExistException,
+from utils.exceptions import (PatientRecordAlreadyExistException,
                               PdsTooManyRequestsException)
 from utils.lloyd_george_validator import (
     LGInvalidFilesException, check_for_duplicate_files,
@@ -394,7 +394,7 @@ def test_check_check_for_patient_already_exist_in_repo_raise_exception_when_pati
 ):
     mock_fetch_documents_from_table.return_value = [MOCK_DOCUMENT_REFERENCE]
 
-    with pytest.raises(PatientAlreadyExistException):
+    with pytest.raises(PatientRecordAlreadyExistException):
         check_for_patient_already_exist_in_repo(TEST_NHS_NUMBER)
 
     mock_fetch_documents_from_table.assert_called_with(

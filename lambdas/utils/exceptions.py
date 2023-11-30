@@ -64,7 +64,7 @@ class InvalidDocumentReferenceException(Exception):
     pass
 
 
-class PatientAlreadyExistException(Exception):
+class PatientRecordAlreadyExistException(Exception):
     pass
 
 

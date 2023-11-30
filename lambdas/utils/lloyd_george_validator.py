@@ -11,7 +11,7 @@ from requests import HTTPError
 from services.document_service import DocumentService
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (PatientAlreadyExistException,
+from utils.exceptions import (PatientRecordAlreadyExistException,
                               PdsTooManyRequestsException)
 from utils.unicode_utils import REGEX_PATIENT_NAME_PATTERN, names_are_matching
 from utils.utilities import get_pds_service
@@ -69,7 +69,7 @@ def check_for_patient_already_exist_in_repo(nhs_number: str):
         lloyd_george_table_name,
     )
     if documents_found:
-        raise PatientAlreadyExistException(
+        raise PatientRecordAlreadyExistException(
             "Lloyd George already exists for patient, upload cancelled."
         )
 

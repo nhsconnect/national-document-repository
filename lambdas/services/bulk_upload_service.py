@@ -14,7 +14,7 @@ from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (DocumentInfectedException,
                               InvalidMessageException,
-                              PatientAlreadyExistException,
+                              PatientRecordAlreadyExistException,
                               PdsTooManyRequestsException,
                               S3FileNotFoundException, TagNotFoundException,
                               VirusScanFailedException,
@@ -71,7 +71,7 @@ class BulkUploadService:
                 "Cannot validate patient due to PDS responded with Too Many Requests"
             )
             raise error
-        except (LGInvalidFilesException, PatientAlreadyExistException) as error:
+        except (LGInvalidFilesException, PatientRecordAlreadyExistException) as error:
             logger.info(
                 f"Detected issue related to patient number: {staging_metadata.nhs_number}"
             )
