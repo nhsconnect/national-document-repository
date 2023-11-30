@@ -16,7 +16,7 @@ const Header = (props: Props) => {
             <NhsHeader.Container>
                 <NhsHeader.Logo onClick={navigateHome} className="clickable" />
                 <NhsHeader.ServiceName onClick={navigateHome} className="clickable">
-                    Inactive Patient Record Administration
+                    Access and store digital GP records
                 </NhsHeader.ServiceName>
             </NhsHeader.Container>
 

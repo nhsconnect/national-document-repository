@@ -30,7 +30,7 @@ describe('Header', () => {
         it('navigates to the home page when header is clicked', async () => {
             renderHeaderWithRouter();
 
-            userEvent.click(screen.getByText('Inactive Patient Record Administration'));
+            userEvent.click(screen.getByText('Access and store digital GP records'));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
