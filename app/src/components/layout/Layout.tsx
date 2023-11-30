@@ -2,7 +2,7 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import Header from './header/Header';
 import { Footer } from 'nhsuk-react-components';
-import PhaseBanner from './phaseBanner/phaseBanner';
+import PhaseBanner from './phaseBanner/testBanner';
 
 type Props = {
     children: ReactNode;
