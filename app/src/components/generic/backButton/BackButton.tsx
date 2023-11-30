@@ -3,8 +3,8 @@ import React from 'react';
 import type { MouseEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router';
 import { endpoints } from '../../../types/generic/endpoints';
-import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 import { routes } from '../../../types/generic/routes';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 
 const BackButton = () => {
     const navigate = useNavigate();

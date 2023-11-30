@@ -1,7 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
-import { useNavigate } from 'react-router';
-import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
@@ -11,15 +8,16 @@ import LloydGeorgeRecordStage from '../../components/blocks/lloydGeorgeRecordSta
 import LloydGeorgeDownloadAllStage from '../../components/blocks/lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import usePatient from '../../helpers/hooks/usePatient';
 
 function LloydGeorgeRecordPage() {
-    const [patientDetails] = usePatientDetailsContext();
+    const patientDetails = usePatient();
     const [downloadStage, setDownloadStage] = useState(DOWNLOAD_STAGE.INITIAL);
     const [numberOfFiles, setNumberOfFiles] = useState(0);
     const [totalFileSizeInByte, setTotalFileSizeInByte] = useState(0);
     const [lastUpdated, setLastUpdated] = useState('');
     const [lloydGeorgeUrl, setLloydGeorgeUrl] = useState('');
-    const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
@@ -56,7 +54,6 @@ function LloydGeorgeRecordPage() {
         patientDetails,
         baseUrl,
         baseHeaders,
-        navigate,
         setDownloadStage,
         setLloydGeorgeUrl,
         setLastUpdated,
@@ -67,40 +64,28 @@ function LloydGeorgeRecordPage() {
     switch (stage) {
         case LG_RECORD_STAGE.RECORD:
             return (
-                patientDetails && (
-                    <LloydGeorgeRecordStage
-                        numberOfFiles={numberOfFiles}
-                        totalFileSizeInByte={totalFileSizeInByte}
-                        lastUpdated={lastUpdated}
-                        lloydGeorgeUrl={lloydGeorgeUrl}
-                        patientDetails={patientDetails}
-                        downloadStage={downloadStage}
-                        setStage={setStage}
-                        stage={stage}
-                    />
-                )
+                <LloydGeorgeRecordStage
+                    numberOfFiles={numberOfFiles}
+                    totalFileSizeInByte={totalFileSizeInByte}
+                    lastUpdated={lastUpdated}
+                    lloydGeorgeUrl={lloydGeorgeUrl}
+                    downloadStage={downloadStage}
+                    setStage={setStage}
+                    stage={stage}
+                />
             );
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
             return (
-                patientDetails && (
-                    <LloydGeorgeDownloadAllStage
-                        numberOfFiles={numberOfFiles}
-                        setStage={setStage}
-                        patientDetails={patientDetails}
-                    />
-                )
+                <LloydGeorgeDownloadAllStage numberOfFiles={numberOfFiles} setStage={setStage} />
             );
         case LG_RECORD_STAGE.DELETE_ALL:
             return (
-                patientDetails && (
-                    <DeleteDocumentsStage
-                        docType={DOCUMENT_TYPE.LLOYD_GEORGE}
-                        numberOfFiles={numberOfFiles}
-                        patientDetails={patientDetails}
-                        setStage={setStage}
-                        setDownloadStage={setDownloadStage}
-                    />
-                )
+                <DeleteDocumentsStage
+                    docType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                    numberOfFiles={numberOfFiles}
+                    setStage={setStage}
+                    setDownloadStage={setDownloadStage}
+                />
             );
         default:
             return <div></div>;

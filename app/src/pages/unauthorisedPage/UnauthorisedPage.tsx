@@ -1,14 +1,15 @@
 import React, { MouseEvent, useState } from 'react';
 import { routes } from '../../types/generic/routes';
 import { Link } from 'react-router-dom';
-import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
+import { useNavigate } from 'react-router';
 import { endpoints } from '../../types/generic/endpoints';
 import Spinner from '../../components/generic/spinner/Spinner';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 const UnauthorisedPage = () => {
     const baseAPIUrl = useBaseAPIUrl();
     const [isLoading, setIsLoading] = useState(false);
-
+    const navigate = useNavigate();
     const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
         setIsLoading(true);
         e.preventDefault();
@@ -24,7 +25,15 @@ const UnauthorisedPage = () => {
                 </Link>{' '}
                 may fix this.
             </p>
-            <Link to={routes.HOME}>Return home</Link>
+            <Link
+                to="#"
+                onClick={(e) => {
+                    e.preventDefault();
+                    navigate(routes.HOME);
+                }}
+            >
+                Return home
+            </Link>
         </>
     ) : (
         <Spinner status="Logging in..." />

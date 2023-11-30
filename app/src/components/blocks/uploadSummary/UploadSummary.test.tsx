@@ -12,8 +12,21 @@ import {
     buildPatientDetails,
     buildTextFile,
 } from '../../../helpers/test/testBuilders';
+import usePatient from '../../../helpers/hooks/usePatient';
+
+jest.mock('../../../helpers/hooks/usePatient');
+const mockedUsePatient = usePatient as jest.Mock;
+const mockPatient = buildPatientDetails();
 
 describe('UploadSummary', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatient);
+    });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('renders the page', () => {
         renderUploadSummary({ documents: [] });
 
@@ -190,7 +203,6 @@ describe('UploadSummary', () => {
 const renderUploadSummary = (propsOverride: Partial<Props>) => {
     const props: Props = {
         documents: [],
-        patientDetails: buildPatientDetails(),
         ...propsOverride,
     };
 

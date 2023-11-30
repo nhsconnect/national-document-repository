@@ -3,19 +3,19 @@ import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
-import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import BackButton from '../../components/generic/backButton/BackButton';
 import { useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
+import usePatient from '../../helpers/hooks/usePatient';
 
 function PatientResultPage() {
     const role = useRole();
+    const patientDetails = usePatient();
     const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
     const userIsGPAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
     const userIsGPClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
-    const [patientDetails] = usePatientDetailsContext();
     const navigate = useNavigate();
     const [inputError, setInputError] = useState('');
     const { handleSubmit } = useForm();
@@ -40,7 +40,8 @@ function PatientResultPage() {
             navigate(routes.DOWNLOAD_DOCUMENTS);
         }
     };
-
+    const showWarning = patientDetails?.superseded || patientDetails?.restricted;
+    const isGp = userIsGPAdmin || userIsGPClinical;
     return (
         <div style={{ maxWidth: 730 }}>
             <BackButton />
@@ -54,7 +55,7 @@ function PatientResultPage() {
             )}
             <h1>Verify patient details</h1>
 
-            {patientDetails && (patientDetails.superseded || patientDetails.restricted) && (
+            {showWarning && (
                 <WarningCallout>
                     <WarningCallout.Label headingLevel="h2">Information</WarningCallout.Label>
                     {patientDetails.superseded && (
@@ -69,10 +70,10 @@ function PatientResultPage() {
                 </WarningCallout>
             )}
 
-            {patientDetails && <PatientSummary patientDetails={patientDetails} />}
+            <PatientSummary />
 
             <form onSubmit={handleSubmit(submit)} style={{ marginTop: 60 }}>
-                {(userIsGPAdmin || userIsGPClinical) && (
+                {isGp && (
                     <>
                         <p id="gp-message">
                             Ensure these patient details match the records and attachments that you

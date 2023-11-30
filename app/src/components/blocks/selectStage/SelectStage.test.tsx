@@ -9,15 +9,26 @@ import userEvent from '@testing-library/user-event';
 import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../../types/pages/UploadDocumentsPage/types';
 import { act } from 'react-dom/test-utils';
 import { PatientDetails } from '../../../types/generic/patientDetails';
+import usePatient from '../../../helpers/hooks/usePatient';
 
 jest.mock('../../../helpers/utils/toFileList', () => ({
     __esModule: true,
     default: () => [],
 }));
-
+jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('react-router');
+const mockedUsePatient = usePatient as jest.Mock;
+const mockPatient = buildPatientDetails();
 
 describe('<UploadDocumentsPage />', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatient);
+    });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     describe('upload documents with an NHS number', () => {
         const documentOne = buildTextFile('one', 100);
         const documentTwo = buildTextFile('two', 200);
@@ -35,7 +46,7 @@ describe('<UploadDocumentsPage />', () => {
         const mockPatientDetails: PatientDetails = buildPatientDetails();
 
         it('renders the page', async () => {
-            renderSelectStage(setDocumentMock);
+            render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
             expect(screen.getByRole('heading', { name: 'Upload documents' })).toBeInTheDocument();
             expect(screen.getByText(mockPatientDetails.nhsNumber)).toBeInTheDocument();
@@ -46,7 +57,7 @@ describe('<UploadDocumentsPage />', () => {
         });
 
         it('can upload documents to both LG and ARF forms', async () => {
-            renderSelectStage(setDocumentMock);
+            render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
             expect(screen.getByRole('heading', { name: 'Upload documents' })).toBeInTheDocument();
             expect(screen.getByText(mockPatientDetails.nhsNumber)).toBeInTheDocument();
@@ -79,7 +90,7 @@ describe('<UploadDocumentsPage />', () => {
         it.each([['ARF'], ['LG']])(
             "does upload and then remove a file for '%s' input",
             async (inputType) => {
-                renderSelectStage(setDocumentMock);
+                render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
                 act(() => {
                     userEvent.upload(screen.getByTestId(`${inputType}-input`), [
@@ -111,7 +122,7 @@ describe('<UploadDocumentsPage />', () => {
         ])(
             "does not upload either forms if selected file is more than 5GB for '%s' input",
             async (inputType) => {
-                renderSelectStage(setDocumentMock);
+                render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
                 const documentBig =
                     inputType.name === 'ARF'
@@ -141,7 +152,8 @@ describe('<UploadDocumentsPage />', () => {
         );
 
         it('does not upload LG form if selected file is not PDF', async () => {
-            renderSelectStage(setDocumentMock);
+            render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
+
             const lgFileWithBadType = new File(
                 ['test'],
                 `1of2000_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf`,
@@ -168,7 +180,8 @@ describe('<UploadDocumentsPage />', () => {
         });
 
         it('does not upload LG form if total number of file does not match file name', async () => {
-            renderSelectStage(setDocumentMock);
+            render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
+
             const lgExtraFile = buildLgFile(3, 3);
 
             act(() => {
@@ -189,7 +202,8 @@ describe('<UploadDocumentsPage />', () => {
         });
 
         it('does not upload LG form if selected file does not match naming conventions', async () => {
-            renderSelectStage(setDocumentMock);
+            render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
+
             const pdfFileWithBadName = new File(['test'], `test_not_up_to_naming_conventions.pdf`, {
                 type: 'application/pdf',
             });
@@ -211,7 +225,8 @@ describe('<UploadDocumentsPage />', () => {
         });
 
         it('does not upload LG form if selected file number is bigger than number of total files', async () => {
-            renderSelectStage(setDocumentMock);
+            render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
+
             const pdfFileWithBadNumber = buildLgFile(2, 1);
             act(() => {
                 userEvent.upload(screen.getByTestId(`LG-input`), pdfFileWithBadNumber);
@@ -231,7 +246,8 @@ describe('<UploadDocumentsPage />', () => {
         });
 
         it('does not upload LG form if files do not match each other', async () => {
-            renderSelectStage(setDocumentMock);
+            render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
+
             const joeBloggsFile = new File(
                 ['test'],
                 `1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf`,
@@ -265,8 +281,9 @@ describe('<UploadDocumentsPage />', () => {
         });
 
         it('does not upload LG form if two or more files match name/size', async () => {
-            renderSelectStage(setDocumentMock);
             const duplicateFileWarning = 'There are two or more documents with the same name.';
+            render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
+
             act(() => {
                 userEvent.upload(screen.getByTestId(`LG-input`), [lgDocumentTwo, lgDocumentTwo]);
             });
@@ -289,8 +306,7 @@ describe('<UploadDocumentsPage />', () => {
             'shows a duplicate file warning if two or more files match name/size for ARF input only',
             async (inputType) => {
                 const duplicateFileWarning = 'There are two or more documents with the same name.';
-
-                renderSelectStage(setDocumentMock);
+                render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
                 act(() => {
                     userEvent.upload(screen.getByTestId(`${inputType}-input`), [
@@ -317,7 +333,7 @@ describe('<UploadDocumentsPage />', () => {
         it.each([['ARF'], ['LG']])(
             "does allow the user to add the same file again if they remove for '%s' input",
             async (inputType) => {
-                renderSelectStage(setDocumentMock);
+                render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
                 const selectFilesLabel = screen.getByTestId(`${inputType}-input`);
 
@@ -341,7 +357,7 @@ describe('<UploadDocumentsPage />', () => {
         );
 
         it('renders link to PCSE that opens in a new tab', () => {
-            renderSelectStage(setDocumentMock);
+            render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
             const pcseLink = screen.getByRole('link', {
                 name: 'Primary Care Support England',
@@ -351,20 +367,3 @@ describe('<UploadDocumentsPage />', () => {
         });
     });
 });
-
-const renderSelectStage = (
-    setDocumentMock: jest.Mock,
-    patientDetails: Partial<PatientDetails> = {},
-) => {
-    const mockPatient = {
-        ...buildPatientDetails(),
-        ...patientDetails,
-    };
-    render(
-        <SelectStage
-            patientDetails={mockPatient}
-            setDocuments={setDocumentMock}
-            uploadDocuments={() => {}}
-        />,
-    );
-};

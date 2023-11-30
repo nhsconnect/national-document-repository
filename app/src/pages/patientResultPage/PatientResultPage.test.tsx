@@ -1,18 +1,23 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import PatientResultPage from './PatientResultPage';
-import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
-import { PatientDetails } from '../../types/generic/patientDetails';
-import * as ReactRouter from 'react-router';
-import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
 import { act } from 'react-dom/test-utils';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
+import usePatient from '../../helpers/hooks/usePatient';
 
+const mockedUseNavigate = jest.fn();
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+    useLocation: () => jest.fn(),
+}));
 jest.mock('../../helpers/hooks/useRole');
+jest.mock('../../helpers/hooks/usePatient');
+
 const mockedUseRole = useRole as jest.Mock;
+const mockedUsePatient = usePatient as jest.Mock;
 
 describe('PatientResultPage', () => {
     beforeEach(() => {
@@ -25,7 +30,7 @@ describe('PatientResultPage', () => {
 
     describe('Rendering', () => {
         it('displays component', () => {
-            renderPatientResultPage();
+            render(<PatientResultPage />);
 
             expect(screen.getByText('Verify patient details')).toBeInTheDocument();
         });
@@ -37,8 +42,9 @@ describe('PatientResultPage', () => {
                 const familyName = 'Smith';
                 const patientDetails = buildPatientDetails({ familyName, nhsNumber });
                 mockedUseRole.mockReturnValue(role);
+                mockedUsePatient.mockReturnValue(patientDetails);
 
-                renderPatientResultPage(patientDetails);
+                render(<PatientResultPage />);
 
                 expect(
                     screen.getByRole('heading', { name: 'Verify patient details' }),
@@ -68,8 +74,9 @@ describe('PatientResultPage', () => {
                 const patientDetails = buildPatientDetails({ nhsNumber });
 
                 mockedUseRole.mockReturnValue(role);
+                mockedUsePatient.mockReturnValue(patientDetails);
 
-                renderPatientResultPage(patientDetails);
+                render(<PatientResultPage />);
 
                 expect(
                     screen.getByRole('heading', { name: 'Verify patient details' }),
@@ -88,8 +95,9 @@ describe('PatientResultPage', () => {
 
             const role = REPOSITORY_ROLE.PCSE;
             mockedUseRole.mockReturnValue(role);
+            mockedUsePatient.mockReturnValue(patientDetails);
 
-            renderPatientResultPage(patientDetails);
+            render(<PatientResultPage />);
 
             expect(
                 screen.getByRole('heading', { name: 'Verify patient details' }),
@@ -110,12 +118,11 @@ describe('PatientResultPage', () => {
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "displays an error message if 'active' boolean is missing on the patient, when role is '%s'",
             async (role) => {
-                const history = createMemoryHistory({ initialEntries: ['/example'] });
-
+                const patient = buildPatientDetails({ active: undefined });
                 mockedUseRole.mockReturnValue(role);
+                mockedUsePatient.mockReturnValue(patient);
 
-                renderPatientResultPage({ active: undefined }, history);
-                expect(history.location.pathname).toBe('/example');
+                render(<PatientResultPage />);
 
                 act(() => {
                     userEvent.click(
@@ -136,8 +143,9 @@ describe('PatientResultPage', () => {
         it('displays a message when NHS number is superseded', async () => {
             const nhsNumber = '9000000012';
             const patientDetails = buildPatientDetails({ superseded: true, nhsNumber });
+            mockedUsePatient.mockReturnValue(patientDetails);
 
-            renderPatientResultPage(patientDetails);
+            render(<PatientResultPage />);
 
             expect(
                 screen.getByRole('heading', { name: 'Verify patient details' }),
@@ -154,8 +162,9 @@ describe('PatientResultPage', () => {
                 postalCode: null,
                 restricted: true,
             });
+            mockedUsePatient.mockReturnValue(patientDetails);
 
-            renderPatientResultPage(patientDetails);
+            render(<PatientResultPage />);
 
             expect(
                 screen.getByRole('heading', { name: 'Verify patient details' }),
@@ -172,13 +181,11 @@ describe('PatientResultPage', () => {
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "navigates to Upload docs page after user selects Inactive patient when role is '%s'",
             async (role) => {
-                const history = createMemoryHistory({
-                    initialEntries: ['/example'],
-                });
+                const patient = buildPatientDetails({ active: false });
 
+                mockedUsePatient.mockReturnValue(patient);
                 mockedUseRole.mockReturnValue(role);
-                renderPatientResultPage({ active: false }, history);
-                expect(history.location.pathname).toBe('/example');
+                render(<PatientResultPage />);
                 act(() => {
                     userEvent.click(
                         screen.getByRole('button', {
@@ -188,7 +195,7 @@ describe('PatientResultPage', () => {
                 });
 
                 await waitFor(() => {
-                    expect(history.location.pathname).toBe(routes.UPLOAD_DOCUMENTS);
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UPLOAD_DOCUMENTS);
                 });
             },
         );
@@ -196,11 +203,11 @@ describe('PatientResultPage', () => {
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "navigates to Lloyd George Record page after user selects Active patient, when role is '%s'",
             async (role) => {
-                const history = createMemoryHistory({ initialEntries: ['/example'] });
+                const patient = buildPatientDetails({ active: true });
                 mockedUseRole.mockReturnValue(role);
+                mockedUsePatient.mockReturnValue(patient);
 
-                renderPatientResultPage({ active: true }, history);
-                expect(history.location.pathname).toBe('/example');
+                render(<PatientResultPage />);
 
                 act(() => {
                     userEvent.click(
@@ -209,44 +216,22 @@ describe('PatientResultPage', () => {
                 });
 
                 await waitFor(() => {
-                    expect(history.location.pathname).toBe(routes.LLOYD_GEORGE);
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE);
                 });
             },
         );
 
         it('navigates to ARF Download page when user selects Verify patient, when role is PCSE', async () => {
-            const history = createMemoryHistory({ initialEntries: ['/example'] });
-
             const role = REPOSITORY_ROLE.PCSE;
             mockedUseRole.mockReturnValue(role);
 
-            renderPatientResultPage({}, history);
-            expect(history.location.pathname).toBe('/example');
+            render(<PatientResultPage />);
 
             userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
 
             await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.DOWNLOAD_DOCUMENTS);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.DOWNLOAD_DOCUMENTS);
             });
         });
     });
 });
-
-const homeRoute = '/example';
-const renderPatientResultPage = (
-    patientOverride: Partial<PatientDetails> = {},
-    history = createMemoryHistory({ initialEntries: ['/example'] }),
-) => {
-    const patient: PatientDetails = {
-        ...buildPatientDetails(),
-        ...patientOverride,
-    };
-
-    render(
-        <ReactRouter.Router navigator={history} location={homeRoute}>
-            <PatientDetailsProvider patientDetails={patient}>
-                <PatientResultPage />
-            </PatientDetailsProvider>
-        </ReactRouter.Router>,
-    );
-};

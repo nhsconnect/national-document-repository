@@ -3,10 +3,6 @@ import PatientDetailsProvider, { usePatientDetailsContext } from './PatientProvi
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import type { PatientDetails } from '../../types/generic/patientDetails';
 
-type TestProps = {
-    patientDetails: PatientDetails;
-};
-
 describe('PatientDetailsProvider', () => {
     it('provides NHS number and family name', () => {
         const patientDetails = buildPatientDetails({
@@ -29,6 +25,10 @@ describe('PatientDetailsProvider', () => {
         expect(screen.getByText(`NHS Number: ${patientDetails.nhsNumber}`)).toBeInTheDocument();
     });
 });
+
+type TestProps = {
+    patientDetails: PatientDetails;
+};
 
 const TestComponent = (props: TestProps) => {
     const [patientDetails, setPatientDetails] = usePatientDetailsContext();

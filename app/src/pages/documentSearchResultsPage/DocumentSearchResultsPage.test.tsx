@@ -1,22 +1,33 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
 import DocumentSearchResultsPage from './DocumentSearchResultsPage';
 import userEvent from '@testing-library/user-event';
-import * as ReactRouter from 'react-router';
 import { buildPatientDetails, buildSearchResult } from '../../helpers/test/testBuilders';
 import { routes } from '../../types/generic/routes';
-import { createMemoryHistory } from 'history';
-import { PatientDetails } from '../../types/generic/patientDetails';
 import axios from 'axios';
+import usePatient from '../../helpers/hooks/usePatient';
+import { LinkProps } from 'react-router-dom';
 
+const mockedUseNavigate = jest.fn();
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} role="link" />,
+    useNavigate: () => jest.fn(),
+}));
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('axios');
+jest.mock('../../helpers/hooks/usePatient');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedUsePatient = usePatient as jest.Mock;
+const mockPatient = buildPatientDetails();
 
 describe('<DocumentSearchResultsPage />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatient);
     });
     afterEach(() => {
         jest.clearAllMocks();
@@ -28,7 +39,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 return Promise.resolve({ data: [buildSearchResult()] });
             });
 
-            renderSearchResultsPage();
+            render(<DocumentSearchResultsPage />);
 
             expect(
                 screen.getByRole('heading', {
@@ -56,7 +67,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 return Promise.resolve({ data: [buildSearchResult()] });
             });
 
-            renderSearchResultsPage();
+            render(<DocumentSearchResultsPage />);
 
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
         });
@@ -66,7 +77,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 return Promise.resolve({ data: [] });
             });
 
-            renderSearchResultsPage();
+            render(<DocumentSearchResultsPage />);
 
             await waitFor(() => {
                 expect(
@@ -91,7 +102,7 @@ describe('<DocumentSearchResultsPage />', () => {
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-            renderSearchResultsPage();
+            render(<DocumentSearchResultsPage />);
 
             expect(await screen.findByRole('alert')).toBeInTheDocument();
             expect(
@@ -106,18 +117,11 @@ describe('<DocumentSearchResultsPage />', () => {
 
     describe('Navigation', () => {
         it('navigates to Start page when user clicks on start again button', async () => {
-            const history = createMemoryHistory({
-                initialEntries: ['/example'],
-                initialIndex: 1,
-            });
-
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: [buildSearchResult()] }),
             );
 
-            renderSearchResultsPage({}, history);
-
-            expect(history.location.pathname).toBe('/example');
+            render(<DocumentSearchResultsPage />);
 
             await waitFor(() => {
                 expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
@@ -126,29 +130,8 @@ describe('<DocumentSearchResultsPage />', () => {
             userEvent.click(screen.getByRole('link', { name: 'Start Again' }));
 
             await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.HOME);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
             });
         });
     });
 });
-
-const homeRoute = '/example';
-const renderSearchResultsPage = (
-    patientOverride: Partial<PatientDetails> = {},
-    history = createMemoryHistory({
-        initialEntries: [homeRoute],
-        initialIndex: 1,
-    }),
-) => {
-    const patient: PatientDetails = {
-        ...buildPatientDetails(),
-        ...patientOverride,
-    };
-    render(
-        <ReactRouter.Router navigator={history} location={homeRoute}>
-            <PatientDetailsProvider patientDetails={patient}>
-                <DocumentSearchResultsPage />
-            </PatientDetailsProvider>
-        </ReactRouter.Router>,
-    );
-};

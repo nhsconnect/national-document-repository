@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import getAuthToken, { AuthTokenArgs } from '../../helpers/requests/getAuthToken';
-import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
 import { routes } from '../../types/generic/routes';
 import { useNavigate } from 'react-router';
@@ -10,6 +9,7 @@ import { AxiosError } from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 type Props = {};
 

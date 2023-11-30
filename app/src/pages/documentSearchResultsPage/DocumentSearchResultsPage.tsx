@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/documentSearchResults/DocumentSearchResults';
@@ -9,16 +8,17 @@ import { Link } from 'react-router-dom';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';
 import ProgressBar from '../../components/generic/progressBar/ProgressBar';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
-import { useBaseAPIUrl } from '../../providers/configProvider/ConfigProvider';
 import DocumentSearchResultsOptions from '../../components/blocks/documentSearchResultsOptions/DocumentSearchResultsOptions';
 import { AxiosError } from 'axios';
 import getDocumentSearchResults from '../../helpers/requests/getDocumentSearchResults';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
+import usePatient from '../../helpers/hooks/usePatient';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 function DocumentSearchResultsPage() {
-    const [patientDetails] = usePatientDetailsContext();
+    const patientDetails = usePatient();
 
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
@@ -78,7 +78,7 @@ function DocumentSearchResultsPage() {
             {(submissionState === SUBMISSION_STATE.FAILED ||
                 downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
 
-            {patientDetails && <PatientSummary patientDetails={patientDetails} />}
+            {<PatientSummary />}
 
             {submissionState === SUBMISSION_STATE.PENDING && (
                 <ProgressBar status="Loading..."></ProgressBar>
@@ -94,7 +94,6 @@ function DocumentSearchResultsPage() {
                                 downloadState={downloadState}
                                 updateDownloadState={handleUpdateDownloadState}
                                 numberOfFiles={searchResults.length}
-                                patientDetails={patientDetails}
                                 setIsDeletingDocuments={setIsDeletingDocuments}
                             />
                         </>
@@ -125,14 +124,11 @@ function DocumentSearchResultsPage() {
             )}
         </>
     ) : (
-        patientDetails && (
-            <DeleteDocumentsStage
-                numberOfFiles={searchResults.length}
-                patientDetails={patientDetails}
-                setIsDeletingDocuments={setIsDeletingDocuments}
-                docType={DOCUMENT_TYPE.ALL}
-            />
-        )
+        <DeleteDocumentsStage
+            numberOfFiles={searchResults.length}
+            setIsDeletingDocuments={setIsDeletingDocuments}
+            docType={DOCUMENT_TYPE.ALL}
+        />
     );
 }
 

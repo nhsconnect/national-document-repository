@@ -8,14 +8,18 @@ import { useState } from 'react';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import { act } from 'react-dom/test-utils';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import usePatient from '../../../helpers/hooks/usePatient';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 
 jest.mock('../../../helpers/hooks/useRole');
+jest.mock('../../../helpers/hooks/usePatient');
+const mockedUsePatient = usePatient as jest.Mock;
 
 describe('LloydGeorgeRecordStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatientDetails);
     });
     afterEach(() => {
         jest.clearAllMocks();
@@ -104,7 +108,6 @@ const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage' | 'stage'> = {
-        patientDetails: mockPatientDetails,
         downloadStage: DOWNLOAD_STAGE.SUCCEEDED,
         lloydGeorgeUrl: mockPdf.presign_url,
         lastUpdated: mockPdf.last_updated,

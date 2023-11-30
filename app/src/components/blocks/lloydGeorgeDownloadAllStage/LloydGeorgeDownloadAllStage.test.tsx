@@ -1,15 +1,27 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import LgDownloadAllStage, { Props } from './LloydGeorgeDownloadAllStage';
 import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
-import { createMemoryHistory } from 'history';
-import * as ReactRouter from 'react-router';
 import axios from 'axios';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
+import usePatient from '../../../helpers/hooks/usePatient';
+import { LinkProps } from 'react-router-dom';
 
+const mockedUseNavigate = jest.fn();
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} role="link" />,
+}));
 jest.mock('axios');
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../helpers/hooks/usePatient');
+
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedUsePatient = usePatient as jest.Mock;
+
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
 const mockSetStage = jest.fn();
@@ -17,6 +29,7 @@ const mockSetStage = jest.fn();
 describe('LloydGeorgeDownloadAllStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatient);
     });
     afterEach(() => {
         jest.clearAllMocks();
@@ -85,24 +98,11 @@ describe('LloydGeorgeDownloadAllStage', () => {
     });
 });
 
-const TestApp = (props: Omit<Props, 'setStage'>) => {
-    const history = createMemoryHistory({
-        initialEntries: ['/example'],
-        initialIndex: 0,
-    });
-    return (
-        <ReactRouter.Router navigator={history} location={history.location}>
-            <LgDownloadAllStage {...props} setStage={mockSetStage} />
-        </ReactRouter.Router>
-    );
-};
-
 const renderComponent = (propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage'> = {
         numberOfFiles: mockPdf.number_of_files,
-        patientDetails: mockPatient,
         ...propsOverride,
     };
 
-    return render(<TestApp {...props} />);
+    return render(<LgDownloadAllStage {...props} setStage={mockSetStage} />);
 };

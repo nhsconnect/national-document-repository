@@ -2,18 +2,25 @@ import { render, screen, waitFor } from '@testing-library/react';
 import LgRecordDetails, { Props } from './LloydGeorgeRecordDetails';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-import * as ReactRouter from 'react-router';
-import { createMemoryHistory } from 'history';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useRole from '../../../helpers/hooks/useRole';
 import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
+import { LinkProps } from 'react-router-dom';
 jest.mock('../../../helpers/hooks/useRole');
 
+const mockedUseNavigate = jest.fn();
 const mockPdf = buildLgSearchResult();
 const mockSetStaqe = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} role="link" />,
+}));
 
 describe('LloydGeorgeRecordDetails', () => {
     beforeEach(() => {
@@ -128,15 +135,7 @@ describe('LloydGeorgeRecordDetails', () => {
 });
 
 const TestApp = (props: Omit<Props, 'setStage'>) => {
-    const history = createMemoryHistory({
-        initialEntries: ['/', '/example'],
-        initialIndex: 1,
-    });
-    return (
-        <ReactRouter.Router navigator={history} location={'/example'}>
-            <LgRecordDetails {...props} setStage={mockSetStaqe} />;
-        </ReactRouter.Router>
-    );
+    return <LgRecordDetails {...props} setStage={mockSetStaqe} />;
 };
 
 const renderComponent = (propsOverride?: Partial<Props>) => {

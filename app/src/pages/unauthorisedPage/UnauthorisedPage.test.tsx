@@ -1,19 +1,51 @@
-import { render, screen } from '@testing-library/react';
-import * as ReactRouter from 'react-router';
+import { render, screen, waitFor } from '@testing-library/react';
 import UnauthorisedPage from './UnauthorisedPage';
-import { createMemoryHistory } from 'history';
+import { LinkProps } from 'react-router-dom';
+import { act } from 'react-dom/test-utils';
+import userEvent from '@testing-library/user-event';
+import { routes } from '../../types/generic/routes';
+
+const mockedUseNavigate = jest.fn();
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
+jest.mock('../../helpers/hooks/useBaseAPIUrl');
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} role="link" />,
+}));
 
 describe('UnauthorisedPage', () => {
-    it('renders unauthorised message', () => {
-        const history = createMemoryHistory({
-            initialEntries: ['/'],
-            initialIndex: 0,
+    describe('Rendering', () => {
+        it('renders unauthorised message', () => {
+            render(<UnauthorisedPage />);
+            expect(screen.getByText('Unauthorised access')).toBeInTheDocument();
         });
-        render(
-            <ReactRouter.Router navigator={history} location={history.location}>
-                <UnauthorisedPage />
-            </ReactRouter.Router>,
-        );
-        expect(screen.getByText('Unauthorised access')).toBeInTheDocument();
+
+        it('renders a return home link', () => {
+            render(<UnauthorisedPage />);
+            expect(
+                screen.getByRole('link', {
+                    name: 'Return home',
+                }),
+            ).toBeInTheDocument();
+        });
+    });
+
+    describe('Navigation', () => {
+        it('navigates user to home page when return home is clicked', async () => {
+            render(<UnauthorisedPage />);
+            const returnHomeLink = screen.getByRole('link', {
+                name: 'Return home',
+            });
+            expect(returnHomeLink).toBeInTheDocument();
+            act(() => {
+                userEvent.click(returnHomeLink);
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
+            });
+        });
     });
 });

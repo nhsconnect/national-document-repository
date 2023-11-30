@@ -1,40 +1,42 @@
-import { createMemoryHistory } from 'history';
 import { render, screen, waitFor } from '@testing-library/react';
-import * as ReactRouter from 'react-router';
 import userEvent from '@testing-library/user-event';
 import BackButton from './BackButton';
-import { routes } from '../../../types/generic/routes';
 import { endpoints } from '../../../types/generic/endpoints';
-import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+import { routes } from '../../../types/generic/routes';
+
+jest.mock('../../../helpers/hooks/useBaseAPIUrl');
+const mockUseBaseAPIUrl = useBaseAPIUrl as jest.Mock;
+const mockUseNavigate = jest.fn();
+let mockPathname = { pathname: '' };
+jest.mock('react-router', () => ({
+    useNavigate: () => mockUseNavigate,
+    useLocation: () => mockPathname,
+}));
+const testUrl = '/test';
 
 describe('BackButton', () => {
-    it('navigates to previous page when clicking the back buttonand not on the search pages', async () => {
-        const history = createMemoryHistory({
-            initialEntries: ['/', '/example'],
-            initialIndex: 1,
-        });
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockUseBaseAPIUrl.mockReturnValue(testUrl);
+    });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
 
-        render(
-            <ReactRouter.Router navigator={history} location={'/example'}>
-                <BackButton />
-            </ReactRouter.Router>,
-        );
+    it('navigates to previous page when clicking the back button and not on the search pages', async () => {
+        mockPathname = { pathname: testUrl };
 
+        render(<BackButton />);
         userEvent.click(screen.getByText('Back'));
 
         await waitFor(() => {
-            expect(history.location.pathname).toBe('/');
+            expect(mockUseNavigate).toHaveBeenCalledWith(-1);
         });
     });
 
     it('calls the login handler when clicking the back button on the upload search page', async () => {
-        const test_location_prefix = useBaseAPIUrl();
-
-        const history = createMemoryHistory({
-            initialEntries: ['/', '/example'],
-            initialIndex: 1,
-        });
-
+        mockPathname = { pathname: routes.UPLOAD_SEARCH };
         //Override the default window.location property as it is not configurable so can't be mocked by jest
         Object.defineProperty(window, 'location', {
             configurable: true,
@@ -43,28 +45,16 @@ describe('BackButton', () => {
         });
 
         window.location.replace = jest.fn();
-
-        render(
-            <ReactRouter.Router navigator={history} location={routes.UPLOAD_SEARCH}>
-                <BackButton />
-            </ReactRouter.Router>,
-        );
+        render(<BackButton />);
 
         userEvent.click(screen.getByText('Back'));
 
         await waitFor(() => {
-            expect(window.location.replace).toBeCalledWith(test_location_prefix + endpoints.LOGIN);
+            expect(window.location.replace).toBeCalledWith(testUrl + endpoints.LOGIN);
         });
     });
 
     it('calls the login handler when clicking the back button on the download search page', async () => {
-        const test_location_prefix = useBaseAPIUrl();
-
-        const history = createMemoryHistory({
-            initialEntries: ['/', '/example'],
-            initialIndex: 1,
-        });
-
         //Override the default window.location property as it is not configurable so can't be mocked by jest
         Object.defineProperty(window, 'location', {
             configurable: true,
@@ -73,17 +63,14 @@ describe('BackButton', () => {
         });
 
         window.location.replace = jest.fn();
+        mockPathname = { pathname: routes.DOWNLOAD_SEARCH };
 
-        render(
-            <ReactRouter.Router navigator={history} location={routes.DOWNLOAD_SEARCH}>
-                <BackButton />
-            </ReactRouter.Router>,
-        );
+        render(<BackButton />);
 
         userEvent.click(screen.getByText('Back'));
 
         await waitFor(() => {
-            expect(window.location.replace).toBeCalledWith(test_location_prefix + endpoints.LOGIN);
+            expect(window.location.replace).toBeCalledWith(testUrl + endpoints.LOGIN);
         });
     });
 });

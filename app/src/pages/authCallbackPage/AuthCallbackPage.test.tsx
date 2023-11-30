@@ -1,13 +1,15 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import AuthCallbackPage from './AuthCallbackPage';
 import SessionProvider from '../../providers/sessionProvider/SessionProvider';
-import * as ReactRouter from 'react-router';
-import { History, createMemoryHistory } from 'history';
 import axios from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { routes } from '../../types/generic/routes';
-jest.mock('axios');
 
+const mockedUseNavigate = jest.fn();
+jest.mock('axios');
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const params = {
     code: 'cis2-code',
@@ -42,35 +44,25 @@ describe('AuthCallbackPage', () => {
     });
 
     it('returns a loading state until redirection to token request handler', async () => {
-        const history = createMemoryHistory({
-            initialEntries: [currentPage],
-            initialIndex: 0,
-        });
-
         mockedAxios.get.mockImplementation(() => Promise.resolve({ data: buildUserAuth() }));
-        renderCallbackPage(history);
+        renderCallbackPage();
         expect(screen.getByRole('status')).toBeInTheDocument();
         expect(screen.getByText('Logging in...')).toBeInTheDocument();
+
         await waitFor(() => {
-            expect(history.location.pathname).toBe(routes.UPLOAD_SEARCH);
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UPLOAD_SEARCH);
         });
     });
 
     it('navigates to the select role page when callback token request is successful', async () => {
-        const history = createMemoryHistory({
-            initialEntries: [currentPage],
-            initialIndex: 0,
-        });
-
         mockedAxios.get.mockImplementation(() => Promise.resolve({ data: buildUserAuth() }));
-        renderCallbackPage(history);
+        renderCallbackPage();
 
         expect(screen.getByRole('status')).toBeInTheDocument();
         expect(screen.getByText('Logging in...')).toBeInTheDocument();
-        expect(history.location.pathname).toBe(currentPage);
 
         await waitFor(() => {
-            expect(history.location.pathname).toBe(routes.UPLOAD_SEARCH);
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UPLOAD_SEARCH);
         });
     });
 
@@ -81,36 +73,23 @@ describe('AuthCallbackPage', () => {
                 message: '400 Bad Request',
             },
         };
-        const history = createMemoryHistory({
-            initialEntries: [currentPage],
-            initialIndex: 0,
-        });
 
         mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
-        renderCallbackPage(history);
+        renderCallbackPage();
 
         expect(screen.getByRole('status')).toBeInTheDocument();
         expect(screen.getByText('Logging in...')).toBeInTheDocument();
-        expect(history.location.pathname).toBe(currentPage);
 
         await waitFor(() => {
-            expect(history.location.pathname).toBe(routes.AUTH_ERROR);
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.AUTH_ERROR);
         });
     });
 });
 
-const renderCallbackPage = (
-    history: History = createMemoryHistory({
-        initialEntries: [currentPage],
-        initialIndex: 1,
-    }),
-) => {
+const renderCallbackPage = () => {
     render(
         <SessionProvider>
-            <ReactRouter.Router navigator={history} location={history.location}>
-                <AuthCallbackPage />,
-            </ReactRouter.Router>
-            ,
+            <AuthCallbackPage />
         </SessionProvider>,
     );
 };

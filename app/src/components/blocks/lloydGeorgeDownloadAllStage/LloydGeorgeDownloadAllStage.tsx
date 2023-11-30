@@ -9,19 +9,18 @@ import React, {
 } from 'react';
 import { Card } from 'nhsuk-react-components';
 import { Link } from 'react-router-dom';
-import { PatientDetails } from '../../../types/generic/patientDetails';
-import { useBaseAPIUrl } from '../../../providers/configProvider/ConfigProvider';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownloadComplete';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+import usePatient from '../../../helpers/hooks/usePatient';
 const FakeProgress = require('fake-progress');
 
 export type Props = {
     numberOfFiles: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    patientDetails: PatientDetails;
 };
 
 type DownloadLinkAttributes = {
@@ -29,7 +28,7 @@ type DownloadLinkAttributes = {
     filename: string;
 };
 
-function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }: Props) {
+function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     const baseUrl = useBaseAPIUrl();
@@ -42,8 +41,8 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
 
-    const { nhsNumber } = patientDetails;
-
+    const patientDetails = usePatient();
+    const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
 
     const progressTimer = useMemo(() => {
@@ -103,8 +102,8 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
         <div className="lloydgeorge_downloadall-stage">
             <div className="lloydgeorge_downloadall-stage_header">
                 <h1>Downloading documents</h1>
-                <h2>{patientDetails.givenName + ' ' + patientDetails.familyName}</h2>
-                <h4>NHS number: {patientDetails.nhsNumber}</h4>
+                <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
+                <h4>NHS number: {patientDetails?.nhsNumber}</h4>
                 <div className="nhsuk-heading-xl" />
                 <h4>Preparing download for {numberOfFiles} files</h4>
             </div>
@@ -146,7 +145,7 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage, patientDetails }
             </Card>
         </div>
     ) : (
-        <LgDownloadComplete patientDetails={patientDetails} setStage={setStage} />
+        <LgDownloadComplete setStage={setStage} />
     );
 }
 

@@ -1,19 +1,21 @@
 import { createMemoryHistory } from 'history';
-import * as ReactRouter from 'react-router';
-import { buildPatientDetails, buildUserAuth } from '../../../helpers/test/testBuilders';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import DocumentSearchResultsOptions from './DocumentSearchResultsOptions';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
-import { PatientDetails } from '../../../types/generic/patientDetails';
 import { routes } from '../../../types/generic/routes';
-import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
-jest.mock('axios');
+import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 
+const mockedUseNavigate = jest.fn();
+jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../helpers/hooks/useBaseAPIUrl');
+jest.mock('axios');
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const updateDownloadState = jest.fn();
-const mockPatientDetails = buildPatientDetails();
 const mockSetIsDeletingDocuments = jest.fn();
 
 describe('DocumentSearchResultsOptions', () => {
@@ -142,49 +144,28 @@ describe('DocumentSearchResultsOptions', () => {
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-            renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL, {}, history);
+            renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
             expect(history.location.pathname).toBe('/example');
 
             userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
 
             await waitFor(() => {
-                expect(history.location.pathname).toBe(routes.HOME);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
             });
         });
     });
 });
 
-const homeRoute = '/example';
-const renderDocumentSearchResultsOptions = (
-    downloadState: SUBMISSION_STATE,
-    patientOverride: Partial<PatientDetails> = {},
-    history = createMemoryHistory({
-        initialEntries: [homeRoute],
-        initialIndex: 1,
-    }),
-) => {
-    const auth: Session = {
-        auth: buildUserAuth(),
-        isLoggedIn: true,
-    };
-    const patient: PatientDetails = {
-        ...buildPatientDetails(),
-        ...patientOverride,
-    };
-
+const renderDocumentSearchResultsOptions = (downloadState: SUBMISSION_STATE) => {
+    const patient = buildPatientDetails();
     render(
-        <ReactRouter.Router navigator={history} location={homeRoute}>
-            <SessionProvider sessionOverride={auth}>
-                <DocumentSearchResultsOptions
-                    nhsNumber={patient.nhsNumber}
-                    downloadState={downloadState}
-                    updateDownloadState={updateDownloadState}
-                    patientDetails={mockPatientDetails}
-                    numberOfFiles={7}
-                    setIsDeletingDocuments={mockSetIsDeletingDocuments}
-                />
-            </SessionProvider>
-        </ReactRouter.Router>,
+        <DocumentSearchResultsOptions
+            nhsNumber={patient.nhsNumber}
+            downloadState={downloadState}
+            updateDownloadState={updateDownloadState}
+            numberOfFiles={7}
+            setIsDeletingDocuments={mockSetIsDeletingDocuments}
+        />,
     );
 };
