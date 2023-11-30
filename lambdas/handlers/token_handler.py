@@ -6,12 +6,15 @@ import uuid
 import jwt
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
+from oauthlib.oauth2 import WebApplicationClient
+
 from enums.logging_app_interaction import LoggingAppInteraction
 from enums.repository_role import RepositoryRole
 from models.oidc_models import IdTokenClaimSet
 from services.dynamo_service import DynamoDBService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
+from services.ssm_service import SSMService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
@@ -40,6 +43,7 @@ def lambda_handler(event, context):
     ods_api_service = OdsApiService()
 
     try:
+        oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
         if not (auth_code and state):

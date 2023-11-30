@@ -86,3 +86,7 @@ class S3FileNotFoundException(Exception):
 
 class TagNotFoundException(Exception):
     pass
+
+
+class LogoutFailureException(Exception):
+    pass
