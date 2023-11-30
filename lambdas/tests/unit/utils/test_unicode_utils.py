@@ -1,14 +1,10 @@
 import re
 
 import pytest
-from utils.unicode_utils import (
-    REGEX_PATIENT_NAME_PATTERN,
-    contains_accent_char,
-    convert_to_nfc_form,
-    convert_to_nfd_form,
-    remove_accent_glyphs,
-    names_are_matching,
-)
+from utils.unicode_utils import (REGEX_PATIENT_NAME_PATTERN,
+                                 contains_accent_char, convert_to_nfc_form,
+                                 convert_to_nfd_form, names_are_matching,
+                                 remove_accent_glyphs)
 
 NAME_WITH_ACCENT_NFC_FORM = "Évèlynêë François Ågāřdñ"
 NAME_WITH_ACCENT_NFD_FORM = "Évèlynêë François Ågāřdñ"

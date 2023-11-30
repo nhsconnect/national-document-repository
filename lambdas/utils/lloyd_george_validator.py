@@ -11,8 +11,8 @@ from pydantic import ValidationError
 from requests import HTTPError
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.unicode_utils import REGEX_PATIENT_NAME_PATTERN, names_are_matching
 from utils.exceptions import PdsTooManyRequestsException
+from utils.unicode_utils import REGEX_PATIENT_NAME_PATTERN, names_are_matching
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)

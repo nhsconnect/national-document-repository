@@ -1,13 +1,8 @@
 import pytest
 from botocore.exceptions import ClientError
 from services.s3_service import S3Service
-from tests.unit.conftest import (
-    MOCK_BUCKET,
-    TEST_FILE_KEY,
-    TEST_FILE_NAME,
-    TEST_NHS_NUMBER,
-    TEST_OBJECT_KEY,
-)
+from tests.unit.conftest import (MOCK_BUCKET, TEST_FILE_KEY, TEST_FILE_NAME,
+                                 TEST_NHS_NUMBER, TEST_OBJECT_KEY)
 from utils.exceptions import TagNotFoundException
 
 MOCK_PRESIGNED_POST_RESPONSE = {

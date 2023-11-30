@@ -3,7 +3,6 @@ import uuid
 
 import pydantic
 from botocore.exceptions import ClientError
-
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from models.bulk_upload_status import FailedUpload, SuccessfulUpload
@@ -13,22 +12,17 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (
-    DocumentInfectedException,
-    InvalidMessageException,
-    PdsTooManyRequestsException,
-    S3FileNotFoundException,
-    TagNotFoundException,
-    VirusScanFailedException,
-    VirusScanNoResultException,
-)
-from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names
+from utils.exceptions import (DocumentInfectedException,
+                              InvalidMessageException,
+                              PdsTooManyRequestsException,
+                              S3FileNotFoundException, TagNotFoundException,
+                              VirusScanFailedException,
+                              VirusScanNoResultException)
+from utils.lloyd_george_validator import (LGInvalidFilesException,
+                                          validate_lg_file_names)
 from utils.request_context import request_context
-from utils.unicode_utils import (
-    contains_accent_char,
-    convert_to_nfc_form,
-    convert_to_nfd_form,
-)
+from utils.unicode_utils import (contains_accent_char, convert_to_nfc_form,
+                                 convert_to_nfd_form)
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
