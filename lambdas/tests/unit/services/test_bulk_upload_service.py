@@ -19,8 +19,10 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
 from tests.unit.utils.test_unicode_utils import (NAME_WITH_ACCENT_NFC_FORM,
                                                  NAME_WITH_ACCENT_NFD_FORM)
 from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException, S3FileNotFoundException,
-                              TagNotFoundException, VirusScanFailedException,
+                              InvalidMessageException,
+                              PatientRecordAlreadyExistException,
+                              S3FileNotFoundException, TagNotFoundException,
+                              VirusScanFailedException,
                               VirusScanNoResultException)
 from utils.lloyd_george_validator import LGInvalidFilesException
 
@@ -148,6 +150,35 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
     mock_report_upload_complete.assert_called()
     assert service.s3_service.get_tag_value.call_count == 3
     assert service.s3_service.copy_across_bucket.call_count == 3
+
+
+def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_already_in_repo(
+    set_env, mocker, mock_uuid, mock_validate_files
+):
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        BulkUploadService, "remove_ingested_file_from_source_bucket"
+    )
+    mock_report_upload_failure = mocker.patch.object(
+        BulkUploadService, "report_upload_failure"
+    )
+
+    mocked_error = PatientRecordAlreadyExistException(
+        "Lloyd George already exists for patient, upload cancelled."
+    )
+    mock_validate_files.side_effect = mocked_error
+
+    service = BulkUploadService()
+    service.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    mock_create_lg_records_and_copy_files.assert_not_called()
+    mock_remove_ingested_file_from_source_bucket.assert_not_called()
+
+    mock_report_upload_failure.assert_called_with(
+        TEST_STAGING_METADATA, str(mocked_error)
+    )
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
@@ -296,7 +327,26 @@ def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract
     mock_create_lg_records_and_copy_files.assert_not_called()
 
 
-def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(set_env):
+def test_validate_files_propagate_PatientRecordAlreadyExistException_when_patient_record_already_in_repo(
+    set_env, mocker
+):
+    mocker.patch(
+        "utils.lloyd_george_validator.check_for_patient_already_exist_in_repo",
+        side_effect=PatientRecordAlreadyExistException,
+    )
+    service = BulkUploadService()
+
+    with pytest.raises(PatientRecordAlreadyExistException):
+        service.validate_files(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+
+
+def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(
+    set_env, mocker
+):
+    mocker.patch(
+        "utils.lloyd_george_validator.check_for_patient_already_exist_in_repo",
+        return_value=None,
+    )
     service = BulkUploadService()
 
     with pytest.raises(LGInvalidFilesException):

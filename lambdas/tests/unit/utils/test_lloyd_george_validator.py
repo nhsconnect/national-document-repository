@@ -2,13 +2,19 @@ import json
 
 import pytest
 from botocore.exceptions import ClientError
+from enums.supported_document_types import SupportedDocumentTypes
 from requests import Response
+from services.document_service import DocumentService
+from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
-from utils.exceptions import PdsTooManyRequestsException
+from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
+from utils.exceptions import (PatientRecordAlreadyExistException,
+                              PdsTooManyRequestsException)
 from utils.lloyd_george_validator import (
     LGInvalidFilesException, check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
-    check_for_number_of_files_match_expected, extract_info_from_filename,
+    check_for_number_of_files_match_expected,
+    check_for_patient_already_exist_in_repo, extract_info_from_filename,
     validate_file_name, validate_lg_file_type, validate_with_pds_service)
 
 
@@ -370,6 +376,42 @@ def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
 
 
+def test_check_for_patient_already_exist_in_repo_return_none_when_patient_record_not_exist(
+    set_env, mock_fetch_available_document_references_by_type
+):
+    mock_fetch_available_document_references_by_type.return_value = []
+    expected = None
+    actual = check_for_patient_already_exist_in_repo(TEST_NHS_NUMBER)
+
+    assert actual == expected
+
+    mock_fetch_available_document_references_by_type.assert_called_with(
+        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG.value
+    )
+
+
+def test_check_check_for_patient_already_exist_in_repo_raise_exception_when_patient_record_already_exist(
+    set_env, mock_fetch_available_document_references_by_type
+):
+    mock_fetch_available_document_references_by_type.return_value = [
+        MOCK_DOCUMENT_REFERENCE
+    ]
+
+    with pytest.raises(PatientRecordAlreadyExistException):
+        check_for_patient_already_exist_in_repo(TEST_NHS_NUMBER)
+
+    mock_fetch_available_document_references_by_type.assert_called_with(
+        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG.value
+    )
+
+
 @pytest.fixture
 def mock_pds_call(mocker):
     yield mocker.patch("services.mock_pds_service.MockPdsApiService.pds_request")
+
+
+@pytest.fixture
+def mock_fetch_available_document_references_by_type(mocker):
+    yield mocker.patch.object(
+        DocumentService, "fetch_available_document_references_by_type"
+    )

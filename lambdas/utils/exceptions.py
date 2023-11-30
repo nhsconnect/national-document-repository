@@ -64,6 +64,10 @@ class InvalidDocumentReferenceException(Exception):
     pass
 
 
+class PatientRecordAlreadyExistException(Exception):
+    pass
+
+
 class UserNotAuthorisedException(Exception):
     pass
 
