@@ -152,7 +152,6 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
     assert service.s3_service.copy_across_bucket.call_count == 3
 
 
-
 def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_already_in_repo(
     set_env, mocker, mock_uuid, mock_validate_files
 ):
