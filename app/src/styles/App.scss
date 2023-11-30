@@ -1,3 +1,6 @@
+$govuk-compatibility-govukelements: true;
+@import 'node_modules/govuk-frontend/govuk/components/phase-banner/phase-banner';
+
 @import 'node_modules/nhsuk-frontend/packages/nhsuk';
 @import 'node_modules/nhsuk-frontend/packages/core/all';
 @import 'node_modules/nhsuk-frontend/packages/components/button/button';
