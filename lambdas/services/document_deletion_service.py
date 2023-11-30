@@ -1,4 +1,5 @@
 import os
+from typing import Union
 
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
@@ -14,38 +15,38 @@ class DocumentDeletionService:
         super().__init__()
         self.document_service = DocumentService()
 
-    def handle_delete(self, nhs_number: str, doc_type: str) -> list[DocumentReference]:
+    def handle_delete(
+        self, nhs_number: str, doc_type: SupportedDocumentTypes
+    ) -> list[DocumentReference]:
         files_deleted = []
+
         match doc_type:
-            case SupportedDocumentTypes.ALL.value:
+            case SupportedDocumentTypes.ALL:
                 arf_deleted = self.handle_delete_for_doc_type(
-                    nhs_number, str(SupportedDocumentTypes.ARF.value)
+                    nhs_number, SupportedDocumentTypes.ARF
                 )
                 lg_deleted = self.handle_delete_for_doc_type(
-                    nhs_number, str(SupportedDocumentTypes.LG.value)
+                    nhs_number, SupportedDocumentTypes.LG
                 )
                 files_deleted = arf_deleted + lg_deleted
-            case SupportedDocumentTypes.ARF.value:
-                files_deleted = self.handle_delete_for_doc_type(
-                    nhs_number, str(SupportedDocumentTypes.ARF.value)
-                )
-            case SupportedDocumentTypes.LG.value:
-                files_deleted = self.handle_delete_for_doc_type(
-                    nhs_number, str(SupportedDocumentTypes.LG.value)
-                )
+            case SupportedDocumentTypes.ARF | SupportedDocumentTypes.LG:
+                files_deleted = self.handle_delete_for_doc_type(nhs_number, doc_type)
+
         return files_deleted
 
     def handle_delete_for_doc_type(
-        self, nhs_number: str, doc_type: str
+        self,
+        nhs_number: str,
+        doc_type: Union[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
     ) -> list[DocumentReference]:
         table_name = ""
-        if doc_type == SupportedDocumentTypes.ARF.value:
+        if doc_type == SupportedDocumentTypes.ARF:
             table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-        if doc_type == SupportedDocumentTypes.LG.value:
+        if doc_type == SupportedDocumentTypes.LG:
             table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
 
         results = self.document_service.fetch_available_document_references_by_type(
-            nhs_number, doc_type
+            nhs_number, doc_type.value
         )
 
         if not results:

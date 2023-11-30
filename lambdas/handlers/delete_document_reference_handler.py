@@ -1,4 +1,3 @@
-
 from botocore.exceptions import ClientError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.document_deletion_service import DocumentDeletionService
@@ -6,8 +5,8 @@ from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.decorators.validate_document_type import (extract_document_type,
-                                                     validate_document_type)
+from utils.decorators.validate_document_type import (
+    extract_document_type_as_enum, validate_document_type)
 from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -29,7 +28,7 @@ def lambda_handler(event, context):
     logger.info("Delete Document Reference handler has been triggered")
 
     nhs_number = event["queryStringParameters"]["patientId"]
-    doc_type = extract_document_type(event["queryStringParameters"]["docType"])
+    doc_type = extract_document_type_as_enum(event["queryStringParameters"]["docType"])
 
     request_context.app_interaction = LoggingAppInteraction.DELETE_RECORD.value
     request_context.patient_nhs_no = nhs_number
