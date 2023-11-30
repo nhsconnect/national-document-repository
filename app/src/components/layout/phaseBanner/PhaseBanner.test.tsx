@@ -14,9 +14,9 @@ describe('PhaseBanner', () => {
 
             expect(screen.getByText('New Service')).toBeInTheDocument();
 
-            expect(screen.getByText(/This is a new service - your/i)).toBeInTheDocument();
+            expect(screen.getByText(/Your/i)).toBeInTheDocument();
             expect(screen.getByText('feedback')).toBeInTheDocument();
-            expect(screen.getByText(/will help us to improve it./i)).toBeInTheDocument();
+            expect(screen.getByText(/will help us to improve this service./i)).toBeInTheDocument();
         });
     });
     describe('Navigation', () => {
