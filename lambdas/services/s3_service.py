@@ -2,6 +2,7 @@ from typing import Any, Mapping
 
 import boto3
 from botocore.client import Config as BotoConfig
+from botocore.exceptions import ClientError
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import TagNotFoundException
 
@@ -91,3 +92,23 @@ class S3Service:
         raise TagNotFoundException(
             f"Object {file_key} doesn't have a tag of key {tag_key}"
         )
+
+    def file_exist_on_s3(self, s3_bucket_name: str, file_key: str) -> bool:
+        try:
+            response = self.client.head_object(Bucket=s3_bucket_name, Key=file_key)
+            if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+                return True
+            return False
+        except (KeyError, AttributeError) as e:
+            logger.info(e)
+            return False
+        except ClientError as e:
+            error_message = str(e)
+            if (
+                "An error occurred (403)" in error_message
+                or "An error occurred (404)" in error_message
+            ):
+                return False
+            logger.error("Got unexpected error when try to check file existence on s3:")
+            logger.error(e)
+            raise e

@@ -21,6 +21,8 @@ from utils.exceptions import (DocumentInfectedException,
 from utils.lloyd_george_validator import (LGInvalidFilesException,
                                           validate_lg_file_names)
 from utils.request_context import request_context
+from utils.unicode_utils import (contains_accent_char, convert_to_nfc_form,
+                                 convert_to_nfd_form)
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -45,6 +47,7 @@ class BulkUploadService:
         self.dynamo_records_in_transaction: list[NHSDocumentReference] = []
         self.source_bucket_files_in_transaction = []
         self.dest_bucket_files_in_transaction = []
+        self.file_path_cache = {}
 
     def handle_sqs_message(self, message: dict):
         try:
@@ -80,6 +83,8 @@ class BulkUploadService:
         logger.info("File validation complete. Checking virus scan results")
 
         try:
+            self.resolve_source_file_path(staging_metadata)
+
             logger.info("Running validation for virus scan results...")
             self.check_virus_result(staging_metadata)
         except VirusScanNoResultException as e:
@@ -159,7 +164,7 @@ class BulkUploadService:
 
     def check_virus_result(self, staging_metadata: StagingMetadata):
         for file_metadata in staging_metadata.files:
-            source_file_key = self.strip_leading_slash(file_metadata.file_path)
+            source_file_key = self.get_source_file_key(file_metadata.file_path)
             file_path = file_metadata.file_path
             try:
                 scan_result = self.s3_service.get_tag_value(
@@ -204,7 +209,6 @@ class BulkUploadService:
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=staging_metadata.nhs_number,
-            delay_seconds=60 * 5,
             group_id=f"back_to_queue_bulk_upload_{uuid.uuid4()}",
         )
 
@@ -220,13 +224,56 @@ class BulkUploadService:
             queue_url=self.metadata_queue_url,
             message_body=sqs_message["body"],
             nhs_number=nhs_number,
-            delay_seconds=60 * 5,
         )
 
     def init_transaction(self):
         self.dynamo_records_in_transaction = []
         self.source_bucket_files_in_transaction = []
         self.dest_bucket_files_in_transaction = []
+
+    def resolve_source_file_path(self, staging_metadata: StagingMetadata):
+        sample_file_path = staging_metadata.files[0].file_path
+
+        if not contains_accent_char(sample_file_path):
+            logger.info("No accented character detected in file path.")
+            self.file_path_cache = {
+                file.file_path: self.strip_leading_slash(file.file_path)
+                for file in staging_metadata.files
+            }
+            return
+
+        logger.info("Detected accented character in file path.")
+        logger.info("Will take special steps to handle file names.")
+
+        resolved_file_paths = {}
+        for file in staging_metadata.files:
+            file_path_in_metadata = file.file_path
+            file_path_without_leading_slash = self.strip_leading_slash(
+                file_path_in_metadata
+            )
+            file_path_in_nfc_form = convert_to_nfc_form(file_path_without_leading_slash)
+            file_path_in_nfd_form = convert_to_nfd_form(file_path_without_leading_slash)
+
+            if self.file_exist_in_staging_bucket(file_path_in_nfc_form):
+                resolved_file_paths[file_path_in_metadata] = file_path_in_nfc_form
+            elif self.file_exist_in_staging_bucket(file_path_in_nfd_form):
+                resolved_file_paths[file_path_in_metadata] = file_path_in_nfd_form
+            else:
+                logger.info(
+                    "No file matching the provided file path was found on S3 bucket"
+                )
+                logger.info("Please check whether files are named correctly")
+                raise S3FileNotFoundException(
+                    f"Failed to access file {sample_file_path}"
+                )
+
+        self.file_path_cache = resolved_file_paths
+
+    def file_exist_in_staging_bucket(self, file_path: str) -> bool:
+        return self.s3_service.file_exist_on_s3(self.staging_bucket_name, file_path)
+
+    def get_source_file_key(self, file_path: str) -> str:
+        return self.file_path_cache[file_path]
 
     def create_lg_records_and_copy_files(self, staging_metadata: StagingMetadata):
         nhs_number = staging_metadata.nhs_number
@@ -235,7 +282,7 @@ class BulkUploadService:
             document_reference = self.convert_to_document_reference(
                 file_metadata, nhs_number
             )
-            source_file_key = self.strip_leading_slash(file_metadata.file_path)
+            source_file_key = self.get_source_file_key(file_metadata.file_path)
             dest_file_key = document_reference.s3_file_key
             self.copy_to_lg_bucket(
                 source_file_key=source_file_key, dest_file_key=dest_file_key
