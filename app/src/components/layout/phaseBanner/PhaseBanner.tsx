@@ -1,8 +1,6 @@
 import React from 'react';
 
-type Props = {};
-
-function PhaseBanner({}: Props) {
+function PhaseBanner() {
     return (
         <div className="govuk-phase-banner">
             <div className="nhsuk-width-container">
