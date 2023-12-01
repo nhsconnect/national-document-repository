@@ -45,13 +45,13 @@ class DocumentDeletionService:
         if not results:
             return []
 
-        doc_type_as_string = doc_type.value
         self.document_service.delete_documents_by_type(
-            doc_type=doc_type_as_string,
+            doc_type=doc_type.value,
             document_references=results,
             type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
         )
         logger.info(
-            "Documents were deleted successfully", {"Result": "Successful deletion"}
+            f"Deleted document of type {doc_type.value}",
+            {"Result": "Successful deletion"},
         )
         return results

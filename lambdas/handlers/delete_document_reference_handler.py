@@ -39,10 +39,17 @@ def lambda_handler(event, context):
     try:
         files_deleted = deletion_service.handle_delete(nhs_number, doc_type)
         if files_deleted:
+            logger.info(
+                "Documents were deleted successfully", {"Result": "Successful deletion"}
+            )
             return ApiGatewayResponse(
                 200, "Success", "DELETE"
             ).create_api_gateway_response()
         else:
+            logger.info(
+                "No records was found for given patient. No document deleted.",
+                {"Result": "No documents available"},
+            )
             return ApiGatewayResponse(
                 404, "No documents available", "DELETE"
             ).create_api_gateway_response()
