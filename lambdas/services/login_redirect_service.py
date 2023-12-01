@@ -11,8 +11,11 @@ logger = LoggingService(__name__)
 
 
 class LoginRedirectService:
-    def prepare_redirect_response(self, web_application_client_class, ssm_service):
+    def prepare_redirect_response(
+        self, web_application_client_class, ssm_service_class
+    ):
         try:
+            ssm_service = ssm_service_class()
             oidc_parameters = ssm_service.get_ssm_parameters(
                 ["OIDC_AUTHORISE_URL", "OIDC_CLIENT_ID"]
             )
