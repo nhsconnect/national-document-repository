@@ -72,23 +72,4 @@ def extract_document_type(value: str) -> str:
 
 
 def extract_document_type_as_enum(value: str) -> SupportedDocumentTypes:
-    doc_type = value.replace(" ", "")
-    if doc_type == SupportedDocumentTypes.LG.value:
-        return SupportedDocumentTypes.LG
-    if doc_type == SupportedDocumentTypes.ARF.value:
-        return SupportedDocumentTypes.ARF
-
-    doc_types_requested = doc_type.split(",")
-
-    doc_types = []
-    for doc_type in doc_types_requested:
-        if SupportedDocumentTypes.get_from_field_name(doc_type):
-            doc_types.append(doc_type)
-
-    doc_type_intersection = set(doc_types) | set(SupportedDocumentTypes.list_names())
-
-    if (
-        SupportedDocumentTypes.LG.value in doc_type_intersection
-        and SupportedDocumentTypes.ARF.value in doc_type_intersection
-    ):
-        return SupportedDocumentTypes.ALL
+    return SupportedDocumentTypes(extract_document_type(value))
