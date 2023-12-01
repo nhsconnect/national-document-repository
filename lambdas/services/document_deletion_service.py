@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import Literal
 
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
@@ -22,22 +22,22 @@ class DocumentDeletionService:
 
         match doc_type:
             case SupportedDocumentTypes.ALL:
-                arf_deleted = self.handle_delete_for_doc_type(
+                arf_deleted = self.delete_specific_doc_type(
                     nhs_number, SupportedDocumentTypes.ARF
                 )
-                lg_deleted = self.handle_delete_for_doc_type(
+                lg_deleted = self.delete_specific_doc_type(
                     nhs_number, SupportedDocumentTypes.LG
                 )
                 files_deleted = arf_deleted + lg_deleted
             case SupportedDocumentTypes.ARF | SupportedDocumentTypes.LG:
-                files_deleted = self.handle_delete_for_doc_type(nhs_number, doc_type)
+                files_deleted = self.delete_specific_doc_type(nhs_number, doc_type)
 
         return files_deleted
 
-    def handle_delete_for_doc_type(
+    def delete_specific_doc_type(
         self,
         nhs_number: str,
-        doc_type: Union[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
+        doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
     ) -> list[DocumentReference]:
         table_name = ""
         if doc_type == SupportedDocumentTypes.ARF:
