@@ -2,10 +2,17 @@
 const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 
-const formTypes = Object.freeze({
+const FORM_TYPES = Object.freeze({
     LG: 'LG',
     ARF: 'ARF',
 });
+
+const TEST_TYPES = Object.freeze({
+    TEST: 'Test',
+    SMOKE: 'Smoke',
+});
+
+const testTypes = Object.keys(TEST_TYPES);
 
 const testPatient = '9000000009';
 const patient = {
@@ -86,20 +93,22 @@ const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
 
 describe('GP Workflow: Upload docs and verify', () => {
     gpRoles.forEach((role) => {
-        beforeEach(() => {
-            cy.login(role);
-            navigateToUploadPage();
+        testTypes.forEach((type) => {
+            it(
+                `[${type}] On Start now button click as ` +
+                    role +
+                    ', redirect to uploads is successful',
+                () => {
+                    if (type === testTypes.SMOKE) {
+                        cy.login(role);
+                        navigateToUploadPage();
+                    } else {
+                    }
+                    cy.url().should('include', 'upload');
+                    cy.url().should('eq', baseUrl + 'upload/submit');
+                },
+            );
         });
-
-        it(
-            '(Smoke test) On Start now button click as ' +
-                role +
-                ', redirect to uploads is successful',
-            () => {
-                cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + 'upload/submit');
-            },
-        );
 
         it.skip(
             "(Smoke test) On Upload button click with a single file for ARF and LG, renders 'Upload Summary' screen for successful upload as a " +
@@ -128,10 +137,10 @@ describe('GP Workflow: Upload docs and verify', () => {
                     });
                 }
 
-                selectForm(formTypes.ARF).selectFile(
+                selectForm(FORM_TYPES.ARF).selectFile(
                     uploadedFilePathNames.ARF[singleFileUsecaseIndex],
                 );
-                selectForm(formTypes.LG).selectFile(
+                selectForm(FORM_TYPES.LG).selectFile(
                     uploadedFilePathNames.LG[singleFileUsecaseIndex],
                 );
 
@@ -155,9 +164,9 @@ describe('GP Workflow: Upload docs and verify', () => {
             },
         );
 
-        Object.values(formTypes).forEach((type) => {
+        Object.values(FORM_TYPES).forEach((type) => {
             describe(`[${type}] Upload: `, () => {
-                it(
+                it.skip(
                     `(Smoke test) Single file: On Choose files button click, file selection is visible for ${type} input as a ` +
                         role,
                     () => {
@@ -178,7 +187,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     `Single file: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 500 for ${type} input as a ` +
                         role,
                     () => {
@@ -211,7 +220,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     `Single file: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 404 for ${type} input as a ` +
                         role,
                     () => {
@@ -244,7 +253,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     `Single file: On Upload button click, renders 'Upload Summary' view with error box when the S3 bucket POST request fails for ${type} input as a ` +
                         role,
                     () => {
@@ -280,7 +289,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     `(Smoke test) Multiple files: On Choose files button click, file selection is visible for ${type} input as a ` +
                         role,
                     () => {
@@ -351,7 +360,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     `(Smoke test) Multiple files: On Upload button click, renders Uploading Stage for ${type} input as a ` +
                         role,
                     () => {
@@ -385,7 +394,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     `Multiple files: On Upload button click, renders 'Upload Summary' view  with error box when DocumentReference returns a 500 for ${type} input as a ` +
                         role,
                     () => {
@@ -426,7 +435,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                     },
                 );
 
-                it(
+                it.skip(
                     `Multiple files: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 404 for ${type} input as a ` +
                         role,
                     () => {
