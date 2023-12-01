@@ -1,6 +1,5 @@
 import json
 import time
-from unittest.mock import patch
 
 import jwt
 import pytest
@@ -24,11 +23,26 @@ MOCK_PARAMETERS = {
 
 @pytest.fixture
 def oidc_service(mocker):
-    with patch.object(
-        OidcService, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
-    ):
-        oidc_service = OidcService()
-        yield oidc_service
+    oidc_service = OidcService()
+    mocker.patch.object(
+        oidc_service, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
+    )
+    oidc_service.set_up_oidc_parameters(FakeSSMService, FakeWebAppClient)
+    yield oidc_service
+
+
+class FakeWebAppClient:
+    def __init__(self, *arg, **kwargs):
+        self.state = "test1state"
+
+    @staticmethod
+    def prepare_token_request(*args, **kwargs):
+        return "test", "", ""
+
+
+class FakeSSMService:
+    def __init__(self, *arg, **kwargs):
+        self.state = "test1state"
 
 
 def test_fetch_tokens_successfully(mocker, oidc_service):

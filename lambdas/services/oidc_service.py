@@ -24,17 +24,14 @@ class OidcService:
     }
 
     def __init__(self):
-        oidc_parameters = self.fetch_oidc_parameters()
-
-        self._client_id = oidc_parameters["OIDC_CLIENT_ID"]
-        self._client_secret = oidc_parameters["OIDC_CLIENT_SECRET"]
-        self._oidc_issuer_url = oidc_parameters["OIDC_ISSUER_URL"]
-        self._oidc_token_url = oidc_parameters["OIDC_TOKEN_URL"]
-        self._oidc_userinfo_url = oidc_parameters["OIDC_USER_INFO_URL"]
-        self._oidc_callback_uri = oidc_parameters["OIDC_CALLBACK_URL"]
-        self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
-
-        self.oidc_client = WebApplicationClient(client_id=self._client_id)
+        self._client_id = ""
+        self._client_secret = ""
+        self._oidc_issuer_url = ""
+        self._oidc_token_url = ""
+        self._oidc_userinfo_url = ""
+        self._oidc_callback_uri = ""
+        self._oidc_jwks_url = ""
+        self.oidc_client = None
 
     def fetch_tokens(self, auth_code: str) -> Tuple[AccessToken, IdTokenClaimSet]:
         url, headers, body = self.oidc_client.prepare_token_request(
@@ -172,8 +169,8 @@ class OidcService:
             raise AuthorisationException("Failed to retrieve userinfo")
 
     # TODO Move to SSM service, example in token_handler_ssm_service
-    @staticmethod
-    def fetch_oidc_parameters():
+    def fetch_oidc_parameters(self, ssm_service_class):
+        ssm_service = ssm_service_class()
         parameters_names = [
             "OIDC_CLIENT_ID",
             "OIDC_CLIENT_SECRET",
@@ -182,20 +179,25 @@ class OidcService:
             "OIDC_USER_INFO_URL",
             "OIDC_JWKS_URL",
         ]
-
-        ssm_client = boto3.client("ssm")
-        ssm_response = ssm_client.get_parameters(
-            Names=parameters_names, WithDecryption=True
+        oidc_parameters = ssm_service.get_ssm_parameters(
+            parameters_names, with_decryption=True
         )
-        oidc_parameters = {
-            parameter["Name"]: parameter["Value"]
-            for parameter in ssm_response["Parameters"]
-        }
 
         # Callback url is different in sandbox/dev/test. This env var is to be supplied by terraform.
         oidc_parameters["OIDC_CALLBACK_URL"] = os.environ["OIDC_CALLBACK_URL"]
 
         return oidc_parameters
+
+    def set_up_oidc_parameters(self, ssm_service_class, web_application_client_class):
+        oidc_parameters = self.fetch_oidc_parameters(ssm_service_class)
+        self._client_id = oidc_parameters["OIDC_CLIENT_ID"]
+        self._client_secret = oidc_parameters["OIDC_CLIENT_SECRET"]
+        self._oidc_issuer_url = oidc_parameters["OIDC_ISSUER_URL"]
+        self._oidc_token_url = oidc_parameters["OIDC_TOKEN_URL"]
+        self._oidc_userinfo_url = oidc_parameters["OIDC_USER_INFO_URL"]
+        self._oidc_callback_uri = oidc_parameters["OIDC_CALLBACK_URL"]
+        self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
+        self.oidc_client = web_application_client_class(client_id=self._client_id)
 
 
 def get_selected_roleid(id_token_claim_set: IdTokenClaimSet):
