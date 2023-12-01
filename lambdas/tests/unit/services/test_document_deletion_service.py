@@ -107,7 +107,6 @@ def test_handle_delete_when_no_record_for_patient_return_empty_list(
     mock_delete_specific_doc_type,
 ):
     service = DocumentDeletionService()
-    # mocker.patch("services.document_service.DocumentService.delete_documents")
 
     expected = []
     actual = service.handle_delete(

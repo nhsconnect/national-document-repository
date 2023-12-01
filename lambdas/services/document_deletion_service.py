@@ -1,4 +1,4 @@
-from typing import Union, Literal
+from typing import Literal
 
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
