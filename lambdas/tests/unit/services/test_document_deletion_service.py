@@ -10,6 +10,7 @@ from tests.unit.helpers.data.test_documents import (
 TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()
 TEST_LG_DOC_STORE_REFERENCES = create_test_lloyd_george_doc_store_refs()
 TEST_NHS_NUMBER_WITH_NO_RECORD = "1234567890"
+TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD = "234567890"
 
 
 def mocked_document_query(nhs_number: str, doc_type: str):
@@ -17,6 +18,11 @@ def mocked_document_query(nhs_number: str, doc_type: str):
         return TEST_LG_DOC_STORE_REFERENCES
     elif nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.ARF.value:
         return TEST_DOC_STORE_REFERENCES
+    elif (
+        nhs_number == TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD
+        and doc_type == SupportedDocumentTypes.LG.value
+    ):
+        return TEST_LG_DOC_STORE_REFERENCES
     return []
 
 
@@ -40,18 +46,6 @@ def mock_document_query(mocker):
     )
 
 
-# @pytest.mark.parametrize(
-#     ["nhs_number", "doc_type", "expected"],
-#     [
-#         (
-#             TEST_NHS_NUMBER,
-#             SupportedDocumentTypes.ALL,
-#             TEST_DOC_STORE_REFERENCES + TEST_LG_DOC_STORE_REFERENCES,
-#         ),
-#         (TEST_NHS_NUMBER, SupportedDocumentTypes.ARF, TEST_DOC_STORE_REFERENCES),
-#         (TEST_NHS_NUMBER, SupportedDocumentTypes.LG, TEST_LG_DOC_STORE_REFERENCES),
-#     ],
-# )
 def test_handle_delete_for_all_doc_type(set_env, mock_delete_specific_doc_type):
     service = DocumentDeletionService()
 
@@ -68,6 +62,24 @@ def test_handle_delete_for_all_doc_type(set_env, mock_delete_specific_doc_type):
     mock_delete_specific_doc_type.assert_any_call(
         TEST_NHS_NUMBER, SupportedDocumentTypes.LG
     )
+
+
+def test_handle_delete_all_doc_type_when_patient_only_got_LG_record(
+    set_env, mock_delete_specific_doc_type
+):
+    service = DocumentDeletionService()
+    nhs_number = TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD
+
+    expected = TEST_LG_DOC_STORE_REFERENCES
+    actual = service.handle_delete(nhs_number, SupportedDocumentTypes.ALL)
+
+    assert expected == actual
+
+    assert mock_delete_specific_doc_type.call_count == 2
+    mock_delete_specific_doc_type.assert_any_call(
+        nhs_number, SupportedDocumentTypes.ARF
+    )
+    mock_delete_specific_doc_type.assert_any_call(nhs_number, SupportedDocumentTypes.LG)
 
 
 @pytest.mark.parametrize(
