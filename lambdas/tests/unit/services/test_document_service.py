@@ -4,10 +4,16 @@ import pytest
 from enums.s3_lifecycle_tags import S3LifecycleDays, S3LifecycleTags
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
-from tests.unit.conftest import (MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME,
-                                 MOCK_TABLE_NAME, TEST_NHS_NUMBER)
-from tests.unit.helpers.data.dynamo_responses import (MOCK_EMPTY_RESPONSE,
-                                                      MOCK_SEARCH_RESPONSE)
+from tests.unit.conftest import (
+    MOCK_ARF_TABLE_NAME,
+    MOCK_LG_TABLE_NAME,
+    MOCK_TABLE_NAME,
+    TEST_NHS_NUMBER,
+)
+from tests.unit.helpers.data.dynamo_responses import (
+    MOCK_EMPTY_RESPONSE,
+    MOCK_SEARCH_RESPONSE,
+)
 
 from lambdas.services.document_service import DocumentService
 

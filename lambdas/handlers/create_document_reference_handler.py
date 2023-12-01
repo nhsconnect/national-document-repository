@@ -6,8 +6,7 @@ from json import JSONDecodeError
 from botocore.exceptions import ClientError
 from enums.logging_app_interaction import LoggingAppInteraction
 from enums.supported_document_types import SupportedDocumentTypes
-from models.nhs_document_reference import (NHSDocumentReference,
-                                           UploadRequestDocument)
+from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
 from pydantic import ValidationError
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
@@ -17,8 +16,7 @@ from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_files)
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_files
 from utils.request_context import request_context
 from utils.utilities import create_reference_id, validate_id
 

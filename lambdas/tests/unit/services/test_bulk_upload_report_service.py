@@ -6,14 +6,22 @@ import pytest
 from boto3.dynamodb.conditions import Attr
 from freezegun import freeze_time
 from services.bulk_upload_report_service import BulkUploadReportService
-from tests.unit.conftest import (MOCK_BULK_REPORT_TABLE_NAME,
-                                 MOCK_LG_STAGING_STORE_BUCKET)
+from tests.unit.conftest import (
+    MOCK_BULK_REPORT_TABLE_NAME,
+    MOCK_LG_STAGING_STORE_BUCKET,
+)
 from tests.unit.helpers.data.bulk_upload.test_data import readfile
 from tests.unit.helpers.data.dynamo_scan_response import (
-    EXPECTED_RESPONSE, MOCK_EMPTY_RESPONSE, MOCK_RESPONSE,
-    MOCK_RESPONSE_WITH_LAST_KEY, UNEXPECTED_RESPONSE)
+    EXPECTED_RESPONSE,
+    MOCK_EMPTY_RESPONSE,
+    MOCK_RESPONSE,
+    MOCK_RESPONSE_WITH_LAST_KEY,
+    UNEXPECTED_RESPONSE,
+)
 from tests.unit.models.test_bulk_upload_status import (
-    MOCK_DATA_COMPLETE_UPLOAD, MOCK_DATA_FAILED_UPLOAD)
+    MOCK_DATA_COMPLETE_UPLOAD,
+    MOCK_DATA_FAILED_UPLOAD,
+)
 
 
 @pytest.fixture()

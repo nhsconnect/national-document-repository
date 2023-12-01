@@ -17,9 +17,11 @@ from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.exceptions import (AuthorisationException,
-                              OrganisationNotFoundException,
-                              TooManyOrgsException)
+from utils.exceptions import (
+    AuthorisationException,
+    OrganisationNotFoundException,
+    TooManyOrgsException,
+)
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -163,18 +165,6 @@ def generate_repository_role(organisation: dict, smartcart_role: str):
 
     logger.info("Role: No smartcard role found")
     return RepositoryRole.NONE
-
-
-def has_role_org_role_code(organisation: dict, role_code: str) -> bool:
-    if organisation["role_code"].upper() == role_code.upper():
-        return True
-    return False
-
-
-def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
-    if organisation["org_ods_code"].upper() == ods_code.upper():
-        return True
-    return False
 
 
 # TODO AKH Dynamo Service class

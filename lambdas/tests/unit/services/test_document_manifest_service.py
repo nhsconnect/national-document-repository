@@ -1,8 +1,12 @@
 import os
 
 from services.document_manifest_service import DocumentManifestService
-from tests.unit.conftest import (MOCK_BUCKET, MOCK_ZIP_OUTPUT_BUCKET,
-                                 MOCK_ZIP_TRACE_TABLE, TEST_NHS_NUMBER)
+from tests.unit.conftest import (
+    MOCK_BUCKET,
+    MOCK_ZIP_OUTPUT_BUCKET,
+    MOCK_ZIP_TRACE_TABLE,
+    TEST_NHS_NUMBER,
+)
 from tests.unit.helpers.data.test_documents import create_test_doc_store_refs
 
 TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()

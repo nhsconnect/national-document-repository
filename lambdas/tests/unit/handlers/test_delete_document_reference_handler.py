@@ -1,7 +1,9 @@
 import pytest
 from handlers.delete_document_reference_handler import lambda_handler
 from tests.unit.helpers.data.test_documents import (
-    create_test_doc_store_refs, create_test_lloyd_george_doc_store_refs)
+    create_test_doc_store_refs,
+    create_test_lloyd_george_doc_store_refs,
+)
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()

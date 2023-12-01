@@ -3,8 +3,11 @@ from typing import Dict, List, NamedTuple
 import requests
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (OdsErrorException, OrganisationNotFoundException,
-                              TooManyOrgsException)
+from utils.exceptions import (
+    OdsErrorException,
+    OrganisationNotFoundException,
+    TooManyOrgsException,
+)
 
 logger = LoggingService(__name__)
 
