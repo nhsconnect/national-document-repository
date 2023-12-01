@@ -25,7 +25,7 @@ describe('PCSE Workflow: patient search and verify', () => {
         cy.visit(baseUrl);
     });
 
-    it('(Smoke test) It redirects to the patient download screen when patient search successfully by a PCSE user', () => {
+    it('[Smoke] It redirects to the patient download screen when patient search successfully by a PCSE user', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -65,7 +65,7 @@ describe('PCSE Workflow: patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/results');
     });
 
-    it('(Smoke test) It searches for a valid patient successfully when the user enters a known nhs number by a PCSE user', () => {
+    it('[Smoke] It searches for a valid patient successfully when the user enters a known nhs number by a PCSE user', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -84,7 +84,7 @@ describe('PCSE Workflow: patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/patient/result');
     });
 
-    it('(Smoke test) It searches for a valid patient successfully when the user enters a known nhs number with spaces by a PCSE user', () => {
+    it('[Smoke] It searches for a valid patient successfully when the user enters a known nhs number with spaces by a PCSE user', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -105,7 +105,7 @@ describe('PCSE Workflow: patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/patient/result');
     });
 
-    it('(Smoke test) It searches for a valid patient successfully when the user enters a known nhs number with dashes by a PCSE user', () => {
+    it('[Smoke] It searches for a valid patient successfully when the user enters a known nhs number with dashes by a PCSE user', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,

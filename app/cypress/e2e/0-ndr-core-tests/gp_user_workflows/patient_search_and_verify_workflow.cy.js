@@ -28,7 +28,7 @@ describe('GP Workflow: Patient search and verify', () => {
         });
 
         it(
-            '(Smoke test) Shows patient upload screen when patient search is used by a ' +
+            '[Smoke] Shows patient upload screen when patient search is used by a ' +
                 role +
                 ' role and patient response is inactive',
             () => {
@@ -60,7 +60,7 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            '(Smoke test) Does not show verify patient view when the search finds no patient as a ' +
+            '[Smoke] Does not show verify patient view when the search finds no patient as a ' +
                 role +
                 ' role',
             () => {

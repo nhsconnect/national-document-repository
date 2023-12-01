@@ -55,7 +55,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         cy.get('#verify-submit').click();
     };
 
-    it('(Smoke test) shows patient details on download page', () => {
+    it('[Smoke] shows patient details on download page', () => {
         navigateToDownload(roles.PCSE);
 
         cy.get('#download-page-title').should('have.length', 1);
@@ -75,7 +75,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         cy.get('#patient-summary-postcode').should('have.text', patient.postalCode);
     });
 
-    it('(Smoke test) shows no files avaliable on 204 success', () => {
+    it('[Smoke] shows no files avaliable on 204 success', () => {
         const searchDocumentReferencesResponse = [];
 
         cy.intercept('GET', '/SearchDocumentReferences*', {
@@ -92,7 +92,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         );
     });
 
-    it('(Smoke test) shows avaliable files to download on 200 success', () => {
+    it('[Smoke] shows avaliable files to download on 200 success', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchDocumentReferences*', {
                 statusCode: 200,
