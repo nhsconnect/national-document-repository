@@ -13,39 +13,6 @@ TEST_NHS_NUMBER_WITH_NO_RECORD = "1234567890"
 TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD = "234567890"
 
 
-def mocked_document_query(nhs_number: str, doc_type: str):
-    if nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.LG.value:
-        return TEST_LG_DOC_STORE_REFERENCES
-    elif nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.ARF.value:
-        return TEST_DOC_STORE_REFERENCES
-    elif (
-        nhs_number == TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD
-        and doc_type == SupportedDocumentTypes.LG.value
-    ):
-        return TEST_LG_DOC_STORE_REFERENCES
-    return []
-
-
-@pytest.fixture
-def mock_delete_specific_doc_type(mocker):
-    def mocked_method(nhs_number: str, doc_type: SupportedDocumentTypes):
-        return mocked_document_query(nhs_number, doc_type.value)
-
-    yield mocker.patch.object(
-        DocumentDeletionService,
-        "delete_specific_doc_type",
-        side_effect=mocked_method,
-    )
-
-
-@pytest.fixture
-def mock_document_query(mocker):
-    yield mocker.patch(
-        "services.document_service.DocumentService.fetch_available_document_references_by_type",
-        side_effect=mocked_document_query,
-    )
-
-
 def test_handle_delete_for_all_doc_type(set_env, mock_delete_specific_doc_type):
     service = DocumentDeletionService()
 
@@ -162,3 +129,36 @@ def test_delete_specific_doc_type_when_no_record_for_given_patient(
     assert actual == expected
 
     mock_delete_doc.assert_not_called()
+
+
+def mocked_document_query(nhs_number: str, doc_type: str):
+    if nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.LG.value:
+        return TEST_LG_DOC_STORE_REFERENCES
+    elif nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.ARF.value:
+        return TEST_DOC_STORE_REFERENCES
+    elif (
+        nhs_number == TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD
+        and doc_type == SupportedDocumentTypes.LG.value
+    ):
+        return TEST_LG_DOC_STORE_REFERENCES
+    return []
+
+
+@pytest.fixture
+def mock_delete_specific_doc_type(mocker):
+    def mocked_method(nhs_number: str, doc_type: SupportedDocumentTypes):
+        return mocked_document_query(nhs_number, doc_type.value)
+
+    yield mocker.patch.object(
+        DocumentDeletionService,
+        "delete_specific_doc_type",
+        side_effect=mocked_method,
+    )
+
+
+@pytest.fixture
+def mock_document_query(mocker):
+    yield mocker.patch(
+        "services.document_service.DocumentService.fetch_available_document_references_by_type",
+        side_effect=mocked_document_query,
+    )
