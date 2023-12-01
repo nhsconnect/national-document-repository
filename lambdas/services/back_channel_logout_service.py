@@ -48,7 +48,6 @@ class BackChannelLogoutService:
             table_name=self.dynamodb_name, filter_expression=filter_sid
         )
         items = db_response.get("Items", None)
-        print(type(items))
         if items and type(items) == list:
             ndr_session_id = items[0].get("NDRSessionId", None)
             return ndr_session_id
