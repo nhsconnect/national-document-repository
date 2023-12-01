@@ -107,3 +107,6 @@ docker-down:
 
 cypress-open:
 	TZ=GMT npm --prefix ./app run cypress
+
+cypress-report:
+	TZ=GMT npm --prefix ./app run cypress-report

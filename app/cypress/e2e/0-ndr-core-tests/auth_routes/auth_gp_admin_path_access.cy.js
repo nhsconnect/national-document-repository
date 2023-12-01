@@ -15,9 +15,9 @@ const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 
 const forbiddenRoutes = ['search/patient', 'search/patient/result', 'search/results'];
 
-describe('assert GP_ADMIN user has access to the GP_ADMIM workflow path', () => {
-    context('session management', () => {
-        it('sets session storage on login and checks starting url route', () => {
+describe('GP Admin user role has access to the expected GP_ADMIM workflow paths', () => {
+    context('GP Admin role has access to expected routes', () => {
+        it('GP Admin role has access to Lloyd George View', () => {
             if (!smokeTest) {
                 cy.intercept('GET', '/SearchPatient*', {
                     statusCode: 200,
@@ -44,10 +44,10 @@ describe('assert GP_ADMIN user has access to the GP_ADMIM workflow path', () => 
     });
 });
 
-describe('assert GP ADMIM role cannot access expected forbidden routes', () => {
-    context('forbidden routes', () => {
+describe('GP Admin user role cannot access expected forbidden routes', () => {
+    context('GP Admin role has no access to forbidden routes', () => {
         forbiddenRoutes.forEach((forbiddenRoute) => {
-            it('assert GP Admin cannot access route ' + forbiddenRoute, () => {
+            it('GP Admin role cannot access route ' + forbiddenRoute, () => {
                 cy.login('GP_ADMIN');
                 cy.visit(baseUrl + forbiddenRoute);
                 cy.url().should('include', 'unauthorised');
