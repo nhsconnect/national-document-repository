@@ -4,10 +4,16 @@ import pytest
 from enums.s3_lifecycle_tags import S3LifecycleDays, S3LifecycleTags
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
-from tests.unit.conftest import (MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME,
-                                 MOCK_TABLE_NAME, TEST_NHS_NUMBER)
-from tests.unit.helpers.data.dynamo_responses import (MOCK_EMPTY_RESPONSE,
-                                                      MOCK_SEARCH_RESPONSE)
+from tests.unit.conftest import (
+    MOCK_ARF_TABLE_NAME,
+    MOCK_LG_TABLE_NAME,
+    MOCK_TABLE_NAME,
+    TEST_NHS_NUMBER,
+)
+from tests.unit.helpers.data.dynamo_responses import (
+    MOCK_EMPTY_RESPONSE,
+    MOCK_SEARCH_RESPONSE,
+)
 
 from lambdas.services.document_service import DocumentService
 
@@ -210,4 +216,25 @@ def test_delete_documents_death_delete(set_env, mocker):
 
     mock_update_item.assert_called_once_with(
         MOCK_TABLE_NAME, test_doc_ref.id, updated_fields=test_update_fields
+    )
+
+
+@pytest.mark.parametrize(
+    ["doc_type", "table_name"],
+    [("ARF", MOCK_ARF_TABLE_NAME), ("LG", MOCK_LG_TABLE_NAME)],
+)
+def test_delete_documents_by_type(set_env, mocker, doc_type, table_name):
+    document_service = DocumentService()
+    mock_delete_document = mocker.patch.object(DocumentService, "delete_documents")
+
+    test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
+
+    document_service.delete_documents_by_type(
+        doc_type, [test_doc_ref], str(S3LifecycleTags.SOFT_DELETE.value)
+    )
+
+    mock_delete_document.assert_called_once_with(
+        table_name=table_name,
+        document_references=[test_doc_ref],
+        type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
     )

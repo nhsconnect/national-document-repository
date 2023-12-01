@@ -128,12 +128,11 @@ class DocumentService(DynamoDBService):
         document_references: list[DocumentReference],
         type_of_delete: str,
     ):
+        table_name = ""
         if doc_type == SupportedDocumentTypes.ARF.value:
             table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
         elif doc_type == SupportedDocumentTypes.LG.value:
             table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-        else:
-            raise ValueError("Unsupported doc type")
 
         return self.delete_documents(
             table_name=table_name,
