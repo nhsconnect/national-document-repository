@@ -149,7 +149,7 @@ def test_lambda_handler_respond_with_400_if_state_or_auth_code_missing(
     mock_oidc_service, mock_aws_infras, set_env, context
 ):
     expected = ApiGatewayResponse(
-        400, "Please supply an authorisation code and state", "GET"
+        400, "No auth code and/or state in the query string parameters", "GET"
     ).create_api_gateway_response()
 
     missing_state = {"queryStringParameters": {"code": "some_auth_code"}}

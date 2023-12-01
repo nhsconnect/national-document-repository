@@ -40,12 +40,15 @@ def lambda_handler(event, context):
     ods_api_service = OdsApiService()
 
     try:
+        missing_value_response_body = (
+            "No auth code and/or state in the query string parameters"
+        )
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
         if not (auth_code and state):
-            return response_400_bad_request_for_missing_parameter()
+            return respond_with(400, missing_value_response_body)
     except (KeyError, TypeError):
-        return response_400_bad_request_for_missing_parameter()
+        return respond_with(400, missing_value_response_body)
 
     try:
         if not have_matching_state_value_in_record(state):
@@ -110,37 +113,25 @@ def lambda_handler(event, context):
         logger.audit_splunk_info(
             "User logged in successfully", {"Result": "Successful login"}
         )
-        return ApiGatewayResponse(
-            200, json.dumps(response), "GET"
-        ).create_api_gateway_response()
+        return respond_with(200, json.dumps(response))
 
     except AuthorisationException as error:
         logger.error(error, {"Result": "Unauthorised"})
-        return ApiGatewayResponse(
-            401, "Failed to authenticate user with OIDC service", "GET"
-        ).create_api_gateway_response()
+        return respond_with(401, "Failed to authenticate user with OIDC service")
     except (ClientError, KeyError, TypeError) as error:
         logger.error(error, {"Result": "Unauthorised"})
-        return ApiGatewayResponse(
-            500, "Server error", "GET"
-        ).create_api_gateway_response()
+        return respond_with(500, "Server error")
     except jwt.PyJWTError as error:
         logger.info(f"error while encoding JWT: {error}", {"Result": "Unauthorised"})
-        return ApiGatewayResponse(
-            500, "Server error", "GET"
-        ).create_api_gateway_response()
+        return respond_with(500, "Server error")
     except OrganisationNotFoundException as error:
         logger.info(
             f"Organisation does not exist for given ODS code: {error}",
             {"Result": "Unauthorised"},
         )
-        return ApiGatewayResponse(
-            500, "Organisation does not exist for given ODS code", "GET"
-        ).create_api_gateway_response()
+        return respond_with(500, "Organisation does not exist for given ODS code")
     except TooManyOrgsException:
-        return ApiGatewayResponse(
-            500, "No single organisation found for given ods codes", "GET"
-        ).create_api_gateway_response()
+        return respond_with(500, "No single organisation found for given ods codes")
 
 
 def generate_repository_role(organisation: dict, smartcart_role: str):
@@ -223,7 +214,6 @@ def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
     return session_id
 
 
-# TODO AKH SSM service
 def issue_auth_token(
     session_id: str,
     id_token_claim_set: IdTokenClaimSet,
@@ -258,7 +248,7 @@ def issue_auth_token(
     return authorisation_token
 
 
-def response_400_bad_request_for_missing_parameter():
+def respond_with(http_status_code, body):
     return ApiGatewayResponse(
-        400, "Please supply an authorisation code and state", "GET"
+        http_status_code, body, "GET"
     ).create_api_gateway_response()
