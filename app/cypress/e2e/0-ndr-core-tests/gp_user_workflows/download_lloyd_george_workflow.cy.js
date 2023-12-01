@@ -36,35 +36,32 @@ describe('GP Workflow: View Lloyd George record', () => {
             cy.getByTestId('actions-menu').click();
             cy.getByTestId('download-all-files-link').click();
 
-            cy.wait('@documentManifest').then(() => {
-                // Assert contents of page when downloading
-                cy.contains('Downloading documents').should('be.visible');
-                cy.contains(
-                    `Preparing download for ${viewLloydGeorgePayload.number_of_files} files`,
-                ).should('be.visible');
-                cy.contains('Compressing record into a zip file').should('be.visible');
-                cy.contains('Cancel').should('be.visible');
+            cy.contains('Downloading documents').should('be.visible');
+            cy.contains(
+                `Preparing download for ${viewLloydGeorgePayload.number_of_files} files`,
+            ).should('be.visible');
+            cy.contains('Compressing record into a zip file').should('be.visible');
+            cy.contains('Cancel').should('be.visible');
 
-                // Assert contents of page after download
-                cy.contains('Download complete').should('be.visible');
-                cy.contains('Documents from the Lloyd George record of:').should('be.visible');
-                cy.contains(
-                    `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
-                ).should('be.visible');
-                cy.contains(`(NHS number: ${searchPatientPayload.nhsNumber})`).should('be.visible');
+            // Assert contents of page after download
+            cy.contains('Download complete').should('be.visible');
+            cy.contains('Documents from the Lloyd George record of:').should('be.visible');
+            cy.contains(
+                `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
+            ).should('be.visible');
+            cy.contains(`(NHS number: ${searchPatientPayload.nhsNumber})`).should('be.visible');
 
-                // Assert file has been downloaded
-                cy.wrap(
-                    Cypress.config('downloadsFolder').then((path) =>
-                        cy.readFile(path + '/browserconfig.xml'),
-                    ),
-                );
+            // Assert file has been downloaded
+            cy.wrap(
+                Cypress.config('downloadsFolder').then((path) =>
+                    cy.readFile(path + '/browserconfig.xml'),
+                ),
+            );
 
-                cy.getByTestId('return-btn').click();
+            cy.getByTestId('return-btn').click();
 
-                // Assert return button returns to pdf view
-                cy.getByTestId('pdf-card').should('be.visible');
-            });
+            // Assert return button returns to pdf view
+            cy.getByTestId('pdf-card').should('be.visible');
         });
 
         it('No download option or menu exists when no Lloyd George record exists for a patient as a GP ADMIN role', () => {
