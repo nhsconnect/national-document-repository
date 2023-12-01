@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Literal
 
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
@@ -36,7 +36,7 @@ class DocumentDeletionService:
     def delete_specific_doc_type(
         self,
         nhs_number: str,
-        doc_type: Union[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
+        doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
     ) -> list[DocumentReference]:
         results = self.document_service.fetch_available_document_references_by_type(
             nhs_number, doc_type.value
