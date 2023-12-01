@@ -240,7 +240,16 @@ def issue_auth_token(
 
     logger.info(f"encoded JWT: {authorisation_token}")
     return authorisation_token
+def has_role_org_role_code(organisation: dict, role_code: str) -> bool:
+    if organisation["role_code"].upper() == role_code.upper():
+        return True
+    return False
 
+
+def has_role_org_ods_code(organisation: dict, ods_code: str) -> bool:
+    if organisation["org_ods_code"].upper() == ods_code.upper():
+        return True
+    return False
 
 def respond_with(http_status_code, body):
     return ApiGatewayResponse(
