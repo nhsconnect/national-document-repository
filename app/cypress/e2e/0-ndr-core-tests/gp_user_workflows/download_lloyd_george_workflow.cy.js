@@ -36,6 +36,9 @@ describe('GP Workflow: View Lloyd George record', () => {
             cy.getByTestId('actions-menu').click();
             cy.getByTestId('download-all-files-link').click();
 
+            cy.wait('@documentManifest');
+
+            // Assert contents of page when downloading
             cy.contains('Downloading documents').should('be.visible');
             cy.contains(
                 `Preparing download for ${viewLloydGeorgePayload.number_of_files} files`,
@@ -52,11 +55,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             cy.contains(`(NHS number: ${searchPatientPayload.nhsNumber})`).should('be.visible');
 
             // Assert file has been downloaded
-            cy.wrap(
-                Cypress.config('downloadsFolder').then((path) =>
-                    cy.readFile(path + '/browserconfig.xml'),
-                ),
-            );
+            cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
 
             cy.getByTestId('return-btn').click();
 
