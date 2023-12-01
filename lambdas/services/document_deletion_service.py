@@ -39,12 +39,6 @@ class DocumentDeletionService:
         nhs_number: str,
         doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
     ) -> list[DocumentReference]:
-        table_name = ""
-        if doc_type == SupportedDocumentTypes.ARF:
-            table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-        if doc_type == SupportedDocumentTypes.LG:
-            table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-
         results = self.document_service.fetch_available_document_references_by_type(
             nhs_number, doc_type.value
         )
@@ -52,8 +46,9 @@ class DocumentDeletionService:
         if not results:
             return []
 
-        self.document_service.delete_documents(
-            table_name=table_name,
+        doc_type_as_string = doc_type.value
+        self.document_service.delete_documents_by_type(
+            doc_type=doc_type_as_string,
             document_references=results,
             type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
         )
