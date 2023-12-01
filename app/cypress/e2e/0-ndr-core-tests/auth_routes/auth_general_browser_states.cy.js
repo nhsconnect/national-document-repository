@@ -17,11 +17,11 @@ describe('Authentication & Authorisation', () => {
                 statusCode: 200,
             }).as('logout');
             cy.getByTestId('logout-btn').click();
-            cy.wait('@logout');
-
-            assertSessionStorage({
-                auth: null,
-                isLoggedIn: false,
+            cy.wait('@logout').then(() => {
+                assertSessionStorage({
+                    auth: null,
+                    isLoggedIn: false,
+                });
             });
         });
 
