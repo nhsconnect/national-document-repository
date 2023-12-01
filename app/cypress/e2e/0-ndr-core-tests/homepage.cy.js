@@ -1,7 +1,7 @@
-describe('home page', () => {
+describe('Home Page Smoketesting', () => {
     const baseUrl = 'http://localhost:3000/';
 
-    context('logged in', () => {
+    context('Logged in tests', () => {
         beforeEach(() => {
             cy.login('GP_ADMIN');
             cy.visit(baseUrl);
@@ -24,12 +24,12 @@ describe('home page', () => {
         });
     });
 
-    context('logged out', () => {
+    context('Logged out tests', () => {
         beforeEach(() => {
             cy.visit(baseUrl);
         });
 
-        it('Test expected URL is correct', () => {
+        it('test expected URL is correct', () => {
             cy.url().should('eq', 'http://localhost:3000/');
         });
 

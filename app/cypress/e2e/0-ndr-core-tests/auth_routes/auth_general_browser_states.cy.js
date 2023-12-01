@@ -1,9 +1,9 @@
 import authPayload from '../../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
 
-describe('authentication & authorisation', () => {
+describe('Authentication & Authorisation', () => {
     const baseUrl = 'http://localhost:3000';
 
-    context('session management', () => {
+    context('Session management is handled correctly', () => {
         it('sets session storage on login and clears session storage on logout', () => {
             cy.login('GP_ADMIN');
 
@@ -17,11 +17,11 @@ describe('authentication & authorisation', () => {
                 statusCode: 200,
             }).as('logout');
             cy.getByTestId('logout-btn').click();
-            cy.wait('@logout');
-
-            assertSessionStorage({
-                auth: null,
-                isLoggedIn: false,
+            cy.wait('@logout').then(() => {
+                assertSessionStorage({
+                    auth: null,
+                    isLoggedIn: false,
+                });
             });
         });
 
@@ -36,7 +36,7 @@ describe('authentication & authorisation', () => {
         };
     });
 
-    context('route access', () => {
+    context('Unauthorised accesses checking when no user is logged in', () => {
         const unauthorisedRoutes = [
             '/search/patient',
             '/search/patient/result',

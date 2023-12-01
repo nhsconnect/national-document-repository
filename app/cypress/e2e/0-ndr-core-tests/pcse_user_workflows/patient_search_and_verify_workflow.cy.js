@@ -1,4 +1,4 @@
-describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
+describe('PCSE Workflow: patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
     const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
@@ -25,7 +25,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         cy.visit(baseUrl);
     });
 
-    it('(Smoke test) shows patient download screen when patient search is used by PCSE', () => {
+    it('(Smoke test) It redirects to the patient download screen when patient search successfully by a PCSE user', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -49,7 +49,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/results');
     });
 
-    it('shows the download documents page when download patient is verified', () => {
+    it('It shows the download documents page when download patient is verified by a PCSE user', () => {
         cy.login('PCSE');
         cy.intercept('GET', '/SearchPatient*', {
             statusCode: 200,
@@ -65,7 +65,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/results');
     });
 
-    it('(Smoke test) searches for a patient when the user enters an nhs number', () => {
+    it('(Smoke test) It searches for a valid patient successfully when the user enters a known nhs number by a PCSE user', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -84,7 +84,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/patient/result');
     });
 
-    it('(Smoke test) searches for a patient when the user enters an nhs number with spaces', () => {
+    it('(Smoke test) It searches for a valid patient successfully when the user enters a known nhs number with spaces by a PCSE user', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
@@ -105,7 +105,7 @@ describe('PCSE User all Workflows Step 1: Patient search and verify', () => {
         cy.url().should('eq', baseUrl + 'search/patient/result');
     });
 
-    it('(Smoke test) searches for a patient when the user enters an nhs number with dashed', () => {
+    it('(Smoke test) It searches for a valid patient successfully when the user enters a known nhs number with dashes by a PCSE user', () => {
         if (!smokeTest) {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,

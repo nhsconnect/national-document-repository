@@ -15,4 +15,12 @@ export default defineConfig({
             bundler: 'webpack',
         },
     },
+
+    reporter: 'mochawesome',
+    reporterOptions: {
+        reportDir: 'cypress/results',
+        overwrite: false,
+        html: false,
+        json: true,
+    },
 });
