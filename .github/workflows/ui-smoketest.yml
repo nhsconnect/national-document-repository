@@ -23,10 +23,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Npm run will run the app locally, we want to test the built application with env vars using serve
-      - name: Install serve globally
-        run: npm install -g serve
-
       - name: Cypress install
         run: |
           npm install --legacy-peer-deps
@@ -39,17 +35,14 @@ jobs:
           browser: chrome
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl}}'
+          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl }}'
+          grep: 'Smoke'
 
   cypress-run-firefox:
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      # Npm run will run the app locally, we want to test the built application with env vars using serve
-      - name: Install serve globally
-        run: npm install -g serve
 
       - name: Cypress install
         run: |
