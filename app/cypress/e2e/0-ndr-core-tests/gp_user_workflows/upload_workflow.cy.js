@@ -90,61 +90,52 @@ describe('GP Workflow: Upload docs and verify', () => {
             navigateToUploadPage();
         });
 
-        it('On Start now button click as ' + role + ', redirect to uploads is successful', () => {
+        it(`can navigate from Start page to Upload page as ${role}`, () => {
             cy.url().should('include', 'upload');
             cy.url().should('eq', baseUrl + 'upload/submit');
         });
 
-        it.skip(
-            "On Upload button click with a single file for ARF and LG, renders 'Upload Summary' screen for successful upload as a " +
-                role +
-                ' role',
-            () => {
-                cy.intercept('POST', '**/DocumentReference**', {
-                    statusCode: 200,
-                    body: {
-                        url: 'http://' + bucketUrlIdentifer,
-                        fields: {
-                            key: 'test key',
-                            'x-amz-algorithm': 'xxxx-xxxx-SHA256',
-                            'x-amz-credential': 'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
-                            'x-amz-date': '20230904T125954Z',
-                            'x-amz-security-token': 'xxxxxxxxx',
-                            'x-amz-signature': '9xxxxxxxx',
-                        },
+        it.skip(`can upload with a single ARF or LG file, then renders 'Upload Summary' screen for successful upload as ${role}`, () => {
+            cy.intercept('POST', '**/DocumentReference**', {
+                statusCode: 200,
+                body: {
+                    url: 'http://' + bucketUrlIdentifer,
+                    fields: {
+                        key: 'test key',
+                        'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                        'x-amz-credential': 'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                        'x-amz-date': '20230904T125954Z',
+                        'x-amz-security-token': 'xxxxxxxxx',
+                        'x-amz-signature': '9xxxxxxxx',
                     },
-                });
+                },
+            });
 
-                cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
-                    statusCode: 204,
-                });
+            cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
+                statusCode: 204,
+            });
 
-                selectForm(formTypes.ARF).selectFile(
-                    uploadedFilePathNames.ARF[singleFileUsecaseIndex],
-                );
-                selectForm(formTypes.LG).selectFile(
-                    uploadedFilePathNames.LG[singleFileUsecaseIndex],
-                );
+            selectForm(formTypes.ARF).selectFile(uploadedFilePathNames.ARF[singleFileUsecaseIndex]);
+            selectForm(formTypes.LG).selectFile(uploadedFilePathNames.LG[singleFileUsecaseIndex]);
 
-                clickUploadButton();
+            clickUploadButton();
 
-                cy.get('#upload-summary-confirmation').should('be.visible');
-                cy.get('#upload-summary-header').should('be.visible');
-                cy.get('#successful-uploads-dropdown').should('be.visible');
-                cy.get('#successful-uploads-dropdown').click();
+            cy.get('#upload-summary-confirmation').should('be.visible');
+            cy.get('#upload-summary-header').should('be.visible');
+            cy.get('#successful-uploads-dropdown').should('be.visible');
+            cy.get('#successful-uploads-dropdown').click();
 
-                cy.get('#successful-uploads tbody tr').should('have.length', 2);
-                cy.get('#successful-uploads tbody tr')
-                    .eq(0)
-                    .should('contain', uploadedFileNames.ARF[singleFileUsecaseIndex]);
-                cy.get('#successful-uploads tbody tr')
-                    .eq(1)
-                    .should('contain', uploadedFileNames.LG[singleFileUsecaseIndex]);
-                cy.get('#close-page-warning').should('be.visible');
+            cy.get('#successful-uploads tbody tr').should('have.length', 2);
+            cy.get('#successful-uploads tbody tr')
+                .eq(0)
+                .should('contain', uploadedFileNames.ARF[singleFileUsecaseIndex]);
+            cy.get('#successful-uploads tbody tr')
+                .eq(1)
+                .should('contain', uploadedFileNames.LG[singleFileUsecaseIndex]);
+            cy.get('#close-page-warning').should('be.visible');
 
-                testStartAgainButton();
-            },
-        );
+            testStartAgainButton();
+        });
 
         Object.values(formTypes).forEach((type) => {
             describe(`[${type}] Upload: `, () => {
