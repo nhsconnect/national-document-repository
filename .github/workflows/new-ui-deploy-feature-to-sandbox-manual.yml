@@ -4,37 +4,37 @@ on:
   workflow_dispatch:
     inputs:
       build_branch:
-        description: "Feature branch to push."
+        description: 'Feature branch to push.'
         required: true
-        type: "string"
-        default: "main"
+        type: 'string'
+        default: 'main'
       sandbox:
-        description: "Which Sandbox to push to."
+        description: 'Which Sandbox to push to.'
         required: true
-        type: "string"
-        default: "ndr"
+        type: 'string'
+        default: 'ndr'
       environment:
-        description: "Which Environment settings to use."
+        description: 'Which Environment settings to use.'
         required: true
-        type: "string"
-        default: "development"
+        type: 'string'
+        default: 'development'
   workflow_call:
     inputs:
       build_branch:
-        description: "Feature branch to push."
+        description: 'Feature branch to push.'
         required: true
-        type: "string"
-        default: "main"
+        type: 'string'
+        default: 'main'
       sandbox:
-        description: "Which Sandbox to push to."
+        description: 'Which Sandbox to push to.'
         required: true
-        type: "string"
-        default: "ndr"
+        type: 'string'
+        default: 'ndr'
       environment:
-        description: "Which Environment settings to use."
+        description: 'Which Environment settings to use.'
         required: true
-        type: "string"
-        default: "development"
+        type: 'string'
+        default: 'development'
     secrets:
       AWS_ASSUME_ROLE:
         required: true
@@ -45,6 +45,78 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
+  install-cypress-build:
+    runs-on: ubuntu-22.04
+    needs: ['react_testing_job']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Cypress install
+        run: npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
+          AWS_REGION: test region
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: development
+          CI: false # Eslint treats warnings as errors when process.env.CI = true.
+          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
+        run: |
+          ./react-environment-config.sh
+        working-directory: ./app
+        shell: bash
+
+      - name: Cypress build
+        uses: cypress-io/github-action@v5
+        with:
+          # Disable running of tests within install job
+          install: false
+          runTests: false
+          build: npm run build
+          working-directory: ./app
+
+      - name: Save build folder
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          if-no-files-found: error
+          path: ./app/build
+  cypress-run-chrome:
+    runs-on: ubuntu-22.04
+    needs: install-cypress-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download the build folder
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: ./app/build
+
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally
+        run: npm install -g serve
+
+      - name: Cypress install
+        run: |
+          npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          start: serve -s build
+          browser: chrome
+          working-directory: ./app
+        env:
+          CYPRESS_BASE_URL: 'http://localhost:3000/'
+          grep: Smoke
   react_testing_job:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
@@ -77,7 +149,6 @@ jobs:
 
       - run: make clean-install
       - run: make test-ui
-
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}

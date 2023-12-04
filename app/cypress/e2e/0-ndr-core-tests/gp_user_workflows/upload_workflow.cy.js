@@ -95,7 +95,7 @@ describe('GP Workflow: Upload docs and verify', () => {
             cy.url().should('eq', baseUrl + 'upload/submit');
         });
 
-        it.skip(`can upload with a single ARF or LG file, then renders 'Upload Summary' screen for successful upload as ${role}`, () => {
+        it.skip(`can upload a single ARF or LG file, then renders 'Upload Summary' page for successful upload as ${role}`, () => {
             cy.intercept('POST', '**/DocumentReference**', {
                 statusCode: 200,
                 body: {
@@ -138,7 +138,7 @@ describe('GP Workflow: Upload docs and verify', () => {
         });
 
         Object.values(formTypes).forEach((type) => {
-            describe(`[${type}] Upload: `, () => {
+            describe(`${type} file upload: `, () => {
                 it(
                     `Single file: On Choose files button click, file selection is visible for ${type} input as a ` +
                         role,
