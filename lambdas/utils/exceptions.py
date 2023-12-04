@@ -98,9 +98,5 @@ class LambdaException(Exception):
         self.message = message
 
 
-class CreateDocumentRefException(LambdaException):
-    pass
-
-
 class LogoutFailureException(Exception):
     pass
