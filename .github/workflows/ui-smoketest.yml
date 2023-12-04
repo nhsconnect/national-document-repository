@@ -4,10 +4,6 @@ name: 'SMOKETEST UI'
 on:
   workflow_dispatch:
     inputs:
-      buildBranch:
-        description: 'Feature branch to push to test?'
-        required: true
-        type: 'string'
       smokeUrl:
         description: 'What URL to run smoketest against'
         required: true
@@ -23,7 +19,6 @@ jobs:
 
   cypress-run-chrome:
     runs-on: ubuntu-22.04
-    needs: install-cypress-build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -48,7 +43,6 @@ jobs:
 
   cypress-run-firefox:
     runs-on: ubuntu-22.04
-    needs: install-cypress-build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -73,7 +67,6 @@ jobs:
 
   cypress-run-edge:
     runs-on: ubuntu-22.04
-    needs: install-cypress-build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
