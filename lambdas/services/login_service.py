@@ -1,14 +1,18 @@
+import os
+import time
+import uuid
+
 import boto3
 import jwt
+from boto3.dynamodb.conditions import Key
+from oauthlib.oauth2 import WebApplicationClient
 
 from enums.repository_role import RepositoryRole
-from handlers.token_handler import (
-    have_matching_state_value_in_record,
-    remove_used_state,
-    create_login_session,
-)
+from models.oidc_models import IdTokenClaimSet
+from services.dynamo_service import DynamoDBService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
+from services.ssm_service import SSMService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
@@ -37,6 +41,9 @@ class LoginService:
     # TODO reduce calls we make to external APIs. Previously there's been a lot of duplicate calls.
 
     def exchange_token(self, state, auth_code) -> tuple:
+
+        oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
+
         if not have_matching_state_value_in_record(state):
             logger.info(
                 f"Mismatching state values. Cannot find state {state} in record"
@@ -87,7 +94,7 @@ class LoginService:
         )
 
         logger.info("Returning authentication details")
-        return (repository_role.value, authorisation_token)
+        return repository_role, authorisation_token
 
 
 def generate_repository_role(organisation: dict, smartcart_role: str):
@@ -158,3 +165,40 @@ def issue_auth_token(
 
     authorisation_token = jwt.encode(ndr_token_content, private_key, algorithm="RS256")
     return authorisation_token
+
+
+# TODO AKH Dynamo Service class
+def have_matching_state_value_in_record(state: str) -> bool:
+    state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
+
+    db_service = DynamoDBService()
+    query_response = db_service.simple_query(
+        table_name=state_table_name, key_condition_expression=Key("State").eq(state)
+    )
+
+    return "Count" in query_response and query_response["Count"] == 1
+
+
+def remove_used_state(state):
+    state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
+    db_service = DynamoDBService()
+    deletion_key = {"State": state}
+    db_service.delete_item(table_name=state_table_name, key=deletion_key)
+
+
+# TODO AKH Dynamo Service class
+def create_login_session(id_token_claim_set: IdTokenClaimSet) -> str:
+    session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
+
+    session_id = str(uuid.uuid4())
+    session_record = {
+        "NDRSessionId": session_id,
+        "sid": id_token_claim_set.sid,
+        "Subject": id_token_claim_set.sub,
+        "TimeToExist": id_token_claim_set.exp,
+    }
+
+    dynamodb_service = DynamoDBService()
+    dynamodb_service.create_item(table_name=session_table_name, item=session_record)
+
+    return session_id
