@@ -1,7 +1,6 @@
 import viewLloydGeorgePayload from '../../../fixtures/requests/GET_LloydGeorgeStitch.json';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
 
-const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
 const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
 
 describe('GP Workflow: View Lloyd George record', () => {
