@@ -205,7 +205,7 @@ class BulkUploadService:
 
     def put_staging_metadata_back_to_queue(self, staging_metadata: StagingMetadata):
         request_context.patient_nhs_no = staging_metadata.nhs_number
-
+        setattr(staging_metadata, "retries", (staging_metadata.retries + 1))
         logger.info("Returning message to sqs queue...")
         self.sqs_service.send_message_with_nhs_number_attr_fifo(
             queue_url=self.metadata_queue_url,
