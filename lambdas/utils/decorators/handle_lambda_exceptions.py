@@ -19,7 +19,7 @@ def handle_lambda_exceptions(lambda_func: Callable):
             return lambda_func(event, context)
         except LambdaException as e:
             return ApiGatewayResponse(
-                e.status_code, e.message, event.get("httpMethod")
+                e.status_code, e.message, event.get("httpMethod", "GET")
             ).create_api_gateway_response()
 
     return interceptor
