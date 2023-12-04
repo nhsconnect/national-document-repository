@@ -42,16 +42,20 @@ describe('LloydGeorgeRecordStage', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
 
-        expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('No documents are available for this patient.'),
+        ).not.toBeInTheDocument();
     });
 
     it('renders no docs available text if there is no LG record', async () => {
         renderComponent({
-            downloadStage: DOWNLOAD_STAGE.FAILED,
+            downloadStage: DOWNLOAD_STAGE.NO_RECORDS,
         });
 
         await waitFor(async () => {
-            expect(screen.getByText('No documents are available')).toBeInTheDocument();
+            expect(
+                screen.getByText('No documents are available for this patient.'),
+            ).toBeInTheDocument();
         });
 
         expect(screen.queryByText('View record')).not.toBeInTheDocument();

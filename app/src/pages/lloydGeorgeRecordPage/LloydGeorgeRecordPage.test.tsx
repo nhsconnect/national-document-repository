@@ -58,7 +58,9 @@ describe('LloydGeorgeRecordPage', () => {
         render(<LloydGeorgeRecordPage />);
 
         await waitFor(async () => {
-            expect(screen.getByText('No documents are available')).toBeInTheDocument();
+            expect(
+                screen.getByText('No documents are available for this patient.'),
+            ).toBeInTheDocument();
         });
 
         expect(screen.queryByText('View record')).not.toBeInTheDocument();

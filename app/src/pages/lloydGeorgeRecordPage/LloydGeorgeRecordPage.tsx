@@ -10,6 +10,7 @@ import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../helpers/hooks/usePatient';
+import { AxiosError } from 'axios';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -43,7 +44,14 @@ function LloydGeorgeRecordPage() {
                 }
                 setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
             } catch (e) {
-                setDownloadStage(DOWNLOAD_STAGE.FAILED);
+                const error = e as AxiosError;
+                if (error.response?.status === 503) {
+                    setDownloadStage(DOWNLOAD_STAGE.TIMEOUT);
+                } else if (error.response?.status === 404) {
+                    setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
+                } else {
+                    setDownloadStage(DOWNLOAD_STAGE.FAILED);
+                }
             }
         };
         if (!mounted.current) {
