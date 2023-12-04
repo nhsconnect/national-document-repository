@@ -26,12 +26,13 @@ logger = LoggingService(__name__)
 )
 @override_error_check
 def lambda_handler(event, context):
+    request_context.app_interaction = LoggingAppInteraction.DELETE_RECORD.value
+
     logger.info("Delete Document Reference handler has been triggered")
 
     nhs_number = extract_nhs_number_from_event(event)
     doc_type = extract_document_type_as_enum(event["queryStringParameters"]["docType"])
 
-    request_context.app_interaction = LoggingAppInteraction.DELETE_RECORD.value
     request_context.patient_nhs_no = nhs_number
 
     deletion_service = DocumentDeletionService()
