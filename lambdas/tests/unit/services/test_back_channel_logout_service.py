@@ -3,7 +3,6 @@ from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from services.back_channel_logout_service import BackChannelLogoutService
 from utils.exceptions import AuthorisationException, LogoutFailureException
-from tests.unit.conftest import set_env
 
 
 @pytest.fixture()

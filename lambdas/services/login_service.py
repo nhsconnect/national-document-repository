@@ -31,26 +31,22 @@ class LoginService:
     Login paths:
     happy path -> respond with response body (JWT + repo role)
     unhappy path -> respond with error
-        Invalid org - auth exception
-        Invalid role code - auth exception
-        Logical error - 
-        
+        state or token -> auth exception with 401
+        Invalid role -> no orgs exception with 401
+        Logical error - 500 (pyjwt, logical etc)
     """
     # TODO review toomanyorgs exception, may not be possible to trigger
     # TODO assign repo role at same time as finding user's role?
     # TODO reduce calls we make to external APIs. Previously there's been a lot of duplicate calls.
 
-    def exchange_token(self, state, auth_code) -> tuple:
-
-        oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
-
+    def exchange_token(self, state, auth_code) -> dict:
         if not have_matching_state_value_in_record(state):
             logger.info(
                 f"Mismatching state values. Cannot find state {state} in record"
             )
-            return AuthorisationException("Unrecognised state value")
+            raise AuthorisationException("Unrecognised state value")
 
-        remove_used_state(state)
+        oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
 
         logger.info("Fetching access token from OIDC Provider")
         access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
@@ -58,6 +54,11 @@ class LoginService:
         logger.info(
             "Use the access token to fetch user's organisation and smartcard codes"
         )
+
+        """ ^^^ Good to stay ^^^   
+            vvv     TODO     vvv
+        """
+
         org_ods_codes = oidc_service.fetch_user_org_codes(
             access_token, id_token_claim_set
         )
@@ -94,9 +95,10 @@ class LoginService:
         )
 
         logger.info("Returning authentication details")
-        return repository_role, authorisation_token
+        return {"local_role": repository_role, "JWT": authorisation_token}
 
 
+# move to local role service
 def generate_repository_role(organisation: dict, smartcart_role: str):
     logger.info(f"Smartcard Role: {smartcart_role}")
 
@@ -176,7 +178,12 @@ def have_matching_state_value_in_record(state: str) -> bool:
         table_name=state_table_name, key_condition_expression=Key("State").eq(state)
     )
 
-    return "Count" in query_response and query_response["Count"] == 1
+    state_match = "Count" in query_response and query_response["Count"] == 1
+
+    if state_match:
+        remove_used_state(state)
+
+    return state_match
 
 
 def remove_used_state(state):

@@ -1,18 +1,10 @@
 import json
-import os
-import time
-import uuid
 
 import jwt
-from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
 from enums.logging_app_interaction import LoggingAppInteraction
-from enums.repository_role import RepositoryRole
-from models.oidc_models import IdTokenClaimSet
-from services.dynamo_service import DynamoDBService
 from services.login_service import LoginService
-from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
@@ -27,7 +19,6 @@ from utils.request_context import request_context
 
 logger = LoggingService(__name__)
 
-token_handler_ssm_service = TokenHandlerSSMService()
 login_service = LoginService()
 
 
@@ -39,10 +30,11 @@ login_service = LoginService()
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
 
+    missing_value_response_body = (
+        "No auth code and/or state in the query string parameters"
+    )
+
     try:
-        missing_value_response_body = (
-            "No auth code and/or state in the query string parameters"
-        )
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
         if not (auth_code and state):
@@ -51,14 +43,12 @@ def lambda_handler(event, context):
         return respond_with(400, missing_value_response_body)
 
     try:
-        #call service
-        repository_role, authorisation_token = login_service.exchange_token(state, auth_code)
-
+        session_info = login_service.exchange_token(state, auth_code)
 
         logger.info("Creating response")
         response = {
-            "role": repository_role.value,
-            "authorisation_token": authorisation_token,
+            "role": session_info["local_role"].value,
+            "authorisation_token": session_info["JWT"],
         }
 
         logger.audit_splunk_info(
