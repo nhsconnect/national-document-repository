@@ -1,4 +1,5 @@
 import pytest
+from botocore.exceptions import ClientError
 from handlers.delete_document_reference_handler import lambda_handler
 from services.document_deletion_service import DocumentDeletionService
 from tests.unit.helpers.data.test_documents import (
@@ -152,6 +153,23 @@ def test_lambda_handler_missing_environment_variables_returns_500(
         500,
         "An error occurred due to missing environment variable: 'DOCUMENT_STORE_DYNAMODB_NAME'",
         "GET",
+    ).create_api_gateway_response()
+    actual = lambda_handler(valid_id_and_arf_doctype_event, context)
+    assert expected == actual
+
+
+def test_lambda_handler_when_deletion_service_throw_client_error_return_500(
+    set_env, valid_id_and_arf_doctype_event, context, mock_handle_delete
+):
+    mock_error = ClientError(
+        {"Error": {"Code": "403", "Message": "Forbidden"}},
+        "S3:PutObjectTagging",
+    )
+    mock_handle_delete.side_effect = mock_error
+    expected = ApiGatewayResponse(
+        500,
+        "Failed to delete documents",
+        "DELETE",
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)
     assert expected == actual
