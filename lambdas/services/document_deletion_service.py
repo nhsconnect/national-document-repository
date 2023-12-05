@@ -45,11 +45,12 @@ class DocumentDeletionService:
         if not results:
             return []
 
-        self.document_service.delete_documents_by_type(
-            doc_type=doc_type.value,
+        self.document_service.delete_documents(
+            table_name=doc_type.get_dynamodb_table_name(),
             document_references=results,
             type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
         )
+
         logger.info(
             f"Deleted document of type {doc_type.value}",
             {"Result": "Successful deletion"},

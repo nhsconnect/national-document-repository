@@ -20,6 +20,8 @@ class DocumentService(DynamoDBService):
     def fetch_available_document_references_by_type(
         self, nhs_number: str, doc_type: str
     ) -> list[DocumentReference]:
+        # TODO: When we have chance, possibly replace os.environ calls with doc_type.get_dynamodb_table_name()
+
         results: list[DocumentReference] = []
         delete_filter = {DocumentReferenceMetadataFields.DELETED.value: ""}
 
@@ -121,21 +123,3 @@ class DocumentService(DynamoDBService):
             )
 
             self.update_item(table_name, reference.id, updated_fields=update_fields)
-
-    def delete_documents_by_type(
-        self,
-        doc_type: str,
-        document_references: list[DocumentReference],
-        type_of_delete: str,
-    ):
-        table_name = ""
-        if doc_type == SupportedDocumentTypes.ARF.value:
-            table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-        elif doc_type == SupportedDocumentTypes.LG.value:
-            table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-
-        return self.delete_documents(
-            table_name=table_name,
-            document_references=document_references,
-            type_of_delete=type_of_delete,
-        )

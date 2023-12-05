@@ -98,5 +98,9 @@ class LambdaException(Exception):
         self.message = message
 
 
+class InvalidDocTypeException(LambdaException):
+    pass
+
+
 class LogoutFailureException(Exception):
     pass
