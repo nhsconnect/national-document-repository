@@ -27,11 +27,9 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
                     data-testid="download-instead-link"
                     onClick={(e) => {
                         e.preventDefault();
-                        if (role === REPOSITORY_ROLE.GP_CLINICAL) {
-                            navigate(routes.UNAUTHORISED);
-                        } else {
-                            setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
-                        }
+                        role === REPOSITORY_ROLE.GP_CLINICAL
+                            ? navigate(routes.UNAUTHORISED)
+                            : setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
                     }}
                 >
                     please download instead

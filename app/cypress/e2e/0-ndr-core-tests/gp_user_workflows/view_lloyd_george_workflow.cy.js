@@ -135,7 +135,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             assertTimeoutLloydGeorgeError(true);
         });
 
-        it('It displays an error with no download link when a Lloyd George stitching timeout occures via the API Gatway for a GP_CLINICAL', () => {
+        it('It displays an error with download link when a Lloyd George stitching timeout occures via the API Gatway for a GP_CLINICAL but link access is denied', () => {
             beforeEachConfiguration('GP_CLINICAL');
             cy.intercept('GET', '/LloydGeorgeStitch*', {
                 statusCode: 503,
