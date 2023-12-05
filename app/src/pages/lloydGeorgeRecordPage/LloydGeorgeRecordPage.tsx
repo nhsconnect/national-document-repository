@@ -97,15 +97,6 @@ function LloydGeorgeRecordPage() {
                     setDownloadStage={setDownloadStage}
                 />
             );
-        case LG_RECORD_STAGE.DELETE_ALL:
-            return (
-                <DeleteDocumentsStage
-                    docType={DOCUMENT_TYPE.LLOYD_GEORGE}
-                    numberOfFiles={numberOfFiles}
-                    setStage={setStage}
-                    setDownloadStage={setDownloadStage}
-                />
-            );
         default:
             return <div></div>;
     }
