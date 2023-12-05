@@ -11,22 +11,24 @@ describe('GP Workflow: View Lloyd George record', () => {
     };
 
     const assertFailedLloydGeorgeLoad = () => {
-        cy.getByTestId('').should(
+        cy.getByTestId('error-summary_message').should(
             'include.text',
-            'An error has occurred creating a Lloyd George preview',
+            'An error has occurred when creating the Lloyd George preview.',
         );
     };
 
     const assertTimeoutLloydGeorgeError = (assertDownloadLink) => {
-        cy.getByTestId('').should(
+        cy.getByTestId('llyoyd-george-record-error-message').should(
             'include.text',
-            'Lloyd George is too large to view in a browser, please download instead',
+            'The Lloyd George document is too large to view in a browser,',
         );
 
         if (assertDownloadLink) {
-            cy.getByTestId();
+            cy.getByTestId('download-instead-link').should('exist');
         } else {
-            cy.getByTestId();
+            cy.getByTestId('download-instead-link').should('exist');
+            cy.getByTestId('download-instead-link').click();
+            cy.url().should('contains', baseUrl + 'unauthorised');
         }
     };
 
@@ -149,9 +151,15 @@ describe('GP Workflow: View Lloyd George record', () => {
         it('A GP ADMIN user can delete the Lloyd George document of an active patient', () => {
             beforeEachConfiguration('GP_ADMIN');
 
-            cy.intercept('GET', '/LloydGeorgeStitch*', {
-                statusCode: 200,
-                body: viewLloydGeorgePayload,
+            let request = 0;
+            const replies = [
+                { statusCode: 200, body: viewLloydGeorgePayload },
+                { statusCode: 404 },
+            ];
+
+            cy.intercept('GET', '/LloydGeorgeStitch*', (req) => {
+                req.reply(replies[request]);
+                request = request + 1;
             }).as('lloydGeorgeStitch');
 
             cy.get('#verify-submit').click();

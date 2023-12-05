@@ -26,9 +26,9 @@ function LloydGeorgeRecordPage() {
 
     useEffect(() => {
         const onPageLoad = async () => {
-            setDownloadStage(DOWNLOAD_STAGE.PENDING);
             const nhsNumber: string = patientDetails?.nhsNumber || '';
             try {
+                console.log('PAGE LOAD');
                 const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
                     await getLloydGeorgeRecord({
                         nhsNumber,
@@ -54,8 +54,10 @@ function LloydGeorgeRecordPage() {
                 }
             }
         };
-        if (!mounted.current) {
+
+        if (!mounted.current || downloadStage === DOWNLOAD_STAGE.REFRESH) {
             mounted.current = true;
+            setDownloadStage(DOWNLOAD_STAGE.PENDING);
             void onPageLoad();
         }
     }, [
@@ -85,6 +87,15 @@ function LloydGeorgeRecordPage() {
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
             return (
                 <LloydGeorgeDownloadAllStage numberOfFiles={numberOfFiles} setStage={setStage} />
+            );
+        case LG_RECORD_STAGE.DELETE_ALL:
+            return (
+                <DeleteDocumentsStage
+                    docType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                    numberOfFiles={numberOfFiles}
+                    setStage={setStage}
+                    setDownloadStage={setDownloadStage}
+                />
             );
         case LG_RECORD_STAGE.DELETE_ALL:
             return (

@@ -15,6 +15,11 @@ const mockPatientDetails = buildPatientDetails();
 jest.mock('../../../helpers/hooks/useRole');
 jest.mock('../../../helpers/hooks/usePatient');
 const mockedUsePatient = usePatient as jest.Mock;
+const mockNavigate = jest.fn();
+
+jest.mock('react-router', () => ({
+    useNavigate: () => mockNavigate,
+}));
 
 describe('LloydGeorgeRecordStage', () => {
     beforeEach(() => {

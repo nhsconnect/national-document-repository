@@ -1,8 +1,11 @@
 import React, { Dispatch, SetStateAction } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Route, useNavigate } from 'react-router-dom';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import ServiceError from '../../layout/serviceErrorBox/ServiceErrorBox';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import useRole from '../../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import { routes } from '../../../types/generic/routes';
 
 type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -10,16 +13,25 @@ type Props = {
 };
 
 function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
+    const role = useRole();
+    const navigate = useNavigate();
+
     if (downloadStage === DOWNLOAD_STAGE.TIMEOUT) {
         return (
             <span>
-                {'The Lloyd George document is too large to view in a browser, '}
+                <p data-testid="llyoyd-george-record-error-message">
+                    {'The Lloyd George document is too large to view in a browser, '}
+                </p>
                 <Link
                     to="#"
                     data-testid="download-instead-link"
                     onClick={(e) => {
                         e.preventDefault();
-                        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+                        if (role === REPOSITORY_ROLE.GP_CLINICAL) {
+                            navigate(routes.UNAUTHORISED);
+                        } else {
+                            setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+                        }
                     }}
                 >
                     please download instead

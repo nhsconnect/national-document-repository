@@ -154,7 +154,11 @@ function DeleteDocumentsStage({
             </form>
         </>
     ) : (
-        <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={setStage} />
+        <DeletionConfirmationStage
+            numberOfFiles={numberOfFiles}
+            setStage={setStage}
+            setDownloadStage={setDownloadStage}
+        />
     );
 }
 export default DeleteDocumentsStage;
