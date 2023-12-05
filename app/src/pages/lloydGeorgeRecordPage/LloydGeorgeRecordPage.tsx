@@ -44,7 +44,7 @@ function LloydGeorgeRecordPage() {
                 setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
             } catch (e) {
                 const error = e as AxiosError;
-                if (error.response?.status === 503) {
+                if (error.response?.status === 504) {
                     setDownloadStage(DOWNLOAD_STAGE.TIMEOUT);
                 } else if (error.response?.status === 404) {
                     setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
