@@ -28,7 +28,6 @@ function LloydGeorgeRecordPage() {
         const onPageLoad = async () => {
             const nhsNumber: string = patientDetails?.nhsNumber || '';
             try {
-                console.log('PAGE LOAD');
                 const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
                     await getLloydGeorgeRecord({
                         nhsNumber,
