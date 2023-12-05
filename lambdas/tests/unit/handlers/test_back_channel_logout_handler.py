@@ -7,8 +7,7 @@ from utils.lambda_response import ApiGatewayResponse
 def test_return_400_when_missing_event(set_env, event, context):
     expected = ApiGatewayResponse(
         400,
-        """{"error": "failed logout", "error_description": 
-            "An error occurred due to missing request body/logout token"}""",
+        """{"error": "failed logout", "error_description": "An error occurred due to missing request body/logout token"}""",
         "POST",
     ).create_api_gateway_response()
 
@@ -19,8 +18,7 @@ def test_return_400_when_missing_event(set_env, event, context):
 def test_return_400_when_empty_token(set_env, context):
     expected = ApiGatewayResponse(
         400,
-        """{"error": "failed logout", "error_description": 
-            "An error occurred due to missing request body/logout token"}""",
+        """{"error": "failed logout", "error_description": "An error occurred due to missing request body/logout token"}""",
         "POST",
     ).create_api_gateway_response()
 
@@ -31,8 +29,7 @@ def test_return_400_when_empty_token(set_env, context):
 def test_return_400_when_missing_token_with_string_in_body(set_env, context):
     expected = ApiGatewayResponse(
         400,
-        """{"error": "failed logout", "error_description": 
-            "An error occurred due to missing request body/logout token"}""",
+        """{"error": "failed logout", "error_description": "An error occurred due to missing request body/logout token"}""",
         "POST",
     ).create_api_gateway_response()
     event = {"httpMethod": "POST", "body": "some_text"}
@@ -44,8 +41,7 @@ def test_return_400_when_missing_token_with_string_in_body(set_env, context):
 def test_return_400_when_missing_token_with_another_body(set_env, context):
     expected = ApiGatewayResponse(
         400,
-        """{"error": "failed logout", "error_description":
-             "An error occurred due to missing logout token"}""",
+        """{"error": "failed logout", "error_description": "An error occurred due to missing logout token"}""",
         "POST",
     ).create_api_gateway_response()
     event = {"httpMethod": "POST", "body": "some_text=something"}
