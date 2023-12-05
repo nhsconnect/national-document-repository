@@ -21,20 +21,20 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
             <span>
                 <p data-testid="llyoyd-george-record-error-message">
                     {'The Lloyd George document is too large to view in a browser, '}
+                    <Link
+                        to="#"
+                        data-testid="download-instead-link"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            role === REPOSITORY_ROLE.GP_CLINICAL
+                                ? navigate(routes.UNAUTHORISED)
+                                : setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+                        }}
+                    >
+                        please download instead
+                    </Link>
+                    {'.'}
                 </p>
-                <Link
-                    to="#"
-                    data-testid="download-instead-link"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        role === REPOSITORY_ROLE.GP_CLINICAL
-                            ? navigate(routes.UNAUTHORISED)
-                            : setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
-                    }}
-                >
-                    please download instead
-                </Link>
-                {'.'}
             </span>
         );
     } else if (downloadStage === DOWNLOAD_STAGE.NO_RECORDS) {
