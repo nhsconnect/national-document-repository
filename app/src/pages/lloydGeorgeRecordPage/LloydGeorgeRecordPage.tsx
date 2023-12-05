@@ -64,6 +64,7 @@ function LloydGeorgeRecordPage() {
         baseUrl,
         baseHeaders,
         setDownloadStage,
+        downloadStage,
         setLloydGeorgeUrl,
         setLastUpdated,
         setNumberOfFiles,
