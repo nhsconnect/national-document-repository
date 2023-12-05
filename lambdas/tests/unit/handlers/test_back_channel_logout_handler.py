@@ -1,8 +1,5 @@
-from handlers.back_channel_logout_handler import (
-    lambda_handler,
-    back_channel_logout_service,
-)
-from tests.unit.conftest import event, context, set_env
+from handlers.back_channel_logout_handler import (back_channel_logout_service,
+                                                  lambda_handler)
 from utils.exceptions import LogoutFailureException
 from utils.lambda_response import ApiGatewayResponse
 

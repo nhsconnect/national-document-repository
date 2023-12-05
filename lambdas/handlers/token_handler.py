@@ -6,11 +6,10 @@ import uuid
 import jwt
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-from oauthlib.oauth2 import WebApplicationClient
-
 from enums.logging_app_interaction import LoggingAppInteraction
 from enums.repository_role import RepositoryRole
 from models.oidc_models import IdTokenClaimSet
+from oauthlib.oauth2 import WebApplicationClient
 from services.dynamo_service import DynamoDBService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
