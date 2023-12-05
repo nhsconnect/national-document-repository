@@ -64,9 +64,7 @@ describe('LloydGeorgeRecordError', () => {
                 <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
             );
 
-            expect(
-                screen.getByText(/No documents are available for this patient/i),
-            ).toBeInTheDocument();
+            expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
         });
     });
 

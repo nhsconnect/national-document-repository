@@ -40,7 +40,7 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
             </span>
         );
     } else if (downloadStage === DOWNLOAD_STAGE.NO_RECORDS) {
-        return <span>No documents are available for this patient.</span>;
+        return <span>No documents are available.</span>;
     } else {
         return (
             <ServiceError message="An error has occurred when creating the Lloyd George preview." />

@@ -58,9 +58,7 @@ describe('LloydGeorgeRecordStage', () => {
         });
 
         await waitFor(async () => {
-            expect(
-                screen.getByText('No documents are available for this patient.'),
-            ).toBeInTheDocument();
+            expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
         });
 
         expect(screen.queryByText('View record')).not.toBeInTheDocument();
