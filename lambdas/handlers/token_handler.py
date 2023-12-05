@@ -48,7 +48,7 @@ def lambda_handler(event, context):
         logger.info("Creating response")
         response = {
             "role": session_info["local_role"].value,
-            "authorisation_token": session_info["JWT"],
+            "authorisation_token": session_info["jwt"],
         }
 
         logger.audit_splunk_info(

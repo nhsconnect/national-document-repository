@@ -95,7 +95,7 @@ class LoginService:
         )
 
         logger.info("Returning authentication details")
-        return {"local_role": repository_role, "JWT": authorisation_token}
+        return {"local_role": repository_role, "jwt": authorisation_token}
 
 
 # move to local role service

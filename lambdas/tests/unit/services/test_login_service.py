@@ -127,7 +127,7 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
     )
     mocker.patch("services.login_service.issue_auth_token", return_value=expected_jwt)
 
-    expected = {"local_role": RepositoryRole.PCSE, "JWT": expected_jwt}
+    expected = {"local_role": RepositoryRole.PCSE, "jwt": expected_jwt}
 
     login_service = LoginService()
 
