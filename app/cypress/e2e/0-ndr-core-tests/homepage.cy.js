@@ -1,6 +1,11 @@
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
-    context('Logged in tests', () => {
+
+    it('should visit expected URL', () => {
+        cy.url().should('eq', baseUrl);
+    });
+
+    context('Login tests', () => {
         beforeEach(() => {
             cy.login('GP_ADMIN');
             cy.visit(baseUrl);
@@ -23,13 +28,9 @@ describe('Home Page', () => {
         });
     });
 
-    context('Logged out tests', () => {
+    context('Logout tests', () => {
         beforeEach(() => {
             cy.visit(baseUrl);
-        });
-
-        it('test expected URL is correct', () => {
-            cy.url().should('eq', baseUrl);
         });
 
         it('displays page header with no navigation on home page when logged out', () => {
