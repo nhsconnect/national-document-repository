@@ -4,11 +4,11 @@ from unittest.mock import call
 import pytest
 from botocore.exceptions import ClientError
 from handlers.bulk_upload_metadata_handler import (csv_to_staging_metadata,
-                                                   download_metadata_from_s3,
                                                    lambda_handler,
                                                    send_metadata_to_fifo_sqs)
 from models.staging_metadata import METADATA_FILENAME
 from pydantic import ValidationError
+from services.bulk_upload_metadata_service import BulkUploadMetadataService
 from tests.unit.conftest import (MOCK_LG_METADATA_SQS_QUEUE,
                                  MOCK_LG_STAGING_STORE_BUCKET)
 from tests.unit.helpers.data.bulk_upload.test_data import (
@@ -25,12 +25,14 @@ MOCK_TEMP_FOLDER = "tests/unit/helpers/data/bulk_upload"
 
 
 def test_lambda_send_metadata_to_sqs_queue(
-    set_env, mocker, mock_sqs_service, event, context
+    set_env, mocker, mock_sqs_service, event, context, mock_download_metadata_from_s3
 ):
-    mocker.patch(
-        "handlers.bulk_upload_metadata_handler.download_metadata_from_s3",
-        return_value=MOCK_METADATA_CSV,
-    )
+    # mocker.patch.object(
+    #     BulkUploadMetadataService,
+    #     "download_metadata_from_s3",
+    #     return_value=MOCK_METADATA_CSV,
+    # )
+    mock_download_metadata_from_s3.return_value = MOCK_METADATA_CSV
     mocker.patch("uuid.uuid4", return_value="123412342")
 
     lambda_handler(event, context)
@@ -74,13 +76,10 @@ def test_handler_log_error_when_fail_to_get_metadata_csv_from_s3(
 
 
 def test_handler_log_error_when_metadata_csv_is_invalid(
-    set_env, mocker, mock_sqs_service, caplog, context, event
+    set_env, mock_sqs_service, caplog, context, event, mock_download_metadata_from_s3
 ):
     for invalid_csv_file in MOCK_INVALID_METADATA_CSV_FILES:
-        mocker.patch(
-            "handlers.bulk_upload_metadata_handler.download_metadata_from_s3",
-            return_value=invalid_csv_file,
-        )
+        mock_download_metadata_from_s3.return_value = invalid_csv_file
 
         lambda_handler(event, context)
 
@@ -113,9 +112,9 @@ def test_handler_log_error_when_failed_to_send_message_to_sqs(
     assert caplog.records[-1].levelname == "ERROR"
 
 
-def test_download_metadata_from_s3(mock_s3_service, mock_tempfile):
-    actual = download_metadata_from_s3(
-        staging_bucket_name=MOCK_LG_STAGING_STORE_BUCKET,
+def test_download_metadata_from_s3(set_env, mock_s3_service, mock_tempfile):
+    service = BulkUploadMetadataService()
+    actual = service.download_metadata_from_s3(
         metadata_filename=METADATA_FILENAME,
     )
     expected = MOCK_METADATA_CSV
@@ -129,16 +128,16 @@ def test_download_metadata_from_s3(mock_s3_service, mock_tempfile):
 
 
 def test_download_metadata_from_s3_raise_error_when_failed_to_download(
-    mock_s3_service, mock_tempfile
+    set_env, mock_s3_service, mock_tempfile
 ):
+    service = BulkUploadMetadataService()
     mock_s3_service.download_file.side_effect = ClientError(
         {"Error": {"Code": "500", "Message": "file not exist in bucket"}},
         "s3_get_object",
     )
 
     with pytest.raises(ClientError):
-        download_metadata_from_s3(
-            staging_bucket_name=MOCK_LG_STAGING_STORE_BUCKET,
+        service.download_metadata_from_s3(
             metadata_filename=METADATA_FILENAME,
         )
 
@@ -155,11 +154,12 @@ def test_csv_to_staging_metadata_raise_error_when_metadata_invalid():
             csv_to_staging_metadata(invalid_csv_file)
 
 
-def test_send_metadata_to_sqs(mocker, mock_sqs_service):
+def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service):
+    service = BulkUploadMetadataService()
     mock_parsed_metadata = EXPECTED_PARSED_METADATA
     mocker.patch("uuid.uuid4", return_value="123412342")
 
-    send_metadata_to_fifo_sqs(mock_parsed_metadata, MOCK_LG_METADATA_SQS_QUEUE)
+    service.send_metadata_to_fifo_sqs(mock_parsed_metadata)
 
     expected_calls = [
         call(
@@ -197,9 +197,14 @@ def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(mock_sqs_ser
 
 
 @pytest.fixture
+def mock_download_metadata_from_s3(mocker):
+    yield mocker.patch.object(BulkUploadMetadataService, "download_metadata_from_s3")
+
+
+@pytest.fixture
 def mock_s3_service(mocker):
     patched_instance = mocker.patch(
-        "handlers.bulk_upload_metadata_handler.S3Service"
+        "services.bulk_upload_metadata_service.S3Service"
     ).return_value
     yield patched_instance
 
@@ -213,6 +218,6 @@ def mock_tempfile(mocker):
 @pytest.fixture
 def mock_sqs_service(mocker):
     patched_instance = mocker.patch(
-        "handlers.bulk_upload_metadata_handler.SQSService"
+        "services.bulk_upload_metadata_service.SQSService"
     ).return_value
     yield patched_instance

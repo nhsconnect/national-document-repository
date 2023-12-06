@@ -6,8 +6,13 @@ from typing import Iterable
 
 import pydantic
 from botocore.exceptions import ClientError
-from models.staging_metadata import (METADATA_FILENAME, NHS_NUMBER_FIELD_NAME,
-                                     MetadataFile, StagingMetadata)
+from models.staging_metadata import (
+    METADATA_FILENAME,
+    NHS_NUMBER_FIELD_NAME,
+    MetadataFile,
+    StagingMetadata,
+)
+from services.bulk_upload_metadata_service import BulkUploadMetadataService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
@@ -23,19 +28,20 @@ def lambda_handler(_event, _context):
     try:
         logger.info("Starting metadata reading process")
 
+        metadata_service = BulkUploadMetadataService()
         staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
-        metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
+        # metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
 
         logger.info("Fetching metadata.csv from bucket")
-        metadata_file = download_metadata_from_s3(
-            staging_bucket_name, METADATA_FILENAME
+        metadata_file = metadata_service.download_metadata_from_s3(
+            METADATA_FILENAME
         )
 
         logger.info("Parsing bulk upload metadata")
-        staging_metadata_list = csv_to_staging_metadata(metadata_file)
+        staging_metadata_list = metadata_service.csv_to_staging_metadata(metadata_file)
 
         logger.info("Finished parsing metadata")
-        send_metadata_to_fifo_sqs(staging_metadata_list, metadata_queue_url)
+        metadata_service.send_metadata_to_fifo_sqs(staging_metadata_list)
 
         logger.info("Sent bulk upload metadata to sqs queue")
     except pydantic.ValidationError as e:
