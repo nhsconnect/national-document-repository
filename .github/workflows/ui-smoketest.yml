@@ -47,6 +47,7 @@ jobs:
           browser: chrome
           working-directory: ./app
         env:
+          CYPRESS_BASE_URL: '${{ github.event.inputs.sandboxUrl }}'
           grep: 'Smoke'
 
   cypress-run-firefox:
@@ -72,6 +73,7 @@ jobs:
           browser: firefox
           working-directory: ./app
         env:
+          CYPRESS_BASE_URL: '${{ github.event.inputs.sandboxUrl }}'
           grep: 'Smoke'
 
   cypress-run-edge:
@@ -97,4 +99,5 @@ jobs:
           browser: edge
           working-directory: ./app
         env:
+          CYPRESS_BASE_URL: '${{ github.event.inputs.sandboxUrl }}'
           grep: 'Smoke'
