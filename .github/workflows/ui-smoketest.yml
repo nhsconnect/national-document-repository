@@ -35,10 +35,10 @@ jobs:
           npm install --legacy-peer-deps
         working-directory: ./app
 
-      - name: Cypress environment
-        run: |
-          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk/
-        working-directory: ./app
+      # - name: Cypress environment
+      #   run: |
+      #     npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk
+      #   working-directory: ./app
 
       - name: Cypress run
         uses: cypress-io/github-action@v5
@@ -47,7 +47,7 @@ jobs:
           browser: chrome
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk/'
+          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           grep: 'Smoke'
 
   cypress-run-firefox:
@@ -63,7 +63,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk/
+          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk
         working-directory: ./app
 
       - name: Cypress run
@@ -73,7 +73,7 @@ jobs:
           browser: firefox
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk/'
+          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           grep: 'Smoke'
 
   cypress-run-edge:
@@ -89,7 +89,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk/
+          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk
         working-directory: ./app
 
       - name: Cypress run
@@ -99,5 +99,5 @@ jobs:
           browser: edge
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk/'
+          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           grep: 'Smoke'

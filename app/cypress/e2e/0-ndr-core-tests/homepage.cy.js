@@ -1,6 +1,6 @@
 describe('Home Page Smoketesting', () => {
     const baseUrl = Cypress.config('baseUrl');
-
+    console.log('URL:', baseUrl);
     context('Logged in tests', () => {
         beforeEach(() => {
             cy.login('GP_ADMIN');
