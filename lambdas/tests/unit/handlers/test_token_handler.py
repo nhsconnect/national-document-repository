@@ -10,7 +10,7 @@ from utils.lambda_response import ApiGatewayResponse
 
 
 @pytest.fixture
-def mock_login_service(mocker):
+def mock_login_service(mocker, set_env):
     mock_service = mocker.patch("handlers.token_handler.LoginService")
     yield mock_service.return_value
 
@@ -22,10 +22,8 @@ def mock_logging_service(mocker):
 
 
 def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
-    set_env,
     mock_logging_service,
     mock_login_service,
-    mocker,
     context,
 ):
     expected_jwt = "mock_ndr_auth_token"
@@ -56,10 +54,8 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
 
 
 def test_handler_passes_error_details_in_response(
-    set_env,
     mock_logging_service,
     mock_login_service,
-    mocker,
     context,
 ):
     expected_status = 400
@@ -77,7 +73,7 @@ def test_handler_passes_error_details_in_response(
     }
 
     expected = ApiGatewayResponse(
-        expected_status, json.dumps(expected_body), "GET"
+        expected_status, expected_body, "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(test_event, context)
@@ -85,6 +81,3 @@ def test_handler_passes_error_details_in_response(
     assert actual == expected
 
     mock_login_service["exchange_token"].expect_called_with(auth_code, state)
-
-
-# TODO Test errors including autherrors (return 401) and erroneous errors (e.g. encoding, keyerrors (return 500)
