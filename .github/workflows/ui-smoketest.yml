@@ -62,7 +62,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox}}.access-request-fulfilment.patient-deductions.nhs.uk/
+          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.sandboxUrl}}
         working-directory: ./app
 
       - name: Cypress run
@@ -87,7 +87,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox}}.access-request-fulfilment.patient-deductions.nhs.uk/
+          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.sandboxUrl}}
         working-directory: ./app
 
       - name: Cypress run
