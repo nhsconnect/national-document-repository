@@ -30,7 +30,7 @@ describe('Home Page Smoketesting', () => {
         });
 
         it('test expected URL is correct', () => {
-            cy.url().should('eq', 'http://localhost:3000/');
+            cy.url().should('eq', baseUrl);
         });
 
         it('displays page header with no navigation on home page when logged out', () => {
