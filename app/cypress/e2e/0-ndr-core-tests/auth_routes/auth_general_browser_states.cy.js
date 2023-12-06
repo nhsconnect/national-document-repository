@@ -57,7 +57,7 @@ describe('Authentication & Authorisation', () => {
                 { tags: 'regression' },
                 () => {
                     // Visit the unauthorised route
-                    cy.visit(baseUrl + route);
+                    cy.visit(route);
 
                     // Assert that the user is redirected
                     cy.url().should('equal', baseUrl + '/unauthorised');

@@ -3,7 +3,7 @@ describe('Home Page', () => {
     const homeUrl = '/';
 
     beforeEach(() => {
-        cy.visit(baseUrl);
+        cy.visit(homeUrl);
     });
     it('should visit expected URL', { tags: 'regression' }, () => {
         cy.url().should('eq', baseUrl + homeUrl);
@@ -38,10 +38,6 @@ describe('Home Page', () => {
     });
 
     context('Logout tests', () => {
-        beforeEach(() => {
-            cy.visit(baseUrl);
-        });
-
         it(
             'displays page header with no navigation on home page when logged out',
             { tags: 'regression' },

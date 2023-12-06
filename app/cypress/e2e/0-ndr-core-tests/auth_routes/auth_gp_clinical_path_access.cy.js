@@ -49,7 +49,7 @@ describe('GP Clinical user role cannot access expected forbidden routes', () => 
                 { tags: 'regression' },
                 () => {
                     cy.login('GP_CLINICAL');
-                    cy.visit(baseUrl + forbiddenRoute);
+                    cy.visit(forbiddenRoute);
                     cy.url().should('include', 'unauthorised');
                 },
             );

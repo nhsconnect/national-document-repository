@@ -1,7 +1,7 @@
 describe('PCSE Workflow: patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
-
+    const homeUrl = '/';
     const testPatient = '9000000009';
     const patient = {
         birthDate: '1970-01-01',
@@ -14,7 +14,7 @@ describe('PCSE Workflow: patient search and verify', () => {
     };
 
     beforeEach(() => {
-        cy.visit(baseUrl);
+        cy.visit(homeUrl);
     });
 
     it(

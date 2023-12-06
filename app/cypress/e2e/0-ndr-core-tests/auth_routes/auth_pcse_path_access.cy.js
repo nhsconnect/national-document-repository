@@ -47,7 +47,7 @@ describe('PCSE user role cannot access expected forbidden routes', () => {
         forbiddenRoutes.forEach((forbiddenRoute) => {
             it('PCSE role cannot access route' + forbiddenRoute, { tags: 'regression' }, () => {
                 cy.login('PCSE');
-                cy.visit(baseUrl + forbiddenRoute);
+                cy.visit(forbiddenRoute);
                 cy.url().should('include', 'unauthorised');
             });
         });

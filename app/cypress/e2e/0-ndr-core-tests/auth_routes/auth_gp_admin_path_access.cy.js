@@ -49,7 +49,7 @@ describe('GP Admin user role cannot access expected forbidden routes', () => {
                 { tags: 'regression' },
                 () => {
                     cy.login('GP_ADMIN');
-                    cy.visit(baseUrl + forbiddenRoute);
+                    cy.visit(forbiddenRoute);
                     cy.url().should('include', 'unauthorised');
                 },
             );
