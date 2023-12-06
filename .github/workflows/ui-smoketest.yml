@@ -5,15 +5,10 @@ on:
   workflow_dispatch:
     inputs:
       sandbox:
-        description: 'Which Sandbox to push to.'
+        description: 'Which Sandbox to run the smoke tests on.'
         required: true
         type: 'string'
         default: 'ndr'
-      smokeUrl:
-        description: 'What URL to run smoketest against'
-        required: true
-        default: 'https://ndr-dev.access-request-fulfilment.patient-deductions.nhs.uk/'
-        type: 'string'
 
 permissions:
   pull-requests: write
@@ -34,7 +29,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.smokeUrl}}.access-request-fulfilment.patient-deductions.nhs.uk/
+          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox}}.access-request-fulfilment.patient-deductions.nhs.uk/
         working-directory: ./app
 
       - name: Cypress run
