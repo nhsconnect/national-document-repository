@@ -1,6 +1,6 @@
 describe('GP Workflow: Patient search and verify', () => {
     // env vars
-    const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+    const baseUrl = Cypress.config('baseUrl');
     const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
     const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
 

@@ -1,7 +1,7 @@
 import authPayload from '../../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
 
 describe('Authentication & Authorisation', () => {
-    const baseUrl = 'http://localhost:3000';
+    const baseUrl = Cypress.config('baseUrl');
 
     context('Session management is handled correctly', () => {
         it.skip('sets session storage on login and clears session storage on logout', () => {

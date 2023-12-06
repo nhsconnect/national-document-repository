@@ -1,5 +1,5 @@
 describe('Home Page Smoketesting', () => {
-    const baseUrl = 'http://localhost:3000/';
+    const baseUrl = Cypress.config('baseUrl');
 
     context('Logged in tests', () => {
         beforeEach(() => {

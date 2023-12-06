@@ -7,6 +7,7 @@ export default defineConfig({
         },
         downloadsFolder: 'cypress/downloads',
         trashAssetsBeforeRuns: true,
+        baseUrl: process.env.CYPRESS_BASE_URL,
     },
 
     component: {
