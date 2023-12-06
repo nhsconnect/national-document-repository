@@ -15,17 +15,22 @@ class LoginRedirectService:
     def __init__(self):
         self.ssm_service = SSMService()
         self.dynamodb_service = DynamoDBService()
+        self.oidc_parameters = {}
+
+    def configure_oidc(self) -> WebApplicationClient:
         self.oidc_parameters = self.ssm_service.get_ssm_parameters(
             ["OIDC_AUTHORISE_URL", "OIDC_CLIENT_ID"]
         )
 
-        self.oidc_client = WebApplicationClient(
+        return WebApplicationClient(
             client_id=self.oidc_parameters["OIDC_CLIENT_ID"],
         )
 
     def prepare_redirect_response(self):
         try:
-            url, _headers, _body = self.oidc_client.prepare_authorization_request(
+            oidc_client = self.configure_oidc()
+
+            url, _headers, _body = oidc_client.prepare_authorization_request(
                 authorization_url=self.oidc_parameters["OIDC_AUTHORISE_URL"],
                 redirect_url=os.environ["OIDC_CALLBACK_URL"],
                 scope=[
@@ -38,7 +43,7 @@ class LoginRedirectService:
                 prompt="login",
             )
 
-            self.save_state_in_dynamo_db(self.oidc_client.state)
+            self.save_state_in_dynamo_db(oidc_client.state)
             location_header = {"Location": url}
             logger.info(
                 "User was successfully redirected to CIS2",

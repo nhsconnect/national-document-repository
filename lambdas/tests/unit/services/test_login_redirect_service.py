@@ -16,7 +16,7 @@ RETURN_URL = (
     "scope=openid+profile+nationalrbacaccess+associatedorgs"
 )
 
-
+from tests.unit.conftest import set_env
 class FakeWebAppClient:
     def __init__(self, *arg, **kwargs):
         self.state = "test1state"
@@ -30,18 +30,25 @@ class FakeWebAppClient:
 def mock_service(mocker, set_env):
     mocker.patch("boto3.resource")
     mocker.patch("boto3.client")
-    mock_ssm = mocker.patch.object("service", "ssm_service")
-    mock_ssm.get_ssm_parameters.return_value = MOCK_MULTI_STRING_PARAMETERS_RESPONSE
     service = LoginRedirectService()
-    mock_ssm = mocker.patch.object(service, "ssm_service")
-    mock_ssm.get_ssm_parameters.return_value = MOCK_MULTI_STRING_PARAMETERS_RESPONSE
-    mocker.patch.object(service, "oidc_client", return_value=FakeWebAppClient)
-    mocker.patch.object(service, "dynamodb_service")
     yield service
+
+@pytest.fixture
+def mock_dynamo(mocker, mock_service):
+    yield mocker.patch.object(mock_service, "dynamodb_service")
+
+@pytest.fixture
+def mock_ssm(mocker, mock_service):
+    yield mocker.patch.object(mock_service, "ssm_service")
+
+@pytest.fixture
+def mock_oidc(mocker, mock_service):
+    mock_service.oidc_parameters = {"OIDC_AUTHORISE_URL": "string", "OIDC_CLIENT_ID": "string"}
+    yield mocker.patch.object(mock_service, "configure_oidc", return_value=FakeWebAppClient())
 
 
 def test_prepare_redirect_response_returns_location_header_with_correct_headers(
-    mocker, set_env, mock_service
+    mocker, set_env, mock_service, mock_oidc
 ):
     mocker.patch.object(mock_service, "save_state_in_dynamo_db")
 
