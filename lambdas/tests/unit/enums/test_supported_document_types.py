@@ -1,10 +1,7 @@
 import pytest
 from enums.supported_document_types import SupportedDocumentTypes
-from tests.unit.conftest import (
-    MOCK_ARF_TABLE_NAME,
-    MOCK_LG_TABLE_NAME,
-    MOCK_LG_TABLE_NAME_ENV_NAME,
-)
+from tests.unit.conftest import (MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME,
+                                 MOCK_LG_TABLE_NAME_ENV_NAME)
 from utils.exceptions import InvalidDocTypeException
 
 
