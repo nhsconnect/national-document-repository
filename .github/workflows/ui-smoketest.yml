@@ -5,7 +5,19 @@ on:
   workflow_dispatch:
     inputs:
       build_branch:
-        description: 'Smoke tests to push.'
+        description: 'Smoke test branch to push.'
+        required: true
+        type: 'string'
+        default: 'main'
+      sandbox:
+        description: 'Sandbox to run the smoke tests against.'
+        required: true
+        type: 'string'
+        default: 'ndr'
+  workflow_call:
+    inputs:
+      build_branch:
+        description: 'Smoke test branch to push.'
         required: true
         type: 'string'
         default: 'main'
@@ -28,7 +40,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: 'nhsconnect/national-document-repository'
-          ref: ${{ github.event.inputs.build_branch}}
+          ref: ${{ inputs.build_branch }}
 
       - name: Cypress install
         run: |
@@ -37,7 +49,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox}}.access-request-fulfilment.patient-deductions.nhs.uk/
+          npx cross-env CYPRESS_BASE_URL='https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk/'
         working-directory: ./app
 
       - name: Cypress run
@@ -62,7 +74,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.sandbox}}
+          npx cross-env CYPRESS_BASE_URL=${{ inputs.sandbox}}
         working-directory: ./app
 
       - name: Cypress run
@@ -87,7 +99,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.sandbox}}
+          npx cross-env CYPRESS_BASE_URL=${{ inputs.sandbox}}
         working-directory: ./app
 
       - name: Cypress run
