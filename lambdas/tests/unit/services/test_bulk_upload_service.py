@@ -79,7 +79,7 @@ def set_up_mocks_for_non_ascii_files(
         service: BulkUploadService, mocker, patient_name_on_s3: str
 ):
     service.s3_service = mocker.MagicMock()
-    service.dynamo_service = mocker.MagicMock()
+    service.dynamo_repository = mocker.MagicMock()
 
     expected_s3_file_paths = make_s3_file_paths(
         make_valid_lg_file_names(total_number=3, patient_name=patient_name_on_s3)
@@ -114,7 +114,7 @@ def set_up_mocks_for_non_ascii_files(
 
     service.s3_service.get_tag_value.side_effect = mock_get_tag_value
     service.s3_service.copy_across_bucket.side_effect = mock_copy_across_bucket
-    service.s3_service.file_exist_on_s3.side_effect = mock_file_exist_on_s3
+    service.s3_service.file_exists_on_staging_bucket.side_effect = mock_file_exist_on_s3
 
 
 @pytest.mark.parametrize(
@@ -292,7 +292,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     )
     service = BulkUploadService()
     service.s3_service = mocker.MagicMock()
-    service.dynamo_service = mocker.MagicMock()
+    service.dynamo_repository = mocker.MagicMock()
     service.validate_files = mocker.MagicMock()
 
     mock_client_error = ClientError(
@@ -447,7 +447,7 @@ def test_check_virus_result_raise_VirusScanFailedException_for_special_cases(
 
 def test_put_staging_metadata_back_to_queue_and_increases_retries(set_env, mocker):
     service = BulkUploadService()
-    service.sqs_service = mocker.MagicMock()
+    service.sqs_repository = mocker.MagicMock()
     mocker.patch("uuid.uuid4", return_value="123412342")
 
     TEST_STAGING_METADATA.retries = 2
@@ -456,7 +456,7 @@ def test_put_staging_metadata_back_to_queue_and_increases_retries(set_env, mocke
 
     service.put_staging_metadata_back_to_queue(TEST_STAGING_METADATA)
 
-    service.sqs_service.send_message_with_nhs_number_attr_fifo.assert_called_with(
+    service.sqs_repository.send_message_with_nhs_number_attr_fifo.assert_called_with(
         group_id="back_to_queue_bulk_upload_123412342",
         queue_url=MOCK_LG_METADATA_SQS_QUEUE,
         message_body=metadata_copy.model_dump_json(by_alias=True),
@@ -466,8 +466,8 @@ def test_put_staging_metadata_back_to_queue_and_increases_retries(set_env, mocke
 @freeze_time("2023-10-2 13:00:00")
 def test_reports_failure_when_max_retries_reached(set_env, mocker, mock_uuid):
     service = BulkUploadService()
-    service.sqs_service = mocker.MagicMock()
-    service.dynamo_service = mocker.MagicMock()
+    service.sqs_repository = mocker.MagicMock()
+    service.dynamo_repository = mocker.MagicMock()
 
     mock_failure_reason = "File was not scanned for viruses before maximum retries attempted"
     TEST_STAGING_METADATA.retries = 15
@@ -476,7 +476,7 @@ def test_reports_failure_when_max_retries_reached(set_env, mocker, mock_uuid):
 
     service.put_staging_metadata_back_to_queue(TEST_STAGING_METADATA)
 
-    service.sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
+    service.sqs_repository.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
     for file in TEST_STAGING_METADATA.files:
         expected_dynamo_db_record = {
@@ -488,7 +488,7 @@ def test_reports_failure_when_max_retries_reached(set_env, mocker, mock_uuid):
             "UploadStatus": "failed",
             "FailureReason": mock_failure_reason,
         }
-        service.dynamo_service.create_item.assert_any_call(
+        service.dynamo_repository.create_item.assert_any_call(
             item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME
         )
 
@@ -558,11 +558,11 @@ def test_resolve_source_file_path_raise_S3FileNotFoundException_if_filename_cant
 
 def test_put_sqs_message_back_to_queue(set_env, mocker):
     service = BulkUploadService()
-    service.sqs_service = mocker.MagicMock()
+    service.sqs_repository = mocker.MagicMock()
 
     service.put_sqs_message_back_to_queue(TEST_SQS_MESSAGE)
 
-    service.sqs_service.send_message_with_nhs_number_attr_fifo.assert_called_with(
+    service.sqs_repository.send_message_with_nhs_number_attr_fifo.assert_called_with(
         queue_url=MOCK_LG_METADATA_SQS_QUEUE,
         message_body=TEST_SQS_MESSAGE["body"],
         nhs_number=TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
@@ -572,7 +572,7 @@ def test_put_sqs_message_back_to_queue(set_env, mocker):
 def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid):
     service = BulkUploadService()
     service.s3_service = mocker.MagicMock()
-    service.dynamo_service = mocker.MagicMock()
+    service.dynamo_repository = mocker.MagicMock()
     service.convert_to_document_reference = mocker.MagicMock(
         return_value=TEST_DOCUMENT_REFERENCE
     )
@@ -593,10 +593,10 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid):
         )
     assert service.s3_service.copy_across_bucket.call_count == 3
 
-    service.dynamo_service.create_item.assert_any_call(
+    service.dynamo_repository.create_item.assert_any_call(
         table_name=MOCK_LG_TABLE_NAME, item=TEST_DOCUMENT_REFERENCE.to_dict()
     )
-    assert service.dynamo_service.create_item.call_count == 3
+    assert service.dynamo_repository.create_item.call_count == 3
 
 
 def test_create_lg_records_and_copy_files_keep_track_of_successfully_ingested_files(
@@ -604,7 +604,7 @@ def test_create_lg_records_and_copy_files_keep_track_of_successfully_ingested_fi
 ):
     service = BulkUploadService()
     service.s3_service = mocker.MagicMock()
-    service.dynamo_service = mocker.MagicMock()
+    service.dynamo_repository = mocker.MagicMock()
     service.convert_to_document_reference = mocker.MagicMock(
         return_value=TEST_DOCUMENT_REFERENCE
     )
@@ -659,7 +659,7 @@ def test_remove_ingested_file_from_source_bucket(set_env, mocker):
 def test_rollback_transaction(set_env, mocker, mock_uuid):
     service = BulkUploadService()
     service.s3_service = mocker.MagicMock()
-    service.dynamo_service = mocker.MagicMock()
+    service.dynamo_repository = mocker.MagicMock()
 
     service.dynamo_records_in_transaction = TEST_DOCUMENT_REFERENCE_LIST
     service.dest_bucket_files_in_transaction = [
@@ -669,10 +669,10 @@ def test_rollback_transaction(set_env, mocker, mock_uuid):
 
     service.rollback_transaction()
 
-    service.dynamo_service.delete_item.assert_called_with(
+    service.dynamo_repository.delete_item.assert_called_with(
         table_name=MOCK_LG_TABLE_NAME, key={"ID": mock_uuid}
     )
-    assert service.dynamo_service.delete_item.call_count == len(
+    assert service.dynamo_repository.delete_item.call_count == len(
         TEST_DOCUMENT_REFERENCE_LIST
     )
 
@@ -690,11 +690,11 @@ def test_rollback_transaction(set_env, mocker, mock_uuid):
 @freeze_time("2023-10-1 13:00:00")
 def test_report_upload_complete_add_record_to_dynamodb(set_env, mocker, mock_uuid):
     service = BulkUploadService()
-    service.dynamo_service = mocker.MagicMock()
+    service.dynamo_repository = mocker.MagicMock()
 
     service.report_upload_complete(TEST_STAGING_METADATA)
 
-    assert service.dynamo_service.create_item.call_count == len(
+    assert service.dynamo_repository.create_item.call_count == len(
         TEST_STAGING_METADATA.files
     )
 
@@ -707,7 +707,7 @@ def test_report_upload_complete_add_record_to_dynamodb(set_env, mocker, mock_uui
             "Timestamp": 1696165200,
             "UploadStatus": "complete",
         }
-        service.dynamo_service.create_item.assert_any_call(
+        service.dynamo_repository.create_item.assert_any_call(
             item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME
         )
 
@@ -715,7 +715,7 @@ def test_report_upload_complete_add_record_to_dynamodb(set_env, mocker, mock_uui
 @freeze_time("2023-10-2 13:00:00")
 def test_report_upload_failure_add_record_to_dynamodb(set_env, mocker, mock_uuid):
     service = BulkUploadService()
-    service.dynamo_service = mocker.MagicMock()
+    service.dynamo_repository = mocker.MagicMock()
 
     mock_failure_reason = "File name invalid"
     service.report_upload_failure(
@@ -732,6 +732,6 @@ def test_report_upload_failure_add_record_to_dynamodb(set_env, mocker, mock_uuid
             "UploadStatus": "failed",
             "FailureReason": mock_failure_reason,
         }
-        service.dynamo_service.create_item.assert_any_call(
+        service.dynamo_repository.create_item.assert_any_call(
             item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME
         )

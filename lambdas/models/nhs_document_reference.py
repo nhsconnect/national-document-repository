@@ -12,7 +12,7 @@ class UploadRequestDocument(BaseModel):
 
 class NHSDocumentReference:
     def __init__(
-        self, nhs_number, content_type, file_name, reference_id, s3_bucket_name
+        self, reference_id: str, nhs_number, file_name: str,  s3_bucket_name: str, content_type: str = "application/pdf"
     ) -> None:
         self.id = reference_id
         self.nhs_number = nhs_number
