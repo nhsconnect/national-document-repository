@@ -27,6 +27,11 @@ jobs:
           npm install --legacy-peer-deps
         working-directory: ./app
 
+      - name: Setting Cypress environment
+        run: |
+          cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
+        working-directory: ./app
+
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
@@ -46,6 +51,11 @@ jobs:
       - name: Cypress install
         run: |
           npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Setting Cypress environment
+        run: |
+          cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
         working-directory: ./app
 
       - name: Cypress run
@@ -68,6 +78,11 @@ jobs:
           npm install --legacy-peer-deps
         working-directory: ./app
 
+      - name: Setting Cypress environment
+        run: |
+          cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
+        working-directory: ./app
+
       - name: Cypress run
         uses: cypress-io/github-action@v5
         with:
@@ -75,4 +90,4 @@ jobs:
           browser: edge
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl}}'
+          CYPRESS_BASE_URL: ''
