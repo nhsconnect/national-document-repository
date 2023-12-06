@@ -1,7 +1,10 @@
 import pytest
 from enums.supported_document_types import SupportedDocumentTypes
-from tests.unit.conftest import (MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME,
-                                 MOCK_LG_TABLE_NAME_ENV_NAME)
+from tests.unit.conftest import (
+    MOCK_ARF_TABLE_NAME,
+    MOCK_LG_TABLE_NAME,
+    MOCK_LG_TABLE_NAME_ENV_NAME,
+)
 from utils.exceptions import InvalidDocTypeException
 
 
@@ -15,11 +18,13 @@ def test_get_dynamodb_table_name_return_table_name(set_env, doc_type, expected):
     assert actual == expected
 
 
-def test_get_dynamodb_table_name_raise_error_for_doc_type_that_dont_have_a_dynamo_table(
+def test_get_dynamodb_table_name_return_a_list_of_table_names_for_doc_type_all(
     set_env,
 ):
-    with pytest.raises(InvalidDocTypeException):
-        SupportedDocumentTypes.ALL.get_dynamodb_table_name()
+    expected = [MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME]
+    actual = SupportedDocumentTypes.ALL.get_dynamodb_table_name()
+
+    assert actual == expected
 
 
 def test_get_dynamodb_table_name_raise_error_when_env_var_is_missing(

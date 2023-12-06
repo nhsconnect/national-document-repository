@@ -27,7 +27,7 @@ class SupportedDocumentTypes(Enum):
             return value
         return None
 
-    def get_dynamodb_table_name(self) -> str:
+    def get_dynamodb_table_name(self) -> str | List[str]:
         """
         Get the dynamodb table name related to a specific doc_type
 
@@ -47,14 +47,11 @@ class SupportedDocumentTypes(Enum):
                     return os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
                 case SupportedDocumentTypes.LG:
                     return os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-                case _:
-                    logger.error(
-                        f"Failed to resolve dynamodb table name for doc_type {self.value}"
-                    )
-                    raise InvalidDocTypeException(
-                        status_code=500,
-                        message=f"Failed to resolve dynamodb table name for doc_type {self.value}",
-                    )
+                case SupportedDocumentTypes.ALL:
+                    return [
+                        enum.get_dynamodb_table_name()
+                        for enum in SupportedDocumentTypes.list()
+                    ]
 
         except KeyError as e:
             logger.error(e)
