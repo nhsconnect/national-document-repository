@@ -4,6 +4,11 @@ name: 'SANDBOX - Smoke Test'
 on:
   workflow_dispatch:
     inputs:
+      build_branch:
+        description: 'Smoke tests to push.'
+        required: true
+        type: 'string'
+        default: 'main'
       sandbox:
         description: 'Which Sandbox to run the smoke tests on.'
         required: true
@@ -21,6 +26,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          repository: 'nhsconnect/national-document-repository'
+          ref: ${{ github.event.inputs.sandbox}}
 
       - name: Cypress install
         run: |
@@ -39,7 +47,6 @@ jobs:
           browser: chrome
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl }}'
           grep: 'Smoke'
 
   cypress-run-firefox:
@@ -55,7 +62,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
+          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.sandbox}}
         working-directory: ./app
 
       - name: Cypress run
@@ -65,7 +72,7 @@ jobs:
           browser: firefox
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl}}'
+          grep: 'Smoke'
 
   cypress-run-edge:
     runs-on: ubuntu-22.04
@@ -80,7 +87,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
+          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.sandbox}}
         working-directory: ./app
 
       - name: Cypress run
@@ -90,4 +97,4 @@ jobs:
           browser: edge
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: ''
+          grep: 'Smoke'
