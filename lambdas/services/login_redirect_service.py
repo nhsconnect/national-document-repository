@@ -2,30 +2,31 @@ import os
 import time
 
 from botocore.exceptions import ClientError
-from oauthlib.oauth2 import InsecureTransportError
+from oauthlib.oauth2 import InsecureTransportError, WebApplicationClient
 from services.dynamo_service import DynamoDBService
+from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import CreateDocumentRefException
+from utils.exceptions import LoginRedirectException
 
 logger = LoggingService(__name__)
 
 
 class LoginRedirectService:
-    def prepare_redirect_response(
-        self, web_application_client_class, ssm_service_class
-    ):
+    def __init__(self):
+        self.ssm_service = SSMService()
+        self.dynamodb_service = DynamoDBService()
+        self.oidc_parameters = self.ssm_service.get_ssm_parameters(
+            ["OIDC_AUTHORISE_URL", "OIDC_CLIENT_ID"]
+        )
+
+        self.oidc_client = WebApplicationClient(
+            client_id=self.oidc_parameters["OIDC_CLIENT_ID"],
+        )
+
+    def prepare_redirect_response(self):
         try:
-            ssm_service = ssm_service_class()
-            oidc_parameters = ssm_service.get_ssm_parameters(
-                ["OIDC_AUTHORISE_URL", "OIDC_CLIENT_ID"]
-            )
-
-            oidc_client = web_application_client_class(
-                client_id=oidc_parameters["OIDC_CLIENT_ID"],
-            )
-
-            url, _headers, _body = oidc_client.prepare_authorization_request(
-                authorization_url=oidc_parameters["OIDC_AUTHORISE_URL"],
+            url, _headers, _body = self.oidc_client.prepare_authorization_request(
+                authorization_url=self.oidc_parameters["OIDC_AUTHORISE_URL"],
                 redirect_url=os.environ["OIDC_CALLBACK_URL"],
                 scope=[
                     "openid",
@@ -37,7 +38,7 @@ class LoginRedirectService:
                 prompt="login",
             )
 
-            self.save_state_in_dynamo_db(oidc_client.state)
+            self.save_state_in_dynamo_db(self.oidc_client.state)
             location_header = {"Location": url}
             logger.info(
                 "User was successfully redirected to CIS2",
@@ -46,15 +47,13 @@ class LoginRedirectService:
 
         except (ClientError, InsecureTransportError) as e:
             logger.error(str(e), {"Result": "Unsuccessful redirect"})
-            raise CreateDocumentRefException(500, "Server error")
+            raise LoginRedirectException(500, "Server error")
 
         return location_header
 
-    @staticmethod
-    def save_state_in_dynamo_db(state):
+    def save_state_in_dynamo_db(self, state):
         dynamodb_name = os.environ["AUTH_DYNAMODB_NAME"]
-        dynamodb_service = DynamoDBService()
         ten_minutes = 60 * 10
         ttl = round(time.time()) + ten_minutes
         item = {"State": state, "TimeToExist": ttl}
-        dynamodb_service.create_item(item=item, table_name=dynamodb_name)
+        self.dynamodb_service.create_item(item=item, table_name=dynamodb_name)

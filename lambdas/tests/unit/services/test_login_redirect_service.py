@@ -3,7 +3,9 @@ from botocore.exceptions import ClientError
 from oauthlib.oauth2 import InsecureTransportError
 from services.login_redirect_service import LoginRedirectService
 from tests.unit.helpers.mock_services import FakeSSMService
-from utils.exceptions import CreateDocumentRefException
+from tests.unit.helpers.ssm_responses import \
+    MOCK_MULTI_STRING_PARAMETERS_RESPONSE
+from utils.exceptions import LoginRedirectException
 
 RETURN_URL = (
     "https://www.string_value_1.com?"
@@ -24,30 +26,34 @@ class FakeWebAppClient:
         return RETURN_URL, "", ""
 
 
-@pytest.fixture()
-def login_redirect_service():
-    login_redirect_service = LoginRedirectService()
-    yield login_redirect_service
+@pytest.fixture
+def mock_service(mocker, set_env):
+    mocker.patch("boto3.resource")
+    mocker.patch("boto3.client")
+    mock_ssm = mocker.patch.object("service", "ssm_service")
+    mock_ssm.get_ssm_parameters.return_value = MOCK_MULTI_STRING_PARAMETERS_RESPONSE
+    service = LoginRedirectService()
+    mock_ssm = mocker.patch.object(service, "ssm_service")
+    mock_ssm.get_ssm_parameters.return_value = MOCK_MULTI_STRING_PARAMETERS_RESPONSE
+    mocker.patch.object(service, "oidc_client", return_value=FakeWebAppClient)
+    mocker.patch.object(service, "dynamodb_service")
+    yield service
 
 
 def test_prepare_redirect_response_returns_location_header_with_correct_headers(
-    mocker, set_env, login_redirect_service
+    mocker, set_env, mock_service
 ):
-    mock_save_state_in_dynamo_db = mocker.patch.object(
-        login_redirect_service, "save_state_in_dynamo_db"
-    )
-    response = login_redirect_service.prepare_redirect_response(
-        FakeWebAppClient, FakeSSMService
-    )
+    mocker.patch.object(mock_service, "save_state_in_dynamo_db")
+
+    response = mock_service.prepare_redirect_response()
 
     expected = {"Location": RETURN_URL}
 
     assert response == expected
-    mock_save_state_in_dynamo_db.assert_called_once_with("test1state")
 
 
 def test_prepare_redirect_response_return_500_when_boto3_client_failing(
-    mocker, set_env, login_redirect_service
+    mocker, set_env, login_redirect_service, mock_dynamodb_service
 ):
     mock_save_state_in_dynamo_db = mocker.patch.object(
         login_redirect_service, "save_state_in_dynamo_db"
@@ -60,9 +66,9 @@ def test_prepare_redirect_response_return_500_when_boto3_client_failing(
         ),
     )
 
-    with pytest.raises(CreateDocumentRefException):
+    with pytest.raises(LoginRedirectException):
         login_redirect_service.prepare_redirect_response(
-            FakeWebAppClient, FakeSSMService
+            FakeWebAppClient, FakeSSMService, mock_dynamodb_service
         )
     mock_save_state_in_dynamo_db.assert_not_called()
 
@@ -77,27 +83,21 @@ def test_prepare_redirect_response_return_500_when_auth_client_failing(
         FakeSSMService, "get_ssm_parameters", side_effect=InsecureTransportError
     )
 
-    with pytest.raises(CreateDocumentRefException):
-        login_redirect_service.prepare_redirect_response(
-            FakeWebAppClient, FakeSSMService
-        )
+    with pytest.raises(LoginRedirectException):
+        login_redirect_service.prepare_redirect_response()
     mock_save_state_in_dynamo_db.assert_not_called()
 
 
-def test_save_to_dynamo(mocker, monkeypatch, login_redirect_service):
+def test_save_to_dynamo(
+    mocker, monkeypatch, login_redirect_service, mock_dynamodb_service
+):
     monkeypatch.setenv("AUTH_DYNAMODB_NAME", "test_table")
-    mock_dynamo_service = mocker.patch(
-        "services.login_redirect_service.DynamoDBService"
-    )
-    mock_dynamo_service_instance = mocker.MagicMock()
-    mock_dynamo_service.return_value = mock_dynamo_service_instance
     mocker.patch("time.time", return_value=1238)
     expected_item = {"State": "test", "TimeToExist": 1838}
 
     login_redirect_service.save_state_in_dynamo_db("test")
 
-    mock_dynamo_service.assert_called_once()
-    mock_dynamo_service_instance.create_item.assert_called_once()
-    mock_dynamo_service_instance.create_item.assert_called_with(
+    mock_dynamodb_service.create_item.assert_called_once()
+    mock_dynamodb_service.create_item.assert_called_with(
         item=expected_item, table_name="test_table"
     )

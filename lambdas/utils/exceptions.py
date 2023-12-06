@@ -116,5 +116,5 @@ class LambdaException(Exception):
         self.message = message
 
 
-class CreateDocumentRefException(LambdaException):
+class LoginRedirectException(LambdaException):
     pass
