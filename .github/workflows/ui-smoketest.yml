@@ -16,7 +16,6 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-
   cypress-run-chrome:
     runs-on: ubuntu-22.04
     steps:
@@ -77,4 +76,3 @@ jobs:
           working-directory: ./app
         env:
           CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl}}'
-

@@ -15,6 +15,11 @@ const mockPatientDetails = buildPatientDetails();
 jest.mock('../../../helpers/hooks/useRole');
 jest.mock('../../../helpers/hooks/usePatient');
 const mockedUsePatient = usePatient as jest.Mock;
+const mockNavigate = jest.fn();
+
+jest.mock('react-router', () => ({
+    useNavigate: () => mockNavigate,
+}));
 
 describe('LloydGeorgeRecordStage', () => {
     beforeEach(() => {
@@ -42,16 +47,18 @@ describe('LloydGeorgeRecordStage', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
 
-        expect(screen.queryByText('No documents are available')).not.toBeInTheDocument();
+        expect(
+            screen.queryByText('No documents are available for this patient.'),
+        ).not.toBeInTheDocument();
     });
 
     it('renders no docs available text if there is no LG record', async () => {
         renderComponent({
-            downloadStage: DOWNLOAD_STAGE.FAILED,
+            downloadStage: DOWNLOAD_STAGE.NO_RECORDS,
         });
 
         await waitFor(async () => {
-            expect(screen.getByText('No documents are available')).toBeInTheDocument();
+            expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
         });
 
         expect(screen.queryByText('View record')).not.toBeInTheDocument();

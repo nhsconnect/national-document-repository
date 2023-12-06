@@ -7,6 +7,7 @@ import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRec
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
+import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordError';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -37,19 +38,18 @@ function LloydGeorgeRecordStage({
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
     const PdfCardDescription = () => {
-        if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
+        if (downloadStage === DOWNLOAD_STAGE.PENDING) {
+            return <span> Loading...</span>;
+        } else if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
             const detailsProps = {
                 lastUpdated,
                 numberOfFiles,
                 totalFileSizeInByte,
                 setStage,
             };
-
-            return <LloydGeorgeRecordDetails {...detailsProps} setStage={setStage} />;
-        } else if (downloadStage === DOWNLOAD_STAGE.FAILED) {
-            return <span>No documents are available</span>;
+            return <LloydGeorgeRecordDetails {...detailsProps} />;
         } else {
-            return <span> Loading...</span>;
+            return <LloydGeorgeRecordError downloadStage={downloadStage} setStage={setStage} />;
         }
     };
 

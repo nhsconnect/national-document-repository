@@ -32,6 +32,8 @@ class StagingMetadata(BaseModel):
     nhs_number: str = Field(alias=NHS_NUMBER_FIELD_NAME)
     files: list[MetadataFile]
 
+    retries: int = 0
+
     @field_validator("nhs_number")
     @classmethod
     def validate_nhs_number(cls, nhs_number: str) -> str:

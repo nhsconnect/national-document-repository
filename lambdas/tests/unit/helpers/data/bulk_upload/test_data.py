@@ -30,7 +30,7 @@ patient_1_file_2 = MetadataFile(
 )
 
 patient_1 = StagingMetadata(
-    nhs_number="1234567890", files=[patient_1_file_1, patient_1_file_2]
+    nhs_number="1234567890", files=[patient_1_file_1, patient_1_file_2], retries=0
 )
 
 patient_2_file_1 = MetadataFile(
@@ -46,7 +46,7 @@ patient_2_file_1 = MetadataFile(
     upload="04/10/2023",
 )
 
-patient_2 = StagingMetadata(nhs_number="1234567891", files=[patient_2_file_1])
+patient_2 = StagingMetadata(nhs_number="1234567891", files=[patient_2_file_1], retries=0)
 
 EXPECTED_PARSED_METADATA = [patient_1, patient_2]
 

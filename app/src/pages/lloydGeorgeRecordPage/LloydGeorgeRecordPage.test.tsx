@@ -14,6 +14,12 @@ jest.mock('../../helpers/hooks/useRole');
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockPatientDetails = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
+const mockNavigate = jest.fn();
+
+jest.mock('react-router', () => ({
+    useNavigate: () => mockNavigate,
+}));
+
 describe('LloydGeorgeRecordPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -58,7 +64,7 @@ describe('LloydGeorgeRecordPage', () => {
         render(<LloydGeorgeRecordPage />);
 
         await waitFor(async () => {
-            expect(screen.getByText('No documents are available')).toBeInTheDocument();
+            expect(screen.getByText('No documents are available.')).toBeInTheDocument();
         });
 
         expect(screen.queryByText('View record')).not.toBeInTheDocument();

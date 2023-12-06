@@ -10,6 +10,28 @@ describe('GP Workflow: View Lloyd George record', () => {
         cy.getByTestId('pdf-card').should('include.text', 'No documents are available');
     };
 
+    const assertFailedLloydGeorgeLoad = () => {
+        cy.getByTestId('error-summary_message').should(
+            'include.text',
+            'An error has occurred when creating the Lloyd George preview.',
+        );
+    };
+
+    const assertTimeoutLloydGeorgeError = (assertDownloadLink) => {
+        cy.getByTestId('llyoyd-george-record-error-message').should(
+            'include.text',
+            'The Lloyd George document is too large to view in a browser,',
+        );
+
+        if (assertDownloadLink) {
+            cy.getByTestId('download-instead-link').should('exist');
+        } else {
+            cy.getByTestId('download-instead-link').should('exist');
+            cy.getByTestId('download-instead-link').click();
+            cy.url().should('contains', baseUrl + 'unauthorised');
+        }
+    };
+
     const assertPatientInfo = () => {
         cy.getByTestId('patient-name').should(
             'have.text',
@@ -86,8 +108,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             );
 
             it(
-                'It displays an empty Lloyd George card when the Lloyd George Stitch API call fails for a ' +
-                    role,
+                'It displays an error when the Lloyd George Stitch API call fails for a ' + role,
                 () => {
                     cy.intercept('GET', '/LloydGeorgeStitch*', {
                         statusCode: 500,
@@ -96,18 +117,49 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                     //Assert
                     assertPatientInfo();
-                    assertEmptyLloydGeorgeCard();
+                    assertFailedLloydGeorgeLoad();
                 },
             );
         });
     });
+
+    context('View Lloyd George document with specific role tests', () => {
+        it('It displays an error with a download link when a Lloyd George stitching timeout occures via the API Gatway for a GP_ADMIN', () => {
+            beforeEachConfiguration('GP_ADMIN');
+            cy.intercept('GET', '/LloydGeorgeStitch*', {
+                statusCode: 504,
+            });
+            cy.get('#verify-submit').click();
+
+            //Assert
+            assertTimeoutLloydGeorgeError(true);
+        });
+
+        it('It displays an error with download link when a Lloyd George stitching timeout occures via the API Gatway for a GP_CLINICAL but link access is denied', () => {
+            beforeEachConfiguration('GP_CLINICAL');
+            cy.intercept('GET', '/LloydGeorgeStitch*', {
+                statusCode: 504,
+            });
+            cy.get('#verify-submit').click();
+
+            //Assert
+            assertTimeoutLloydGeorgeError(false);
+        });
+    });
+
     context('Delete Lloyd George document', () => {
         it('A GP ADMIN user can delete the Lloyd George document of an active patient', () => {
             beforeEachConfiguration('GP_ADMIN');
 
-            cy.intercept('GET', '/LloydGeorgeStitch*', {
-                statusCode: 200,
-                body: viewLloydGeorgePayload,
+            let request = 0;
+            const replies = [
+                { statusCode: 200, body: viewLloydGeorgePayload },
+                { statusCode: 404 },
+            ];
+
+            cy.intercept('GET', '/LloydGeorgeStitch*', (req) => {
+                req.reply(replies[request]);
+                request = request + 1;
             }).as('lloydGeorgeStitch');
 
             cy.get('#verify-submit').click();

@@ -20,7 +20,7 @@ const ServiceError = ({ message }: Props) => {
                 Sorry, the service is currently unavailable.
             </ErrorSummary.Title>
             <ErrorSummary.Body>
-                <p>{message || defaultMessage}</p>
+                <p data-testid="error-summary_message">{message || defaultMessage}</p>
                 <p>
                     Please check your internet connection. If the issue persists please contact the{' '}
                     <a
