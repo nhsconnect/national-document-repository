@@ -1,3 +1,9 @@
+class LambdaException(Exception):
+    def __init__(self, status_code, message):
+        self.status_code = status_code
+        self.message = message
+
+
 class PatientNotFoundException(Exception):
     pass
 
@@ -14,7 +20,7 @@ class PdsTooManyRequestsException(Exception):
     pass
 
 
-class AuthorisationException(Exception):
+class AuthorisationException(LambdaException):
     pass
 
 

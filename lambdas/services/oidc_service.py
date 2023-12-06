@@ -48,7 +48,7 @@ class OidcService:
                 f"{access_token_response.content}"
             )
             raise AuthorisationException(
-                "Failed to retrieve access token from ID Provider"
+                500, "Failed to retrieve access token from ID Provider"
             )
 
     def parse_fetch_tokens_response(
@@ -68,7 +68,7 @@ class OidcService:
             return access_token, id_token_claims_set
         except KeyError:
             raise AuthorisationException(
-                "Access Token not found in ID Provider's response"
+                500, "Access Token not found in ID Provider's response"
             )
 
     def validate_and_decode_token(self, signed_token: str) -> Dict:
@@ -88,7 +88,7 @@ class OidcService:
             )
         except jwt.exceptions.PyJWTError as err:
             logger.error(err)
-            raise AuthorisationException("The given JWT is invalid or expired.")
+            raise AuthorisationException(400, "The given JWT is invalid or expired.")
 
     def fetch_user_org_codes(
         self, access_token: str, id_token_claim_set: IdTokenClaimSet
@@ -135,7 +135,9 @@ class OidcService:
                 break
 
         if role_codes == "":
-            raise AuthorisationException("No role codes found for users selected role")
+            raise AuthorisationException(
+                500, "No role codes found for users selected role"
+            )
 
         role_codes_split = role_codes.split(":")
 
@@ -144,7 +146,8 @@ class OidcService:
                 return role_code, user_id
 
         raise AuthorisationException(
-            f"Role codes have been found for the user but not with prefix {prefix_character.upper()}"
+            500,
+            f"Role codes have been found for the user but not with prefix {prefix_character.upper()}",
         )
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
@@ -164,7 +167,7 @@ class OidcService:
                 f"Got error response from OIDC provider: {userinfo_response.status_code} "
                 f"{userinfo_response.content}"
             )
-            raise AuthorisationException("Failed to retrieve userinfo")
+            raise AuthorisationException(500, "Failed to retrieve userinfo")
 
     # TODO Move to SSM service, example in token_handler_ssm_service
     def fetch_oidc_parameters(self, ssm_service_class):

@@ -131,7 +131,7 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
 
     login_service = LoginService()
 
-    actual = login_service.exchange_token(auth_code, state)
+    actual = login_service.generate_session(auth_code, state)
 
     assert actual == expected
 
@@ -150,7 +150,7 @@ def test_exchange_token_raises_auth_exception_when_auth_code_is_invalid(
     login_service = LoginService()
 
     with pytest.raises(AuthorisationException):
-        login_service.exchange_token("auth_code", "state")
+        login_service.generate_session("auth_code", "state")
         # TODO assert 401 in error
 
     mock_oidc_service["fetch_user_org_codes"].assert_not_called()
@@ -165,7 +165,7 @@ def test_exchange_token_raises_auth_error_when_given_state_is_not_in_state_table
     login_service = LoginService()
 
     with pytest.raises(AuthorisationException):
-        login_service.exchange_token("auth_code", "state")
+        login_service.generate_session("auth_code", "state")
         # TODO assert 401 in error
 
     mock_oidc_service["fetch_token"].assert_not_called()
@@ -189,7 +189,7 @@ def test_exchange_token_raises_auth_error_when_user_doesnt_have_a_valid_role_to_
     login_service = LoginService()
 
     with pytest.raises(AuthorisationException):
-        login_service.exchange_token("auth_code", "state")
+        login_service.generate_session("auth_code", "state")
         # TODO assert 401 in error
 
     mock_aws_infras["session_table"].post.assert_not_called()
@@ -217,7 +217,7 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
     login_service = LoginService()
 
     with pytest.raises(Exception):
-        login_service.exchange_token("auth_code", "state")
+        login_service.generate_session("auth_code", "state")
     # TODO assert 500 in error
 
 
@@ -235,6 +235,14 @@ def test_exchange_token_raises_error_when_encounter_pyjwt_encode_error(
     login_service = LoginService()
 
     with pytest.raises(Exception):
-        login_service.exchange_token("auth_code", "state")
+        login_service.generate_session("auth_code", "state")
 
     # TODO assert 500 in error
+
+
+def test_generate_repository_role_pcse(
+    mock_logging_service,
+    set_env,
+    context,
+):
+    return True

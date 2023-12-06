@@ -28,7 +28,7 @@ class AuthoriserService:
                 ssm_public_key_parameter=ssm_jwt_public_key_parameter,
             )
             if decoded_token is None:
-                raise AuthorisationException("error while decoding JWT")
+                raise AuthorisationException(500, "error while decoding JWT")
             request_context.authorization = decoded_token
 
             ndr_session_id = decoded_token.get("ndr_session_id")
@@ -48,7 +48,7 @@ class AuthoriserService:
             return allow_policy
 
         except (KeyError, IndexError) as e:
-            raise AuthorisationException(e)
+            raise AuthorisationException(None, e)
 
     @staticmethod
     def deny_access_policy(path, user_role):
@@ -86,12 +86,14 @@ class AuthoriserService:
             return current_session
         except (KeyError, IndexError):
             raise AuthorisationException(
-                f"Unable to find session for session ID ending in: {self.redact_session_id}"
+                None,
+                f"Unable to find session for session ID ending in: {self.redact_session_id}",
             )
 
     def validate_login_session(self, session_expiry_time: float):
         time_now = time.time()
         if session_expiry_time <= time_now:
             raise AuthorisationException(
-                f"The session is already expired for session ID ending in: {self.redact_session_id}"
+                None,
+                f"The session is already expired for session ID ending in: {self.redact_session_id}",
             )
