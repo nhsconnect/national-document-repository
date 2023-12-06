@@ -97,7 +97,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 ', redirect to uploads is successful',
             () => {
                 cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + 'upload/submit');
+                cy.url().should('eq', baseUrl + '/upload/submit');
             },
         );
 

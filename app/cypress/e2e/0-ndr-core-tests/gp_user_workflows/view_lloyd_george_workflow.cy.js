@@ -28,7 +28,7 @@ describe('GP Workflow: View Lloyd George record', () => {
         } else {
             cy.getByTestId('download-instead-link').should('exist');
             cy.getByTestId('download-instead-link').click();
-            cy.url().should('contains', baseUrl + 'unauthorised');
+            cy.url().should('contains', baseUrl + '/unauthorised');
         }
     };
 

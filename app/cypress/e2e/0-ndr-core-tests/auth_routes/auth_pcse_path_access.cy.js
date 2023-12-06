@@ -32,7 +32,7 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
 
             cy.login('PCSE');
 
-            cy.url().should('eq', baseUrl + 'search/patient');
+            cy.url().should('eq', baseUrl + '/search/patient');
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
@@ -40,7 +40,7 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
             cy.wait('@search');
 
             cy.get('#verify-submit').click();
-            cy.url().should('eq', baseUrl + 'search/results');
+            cy.url().should('eq', baseUrl + '/search/results');
         });
     });
 });

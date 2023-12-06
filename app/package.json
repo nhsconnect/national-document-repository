@@ -13,8 +13,8 @@
         "build-storybook": "storybook build",
         "format": "prettier --write \"**/*.+(ts|tsx|js|scss|json|css|md)\"",
         "prepare": "cd ../ && husky install ./app/.husky",
-        "cypress": "cross-env CYPRESS_BASE_URL=http://localhost:3000/ cypress open",
-        "cypress-report-run": "cross-env CYPRESS_BASE_URL=http://localhost:3000/ cypress run --reporter mochawesome",
+        "cypress": "cross-env CYPRESS_BASE_URL=http://localhost:3000 cypress open",
+        "cypress-report-run": "cross-env CYPRESS_BASE_URL=http://localhost:3000 cypress run --reporter mochawesome",
         "cypress-report-merge": "npx mochawesome-merge \"cypress/results/*.json\" > mochawesomemerged.json",
         "cypress-report-generate": "npx marge mochawesomemerged.json",
         "cypress-report": "rm -r cypress/results/* && npm run cypress-report-run && npm run cypress-report-merge && npm run cypress-report-generate"

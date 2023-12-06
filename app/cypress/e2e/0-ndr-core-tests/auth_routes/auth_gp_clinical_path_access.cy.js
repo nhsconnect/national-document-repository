@@ -26,7 +26,7 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
             }
 
             cy.login('GP_CLINICAL');
-            cy.url().should('eq', baseUrl + 'search/upload');
+            cy.url().should('eq', baseUrl + '/search/upload');
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
@@ -39,7 +39,7 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
             cy.get('#verify-submit').click();
 
             cy.url().should('include', 'lloyd-george-record');
-            cy.url().should('eq', baseUrl + 'search/patient/lloyd-george-record');
+            cy.url().should('eq', baseUrl + '/search/patient/lloyd-george-record');
         });
     });
 });
