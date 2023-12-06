@@ -37,6 +37,11 @@ def mock_create_reference_in_dynamodb(mock_create_doc_ref_service, mocker):
     )
 
 
+@pytest.fixture()
+def mock_validate_lg(mocker):
+    yield mocker.patch("services.create_document_reference_service.validate_lg_files")
+
+
 def test_create_document_reference_request_empty_list(
     mock_create_doc_ref_service,
     mock_prepare_doc_object,
@@ -56,11 +61,9 @@ def test_create_document_reference_request_with_arf_list(
     mock_prepare_doc_object,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
+    mock_validate_lg,
 ):
     mock_prepare_doc_object.return_value = "test_return_value"
-    mock_validate_lg = mocker.patch(
-        "services.create_document_reference_service.validate_lg_files"
-    )
 
     mock_create_doc_ref_service.create_document_reference_request(ARF_FILE_LIST)
 
@@ -78,12 +81,10 @@ def test_create_document_reference_request_with_lg_list(
     mock_prepare_doc_object,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
+    mock_validate_lg,
 ):
     mock_prepare_doc_object.return_value = "test_return_value"
     mock_create_doc_ref_service.lg_documents = LG_FILE_LIST
-    mock_validate_lg = mocker.patch(
-        "services.create_document_reference_service.validate_lg_files"
-    )
 
     mock_create_doc_ref_service.create_document_reference_request(LG_FILE_LIST)
 
@@ -101,13 +102,11 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     mock_prepare_doc_object,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
+    mock_validate_lg,
 ):
     mock_prepare_doc_object.return_value = "test_return_value"
     mock_create_doc_ref_service.lg_documents = LG_FILE_LIST
-    mock_validate_lg = mocker.patch(
-        "services.create_document_reference_service.validate_lg_files",
-        side_effect=LGInvalidFilesException("test"),
-    )
+    mock_validate_lg.side_effect = LGInvalidFilesException("test")
 
     with pytest.raises(CreateDocumentRefException):
         mock_create_doc_ref_service.create_document_reference_request(LG_FILE_LIST)

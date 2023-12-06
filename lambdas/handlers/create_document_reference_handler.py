@@ -6,8 +6,6 @@ from json import JSONDecodeError
 from enums.logging_app_interaction import LoggingAppInteraction
 
 from services.create_document_reference_service import CreateDocumentReferenceService
-from services.dynamo_service import DynamoDBService
-from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
