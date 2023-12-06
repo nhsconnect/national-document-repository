@@ -102,5 +102,9 @@ class CreateDocumentRefException(LambdaException):
     pass
 
 
+class SearchPatientException(LambdaException):
+    pass
+
+
 class LogoutFailureException(Exception):
     pass
