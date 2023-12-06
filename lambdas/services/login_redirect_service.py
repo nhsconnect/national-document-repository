@@ -5,7 +5,7 @@ from botocore.exceptions import ClientError
 from oauthlib.oauth2 import InsecureTransportError
 from services.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
-from utils.lambda_response import ApiGatewayResponse
+from utils.exceptions import CreateDocumentRefException
 
 logger = LoggingService(__name__)
 
@@ -45,13 +45,10 @@ class LoginRedirectService:
             )
 
         except (ClientError, InsecureTransportError) as e:
-            logger.error(f"Error: {e}", {"Result": "Unsuccessful redirect"})
-            return ApiGatewayResponse(
-                500, "Server error", "GET"
-            ).create_api_gateway_response()
-        return ApiGatewayResponse(303, "", "GET").create_api_gateway_response(
-            headers=location_header
-        )
+            logger.error(str(e), {"Result": "Unsuccessful redirect"})
+            raise CreateDocumentRefException(500, "Server error")
+
+        return location_header
 
     @staticmethod
     def save_state_in_dynamo_db(state):

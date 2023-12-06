@@ -1,9 +1,9 @@
 import pytest
 from botocore.exceptions import ClientError
-from tests.unit.helpers.mock_services import FakeSSMService
 from oauthlib.oauth2 import InsecureTransportError
 from services.login_redirect_service import LoginRedirectService
-from utils.lambda_response import ApiGatewayResponse
+from tests.unit.helpers.mock_services import FakeSSMService
+from utils.exceptions import CreateDocumentRefException
 
 RETURN_URL = (
     "https://www.string_value_1.com?"
@@ -30,7 +30,7 @@ def login_redirect_service():
     yield login_redirect_service
 
 
-def test_prepare_redirect_response_return_303_with_correct_headers(
+def test_prepare_redirect_response_returns_location_header_with_correct_headers(
     mocker, set_env, login_redirect_service
 ):
     mock_save_state_in_dynamo_db = mocker.patch.object(
@@ -39,11 +39,8 @@ def test_prepare_redirect_response_return_303_with_correct_headers(
     response = login_redirect_service.prepare_redirect_response(
         FakeWebAppClient, FakeSSMService
     )
-    location_header = {"Location": RETURN_URL}
 
-    expected = ApiGatewayResponse(303, "", "GET").create_api_gateway_response(
-        headers=location_header
-    )
+    expected = {"Location": RETURN_URL}
 
     assert response == expected
     mock_save_state_in_dynamo_db.assert_called_once_with("test1state")
@@ -63,15 +60,10 @@ def test_prepare_redirect_response_return_500_when_boto3_client_failing(
         ),
     )
 
-    response = login_redirect_service.prepare_redirect_response(
-        FakeWebAppClient, FakeSSMService
-    )
-
-    expected = ApiGatewayResponse(
-        500, "Server error", "GET"
-    ).create_api_gateway_response()
-
-    assert response == expected
+    with pytest.raises(CreateDocumentRefException):
+        login_redirect_service.prepare_redirect_response(
+            FakeWebAppClient, FakeSSMService
+        )
     mock_save_state_in_dynamo_db.assert_not_called()
 
 
@@ -84,15 +76,11 @@ def test_prepare_redirect_response_return_500_when_auth_client_failing(
     mocker.patch.object(
         FakeSSMService, "get_ssm_parameters", side_effect=InsecureTransportError
     )
-    expected = ApiGatewayResponse(
-        500, "Server error", "GET"
-    ).create_api_gateway_response()
 
-    response = login_redirect_service.prepare_redirect_response(
-        FakeWebAppClient, FakeSSMService
-    )
-
-    assert response == expected
+    with pytest.raises(CreateDocumentRefException):
+        login_redirect_service.prepare_redirect_response(
+            FakeWebAppClient, FakeSSMService
+        )
     mock_save_state_in_dynamo_db.assert_not_called()
 
 
