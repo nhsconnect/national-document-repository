@@ -17,21 +17,24 @@ def patch_env_vars():
     with patch.dict(os.environ, env_vars):
         yield env_vars
 
-
-def test_lambda_handler_valid_id_returns_200(
-    valid_id_event_with_auth_header, context, mocker
-):
-    patient_details = """{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22",
-        "postalCode":"LS1 6AE","nhsNumber":"9000000009","superseded":false,
-        "restricted":false,"generalPracticeOds":"Y12345","active":true}"""
+@pytest.fixture()
+def mocked_context(mocker):
     mocked_context = mocker.MagicMock()
     mocked_context.authorization = {
         "selected_organisation": {"org_ods_code": "Y12345"},
         "repository_role": "GP_ADMIN",
     }
-    mocker.patch(
+    _ = mocker.patch(
         "handlers.search_patient_details_handler.request_context", mocked_context
     )
+    yield _
+
+def test_lambda_handler_valid_id_returns_200(
+    valid_id_event_with_auth_header, context, mocker, mocked_context
+):
+    patient_details = """{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22",
+        "postalCode":"LS1 6AE","nhsNumber":"9000000009","superseded":false,
+        "restricted":false,"generalPracticeOds":"Y12345","active":true}"""
 
     mocker.patch(
         "handlers.search_patient_details_handler.SearchPatientDetailsService.handle_search_patient_request",
@@ -57,11 +60,8 @@ def test_lambda_handler_invalid_id_returns_400(invalid_id_event, context):
 
 
 def test_lambda_handler_valid_id_not_in_pds_returns_404(
-    valid_id_event_with_auth_header, context, mocker
+    valid_id_event_with_auth_header, context, mocker, mocked_context
 ):
-    mocker.patch(
-        "handlers.search_patient_details_handler.request_context"
-    )
 
     mocker.patch(
         "handlers.search_patient_details_handler.SearchPatientDetailsService.handle_search_patient_request",
