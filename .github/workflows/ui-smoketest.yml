@@ -10,7 +10,7 @@ on:
         type: 'string'
         default: 'main'
       sandbox:
-        description: 'Which Sandbox to run the smoke tests on.'
+        description: 'Sandbox to run the smoke tests against.'
         required: true
         type: 'string'
         default: 'ndr'
@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: 'nhsconnect/national-document-repository'
-          ref: ${{ github.event.inputs.sandbox}}
+          ref: ${{ github.event.inputs.build_branch}}
 
       - name: Cypress install
         run: |
