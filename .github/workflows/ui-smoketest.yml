@@ -29,7 +29,7 @@ jobs:
 
       - name: Setting Cypress environment
         run: |
-          cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
+          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
         working-directory: ./app
 
       - name: Cypress run
@@ -55,7 +55,7 @@ jobs:
 
       - name: Setting Cypress environment
         run: |
-          cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
+          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
         working-directory: ./app
 
       - name: Cypress run
@@ -80,7 +80,7 @@ jobs:
 
       - name: Setting Cypress environment
         run: |
-          cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
+          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
         working-directory: ./app
 
       - name: Cypress run
