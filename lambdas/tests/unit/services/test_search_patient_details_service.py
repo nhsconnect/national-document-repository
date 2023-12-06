@@ -58,6 +58,8 @@ def test_check_if_user_authorise_valid(mock_service):
         ("GP_CLINICAL", ""),
         ("PCSE", ""),
         ("PCSE", "new_gp_ods_code"),
+        ("Not_valid", "new_gp_ods_code"),
+        ("Not_valid", ""),
     ),
     indirect=True,
 )

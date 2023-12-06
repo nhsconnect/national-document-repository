@@ -2,7 +2,7 @@ import os
 from unittest.mock import patch
 
 import pytest
-from handlers.search_patient_details_handler import lambda_handler, request_context
+from handlers.search_patient_details_handler import lambda_handler
 
 from utils.exceptions import SearchPatientException
 from utils.lambda_response import ApiGatewayResponse
@@ -59,7 +59,7 @@ def test_lambda_handler_invalid_id_returns_400(invalid_id_event, context):
 def test_lambda_handler_valid_id_not_in_pds_returns_404(
     valid_id_event_with_auth_header, context, mocker
 ):
-    mock_request_context = mocker.patch(
+    mocker.patch(
         "handlers.search_patient_details_handler.request_context"
     )
 
@@ -82,7 +82,7 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
 
 
 def test_lambda_handler_missing_id_in_query_params_returns_400(
-    missing_id_event, context, mocker, patch_env_vars
+    missing_id_event, context
 ):
     expected = ApiGatewayResponse(
         400, "An error occurred due to missing key: 'patientId'", "GET"

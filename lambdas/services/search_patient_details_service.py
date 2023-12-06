@@ -43,7 +43,7 @@ class SearchPatientDetailsService:
 
         except UserNotAuthorisedException:
             logger.error(
-                f"PDS Error: User not authorised",
+                "PDS Error: User not authorised",
                 {"Result": "Patient found, User not authorised to view patient"},
             )
             raise SearchPatientException(
