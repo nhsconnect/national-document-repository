@@ -1,15 +1,16 @@
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
+    const homeUrl = '/';
     beforeEach(() => {
         cy.visit(baseUrl);
     });
 
-    it('[Smoke] should visit expected URL', () => {
-        cy.url().should('eq', baseUrl);
+    it('[Smoke] should visit expected URL', { tags: 'smoke' }, () => {
+        cy.url().should('eq', baseUrl + homeUrl);
     });
 
     context('Login tests', () => {
-        it('[Smoke] displays expected page header on home page when logged in', () => {
+        it('displays expected page header on home page when logged in', { tags: 'smoke' }, () => {
             // Add CIS2 login steps
             cy.get('header').should('have.length', 1);
 

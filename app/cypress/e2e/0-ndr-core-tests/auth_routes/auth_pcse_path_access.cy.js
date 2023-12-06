@@ -13,15 +13,15 @@ const patient = {
 const baseUrl = Cypress.config('baseUrl');
 
 const forbiddenRoutes = [
-    'search/patient/lloyd-george-record',
-    'search/upload',
-    'search/upload/result',
-    'upload/submit',
+    '/search/patient/lloyd-george-record',
+    '/search/upload',
+    '/search/upload/result',
+    '/upload/submit',
 ];
 
 describe('PCSE user role has access to the expected GP_ADMIN workflow paths', () => {
     context('PCSE role has access to expected routes', () => {
-        it('PCSE role has access to Download View', () => {
+        it('PCSE role has access to Download View', { tags: 'regression' }, () => {
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
                 body: patient,
@@ -45,7 +45,7 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
 describe('PCSE user role cannot access expected forbidden routes', () => {
     context('PCSE role has no access to forbidden routes', () => {
         forbiddenRoutes.forEach((forbiddenRoute) => {
-            it('PCSE role cannot access route' + forbiddenRoute, () => {
+            it('PCSE role cannot access route' + forbiddenRoute, { tags: 'regression' }, () => {
                 cy.login('PCSE');
                 cy.visit(baseUrl + forbiddenRoute);
                 cy.url().should('include', 'unauthorised');

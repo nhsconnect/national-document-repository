@@ -30,6 +30,7 @@ describe('GP Workflow: Patient search and verify', () => {
             'Shows patient upload screen when patient search is used by a ' +
                 role +
                 ' role and patient response is inactive',
+            { tags: 'regression' },
             () => {
                 cy.intercept('GET', '/SearchPatient*', {
                     statusCode: 200,
@@ -60,6 +61,7 @@ describe('GP Workflow: Patient search and verify', () => {
             'Does not show verify patient view when the search finds no patient as a ' +
                 role +
                 ' role',
+            { tags: 'regression' },
             () => {
                 cy.intercept('GET', '/SearchPatient*', {
                     statusCode: noPatientError,
@@ -85,6 +87,7 @@ describe('GP Workflow: Patient search and verify', () => {
             'Shows the upload documents page when upload patient is verified and inactive as a ' +
                 role +
                 ' role',
+            { tags: 'regression' },
             () => {
                 cy.intercept('GET', '/SearchPatient*', {
                     statusCode: 200,
@@ -99,7 +102,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#verify-submit').click();
 
                 cy.url().should('include', 'submit');
-                cy.url().should('eq', baseUrl + 'upload/submit');
+                cy.url().should('eq', baseUrl + '/upload/submit');
             },
         );
 
@@ -107,6 +110,7 @@ describe('GP Workflow: Patient search and verify', () => {
             'Shows the Lloyd george view page when upload patient is verified and active as a ' +
                 role +
                 ' role',
+            { tags: 'regression' },
             () => {
                 patient.active = true;
 
@@ -131,6 +135,7 @@ describe('GP Workflow: Patient search and verify', () => {
             'Search validation is shown when the user does not enter an nhs number as a ' +
                 role +
                 ' role',
+            { tags: 'regression' },
             () => {
                 cy.get('#search-submit').click();
                 cy.get('#nhs-number-input--error-message').should('be.visible');
@@ -145,6 +150,7 @@ describe('GP Workflow: Patient search and verify', () => {
             'Search validation is shown when the user enters an invalid nhs number as a ' +
                 role +
                 ' role',
+            { tags: 'regression' },
             () => {
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type('900');

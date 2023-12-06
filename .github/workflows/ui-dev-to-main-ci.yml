@@ -121,8 +121,8 @@ jobs:
           working-directory: ./app
         env:
           CYPRESS_BASE_URL: 'http://localhost:3000/'
-          CYPRESS_RUN_AS_SMOKETEST: false
-      
+          grepTags: 'regression'
+
   cypress-run-firefox:
     runs-on: ubuntu-22.04
     needs: install-cypress-build
@@ -154,7 +154,7 @@ jobs:
           working-directory: ./app
         env:
           CYPRESS_BASE_URL: 'http://localhost:3000/'
-          CYPRESS_RUN_AS_SMOKETEST: false
+          grepTags: 'regression'
 
   cypress-run-edge:
     runs-on: ubuntu-22.04
@@ -191,7 +191,7 @@ jobs:
           working-directory: ./app
         env:
           CYPRESS_BASE_URL: 'http://localhost:3000/'
-          CYPRESS_RUN_AS_SMOKETEST: false
+          grepTags: 'regression'
 
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest

@@ -33,6 +33,8 @@ describe('PCSE Workflow: Access and download found files', () => {
         },
     ];
 
+    const homeUrl = '/';
+
     beforeEach(() => {
         cy.login('PCSE');
     });
@@ -54,7 +56,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         cy.get('#verify-submit').click();
     };
 
-    it('shows patient details on download page', () => {
+    it('shows patient details on download page', { tags: 'regression' }, () => {
         navigateToDownload(roles.PCSE);
 
         cy.get('#download-page-title').should('have.length', 1);
@@ -74,7 +76,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         cy.get('#patient-summary-postcode').should('have.text', patient.postalCode);
     });
 
-    it('shows no files avaliable on 204 success', () => {
+    it('shows no files avaliable on 204 success', { tags: 'regression' }, () => {
         const searchDocumentReferencesResponse = [];
 
         cy.intercept('GET', '/SearchDocumentReferences*', {
@@ -91,7 +93,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         );
     });
 
-    it('shows avaliable files to download on 200 success', () => {
+    it('shows avaliable files to download on 200 success', { tags: 'regression' }, () => {
         cy.intercept('GET', '/SearchDocumentReferences*', {
             statusCode: 200,
             body: searchDocumentReferencesResponse,
@@ -140,54 +142,66 @@ describe('PCSE Workflow: Access and download found files', () => {
         );
     });
 
-    it('Shows spinner button while waiting for Download Document Manifest response', () => {
-        cy.intercept('GET', '/SearchDocumentReferences*', {
-            statusCode: 200,
-            body: searchDocumentReferencesResponse,
-        }).as('search');
-
-        navigateToDownload(roles.PCSE);
-
-        const documentManifestResponse = 'test-s3-url';
-        cy.intercept({ url: '/DocumentManifest*', middleware: true }, (req) => {
-            req.reply({
+    it(
+        'Shows spinner button while waiting for Download Document Manifest response',
+        { tags: 'regression' },
+        () => {
+            cy.intercept('GET', '/SearchDocumentReferences*', {
                 statusCode: 200,
-                body: documentManifestResponse,
-                delay: 1500,
-            });
-        }).as('search');
-
-        cy.get('#download-documents').click();
-        cy.get('#download-spinner').should('exist');
-    });
-
-    it('Shows service error box on Search Document Reference 500 response', () => {
-        cy.intercept('GET', '/SearchDocumentReferences*', {
-            statusCode: 500,
-        }).as('search');
-
-        navigateToDownload(roles.PCSE);
-
-        cy.get('#service-error').should('exist');
-    });
-
-    it('Shows progress bar while waiting for Search Document Reference response', () => {
-        const searchDocumentReferencesResponse = [];
-
-        cy.intercept({ url: '/SearchDocumentReferences*', middleware: true }, (req) => {
-            req.reply({
-                statusCode: 204,
                 body: searchDocumentReferencesResponse,
-                delay: 1500,
-            });
-        }).as('search');
+            }).as('search');
 
-        navigateToDownload(roles.PCSE);
+            navigateToDownload(roles.PCSE);
 
-        cy.get('.progress-bar').should('exist');
-    });
+            const documentManifestResponse = 'test-s3-url';
+            cy.intercept({ url: '/DocumentManifest*', middleware: true }, (req) => {
+                req.reply({
+                    statusCode: 200,
+                    body: documentManifestResponse,
+                    delay: 1500,
+                });
+            }).as('search');
 
-    it('Start again button takes us to the home page', () => {
+            cy.get('#download-documents').click();
+            cy.get('#download-spinner').should('exist');
+        },
+    );
+
+    it(
+        'Shows service error box on Search Document Reference 500 response',
+        { tags: 'regression' },
+        () => {
+            cy.intercept('GET', '/SearchDocumentReferences*', {
+                statusCode: 500,
+            }).as('search');
+
+            navigateToDownload(roles.PCSE);
+
+            cy.get('#service-error').should('exist');
+        },
+    );
+
+    it(
+        'Shows progress bar while waiting for Search Document Reference response',
+        { tags: 'regression' },
+        () => {
+            const searchDocumentReferencesResponse = [];
+
+            cy.intercept({ url: '/SearchDocumentReferences*', middleware: true }, (req) => {
+                req.reply({
+                    statusCode: 204,
+                    body: searchDocumentReferencesResponse,
+                    delay: 1500,
+                });
+            }).as('search');
+
+            navigateToDownload(roles.PCSE);
+
+            cy.get('.progress-bar').should('exist');
+        },
+    );
+
+    it('Start again button takes us to the home page', { tags: 'regression' }, () => {
         const searchDocumentReferencesResponse = [];
 
         cy.intercept({ url: '/SearchDocumentReferences*', middleware: true }, (req) => {
@@ -201,7 +215,7 @@ describe('PCSE Workflow: Access and download found files', () => {
 
         cy.get('#start-again-link').should('exist');
         cy.get('#start-again-link').click();
-        cy.url().should('eq', baseUrl);
+        cy.url().should('eq', baseUrl + homeUrl);
     });
 
     context('Delete all documents relating to a patient', () => {
@@ -226,77 +240,95 @@ describe('PCSE Workflow: Access and download found files', () => {
             cy.wait('@documentSearch');
         });
 
-        it('allows a PCSE user to delete all documents relating to a patient', () => {
-            cy.intercept(
-                'DELETE',
-                `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG,ARF`,
-                {
-                    statusCode: 200,
-                    body: 'Success',
-                },
-            ).as('documentDelete');
+        it(
+            'allows a PCSE user to delete all documents relating to a patient',
+            { tags: 'regression' },
+            () => {
+                cy.intercept(
+                    'DELETE',
+                    `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG,ARF`,
+                    {
+                        statusCode: 200,
+                        body: 'Success',
+                    },
+                ).as('documentDelete');
 
-            cy.getByTestId('delete-all-documents-btn').click();
+                cy.getByTestId('delete-all-documents-btn').click();
 
-            cy.getByTestId('yes-radio-btn').click();
-            cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('yes-radio-btn').click();
+                cy.getByTestId('delete-submit-btn').click();
 
-            cy.wait('@documentDelete');
+                cy.wait('@documentDelete');
 
-            // assert delete success page is as expected
-            cy.contains('Deletion complete').should('be.visible');
-            cy.contains('2 files from the record of:').should('be.visible');
-            cy.contains('GivenName Surname').should('be.visible');
-            cy.contains('(NHS number: 900 000 0009)').should('be.visible');
-        });
+                // assert delete success page is as expected
+                cy.contains('Deletion complete').should('be.visible');
+                cy.contains('2 files from the record of:').should('be.visible');
+                cy.contains('GivenName Surname').should('be.visible');
+                cy.contains('(NHS number: 900 000 0009)').should('be.visible');
+            },
+        );
 
-        it('returns user to download documents page on cancel of delete', () => {
-            cy.getByTestId('delete-all-documents-btn').click();
+        it(
+            'returns user to download documents page on cancel of delete',
+            { tags: 'regression' },
+            () => {
+                cy.getByTestId('delete-all-documents-btn').click();
 
-            // cancel delete
-            cy.getByTestId('no-radio-btn').click();
-            cy.getByTestId('delete-submit-btn').click();
+                // cancel delete
+                cy.getByTestId('no-radio-btn').click();
+                cy.getByTestId('delete-submit-btn').click();
 
-            // assert user is returned to download documents page
-            cy.contains('Download electronic health records and attachments').should('be.visible');
-        });
+                // assert user is returned to download documents page
+                cy.contains('Download electronic health records and attachments').should(
+                    'be.visible',
+                );
+            },
+        );
 
-        it('displays an error when the delete document API call fails', () => {
-            cy.intercept(
-                'DELETE',
-                `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG,ARF`,
-                {
-                    statusCode: 500,
-                    body: 'Failed to delete documents',
-                },
-            ).as('documentDelete');
+        it(
+            'displays an error when the delete document API call fails',
+            { tags: 'regression' },
+            () => {
+                cy.intercept(
+                    'DELETE',
+                    `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG,ARF`,
+                    {
+                        statusCode: 500,
+                        body: 'Failed to delete documents',
+                    },
+                ).as('documentDelete');
 
-            cy.getByTestId('delete-all-documents-btn').click();
+                cy.getByTestId('delete-all-documents-btn').click();
 
-            cy.getByTestId('yes-radio-btn').click();
-            cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('yes-radio-btn').click();
+                cy.getByTestId('delete-submit-btn').click();
 
-            // assert
-            cy.getByTestId('service-error').should('be.visible');
-        });
+                // assert
+                cy.getByTestId('service-error').should('be.visible');
+            },
+        );
 
-        it('displays an error on delete attempt when documents exist for the patient', () => {
-            cy.intercept(
-                'DELETE',
-                `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG,ARF`,
-                {
-                    statusCode: 404,
-                    body: 'No documents available',
-                },
-            ).as('documentDelete');
+        it(
+            'displays an error on delete attempt when documents exist for the patient',
+            { tags: 'regression' },
+            () => {
+                cy.intercept(
+                    'DELETE',
+                    `/DocumentDelete?patientId=${searchPatientPayload.nhsNumber}&docType=LG,ARF`,
+                    {
+                        statusCode: 404,
+                        body: 'No documents available',
+                    },
+                ).as('documentDelete');
 
-            cy.getByTestId('delete-all-documents-btn').click();
+                cy.getByTestId('delete-all-documents-btn').click();
 
-            cy.getByTestId('yes-radio-btn').click();
-            cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('yes-radio-btn').click();
+                cy.getByTestId('delete-submit-btn').click();
 
-            // assert
-            cy.getByTestId('service-error').should('be.visible');
-        });
+                // assert
+                cy.getByTestId('service-error').should('be.visible');
+            },
+        );
     });
 });
