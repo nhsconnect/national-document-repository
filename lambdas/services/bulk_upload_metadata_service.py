@@ -1,5 +1,6 @@
 import csv
 import os
+import shutil
 import tempfile
 import uuid
 from typing import Iterable
@@ -35,6 +36,8 @@ class BulkUploadMetadataService:
 
         logger.info("Sent bulk upload metadata to sqs queue")
 
+        # self.clear_temp_storage()
+
     def download_metadata_from_s3(self, metadata_filename: str) -> str:
         local_file_path = os.path.join(self.temp_dir, metadata_filename)
         self.s3_service.download_file(
@@ -44,7 +47,8 @@ class BulkUploadMetadataService:
         )
         return local_file_path
 
-    def csv_to_staging_metadata(self, csv_file_path: str) -> list[StagingMetadata]:
+    @staticmethod
+    def csv_to_staging_metadata(csv_file_path: str) -> list[StagingMetadata]:
         patients = {}
         with open(csv_file_path, mode="r") as csv_file_handler:
             csv_reader: Iterable[dict] = csv.DictReader(csv_file_handler)
@@ -76,3 +80,6 @@ class BulkUploadMetadataService:
                 nhs_number=nhs_number,
                 group_id=sqs_group_id,
             )
+
+    def clear_temp_storage(self):
+        shutil.rmtree(self.temp_dir)
