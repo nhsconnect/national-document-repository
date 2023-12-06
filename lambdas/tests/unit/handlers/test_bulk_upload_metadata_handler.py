@@ -3,9 +3,7 @@ from unittest.mock import call
 
 import pytest
 from botocore.exceptions import ClientError
-from handlers.bulk_upload_metadata_handler import (csv_to_staging_metadata,
-                                                   lambda_handler,
-                                                   send_metadata_to_fifo_sqs)
+from handlers.bulk_upload_metadata_handler import lambda_handler
 from models.staging_metadata import METADATA_FILENAME
 from pydantic import ValidationError
 from services.bulk_upload_metadata_service import BulkUploadMetadataService
@@ -27,11 +25,6 @@ MOCK_TEMP_FOLDER = "tests/unit/helpers/data/bulk_upload"
 def test_lambda_send_metadata_to_sqs_queue(
     set_env, mocker, mock_sqs_service, event, context, mock_download_metadata_from_s3
 ):
-    # mocker.patch.object(
-    #     BulkUploadMetadataService,
-    #     "download_metadata_from_s3",
-    #     return_value=MOCK_METADATA_CSV,
-    # )
     mock_download_metadata_from_s3.return_value = MOCK_METADATA_CSV
     mocker.patch("uuid.uuid4", return_value="123412342")
 
@@ -142,16 +135,18 @@ def test_download_metadata_from_s3_raise_error_when_failed_to_download(
         )
 
 
-def test_csv_to_staging_metadata():
-    actual = csv_to_staging_metadata(MOCK_METADATA_CSV)
+def test_csv_to_staging_metadata(set_env):
+    service = BulkUploadMetadataService()
+    actual = service.csv_to_staging_metadata(MOCK_METADATA_CSV)
     expected = EXPECTED_PARSED_METADATA
     assert actual == expected
 
 
-def test_csv_to_staging_metadata_raise_error_when_metadata_invalid():
+def test_csv_to_staging_metadata_raise_error_when_metadata_invalid(set_env):
+    service = BulkUploadMetadataService()
     for invalid_csv_file in MOCK_INVALID_METADATA_CSV_FILES:
         with pytest.raises(ValidationError):
-            csv_to_staging_metadata(invalid_csv_file)
+            service.csv_to_staging_metadata(invalid_csv_file)
 
 
 def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service):
@@ -181,7 +176,10 @@ def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service):
     assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
 
 
-def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(mock_sqs_service):
+def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(
+    set_env, mock_sqs_service
+):
+    service = BulkUploadMetadataService()
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.side_effect = ClientError(
         {
             "Error": {
@@ -193,7 +191,7 @@ def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(mock_sqs_ser
     )
 
     with pytest.raises(ClientError):
-        send_metadata_to_fifo_sqs(EXPECTED_PARSED_METADATA, MOCK_LG_METADATA_SQS_QUEUE)
+        service.send_metadata_to_fifo_sqs(EXPECTED_PARSED_METADATA)
 
 
 @pytest.fixture
