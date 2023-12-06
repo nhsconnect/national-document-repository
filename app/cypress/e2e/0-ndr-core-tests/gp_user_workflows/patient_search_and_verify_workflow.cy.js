@@ -1,7 +1,6 @@
 describe('GP Workflow: Patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
-    const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
     const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
 
     const noPatientError = 400;
@@ -28,16 +27,14 @@ describe('GP Workflow: Patient search and verify', () => {
         });
 
         it(
-            '(Smoke test) Shows patient upload screen when patient search is used by a ' +
+            'Shows patient upload screen when patient search is used by a ' +
                 role +
                 ' role and patient response is inactive',
             () => {
-                if (!smokeTest) {
-                    cy.intercept('GET', '/SearchPatient*', {
-                        statusCode: 200,
-                        body: patient,
-                    }).as('search');
-                }
+                cy.intercept('GET', '/SearchPatient*', {
+                    statusCode: 200,
+                    body: patient,
+                }).as('search');
 
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(testPatient);
@@ -60,15 +57,13 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            '(Smoke test) Does not show verify patient view when the search finds no patient as a ' +
+            'Does not show verify patient view when the search finds no patient as a ' +
                 role +
                 ' role',
             () => {
-                if (!smokeTest) {
-                    cy.intercept('GET', '/SearchPatient*', {
-                        statusCode: noPatientError,
-                    }).as('search');
-                }
+                cy.intercept('GET', '/SearchPatient*', {
+                    statusCode: noPatientError,
+                }).as('search');
 
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(testNotFoundPatient);

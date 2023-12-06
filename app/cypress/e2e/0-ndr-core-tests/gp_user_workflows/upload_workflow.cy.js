@@ -1,6 +1,5 @@
 // env vars
 const baseUrl = Cypress.config('baseUrl');
-const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 
 const formTypes = Object.freeze({
     LG: 'LG',
@@ -91,43 +90,34 @@ describe('GP Workflow: Upload docs and verify', () => {
             navigateToUploadPage();
         });
 
-        it(
-            '(Smoke test) On Start now button click as ' +
-                role +
-                ', redirect to uploads is successful',
-            () => {
-                cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + '/upload/submit');
-            },
-        );
+        it('On Start now button click as ' + role + ', redirect to uploads is successful', () => {
+            cy.url().should('include', 'upload');
+            cy.url().should('eq', baseUrl + '/upload/submit');
+        });
 
         it.skip(
-            "(Smoke test) On Upload button click with a single file for ARF and LG, renders 'Upload Summary' screen for successful upload as a " +
+            "On Upload button click with a single file for ARF and LG, renders 'Upload Summary' screen for successful upload as a " +
                 role +
                 ' role',
             () => {
-                if (smokeTest === false) {
-                    cy.intercept('POST', '**/DocumentReference**', {
-                        statusCode: 200,
-                        body: {
-                            url: 'http://' + bucketUrlIdentifer,
-                            fields: {
-                                key: 'test key',
-                                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
-                                'x-amz-credential':
-                                    'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
-                                'x-amz-date': '20230904T125954Z',
-                                'x-amz-security-token': 'xxxxxxxxx',
-                                'x-amz-signature': '9xxxxxxxx',
-                            },
+                cy.intercept('POST', '**/DocumentReference**', {
+                    statusCode: 200,
+                    body: {
+                        url: 'http://' + bucketUrlIdentifer,
+                        fields: {
+                            key: 'test key',
+                            'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                            'x-amz-credential': 'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                            'x-amz-date': '20230904T125954Z',
+                            'x-amz-security-token': 'xxxxxxxxx',
+                            'x-amz-signature': '9xxxxxxxx',
                         },
-                    });
+                    },
+                });
 
-                    cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
-                        statusCode: 204,
-                    });
-                }
-
+                cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
+                    statusCode: 204,
+                });
                 selectForm(formTypes.ARF).selectFile(
                     uploadedFilePathNames.ARF[singleFileUsecaseIndex],
                 );
@@ -158,7 +148,7 @@ describe('GP Workflow: Upload docs and verify', () => {
         Object.values(formTypes).forEach((type) => {
             describe(`[${type}] Upload: `, () => {
                 it(
-                    `(Smoke test) Single file: On Choose files button click, file selection is visible for ${type} input as a ` +
+                    `Single file: On Choose files button click, file selection is visible for ${type} input as a ` +
                         role,
                     () => {
                         cy.get('#selected-documents-table').should('not.exist');
@@ -281,7 +271,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `(Smoke test) Multiple files: On Choose files button click, file selection is visible for ${type} input as a ` +
+                    `Multiple files: On Choose files button click, file selection is visible for ${type} input as a ` +
                         role,
                     () => {
                         cy.get('#selected-documents-table').should('not.exist');
@@ -305,30 +295,28 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it.skip(
-                    `(Smoke test) Multiple files: On Upload button click, renders 'Upload Summary' view for successful upload for ${type} input as a ` +
+                    `Multiple files: On Upload button click, renders 'Upload Summary' view for successful upload for ${type} input as a ` +
                         role,
                     () => {
-                        if (smokeTest === false) {
-                            cy.intercept('POST', '**/DocumentReference**', {
-                                statusCode: 200,
-                                body: {
-                                    url: 'http://' + bucketUrlIdentifer,
-                                    fields: {
-                                        key: 'test key',
-                                        'x-amz-algorithm': 'xxxx-xxxx-SHA256',
-                                        'x-amz-credential':
-                                            'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
-                                        'x-amz-date': '20230904T125954Z',
-                                        'x-amz-security-token': 'xxxxxxxxx',
-                                        'x-amz-signature': '9xxxxxxxx',
-                                    },
+                        cy.intercept('POST', '**/DocumentReference**', {
+                            statusCode: 200,
+                            body: {
+                                url: 'http://' + bucketUrlIdentifer,
+                                fields: {
+                                    key: 'test key',
+                                    'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                                    'x-amz-credential':
+                                        'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                                    'x-amz-date': '20230904T125954Z',
+                                    'x-amz-security-token': 'xxxxxxxxx',
+                                    'x-amz-signature': '9xxxxxxxx',
                                 },
-                            });
+                            },
+                        });
 
-                            cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
-                                statusCode: 204,
-                            });
-                        }
+                        cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
+                            statusCode: 204,
+                        });
 
                         selectForm(type).selectFile(
                             uploadedFilePathNames[type][multiFileUSecaseIndex],
@@ -352,7 +340,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `(Smoke test) Multiple files: On Upload button click, renders Uploading Stage for ${type} input as a ` +
+                    `Multiple files: On Upload button click, renders Uploading Stage for ${type} input as a ` +
                         role,
                     () => {
                         cy.intercept('POST', '**/DocumentReference*', (req) => {

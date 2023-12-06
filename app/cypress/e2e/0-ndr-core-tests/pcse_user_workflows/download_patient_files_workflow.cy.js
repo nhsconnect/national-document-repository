@@ -3,7 +3,6 @@ import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.j
 describe('PCSE Workflow: Access and download found files', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
-    const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 
     const roles = Object.freeze({
         GP: 'GP_ADMIN',
@@ -55,7 +54,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         cy.get('#verify-submit').click();
     };
 
-    it('(Smoke test) shows patient details on download page', () => {
+    it('shows patient details on download page', () => {
         navigateToDownload(roles.PCSE);
 
         cy.get('#download-page-title').should('have.length', 1);
@@ -75,7 +74,7 @@ describe('PCSE Workflow: Access and download found files', () => {
         cy.get('#patient-summary-postcode').should('have.text', patient.postalCode);
     });
 
-    it('(Smoke test) shows no files avaliable on 204 success', () => {
+    it('shows no files avaliable on 204 success', () => {
         const searchDocumentReferencesResponse = [];
 
         cy.intercept('GET', '/SearchDocumentReferences*', {
@@ -92,13 +91,11 @@ describe('PCSE Workflow: Access and download found files', () => {
         );
     });
 
-    it('(Smoke test) shows avaliable files to download on 200 success', () => {
-        if (!smokeTest) {
-            cy.intercept('GET', '/SearchDocumentReferences*', {
-                statusCode: 200,
-                body: searchDocumentReferencesResponse,
-            }).as('search');
-        }
+    it('shows avaliable files to download on 200 success', () => {
+        cy.intercept('GET', '/SearchDocumentReferences*', {
+            statusCode: 200,
+            body: searchDocumentReferencesResponse,
+        }).as('search');
 
         navigateToDownload(roles.PCSE);
 
@@ -118,41 +115,36 @@ describe('PCSE Workflow: Access and download found files', () => {
         cy.get('#available-files-row-1-created-date').should('exist');
 
         // We cannot test datetimes of a created s3 bucket object easily on a live instance, therefore
-        // the exists checks above should be enough for a smoketest
 
-        if (!smokeTest) {
-            cy.get('#available-files-row-0-created-date').should(
-                'have.text',
-                searchDocumentReferencesResponse[1].created.toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    second: 'numeric',
-                }),
-            );
-            cy.get('#available-files-row-1-created-date').should(
-                'have.text',
-                searchDocumentReferencesResponse[0].created.toLocaleDateString('en-GB', {
-                    day: '2-digit',
-                    month: 'long',
-                    year: 'numeric',
-                    hour: 'numeric',
-                    minute: 'numeric',
-                    second: 'numeric',
-                }),
-            );
-        }
+        cy.get('#available-files-row-0-created-date').should(
+            'have.text',
+            searchDocumentReferencesResponse[1].created.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+            }),
+        );
+        cy.get('#available-files-row-1-created-date').should(
+            'have.text',
+            searchDocumentReferencesResponse[0].created.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+            }),
+        );
     });
 
     it('Shows spinner button while waiting for Download Document Manifest response', () => {
-        if (!smokeTest) {
-            cy.intercept('GET', '/SearchDocumentReferences*', {
-                statusCode: 200,
-                body: searchDocumentReferencesResponse,
-            }).as('search');
-        }
+        cy.intercept('GET', '/SearchDocumentReferences*', {
+            statusCode: 200,
+            body: searchDocumentReferencesResponse,
+        }).as('search');
 
         navigateToDownload(roles.PCSE);
 

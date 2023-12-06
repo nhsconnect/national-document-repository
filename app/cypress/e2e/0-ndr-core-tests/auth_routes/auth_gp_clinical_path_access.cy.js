@@ -10,7 +10,6 @@ const patient = {
     active: true,
 };
 
-const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 const baseUrl = Cypress.config('baseUrl');
 
 const forbiddenRoutes = ['search/patient', 'search/patient/result', 'search/results'];
@@ -18,12 +17,10 @@ const forbiddenRoutes = ['search/patient', 'search/patient/result', 'search/resu
 describe('GP Clinical user role has access to the expected GP_CLINICAL workflow paths', () => {
     context('GP Clinical role has access to expected routes', () => {
         it('GP Clinical role has access to Lloyd George View', () => {
-            if (!smokeTest) {
-                cy.intercept('GET', '/SearchPatient*', {
-                    statusCode: 200,
-                    body: patient,
-                }).as('search');
-            }
+            cy.intercept('GET', '/SearchPatient*', {
+                statusCode: 200,
+                body: patient,
+            }).as('search');
 
             cy.login('GP_CLINICAL');
             cy.url().should('eq', baseUrl + '/search/upload');

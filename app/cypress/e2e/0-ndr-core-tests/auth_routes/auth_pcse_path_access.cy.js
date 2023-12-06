@@ -10,7 +10,6 @@ const patient = {
     active: false,
 };
 
-const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 const baseUrl = Cypress.config('baseUrl');
 
 const forbiddenRoutes = [
@@ -23,12 +22,10 @@ const forbiddenRoutes = [
 describe('PCSE user role has access to the expected GP_ADMIN workflow paths', () => {
     context('PCSE role has access to expected routes', () => {
         it('PCSE role has access to Download View', () => {
-            if (!smokeTest) {
-                cy.intercept('GET', '/SearchPatient*', {
-                    statusCode: 200,
-                    body: patient,
-                }).as('search');
-            }
+            cy.intercept('GET', '/SearchPatient*', {
+                statusCode: 200,
+                body: patient,
+            }).as('search');
 
             cy.login('PCSE');
 
