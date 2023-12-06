@@ -1,11 +1,7 @@
-import os
-import tempfile
-
 import pydantic
 from botocore.exceptions import ClientError
 from models.staging_metadata import METADATA_FILENAME
 from services.bulk_upload_metadata_service import BulkUploadMetadataService
-from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
@@ -20,17 +16,8 @@ def lambda_handler(_event, _context):
         logger.info("Starting metadata reading process")
 
         metadata_service = BulkUploadMetadataService()
+        metadata_service.process_metadata(METADATA_FILENAME)
 
-        logger.info("Fetching metadata.csv from bucket")
-        metadata_file = metadata_service.download_metadata_from_s3(METADATA_FILENAME)
-
-        logger.info("Parsing bulk upload metadata")
-        staging_metadata_list = metadata_service.csv_to_staging_metadata(metadata_file)
-
-        logger.info("Finished parsing metadata")
-        metadata_service.send_metadata_to_fifo_sqs(staging_metadata_list)
-
-        logger.info("Sent bulk upload metadata to sqs queue")
     except pydantic.ValidationError as e:
         logger.info(
             "Failed to parse metadata.csv", {"Result": "Unsuccessful bulk upload"}
@@ -46,52 +33,3 @@ def lambda_handler(_event, _context):
                 f'No metadata file could be found with the name "{METADATA_FILENAME}"',
                 {"Result": "Unsuccessful bulk upload"},
             )
-
-
-def download_metadata_from_s3(staging_bucket_name: str, metadata_filename: str):
-    s3_service = S3Service()
-    temp_dir = tempfile.mkdtemp()
-
-    local_file_path = os.path.join(temp_dir, metadata_filename)
-    s3_service.download_file(
-        s3_bucket_name=staging_bucket_name,
-        file_key=metadata_filename,
-        download_path=local_file_path,
-    )
-    return local_file_path
-
-
-# def csv_to_staging_metadata(csv_file_path: str) -> list[StagingMetadata]:
-#     patients = {}
-#     with open(csv_file_path, mode="r") as csv_file_handler:
-#         csv_reader: Iterable[dict] = csv.DictReader(csv_file_handler)
-#         for row in csv_reader:
-#             file_metadata = MetadataFile.model_validate(row)
-#             nhs_number = row[NHS_NUMBER_FIELD_NAME]
-#             if nhs_number not in patients:
-#                 patients[nhs_number] = [file_metadata]
-#             else:
-#                 patients[nhs_number] += [file_metadata]
-#
-#     return [
-#         StagingMetadata(nhs_number=nhs_number, files=patients[nhs_number])
-#         for nhs_number in patients
-#     ]
-#
-#
-# def send_metadata_to_fifo_sqs(
-#     staging_metadata_list: list[StagingMetadata], metadata_queue_url: str
-# ) -> None:
-#     sqs_service = SQSService()
-#     sqs_group_id = f"bulk_upload_{uuid.uuid4()}"
-#
-#     for staging_metadata in staging_metadata_list:
-#         nhs_number = staging_metadata.nhs_number
-#         logger.info(f"Sending metadata for patientId: {nhs_number}")
-#
-#         sqs_service.send_message_with_nhs_number_attr_fifo(
-#             queue_url=metadata_queue_url,
-#             message_body=staging_metadata.model_dump_json(by_alias=True),
-#             nhs_number=nhs_number,
-#             group_id=sqs_group_id,
-#         )

@@ -23,6 +23,18 @@ class BulkUploadMetadataService:
 
         self.temp_dir = tempfile.mkdtemp()
 
+    def process_metadata(self, metadata_filename: str):
+        logger.info("Fetching metadata.csv from bucket")
+        metadata_file = self.download_metadata_from_s3(metadata_filename)
+
+        logger.info("Parsing bulk upload metadata")
+        staging_metadata_list = self.csv_to_staging_metadata(metadata_file)
+
+        logger.info("Finished parsing metadata")
+        self.send_metadata_to_fifo_sqs(staging_metadata_list)
+
+        logger.info("Sent bulk upload metadata to sqs queue")
+
     def download_metadata_from_s3(self, metadata_filename: str) -> str:
         local_file_path = os.path.join(self.temp_dir, metadata_filename)
         self.s3_service.download_file(
