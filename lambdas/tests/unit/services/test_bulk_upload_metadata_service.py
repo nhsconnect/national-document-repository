@@ -46,12 +46,13 @@ def test_process_metadata_send_metadata_to_sqs_queue(
             nhs_number="1234567891",
         ),
     ]
+
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
         expected_calls
     )
 
 
-def test_handler_propagate_client_error_when_fail_to_get_metadata_csv_from_s3(
+def test_process_metadata_propagate_client_error_when_fail_to_get_metadata_csv_from_s3(
     set_env, metadata_filename, mock_s3_service, mock_sqs_service
 ):
     mock_s3_service.download_file.side_effect = ClientError(
@@ -70,7 +71,7 @@ def test_handler_propagate_client_error_when_fail_to_get_metadata_csv_from_s3(
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
-def test_handler_raise_validation_error_when_metadata_csv_is_invalid(
+def test_process_metadata_raise_validation_error_when_metadata_csv_is_invalid(
     set_env, metadata_filename, mock_sqs_service, mock_download_metadata_from_s3
 ):
     service = BulkUploadMetadataService()
@@ -84,7 +85,7 @@ def test_handler_raise_validation_error_when_metadata_csv_is_invalid(
         mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
-def test_handler_log_error_when_failed_to_send_message_to_sqs(
+def test_process_metadata_raise_client_error_when_failed_to_send_message_to_sqs(
     set_env, metadata_filename, mock_s3_service, mock_sqs_service, mock_tempfile
 ):
     mock_client_error = ClientError(
@@ -198,6 +199,15 @@ def test_send_metadata_to_sqs_raise_error_when_fail_to_send_message(
         service.send_metadata_to_fifo_sqs(EXPECTED_PARSED_METADATA)
 
 
+def test_clear_temp_storage(set_env, mocker, mock_tempfile):
+    mocked_rm = mocker.patch("shutil.rmtree")
+    service = BulkUploadMetadataService()
+
+    service.clear_temp_storage()
+
+    mocked_rm.assert_called_once_with(service.temp_download_dir)
+
+
 @pytest.fixture
 def metadata_filename():
     return METADATA_FILENAME
@@ -219,6 +229,7 @@ def mock_s3_service(mocker):
 @pytest.fixture
 def mock_tempfile(mocker):
     mocker.patch.object(tempfile, "mkdtemp", return_value=MOCK_TEMP_FOLDER)
+    mocker.patch("shutil.rmtree")
     yield
 
 

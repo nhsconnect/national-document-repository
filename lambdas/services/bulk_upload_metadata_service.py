@@ -22,7 +22,7 @@ class BulkUploadMetadataService:
         self.staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
         self.metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
 
-        self.temp_dir = tempfile.mkdtemp()
+        self.temp_download_dir = tempfile.mkdtemp()
 
     def process_metadata(self, metadata_filename: str):
         logger.info("Fetching metadata.csv from bucket")
@@ -36,10 +36,10 @@ class BulkUploadMetadataService:
 
         logger.info("Sent bulk upload metadata to sqs queue")
 
-        # self.clear_temp_storage()
+        self.clear_temp_storage()
 
     def download_metadata_from_s3(self, metadata_filename: str) -> str:
-        local_file_path = os.path.join(self.temp_dir, metadata_filename)
+        local_file_path = os.path.join(self.temp_download_dir, metadata_filename)
         self.s3_service.download_file(
             s3_bucket_name=self.staging_bucket_name,
             file_key=metadata_filename,
@@ -82,4 +82,4 @@ class BulkUploadMetadataService:
             )
 
     def clear_temp_storage(self):
-        shutil.rmtree(self.temp_dir)
+        shutil.rmtree(self.temp_download_dir)
