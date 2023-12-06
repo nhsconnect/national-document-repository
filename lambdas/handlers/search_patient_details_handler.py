@@ -1,7 +1,6 @@
 from enums.logging_app_interaction import LoggingAppInteraction
 
 from services.search_patient_details_service import SearchPatientDetailsService
-from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
@@ -29,7 +28,7 @@ def lambda_handler(event, context):
             ).get("org_ods_code", "")
             user_role = request_context.authorization.get("repository_role", "")
         search_service = SearchPatientDetailsService(user_ods_code, user_role)
-        response = search_service.handle_search_patient_request(nhs_number, SSMService)
+        response = search_service.handle_search_patient_request(nhs_number)
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
 

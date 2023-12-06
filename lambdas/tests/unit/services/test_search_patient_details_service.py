@@ -12,14 +12,11 @@ from utils.exceptions import (
 
 
 @pytest.fixture(scope="function")
-def mock_service(request):
+def mock_service(request, mocker):
     user_role, user_ods_code = request.param
-    return SearchPatientDetailsService(user_role, user_ods_code)
-
-
-@pytest.fixture()
-def mock_ssm(mocker):
-    return mocker.MagicMock
+    service = SearchPatientDetailsService(user_role, user_ods_code)
+    mocker.patch.object(service, "ssm_service")
+    return service
 
 
 @pytest.fixture()
@@ -32,8 +29,7 @@ def mock_pds_service_fetch(mocker):
 
 @pytest.fixture()
 def mock_check_if_user_authorise(mocker, mock_service):
-    mock_service.check_if_user_authorise = mocker.MagicMock()
-    yield mock_service.check_if_user_authorise
+    yield mocker.patch.object(mock_service, "check_if_user_authorise")
 
 
 @pytest.mark.parametrize(
@@ -72,7 +68,6 @@ def test_check_if_user_authorise_raise_error(mock_service):
     "mock_service", (("GP_ADMIN", "test_ods_code"), ("GP_ADMIN", "")), indirect=True
 )
 def test_handle_search_patient_request_valid(mock_service, mocker):
-    mock_ssm_class = mocker.MagicMock
     pds_service_response = PatientDetails(
         givenName=["Jane"],
         familyName="Smith",
@@ -97,7 +92,7 @@ def test_handle_search_patient_request_valid(mock_service, mocker):
     )
 
     actual_response = mock_service.handle_search_patient_request(
-        "9000000009", mock_ssm_class
+        "9000000009"
     )
 
     mock_pds_service_fetch.assert_called_with("9000000009")
@@ -108,11 +103,11 @@ def test_handle_search_patient_request_valid(mock_service, mocker):
     "mock_service", (("GP_ADMIN", "test_ods_code"), ("GP_ADMIN", "")), indirect=True
 )
 def test_handle_search_patient_request_raise_error_when_patient_not_found(
-    mock_service, mock_ssm, mock_pds_service_fetch
+    mock_service, mock_pds_service_fetch
 ):
     mock_pds_service_fetch.side_effect = PatientNotFoundException()
     with pytest.raises(SearchPatientException):
-        mock_service.handle_search_patient_request("9000000009", mock_ssm)
+        mock_service.handle_search_patient_request("9000000009")
 
     mock_pds_service_fetch.assert_called_with("9000000009")
 
@@ -121,11 +116,11 @@ def test_handle_search_patient_request_raise_error_when_patient_not_found(
     "mock_service", (("GP_ADMIN", "test_ods_code"), ("GP_ADMIN", "")), indirect=True
 )
 def test_handle_search_patient_request_raise_error_when_user_is_not_auth(
-    mock_service, mock_ssm, mock_pds_service_fetch, mock_check_if_user_authorise
+    mock_service, mock_pds_service_fetch, mock_check_if_user_authorise
 ):
     mock_check_if_user_authorise.side_effect = UserNotAuthorisedException()
     with pytest.raises(SearchPatientException):
-        mock_service.handle_search_patient_request("9000000009", mock_ssm)
+        mock_service.handle_search_patient_request("9000000009")
 
     mock_pds_service_fetch.assert_called_with("9000000009")
     mock_check_if_user_authorise.assert_called()
@@ -135,11 +130,11 @@ def test_handle_search_patient_request_raise_error_when_user_is_not_auth(
     "mock_service", (("GP_ADMIN", "test_ods_code"), ("GP_ADMIN", "")), indirect=True
 )
 def test_handle_search_patient_request_raise_error_when_invalid_patient(
-    mock_service, mock_ssm, mock_pds_service_fetch, mock_check_if_user_authorise
+    mock_service, mock_pds_service_fetch, mock_check_if_user_authorise
 ):
     mock_pds_service_fetch.side_effect = InvalidResourceIdException()
     with pytest.raises(SearchPatientException):
-        mock_service.handle_search_patient_request("9000000009", mock_ssm)
+        mock_service.handle_search_patient_request("9000000009")
 
     mock_pds_service_fetch.assert_called_with("9000000009")
     mock_check_if_user_authorise.assert_not_called()
@@ -149,12 +144,12 @@ def test_handle_search_patient_request_raise_error_when_invalid_patient(
     "mock_service", (("GP_ADMIN", "test_ods_code"), ("GP_ADMIN", "")), indirect=True
 )
 def test_handle_search_patient_request_raise_error_when_pds_error(
-    mock_service, mock_ssm, mock_pds_service_fetch, mock_check_if_user_authorise
+    mock_service, mock_pds_service_fetch, mock_check_if_user_authorise
 ):
     mock_pds_service_fetch.side_effect = PdsErrorException()
 
     with pytest.raises(SearchPatientException):
-        mock_service.handle_search_patient_request("9000000009", mock_ssm)
+        mock_service.handle_search_patient_request("9000000009")
 
     mock_pds_service_fetch.assert_called_with("9000000009")
     mock_check_if_user_authorise.assert_not_called()

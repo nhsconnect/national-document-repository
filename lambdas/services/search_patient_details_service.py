@@ -2,6 +2,7 @@ from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
 
 from enums.repository_role import RepositoryRole
+from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
     UserNotAuthorisedException,
@@ -19,10 +20,11 @@ class SearchPatientDetailsService:
     def __init__(self, user_role, user_ods_code):
         self.user_role = user_role
         self.user_ods_code = user_ods_code
+        self.ssm_service = SSMService()
 
-    def handle_search_patient_request(self, nhs_number, ssm_service_class):
+    def handle_search_patient_request(self, nhs_number):
         try:
-            pds_api_service = get_pds_service()(ssm_service_class())
+            pds_api_service = get_pds_service()(self.ssm_service)
             patient_details = pds_api_service.fetch_patient_details(nhs_number)
 
             self.check_if_user_authorise(gp_ods=patient_details.general_practice_ods)
