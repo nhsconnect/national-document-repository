@@ -9,11 +9,11 @@ on:
         required: true
         type: 'string'
         default: 'main'
-      sandbox:
+      sandboxUrl:
         description: 'Sandbox to run the smoke tests on.'
         required: true
         type: 'string'
-        default: 'ndr'
+        default: 'https://ndra.access-request-fulfilment.patient-deductions.nhs.uk/'
 
 permissions:
   pull-requests: write
@@ -37,7 +37,7 @@ jobs:
 
       - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.sandbox}}.access-request-fulfilment.patient-deductions.nhs.uk/
+          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.sandboxUrl}}
         working-directory: ./app
 
       - name: Cypress run
