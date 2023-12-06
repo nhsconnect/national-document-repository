@@ -58,24 +58,18 @@ def lambda_handler(event, context):
 
 def processing_event_details(event):
     try:
-        body = json.loads(event.get("body", ""))
+        body = json.loads(event["body"])
+        nhs_number = body["subject"]["identifier"]["value"]
 
         if not body or not isinstance(body, dict):
             raise CreateDocumentRefException(400, "Missing event body")
-        nhs_number = body.get("subject", {}).get("identifier", {}).get("value", None)
 
-        if not nhs_number:
-            raise CreateDocumentRefException(
-                400, "Request body missing some properties"
-            )
-        content = body.get("content", [None])[0]
-
-        if not content or not isinstance(content, dict):
-            raise CreateDocumentRefException(
-                400, "Request body missing some properties"
-            )
-        doc_list = content.get("attachment", [])
+        doc_list = body["content"][0]["attachment"]
         return nhs_number, doc_list
 
     except (JSONDecodeError, AttributeError) as e:
+        logger.error(e)
         raise CreateDocumentRefException(400, f"Invalid json in body: {str(e)}")
+    except (KeyError, TypeError) as e:
+        logger.error(e)
+        raise CreateDocumentRefException(400, "Request body missing some properties")
