@@ -1,9 +1,14 @@
 # .github/workflows/terraform-dev
-name: 'SMOKETEST UI'
+name: 'SANDBOX - Smoke Test'
 
 on:
   workflow_dispatch:
     inputs:
+      sandbox:
+        description: 'Which Sandbox to push to.'
+        required: true
+        type: 'string'
+        default: 'ndr'
       smokeUrl:
         description: 'What URL to run smoketest against'
         required: true
@@ -27,9 +32,9 @@ jobs:
           npm install --legacy-peer-deps
         working-directory: ./app
 
-      - name: Setting Cypress environment
+      - name: Cypress environment
         run: |
-          npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
+          npx cross-env CYPRESS_BASE_URL=https://${{ github.event.inputs.smokeUrl}}.access-request-fulfilment.patient-deductions.nhs.uk/
         working-directory: ./app
 
       - name: Cypress run
@@ -53,7 +58,7 @@ jobs:
           npm install --legacy-peer-deps
         working-directory: ./app
 
-      - name: Setting Cypress environment
+      - name: Cypress environment
         run: |
           npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
         working-directory: ./app
@@ -78,7 +83,7 @@ jobs:
           npm install --legacy-peer-deps
         working-directory: ./app
 
-      - name: Setting Cypress environment
+      - name: Cypress environment
         run: |
           npx cross-env CYPRESS_BASE_URL=${{ github.event.inputs.smokeUrl}}
         working-directory: ./app
