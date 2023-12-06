@@ -6,12 +6,8 @@ from typing import Iterable
 
 import pydantic
 from botocore.exceptions import ClientError
-from models.staging_metadata import (
-    METADATA_FILENAME,
-    NHS_NUMBER_FIELD_NAME,
-    MetadataFile,
-    StagingMetadata,
-)
+from models.staging_metadata import (METADATA_FILENAME, NHS_NUMBER_FIELD_NAME,
+                                     MetadataFile, StagingMetadata)
 from services.bulk_upload_metadata_service import BulkUploadMetadataService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
@@ -29,13 +25,11 @@ def lambda_handler(_event, _context):
         logger.info("Starting metadata reading process")
 
         metadata_service = BulkUploadMetadataService()
-        staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
+        os.environ["STAGING_STORE_BUCKET_NAME"]
         # metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
 
         logger.info("Fetching metadata.csv from bucket")
-        metadata_file = metadata_service.download_metadata_from_s3(
-            METADATA_FILENAME
-        )
+        metadata_file = metadata_service.download_metadata_from_s3(METADATA_FILENAME)
 
         logger.info("Parsing bulk upload metadata")
         staging_metadata_list = metadata_service.csv_to_staging_metadata(metadata_file)
