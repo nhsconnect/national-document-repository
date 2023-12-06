@@ -14,11 +14,8 @@
 // https://on.cypress.io/configuration
 // ***********************************************************
 
-// Import commands.js using ES2015 syntax:
 import './commands';
-
-// Alternatively you can use CommonJS syntax:
-// require('./commands')
+import './aws.commands';
 
 Cypress.Commands.add('getByTestId', (selector, ...args) => {
     return cy.get(`[data-testid=${selector}]`, ...args);
@@ -55,6 +52,15 @@ declare global {
              * @param {string} role - The user role to login with. Must be either 'gp' or 'pcse'
              */
             login(role: string): Chainable<Subject>;
+            /**
+             * Add file to s3 bucket
+             */
+            uploadFileToS3ViaNode(): Chainable<Subject>;
+            /**
+             * Add dynamoDB entry
+             * @param {string} item - dynamoDB entry
+             */
+            addDynamoDBEntry(item: string): Chainable<Subject>;
         }
     }
 }
