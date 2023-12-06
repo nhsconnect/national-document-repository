@@ -43,7 +43,7 @@ jobs:
           working-directory: ./app
         env:
           CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
-          grepTags: 'smoke'
+          CYPRESS_grepTags: 'smoke'
 
   cypress-run-firefox:
     runs-on: ubuntu-22.04
@@ -67,7 +67,7 @@ jobs:
           working-directory: ./app
         env:
           CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
-          grepTags: 'smoke'
+          CYPRESS_grepTags: 'smoke'
 
   cypress-run-edge:
     runs-on: ubuntu-22.04
@@ -91,4 +91,4 @@ jobs:
           working-directory: ./app
         env:
           CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
-          grepTags: 'smoke'
+          CYPRESS_grepTags: 'smoke'
