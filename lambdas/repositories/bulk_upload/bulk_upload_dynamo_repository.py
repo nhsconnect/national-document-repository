@@ -56,6 +56,9 @@ class BulkUploadDynamoRepository:
                 item=dynamo_record.model_dump(by_alias=True)
             )
 
+    def init_transaction(self):
+        self.dynamo_records_in_transaction = []
+
     def rollback_transaction(self):
         for document_reference in self.dynamo_records_in_transaction:
             primary_key_name = DocumentReferenceMetadataFields.ID.value

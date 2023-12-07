@@ -65,8 +65,9 @@ class BulkUploadService:
                 logger.info("Continue on next message")
 
     def handle_sqs_message(self, message: dict):
+
+        logger.info("Validating SQS event")
         try:
-            logger.info("Parsing message from sqs...")
             staging_metadata_json = message["body"]
             staging_metadata = StagingMetadata.model_validate_json(
                 staging_metadata_json
@@ -76,9 +77,9 @@ class BulkUploadService:
             logger.error(e)
             raise InvalidMessageException(str(e))
 
+        logger.info("SQS event is valid. Validating NHS number and file names")
         try:
             request_context.patient_nhs_no = staging_metadata.nhs_number
-            logger.info("Running validation for file names...")
             lloyd_george_validator.validate_bulk_uploaded_files(staging_metadata)
         except PdsTooManyRequestsException as error:
             logger.info(
@@ -96,12 +97,10 @@ class BulkUploadService:
             self.dynamo_repository.report_upload_failure(staging_metadata, failure_reason)
             return
 
-        logger.info("File validation complete. Checking virus scan results")
+        logger.info("NHS Number and filename validation complete. Checking virus scan has marked files as Clean")
 
         try:
             self.resolve_source_file_path(staging_metadata)
-
-            logger.info("Running validation for virus scan results...")
             self.s3_repository.check_virus_result(staging_metadata, self.file_path_cache)
         except VirusScanNoResultException as e:
             logger.info(e)
@@ -139,10 +138,13 @@ class BulkUploadService:
             return
 
         logger.info(
-            "Virus result validation complete. Start uploading Lloyd George records"
+            "Virus result validation complete. Initialising transaction"
         )
 
         self.s3_repository.init_transaction()
+        self.dynamo_repository.init_transaction()
+
+        logger.info("Transaction initialised. Transfering files to main S3 bucket and creating metadata")
 
         try:
             self.create_lg_records_and_copy_files(staging_metadata)
@@ -164,13 +166,14 @@ class BulkUploadService:
             )
             return
 
-        logger.info("Removing the files that we accepted from staging bucket...")
+        logger.info("File transfer complete. Removing uploaded files from staging bucket")
         self.s3_repository.remove_ingested_file_from_source_bucket()
 
         logger.info(
             f"Completed file ingestion for patient {staging_metadata.nhs_number}",
             {"Result": "Successful upload"},
         )
+        logger.info("Reporting transaction successful")
         self.dynamo_repository.report_upload_complete(staging_metadata)
 
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
@@ -228,6 +231,16 @@ class BulkUploadService:
             )
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
 
+    def rollback_transaction(self):
+        try:
+            self.s3_repository.rollback_transaction()
+            self.dynamo_repository.rollback_transaction()
+            logger.info("Rolled back an incomplete transaction")
+        except ClientError as e:
+            logger.error(
+                f"Failed to rollback the incomplete transaction due to error: {e}"
+            )
+
     @staticmethod
     def convert_to_document_reference(
             file_metadata: MetadataFile, nhs_number: str, s3_bucket_name: str
@@ -242,16 +255,6 @@ class BulkUploadService:
         )
         document_reference.set_virus_scanner_result(VirusScanResult.CLEAN)
         return document_reference
-
-    def rollback_transaction(self):
-        try:
-            self.s3_repository.rollback_transaction()
-            self.dynamo_repository.rollback_transaction()
-            logger.info("Rolled back an incomplete transaction")
-        except ClientError as e:
-            logger.error(
-                f"Failed to rollback the incomplete transaction due to error: {e}"
-            )
 
     @staticmethod
     def strip_leading_slash(filepath: str) -> str:
