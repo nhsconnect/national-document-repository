@@ -10,6 +10,7 @@ from services.dynamo_service import DynamoDBService
 from services.login_service import LoginService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
+from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
 
@@ -261,12 +262,114 @@ def test_exchange_token_raises_error_when_encounter_pyjwt_encode_error(
     with pytest.raises(Exception):
         login_service.generate_session("auth_code", "state")
 
-    # TODO assert 500 in error
 
-
-def test_generate_repository_role_pcse(
-    mock_logging_service,
-    set_env,
-    context,
+def test_generate_repository_role_gp_admin(
+    mock_logging_service, set_env, context, mocker
 ):
-    pass
+    ods_code = "ods_code"
+    org_role_code = "org_role_code"
+    user_role_code = "role_code"
+    org = {"org_ods_code": ods_code, "role_code": org_role_code}
+
+    mocker.patch.object(
+        TokenHandlerSSMService,
+        "get_smartcard_role_gp_admin",
+        return_value=user_role_code,
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_org_role_codes", return_value=[org_role_code]
+    )
+
+    login_service = LoginService()
+
+    expected = RepositoryRole.GP_ADMIN
+    actual = login_service.generate_repository_role(login_service, org, user_role_code)
+    assert expected == actual
+
+
+def test_generate_repository_role_gp_clinical(
+    mock_logging_service, set_env, context, mocker
+):
+    ods_code = "ods_code"
+    org_role_code = "org_role_code"
+    user_role_code = "role_code"
+    org = {"org_ods_code": ods_code, "role_code": org_role_code}
+
+    mocker.patch.object(
+        TokenHandlerSSMService,
+        "get_smartcard_role_gp_admin",
+        return_value="wrong_role_code",
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService,
+        "get_smartcard_role_gp_clinical",
+        return_value=user_role_code,
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_org_role_codes", return_value=[org_role_code]
+    )
+
+    login_service = LoginService()
+
+    expected = RepositoryRole.GP_CLINICAL
+    actual = login_service.generate_repository_role(login_service, org, user_role_code)
+    assert expected == actual
+
+
+def test_generate_repository_role_pcse(mock_logging_service, set_env, context, mocker):
+    ods_code = "ods_code"
+    user_role_code = "role_code"
+    org_role_code = "org_role_code"
+    org = {"org_ods_code": ods_code, "role_code": org_role_code}
+
+    mocker.patch.object(
+        TokenHandlerSSMService,
+        "get_smartcard_role_gp_admin",
+        return_value="wrong_role_code",
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService,
+        "get_smartcard_role_gp_clinical",
+        return_value="wrong_role_code",
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_smartcard_role_pcse", return_value=user_role_code
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService, "get_org_ods_codes", return_value=[ods_code]
+    )
+
+    login_service = LoginService()
+
+    expected = RepositoryRole.PCSE
+    actual = login_service.generate_repository_role(login_service, org, user_role_code)
+    assert expected == actual
+
+
+def test_generate_repository_role_no_role(
+    mock_logging_service, set_env, context, mocker
+):
+    user_role_code = "role_code"
+    org = {"org_ods_code": "ods_code", "role_code": "not_gp_or_pcse"}
+
+    mocker.patch.object(
+        TokenHandlerSSMService,
+        "get_smartcard_role_gp_admin",
+        return_value="wrong_role_code",
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService,
+        "get_smartcard_role_gp_clinical",
+        return_value="wrong_role_code",
+    )
+    mocker.patch.object(
+        TokenHandlerSSMService,
+        "get_smartcard_role_pcse",
+        return_value="wrong_role_code",
+    )
+
+    login_service = LoginService()
+
+    expected = RepositoryRole.NONE
+    actual = login_service.generate_repository_role(login_service, org, user_role_code)
+    assert expected == actual

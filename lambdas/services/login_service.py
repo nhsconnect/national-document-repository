@@ -26,15 +26,6 @@ ods_api_service = OdsApiService()
 class LoginService:
     db_service = DynamoDBService()
 
-    """
-    Login paths:
-    happy path -> respond with response body (JWT + repo role)
-    unhappy path -> respond with error
-        state or token -> auth exception with 401
-        Invalid role -> no orgs exception with 401
-        Logical error - 500 (pyjwt, logical etc)
-    """
-
     def generate_session(self, state, auth_code) -> dict:
         if not self.have_matching_state_value_in_record(state):
             logger.info(
