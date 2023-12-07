@@ -94,3 +94,7 @@ class TagNotFoundException(Exception):
 
 class LogoutFailureException(Exception):
     pass
+
+
+class BulkUploadException(Exception):
+    pass
