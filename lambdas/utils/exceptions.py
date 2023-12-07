@@ -102,6 +102,10 @@ class CreateDocumentRefException(LambdaException):
     pass
 
 
+class SearchPatientException(LambdaException):
+    pass
+
+
 class InvalidDocTypeException(LambdaException):
     pass
 
