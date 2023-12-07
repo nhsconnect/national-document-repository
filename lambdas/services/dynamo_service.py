@@ -2,10 +2,12 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from utils.audit_logging_setup import LoggingService
-from utils.dynamo import (create_expression_attribute_values,
-                          create_expressions,
-                          create_nonexistant_or_empty_attr_filter,
-                          create_update_expression)
+from utils.dynamo import (
+    create_expression_attribute_values,
+    create_expressions,
+    create_nonexistant_or_empty_attr_filter,
+    create_update_expression,
+)
 from utils.exceptions import DynamoDbException, InvalidResourceIdException
 
 logger = LoggingService(__name__)
@@ -167,5 +169,17 @@ class DynamoDBService:
             )
         except ClientError as e:
             logger.error(f"Unable to scan table: {table_name}")
+            logger.error(e)
+            raise e
+
+    def batch_writing(self, table_name, item_list):
+        try:
+            table = self.get_table(table_name)
+            logger.info(f"Writing item to table: {table_name}")
+            with table.batch_writer() as batch:
+                for item in item_list:
+                    batch.put_item(Item=item)
+        except ClientError as e:
+            logger.error(f"Unable to write item to table: {table_name}")
             logger.error(e)
             raise e
