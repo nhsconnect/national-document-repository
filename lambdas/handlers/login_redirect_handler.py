@@ -17,7 +17,6 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
     login_redirect_service = LoginRedirectService()
-    request_context.app_interaction = LoggingAppInteraction.LOGIN.value
     try:
         location_header = login_redirect_service.prepare_redirect_response()
     except LoginRedirectException as e:
