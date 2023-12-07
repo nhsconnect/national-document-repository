@@ -237,6 +237,7 @@ def test_test_scan_table_with_start_key_and_filter(
             FilterExpression="filter_test",
         )
 
+
 def test_batch_write_to_dynamo(mock_dynamo_table, mock_boto3_dynamo, mocker):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         db_service = DynamoDBService()
@@ -249,18 +250,24 @@ def test_batch_write_to_dynamo(mock_dynamo_table, mock_boto3_dynamo, mocker):
 
         db_service.batch_writing(MOCK_TABLE_NAME, items)
 
-        mock_batch_writer.put_item.assert_has_calls([mocker.call(Item=item) for item in items])
+        mock_batch_writer.put_item.assert_has_calls(
+            [mocker.call(Item=item) for item in items]
+        )
         assert mock_batch_writer.put_item.call_count == 2
 
 
-def test_batch_write_to_dynamo_raise_error(mock_dynamo_table, mock_boto3_dynamo, mocker):
+def test_batch_write_to_dynamo_raise_error(
+    mock_dynamo_table, mock_boto3_dynamo, mocker
+):
     with patch.object(boto3, "resource", return_value=mock_boto3_dynamo):
         db_service = DynamoDBService()
         mock_batch_writer = mocker.MagicMock()
         mock_dynamo_table.batch_writer.return_value = mock_batch_writer
         mock_batch_writer.__enter__ = mocker.MagicMock(return_value=mock_batch_writer)
         mock_batch_writer.__exit__ = mocker.MagicMock(return_value=None)
-        mock_batch_writer.put_item.side_effect = ClientError({"error": "test error message"}, "test"),
+        mock_batch_writer.put_item.side_effect = (
+            ClientError({"error": "test error message"}, "test"),
+        )
         mock_boto3_dynamo.Table.return_value = mock_dynamo_table
         items = [{"NhsNumber": TEST_NHS_NUMBER}, {"NhsNumber": "12435255"}]
         with pytest.raises(ClientError):

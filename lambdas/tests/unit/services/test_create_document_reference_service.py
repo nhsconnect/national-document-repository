@@ -52,7 +52,7 @@ def test_create_document_reference_request_empty_list(
 
     mock_prepare_doc_object.assert_not_called()
     mock_prepare_pre_signed_url.assert_not_called()
-    mock_create_reference_in_dynamodb.assert_called_once()
+    mock_create_reference_in_dynamodb.assert_not_called()
 
 
 def test_create_document_reference_request_with_arf_list(
@@ -64,6 +64,7 @@ def test_create_document_reference_request_with_arf_list(
     mock_validate_lg,
 ):
     mock_prepare_doc_object.return_value = "test_return_value"
+    mock_create_doc_ref_service.arf_documents.append(ARF_FILE_LIST)
 
     mock_create_doc_ref_service.create_document_reference_request(ARF_FILE_LIST)
 
@@ -94,6 +95,39 @@ def test_create_document_reference_request_with_lg_list(
     mock_prepare_pre_signed_url.assert_called_with("test_return_value")
     mock_create_reference_in_dynamodb.assert_called_once()
     mock_validate_lg.assert_called_with(mock_create_doc_ref_service.lg_documents)
+
+
+def test_create_document_reference_request_with_both_list(
+    mock_create_doc_ref_service,
+    mocker,
+    mock_prepare_doc_object,
+    mock_prepare_pre_signed_url,
+    mock_create_reference_in_dynamodb,
+    mock_validate_lg,
+):
+    mock_prepare_doc_object.return_value = "test_return_value"
+    mock_create_doc_ref_service.arf_documents = ARF_FILE_LIST
+    mock_create_doc_ref_service.lg_documents = LG_FILE_LIST
+    files_list = ARF_FILE_LIST + LG_FILE_LIST
+    mock_create_doc_ref_service.create_document_reference_request(files_list)
+
+    mock_prepare_doc_object.assert_has_calls(
+        [mocker.call(file) for file in files_list], any_order=True
+    )
+    mock_prepare_pre_signed_url.assert_called_with("test_return_value")
+    mock_create_reference_in_dynamodb.assert_has_calls(
+        [
+            mocker.call(
+                mock_create_doc_ref_service.lg_dynamo_table,
+                mock_create_doc_ref_service.lg_documents_dict_format,
+            ),
+            mocker.call(
+                mock_create_doc_ref_service.arf_dynamo_table,
+                mock_create_doc_ref_service.arf_documents_dict_format,
+            ),
+        ]
+    )
+    mock_validate_lg.assert_called()
 
 
 def test_create_document_reference_request_raise_error_when_invalid_lg(
@@ -255,51 +289,54 @@ def test_create_reference_in_dynamodb_raise_error(mock_create_doc_ref_service):
     )
     mock_create_doc_ref_service.arf_documents_dict_format = {"test": "test"}
     with pytest.raises(CreateDocumentRefException):
-        mock_create_doc_ref_service.create_reference_in_dynamodb()
+        mock_create_doc_ref_service.create_reference_in_dynamodb("test", ["test"])
 
     mock_create_doc_ref_service.dynamo_service.batch_writing.assert_called_once()
 
 
 def test_create_reference_in_dynamodb_both_tables(mock_create_doc_ref_service, mocker):
-    mock_create_doc_ref_service.arf_documents_dict_format = {"test_arf": "test"}
-    mock_create_doc_ref_service.lg_documents_dict_format = {"test_lg": "test"}
-
-    mock_create_doc_ref_service.create_reference_in_dynamodb()
-
-    mock_create_doc_ref_service.dynamo_service.batch_writing.assert_has_calls(
-        [
-            mocker.call(
-                mock_create_doc_ref_service.arf_dynamo_table, {"test_arf": "test"}
-            ),
-            mocker.call(
-                mock_create_doc_ref_service.lg_dynamo_table, {"test_lg": "test"}
-            ),
-        ]
+    mock_create_doc_ref_service.create_reference_in_dynamodb(
+        mock_create_doc_ref_service.arf_dynamo_table, [{"test_arf": "test"}]
     )
-    assert mock_create_doc_ref_service.dynamo_service.batch_writing.call_count == 2
-
-
-def test_create_reference_in_dynamodb_arf_only(mock_create_doc_ref_service, mocker):
-    mock_create_doc_ref_service.arf_documents_dict_format = {"test_arf": "test"}
-
-    mock_create_doc_ref_service.create_reference_in_dynamodb()
 
     mock_create_doc_ref_service.dynamo_service.batch_writing.assert_has_calls(
         [
             mocker.call(
-                mock_create_doc_ref_service.arf_dynamo_table, {"test_arf": "test"}
+                mock_create_doc_ref_service.arf_dynamo_table, [{"test_arf": "test"}]
             )
         ]
     )
     assert mock_create_doc_ref_service.dynamo_service.batch_writing.call_count == 1
 
 
-def test_create_reference_in_dynamodb_lg_only(mock_create_doc_ref_service, mocker):
-    mock_create_doc_ref_service.lg_documents_dict_format = {"test_lg": "test"}
+def test_return_info_by_doc_type_raise_error(mock_create_doc_ref_service):
+    with pytest.raises(CreateDocumentRefException):
+        mock_create_doc_ref_service.return_info_by_doc_type("test")
 
-    mock_create_doc_ref_service.create_reference_in_dynamodb()
 
-    mock_create_doc_ref_service.dynamo_service.batch_writing.assert_has_calls(
-        [mocker.call(mock_create_doc_ref_service.lg_dynamo_table, {"test_lg": "test"})]
+def test_return_info_by_doc_type_return_arf(mock_create_doc_ref_service):
+    (
+        s3_destination,
+        documents_type_list,
+        documents_list_dict_format,
+    ) = mock_create_doc_ref_service.return_info_by_doc_type("ARF")
+    assert s3_destination == mock_create_doc_ref_service.arf_s3_bucket_name
+    assert documents_type_list == mock_create_doc_ref_service.arf_documents
+    assert (
+        documents_list_dict_format
+        == mock_create_doc_ref_service.arf_documents_dict_format
     )
-    assert mock_create_doc_ref_service.dynamo_service.batch_writing.call_count == 1
+
+
+def test_return_info_by_doc_type_return_lg(mock_create_doc_ref_service):
+    (
+        s3_destination,
+        documents_type_list,
+        documents_list_dict_format,
+    ) = mock_create_doc_ref_service.return_info_by_doc_type("LG")
+    assert s3_destination == mock_create_doc_ref_service.lg_s3_bucket_name
+    assert documents_type_list == mock_create_doc_ref_service.lg_documents
+    assert (
+        documents_list_dict_format
+        == mock_create_doc_ref_service.lg_documents_dict_format
+    )

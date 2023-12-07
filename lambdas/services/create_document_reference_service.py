@@ -40,7 +40,14 @@ class CreateDocumentReferenceService:
                 self.prepare_pre_signed_url(document_reference)
             if self.lg_documents:
                 validate_lg_files(self.lg_documents)
-            self.create_reference_in_dynamodb()
+                self.create_reference_in_dynamodb(
+                    self.lg_dynamo_table, self.lg_documents_dict_format
+                )
+            if self.arf_documents:
+                self.create_reference_in_dynamodb(
+                    self.arf_dynamo_table, self.arf_documents_dict_format
+                )
+
         except (InvalidResourceIdException, LGInvalidFilesException) as e:
             raise CreateDocumentRefException(400, e)
 
@@ -62,17 +69,11 @@ class CreateDocumentReferenceService:
 
         logger.info("Provided document is supported")
 
-        s3_destination, documents_type_list, documents_list_dict_format = (
-            (self.lg_s3_bucket_name, self.lg_documents, self.lg_documents_dict_format)
-            if document_type == SupportedDocumentTypes.LG.value
-            else (
-                self.arf_s3_bucket_name,
-                self.arf_documents,
-                self.arf_documents_dict_format,
-            )
-            if document_type == SupportedDocumentTypes.ARF.value
-            else (None, None, None)
-        )
+        (
+            s3_destination,
+            documents_type_list,
+            documents_list_dict_format,
+        ) = self.return_info_by_doc_type(document_type)
 
         s3_object_key = create_reference_id()
         document_reference = NHSDocumentReference(
@@ -105,27 +106,32 @@ class CreateDocumentReferenceService:
             )
             raise CreateDocumentRefException(500, "Internal error")
 
-    def create_reference_in_dynamodb(self):
+    def create_reference_in_dynamodb(self, dynamo_table, document_list):
         try:
-            if self.arf_documents_dict_format:
-                self.dynamo_service.batch_writing(
-                    self.arf_dynamo_table, self.arf_documents_dict_format
-                )
-                logger.info(
-                    "Writing ARF document references",
-                    {"Result": "Upload reference ARF was created successfully"},
-                )
-            if self.lg_documents_dict_format:
-                self.dynamo_service.batch_writing(
-                    self.lg_dynamo_table, self.lg_documents_dict_format
-                )
-                logger.info(
-                    "Writing LG document references",
-                    {"Result": "Upload reference LG was created successfully"},
-                )
+            self.dynamo_service.batch_writing(dynamo_table, document_list)
+            logger.info(
+                f"Writing document references to {dynamo_table}",
+                {"Result": "Upload reference was created successfully"},
+            )
 
         except ClientError as e:
             logger.error(
                 str(e), {"Result": "Upload reference creation was unsuccessful"}
             )
             raise CreateDocumentRefException(500, "Internal error")
+
+    def return_info_by_doc_type(self, doc_type):
+        if doc_type == SupportedDocumentTypes.LG.value:
+            return (
+                self.lg_s3_bucket_name,
+                self.lg_documents,
+                self.lg_documents_dict_format,
+            )
+        elif doc_type == SupportedDocumentTypes.ARF.value:
+            return (
+                self.arf_s3_bucket_name,
+                self.arf_documents,
+                self.arf_documents_dict_format,
+            )
+        else:
+            raise CreateDocumentRefException(400, "Invalid document type")
