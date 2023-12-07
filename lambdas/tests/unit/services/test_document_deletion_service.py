@@ -2,10 +2,11 @@ import pytest
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from services.document_deletion_service import DocumentDeletionService
-from tests.unit.conftest import (MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME,
-                                 TEST_NHS_NUMBER)
+from tests.unit.conftest import MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME, TEST_NHS_NUMBER
 from tests.unit.helpers.data.test_documents import (
-    create_test_doc_store_refs, create_test_lloyd_george_doc_store_refs)
+    create_test_doc_store_refs,
+    create_test_lloyd_george_doc_store_refs,
+)
 
 TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()
 TEST_LG_DOC_STORE_REFERENCES = create_test_lloyd_george_doc_store_refs()
@@ -91,13 +92,10 @@ def test_delete_specific_doc_type(
     doc_type,
     table_name,
     doc_ref,
-    mocker,
     mock_document_query,
+    mock_delete_doc,
     mock_deletion_service,
 ):
-    mock_delete_doc = mocker.patch(
-        "services.document_service.DocumentService.delete_documents"
-    )
     type_of_delete = str(S3LifecycleTags.SOFT_DELETE.value)
 
     expected = doc_ref
@@ -117,12 +115,12 @@ def test_delete_specific_doc_type(
     [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
 )
 def test_delete_specific_doc_type_when_no_record_for_given_patient(
-    set_env, doc_type, mocker, mock_document_query, mock_deletion_service
+    set_env,
+    doc_type,
+    mock_document_query,
+    mock_deletion_service,
+    mock_delete_doc,
 ):
-    mock_delete_doc = mocker.patch(
-        "services.document_service.DocumentService.delete_documents"
-    )
-
     expected = []
     actual = mock_deletion_service.delete_specific_doc_type(
         TEST_NHS_NUMBER_WITH_NO_RECORD, doc_type
@@ -149,6 +147,11 @@ def mocked_document_query(nhs_number: str, doc_type: str):
 @pytest.fixture
 def mock_deletion_service(mocker):
     yield DocumentDeletionService()
+
+
+@pytest.fixture
+def mock_delete_doc(mocker):
+    yield mocker.patch("services.document_service.DocumentService.delete_documents")
 
 
 @pytest.fixture
