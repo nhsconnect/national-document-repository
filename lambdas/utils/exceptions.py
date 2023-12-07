@@ -108,3 +108,7 @@ class SearchPatientException(LambdaException):
 
 class LogoutFailureException(Exception):
     pass
+
+
+class LoginRedirectException(LambdaException):
+    pass
