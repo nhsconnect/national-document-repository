@@ -37,7 +37,7 @@ class DocumentManifestService:
         try:
             self.documents = (
                 self.document_service.fetch_available_document_references_by_type(
-                    self.nhs_number, doc_type
+                    nhs_number=self.nhs_number, doc_type=doc_type
                 )
             )
             if not self.documents:
@@ -91,6 +91,9 @@ class DocumentManifestService:
                     document.get_file_bucket(), document.get_file_key(), download_path
                 )
             except ClientError:
+                logger.error(
+                    f"{document.get_file_key()} may reference missing file in s3 bucket {document.get_file_bucket()}"
+                )
                 raise DocumentManifestServiceException(
                     status_code=500,
                     message=f"Reference to {document.file_key} that doesn't exist in s3",
@@ -98,9 +101,8 @@ class DocumentManifestService:
 
     def upload_zip_file(self):
         logger.info("Creating zip from files")
-        temp_output_dir = tempfile.mkdtemp()
 
-        zip_file_path = os.path.join(temp_output_dir, self.zip_file_name)
+        zip_file_path = os.path.join(self.temp_output_dir, self.zip_file_name)
         with zipfile.ZipFile(zip_file_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             for root, _, files in os.walk(self.temp_downloads_dir):
                 for file in files:
