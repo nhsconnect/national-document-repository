@@ -14,7 +14,6 @@ RETURN_URL = (
 )
 
 
-
 class FakeWebAppClient:
     def __init__(self, *arg, **kwargs):
         self.state = "test1state"
@@ -35,11 +34,6 @@ def mock_service(mocker, set_env):
 @pytest.fixture
 def mock_dynamo(mocker, mock_service):
     yield mocker.patch.object(mock_service, "dynamodb_service")
-
-
-@pytest.fixture
-def mock_ssm(mocker, mock_service):
-    yield mocker.patch.object(mock_service, "ssm_service")
 
 
 @pytest.fixture
