@@ -4,7 +4,6 @@ import boto3
 import pytest
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
-
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.dynamo_service import DynamoDBService
 from tests.unit.conftest import MOCK_TABLE_NAME, TEST_NHS_NUMBER

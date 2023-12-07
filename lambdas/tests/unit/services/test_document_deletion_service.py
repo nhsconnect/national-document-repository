@@ -2,11 +2,10 @@ import pytest
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from services.document_deletion_service import DocumentDeletionService
-from tests.unit.conftest import MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME, TEST_NHS_NUMBER
+from tests.unit.conftest import (MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME,
+                                 TEST_NHS_NUMBER)
 from tests.unit.helpers.data.test_documents import (
-    create_test_doc_store_refs,
-    create_test_lloyd_george_doc_store_refs,
-)
+    create_test_doc_store_refs, create_test_lloyd_george_doc_store_refs)
 
 TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()
 TEST_LG_DOC_STORE_REFERENCES = create_test_lloyd_george_doc_store_refs()

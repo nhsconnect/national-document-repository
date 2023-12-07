@@ -4,9 +4,7 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from handlers.document_manifest_by_nhs_number_handler import lambda_handler
 from tests.unit.helpers.data.test_documents import (
-    create_test_doc_store_refs,
-    create_test_lloyd_george_doc_store_refs,
-)
+    create_test_doc_store_refs, create_test_lloyd_george_doc_store_refs)
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_METADATA_FIELDS = [

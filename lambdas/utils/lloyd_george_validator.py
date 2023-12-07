@@ -12,10 +12,8 @@ from requests import HTTPError
 from services.document_service import DocumentService
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (
-    PatientRecordAlreadyExistException,
-    PdsTooManyRequestsException,
-)
+from utils.exceptions import (PatientRecordAlreadyExistException,
+                              PdsTooManyRequestsException)
 from utils.unicode_utils import REGEX_PATIENT_NAME_PATTERN, names_are_matching
 from utils.utilities import get_pds_service
 

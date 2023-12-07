@@ -4,15 +4,14 @@ import sys
 from json import JSONDecodeError
 
 from enums.logging_app_interaction import LoggingAppInteraction
-
-from services.create_document_reference_service import CreateDocumentReferenceService
+from services.create_document_reference_service import \
+    CreateDocumentReferenceService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import CreateDocumentRefException
 from utils.lambda_response import ApiGatewayResponse
-
 from utils.request_context import request_context
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
