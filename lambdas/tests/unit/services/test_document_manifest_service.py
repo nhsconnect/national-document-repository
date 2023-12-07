@@ -50,7 +50,7 @@ def mock_dynamo_service(mocker, mock_service):
     mocker.patch.object(mock_dynamo_service, "create_item")
     yield mock_dynamo_service
 
-
+from tests.unit.conftest import set_env
 def test_create_document_manifest_presigned_url_doc_store(
     mock_service, mock_s3_service, mock_document_service
 ):
@@ -147,7 +147,7 @@ def test_download_documents_to_be_zipped_handles_duplicate_file_names(mock_servi
     mock_service.documents[1].file_name = "test.pdf"
     mock_service.documents[2].file_name = "test.pdf"
 
-    mock_service.download_documents_to_be_zipped()
+    mock_service.download_documents_to_be_zipped(TEST_LLOYD_GEORGE_DOCUMENT_REFS)
 
     assert mock_service.documents[0].file_name == "test.pdf"
     assert mock_service.documents[1].file_name == "test(2).pdf"
@@ -157,9 +157,7 @@ def test_download_documents_to_be_zipped_handles_duplicate_file_names(mock_servi
 def test_download_documents_to_be_zipped_calls_download_file(
     mock_service, mock_s3_service
 ):
-    mock_service.documents = TEST_LLOYD_GEORGE_DOCUMENT_REFS
-
-    mock_service.download_documents_to_be_zipped()
+    mock_service.download_documents_to_be_zipped(TEST_LLOYD_GEORGE_DOCUMENT_REFS)
 
     assert mock_s3_service.download_file.call_count == 3
 
@@ -167,13 +165,12 @@ def test_download_documents_to_be_zipped_calls_download_file(
 def test_download_documents_to_be_zipped_creates_download_path(
     mock_service, mock_s3_service
 ):
-    mock_service.documents = [TEST_DOC_STORE_DOCUMENT_REFS[0]]
     expected_download_path = os.path.join(
         mock_service.temp_downloads_dir, TEST_DOC_STORE_DOCUMENT_REFS[0].file_name
     )
     expected_document_file_key = TEST_DOC_STORE_DOCUMENT_REFS[0].get_file_key()
 
-    mock_service.download_documents_to_be_zipped()
+    mock_service.download_documents_to_be_zipped([TEST_DOC_STORE_DOCUMENT_REFS[0]])
     mock_s3_service.download_file.assert_called_with(
         MOCK_BUCKET, expected_document_file_key, expected_download_path
     )

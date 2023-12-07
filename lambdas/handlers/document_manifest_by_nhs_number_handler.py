@@ -29,12 +29,12 @@ logger = LoggingService(__name__)
 @override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.DOWNLOAD_RECORD.value
+    logger.info("Starting document manifest process")
     try:
         nhs_number = event["queryStringParameters"]["patientId"]
         doc_type = extract_document_type(event["queryStringParameters"]["docType"])
         request_context.patient_nhs_no = nhs_number
 
-        logger.info("Starting document manifest process")
         document_manifest_service = DocumentManifestService(nhs_number)
         response = document_manifest_service.create_document_manifest_presigned_url(
             doc_type

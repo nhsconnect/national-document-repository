@@ -20,8 +20,6 @@ class DocumentService:
     def fetch_available_document_references_by_type(
         self, nhs_number: str, doc_type: str
     ) -> list[DocumentReference]:
-        # TODO: When we have chance, possibly replace os.environ calls with doc_type.get_dynamodb_table_name()
-
         results: list[DocumentReference] = []
         delete_filter = {DocumentReferenceMetadataFields.DELETED.value: ""}
 

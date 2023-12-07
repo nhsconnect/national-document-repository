@@ -24,23 +24,20 @@ class DocumentManifestService:
         self.document_service = DocumentService()
 
         self.nhs_number = nhs_number
-        self.documents: list[DocumentReference] = []
         self.zip_file_name = f"patient-record-{self.nhs_number}.zip"
         self.temp_downloads_dir = tempfile.mkdtemp()
         self.temp_output_dir = tempfile.mkdtemp()
         self.zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
         self.zip_trace_table = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
-        # TODO - Add time to live for zipped manifest
-        # zip_trace_ttl = os.environ["DOCUMENT_ZIP_TRACE_TTL_IN_DAYS"]
 
     def create_document_manifest_presigned_url(self, doc_type: str) -> str:
         try:
-            self.documents = (
+            documents = (
                 self.document_service.fetch_available_document_references_by_type(
                     nhs_number=self.nhs_number, doc_type=doc_type
                 )
             )
-            if not self.documents:
+            if not documents:
                 raise DocumentManifestServiceException(
                     status_code=404,
                     message="No documents found for given NHS number and document type",
@@ -56,7 +53,7 @@ class DocumentManifestService:
                 message=str(e),
             )
 
-        self.download_documents_to_be_zipped()
+        self.download_documents_to_be_zipped(documents)
         self.upload_zip_file()
 
         shutil.rmtree(self.temp_downloads_dir)
@@ -66,11 +63,11 @@ class DocumentManifestService:
             s3_bucket_name=self.zip_output_bucket, file_key=self.zip_file_name
         )
 
-    def download_documents_to_be_zipped(self):
+    def download_documents_to_be_zipped(self, documents: list[DocumentReference]):
         logger.info("Downloading documents to be zipped")
         file_names_to_be_zipped = {}
 
-        for document in self.documents:
+        for document in documents:
             file_name = document.file_name
 
             duplicated_filename = file_name in file_names_to_be_zipped
