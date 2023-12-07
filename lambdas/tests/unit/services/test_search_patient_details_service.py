@@ -91,9 +91,7 @@ def test_handle_search_patient_request_valid(mock_service, mocker):
         "services.search_patient_details_service.SearchPatientDetailsService.check_if_user_authorise"
     )
 
-    actual_response = mock_service.handle_search_patient_request(
-        "9000000009"
-    )
+    actual_response = mock_service.handle_search_patient_request("9000000009")
 
     mock_pds_service_fetch.assert_called_with("9000000009")
     assert actual_response == expected_response
