@@ -1,15 +1,20 @@
+
 from handlers.back_channel_logout_handler import (
     lambda_handler,
     back_channel_logout_service,
 )
+
 from utils.exceptions import LogoutFailureException
 from utils.lambda_response import ApiGatewayResponse
+
+error_string = """{"error": "failed logout", "error_description":""" + \
+               """ "An error occurred due to missing request body/logout token"}"""
 
 
 def test_return_400_when_missing_event(set_env, event, context):
     expected = ApiGatewayResponse(
         400,
-        """{"error": "failed logout", "error_description": "An error occurred due to missing request body/logout token"}""",
+        error_string,
         "POST",
     ).create_api_gateway_response()
 
@@ -20,7 +25,7 @@ def test_return_400_when_missing_event(set_env, event, context):
 def test_return_400_when_empty_token(set_env, context):
     expected = ApiGatewayResponse(
         400,
-        """{"error": "failed logout", "error_description": "An error occurred due to missing request body/logout token"}""",
+        error_string,
         "POST",
     ).create_api_gateway_response()
 
@@ -31,7 +36,7 @@ def test_return_400_when_empty_token(set_env, context):
 def test_return_400_when_missing_token_with_string_in_body(set_env, context):
     expected = ApiGatewayResponse(
         400,
-        """{"error": "failed logout", "error_description": "An error occurred due to missing request body/logout token"}""",
+        error_string,
         "POST",
     ).create_api_gateway_response()
     event = {"httpMethod": "POST", "body": "some_text"}

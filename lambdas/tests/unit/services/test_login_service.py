@@ -269,4 +269,4 @@ def test_generate_repository_role_pcse(
     set_env,
     context,
 ):
-    return True
+    pass

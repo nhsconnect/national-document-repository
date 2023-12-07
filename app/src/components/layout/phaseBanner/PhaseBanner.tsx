@@ -9,16 +9,7 @@ function PhaseBanner() {
                         New Service
                     </strong>
                     <span className="govuk-phase-banner__text">
-                        {'Your '}
-                        <a
-                            className="govuk-link"
-                            href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                            feedback
-                        </a>
-                        {' will help us to improve this service.'}
+                        Your feedback will help us to improve this service.
                     </span>
                 </p>
             </div>

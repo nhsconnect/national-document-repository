@@ -9,6 +9,7 @@ import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { LinkProps } from 'react-router-dom';
 import usePatient from '../../../helpers/hooks/usePatient';
+import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../../helpers/hooks/useRole');
@@ -27,6 +28,7 @@ const mockedUsePatient = usePatient as jest.Mock;
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
 const mockSetStage = jest.fn();
+const mockSetDownloadStage = jest.fn();
 
 describe('DeletionConfirmationStage', () => {
     beforeEach(() => {
@@ -189,6 +191,7 @@ describe('DeletionConfirmationStage', () => {
                     <DeletionConfirmationStage
                         numberOfFiles={numberOfFiles}
                         setStage={mockSetStage}
+                        setDownloadStage={mockSetDownloadStage}
                     />,
                 );
 
@@ -207,6 +210,7 @@ describe('DeletionConfirmationStage', () => {
                 await waitFor(() => {
                     expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
                 });
+                expect(mockSetDownloadStage).toHaveBeenCalledWith(DOWNLOAD_STAGE.REFRESH);
             },
         );
     });

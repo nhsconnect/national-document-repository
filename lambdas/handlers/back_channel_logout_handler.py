@@ -3,7 +3,6 @@ from urllib.parse import parse_qs
 
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.back_channel_logout_service import BackChannelLogoutService
-
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check

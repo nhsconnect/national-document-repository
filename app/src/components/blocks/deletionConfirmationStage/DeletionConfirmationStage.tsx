@@ -8,20 +8,23 @@ import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
+import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 
 export type Props = {
     numberOfFiles: number;
+    setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-function DeletionConfirmationStage({ numberOfFiles, setStage }: Props) {
+function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }: Props) {
     const navigate = useNavigate();
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const role = useRole();
     const handleClick = () => {
-        if (setStage) {
+        if (setStage && setDownloadStage) {
+            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
             setStage(LG_RECORD_STAGE.RECORD);
         }
     };

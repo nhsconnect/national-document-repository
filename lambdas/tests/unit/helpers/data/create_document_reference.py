@@ -41,31 +41,28 @@ MOCK_EVENT_BODY = {
     ],
     "created": "2023-10-02T15:55:30.650Z",
 }
+LG_FILE_LIST = [
+    {
+        "fileName": f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
+        "contentType": "application/pdf",
+        "docType": "LG",
+    },
+    {
+        "fileName": f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
+        "contentType": "application/pdf",
+        "docType": "LG",
+    },
+    {
+        "fileName": f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
+        "contentType": "application/pdf",
+        "docType": "LG",
+    },
+]
 
 LG_MOCK_EVENT_BODY = {
     "resourceType": "DocumentReference",
     "subject": {"identifier": {"value": TEST_NHS_NUMBER}},
-    "content": [
-        {
-            "attachment": [
-                {
-                    "fileName": f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
-                    "contentType": "application/pdf",
-                    "docType": "LG",
-                },
-                {
-                    "fileName": f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
-                    "contentType": "application/pdf",
-                    "docType": "LG",
-                },
-                {
-                    "fileName": f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
-                    "contentType": "application/pdf",
-                    "docType": "LG",
-                },
-            ]
-        }
-    ],
+    "content": [{"attachment": LG_FILE_LIST}],
     "created": "2023-10-02T15:55:30.650Z",
 }
 
@@ -145,32 +142,28 @@ LG_MOCK_DUPLICATE_FILES_EVENT_BODY = {
     "created": "2023-10-02T15:55:30.650Z",
     "httpMethod": "POST",
 }
-
+ARF_FILE_LIST = [
+    {
+        "fileName": "test1.txt",
+        "contentType": "text/plain",
+        "docType": "ARF",
+    },
+    {
+        "fileName": "test2.txt",
+        "contentType": "text/plain",
+        "docType": "ARF",
+    },
+    {
+        "fileName": "test3.txt",
+        "contentType": "text/plain",
+        "docType": "ARF",
+    },
+]
 
 ARF_MOCK_EVENT_BODY = {
     "resourceType": "DocumentReference",
     "subject": {"identifier": {"value": TEST_NHS_NUMBER}},
-    "content": [
-        {
-            "attachment": [
-                {
-                    "fileName": "test1.txt",
-                    "contentType": "text/plain",
-                    "docType": "ARF",
-                },
-                {
-                    "fileName": "test2.txt",
-                    "contentType": "text/plain",
-                    "docType": "ARF",
-                },
-                {
-                    "fileName": "test3.txt",
-                    "contentType": "text/plain",
-                    "docType": "ARF",
-                },
-            ]
-        }
-    ],
+    "content": [{"attachment": ARF_FILE_LIST}],
     "created": "2023-10-02T15:55:30.650Z",
 }
 

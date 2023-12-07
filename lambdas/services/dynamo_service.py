@@ -171,3 +171,15 @@ class DynamoDBService:
             logger.error(f"Unable to scan table: {table_name}")
             logger.error(e)
             raise e
+
+    def batch_writing(self, table_name, item_list):
+        try:
+            table = self.get_table(table_name)
+            logger.info(f"Writing item to table: {table_name}")
+            with table.batch_writer() as batch:
+                for item in item_list:
+                    batch.put_item(Item=item)
+        except ClientError as e:
+            logger.error(f"Unable to write item to table: {table_name}")
+            logger.error(e)
+            raise e

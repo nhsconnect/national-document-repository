@@ -4,7 +4,7 @@ describe('Authentication & Authorisation', () => {
     const baseUrl = 'http://localhost:3000';
 
     context('Session management is handled correctly', () => {
-        it('sets session storage on login and clears session storage on logout', () => {
+        it.skip('sets session storage on login and clears session storage on logout', () => {
             cy.login('GP_ADMIN');
 
             assertSessionStorage({

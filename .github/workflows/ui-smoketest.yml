@@ -1,0 +1,94 @@
+# .github/workflows/terraform-dev
+name: 'SMOKETEST UI'
+
+on:
+  workflow_dispatch:
+    inputs:
+      buildBranch:
+        description: 'Feature branch to push to test?'
+        required: true
+        type: 'string'
+      smokeUrl:
+        description: 'What URL to run smoketest against'
+        required: true
+        default: 'https://ndr-dev.access-request-fulfilment.patient-deductions.nhs.uk/'
+        type: 'string'
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+
+  cypress-run-chrome:
+    runs-on: ubuntu-22.04
+    needs: install-cypress-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally
+        run: npm install -g serve
+
+      - name: Cypress install
+        run: |
+          npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          install: false
+          browser: chrome
+          working-directory: ./app
+        env:
+          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl}}'
+
+  cypress-run-firefox:
+    runs-on: ubuntu-22.04
+    needs: install-cypress-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally
+        run: npm install -g serve
+
+      - name: Cypress install
+        run: |
+          npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          install: false
+          browser: firefox
+          working-directory: ./app
+        env:
+          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl}}'
+
+  cypress-run-edge:
+    runs-on: ubuntu-22.04
+    needs: install-cypress-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Cypress install
+        run: |
+          npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          install: false
+          browser: edge
+          working-directory: ./app
+        env:
+          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl}}'
+
