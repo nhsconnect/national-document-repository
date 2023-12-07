@@ -26,12 +26,6 @@ def test_process_metadata_send_metadata_to_sqs_queue(
 ):
     mock_download_metadata_from_s3.return_value = MOCK_METADATA_CSV
     mocker.patch("uuid.uuid4", return_value="123412342")
-
-    service = BulkUploadMetadataService()
-    service.process_metadata(metadata_filename)
-
-    assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
-
     expected_calls = [
         call(
             group_id="bulk_upload_123412342",
@@ -47,6 +41,10 @@ def test_process_metadata_send_metadata_to_sqs_queue(
         ),
     ]
 
+    service = BulkUploadMetadataService()
+    service.process_metadata(metadata_filename)
+
+    assert mock_sqs_service.send_message_with_nhs_number_attr_fifo.call_count == 2
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
         expected_calls
     )
@@ -158,9 +156,6 @@ def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service):
     service = BulkUploadMetadataService()
     mock_parsed_metadata = EXPECTED_PARSED_METADATA
     mocker.patch("uuid.uuid4", return_value="123412342")
-
-    service.send_metadata_to_fifo_sqs(mock_parsed_metadata)
-
     expected_calls = [
         call(
             queue_url=MOCK_LG_METADATA_SQS_QUEUE,
@@ -175,6 +170,9 @@ def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service):
             group_id="bulk_upload_123412342",
         ),
     ]
+
+    service.send_metadata_to_fifo_sqs(mock_parsed_metadata)
+
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
         expected_calls
     )
