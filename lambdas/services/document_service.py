@@ -12,10 +12,10 @@ from utils.audit_logging_setup import LoggingService
 logger = LoggingService(__name__)
 
 
-class DocumentService(DynamoDBService):
+class DocumentService:
     def __init__(self):
-        super().__init__()
         self.s3_service = S3Service()
+        self.dynamo_service = DynamoDBService()
 
     def fetch_available_document_references_by_type(
         self, nhs_number: str, doc_type: str
@@ -55,7 +55,7 @@ class DocumentService(DynamoDBService):
         self, nhs_number: str, table: str
     ) -> list[DocumentReference]:
         documents = []
-        response = self.query_with_requested_fields(
+        response = self.dynamo_service.query_with_requested_fields(
             table_name=table,
             index_name="NhsNumberIndex",
             search_key="NhsNumber",
@@ -73,7 +73,7 @@ class DocumentService(DynamoDBService):
     ) -> list[DocumentReference]:
         documents = []
 
-        response = self.query_with_requested_fields(
+        response = self.dynamo_service.query_with_requested_fields(
             table_name=table,
             index_name="NhsNumberIndex",
             search_key="NhsNumber",
@@ -122,4 +122,6 @@ class DocumentService(DynamoDBService):
                 tag_value=str(S3LifecycleTags.ENABLE_TAG.value),
             )
 
-            self.update_item(table_name, reference.id, updated_fields=update_fields)
+            self.dynamo_service.update_item(
+                table_name, reference.id, updated_fields=update_fields
+            )
