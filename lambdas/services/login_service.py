@@ -51,10 +51,6 @@ class LoginService:
             "Use the access token to fetch user's organisation and smartcard codes"
         )
 
-        """ ^^^ Good to stay ^^^   
-            vvv     TODO     vvv
-        """
-
         org_ods_codes = oidc_service.fetch_user_org_codes(
             access_token, id_token_claim_set
         )

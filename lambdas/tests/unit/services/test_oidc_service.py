@@ -113,7 +113,9 @@ def test_fetch_tokens_raises_AuthorisationException_for_invalid_id_token(
     )
     mocker.patch("requests.post", return_value=mock_cis2_response)
     mocker.patch.object(
-        oidc_service, "validate_and_decode_token", side_effect=AuthorisationException(None, None)
+        oidc_service,
+        "validate_and_decode_token",
+        side_effect=AuthorisationException(None, None),
     )
 
     with pytest.raises(AuthorisationException):

@@ -3,7 +3,6 @@ import json
 import pytest
 from enums.repository_role import RepositoryRole
 from handlers.token_handler import lambda_handler
-from services.login_service import LoginService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
 from utils.lambda_response import ApiGatewayResponse
@@ -13,7 +12,6 @@ from utils.lambda_response import ApiGatewayResponse
 def mock_login_service(mocker, set_env):
     mock_service = mocker.patch("handlers.token_handler.LoginService")
     yield mock_service.return_value
-
 
 
 @pytest.fixture

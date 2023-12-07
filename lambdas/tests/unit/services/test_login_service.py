@@ -6,6 +6,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.repository_role import RepositoryRole
 from models.oidc_models import IdTokenClaimSet
+from services.dynamo_service import DynamoDBService
 from services.login_service import LoginService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
@@ -24,7 +25,7 @@ def mock_aws_infras(mocker, set_env):
         "Parameter": {"Value": "fake_private_key"}
     }
 
-    mock_state_table.query.return_value = {"Count": 1, "Items": [{"id": "fake_item"}]}
+    mock_state_table.query.return_value = {"Count": 1, "Items": [{"id": "state"}]}
 
     def mock_dynamo_table(table_name: str):
         if table_name == os.environ["AUTH_STATE_TABLE_NAME"]:
@@ -117,21 +118,31 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
     expected_jwt = "mock_ndr_auth_token"
     expected_role = RepositoryRole.PCSE
 
-    mocker.patch(
-        "services.login_service.create_login_session",
+    mocker.patch.object(
+        LoginService,
+        "create_login_session",
         return_value="new_item_session_id",
     )
-    mocker.patch(
-        "services.login_service.generate_repository_role",
+    mocker.patch.object(
+        LoginService,
+        "generate_repository_role",
         return_value=expected_role,
     )
-    mocker.patch("services.login_service.issue_auth_token", return_value=expected_jwt)
+    mocker.patch.object(LoginService, "issue_auth_token", return_value=expected_jwt)
+
+    dynamo_state_query_result = {"Count": 1, "Items": [{"id": "state"}]}
+
+    mocker.patch.object(
+        DynamoDBService, "simple_query", return_value=dynamo_state_query_result
+    )
+
+    mocker.patch.object(DynamoDBService, "delete_item")
 
     expected = {"local_role": RepositoryRole.PCSE, "jwt": expected_jwt}
 
     login_service = LoginService()
 
-    actual = login_service.generate_session(auth_code, state)
+    actual = login_service.generate_session(state, auth_code)
 
     assert actual == expected
 
@@ -144,29 +155,35 @@ def test_exchange_token_raises_auth_exception_when_auth_code_is_invalid(
     mock_ods_api_service,
     mock_jwt_encode,
     set_env,
+    mocker,
     context,
 ):
-    mock_oidc_service["fetch_token"].side_effect = AuthorisationException
+    mock_oidc_service["fetch_token"].side_effect = AuthorisationException(
+        500, "Failed to retrieve access token from ID Provider"
+    )
     login_service = LoginService()
+    mocker.patch.object(
+        LoginService, "have_matching_state_value_in_record", return_value=True
+    )
 
     with pytest.raises(AuthorisationException):
         login_service.generate_session("auth_code", "state")
-        # TODO assert 401 in error
 
     mock_oidc_service["fetch_user_org_codes"].assert_not_called()
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
 def test_exchange_token_raises_auth_error_when_given_state_is_not_in_state_table(
-    mock_aws_infras, mock_oidc_service, set_env, context
+    mock_aws_infras, mock_oidc_service, set_env, context, mocker
 ):
-    mock_aws_infras["state_table"].query.return_value = {"Count": 0, "Items": []}
+    mocker.patch.object(
+        DynamoDBService, "simple_query", return_value={"Count": 0, "Items": []}
+    )
 
     login_service = LoginService()
 
     with pytest.raises(AuthorisationException):
         login_service.generate_session("auth_code", "state")
-        # TODO assert 401 in error
 
     mock_oidc_service["fetch_token"].assert_not_called()
     mock_oidc_service["fetch_user_org_codes"].assert_not_called()
@@ -182,6 +199,14 @@ def test_exchange_token_raises_auth_error_when_user_doesnt_have_a_valid_role_to_
         def keys(self):
             return []
 
+    dynamo_state_query_result = {"Count": 1, "Items": [{"id": "state"}]}
+
+    mocker.patch.object(
+        DynamoDBService, "simple_query", return_value=dynamo_state_query_result
+    )
+
+    mocker.patch.object(DynamoDBService, "delete_item")
+
     mocker.patch(
         "services.ods_api_service.OdsApiService.fetch_organisation_with_permitted_role"
     ).return_value = PermittedOrgs()
@@ -190,7 +215,6 @@ def test_exchange_token_raises_auth_error_when_user_doesnt_have_a_valid_role_to_
 
     with pytest.raises(AuthorisationException):
         login_service.generate_session("auth_code", "state")
-        # TODO assert 401 in error
 
     mock_aws_infras["session_table"].post.assert_not_called()
 
