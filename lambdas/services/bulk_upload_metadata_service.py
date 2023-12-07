@@ -5,6 +5,8 @@ import tempfile
 import uuid
 from typing import Iterable
 
+import pydantic
+from botocore.exceptions import ClientError
 from models.staging_metadata import (NHS_NUMBER_FIELD_NAME, MetadataFile,
                                      StagingMetadata)
 from services.s3_service import S3Service
@@ -25,18 +27,37 @@ class BulkUploadMetadataService:
         self.temp_download_dir = tempfile.mkdtemp()
 
     def process_metadata(self, metadata_filename: str):
-        logger.info("Fetching metadata.csv from bucket")
-        metadata_file = self.download_metadata_from_s3(metadata_filename)
+        try:
+            logger.info("Fetching metadata.csv from bucket")
+            metadata_file = self.download_metadata_from_s3(metadata_filename)
 
-        logger.info("Parsing bulk upload metadata")
-        staging_metadata_list = self.csv_to_staging_metadata(metadata_file)
+            logger.info("Parsing bulk upload metadata")
+            staging_metadata_list = self.csv_to_staging_metadata(metadata_file)
 
-        logger.info("Finished parsing metadata")
-        self.send_metadata_to_fifo_sqs(staging_metadata_list)
+            logger.info("Finished parsing metadata")
+            self.send_metadata_to_fifo_sqs(staging_metadata_list)
 
-        logger.info("Sent bulk upload metadata to sqs queue")
+            logger.info("Sent bulk upload metadata to sqs queue")
 
-        self.clear_temp_storage()
+            self.clear_temp_storage()
+
+        except pydantic.ValidationError as e:
+            logger.info(
+                "Failed to parse metadata.csv", {"Result": "Unsuccessful bulk upload"}
+            )
+            logger.error(str(e))
+        except KeyError as e:
+            logger.info(
+                "Failed due to missing key", {"Result": "Unsuccessful bulk upload"}
+            )
+            logger.error(str(e))
+        except ClientError as e:
+            logger.error(str(e))
+            if "HeadObject" in str(e):
+                logger.error(
+                    f'No metadata file could be found with the name "{metadata_filename}"',
+                    {"Result": "Unsuccessful bulk upload"},
+                )
 
     def download_metadata_from_s3(self, metadata_filename: str) -> str:
         local_file_path = os.path.join(self.temp_download_dir, metadata_filename)

@@ -6,12 +6,11 @@ from botocore.exceptions import ClientError
 from models.staging_metadata import METADATA_FILENAME
 from pydantic import ValidationError
 from services.bulk_upload_metadata_service import BulkUploadMetadataService
-from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, MOCK_LG_STAGING_STORE_BUCKET
+from tests.unit.conftest import (MOCK_LG_METADATA_SQS_QUEUE,
+                                 MOCK_LG_STAGING_STORE_BUCKET)
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    EXPECTED_PARSED_METADATA,
-    EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
-    EXPECTED_SQS_MSG_FOR_PATIENT_1234567891,
-)
+    EXPECTED_PARSED_METADATA, EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
+    EXPECTED_SQS_MSG_FOR_PATIENT_1234567891)
 
 MOCK_METADATA_CSV = "tests/unit/helpers/data/bulk_upload/metadata.csv"
 MOCK_INVALID_METADATA_CSV_FILES = [
@@ -55,26 +54,31 @@ def test_process_metadata_send_metadata_to_sqs_queue(
     )
 
 
-def test_process_metadata_propagate_client_error_when_fail_to_get_metadata_csv_from_s3(
-    set_env, metadata_filename, mock_s3_service, mock_sqs_service, metadata_service
+def test_process_metadata_catch_and_log_error_when_fail_to_get_metadata_csv_from_s3(
+    set_env,
+    caplog,
+    metadata_filename,
+    mock_s3_service,
+    mock_sqs_service,
+    metadata_service,
 ):
     mock_s3_service.download_file.side_effect = ClientError(
         {"Error": {"Code": "403", "Message": "Forbidden"}},
         "S3:HeadObject",
     )
-    expected_err_msg = (
-        "An error occurred (403) when calling the S3:HeadObject operation: Forbidden"
-    )
+    expected_err_msg = 'No metadata file could be found with the name "metadata.csv"'
 
-    with pytest.raises(ClientError) as e:
-        metadata_service.process_metadata(metadata_filename)
+    metadata_service.process_metadata(metadata_filename)
 
-    assert str(e.value) == expected_err_msg
+    assert caplog.records[-1].msg == expected_err_msg
+    assert caplog.records[-1].levelname == "ERROR"
+
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
 def test_process_metadata_raise_validation_error_when_metadata_csv_is_invalid(
     set_env,
+    caplog,
     metadata_filename,
     mock_sqs_service,
     mock_download_metadata_from_s3,
@@ -83,14 +87,17 @@ def test_process_metadata_raise_validation_error_when_metadata_csv_is_invalid(
     for invalid_csv_file in MOCK_INVALID_METADATA_CSV_FILES:
         mock_download_metadata_from_s3.return_value = invalid_csv_file
 
-        with pytest.raises(ValidationError):
-            metadata_service.process_metadata(metadata_filename)
+        metadata_service.process_metadata(metadata_filename)
+
+        assert "validation error" in caplog.records[-1].msg
+        assert caplog.records[-1].levelname == "ERROR"
 
         mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
 def test_process_metadata_raise_client_error_when_failed_to_send_message_to_sqs(
     set_env,
+    caplog,
     metadata_filename,
     mock_s3_service,
     mock_sqs_service,
@@ -114,10 +121,10 @@ def test_process_metadata_raise_client_error_when_failed_to_send_message_to_sqs(
         " The specified queue does not exist"
     )
 
-    with pytest.raises(ClientError) as e:
-        metadata_service.process_metadata(metadata_filename)
+    metadata_service.process_metadata(metadata_filename)
 
-    assert str(e.value) == expected_err_msg
+    assert caplog.records[-1].msg == expected_err_msg
+    assert caplog.records[-1].levelname == "ERROR"
 
 
 def test_download_metadata_from_s3(
