@@ -7,6 +7,6 @@ services:
     build:
       context: .
     ports:
-      - 8080:80
+      - "${HOST_PORT}:${CONTAINER_PORT}"
     env_file:
       - .env

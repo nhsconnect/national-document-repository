@@ -15,6 +15,6 @@ WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
 COPY --from=builder /app/build .
 WORKDIR /etc/nginx
-COPY --from=builder ./app/docker/nginx.conf .
-EXPOSE 80
+COPY --from=builder ./app/docker/nginx.conf ./nginx.conf.template
+RUN cat nginx.conf.template | envsubst > ./nginx.conf
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
