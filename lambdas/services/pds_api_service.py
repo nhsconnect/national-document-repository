@@ -1,6 +1,7 @@
 import json
 import time
 import uuid
+from json import JSONDecodeError
 
 import jwt
 import requests
@@ -46,7 +47,7 @@ class PdsApiService(PatientSearch):
 
             return pds_response
 
-        except ClientError as e:
+        except (ClientError, JSONDecodeError) as e:
             logger.error(f"Error when getting ssm parameters {e}")
             raise PdsErrorException("Failed to preform patient search")
 

@@ -1,7 +1,6 @@
 import json
 
 import pytest
-
 from handlers.create_document_reference_handler import (
     lambda_handler,
     processing_event_details,
@@ -13,12 +12,12 @@ from tests.unit.conftest import (
     TEST_OBJECT_KEY,
 )
 from tests.unit.helpers.data.create_document_reference import (
+    ARF_FILE_LIST,
     ARF_MOCK_EVENT_BODY,
     ARF_MOCK_RESPONSE,
     LG_AND_ARF_MOCK_RESPONSE,
     LG_MOCK_EVENT_BODY,
     MOCK_EVENT_BODY,
-    ARF_FILE_LIST,
 )
 from utils.exceptions import CreateDocumentRefException
 from utils.lambda_response import ApiGatewayResponse

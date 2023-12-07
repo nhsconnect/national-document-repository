@@ -4,6 +4,7 @@ from utils.lambda_response import ApiGatewayResponse
 
 from lambdas.utils.decorators.validate_document_type import (
     extract_document_type,
+    extract_document_type_as_enum,
     validate_document_type,
 )
 
@@ -142,5 +143,24 @@ def test_extract_document_type_arf(value):
     expected = SupportedDocumentTypes.ARF.value
 
     actual = extract_document_type(value)
+
+    assert expected == actual
+
+
+@pytest.mark.parametrize(
+    ["value", "expected"],
+    [
+        ("ARF", SupportedDocumentTypes.ARF),
+        ("ARF ", SupportedDocumentTypes.ARF),
+        (" ARF", SupportedDocumentTypes.ARF),
+        ("LG", SupportedDocumentTypes.LG),
+        ("LG ", SupportedDocumentTypes.LG),
+        (" LG", SupportedDocumentTypes.LG),
+        (" ARF, LG ", SupportedDocumentTypes.ALL),
+        (" LG  , ARF ", SupportedDocumentTypes.ALL),
+    ],
+)
+def test_extract_document_type_as_enum(value, expected):
+    actual = extract_document_type_as_enum(value)
 
     assert expected == actual
