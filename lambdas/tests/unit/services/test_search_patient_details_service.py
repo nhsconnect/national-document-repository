@@ -1,14 +1,10 @@
 import pytest
-
 from models.pds_models import PatientDetails
 from services.search_patient_details_service import SearchPatientDetailsService
-from utils.exceptions import (
-    UserNotAuthorisedException,
-    PatientNotFoundException,
-    SearchPatientException,
-    InvalidResourceIdException,
-    PdsErrorException,
-)
+from utils.exceptions import (InvalidResourceIdException,
+                              PatientNotFoundException, PdsErrorException,
+                              SearchPatientException,
+                              UserNotAuthorisedException)
 
 
 @pytest.fixture(scope="function")

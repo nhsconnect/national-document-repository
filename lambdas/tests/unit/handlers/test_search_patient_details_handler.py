@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 import pytest
 from handlers.search_patient_details_handler import lambda_handler
-
 from utils.exceptions import SearchPatientException
 from utils.lambda_response import ApiGatewayResponse
 

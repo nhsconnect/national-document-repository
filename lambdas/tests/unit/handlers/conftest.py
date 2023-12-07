@@ -49,6 +49,15 @@ def valid_id_and_lg_doctype_event():
 
 
 @pytest.fixture
+def valid_id_and_lg_doctype_delete_event():
+    api_gateway_proxy_event = {
+        "httpMethod": "DELETE",
+        "queryStringParameters": {"patientId": "9000000009", "docType": "LG"},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
 def valid_id_and_invalid_doctype_event():
     api_gateway_proxy_event = {
         "httpMethod": "GET",

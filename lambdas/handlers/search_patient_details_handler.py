@@ -1,5 +1,4 @@
 from enums.logging_app_interaction import LoggingAppInteraction
-
 from services.search_patient_details_service import SearchPatientDetailsService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.override_error_check import override_error_check

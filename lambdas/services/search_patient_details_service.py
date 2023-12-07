@@ -1,16 +1,12 @@
+from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
-
-from enums.repository_role import RepositoryRole
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (
-    UserNotAuthorisedException,
-    PatientNotFoundException,
-    SearchPatientException,
-    InvalidResourceIdException,
-    PdsErrorException,
-)
+from utils.exceptions import (InvalidResourceIdException,
+                              PatientNotFoundException, PdsErrorException,
+                              SearchPatientException,
+                              UserNotAuthorisedException)
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
