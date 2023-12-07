@@ -15,6 +15,7 @@ logger = LoggingService(__name__)
 @override_error_check
 @ensure_environment_variables(names=["AUTH_DYNAMODB_NAME"])
 def lambda_handler(event, context):
+    request_context.app_interaction = LoggingAppInteraction.LOGIN.value
     login_redirect_service = LoginRedirectService()
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
     try:
