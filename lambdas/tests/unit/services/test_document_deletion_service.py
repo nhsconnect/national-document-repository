@@ -13,12 +13,14 @@ TEST_NHS_NUMBER_WITH_NO_RECORD = "1234567890"
 TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD = "234567890"
 
 
-def test_handle_delete_for_all_doc_type(set_env, mock_delete_specific_doc_type):
-    service = DocumentDeletionService()
-
+def test_handle_delete_for_all_doc_type(
+    set_env, mock_delete_specific_doc_type, mock_deletion_service
+):
     expected = TEST_DOC_STORE_REFERENCES + TEST_LG_DOC_STORE_REFERENCES
 
-    actual = service.handle_delete(TEST_NHS_NUMBER, SupportedDocumentTypes.ALL)
+    actual = mock_deletion_service.handle_delete(
+        TEST_NHS_NUMBER, SupportedDocumentTypes.ALL
+    )
 
     assert expected == actual
 
@@ -32,13 +34,12 @@ def test_handle_delete_for_all_doc_type(set_env, mock_delete_specific_doc_type):
 
 
 def test_handle_delete_all_doc_type_when_patient_only_got_LG_record(
-    set_env, mock_delete_specific_doc_type
+    set_env, mock_delete_specific_doc_type, mock_deletion_service
 ):
-    service = DocumentDeletionService()
     nhs_number = TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD
 
     expected = TEST_LG_DOC_STORE_REFERENCES
-    actual = service.handle_delete(nhs_number, SupportedDocumentTypes.ALL)
+    actual = mock_deletion_service.handle_delete(nhs_number, SupportedDocumentTypes.ALL)
 
     assert expected == actual
 
@@ -57,11 +58,9 @@ def test_handle_delete_all_doc_type_when_patient_only_got_LG_record(
     ],
 )
 def test_handle_delete_for_one_doc_type(
-    set_env, doc_type, expected, mock_delete_specific_doc_type
+    set_env, doc_type, expected, mock_delete_specific_doc_type, mock_deletion_service
 ):
-    service = DocumentDeletionService()
-
-    actual = service.handle_delete(TEST_NHS_NUMBER, doc_type)
+    actual = mock_deletion_service.handle_delete(TEST_NHS_NUMBER, doc_type)
 
     assert actual == expected
 
@@ -70,13 +69,10 @@ def test_handle_delete_for_one_doc_type(
 
 
 def test_handle_delete_when_no_record_for_patient_return_empty_list(
-    set_env,
-    mock_delete_specific_doc_type,
+    set_env, mock_delete_specific_doc_type, mock_deletion_service
 ):
-    service = DocumentDeletionService()
-
     expected = []
-    actual = service.handle_delete(
+    actual = mock_deletion_service.handle_delete(
         TEST_NHS_NUMBER_WITH_NO_RECORD, SupportedDocumentTypes.ALL
     )
 
@@ -91,16 +87,21 @@ def test_handle_delete_when_no_record_for_patient_return_empty_list(
     ],
 )
 def test_delete_specific_doc_type(
-    set_env, doc_type, table_name, doc_ref, mocker, mock_document_query
+    set_env,
+    doc_type,
+    table_name,
+    doc_ref,
+    mocker,
+    mock_document_query,
+    mock_deletion_service,
 ):
-    service = DocumentDeletionService()
     mock_delete_doc = mocker.patch(
         "services.document_service.DocumentService.delete_documents"
     )
     type_of_delete = str(S3LifecycleTags.SOFT_DELETE.value)
 
     expected = doc_ref
-    actual = service.delete_specific_doc_type(TEST_NHS_NUMBER, doc_type)
+    actual = mock_deletion_service.delete_specific_doc_type(TEST_NHS_NUMBER, doc_type)
 
     assert actual == expected
 
@@ -116,15 +117,16 @@ def test_delete_specific_doc_type(
     [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
 )
 def test_delete_specific_doc_type_when_no_record_for_given_patient(
-    set_env, doc_type, mocker, mock_document_query
+    set_env, doc_type, mocker, mock_document_query, mock_deletion_service
 ):
-    service = DocumentDeletionService()
     mock_delete_doc = mocker.patch(
         "services.document_service.DocumentService.delete_documents"
     )
 
     expected = []
-    actual = service.delete_specific_doc_type(TEST_NHS_NUMBER_WITH_NO_RECORD, doc_type)
+    actual = mock_deletion_service.delete_specific_doc_type(
+        TEST_NHS_NUMBER_WITH_NO_RECORD, doc_type
+    )
 
     assert actual == expected
 
@@ -142,6 +144,11 @@ def mocked_document_query(nhs_number: str, doc_type: str):
     ):
         return TEST_LG_DOC_STORE_REFERENCES
     return []
+
+
+@pytest.fixture
+def mock_deletion_service(mocker):
+    yield DocumentDeletionService()
 
 
 @pytest.fixture
