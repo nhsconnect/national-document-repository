@@ -18,16 +18,16 @@ class LoginRedirectService:
         self.oidc_parameters = {}
 
     def configure_oidc(self) -> WebApplicationClient:
-        self.oidc_parameters = self.ssm_service.get_ssm_parameters(
-            ["OIDC_AUTHORISE_URL", "OIDC_CLIENT_ID"]
-        )
-
         return WebApplicationClient(
             client_id=self.oidc_parameters["OIDC_CLIENT_ID"],
         )
 
     def prepare_redirect_response(self):
         try:
+            self.oidc_parameters = self.ssm_service.get_ssm_parameters(
+                ["OIDC_AUTHORISE_URL", "OIDC_CLIENT_ID"]
+            )
+
             oidc_client = self.configure_oidc()
 
             url, _headers, _body = oidc_client.prepare_authorization_request(

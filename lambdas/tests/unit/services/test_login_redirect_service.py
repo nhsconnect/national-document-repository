@@ -37,18 +37,23 @@ def mock_dynamo(mocker, mock_service):
 
 
 @pytest.fixture
-def mock_oidc(mocker, mock_service):
+def mock_ssm(mocker, mock_service):
     mock_service.oidc_parameters = {
         "OIDC_AUTHORISE_URL": "string",
         "OIDC_CLIENT_ID": "string",
     }
+    yield mocker.patch.object(mock_service, "ssm_service")
+
+
+@pytest.fixture
+def mock_oidc(mocker, mock_service):
     yield mocker.patch.object(
         mock_service, "configure_oidc", return_value=FakeWebAppClient()
     )
 
 
 def test_prepare_redirect_response_returns_location_header_with_correct_headers(
-    mocker, mock_service, mock_oidc
+    mocker, mock_service, mock_oidc, mock_ssm
 ):
     mocker.patch.object(mock_service, "save_state_in_dynamo_db")
 
@@ -57,10 +62,11 @@ def test_prepare_redirect_response_returns_location_header_with_correct_headers(
     expected = {"Location": RETURN_URL}
 
     assert response == expected
+    mock_ssm.get_ssm_parameters.assert_called_once()
 
 
 def test_prepare_redirect_response_return_500_when_boto3_client_failing(
-    mocker, mock_service, mock_oidc
+    mocker, mock_service, mock_oidc, mock_ssm
 ):
     mock_save_state_in_dynamo_db = mocker.patch.object(
         mock_service, "save_state_in_dynamo_db"
@@ -72,10 +78,11 @@ def test_prepare_redirect_response_return_500_when_boto3_client_failing(
     with pytest.raises(LoginRedirectException):
         mock_service.prepare_redirect_response()
     mock_save_state_in_dynamo_db.assert_not_called()
+    mock_ssm.get_ssm_parameters.assert_called_once()
 
 
 def test_prepare_redirect_response_return_500_when_auth_client_failing(
-    mocker, mock_service, mock_oidc
+    mocker, mock_service, mock_oidc, mock_ssm
 ):
     mock_save_state_in_dynamo_db = mocker.patch.object(
         mock_service, "save_state_in_dynamo_db"
@@ -85,6 +92,7 @@ def test_prepare_redirect_response_return_500_when_auth_client_failing(
     with pytest.raises(LoginRedirectException):
         mock_service.prepare_redirect_response()
     mock_save_state_in_dynamo_db.assert_not_called()
+    mock_ssm.get_ssm_parameters.assert_called_once()
 
 
 def test_save_to_dynamo(mocker, monkeypatch, mock_service, mock_dynamo):
