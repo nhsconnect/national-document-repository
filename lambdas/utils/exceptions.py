@@ -98,6 +98,10 @@ class LambdaException(Exception):
         self.message = message
 
 
+class CreateDocumentRefException(LambdaException):
+    pass
+
+
 class InvalidDocTypeException(LambdaException):
     pass
 
