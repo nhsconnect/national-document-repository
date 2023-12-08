@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 import pytest
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.s3_lifecycle_tags import S3LifecycleDays, S3LifecycleTags
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
@@ -30,125 +31,185 @@ MOCK_DOCUMENT = {
 
 
 @pytest.fixture
-def nhs_number():
-    return "9000000009"
-
-
-def test_returns_list_of_lg_document_references_when_results_are_returned(
-    set_env, mocker
-):
+def mock_service(set_env, mocker):
     mocker.patch("boto3.resource")
     service = DocumentService()
+    mocker.patch.object(service, "s3_service")
+    mocker.patch.object(service, "dynamo_service")
+    yield service
 
-    mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
-    mock_dynamo_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
 
-    results = service.fetch_available_document_references_by_type(TEST_NHS_NUMBER, "LG")
+@pytest.fixture
+def mock_dynamo_service(mocker, mock_service):
+    mocker.patch.object(mock_service.dynamo_service, "query_with_requested_fields")
+    mocker.patch.object(mock_service.dynamo_service, "update_item")
+    yield mock_service.dynamo_service
 
-    mock_dynamo_table.assert_called_with(MOCK_LG_TABLE_NAME)
+
+@pytest.fixture
+def mock_s3_service(mocker, mock_service):
+    mocker.patch.object(mock_service.s3_service, "create_object_tag")
+    yield mock_service.s3_service
+
+
+def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_references(
+    mock_service, mock_dynamo_service
+):
+    mock_dynamo_service.query_with_requested_fields.return_value = MOCK_SEARCH_RESPONSE
+
+    results = mock_service.fetch_available_document_references_by_type(
+        TEST_NHS_NUMBER, "LG"
+    )
 
     assert len(results) == 3
     for result in results:
         assert isinstance(result, DocumentReference)
 
+    mock_dynamo_service.query_with_requested_fields.assert_called_once_with(
+        table_name=MOCK_LG_TABLE_NAME,
+        index_name="NhsNumberIndex",
+        search_key="NhsNumber",
+        search_condition=TEST_NHS_NUMBER,
+        requested_fields=DocumentReferenceMetadataFields.list(),
+        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+    )
 
-def test_returns_list_of_arf_document_references_when_results_are_returned(
-    set_env, mocker
+
+def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_references(
+    mock_service, mock_dynamo_service
 ):
-    mocker.patch("boto3.resource")
-    service = DocumentService()
+    mock_dynamo_service.query_with_requested_fields.return_value = MOCK_SEARCH_RESPONSE
 
-    mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
-    mock_dynamo_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
-
-    results = service.fetch_available_document_references_by_type(
+    results = mock_service.fetch_available_document_references_by_type(
         TEST_NHS_NUMBER, "ARF"
     )
 
-    mock_dynamo_table.assert_called_with(MOCK_ARF_TABLE_NAME)
-
     assert len(results) == 3
     for result in results:
         assert isinstance(result, DocumentReference)
 
-
-def test_returns_list_of_both_type_document_references_when_results_are_returned(
-    set_env, mocker
-):
-    mocker.patch("boto3.resource")
-    service = DocumentService()
-
-    mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
-    mock_dynamo_table.return_value.query.side_effect = [
-        MOCK_SEARCH_RESPONSE,
-        MOCK_SEARCH_RESPONSE,
-    ]
-
-    results = service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, "ALL"
+    mock_dynamo_service.query_with_requested_fields.assert_called_once_with(
+        table_name=MOCK_ARF_TABLE_NAME,
+        index_name="NhsNumberIndex",
+        search_key="NhsNumber",
+        search_condition=TEST_NHS_NUMBER,
+        requested_fields=DocumentReferenceMetadataFields.list(),
+        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
     )
 
-    assert mock_dynamo_table.call_count == 2
+
+def test_fetch_available_document_references_by_type_all_returns_list_of_doc_references(
+    mocker, mock_service, mock_dynamo_service
+):
+    mock_dynamo_service.query_with_requested_fields.return_value = MOCK_SEARCH_RESPONSE
+
+    results = mock_service.fetch_available_document_references_by_type(
+        TEST_NHS_NUMBER, "ALL"
+    )
 
     assert len(results) == 6
     for result in results:
         assert isinstance(result, DocumentReference)
 
+    expected_calls = [
+        mocker.call(
+            table_name=MOCK_ARF_TABLE_NAME,
+            index_name="NhsNumberIndex",
+            search_key="NhsNumber",
+            search_condition=TEST_NHS_NUMBER,
+            requested_fields=DocumentReferenceMetadataFields.list(),
+            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        ),
+        mocker.call(
+            table_name=MOCK_LG_TABLE_NAME,
+            index_name="NhsNumberIndex",
+            search_key="NhsNumber",
+            search_condition=TEST_NHS_NUMBER,
+            requested_fields=DocumentReferenceMetadataFields.list(),
+            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        ),
+    ]
 
-def test_returns_list_of_both_type_document_references_when_only_one_result_is_returned(
-    set_env, mocker
+    mock_dynamo_service.query_with_requested_fields.assert_has_calls(
+        expected_calls, any_order=True
+    )
+
+
+def test_fetch_available_document_references_by_type_all_only_one_result_is_returned_returns_doc_references(
+    mocker, mock_service, mock_dynamo_service
 ):
-    mocker.patch("boto3.resource")
-    service = DocumentService()
-
-    mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
-    mock_dynamo_table.return_value.query.side_effect = [
+    mock_dynamo_service.query_with_requested_fields.side_effect = [
         MOCK_SEARCH_RESPONSE,
         MOCK_EMPTY_RESPONSE,
     ]
 
-    results = service.fetch_available_document_references_by_type(
+    results = mock_service.fetch_available_document_references_by_type(
         TEST_NHS_NUMBER, "ALL"
     )
-
-    assert mock_dynamo_table.call_count == 2
 
     assert len(results) == 3
     for result in results:
         assert isinstance(result, DocumentReference)
 
+    expected_calls = [
+        mocker.call(
+            table_name=MOCK_ARF_TABLE_NAME,
+            index_name="NhsNumberIndex",
+            search_key="NhsNumber",
+            search_condition=TEST_NHS_NUMBER,
+            requested_fields=DocumentReferenceMetadataFields.list(),
+            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        ),
+        mocker.call(
+            table_name=MOCK_LG_TABLE_NAME,
+            index_name="NhsNumberIndex",
+            search_key="NhsNumber",
+            search_condition=TEST_NHS_NUMBER,
+            requested_fields=DocumentReferenceMetadataFields.list(),
+            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        ),
+    ]
 
-def test_returns_empty_list_of_lg_document_references_when_no_results_are_returned(
-    set_env, mocker
+    mock_dynamo_service.query_with_requested_fields.assert_has_calls(
+        expected_calls, any_order=True
+    )
+
+
+def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_doc_references(
+    mock_service, mock_dynamo_service
 ):
-    mocker.patch("boto3.resource")
-    service = DocumentService()
+    mock_dynamo_service.query_with_requested_fields.return_value = MOCK_EMPTY_RESPONSE
 
-    mock_dynamo_table = mocker.patch.object(service.dynamodb, "Table")
-    mock_dynamo_table.return_value.query.return_value = MOCK_EMPTY_RESPONSE
-
-    result = service.fetch_available_document_references_by_type(TEST_NHS_NUMBER, "LG")
-
-    mock_dynamo_table.assert_called_with(MOCK_LG_TABLE_NAME)
+    result = mock_service.fetch_available_document_references_by_type(
+        TEST_NHS_NUMBER, "LG"
+    )
 
     assert len(result) == 0
+    mock_dynamo_service.query_with_requested_fields.assert_called_once_with(
+        table_name=MOCK_LG_TABLE_NAME,
+        index_name="NhsNumberIndex",
+        search_key="NhsNumber",
+        search_condition=TEST_NHS_NUMBER,
+        requested_fields=DocumentReferenceMetadataFields.list(),
+        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+    )
 
 
-def test_returns_empty_list_when_invalid_doctype_supplied(set_env, mocker):
-    mocker.patch("boto3.resource")
-    service = DocumentService()
-
-    result = service.fetch_available_document_references_by_type(
+def test_fetch_available_document_references_by_type_when_invalid_doctype_supplied_returns_empty_list(
+    mock_service, mock_dynamo_service
+):
+    result = mock_service.fetch_available_document_references_by_type(
         TEST_NHS_NUMBER, "INVALID"
     )
 
     assert len(result) == 0
+    mock_dynamo_service.query_with_requested_fields.assert_not_called()
 
 
 @freeze_time("2023-10-1 13:00:00")
-def test_delete_documents_soft_delete(set_env, mocker):
-    mocker.patch("boto3.client")
-
+def test_delete_documents_soft_delete(
+    mock_service, mock_dynamo_service, mock_s3_service
+):
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
     test_date = datetime.now()
@@ -159,33 +220,26 @@ def test_delete_documents_soft_delete(set_env, mocker):
         "TTL": int(ttl_date.timestamp()),
     }
 
-    document_service = DocumentService()
-
-    mock_create_object_tag = mocker.patch.object(
-        document_service.s3_service, "create_object_tag"
-    )
-    mock_update_item = mocker.patch.object(document_service, "update_item")
-
-    document_service.delete_documents(
+    mock_service.delete_documents(
         MOCK_TABLE_NAME, [test_doc_ref], str(S3LifecycleTags.SOFT_DELETE.value)
     )
 
-    mock_create_object_tag.assert_called_once_with(
+    mock_s3_service.create_object_tag.assert_called_once_with(
         file_key=test_doc_ref.get_file_key(),
         s3_bucket_name=test_doc_ref.get_file_bucket(),
         tag_key="soft-delete",
         tag_value="true",
     )
 
-    mock_update_item.assert_called_once_with(
+    mock_dynamo_service.update_item.assert_called_once_with(
         MOCK_TABLE_NAME, test_doc_ref.id, updated_fields=test_update_fields
     )
 
 
 @freeze_time("2023-10-1 13:00:00")
-def test_delete_documents_death_delete(set_env, mocker):
-    mocker.patch("boto3.client")
-
+def test_delete_documents_death_delete(
+    mock_service, mock_dynamo_service, mock_s3_service
+):
     test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
 
     test_date = datetime.now()
@@ -196,24 +250,17 @@ def test_delete_documents_death_delete(set_env, mocker):
         "TTL": int(ttl_date.timestamp()),
     }
 
-    document_service = DocumentService()
-
-    mock_create_object_tag = mocker.patch.object(
-        document_service.s3_service, "create_object_tag"
-    )
-    mock_update_item = mocker.patch.object(document_service, "update_item")
-
-    document_service.delete_documents(
+    mock_service.delete_documents(
         MOCK_TABLE_NAME, [test_doc_ref], str(S3LifecycleTags.DEATH_DELETE.value)
     )
 
-    mock_create_object_tag.assert_called_once_with(
+    mock_s3_service.create_object_tag.assert_called_once_with(
         file_key=test_doc_ref.get_file_key(),
         s3_bucket_name=test_doc_ref.get_file_bucket(),
         tag_key="patient-death",
         tag_value="true",
     )
 
-    mock_update_item.assert_called_once_with(
+    mock_dynamo_service.update_item.assert_called_once_with(
         MOCK_TABLE_NAME, test_doc_ref.id, updated_fields=test_update_fields
     )

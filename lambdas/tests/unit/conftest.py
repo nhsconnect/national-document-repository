@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from unittest import mock
 
 import pytest
+from models.document_reference import DocumentReference
+from pydantic import ValidationError
 
 REGION_NAME = "eu-west-2"
 
@@ -174,3 +176,12 @@ def mock_userinfo():
         "user_id": user_id,
         "user_info": mock_userinfo,
     }
+
+
+@pytest.fixture()
+def validation_error() -> ValidationError:
+    try:
+        data = {}
+        DocumentReference.model_validate(data)
+    except ValidationError as e:
+        return e
