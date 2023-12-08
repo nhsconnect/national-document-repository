@@ -38,20 +38,20 @@ def lambda_handler(event, context):
     try:
         session_info = login_service.generate_session(state, auth_code)
 
-        logger.info("Creating response")
-        response = {
-            "role": session_info["local_role"].value,
-            "authorisation_token": session_info["jwt"],
-        }
-
-        logger.audit_splunk_info(
-            "User logged in successfully", {"Result": "Successful login"}
-        )
-        return respond_with(200, json.dumps(response))
-
     except AuthorisationException as error:
         logger.error(error, {"Result": "Unauthorised"})
         return respond_with(error.status_code, error.message)
+
+    logger.info("Creating response")
+    response = {
+        "role": session_info["local_role"].value,
+        "authorisation_token": session_info["jwt"],
+    }
+
+    logger.audit_splunk_info(
+        "User logged in successfully", {"Result": "Successful login"}
+    )
+    return respond_with(200, json.dumps(response))
 
 
 def respond_with(http_status_code, body):
