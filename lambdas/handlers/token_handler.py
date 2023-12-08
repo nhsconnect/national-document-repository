@@ -103,7 +103,6 @@ def lambda_handler(event, context):
             repository_role.value,
             user_id,
         )
-
         logger.info("Creating response")
         response = {
             "role": repository_role.value,
