@@ -34,10 +34,6 @@ class DynamoDbException(Exception):
     pass
 
 
-class ManifestDownloadException(Exception):
-    pass
-
-
 class MissingEnvVarException(Exception):
     pass
 
@@ -115,4 +111,8 @@ class LogoutFailureException(Exception):
 
 
 class LoginRedirectException(LambdaException):
+    pass
+
+
+class DocumentManifestServiceException(LambdaException):
     pass

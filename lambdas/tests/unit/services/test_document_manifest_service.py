@@ -1,112 +1,191 @@
 import os
 
+import pytest
+from enums.supported_document_types import SupportedDocumentTypes
 from services.document_manifest_service import DocumentManifestService
 from tests.unit.conftest import (MOCK_BUCKET, MOCK_ZIP_OUTPUT_BUCKET,
-                                 MOCK_ZIP_TRACE_TABLE, TEST_NHS_NUMBER)
-from tests.unit.helpers.data.test_documents import create_test_doc_store_refs
+                                 TEST_NHS_NUMBER)
+from tests.unit.helpers.data.s3_responses import MOCK_PRESIGNED_URL_RESPONSE
+from tests.unit.helpers.data.test_documents import (
+    create_test_doc_store_refs, create_test_lloyd_george_doc_store_refs)
+from utils.exceptions import DocumentManifestServiceException
 
-TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()
-MOCK_PRESIGNED_URL_RESPONSE = {
-    "url": "https://ndr-dev-document-store.s3.amazonaws.com/",
-    "fields": {
-        "key": "0abed67c-0d0b-4a11-a600-a2f19ee61281",
-        "x-amz-algorithm": "AWS4-HMAC-SHA256",
-        "x-amz-credential": "ASIAXYSUA44VTL5M5LWL/20230911/eu-west-2/s3/aws4_request",
-        "x-amz-date": "20230911T084756Z",
-        "x-amz-expires": "1800",
-        "x-amz-signed-headers": "test-host",
-        "x-amz-signature": "test-signature",
-    },
-}
+TEST_DOC_STORE_DOCUMENT_REFS = create_test_doc_store_refs()
+TEST_LLOYD_GEORGE_DOCUMENT_REFS = create_test_lloyd_george_doc_store_refs()
 
 
-def test_create_document_manifest_presigned_url(set_env, mocker):
-    mocker.patch("boto3.client")
 
-    service = DocumentManifestService(
-        TEST_NHS_NUMBER,
-        TEST_DOC_STORE_REFERENCES,
-        MOCK_ZIP_OUTPUT_BUCKET,
-        MOCK_ZIP_TRACE_TABLE,
+@pytest.fixture
+def mock_service(mocker, set_env):
+    service = DocumentManifestService(TEST_NHS_NUMBER)
+    mocker.patch.object(service, "s3_service")
+    mocker.patch.object(service, "dynamo_service")
+    mocker.patch.object(service, "document_service")
+    yield service
+
+
+@pytest.fixture
+def mock_document_service(mocker, mock_service):
+    mock_document_service = mock_service.document_service
+    mocker.patch.object(
+        mock_document_service, "fetch_available_document_references_by_type"
+    )
+    yield mock_document_service
+
+
+@pytest.fixture
+def mock_s3_service(mocker, mock_service):
+    mock_s3_service = mock_service.s3_service
+    mocker.patch.object(mock_s3_service, "create_download_presigned_url")
+    mocker.patch.object(mock_s3_service, "upload_file")
+    mock_s3_service.create_download_presigned_url.return_value = (
+        MOCK_PRESIGNED_URL_RESPONSE
+    )
+    yield mock_s3_service
+
+
+@pytest.fixture
+def mock_dynamo_service(mocker, mock_service):
+    mock_dynamo_service = mock_service.dynamo_service
+    mocker.patch.object(mock_dynamo_service, "create_item")
+    yield mock_dynamo_service
+
+from tests.unit.conftest import set_env
+def test_create_document_manifest_presigned_url_doc_store(
+    mock_service, mock_s3_service, mock_document_service
+):
+    mock_document_service.fetch_available_document_references_by_type.return_value = (
+        TEST_DOC_STORE_DOCUMENT_REFS
     )
 
-    mock_s3_service = mocker.patch.object(
-        service.s3_service, "create_download_presigned_url"
+    response = mock_service.create_document_manifest_presigned_url(
+        SupportedDocumentTypes.ARF.value
     )
-    mock_s3_service.return_value = MOCK_PRESIGNED_URL_RESPONSE
 
-    mock_download_documents_to_be_zipped = mocker.patch.object(
-        service, "download_documents_to_be_zipped"
-    )
-    mock_upload_zip_file = mocker.patch.object(service, "upload_zip_file")
-
-    response = service.create_document_manifest_presigned_url()
-
+    assert mock_service.zip_file_name == f"patient-record-{TEST_NHS_NUMBER}.zip"
     assert response == MOCK_PRESIGNED_URL_RESPONSE
-    mock_download_documents_to_be_zipped.assert_called_once()
-    mock_upload_zip_file.assert_called_once()
-
-
-def test_download_documents_to_be_zipped_handles_duplicate_file_names(set_env, mocker):
-    mocker.patch("boto3.client")
-
-    TEST_DOC_STORE_REFERENCES[0].file_name = "test.pdf"
-    TEST_DOC_STORE_REFERENCES[1].file_name = "test.pdf"
-    TEST_DOC_STORE_REFERENCES[2].file_name = "test.pdf"
-
-    service = DocumentManifestService(
-        TEST_NHS_NUMBER,
-        TEST_DOC_STORE_REFERENCES,
-        MOCK_ZIP_OUTPUT_BUCKET,
-        MOCK_ZIP_TRACE_TABLE,
+    mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
+        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.ARF.value
+    )
+    mock_s3_service.create_download_presigned_url.assert_called_once_with(
+        s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
     )
 
-    service.download_documents_to_be_zipped()
 
-    assert TEST_DOC_STORE_REFERENCES[0].file_name == "test.pdf"
-    assert TEST_DOC_STORE_REFERENCES[1].file_name == "test(2).pdf"
-    assert TEST_DOC_STORE_REFERENCES[2].file_name == "test(3).pdf"
-
-
-def test_download_documents_to_be_zipped_calls_download_file(set_env, mocker):
-    mocker.patch("boto3.client")
-
-    service = DocumentManifestService(
-        TEST_NHS_NUMBER,
-        TEST_DOC_STORE_REFERENCES,
-        MOCK_ZIP_OUTPUT_BUCKET,
-        MOCK_ZIP_TRACE_TABLE,
-    )
-    mock_s3_service_download_file = mocker.patch.object(
-        service.s3_service, "download_file"
+def test_create_document_manifest_presigned_url_lloyd_george(
+    mock_service, mock_s3_service, mock_document_service
+):
+    mock_service.document_service.fetch_available_document_references_by_type.return_value = (
+        TEST_LLOYD_GEORGE_DOCUMENT_REFS
     )
 
-    service.download_documents_to_be_zipped()
-
-    assert mock_s3_service_download_file.call_count == 3
-
-
-def test_download_documents_to_be_zipped_creates_download_path(set_env, mocker):
-    mocker.patch("boto3.client")
-
-    service = DocumentManifestService(
-        TEST_NHS_NUMBER,
-        [TEST_DOC_STORE_REFERENCES[0]],
-        MOCK_ZIP_OUTPUT_BUCKET,
-        MOCK_ZIP_TRACE_TABLE,
-    )
-    mock_s3_service_download_file = mocker.patch.object(
-        service.s3_service, "download_file"
+    response = mock_service.create_document_manifest_presigned_url(
+        SupportedDocumentTypes.LG.value
     )
 
-    service.download_documents_to_be_zipped()
+    assert mock_service.zip_file_name == f"patient-record-{TEST_NHS_NUMBER}.zip"
+    assert response == MOCK_PRESIGNED_URL_RESPONSE
+    mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
+        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG.value
+    )
+    mock_s3_service.create_download_presigned_url.assert_called_once_with(
+        s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
+    )
 
+
+def test_create_document_manifest_presigned_url_all(
+    mocker, mock_service, mock_s3_service, mock_document_service
+):
+    mock_service.document_service.fetch_available_document_references_by_type.return_value = (
+        TEST_DOC_STORE_DOCUMENT_REFS + TEST_LLOYD_GEORGE_DOCUMENT_REFS
+    )
+
+    response = mock_service.create_document_manifest_presigned_url(
+        SupportedDocumentTypes.ALL.value
+    )
+
+    assert mock_service.zip_file_name == f"patient-record-{TEST_NHS_NUMBER}.zip"
+    assert response == MOCK_PRESIGNED_URL_RESPONSE
+    mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
+        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.ALL.value
+    )
+    mock_s3_service.create_download_presigned_url.assert_called_once_with(
+        s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
+    )
+
+
+def test_create_document_manifest_presigned_raises_exception_when_validation_error(
+    mock_service, validation_error
+):
+    mock_service.document_service.fetch_available_document_references_by_type.side_effect = (
+        validation_error
+    )
+
+    with pytest.raises(DocumentManifestServiceException):
+        mock_service.create_document_manifest_presigned_url(
+            SupportedDocumentTypes.ALL.value
+        )
+
+
+def test_create_document_manifest_presigned_raises_exception_when_documents_empty(
+    mock_service,
+):
+    mock_service.document_service.fetch_available_document_references_by_type.return_value = (
+        []
+    )
+
+    with pytest.raises(DocumentManifestServiceException):
+        mock_service.create_document_manifest_presigned_url(
+            SupportedDocumentTypes.ALL.value
+        )
+
+
+def test_download_documents_to_be_zipped_handles_duplicate_file_names(mock_service):
+    mock_service.documents = TEST_LLOYD_GEORGE_DOCUMENT_REFS
+
+    mock_service.documents[0].file_name = "test.pdf"
+    mock_service.documents[1].file_name = "test.pdf"
+    mock_service.documents[2].file_name = "test.pdf"
+
+    mock_service.download_documents_to_be_zipped(TEST_LLOYD_GEORGE_DOCUMENT_REFS)
+
+    assert mock_service.documents[0].file_name == "test.pdf"
+    assert mock_service.documents[1].file_name == "test(2).pdf"
+    assert mock_service.documents[2].file_name == "test(3).pdf"
+
+
+def test_download_documents_to_be_zipped_calls_download_file(
+    mock_service, mock_s3_service
+):
+    mock_service.download_documents_to_be_zipped(TEST_LLOYD_GEORGE_DOCUMENT_REFS)
+
+    assert mock_s3_service.download_file.call_count == 3
+
+
+def test_download_documents_to_be_zipped_creates_download_path(
+    mock_service, mock_s3_service
+):
     expected_download_path = os.path.join(
-        service.temp_downloads_dir, TEST_DOC_STORE_REFERENCES[0].file_name
+        mock_service.temp_downloads_dir, TEST_DOC_STORE_DOCUMENT_REFS[0].file_name
+    )
+    expected_document_file_key = TEST_DOC_STORE_DOCUMENT_REFS[0].get_file_key()
+
+    mock_service.download_documents_to_be_zipped([TEST_DOC_STORE_DOCUMENT_REFS[0]])
+    mock_s3_service.download_file.assert_called_with(
+        MOCK_BUCKET, expected_document_file_key, expected_download_path
     )
 
-    document_file_key = TEST_DOC_STORE_REFERENCES[0].get_file_key()
 
-    mock_s3_service_download_file.assert_called_with(
-        MOCK_BUCKET, document_file_key, expected_download_path
+def test_upload_zip_file(mock_service, mock_s3_service, mock_dynamo_service):
+    expected_upload_path = os.path.join(
+        mock_service.temp_output_dir, mock_service.zip_file_name
     )
+    mock_service.upload_zip_file()
+
+    mock_s3_service.upload_file.assert_called_with(
+        file_name=expected_upload_path,
+        s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET,
+        file_key=mock_service.zip_file_name,
+    )
+
+    mock_dynamo_service.create_item.assert_called_once()
