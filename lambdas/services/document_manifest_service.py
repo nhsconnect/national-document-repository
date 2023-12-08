@@ -11,8 +11,7 @@ from services.document_service import DocumentService
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (DocumentManifestServiceException,
-                              DynamoDbException)
+from utils.exceptions import DocumentManifestServiceException, DynamoDbException
 
 logger = LoggingService(__name__)
 

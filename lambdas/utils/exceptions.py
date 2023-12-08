@@ -121,5 +121,6 @@ class DocumentManifestServiceException(LambdaException):
 class OidcApiException(Exception):
     pass
 
+
 class LoginException(LambdaException):
     pass

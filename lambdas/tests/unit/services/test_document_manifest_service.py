@@ -3,16 +3,16 @@ import os
 import pytest
 from enums.supported_document_types import SupportedDocumentTypes
 from services.document_manifest_service import DocumentManifestService
-from tests.unit.conftest import (MOCK_BUCKET, MOCK_ZIP_OUTPUT_BUCKET,
-                                 TEST_NHS_NUMBER)
+from tests.unit.conftest import MOCK_BUCKET, MOCK_ZIP_OUTPUT_BUCKET, TEST_NHS_NUMBER
 from tests.unit.helpers.data.s3_responses import MOCK_PRESIGNED_URL_RESPONSE
 from tests.unit.helpers.data.test_documents import (
-    create_test_doc_store_refs, create_test_lloyd_george_doc_store_refs)
+    create_test_doc_store_refs,
+    create_test_lloyd_george_doc_store_refs,
+)
 from utils.exceptions import DocumentManifestServiceException
 
 TEST_DOC_STORE_DOCUMENT_REFS = create_test_doc_store_refs()
 TEST_LLOYD_GEORGE_DOCUMENT_REFS = create_test_lloyd_george_doc_store_refs()
-
 
 
 @pytest.fixture
@@ -50,7 +50,9 @@ def mock_dynamo_service(mocker, mock_service):
     mocker.patch.object(mock_dynamo_service, "create_item")
     yield mock_dynamo_service
 
-from tests.unit.conftest import set_env
+
+
+
 def test_create_document_manifest_presigned_url_doc_store(
     mock_service, mock_s3_service, mock_document_service
 ):
