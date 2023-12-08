@@ -78,9 +78,7 @@ def test_fetch_tokens_successfully(mocker, oidc_service):
     mocked_id_token_validation.assert_called_with(mock_id_token)
 
 
-def test_fetch_tokens_raises_exception_for_invalid_auth_code(
-    mocker, oidc_service
-):
+def test_fetch_tokens_raises_exception_for_invalid_auth_code(mocker, oidc_service):
     mocker.patch(
         "requests.post",
         return_value=MockResponse(

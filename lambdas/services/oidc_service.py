@@ -131,8 +131,7 @@ class OidcService:
                 break
 
         if role_codes == "":
-            raise AuthorisationException("No role codes found for users selected role"
-            )
+            raise AuthorisationException("No role codes found for users selected role")
 
         role_codes_split = role_codes.split(":")
 

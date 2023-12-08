@@ -15,8 +15,14 @@ from services.oidc_service import OidcService
 from services.ssm_service import SSMService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import LoginException, OidcApiException, AuthorisationException, TooManyOrgsException, \
-    OdsErrorException, OrganisationNotFoundException
+from utils.exceptions import (
+    LoginException,
+    OidcApiException,
+    AuthorisationException,
+    TooManyOrgsException,
+    OdsErrorException,
+    OrganisationNotFoundException,
+)
 
 logger = LoggingService(__name__)
 token_handler_ssm_service = TokenHandlerSSMService()
@@ -56,17 +62,18 @@ class LoginService:
         except OidcApiException:
             raise LoginException(500, "Issue when contacting CIS2")
         except AuthorisationException:
-            raise LoginException(401, "Cannot log user in, expected information from CIS2 is missing")
+            raise LoginException(
+                401, "Cannot log user in, expected information from CIS2 is missing"
+            )
 
         try:
-            permitted_orgs_details = ods_api_service.fetch_organisation_with_permitted_role(
-                org_ods_codes
+            permitted_orgs_details = (
+                ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
             )
         except (TooManyOrgsException, OdsErrorException):
             raise LoginException(500, "Bad response from ODS API")
         except OrganisationNotFoundException:
             raise LoginException(401, "No org found for given ODS code")
-
 
         logger.info(f"Permitted_orgs_details: {permitted_orgs_details}")
 
@@ -117,7 +124,6 @@ class LoginService:
         state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
         deletion_key = {"State": state}
         self.db_service.delete_item(table_name=state_table_name, key=deletion_key)
-
 
     @staticmethod
     def generate_repository_role(self, organisation: dict, smartcard_role: str):

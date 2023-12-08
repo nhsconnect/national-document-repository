@@ -127,5 +127,6 @@ class LogoutFailureException(Exception):
 class LoginRedirectException(LambdaException):
     pass
 
+
 class OidcApiException(Exception):
     pass
