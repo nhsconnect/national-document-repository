@@ -20,7 +20,11 @@ class PdsTooManyRequestsException(Exception):
     pass
 
 
-class AuthorisationException(LambdaException):
+class AuthorisationException(Exception):
+    pass
+
+
+class LoginException(LambdaException):
     pass
 
 
@@ -121,4 +125,7 @@ class LogoutFailureException(Exception):
 
 
 class LoginRedirectException(LambdaException):
+    pass
+
+class OidcApiException(Exception):
     pass

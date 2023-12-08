@@ -12,7 +12,7 @@ from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import AuthorisationException
+from utils.exceptions import AuthorisationException, LoginException
 
 
 @pytest.fixture
@@ -160,21 +160,21 @@ def test_exchange_token_raises_auth_exception_when_auth_code_is_invalid(
     context,
 ):
     mock_oidc_service["fetch_token"].side_effect = AuthorisationException(
-        500, "Failed to retrieve access token from ID Provider"
+        "Failed to retrieve access token from ID Provider"
     )
     login_service = LoginService()
     mocker.patch.object(
         LoginService, "have_matching_state_value_in_record", return_value=True
     )
 
-    with pytest.raises(AuthorisationException):
+    with pytest.raises(LoginException):
         login_service.generate_session("auth_code", "state")
 
     mock_oidc_service["fetch_user_org_codes"].assert_not_called()
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
-def test_exchange_token_raises_auth_error_when_given_state_is_not_in_state_table(
+def test_exchange_token_raises_login_error_when_given_state_is_not_in_state_table(
     mock_aws_infras, mock_oidc_service, set_env, context, mocker
 ):
     mocker.patch.object(
@@ -183,7 +183,7 @@ def test_exchange_token_raises_auth_error_when_given_state_is_not_in_state_table
 
     login_service = LoginService()
 
-    with pytest.raises(AuthorisationException):
+    with pytest.raises(LoginException):
         login_service.generate_session("auth_code", "state")
 
     mock_oidc_service["fetch_token"].assert_not_called()
@@ -191,7 +191,7 @@ def test_exchange_token_raises_auth_error_when_given_state_is_not_in_state_table
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
-def test_exchange_token_raises_auth_error_when_user_doesnt_have_a_valid_role_to_login(
+def test_exchange_token_raises_login_error_when_user_doesnt_have_a_valid_role_to_login(
     mock_aws_infras,
     mock_oidc_service,
     mocker,
@@ -214,7 +214,7 @@ def test_exchange_token_raises_auth_error_when_user_doesnt_have_a_valid_role_to_
 
     login_service = LoginService()
 
-    with pytest.raises(AuthorisationException):
+    with pytest.raises(LoginException):
         login_service.generate_session("auth_code", "state")
 
     mock_aws_infras["session_table"].post.assert_not_called()
@@ -241,9 +241,8 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
 
     login_service = LoginService()
 
-    with pytest.raises(Exception):
+    with pytest.raises(LoginException):
         login_service.generate_session("auth_code", "state")
-    # TODO assert 500 in error
 
 
 def test_exchange_token_raises_error_when_encounter_pyjwt_encode_error(
@@ -259,7 +258,7 @@ def test_exchange_token_raises_error_when_encounter_pyjwt_encode_error(
 
     login_service = LoginService()
 
-    with pytest.raises(Exception):
+    with pytest.raises(LoginException):
         login_service.generate_session("auth_code", "state")
 
 

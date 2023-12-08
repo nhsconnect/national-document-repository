@@ -4,7 +4,7 @@ import pytest
 from enums.repository_role import RepositoryRole
 from handlers.token_handler import lambda_handler
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import AuthorisationException
+from utils.exceptions import AuthorisationException, LoginException
 from utils.lambda_response import ApiGatewayResponse
 
 
@@ -58,7 +58,7 @@ def test_handler_passes_error_details_in_response(
 ):
     expected_status = 400
     expected_body = "Error desc"
-    exception = AuthorisationException(
+    exception = LoginException(
         status_code=expected_status, message=expected_body
     )
     mock_login_service.generate_session.side_effect = exception

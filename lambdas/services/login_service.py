@@ -15,7 +15,8 @@ from services.oidc_service import OidcService
 from services.ssm_service import SSMService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import AuthorisationException
+from utils.exceptions import LoginException, OidcApiException, AuthorisationException, TooManyOrgsException, \
+    OdsErrorException, OrganisationNotFoundException
 
 logger = LoggingService(__name__)
 token_handler_ssm_service = TokenHandlerSSMService()
@@ -27,36 +28,51 @@ class LoginService:
     db_service = DynamoDBService()
 
     def generate_session(self, state, auth_code) -> dict:
+        logger.info("Login process started")
+
         if not self.have_matching_state_value_in_record(state):
             logger.info(
                 f"Mismatching state values. Cannot find state {state} in record"
             )
-            raise AuthorisationException(401, "Unrecognised state value")
+            raise LoginException(401, "Unrecognised state value")
 
         oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
 
         logger.info("Fetching access token from OIDC Provider")
-        access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
+        try:
+            access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
 
-        logger.info(
-            "Use the access token to fetch user's organisation and smartcard codes"
-        )
+            logger.info(
+                "Use the access token to fetch user's organisation and smartcard codes"
+            )
 
-        org_ods_codes = oidc_service.fetch_user_org_codes(
-            access_token, id_token_claim_set
-        )
-        smartcard_role_code, user_id = oidc_service.fetch_user_role_code(
-            access_token, id_token_claim_set, "R"
-        )
-        permitted_orgs_details = ods_api_service.fetch_organisation_with_permitted_role(
-            org_ods_codes
-        )
+            org_ods_codes = oidc_service.fetch_user_org_codes(
+                access_token, id_token_claim_set
+            )
+
+            smartcard_role_code, user_id = oidc_service.fetch_user_role_code(
+                access_token, id_token_claim_set, "R"
+            )
+        except OidcApiException:
+            raise LoginException(500, "Issue when contacting CIS2")
+        except AuthorisationException:
+            raise LoginException(401, "Cannot log user in, expected information from CIS2 is missing")
+
+        try:
+            permitted_orgs_details = ods_api_service.fetch_organisation_with_permitted_role(
+                org_ods_codes
+            )
+        except (TooManyOrgsException, OdsErrorException):
+            raise LoginException(500, "Bad response from ODS API")
+        except OrganisationNotFoundException:
+            raise LoginException(401, "No org found for given ODS code")
+
 
         logger.info(f"Permitted_orgs_details: {permitted_orgs_details}")
 
         if len(permitted_orgs_details.keys()) == 0:
             logger.info("User has no org to log in with")
-            raise AuthorisationException(
+            raise LoginException(
                 401, f"{permitted_orgs_details.keys()} valid organisations for user"
             )
 
@@ -90,17 +106,18 @@ class LoginService:
         state_match = "Count" in query_response and query_response["Count"] == 1
 
         if state_match:
-            self.remove_used_state(state)
+            try:
+                self.remove_used_state(state)
+            except ClientError:
+                raise LoginException(500, "Unable to remove used state value")
 
         return state_match
 
     def remove_used_state(self, state):
-        try:
-            state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
-            deletion_key = {"State": state}
-            self.db_service.delete_item(table_name=state_table_name, key=deletion_key)
-        except ClientError:
-            raise AuthorisationException(500, "Unable to remove used state value")
+        state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
+        deletion_key = {"State": state}
+        self.db_service.delete_item(table_name=state_table_name, key=deletion_key)
+
 
     @staticmethod
     def generate_repository_role(self, organisation: dict, smartcard_role: str):

@@ -136,7 +136,7 @@ def test_back_channel_logout_handler_invalid_jwt_raise_error(
     mocker.patch("services.oidc_service.OidcService.set_up_oidc_parameters")
     mocker.patch(
         "services.oidc_service.OidcService.validate_and_decode_token",
-        side_effect=AuthorisationException(None, None),
+        side_effect=AuthorisationException(),
     )
     with pytest.raises(LogoutFailureException):
         mock_back_channel_logout_service.logout_handler(mock_token)

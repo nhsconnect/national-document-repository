@@ -8,7 +8,7 @@ from models.oidc_models import IdTokenClaimSet
 from requests import Response
 from services.oidc_service import OidcService
 from tests.unit.helpers.mock_response import MockResponse
-from utils.exceptions import AuthorisationException
+from utils.exceptions import AuthorisationException, OidcApiException
 
 MOCK_PARAMETERS = {
     "OIDC_CLIENT_ID": "mock_client_id",
@@ -78,7 +78,7 @@ def test_fetch_tokens_successfully(mocker, oidc_service):
     mocked_id_token_validation.assert_called_with(mock_id_token)
 
 
-def test_fetch_tokens_raises_AuthorisationException_for_invalid_auth_code(
+def test_fetch_tokens_raises_exception_for_invalid_auth_code(
     mocker, oidc_service
 ):
     mocker.patch(
@@ -92,7 +92,7 @@ def test_fetch_tokens_raises_AuthorisationException_for_invalid_auth_code(
         ),
     )
 
-    with pytest.raises(AuthorisationException):
+    with pytest.raises(OidcApiException):
         oidc_service.fetch_tokens("invalid_auth_code")
 
 
@@ -115,7 +115,7 @@ def test_fetch_tokens_raises_AuthorisationException_for_invalid_id_token(
     mocker.patch.object(
         oidc_service,
         "validate_and_decode_token",
-        side_effect=AuthorisationException(None, None),
+        side_effect=AuthorisationException(),
     )
 
     with pytest.raises(AuthorisationException):
@@ -142,7 +142,7 @@ def test_fetch_user_org_code(mocker, oidc_service, mock_userinfo):
     assert actual[0] == mock_userinfo["org_code"]
 
 
-def test_fetch_user_org_codes_raise_AuthorisationException_for_invalid_access_token(
+def test_fetch_user_org_codes_raises_exception_for_invalid_access_token(
     mocker, oidc_service
 ):
     mock_token = "fake_access_token"
@@ -157,7 +157,7 @@ def test_fetch_user_org_codes_raise_AuthorisationException_for_invalid_access_to
     )
     mocker.patch("requests.get", return_value=mock_response)
 
-    with pytest.raises(AuthorisationException):
+    with pytest.raises(OidcApiException):
         oidc_service.fetch_user_org_codes(mock_token, "not a real role")
 
 
@@ -206,7 +206,7 @@ def mock_jwk_client(mocker, mock_id_tokens):
     yield
 
 
-def test_validate_and_decode_token__validate_token_with_proper_keys(
+def test_validate_and_decode_token_validate_token_with_proper_keys(
     mock_id_tokens, oidc_service, mock_jwk_client
 ):
     id_token = mock_id_tokens["valid_id_token"]
@@ -217,21 +217,21 @@ def test_validate_and_decode_token__validate_token_with_proper_keys(
     assert actual == expect
 
 
-def test_validate_and_decode_token_raise_AuthorisationException_for_fake_id_token(
+def test_validate_and_decode_token_raises_exception_for_fake_id_token(
     mock_id_tokens, oidc_service, mock_jwk_client
 ):
     counterfeit_id_token = mock_id_tokens["counterfeit_id_token"]
 
-    with pytest.raises(AuthorisationException):
+    with pytest.raises(OidcApiException):
         oidc_service.validate_and_decode_token(counterfeit_id_token)
 
 
-def test_oidc_service_validate_and_decode_token_raise_AuthorisationException_for_expired_id_token(
+def test_oidc_service_validate_and_decode_token_raises_exception_for_expired_id_token(
     mock_id_tokens, oidc_service, mock_jwk_client
 ):
     expired_id_token = mock_id_tokens["expired_id_token"]
 
-    with pytest.raises(AuthorisationException):
+    with pytest.raises(OidcApiException):
         oidc_service.validate_and_decode_token(expired_id_token)
 
 
@@ -282,7 +282,7 @@ def test_fetch_tokens_response_throws_authorisation_exception_when_access_token_
         }
     ).encode("utf-8")
 
-    with pytest.raises(AuthorisationException):
+    with pytest.raises(OidcApiException):
         oidc_service.parse_fetch_tokens_response(mock_cis2_response)
 
 
@@ -370,5 +370,5 @@ def test_fetch_user_info_throws_exception_for_non_200_response(oidc_service, moc
     mock_response = MockResponse(status_code=400, json_data="")
     mocker.patch("requests.get", return_value=mock_response)
 
-    with pytest.raises(AuthorisationException):
+    with pytest.raises(OidcApiException):
         oidc_service.fetch_userinfo("access_token")

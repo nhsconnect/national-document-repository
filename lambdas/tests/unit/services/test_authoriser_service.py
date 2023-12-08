@@ -230,7 +230,7 @@ def test_return_deny_policy_when_no_session_found(
 
     mock_find_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.find_login_session",
-        side_effect=AuthorisationException(None, None),
+        side_effect=AuthorisationException(),
     )
     mock_validate_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.validate_login_session"
@@ -264,7 +264,7 @@ def test_raise_exception_when_user_session_is_expired(
     )
     mock_validate_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.validate_login_session",
-        side_effect=AuthorisationException(None, None),
+        side_effect=AuthorisationException(),
     )
     mock_deny_access_policy = mocker.patch(
         "services.authoriser_service.AuthoriserService.deny_access_policy"
