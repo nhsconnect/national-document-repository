@@ -179,7 +179,6 @@ class LoginService:
             return True
         return False
 
-    @staticmethod
     def issue_auth_token(
         self,
         session_id: str,
