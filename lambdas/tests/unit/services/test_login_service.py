@@ -184,7 +184,8 @@ def test_exchange_token_raises_login_error_when_given_state_is_not_in_state_tabl
     login_service = LoginService()
 
     with pytest.raises(LoginException):
-        login_service.generate_session("auth_code", "state")
+        error = login_service.generate_session("auth_code", "state")
+        assert error.status_code == 401
 
     mock_oidc_service["fetch_token"].assert_not_called()
     mock_oidc_service["fetch_user_org_codes"].assert_not_called()
@@ -215,17 +216,21 @@ def test_exchange_token_raises_login_error_when_user_doesnt_have_a_valid_role_to
     login_service = LoginService()
 
     with pytest.raises(LoginException):
-        login_service.generate_session("auth_code", "state")
+        error = login_service.generate_session("auth_code", "state")
+        assert error.status_code == 401
 
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
-# TODO needs to go in dynamo service tests when refactoring of CUT is done
 def test_exchange_token_raises_error_when_encounter_boto3_error(
     mock_aws_infras, set_env, mocker, context
 ):
-    mock_aws_infras["state_table"].query.side_effect = ClientError(
-        {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
+    mocker.patch.object(
+        DynamoDBService,
+        "simple_query",
+        side_effect=ClientError(
+            {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
+        ),
     )
 
     mock_oidc = mocker.patch("services.oidc_service.OidcService.fetch_oidc_parameters")
@@ -242,7 +247,8 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
     login_service = LoginService()
 
     with pytest.raises(LoginException):
-        login_service.generate_session("auth_code", "state")
+        error = login_service.generate_session("auth_code", "state")
+        assert error.status_code == 500
 
 
 def test_exchange_token_raises_error_when_encounter_pyjwt_encode_error(
@@ -259,7 +265,8 @@ def test_exchange_token_raises_error_when_encounter_pyjwt_encode_error(
     login_service = LoginService()
 
     with pytest.raises(LoginException):
-        login_service.generate_session("auth_code", "state")
+        error = login_service.generate_session("auth_code", "state")
+        assert error.status_code == 500
 
 
 def test_generate_repository_role_gp_admin(

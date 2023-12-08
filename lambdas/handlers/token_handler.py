@@ -19,8 +19,6 @@ logger = LoggingService(__name__)
     names=["AUTH_STATE_TABLE_NAME", "AUTH_SESSION_TABLE_NAME"]
 )
 def lambda_handler(event, context):
-    login_service = LoginService()
-
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
 
     missing_value_response_body = (
@@ -36,6 +34,8 @@ def lambda_handler(event, context):
         return respond_with(400, missing_value_response_body)
 
     try:
+        login_service = LoginService()
+
         session_info = login_service.generate_session(state, auth_code)
 
     except LoginException as error:

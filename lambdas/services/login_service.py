@@ -25,38 +25,41 @@ from utils.exceptions import (
 )
 
 logger = LoggingService(__name__)
-token_handler_ssm_service = TokenHandlerSSMService()
-oidc_service = OidcService()
-ods_api_service = OdsApiService()
 
 
 class LoginService:
     db_service = DynamoDBService()
+    token_handler_ssm_service = TokenHandlerSSMService()
+    oidc_service = OidcService()
+    ods_api_service = OdsApiService()
 
     def generate_session(self, state, auth_code) -> dict:
         logger.info("Login process started")
 
-        if not self.have_matching_state_value_in_record(state):
-            logger.info(
-                f"Mismatching state values. Cannot find state {state} in record"
-            )
-            raise LoginException(401, "Unrecognised state value")
+        try:
+            if not self.have_matching_state_value_in_record(state):
+                logger.info(
+                    f"Mismatching state values. Cannot find state {state} in record"
+                )
+                raise LoginException(401, "Unrecognised state value")
+        except ClientError:
+            raise LoginException(500, "Unable to validate state")
 
-        oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
+        self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
 
         logger.info("Fetching access token from OIDC Provider")
         try:
-            access_token, id_token_claim_set = oidc_service.fetch_tokens(auth_code)
+            access_token, id_token_claim_set = self.oidc_service.fetch_tokens(auth_code)
 
             logger.info(
                 "Use the access token to fetch user's organisation and smartcard codes"
             )
 
-            org_ods_codes = oidc_service.fetch_user_org_codes(
+            org_ods_codes = self.oidc_service.fetch_user_org_codes(
                 access_token, id_token_claim_set
             )
 
-            smartcard_role_code, user_id = oidc_service.fetch_user_role_code(
+            smartcard_role_code, user_id = self.oidc_service.fetch_user_role_code(
                 access_token, id_token_claim_set, "R"
             )
         except OidcApiException:
@@ -68,7 +71,9 @@ class LoginService:
 
         try:
             permitted_orgs_details = (
-                ods_api_service.fetch_organisation_with_permitted_role(org_ods_codes)
+                self.ods_api_service.fetch_organisation_with_permitted_role(
+                    org_ods_codes
+                )
             )
         except (TooManyOrgsException, OdsErrorException):
             raise LoginException(500, "Bad response from ODS API")
@@ -129,26 +134,32 @@ class LoginService:
     def generate_repository_role(self, organisation: dict, smartcard_role: str):
         logger.info(f"Smartcard Role: {smartcard_role}")
 
-        if token_handler_ssm_service.get_smartcard_role_gp_admin() == smartcard_role:
+        if (
+            self.token_handler_ssm_service.get_smartcard_role_gp_admin()
+            == smartcard_role
+        ):
             logger.info("GP Admin: smartcard ODS identified")
             if self.has_role_org_role_code(
-                organisation, token_handler_ssm_service.get_org_role_codes()[0]
+                organisation, self.token_handler_ssm_service.get_org_role_codes()[0]
             ):
                 return RepositoryRole.GP_ADMIN
             return RepositoryRole.NONE
 
-        if token_handler_ssm_service.get_smartcard_role_gp_clinical() == smartcard_role:
+        if (
+            self.token_handler_ssm_service.get_smartcard_role_gp_clinical()
+            == smartcard_role
+        ):
             logger.info("GP Clinical: smartcard ODS identified")
             if self.has_role_org_role_code(
-                organisation, token_handler_ssm_service.get_org_role_codes()[0]
+                organisation, self.token_handler_ssm_service.get_org_role_codes()[0]
             ):
                 return RepositoryRole.GP_CLINICAL
             return RepositoryRole.NONE
 
-        if token_handler_ssm_service.get_smartcard_role_pcse() == smartcard_role:
+        if self.token_handler_ssm_service.get_smartcard_role_pcse() == smartcard_role:
             logger.info("PCSE: smartcard ODS identified")
             if self.has_role_org_ods_code(
-                organisation, token_handler_ssm_service.get_org_ods_codes()[0]
+                organisation, self.token_handler_ssm_service.get_org_ods_codes()[0]
             ):
                 return RepositoryRole.PCSE
             return RepositoryRole.NONE
@@ -170,6 +181,7 @@ class LoginService:
 
     @staticmethod
     def issue_auth_token(
+        self,
         session_id: str,
         id_token_claim_set: IdTokenClaimSet,
         user_org_details: list[dict],
@@ -177,7 +189,7 @@ class LoginService:
         repository_role: RepositoryRole,
         user_id: str,
     ) -> str:
-        private_key = token_handler_ssm_service.get_jwt_private_key()
+        private_key = self.token_handler_ssm_service.get_jwt_private_key()
 
         thirty_minutes_later = time.time() + (60 * 30)
         ndr_token_expiry_time = min(thirty_minutes_later, id_token_claim_set.exp)
