@@ -31,7 +31,7 @@ def lambda_handler(event, context):
         print(f"user_role {user_role}")
         print(f"user_ods_code {user_ods_code}")
 
-        search_service = SearchPatientDetailsService(user_ods_code, user_role)
+        search_service = SearchPatientDetailsService(user_role, user_ods_code)
         response = search_service.handle_search_patient_request(nhs_number)
 
         return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
