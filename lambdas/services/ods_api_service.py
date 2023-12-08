@@ -111,7 +111,7 @@ def find_org_relationship(org_data):
             if (
                 rel["Status"] == "Active"
                 and rel["id"] == "RE4"
-                and rel["Target"]["OrgId"]["extension"] == "15E"
+                and rel["Target"]["OrgId"]["extension"] == "92A"
             ):
                 return True
     except (KeyError, TypeError):
