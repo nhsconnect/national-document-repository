@@ -1,9 +1,10 @@
 import pytest
 from handlers.bulk_upload_handler import lambda_handler
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    TEST_EVENT_WITH_10_SQS_MESSAGES, TEST_EVENT_WITH_SQS_MESSAGES)
-from utils.exceptions import (InvalidMessageException,
-                              PdsTooManyRequestsException)
+    TEST_EVENT_WITH_10_SQS_MESSAGES,
+    TEST_EVENT_WITH_SQS_MESSAGES,
+)
+from utils.exceptions import InvalidMessageException, PdsTooManyRequestsException
 
 
 @pytest.fixture

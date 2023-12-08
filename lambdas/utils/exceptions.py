@@ -116,3 +116,11 @@ class LoginRedirectException(LambdaException):
 
 class DocumentManifestServiceException(LambdaException):
     pass
+
+
+class OidcApiException(Exception):
+    pass
+
+
+class LoginException(LambdaException):
+    pass

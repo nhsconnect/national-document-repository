@@ -1,10 +1,11 @@
 import pytest
 from botocore.exceptions import ClientError
 from models.nhs_document_reference import UploadRequestDocument
-from services.create_document_reference_service import \
-    CreateDocumentReferenceService
-from tests.unit.helpers.data.create_document_reference import (ARF_FILE_LIST,
-                                                               LG_FILE_LIST)
+from services.create_document_reference_service import CreateDocumentReferenceService
+from tests.unit.helpers.data.create_document_reference import (
+    ARF_FILE_LIST,
+    LG_FILE_LIST,
+)
 from utils.exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException
 

@@ -2,16 +2,13 @@ import os
 
 from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
-from models.nhs_document_reference import (NHSDocumentReference,
-                                           UploadRequestDocument)
+from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
 from pydantic import ValidationError
 from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (CreateDocumentRefException,
-                              InvalidResourceIdException)
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_files)
+from utils.exceptions import CreateDocumentRefException, InvalidResourceIdException
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_files
 from utils.utilities import create_reference_id, validate_id
 
 logger = LoggingService(__name__)

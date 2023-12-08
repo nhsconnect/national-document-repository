@@ -8,14 +8,21 @@ from services.document_service import DocumentService
 from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
-from utils.exceptions import (PatientRecordAlreadyExistException,
-                              PdsTooManyRequestsException)
+from utils.exceptions import (
+    PatientRecordAlreadyExistException,
+    PdsTooManyRequestsException,
+)
 from utils.lloyd_george_validator import (
-    LGInvalidFilesException, check_for_duplicate_files,
+    LGInvalidFilesException,
+    check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
     check_for_number_of_files_match_expected,
-    check_for_patient_already_exist_in_repo, extract_info_from_filename,
-    validate_file_name, validate_lg_file_type, validate_with_pds_service)
+    check_for_patient_already_exist_in_repo,
+    extract_info_from_filename,
+    validate_file_name,
+    validate_lg_file_type,
+    validate_with_pds_service,
+)
 
 
 def test_catching_error_when_file_type_not_pdf():

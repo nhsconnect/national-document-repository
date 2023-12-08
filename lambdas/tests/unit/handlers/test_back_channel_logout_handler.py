@@ -1,5 +1,7 @@
-from handlers.back_channel_logout_handler import (back_channel_logout_service,
-                                                  lambda_handler)
+from handlers.back_channel_logout_handler import (
+    back_channel_logout_service,
+    lambda_handler,
+)
 from utils.exceptions import LogoutFailureException
 from utils.lambda_response import ApiGatewayResponse
 

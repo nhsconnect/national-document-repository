@@ -3,8 +3,10 @@ from enums.supported_document_types import SupportedDocumentTypes
 from utils.lambda_response import ApiGatewayResponse
 
 from lambdas.utils.decorators.validate_document_type import (
-    extract_document_type, extract_document_type_as_enum,
-    validate_document_type)
+    extract_document_type,
+    extract_document_type_as_enum,
+    validate_document_type,
+)
 
 
 @validate_document_type

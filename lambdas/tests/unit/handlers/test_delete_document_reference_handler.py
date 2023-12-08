@@ -3,7 +3,9 @@ from botocore.exceptions import ClientError
 from handlers.delete_document_reference_handler import lambda_handler
 from services.document_deletion_service import DocumentDeletionService
 from tests.unit.helpers.data.test_documents import (
-    create_test_doc_store_refs, create_test_lloyd_george_doc_store_refs)
+    create_test_doc_store_refs,
+    create_test_lloyd_george_doc_store_refs,
+)
 from utils.exceptions import LambdaException
 from utils.lambda_response import ApiGatewayResponse
 

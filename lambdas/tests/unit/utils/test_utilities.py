@@ -1,7 +1,6 @@
 import pytest
 from utils.exceptions import InvalidResourceIdException
-from utils.utilities import (camelize_dict, redact_id_to_last_4_chars,
-                             validate_id)
+from utils.utilities import camelize_dict, redact_id_to_last_4_chars, validate_id
 
 
 def test_validate_id_with_valid_id_returns_true():

@@ -86,12 +86,12 @@ class AuthoriserService:
             return current_session
         except (KeyError, IndexError):
             raise AuthorisationException(
-                f"Unable to find session for session ID ending in: {self.redact_session_id}"
+                f"Unable to find session for session ID ending in: {self.redact_session_id}",
             )
 
     def validate_login_session(self, session_expiry_time: float):
         time_now = time.time()
         if session_expiry_time <= time_now:
             raise AuthorisationException(
-                f"The session is already expired for session ID ending in: {self.redact_session_id}"
+                f"The session is already expired for session ID ending in: {self.redact_session_id}",
             )
