@@ -1,7 +1,5 @@
 import os
-from unittest.mock import patch
 
-import jwt
 import pytest
 from botocore.exceptions import ClientError
 from enums.repository_role import RepositoryRole
@@ -150,7 +148,7 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
     mock_oidc_service["fetch_token"].expect_called_with(auth_code)
 
 
-def test_exchange_token_raises_auth_exception_when_auth_code_is_invalid(
+def test_exchange_token_raises_exception_when_token_exchange_with_oidc_provider_throws_error(
     mock_aws_infras,
     mock_oidc_service,
     mock_ods_api_service,
@@ -251,24 +249,6 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
         assert error.status_code == 500
 
 
-def test_exchange_token_raises_error_when_encounter_pyjwt_encode_error(
-    mock_aws_infras,
-    mock_oidc_service,
-    mock_ods_api_service,
-    mock_jwt_encode,
-    set_env,
-    context,
-):
-    jwt_error = jwt.PyJWTError()
-    patch.object(OidcService, "fetch_tokens", side_effect=jwt_error)
-
-    login_service = LoginService()
-
-    with pytest.raises(LoginException):
-        error = login_service.generate_session("auth_code", "state")
-        assert error.status_code == 500
-
-
 def test_generate_repository_role_gp_admin(
     mock_logging_service, set_env, context, mocker
 ):
@@ -289,7 +269,7 @@ def test_generate_repository_role_gp_admin(
     login_service = LoginService()
 
     expected = RepositoryRole.GP_ADMIN
-    actual = login_service.generate_repository_role(login_service, org, user_role_code)
+    actual = login_service.generate_repository_role(org, user_role_code)
     assert expected == actual
 
 
@@ -318,7 +298,7 @@ def test_generate_repository_role_gp_clinical(
     login_service = LoginService()
 
     expected = RepositoryRole.GP_CLINICAL
-    actual = login_service.generate_repository_role(login_service, org, user_role_code)
+    actual = login_service.generate_repository_role(org, user_role_code)
     assert expected == actual
 
 
@@ -348,7 +328,7 @@ def test_generate_repository_role_pcse(mock_logging_service, set_env, context, m
     login_service = LoginService()
 
     expected = RepositoryRole.PCSE
-    actual = login_service.generate_repository_role(login_service, org, user_role_code)
+    actual = login_service.generate_repository_role(org, user_role_code)
     assert expected == actual
 
 
@@ -377,5 +357,5 @@ def test_generate_repository_role_no_role(
     login_service = LoginService()
 
     expected = RepositoryRole.NONE
-    actual = login_service.generate_repository_role(login_service, org, user_role_code)
+    actual = login_service.generate_repository_role(org, user_role_code)
     assert expected == actual

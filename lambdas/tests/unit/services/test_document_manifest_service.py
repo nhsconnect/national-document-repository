@@ -51,8 +51,6 @@ def mock_dynamo_service(mocker, mock_service):
     yield mock_dynamo_service
 
 
-
-
 def test_create_document_manifest_presigned_url_doc_store(
     mock_service, mock_s3_service, mock_document_service
 ):

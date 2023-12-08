@@ -28,10 +28,11 @@ logger = LoggingService(__name__)
 
 
 class LoginService:
-    db_service = DynamoDBService()
-    token_handler_ssm_service = TokenHandlerSSMService()
-    oidc_service = OidcService()
-    ods_api_service = OdsApiService()
+    def __init__(self):
+        self.db_service = DynamoDBService()
+        self.token_handler_ssm_service = TokenHandlerSSMService()
+        self.oidc_service = OidcService()
+        self.ods_api_service = OdsApiService()
 
     def generate_session(self, state, auth_code) -> dict:
         logger.info("Login process started")
@@ -130,7 +131,6 @@ class LoginService:
         deletion_key = {"State": state}
         self.db_service.delete_item(table_name=state_table_name, key=deletion_key)
 
-    @staticmethod
     def generate_repository_role(self, organisation: dict, smartcard_role: str):
         logger.info(f"Smartcard Role: {smartcard_role}")
 
