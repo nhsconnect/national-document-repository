@@ -55,33 +55,32 @@ class OdsApiService:
 
         if pcse_ods is not None:
             logger.info(f"ODS code {ods_code} is a PCSE, returning org data")
-            response = parse_ods_response(org_data, "")
+            response = parse_ods_response(org_data, "", False)
             return response
 
         gpp_org = find_and_get_gpp_org_code(org_data)
 
         if gpp_org is not None:
             logger.info(f"ODS code {ods_code} is a GPP, returning org data")
-            response = parse_ods_response(org_data, gpp_org)
+            is_bsol = find_org_relationship(org_data)
+            response = parse_ods_response(org_data, gpp_org, is_bsol)
             return response
 
         logger.info(f"ODS code {ods_code} is not a GPP or PCSE, returning empty list")
         return {}
 
 
-def parse_ods_response(org_data, role_code) -> dict:
+def parse_ods_response(org_data, role_code, is_bsol) -> dict:
     org_name = org_data["Organisation"]["Name"]
-    logger.info(f"Organisation Name: {org_name}")
-
     org_ods_code = org_data["Organisation"]["OrgId"]["extension"]
-    logger.info(f"Organisation Org Code: {org_ods_code}")
 
-    logger.info(f"Role code: {role_code}")
     response_dictionary = {
         "name": org_name,
         "org_ods_code": org_ods_code,
         "role_code": role_code,
+        "is_BSOL": is_bsol,
     }
+    logger.info(f"Response: {response_dictionary}")
 
     return response_dictionary
 
@@ -102,3 +101,19 @@ def find_and_get_pcse_ods(ods_code):
     if ods_code == token_handler_ssm_service.get_org_ods_codes()[0]:
         return ods_code
     return None
+
+
+def find_org_relationship(org_data):
+    logger.info("Checking relationships")
+    try:
+        relationships: List[Dict] = org_data["Rels"]["Rel"]
+        for rel in relationships:
+            if (
+                rel["Status"] == "Active"
+                and rel["id"] == "RE4"
+                and rel["Target"]["OrgId"]["extension"] == "15E"
+            ):
+                return True
+    except (KeyError, TypeError):
+        logger.info("Failure fetching relationships")
+    return False

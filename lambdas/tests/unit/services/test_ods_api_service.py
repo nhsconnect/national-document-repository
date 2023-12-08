@@ -55,11 +55,12 @@ def test_parse_ods_response_extracts_data_and_includes_role_code_passed_as_arg(
     test_response = mock_ods_responses["pcse_org"]
     role_code = "this should be the role code and not the one in the mock data"
 
-    actual = parse_ods_response(test_response, role_code)
+    actual = parse_ods_response(test_response, role_code, False)
     expected = {
         "name": "Primary Care Support England",
         "org_ods_code": "X4S4L",
         "role_code": role_code,
+        "is_BSOL": False,
     }
 
     assert actual == expected
@@ -79,6 +80,7 @@ def test_fetch_org_with_permitted_role_pcse(mock_ods_responses, mocker):
         "name": "Primary Care Support England",
         "org_ods_code": pcse_ods,
         "role_code": "",
+        "is_BSOL": False,
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
@@ -105,6 +107,7 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
         "name": "Mock GP Practice",
         "org_ods_code": "A9A5A",
         "role_code": "RO76",
+        "is_BSOL": False,
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
