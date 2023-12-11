@@ -3,7 +3,6 @@ import json
 import pytest
 from enums.repository_role import RepositoryRole
 from handlers.token_handler import lambda_handler
-from utils.audit_logging_setup import LoggingService
 from utils.exceptions import LoginException
 from utils.lambda_response import ApiGatewayResponse
 
@@ -14,13 +13,8 @@ def mock_login_service(mocker, set_env):
     yield mock_service.return_value
 
 
-@pytest.fixture
-def mock_logging_service(mocker):
-    yield mocker.patch.object(LoggingService, "__init__", return_value=None)
-
-
 def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
-    mock_logging_service,
+
     mock_login_service,
     context,
 ):
@@ -53,11 +47,10 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
 
     assert actual == expected
 
-    mock_login_service["exchange_token"].expect_called_with(auth_code, state)
+    mock_login_service.generate_session.assert_called_with(state, auth_code)
 
 
 def test_handler_passes_error_details_in_response(
-    mock_logging_service,
     mock_login_service,
     context,
 ):
@@ -81,4 +74,46 @@ def test_handler_passes_error_details_in_response(
 
     assert actual == expected
 
-    mock_login_service["exchange_token"].expect_called_with(auth_code, state)
+    mock_login_service.generate_session.assert_called_with(state, auth_code)
+
+
+def test_missing_query_string_params_raise_key_error(mock_login_service, context):
+    expected_status = 400
+    expected_body = "No auth code and/or state in the query string parameters"
+
+    auth_code = "auth_code"
+    test_event = {
+        "queryStringParameters": {"test": auth_code},
+        "httpmethod": "GET",
+    }
+
+    expected = ApiGatewayResponse(
+        expected_status, expected_body, "GET"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(test_event, context)
+
+    assert actual == expected
+
+    mock_login_service.generate_session.assert_not_called()
+
+
+def test_missing_query_string_params_raise_login_error(
+    mock_login_service,
+    context,
+):
+    expected_status = 400
+    expected_body = "No auth code and/or state in the query string parameters"
+
+    test_event = {
+        "queryStringParameters": {"code": "", "state": ""},
+        "httpmethod": "GET",
+    }
+    expected = ApiGatewayResponse(
+        expected_status, expected_body, "GET"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(test_event, context)
+
+    assert actual == expected
+    mock_login_service.generate_session.assert_not_called()
