@@ -2,16 +2,25 @@ import json
 
 import pytest
 from requests import Response
-from services.ods_api_service import (OdsApiService, find_org_relationship,
-                                      parse_ods_response)
+from services.ods_api_service import (
+    OdsApiService,
+    find_org_relationship,
+    parse_ods_response,
+)
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from tests.unit.helpers.data.ods.ods_organisation_response import (
-    BSOL_ORGANISATION_RESPONSE, NO_RELS_RESPONSE,
-    NON_BSOL_ORGANISATION_RESPONSE, RE6_REL_ID_RESPONSE)
+    BSOL_ORGANISATION_RESPONSE,
+    NO_RELS_RESPONSE,
+    NON_BSOL_ORGANISATION_RESPONSE,
+    RE6_REL_ID_RESPONSE,
+)
 from tests.unit.helpers.data.ods.utils import load_ods_response_data
 from tests.unit.helpers.mock_response import MockResponse
-from utils.exceptions import (OdsErrorException, OrganisationNotFoundException,
-                              TooManyOrgsException)
+from utils.exceptions import (
+    OdsErrorException,
+    OrganisationNotFoundException,
+    TooManyOrgsException,
+)
 
 
 def test_fetch_organisation_data_returns_organisation_data(mocker):

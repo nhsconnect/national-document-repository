@@ -14,7 +14,6 @@ def mock_login_service(mocker, set_env):
 
 
 def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
-
     mock_login_service,
     context,
 ):

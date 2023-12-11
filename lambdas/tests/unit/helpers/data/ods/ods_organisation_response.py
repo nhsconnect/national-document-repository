@@ -1,4 +1,5 @@
 from enums.repository_role import OrganisationRelationship
+
 MOCK_GP_NAME = "Mock GP Practice"
 
 NON_BSOL_ORGANISATION_RESPONSE = {

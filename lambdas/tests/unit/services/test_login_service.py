@@ -138,10 +138,10 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
     mocker.patch.object(DynamoDBService, "delete_item")
 
     expected = {
-            "isBSOL": expected_is_bsol,
-            "role": expected_role.value,
-            "authorisation_token": expected_jwt,
-        }
+        "isBSOL": expected_is_bsol,
+        "role": expected_role.value,
+        "authorisation_token": expected_jwt,
+    }
 
     login_service = LoginService()
 
@@ -253,9 +253,7 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
         assert error.status_code == 500
 
 
-def test_generate_repository_role_gp_admin(
-    mock_logging_service, set_env, mocker
-):
+def test_generate_repository_role_gp_admin(mock_logging_service, set_env, mocker):
     ods_code = "ods_code"
     org_role_code = "org_role_code"
     user_role_code = "role_code"
@@ -277,9 +275,7 @@ def test_generate_repository_role_gp_admin(
     assert expected == actual
 
 
-def test_generate_repository_role_gp_clinical(
-    mock_logging_service, set_env, mocker
-):
+def test_generate_repository_role_gp_clinical(mock_logging_service, set_env, mocker):
     ods_code = "ods_code"
     org_role_code = "org_role_code"
     user_role_code = "role_code"
@@ -336,9 +332,7 @@ def test_generate_repository_role_pcse(mock_logging_service, set_env, mocker):
     assert expected == actual
 
 
-def test_generate_repository_role_no_role(
-    mock_logging_service, set_env, mocker
-):
+def test_generate_repository_role_no_role(mock_logging_service, set_env, mocker):
     user_role_code = "role_code"
     org = {"org_ods_code": "ods_code", "role_code": "not_gp_or_pcse"}
 
