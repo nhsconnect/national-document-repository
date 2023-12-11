@@ -98,8 +98,9 @@ jobs:
           ECR_REPOSITORY: ndr-${{ github.event.client_payload.sandbox }}-app
           IMAGE_TAG: latest
           IMAGE_TAG_SHA: ${{ github.sha }}
+          CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
+          docker build --build-arg="CONTAINER_PORT=$CONTAINER_PORT" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" >> $GITHUB_OUTPUT
