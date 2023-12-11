@@ -1,7 +1,8 @@
 from enums.repository_role import OrganisationRelationship
+MOCK_GP_NAME = "Mock GP Practice"
 
 NON_BSOL_ORGANISATION_RESPONSE = {
-    "Name": "Mock GP Practice",
+    "Name": MOCK_GP_NAME,
     "Rels": {
         "Rel": [
             {
@@ -24,7 +25,7 @@ NON_BSOL_ORGANISATION_RESPONSE = {
 
 
 BSOL_ORGANISATION_RESPONSE = {
-    "Name": "Mock GP Practice",
+    "Name": MOCK_GP_NAME,
     "Rels": {
         "Rel": [
             {
@@ -47,7 +48,7 @@ BSOL_ORGANISATION_RESPONSE = {
 
 
 RE6_REL_ID_RESPONSE = {
-    "Name": "Mock GP Practice",
+    "Name": MOCK_GP_NAME,
     "Rels": {
         "Rel": [
             {
@@ -68,4 +69,4 @@ RE6_REL_ID_RESPONSE = {
     },
 }
 
-NO_RELS_RESPONSE = {"Name": "Mock GP Practice"}
+NO_RELS_RESPONSE = {"Name": MOCK_GP_NAME}
