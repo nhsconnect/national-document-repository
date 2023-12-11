@@ -115,7 +115,6 @@ jobs:
           OIDC_PROVIDER_ID: not provided yet
           BUILD_ENV: ${{ inputs.environment }}
           IMAGE_VERSION: 'ndr-${{ inputs.sandbox }}-app:${{ github.sha }}'
-          CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
           ./react-environment-config.sh
 
@@ -128,7 +127,7 @@ jobs:
           IMAGE_TAG_SHA: ${{ github.sha }}
           CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
+          docker build --build-arg="CONTAINER_PORT=$CONTAINER_PORT" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" >> $GITHUB_OUTPUT
