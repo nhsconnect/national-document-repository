@@ -7,7 +7,6 @@ from enums.pds_ssm_parameters import SSMParameter
 from enums.supported_document_types import SupportedDocumentTypes
 from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient
-from pydantic import ValidationError
 from requests import HTTPError
 from services.document_service import DocumentService
 from services.ssm_service import SSMService
@@ -20,6 +19,8 @@ from utils.unicode_utils import REGEX_PATIENT_NAME_PATTERN, names_are_matching
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
+
+filename_error_string = "One or more of the files do not match naming convention"
 
 
 class LGInvalidFilesException(Exception):
@@ -38,7 +39,7 @@ def validate_file_name(name: str):
     lg_regex = rf"[0-9]+of[0-9]+_Lloyd_George_Record_\[{REGEX_PATIENT_NAME_PATTERN}\]_\[{nhs_number_pattern}\]_\[\d\d-\d\d-\d\d\d\d].pdf"
     if not re.fullmatch(lg_regex, name):
         raise LGInvalidFilesException(
-            "One or more of the files do not match naming convention"
+            filename_error_string
         )
 
 
@@ -60,7 +61,7 @@ def check_for_number_of_files_match_expected(file_name: str, total_files_number:
             )
     except (AttributeError, IndexError, ValueError):
         raise LGInvalidFilesException(
-            "One or more of the files do not match naming convention"
+            filename_error_string
         )
 
 
@@ -112,13 +113,13 @@ def extract_info_from_filename(filename: str) -> dict:
         return match.groupdict()
     else:
         raise LGInvalidFilesException(
-            "One or more of the files do not match naming convention"
+            filename_error_string
         )
 
 
 def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
     expected_common_part = [
-        file_name[file_name.index("of") :] for file_name in file_name_list
+        file_name[file_name.index("of"):] for file_name in file_name_list
     ]
     if len(set(expected_common_part)) != 1:
         raise LGInvalidFilesException("File names does not match with each other")
@@ -154,9 +155,9 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         if patient_details.birth_date != date_of_birth:
             raise LGInvalidFilesException("Patient DoB does not match our records")
         patient_full_name = (
-            " ".join([name for name in patient_details.given_Name])
-            + " "
-            + patient_details.family_name
+                " ".join([name for name in patient_details.given_Name])
+                + " "
+                + patient_details.family_name
         )
         logger.info("Verifying patient name against the record in PDS...")
 
@@ -167,7 +168,7 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         if patient_details.general_practice_ods != current_user_ods:
             raise LGInvalidFilesException("User is not allowed to access patient")
 
-    except (ValidationError, ClientError, ValueError) as e:
+    except (ClientError, ValueError) as e:
         logger.error(e)
         raise LGInvalidFilesException(e)
     except HTTPError as e:
