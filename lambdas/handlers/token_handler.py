@@ -38,12 +38,16 @@ def lambda_handler(event, context):
             "User logged in successfully", {"Result": "Successful login"}
         )
         return ApiGatewayResponse(
-        200, json.dumps(response), "GET").create_api_gateway_response()
+            200, json.dumps(response), "GET"
+        ).create_api_gateway_response()
 
     except (KeyError, TypeError):
-        return ApiGatewayResponse(400, missing_value_response_body, "GET").create_api_gateway_response()
+        return ApiGatewayResponse(
+            400, missing_value_response_body, "GET"
+        ).create_api_gateway_response()
 
     except LoginException as error:
         logger.error(error, {"Result": "Unauthorised"})
-        return ApiGatewayResponse(error.status_code, error.message, "GET").create_api_gateway_response()
-
+        return ApiGatewayResponse(
+            error.status_code, error.message, "GET"
+        ).create_api_gateway_response()
