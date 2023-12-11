@@ -12,6 +12,7 @@ from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import CreateDocumentRefException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
+from utils.utilities import validate_id
 
 sys.path.append(os.path.join(os.path.dirname(__file__)))
 
@@ -58,6 +59,8 @@ def processing_event_details(event):
     try:
         body = json.loads(event["body"])
         nhs_number = body["subject"]["identifier"]["value"]
+        if not validate_id(nhs_number):
+            raise CreateDocumentRefException(400, "Invalid NHS number")
 
         if not body or not isinstance(body, dict):
             raise CreateDocumentRefException(400, "Missing event body")
