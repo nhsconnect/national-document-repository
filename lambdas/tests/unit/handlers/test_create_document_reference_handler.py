@@ -50,7 +50,7 @@ def mock_processing_event_details(mocker):
 
 
 def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
-    set_env, both_type_event, context, mocker
+        set_env, both_type_event, context, mocker
 ):
     mock_service = mocker.patch(
         "handlers.create_document_reference_handler.CreateDocumentReferenceService",
@@ -74,11 +74,11 @@ lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME", "LLOYD_GEORGE_DYNAMODB_N
 
 @pytest.mark.parametrize("environment_variable", lg_environment_variables)
 def test_lambda_handler_missing_environment_variables_type_lg_returns_400(
-    set_env,
-    monkeypatch,
-    lg_type_event,
-    environment_variable,
-    context,
+        set_env,
+        monkeypatch,
+        lg_type_event,
+        environment_variable,
+        context,
 ):
     monkeypatch.delenv(environment_variable)
     expected = ApiGatewayResponse(
@@ -92,11 +92,11 @@ def test_lambda_handler_missing_environment_variables_type_lg_returns_400(
 
 @pytest.mark.parametrize("environment_variable", arf_environment_variables)
 def test_lambda_handler_missing_environment_variables_type_arf_returns_500(
-    set_env,
-    monkeypatch,
-    arf_type_event,
-    environment_variable,
-    context,
+        set_env,
+        monkeypatch,
+        arf_type_event,
+        environment_variable,
+        context,
 ):
     monkeypatch.delenv(environment_variable)
     expected = ApiGatewayResponse(
@@ -137,7 +137,16 @@ def test_processing_event_details_missing_value_body_raise_error():
 def test_processing_event_details_missing_content_body_raise_error():
     invalid_event = {
         "httpMethod": "POST",
-        "body": """{"subject": {"identifier": {"value": "text"}}}""",
+        "body": """{"subject": {"identifier": {"value": "9000000009"}}}""",
+    }
+    with pytest.raises(CreateDocumentRefException):
+        processing_event_details(invalid_event)
+
+
+def test_processing_event_details_invalid_nhs_number_raise_error():
+    invalid_event = {
+        "httpMethod": "POST",
+        "body": """{"subject": {"identifier": {"value": "90AB000009"}}}""",
     }
     with pytest.raises(CreateDocumentRefException):
         processing_event_details(invalid_event)
@@ -146,7 +155,7 @@ def test_processing_event_details_missing_content_body_raise_error():
 def test_processing_event_details_missing_attachment_body_raise_error():
     invalid_event = {
         "httpMethod": "POST",
-        "body": """{"subject": {"identifier": {"value": "text"}},  "content": [
+        "body": """{"subject": {"identifier": {"value": "9000000009"}},  "content": [
         {"attachment": "text}}""",
     }
     with pytest.raises(CreateDocumentRefException):
@@ -165,7 +174,7 @@ def test_processing_event_details_get_nhs_number_and_doc_list(arf_type_event):
 
 
 def test_lambda_handler_processing_event_details_raise_error(
-    mocker, arf_type_event, context, set_env, mock_processing_event_details
+        mocker, arf_type_event, context, set_env, mock_processing_event_details
 ):
     mock_processing_event_details.side_effect = CreateDocumentRefException(400, "test")
     expected = ApiGatewayResponse(
@@ -179,7 +188,7 @@ def test_lambda_handler_processing_event_details_raise_error(
 
 
 def test_lambda_handler_service_raise_error(
-    mocker, arf_type_event, context, set_env, mock_processing_event_details
+        mocker, arf_type_event, context, set_env, mock_processing_event_details
 ):
     mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
 
@@ -199,7 +208,7 @@ def test_lambda_handler_service_raise_error(
 
 
 def test_lambda_handler_valid(
-    mocker, arf_type_event, context, set_env, mock_processing_event_details
+        mocker, arf_type_event, context, set_env, mock_processing_event_details
 ):
     mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
 

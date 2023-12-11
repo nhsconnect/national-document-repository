@@ -9,7 +9,7 @@ from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.exceptions import CreateDocumentRefException
+from utils.exceptions import CreateDocumentRefException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 from utils.utilities import validate_id
@@ -59,7 +59,9 @@ def processing_event_details(event):
     try:
         body = json.loads(event["body"])
         nhs_number = body["subject"]["identifier"]["value"]
-        if not validate_id(nhs_number):
+        try:
+            validate_id(nhs_number)
+        except InvalidResourceIdException:
             raise CreateDocumentRefException(400, "Invalid NHS number")
 
         if not body or not isinstance(body, dict):
