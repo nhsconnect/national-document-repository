@@ -106,8 +106,18 @@ class LoginService:
             user_id,
         )
 
+        is_bsol = (
+            repository_role.value == RepositoryRole.GP_ADMIN.value
+            and permitted_orgs_details["is_BSOL"]
+        )
+
         logger.info("Returning authentication details")
-        return {"local_role": repository_role, "jwt": authorisation_token}
+        response = {
+            "isBSOL": is_bsol,
+            "role": repository_role.value,
+            "authorisation_token": authorisation_token,
+        }
+        return response
 
     def have_matching_state_value_in_record(self, state: str) -> bool:
         state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
