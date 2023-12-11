@@ -22,6 +22,7 @@ sed $SEDOPTION "s/%AWS_REGION%/${AWS_REGION}/" .env
 sed $SEDOPTION "s/%OIDC_PROVIDER_ID%/${OIDC_PROVIDER_ID}/" .env
 sed $SEDOPTION "s/%BUILD_ENV%/${BUILD_ENV}/" .env
 sed $SEDOPTION "s/%IMAGE_VERSION%/${IMAGE_VERSION}/" .env
+sed $SEDOPTION "s/%CONTAINER_PORT%/${CONTAINER_PORT}/" .env
 
 echo "var transformation completed"
 

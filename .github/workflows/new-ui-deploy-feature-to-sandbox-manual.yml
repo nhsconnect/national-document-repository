@@ -115,6 +115,7 @@ jobs:
           OIDC_PROVIDER_ID: not provided yet
           BUILD_ENV: ${{ inputs.environment }}
           IMAGE_VERSION: 'ndr-${{ inputs.sandbox }}-app:${{ github.sha }}'
+          CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
           ./react-environment-config.sh
 
