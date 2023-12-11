@@ -25,7 +25,7 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
     context,
 ):
     expected_jwt = "mock_ndr_auth_token"
-    login_service_response = {"local_role": RepositoryRole.PCSE, "jwt": expected_jwt}
+    login_service_response = {"isBSOL": False, "role": RepositoryRole.PCSE.value, "authorisation_token": expected_jwt}
     mock_login_service.generate_session.return_value = login_service_response
 
     auth_code = "auth_code"

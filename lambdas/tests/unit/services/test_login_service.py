@@ -109,13 +109,13 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
     mock_jwt_encode,
     mock_logging_service,
     mocker,
-    context,
 ):
     auth_code = "auth_code"
     state = "state"
 
     expected_jwt = "mock_ndr_auth_token"
     expected_role = RepositoryRole.PCSE
+    expected_is_bsol = False
 
     mocker.patch.object(
         LoginService,
@@ -137,7 +137,11 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
 
     mocker.patch.object(DynamoDBService, "delete_item")
 
-    expected = {"local_role": RepositoryRole.PCSE, "jwt": expected_jwt}
+    expected = {
+            "isBSOL": expected_is_bsol,
+            "role": expected_role.value,
+            "authorisation_token": expected_jwt,
+        }
 
     login_service = LoginService()
 
@@ -145,7 +149,7 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
 
     assert actual == expected
 
-    mock_oidc_service["fetch_token"].expect_called_with(auth_code)
+    mock_oidc_service["fetch_token"].assert_called_with(auth_code)
 
 
 def test_exchange_token_raises_exception_when_token_exchange_with_oidc_provider_throws_error(
@@ -173,7 +177,7 @@ def test_exchange_token_raises_exception_when_token_exchange_with_oidc_provider_
 
 
 def test_exchange_token_raises_login_error_when_given_state_is_not_in_state_table(
-    mock_aws_infras, mock_oidc_service, set_env, context, mocker
+    mock_aws_infras, mock_oidc_service, set_env, mocker
 ):
     mocker.patch.object(
         DynamoDBService, "simple_query", return_value={"Count": 0, "Items": []}
@@ -221,7 +225,7 @@ def test_exchange_token_raises_login_error_when_user_doesnt_have_a_valid_role_to
 
 
 def test_exchange_token_raises_error_when_encounter_boto3_error(
-    mock_aws_infras, set_env, mocker, context
+    mock_aws_infras, set_env, mocker
 ):
     mocker.patch.object(
         DynamoDBService,
@@ -250,7 +254,7 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
 
 
 def test_generate_repository_role_gp_admin(
-    mock_logging_service, set_env, context, mocker
+    mock_logging_service, set_env, mocker
 ):
     ods_code = "ods_code"
     org_role_code = "org_role_code"
@@ -274,7 +278,7 @@ def test_generate_repository_role_gp_admin(
 
 
 def test_generate_repository_role_gp_clinical(
-    mock_logging_service, set_env, context, mocker
+    mock_logging_service, set_env, mocker
 ):
     ods_code = "ods_code"
     org_role_code = "org_role_code"
@@ -302,7 +306,7 @@ def test_generate_repository_role_gp_clinical(
     assert expected == actual
 
 
-def test_generate_repository_role_pcse(mock_logging_service, set_env, context, mocker):
+def test_generate_repository_role_pcse(mock_logging_service, set_env, mocker):
     ods_code = "ods_code"
     user_role_code = "role_code"
     org_role_code = "org_role_code"
@@ -333,7 +337,7 @@ def test_generate_repository_role_pcse(mock_logging_service, set_env, context, m
 
 
 def test_generate_repository_role_no_role(
-    mock_logging_service, set_env, context, mocker
+    mock_logging_service, set_env, mocker
 ):
     user_role_code = "role_code"
     org = {"org_ods_code": "ods_code", "role_code": "not_gp_or_pcse"}

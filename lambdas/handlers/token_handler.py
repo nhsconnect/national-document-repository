@@ -29,32 +29,21 @@ def lambda_handler(event, context):
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
         if not (auth_code and state):
-            return respond_with(400, missing_value_response_body)
-    except (KeyError, TypeError):
-        return respond_with(400, missing_value_response_body)
+            raise LoginException(400, missing_value_response_body)
 
-    try:
         login_service = LoginService()
 
-        session_info = login_service.generate_session(state, auth_code)
+        response = login_service.generate_session(state, auth_code)
+        logger.audit_splunk_info(
+            "User logged in successfully", {"Result": "Successful login"}
+        )
+        return ApiGatewayResponse(
+        200, json.dumps(response), "GET").create_api_gateway_response()
+
+    except (KeyError, TypeError):
+        return ApiGatewayResponse(400, missing_value_response_body, "GET").create_api_gateway_response()
 
     except LoginException as error:
         logger.error(error, {"Result": "Unauthorised"})
-        return respond_with(error.status_code, error.message)
+        return ApiGatewayResponse(error.status_code, error.message, "GET").create_api_gateway_response()
 
-    logger.info("Creating response")
-    response = {
-        "role": session_info["local_role"].value,
-        "authorisation_token": session_info["jwt"],
-    }
-
-    logger.audit_splunk_info(
-        "User logged in successfully", {"Result": "Successful login"}
-    )
-    return respond_with(200, json.dumps(response))
-
-
-def respond_with(http_status_code, body):
-    return ApiGatewayResponse(
-        http_status_code, body, "GET"
-    ).create_api_gateway_response()
