@@ -77,7 +77,8 @@ jobs:
 
       - uses: dkershner6/aws-ssm-getparameters-action@v1
         with:
-          parameterPairs: '/ndr/${{ github.event.client_payload.sandbox }}/api_endpoint = DOC_STORE_API_ENDPOINT'
+          parameterPairs: '/ndr/${{ github.event.client_payload.sandbox }}/api_endpoint = DOC_STORE_API_ENDPOINT, 
+            /ndr/${{ github.event.client_payload.sandbox }}/container_port = CONTAINER_PORT'
           withDecryption: 'true' # defaults to true
 
       - name: Configure React environment vars
