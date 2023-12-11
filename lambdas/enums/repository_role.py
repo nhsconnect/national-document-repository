@@ -11,3 +11,8 @@ class RepositoryRole(Enum):
     @staticmethod
     def list() -> List[str]:
         return [str(item.value) for item in RepositoryRole]
+
+
+class OrganisationRelationship(Enum):
+    BSOL_REL_ID = "RE4"
+    BSOL_ORG_ID = "92A"

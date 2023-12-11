@@ -2,8 +2,12 @@ import json
 
 import pytest
 from requests import Response
-from services.ods_api_service import OdsApiService, parse_ods_response
+from services.ods_api_service import (OdsApiService, find_org_relationship,
+                                      parse_ods_response)
 from services.token_handler_ssm_service import TokenHandlerSSMService
+from tests.unit.helpers.data.ods.ods_organisation_response import (
+    BSOL_ORGANISATION_RESPONSE, NO_RELS_RESPONSE,
+    NON_BSOL_ORGANISATION_RESPONSE, RE6_REL_ID_RESPONSE)
 from tests.unit.helpers.data.ods.utils import load_ods_response_data
 from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import (
@@ -58,11 +62,12 @@ def test_parse_ods_response_extracts_data_and_includes_role_code_passed_as_arg(
     test_response = mock_ods_responses["pcse_org"]
     role_code = "this should be the role code and not the one in the mock data"
 
-    actual = parse_ods_response(test_response, role_code)
+    actual = parse_ods_response(test_response, role_code, False)
     expected = {
         "name": "Primary Care Support England",
         "org_ods_code": "X4S4L",
         "role_code": role_code,
+        "is_BSOL": False,
     }
 
     assert actual == expected
@@ -82,6 +87,7 @@ def test_fetch_org_with_permitted_role_pcse(mock_ods_responses, mocker):
         "name": "Primary Care Support England",
         "org_ods_code": pcse_ods,
         "role_code": "",
+        "is_BSOL": False,
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
@@ -108,6 +114,7 @@ def test_fetch_org_with_permitted_role_gp(mock_ods_responses, mocker):
         "name": "Mock GP Practice",
         "org_ods_code": "A9A5A",
         "role_code": "RO76",
+        "is_BSOL": False,
     }
 
     actual = OdsApiService.fetch_organisation_with_permitted_role(
@@ -148,3 +155,14 @@ def test_fetch_org_with_permitted_role_raises_exception_if_more_than_one_org_for
         OdsApiService.fetch_organisation_with_permitted_role(
             OdsApiService(), ["ods1", "ods2many"]
         )
+
+
+def test_find_org_relationship_bsol_response():
+    assert find_org_relationship(BSOL_ORGANISATION_RESPONSE) is True
+
+
+@pytest.mark.parametrize(
+    "org_data", [NON_BSOL_ORGANISATION_RESPONSE, RE6_REL_ID_RESPONSE, NO_RELS_RESPONSE]
+)
+def test_find_org_relationship_non_bsol_responses(org_data):
+    assert find_org_relationship(org_data) is False

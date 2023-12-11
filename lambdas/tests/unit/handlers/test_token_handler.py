@@ -36,6 +36,7 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
     }
 
     expected_response_body = {
+        "isBSOL": False,
         "role": "PCSE",
         "authorisation_token": expected_jwt,
     }
