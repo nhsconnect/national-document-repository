@@ -12,7 +12,7 @@ clean-build:
 clean-py:
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
-	find . -name '__pycache__' -exec rm -fr {} +	
+	find . -name '__pycache__' -exec rm -fr {} +
 
 clean-test:
 	find . -name '.pytest_cache' -exec rm -fr {} +
@@ -21,14 +21,17 @@ clean-test:
 	find . -name '.cache' -exec rm -fr {} +
 
 format:
-	./lambdas/venv/bin/python3 -m black . &&\
-	ruff check . --fix
-	./lambdas/venv/bin/python3 -m isort lambdas/handlers/. 
-	./lambdas/venv/bin/python3 -m isort lambdas/models/. 
-	./lambdas/venv/bin/python3 -m isort lambdas/utils/. 
-	./lambdas/venv/bin/python3 -m isort lambdas/services/.
-	./lambdas/venv/bin/python3 -m isort lambdas/enums/.
-	./lambdas/venv/bin/python3 -m isort lambdas/tests/. 
+	./lambdas/venv/bin/python3 -m isort --profile black lambdas/
+	./lambdas/venv/bin/python3 -m black lambdas/ &&\
+	ruff check lambdas/ --fix
+
+sort-requirements:
+	sort -o lambdas/requirements.txt lambdas/requirements.txt
+	sort -o lambdas/requirements-test.txt lambdas/requirements-test.txt
+
+check-packages:
+	./lambdas/venv/bin/pip-audit -r lambdas/requirements.txt
+	./lambdas/venv/bin/pip-audit -r lambdas/requirements-test.txt
 
 test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
@@ -51,7 +54,7 @@ env:
 	./lambdas/venv/bin/pip3 install -r lambdas/requirements-test.txt
 
 zip:
-	rm -rf ./lambdas/package_$(lambda_name) || true 
+	rm -rf ./lambdas/package_$(lambda_name) || true
 	mkdir ./lambdas/package_$(lambda_name)
 	./lambdas/venv/bin/pip3 install --platform manylinux2014_x86_64 --only-binary=:all: --implementation cp  -r lambdas/requirements.txt -t ./lambdas/package_$(lambda_name)
 	mkdir ./lambdas/package_$(lambda_name)/handlers
@@ -72,11 +75,8 @@ install:
 clean-install:
 	npm --prefix ./app ci --legacy-peer-deps
 
-pre-commit:
-	npm exec --prefix ./app lint-staged 
-
-pre-push:
-	make test-ui
+pre-commit: sort-requirements format
+	npm exec --prefix ./app lint-staged
 
 start:
 	npm --prefix ./app start

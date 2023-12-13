@@ -1,8 +1,9 @@
-pytest==7.4.0
+black==23.11.0
+freezegun==1.2.2
+isort==5.13.0
+moto==4.1.15
+pip-audit==2.6.1
 pytest-cov==4.1.0
 pytest-mock==3.11.1
+pytest==7.4.3
 ruff==0.0.284
-moto==4.1.15
-freezegun==1.2.2
-black==23.7.0
-isort==5.12.0
