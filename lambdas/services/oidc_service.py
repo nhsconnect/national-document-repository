@@ -58,7 +58,8 @@ class OidcService:
             raw_id_token = response_content["id_token"]
 
             decoded_token = self.validate_and_decode_token(raw_id_token)
-
+            
+            logger.info(f"Decoded toekn: {decoded_token}")
             id_token_claims_set: IdTokenClaimSet = IdTokenClaimSet.model_validate(
                 decoded_token
             )
