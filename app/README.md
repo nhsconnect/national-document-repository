@@ -59,8 +59,8 @@ The applications unit tests will also run automatically every-time a push is mad
 
 There are also Cypress end-to-end tests written against each user journey and it's functionality.
 
-Before running the E2E tests, please ensure you have got the value `CYPRESS_BASE_URL=http://localhost:xxxx` set up in your .env file.  
-You can run then start the E2E tests by running
+Before running the E2E tests, please make sure you have got the value `CYPRESS_BASE_URL=http://localhost:xxxx` set up in your .env file.  
+You can then start the E2E tests by running
 
 ```bash
 make cypress-open
