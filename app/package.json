@@ -14,7 +14,7 @@
         "format": "prettier --write \"**/*.+(ts|tsx|js|scss|json|css|md)\"",
         "prepare": "cd ../ && husky install ./app/.husky",
         "cypress": "cypress open --env CYPRESS_RUN_AS_SMOKETEST=false",
-        "cypress-report-run" : "cypress run --reporter mochawesome --env,CYPRESS_RUN_AS_SMOKETEST=false",
+        "cypress-report-run" : "cypress run --reporter mochawesome --env CYPRESS_RUN_AS_SMOKETEST=false",
         "cypress-report-merge": "npx mochawesome-merge \"cypress/results/*.json\" > mochawesomemerged.json", 
         "cypress-report-generate": "npx marge mochawesomemerged.json",
         "cypress-report": "rm -r cypress/results/* && npm run cypress-report-run && npm run cypress-report-merge && npm run cypress-report-generate"

@@ -50,10 +50,10 @@ describe('Authentication & Authorisation', () => {
         unauthorisedRoutes.forEach((route) => {
             it('redirects logged-out user on unauthorised access to ' + route, () => {
                 // Visit the unauthorised route
-                cy.visit(baseUrl + route);
+                cy.visit(route);
 
                 // Assert that the user is redirected
-                cy.url().should('equal', baseUrl + 'unauthorised');
+                cy.url().should('equal', baseUrl + '/unauthorised');
             });
         });
     });

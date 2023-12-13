@@ -209,7 +209,7 @@ describe('PCSE Workflow: Access and download found files', () => {
 
         cy.get('#start-again-link').should('exist');
         cy.get('#start-again-link').click();
-        cy.url().should('eq', baseUrl);
+        cy.url().should('eq', baseUrl + '/');
     });
 
     context('Delete all documents relating to a patient', () => {

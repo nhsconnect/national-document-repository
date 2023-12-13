@@ -26,7 +26,7 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
             }
 
             cy.login('GP_CLINICAL');
-            cy.url().should('eq', baseUrl + 'search/upload');
+            cy.url().should('eq', baseUrl + '/search/upload');
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
@@ -34,12 +34,12 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
             cy.wait('@search');
 
             cy.url().should('include', 'upload');
-            cy.url().should('eq', baseUrl + 'search/upload/result');
+            cy.url().should('eq', baseUrl + '/search/upload/result');
 
             cy.get('#verify-submit').click();
 
             cy.url().should('include', 'lloyd-george-record');
-            cy.url().should('eq', baseUrl + 'search/patient/lloyd-george-record');
+            cy.url().should('eq', baseUrl + '/search/patient/lloyd-george-record');
         });
     });
 });
@@ -49,7 +49,7 @@ describe('GP Clinical user role cannot access expected forbidden routes', () => 
         forbiddenRoutes.forEach((forbiddenRoute) => {
             it('GP Clinical role cannot access route ' + forbiddenRoute, () => {
                 cy.login('GP_CLINICAL');
-                cy.visit(baseUrl + forbiddenRoute);
+                cy.visit(forbiddenRoute);
                 cy.url().should('include', 'unauthorised');
             });
         });

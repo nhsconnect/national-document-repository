@@ -40,13 +40,13 @@ describe('PCSE Workflow: patient search and verify', () => {
         cy.wait('@search');
 
         cy.url().should('include', 'result');
-        cy.url().should('eq', baseUrl + 'search/patient/result');
+        cy.url().should('eq', baseUrl + '/search/patient/result');
         cy.get('#gp-message').should('not.exist');
 
         cy.get('#verify-submit').click();
 
         cy.url().should('include', 'results');
-        cy.url().should('eq', baseUrl + 'search/results');
+        cy.url().should('eq', baseUrl + '/search/results');
     });
 
     it('It shows the download documents page when download patient is verified by a PCSE user', () => {
@@ -62,7 +62,7 @@ describe('PCSE Workflow: patient search and verify', () => {
         cy.get('#verify-submit').click();
 
         cy.url().should('include', 'results');
-        cy.url().should('eq', baseUrl + 'search/results');
+        cy.url().should('eq', baseUrl + '/search/results');
     });
 
     it('(Smoke test) It searches for a valid patient successfully when the user enters a known nhs number by a PCSE user', () => {
@@ -81,7 +81,7 @@ describe('PCSE Workflow: patient search and verify', () => {
         cy.wait('@search');
 
         cy.url().should('include', 'result');
-        cy.url().should('eq', baseUrl + 'search/patient/result');
+        cy.url().should('eq', baseUrl + '/search/patient/result');
     });
 
     it('(Smoke test) It searches for a valid patient successfully when the user enters a known nhs number with spaces by a PCSE user', () => {
@@ -102,7 +102,7 @@ describe('PCSE Workflow: patient search and verify', () => {
         cy.wait('@search');
 
         cy.url().should('include', 'result');
-        cy.url().should('eq', baseUrl + 'search/patient/result');
+        cy.url().should('eq', baseUrl + '/search/patient/result');
     });
 
     it('(Smoke test) It searches for a valid patient successfully when the user enters a known nhs number with dashes by a PCSE user', () => {
@@ -123,6 +123,6 @@ describe('PCSE Workflow: patient search and verify', () => {
         cy.wait('@search');
 
         cy.url().should('include', 'result');
-        cy.url().should('eq', baseUrl + 'search/patient/result');
+        cy.url().should('eq', baseUrl + '/search/patient/result');
     });
 });

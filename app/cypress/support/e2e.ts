@@ -33,7 +33,7 @@ Cypress.Commands.add('login', (role) => {
             statusCode: 200,
             fixture: 'requests/auth/GET_TokenRequest_' + role + '.json',
         }).as('auth');
-        cy.visit(baseUrl + 'auth-callback');
+        cy.visit('auth-callback');
         cy.wait('@auth');
     } else {
         throw new Error("Invalid role for login. Only 'gp' or 'pcse' are allowed.");

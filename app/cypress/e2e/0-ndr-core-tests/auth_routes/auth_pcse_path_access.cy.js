@@ -31,7 +31,7 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
 
             cy.login('PCSE');
 
-            cy.url().should('eq', baseUrl + 'search/patient');
+            cy.url().should('eq', baseUrl + '/search/patient');
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
@@ -39,7 +39,7 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
             cy.wait('@search');
 
             cy.get('#verify-submit').click();
-            cy.url().should('eq', baseUrl + 'search/results');
+            cy.url().should('eq', baseUrl + '/search/results');
         });
     });
 });
@@ -49,7 +49,7 @@ describe('PCSE user role cannot access expected forbidden routes', () => {
         forbiddenRoutes.forEach((forbiddenRoute) => {
             it('PCSE role cannot access route' + forbiddenRoute, () => {
                 cy.login('PCSE');
-                cy.visit(baseUrl + forbiddenRoute);
+                cy.visit(forbiddenRoute);
                 cy.url().should('include', 'unauthorised');
             });
         });

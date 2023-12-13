@@ -30,7 +30,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
             cy.intercept('GET', '/DocumentManifest*', {
                 statusCode: 200,
-                body: baseUrl + 'browserconfig.xml', // uses public served file in place of a ZIP file
+                body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
             }).as('documentManifest');
 
             cy.getByTestId('actions-menu').click();

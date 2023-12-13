@@ -3,11 +3,7 @@ import * as dotenv from 'dotenv';
 
 function getBaseUrlFromEnv() {
     dotenv.config();
-    return ensureEndsWithSlash(process.env.CYPRESS_BASE_URL);
-}
-
-function ensureEndsWithSlash(url: string): string {
-    return url.endsWith('/') ? url : url + '/';
+    return process.env.CYPRESS_BASE_URL;
 }
 
 export default defineConfig({
