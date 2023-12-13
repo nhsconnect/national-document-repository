@@ -22,7 +22,7 @@ The National Document Repository user interface (UI) has been developed with Rea
 
 ### 1. Set Env Variables
 
-Create a `.env` file by duplicating [.env.example](.env_example) and adding any missing values. This file is sourced to
+Create a `.env` file by duplicating [.env.template](.env.template) and adding any missing values. This file is sourced to
 your shell env so make sure it doesn't have any extra whitespace, comments etc.
 The `local` environment variable will allow your local app to bypass auth and mock most lambda requests.
 
@@ -57,7 +57,10 @@ The applications unit tests will also run automatically every-time a push is mad
 
 ### 2. E2E Tests
 
-There are also Cypress end-to-end tests written against each user journey and it's functionality. You can run these by running
+There are also Cypress end-to-end tests written against each user journey and it's functionality.
+
+Before running the E2E tests, please ensure you have got the value `CYPRESS_BASE_URL=http://localhost:xxxx` set up in your .env file.  
+You can run then start the E2E tests by running
 
 ```bash
 make cypress-open
