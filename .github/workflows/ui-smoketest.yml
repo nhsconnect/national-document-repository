@@ -1,18 +1,19 @@
 # .github/workflows/terraform-dev
-name: 'SMOKETEST UI'
+name: 'SANDBOX - Smoke Test'
 
 on:
   workflow_dispatch:
     inputs:
-      buildBranch:
-        description: 'Feature branch to push to test?'
+      build_branch:
+        description: 'Branch with smoke tests.'
         required: true
         type: 'string'
-      smokeUrl:
-        description: 'What URL to run smoketest against'
+        default: 'main'
+      sandbox:
+        description: 'Sandbox to run the smoke tests on.'
         required: true
-        default: 'https://ndr-dev.access-request-fulfilment.patient-deductions.nhs.uk/'
         type: 'string'
+        default: 'ndr'
 
 permissions:
   pull-requests: write
@@ -20,17 +21,14 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-
   cypress-run-chrome:
     runs-on: ubuntu-22.04
-    needs: install-cypress-build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      # Npm run will run the app locally, we want to test the built application with env vars using serve
-      - name: Install serve globally
-        run: npm install -g serve
+        with:
+          repository: 'nhsconnect/national-document-repository'
+          ref: ${{ github.event.inputs.build_branch}}
 
       - name: Cypress install
         run: |
@@ -44,18 +42,17 @@ jobs:
           browser: chrome
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl}}'
+          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
+          CYPRESS_grepTags: 'smoke'
 
   cypress-run-firefox:
     runs-on: ubuntu-22.04
-    needs: install-cypress-build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-
-      # Npm run will run the app locally, we want to test the built application with env vars using serve
-      - name: Install serve globally
-        run: npm install -g serve
+        with:
+          repository: 'nhsconnect/national-document-repository'
+          ref: ${{ github.event.inputs.build_branch}}
 
       - name: Cypress install
         run: |
@@ -69,14 +66,17 @@ jobs:
           browser: firefox
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl}}'
+          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
+          CYPRESS_grepTags: 'smoke'
 
   cypress-run-edge:
     runs-on: ubuntu-22.04
-    needs: install-cypress-build
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          repository: 'nhsconnect/national-document-repository'
+          ref: ${{ github.event.inputs.build_branch}}
 
       - name: Cypress install
         run: |
@@ -90,5 +90,5 @@ jobs:
           browser: edge
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: '${{ github.event.inputs.smokeUrl}}'
-
+          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
+          CYPRESS_grepTags: 'smoke'

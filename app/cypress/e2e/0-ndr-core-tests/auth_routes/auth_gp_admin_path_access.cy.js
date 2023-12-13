@@ -10,20 +10,17 @@ const patient = {
     active: true,
 };
 
-const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 const baseUrl = Cypress.config('baseUrl');
 
-const forbiddenRoutes = ['search/patient', 'search/patient/result', 'search/results'];
+const forbiddenRoutes = ['/search/patient', '/search/patient/result', '/search/results'];
 
 describe('GP Admin user role has access to the expected GP_ADMIM workflow paths', () => {
     context('GP Admin role has access to expected routes', () => {
-        it('GP Admin role has access to Lloyd George View', () => {
-            if (!smokeTest) {
-                cy.intercept('GET', '/SearchPatient*', {
-                    statusCode: 200,
-                    body: patient,
-                }).as('search');
-            }
+        it('GP Admin role has access to Lloyd George View', { tags: 'regression' }, () => {
+            cy.intercept('GET', '/SearchPatient*', {
+                statusCode: 200,
+                body: patient,
+            }).as('search');
 
             cy.login('GP_ADMIN');
             cy.url().should('eq', baseUrl + '/search/upload');
@@ -47,11 +44,15 @@ describe('GP Admin user role has access to the expected GP_ADMIM workflow paths'
 describe('GP Admin user role cannot access expected forbidden routes', () => {
     context('GP Admin role has no access to forbidden routes', () => {
         forbiddenRoutes.forEach((forbiddenRoute) => {
-            it('GP Admin role cannot access route ' + forbiddenRoute, () => {
-                cy.login('GP_ADMIN');
-                cy.visit(forbiddenRoute);
-                cy.url().should('include', 'unauthorised');
-            });
+            it(
+                'GP Admin role cannot access route ' + forbiddenRoute,
+                { tags: 'regression' },
+                () => {
+                    cy.login('GP_ADMIN');
+                    cy.visit(forbiddenRoute);
+                    cy.url().should('include', 'unauthorised');
+                },
+            );
         });
     });
 });

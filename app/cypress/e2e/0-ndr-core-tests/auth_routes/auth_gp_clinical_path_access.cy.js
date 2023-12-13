@@ -10,20 +10,17 @@ const patient = {
     active: true,
 };
 
-const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 const baseUrl = Cypress.config('baseUrl');
 
-const forbiddenRoutes = ['search/patient', 'search/patient/result', 'search/results'];
+const forbiddenRoutes = ['/search/patient', '/search/patient/result', '/search/results'];
 
 describe('GP Clinical user role has access to the expected GP_CLINICAL workflow paths', () => {
     context('GP Clinical role has access to expected routes', () => {
-        it('GP Clinical role has access to Lloyd George View', () => {
-            if (!smokeTest) {
-                cy.intercept('GET', '/SearchPatient*', {
-                    statusCode: 200,
-                    body: patient,
-                }).as('search');
-            }
+        it('GP Clinical role has access to Lloyd George View', { tags: 'regression' }, () => {
+            cy.intercept('GET', '/SearchPatient*', {
+                statusCode: 200,
+                body: patient,
+            }).as('search');
 
             cy.login('GP_CLINICAL');
             cy.url().should('eq', baseUrl + '/search/upload');
@@ -47,11 +44,15 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
 describe('GP Clinical user role cannot access expected forbidden routes', () => {
     context('GP Clinical role has no access to forbidden routes', () => {
         forbiddenRoutes.forEach((forbiddenRoute) => {
-            it('GP Clinical role cannot access route ' + forbiddenRoute, () => {
-                cy.login('GP_CLINICAL');
-                cy.visit(forbiddenRoute);
-                cy.url().should('include', 'unauthorised');
-            });
+            it(
+                'GP Clinical role cannot access route ' + forbiddenRoute,
+                { tags: 'regression' },
+                () => {
+                    cy.login('GP_CLINICAL');
+                    cy.visit(forbiddenRoute);
+                    cy.url().should('include', 'unauthorised');
+                },
+            );
         });
     });
 });
