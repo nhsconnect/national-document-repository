@@ -18,6 +18,7 @@ MOCK_PARAMETERS = {
     "OIDC_USER_INFO_URL": "https://localhost:3000/mock_userinfo_url",
     "OIDC_CALLBACK_URL": "https://localhost:3000/mock_callback_url",
     "OIDC_JWKS_URL": "https://localhost:3000/mock_jwks_url",
+    "WORKSPACE" : "production"
 }
 
 
@@ -171,6 +172,7 @@ def mock_cis2_public_key_and_id_tokens():
         "iss": MOCK_PARAMETERS["OIDC_ISSUER_URL"],
         "aud": MOCK_PARAMETERS["OIDC_CLIENT_ID"],
         "exp": time.time() + 3600,
+        "acr": "AAL3"
     }
     valid_id_token = jwt.encode(claim_set, key=mock_cis2_private_key, algorithm="RS256")
 

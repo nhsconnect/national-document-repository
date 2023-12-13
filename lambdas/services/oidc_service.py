@@ -30,6 +30,7 @@ class OidcService:
         self._oidc_callback_uri = ""
         self._oidc_jwks_url = ""
         self.oidc_client = None
+        self.workspace = ""
 
     def fetch_tokens(self, auth_code: str) -> Tuple[AccessToken, IdTokenClaimSet]:
         url, headers, body = self.oidc_client.prepare_token_request(
@@ -58,8 +59,8 @@ class OidcService:
             raw_id_token = response_content["id_token"]
 
             decoded_token = self.validate_and_decode_token(raw_id_token)
-            
-            logger.info(f"Decoded toekn: {decoded_token}")
+
+            logger.info(f"Decoded token: {decoded_token}")
             id_token_claims_set: IdTokenClaimSet = IdTokenClaimSet.model_validate(
                 decoded_token
             )
@@ -75,7 +76,7 @@ class OidcService:
             )
             cis2_signing_key = jwks_client.get_signing_key_from_jwt(signed_token)
 
-            return jwt.decode(
+            decoded_token = jwt.decode(
                 jwt=signed_token,
                 key=cis2_signing_key.key,
                 algorithms=["RS256"],
@@ -83,6 +84,10 @@ class OidcService:
                 audience=self._client_id,
                 options=self.VERIFY_ALL,
             )
+
+            if self.validate_acr(decoded_token["acr"]):
+                return decoded_token
+
         except jwt.exceptions.PyJWTError as err:
             logger.error(err)
             raise OidcApiException("The JWT provided by CIS2 is invalid or expired.")
@@ -163,6 +168,12 @@ class OidcService:
             )
             raise OidcApiException("Failed to retrieve userinfo")
 
+    def validate_acr(self, acr):
+        if self.workspace == "pre-prod" or self.workspace == "development" or acr == "AAL3":
+            return True
+        else:
+            raise OidcApiException(f"ACR value {acr} is incorrect for the current workspace {self.workspace}")
+
     # TODO Move to SSM service, example in token_handler_ssm_service
     def fetch_oidc_parameters(self, ssm_service_class):
         ssm_service = ssm_service_class()
@@ -173,6 +184,7 @@ class OidcService:
             "OIDC_TOKEN_URL",
             "OIDC_USER_INFO_URL",
             "OIDC_JWKS_URL",
+            "WORKSPACE"
         ]
         oidc_parameters = ssm_service.get_ssm_parameters(
             parameters_names, with_decryption=True
@@ -193,6 +205,7 @@ class OidcService:
         self._oidc_callback_uri = oidc_parameters["OIDC_CALLBACK_URL"]
         self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
         self.oidc_client = web_application_client_class(client_id=self._client_id)
+        self.workspace = oidc_parameters["WORKSPACE"]
 
 
 def get_selected_roleid(id_token_claim_set: IdTokenClaimSet):
