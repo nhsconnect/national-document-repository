@@ -119,7 +119,7 @@ jobs:
           browser: chrome
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'http://localhost:3000'
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
           CYPRESS_grepTags: 'regression'
 
   cypress-run-firefox:
@@ -152,7 +152,7 @@ jobs:
           browser: firefox
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'http://localhost:3000'
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
           CYPRESS_grepTags: 'regression'
 
   cypress-run-edge:
@@ -185,7 +185,7 @@ jobs:
           browser: edge
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'http://localhost:3000'
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
           CYPRESS_grepTags: 'regression'
 
   react_build_and_deploy_docker_image:
