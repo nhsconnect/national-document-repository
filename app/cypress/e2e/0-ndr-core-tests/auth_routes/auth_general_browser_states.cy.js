@@ -1,7 +1,7 @@
 import authPayload from '../../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
 
 describe('Authentication & Authorisation', () => {
-    const baseUrl = 'http://localhost:3000';
+    const baseUrl = Cypress.config('baseUrl');
 
     context('Session management is handled correctly', () => {
         it.skip('sets session storage on login and clears session storage on logout', () => {
@@ -38,13 +38,13 @@ describe('Authentication & Authorisation', () => {
 
     context('Unauthorised accesses checking when no user is logged in', () => {
         const unauthorisedRoutes = [
-            '/search/patient',
-            '/search/patient/result',
-            '/search/results',
-            '/search/patient/lloyd-george-record',
-            '/search/upload',
-            '/search/upload/result',
-            '/upload/submit',
+            'search/patient',
+            'search/patient/result',
+            'search/results',
+            'search/patient/lloyd-george-record',
+            'search/upload',
+            'search/upload/result',
+            'upload/submit',
         ];
 
         unauthorisedRoutes.forEach((route) => {
@@ -53,7 +53,7 @@ describe('Authentication & Authorisation', () => {
                 cy.visit(baseUrl + route);
 
                 // Assert that the user is redirected
-                cy.url().should('equal', baseUrl + '/unauthorised');
+                cy.url().should('equal', baseUrl + 'unauthorised');
             });
         });
     });

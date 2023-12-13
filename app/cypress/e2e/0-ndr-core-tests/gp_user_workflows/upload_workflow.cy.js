@@ -1,5 +1,5 @@
 // env vars
-const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+const baseUrl = Cypress.config('baseUrl');
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 
 const formTypes = Object.freeze({

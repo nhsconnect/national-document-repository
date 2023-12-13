@@ -11,7 +11,7 @@ const patient = {
 };
 
 const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
-const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+const baseUrl = Cypress.config('baseUrl');
 
 const forbiddenRoutes = ['search/patient', 'search/patient/result', 'search/results'];
 

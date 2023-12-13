@@ -2,7 +2,7 @@ import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.j
 
 describe('PCSE Workflow: Access and download found files', () => {
     // env vars
-    const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+    const baseUrl = Cypress.config('baseUrl');
     const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
 
     const roles = Object.freeze({

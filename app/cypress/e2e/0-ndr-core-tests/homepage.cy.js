@@ -1,5 +1,5 @@
 describe('Home Page Smoketesting', () => {
-    const baseUrl = 'http://localhost:3000/';
+    const baseUrl = Cypress.config('baseUrl');
 
     context('Logged in tests', () => {
         beforeEach(() => {
@@ -30,7 +30,8 @@ describe('Home Page Smoketesting', () => {
         });
 
         it('test expected URL is correct', () => {
-            cy.url().should('eq', 'http://localhost:3000/');
+            const baseUrl = Cypress.config('baseUrl');
+            cy.url().should('eq', baseUrl);
         });
 
         it('displays page header with no navigation on home page when logged out', () => {

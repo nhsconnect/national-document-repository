@@ -40,7 +40,7 @@ Once the packages have been installed, you can then run the app through the foll
 make start
 ```
 
-Once everything is up and running you should see a prompt in the CLI that the app is running on http://localhost:3000. You should now be able to visit the site in a browser of your choice.
+Once everything is up and running you should see a prompt in the CLI that the app is running on http://localhost:xxxx, where xxxx is the value of PORT specified in `.env` file. You should now be able to visit the site in a browser of your choice.
 
 ## Testing
 
