@@ -3,9 +3,9 @@ import os
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from oauthlib.oauth2 import WebApplicationClient
-from services.dynamo_service import DynamoDBService
+from services.base.dynamo_service import DynamoDBService
+from services.base.ssm_service import SSMService
 from services.oidc_service import OidcService
-from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException, LogoutFailureException
 
@@ -13,18 +13,15 @@ logger = LoggingService(__name__)
 
 
 class BackChannelLogoutService:
-    oidc_service = OidcService()
-    dynamodb_service = DynamoDBService()
-
     def __init__(self):
+        self.oidc_service = OidcService()
+        self.dynamodb_service = DynamoDBService()
         self.dynamodb_name = os.getenv("AUTH_DYNAMODB_NAME")
 
     def logout_handler(self, token):
         try:
-            self.__class__.oidc_service.set_up_oidc_parameters(
-                SSMService, WebApplicationClient
-            )
-            decoded_token = self.__class__.oidc_service.validate_and_decode_token(token)
+            self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
+            decoded_token = self.oidc_service.validate_and_decode_token(token)
             sid = decoded_token.get("sid", None)
             if not sid:
                 raise LogoutFailureException("No sid field in decoded token")
@@ -42,7 +39,7 @@ class BackChannelLogoutService:
 
     def finding_session_id_by_sid(self, sid):
         filter_sid = Attr("sid").eq(sid)
-        db_response = self.__class__.dynamodb_service.scan_table(
+        db_response = self.dynamodb_service.scan_table(
             table_name=self.dynamodb_name, filter_expression=filter_sid
         )
         items = db_response.get("Items", None)
@@ -52,7 +49,7 @@ class BackChannelLogoutService:
         return None
 
     def remove_session_from_dynamo_db(self, ndr_session_id):
-        self.__class__.dynamodb_service.delete_item(
+        self.dynamodb_service.delete_item(
             key={"NDRSessionId": ndr_session_id}, table_name=self.dynamodb_name
         )
 

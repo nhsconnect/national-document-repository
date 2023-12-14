@@ -4,13 +4,14 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.repository_role import RepositoryRole
 from models.oidc_models import IdTokenClaimSet
-from services.dynamo_service import DynamoDBService
+from services.base.dynamo_service import DynamoDBService
 from services.login_service import LoginService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import AuthorisationException, LoginException
+from utils.exceptions import AuthorisationException
+from utils.lambda_exceptions import LoginException
 
 
 @pytest.fixture

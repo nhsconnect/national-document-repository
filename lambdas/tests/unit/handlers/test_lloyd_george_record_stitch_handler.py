@@ -6,9 +6,9 @@ import pypdf.errors
 import pytest
 from botocore.exceptions import ClientError
 from handlers.lloyd_george_record_stitch_handler import lambda_handler
-from services.dynamo_service import DynamoDBService
+from services.base.dynamo_service import DynamoDBService
 from tests.unit.conftest import MOCK_LG_BUCKET
-from tests.unit.services.test_s3_service import MOCK_PRESIGNED_URL_RESPONSE
+from tests.unit.services.base.test_s3_service import MOCK_PRESIGNED_URL_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
 
 

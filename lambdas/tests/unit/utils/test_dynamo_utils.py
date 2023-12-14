@@ -1,15 +1,15 @@
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from utils.dynamo import (
+from utils.dynamo_utils import (
+    create_attribute_filter,
     create_expression_attribute_placeholder,
     create_expression_attribute_values,
     create_expression_value_placeholder,
     create_expressions,
-    create_nonexistant_or_empty_attr_filter,
     create_update_expression,
 )
 
 
-def test_create_expressions_correctly_creates_an_expression_of_one_field(set_env):
+def test_create_expressions_correctly_creates_an_expression_of_one_field():
     expected_projection = "#VirusScannerResult_attr"
     expected_expr_attr_names = {"#VirusScannerResult_attr": "VirusScannerResult"}
 
@@ -21,7 +21,7 @@ def test_create_expressions_correctly_creates_an_expression_of_one_field(set_env
     assert actual_expr_attr_names == expected_expr_attr_names
 
 
-def test_create_expressions_correctly_creates_an_expression_of_multiple_fields(set_env):
+def test_create_expressions_correctly_creates_an_expression_of_multiple_fields():
     expected_projection = "#NhsNumber_attr,#FileLocation_attr,#Type_attr"
     expected_expr_attr_names = {
         "#NhsNumber_attr": "NhsNumber",
@@ -42,32 +42,88 @@ def test_create_expressions_correctly_creates_an_expression_of_multiple_fields(s
 
 
 def test_create_expression_attribute_values():
-    field_names = ["Deleted", "VirusScannerResult"]
-    field_values = ["", "Scanned"]
-    expected = {":Deleted_val": "", ":VirusScannerResult_val": "Scanned"}
+    attribute_field_values = {
+        DocumentReferenceMetadataFields.DELETED.value: "True",
+        DocumentReferenceMetadataFields.FILE_NAME.value: "Test Filename",
+    }
+    expected = {":Deleted_val": "True", ":FileName_val": "Test Filename"}
 
-    actual = create_expression_attribute_values(field_names, field_values)
+    actual = create_expression_attribute_values(attribute_field_values)
 
     assert actual == expected
 
 
-def test_create_nonexistant_or_empty_attr_filter_multiple_values():
-    field_names = ["Deleted", "VirusScannerResult"]
+def test_create_attr_filter_multiple_existing_values():
+    fields_filter = {
+        DocumentReferenceMetadataFields.DELETED.value: "True",
+        DocumentReferenceMetadataFields.FILE_NAME.value: "Test Filename",
+    }
+    expected = "Deleted = :Deleted_val AND FileName = :FileName_val"
+
+    actual = create_attribute_filter(fields_filter)
+
+    assert actual == expected
+
+
+def test_create_attr_filter_multiple_mixed_values():
+    fields_filter = {
+        DocumentReferenceMetadataFields.DELETED.value: "",
+        DocumentReferenceMetadataFields.FILE_NAME.value: "Test Filename",
+    }
     expected = (
-        "attribute_not_exists(Deleted) OR Deleted = :Deleted_val AND attribute_not_exists("
-        "VirusScannerResult) OR VirusScannerResult = :VirusScannerResult_val"
+        "attribute_not_exists(Deleted) OR Deleted = :Deleted_val AND "
+        "FileName = :FileName_val"
     )
 
-    actual = create_nonexistant_or_empty_attr_filter(field_names)
+    actual = create_attribute_filter(fields_filter)
 
     assert actual == expected
 
 
-def test_create_nonexistant_or_empty_attr_filter_singular_value():
-    field_names = ["Deleted"]
+def test_create_attr_filter_multiple_empty_values():
+    fields_filter = {
+        DocumentReferenceMetadataFields.DELETED.value: "",
+        DocumentReferenceMetadataFields.FILE_NAME.value: "",
+    }
+    expected = (
+        "attribute_not_exists(Deleted) OR Deleted = :Deleted_val AND "
+        "attribute_not_exists(FileName) OR FileName = :FileName_val"
+    )
+
+    actual = create_attribute_filter(fields_filter)
+
+    assert actual == expected
+
+
+def test_create_attr_filter_multiple_none_values():
+    fields_filter = {
+        DocumentReferenceMetadataFields.DELETED.value: None,
+        DocumentReferenceMetadataFields.FILE_NAME.value: None,
+    }
+    expected = (
+        "attribute_not_exists(Deleted) OR Deleted = :Deleted_val AND "
+        "attribute_not_exists(FileName) OR FileName = :FileName_val"
+    )
+
+    actual = create_attribute_filter(fields_filter)
+
+    assert actual == expected
+
+
+def test_create_attr_filter_singular_existing_value():
+    fields_filter = {DocumentReferenceMetadataFields.DELETED.value: "True"}
+    expected = "Deleted = :Deleted_val"
+
+    actual = create_attribute_filter(fields_filter)
+
+    assert actual == expected
+
+
+def test_create_attr_filter_singular_empty_value():
+    fields_filter = {DocumentReferenceMetadataFields.DELETED.value: ""}
     expected = "attribute_not_exists(Deleted) OR Deleted = :Deleted_val"
 
-    actual = create_nonexistant_or_empty_attr_filter(field_names)
+    actual = create_attribute_filter(fields_filter)
 
     assert actual == expected
 

@@ -8,9 +8,9 @@ from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from models.bulk_upload_status import FailedUpload, SuccessfulUpload
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
-from services.dynamo_service import DynamoDBService
-from services.s3_service import S3Service
-from services.sqs_service import SQSService
+from services.base.dynamo_service import DynamoDBService
+from services.base.s3_service import S3Service
+from services.base.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
     DocumentInfectedException,

@@ -11,7 +11,6 @@ logger = LoggingService(__name__)
 
 class DocumentDeletionService:
     def __init__(self):
-        super().__init__()
         self.document_service = DocumentService()
 
     def handle_delete(

@@ -1,7 +1,7 @@
 import os
 from logging import StreamHandler
 
-from services.sqs_service import SQSService
+from services.base.sqs_service import SQSService
 
 
 class SensitiveAuditService(StreamHandler):

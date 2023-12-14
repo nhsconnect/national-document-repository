@@ -7,7 +7,7 @@ from tests.unit.helpers.data.test_documents import (
     create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
 )
-from utils.exceptions import DocumentManifestServiceException
+from utils.lambda_exceptions import DocumentManifestServiceException
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_METADATA_FIELDS = [

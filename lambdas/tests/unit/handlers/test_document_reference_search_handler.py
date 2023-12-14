@@ -7,7 +7,7 @@ from tests.unit.helpers.data.dynamo_responses import (
     MOCK_EMPTY_RESPONSE,
     MOCK_SEARCH_RESPONSE,
 )
-from utils.exceptions import DynamoDbException, InvalidResourceIdException
+from utils.exceptions import DynamoServiceException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 
 
@@ -15,7 +15,7 @@ def test_lambda_handler_returns_items_from_dynamo_returns_200(
     set_env, valid_id_event_without_auth_header, context, mocker
 ):
     mock_dynamo = mocker.patch(
-        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
     )
     mock_dynamo.return_value = MOCK_SEARCH_RESPONSE
 
@@ -32,7 +32,7 @@ def test_lambda_handler_returns_items_from_doc_store_only_returns_200(
     set_env, valid_id_event_without_auth_header, context, mocker
 ):
     mock_dynamo = mocker.patch(
-        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
     )
     mock_dynamo.side_effect = [MOCK_SEARCH_RESPONSE, MOCK_EMPTY_RESPONSE]
 
@@ -49,7 +49,7 @@ def test_lambda_handler_when_dynamo_returns_no_records_returns_204(
     set_env, valid_id_event_without_auth_header, context, mocker
 ):
     mock_dynamo = mocker.patch(
-        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
     )
     mock_dynamo.return_value = MOCK_EMPTY_RESPONSE
 
@@ -60,13 +60,13 @@ def test_lambda_handler_when_dynamo_returns_no_records_returns_204(
     assert expected == actual
 
 
-def test_lambda_handler_raises_DynamoDbException_returns_500(
+def test_lambda_handler_raises_dynamo_exception_returns_500(
     set_env, valid_id_event_without_auth_header, context, mocker
 ):
     mock_dynamo = mocker.patch(
-        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
     )
-    mock_dynamo.side_effect = DynamoDbException
+    mock_dynamo.side_effect = DynamoServiceException
 
     expected = ApiGatewayResponse(
         500,
@@ -81,7 +81,7 @@ def test_lambda_handler_raises_ClientError_returns_500(
     set_env, valid_id_event_without_auth_header, context, mocker
 ):
     mock_dynamo = mocker.patch(
-        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
     )
     mock_dynamo.return_value = MOCK_EMPTY_RESPONSE
     mock_dynamo.side_effect = ClientError(
@@ -103,7 +103,7 @@ def test_lambda_handler_raises_InvalidResourceIdException_returns_500(
     exception = InvalidResourceIdException
 
     mock_dynamo = mocker.patch(
-        "services.dynamo_service.DynamoDBService.query_with_requested_fields"
+        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
     )
     mock_dynamo.side_effect = exception
 
