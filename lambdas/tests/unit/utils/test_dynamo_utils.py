@@ -44,9 +44,9 @@ def test_create_expressions_correctly_creates_an_expression_of_multiple_fields()
 def test_create_expression_attribute_values():
     attribute_field_values = {
         DocumentReferenceMetadataFields.DELETED.value: "True",
-        DocumentReferenceMetadataFields.FILE_NAME.value: "Test Filename",
+        DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value: "Scanned",
     }
-    expected = {":Deleted_val": "True", ":FileName_val": "Test Filename"}
+    expected = {":Deleted_val": "True", ":VirusScannerResult_val": "Scanned"}
 
     actual = create_expression_attribute_values(attribute_field_values)
 
