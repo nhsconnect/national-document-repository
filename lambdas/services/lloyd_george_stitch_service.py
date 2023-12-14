@@ -1,3 +1,4 @@
+import json
 import os
 import tempfile
 from urllib import parse
@@ -7,6 +8,7 @@ from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from pypdf import PdfWriter
+from pypdf.errors import PyPdfError
 from services.document_service import DocumentService
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -28,6 +30,55 @@ class LloydGeorgeStitchService:
         self.s3_service = S3Service()
         self.document_service = DocumentService()
         self.temp_folder = tempfile.mkdtemp()
+
+    def stitch_lloyd_george_record(self, nhs_number: str):
+        try:
+            lg_records = self.get_lloyd_george_record_for_patient(nhs_number)
+            if len(lg_records) == 0:
+                raise LGStitchServiceException(
+                    404, f"Lloyd george record not found for patient {nhs_number}"
+                )
+
+            ordered_lg_records = self.sort_documents_by_filenames(lg_records)
+            all_lg_parts = self.download_lloyd_george_files(ordered_lg_records)
+        except ClientError as e:
+            logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
+            raise LGStitchServiceException(
+                500, f"Unable to retrieve documents for patient {nhs_number}"
+            )
+
+        try:
+            filename_for_stitched_file = self.make_filename_for_stitched_file(
+                lg_records
+            )
+            stitched_lg_record = self.stitch_pdf(all_lg_parts)
+
+            number_of_files = len(all_lg_parts)
+            last_updated = self.get_most_recent_created_date(lg_records)
+            total_file_size = self.get_total_file_size(all_lg_parts)
+
+            presign_url = self.upload_stitched_lg_record_and_retrieve_presign_url(
+                stitched_lg_record=stitched_lg_record,
+                filename_on_bucket=f"{nhs_number}/{filename_for_stitched_file}",
+            )
+            response = json.dumps(
+                {
+                    "number_of_files": number_of_files,
+                    "last_updated": last_updated,
+                    "presign_url": presign_url,
+                    "total_file_size_in_byte": total_file_size,
+                }
+            )
+            logger.audit_splunk_info(
+                "User has viewed Lloyd George records",
+                {"Result": "Successful viewing LG"},
+            )
+            return response
+        except (ClientError, PyPdfError, FileNotFoundError) as e:
+            logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
+            raise LGStitchServiceException(
+                500, "Unable to return stitched pdf file due to internal error"
+            )
 
     def get_lloyd_george_record_for_patient(
         self, nhs_number: str

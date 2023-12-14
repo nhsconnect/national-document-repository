@@ -9,8 +9,10 @@ from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from services.s3_service import S3Service
 from tests.unit.conftest import MOCK_LG_BUCKET
+from tests.unit.helpers.data.test_documents import (
+    create_test_lloyd_george_doc_store_refs,
+)
 from tests.unit.services.test_s3_service import MOCK_PRESIGNED_URL_RESPONSE
-from unit.helpers.data.test_documents import create_test_lloyd_george_doc_store_refs
 from utils.lambda_response import ApiGatewayResponse
 
 
