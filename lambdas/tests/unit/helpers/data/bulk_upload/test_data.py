@@ -148,17 +148,29 @@ TEST_SQS_MESSAGE_WITH_INVALID_FILENAME = build_test_sqs_message(
 )
 TEST_STAGING_METADATA_WITH_INVALID_FILENAME.model_dump_json(by_alias=True)
 
-TEST_EVENT_WITH_SQS_MESSAGES = {
-    "Records": [
+TEST_EVENT_WITH_ONE_SQS_MESSAGE = {
+    "Records": [TEST_SQS_MESSAGE]
+}
+
+TEST_SQS_MESSAGES_AS_LIST = [
         TEST_SQS_MESSAGE,
         TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
         TEST_SQS_MESSAGE,
     ]
+
+TEST_EVENT_WITH_NO_SQS_MESSAGES = {
+    "Records": []
 }
 
+TEST_EVENT_WITH_SQS_MESSAGES = {
+    "Records": TEST_SQS_MESSAGES_AS_LIST
+}
+
+TEST_SQS_10_MESSAGES_AS_LIST = [
+    build_test_sqs_message_from_nhs_number(str(nhs_number))
+    for nhs_number in range(9_000_000_000, 9_000_000_010)
+]
+
 TEST_EVENT_WITH_10_SQS_MESSAGES = {
-    "Records": [
-        build_test_sqs_message_from_nhs_number(str(nhs_number))
-        for nhs_number in range(9_000_000_000, 9_000_000_010)
-    ]
+    "Records": TEST_SQS_10_MESSAGES_AS_LIST
 }

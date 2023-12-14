@@ -5,6 +5,8 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
+
+from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from services.bulk_upload_service import BulkUploadService
 from tests.unit.conftest import (MOCK_BULK_REPORT_TABLE_NAME, MOCK_LG_BUCKET,
                                  MOCK_LG_METADATA_SQS_QUEUE,
@@ -16,7 +18,7 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_SQS_MESSAGE_WITH_INVALID_FILENAME, TEST_STAGING_METADATA,
     TEST_STAGING_METADATA_WITH_INVALID_FILENAME, build_test_sqs_message,
     build_test_staging_metadata_from_patient_name, make_s3_file_paths,
-    make_valid_lg_file_names)
+    make_valid_lg_file_names, TEST_EVENT_WITH_SQS_MESSAGES, TEST_SQS_MESSAGES_AS_LIST, TEST_SQS_10_MESSAGES_AS_LIST)
 from tests.unit.utils.test_unicode_utils import (NAME_WITH_ACCENT_NFC_FORM,
                                                  NAME_WITH_ACCENT_NFD_FORM)
 from utils.exceptions import (DocumentInfectedException,
@@ -24,7 +26,7 @@ from utils.exceptions import (DocumentInfectedException,
                               PatientRecordAlreadyExistException,
                               S3FileNotFoundException, TagNotFoundException,
                               VirusScanFailedException,
-                              VirusScanNoResultException)
+                              VirusScanNoResultException, PdsTooManyRequestsException)
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 
@@ -45,10 +47,76 @@ def mock_validate_files(mocker):
     yield mocker.patch.object(BulkUploadService, "validate_files")
 
 
+@pytest.fixture
+def mock_handle_sqs_message(mocker):
+    yield mocker.patch.object(BulkUploadService, "handle_sqs_message")
+
+
+@pytest.fixture
+def mock_back_to_queue(mocker):
+    yield mocker.patch.object(BulkUploadSqsRepository, "put_sqs_message_back_to_queue")
+
+
 def build_resolved_file_names_cache(
         file_path_in_metadata: list[str], file_path_in_s3: list[str]
 ) -> dict:
     return dict(zip(file_path_in_metadata, file_path_in_s3))
+
+
+def test_lambda_handler_process_each_sqs_message_one_by_one(
+        set_env, mock_handle_sqs_message
+):
+    service = BulkUploadService()
+
+    service.process_message_queue(TEST_SQS_MESSAGES_AS_LIST)
+
+    assert mock_handle_sqs_message.call_count == len(
+        TEST_SQS_MESSAGES_AS_LIST
+    )
+    for message in TEST_SQS_MESSAGES_AS_LIST:
+        mock_handle_sqs_message.assert_any_call(message)
+
+
+def test_lambda_handler_continue_process_next_message_after_handled_error(
+        set_env, mock_handle_sqs_message
+):
+    # emulate that unexpected error happen at 2nd message
+    mock_handle_sqs_message.side_effect = [
+        None,
+        InvalidMessageException,
+        None,
+    ]
+    service = BulkUploadService()
+    service.process_message_queue(TEST_SQS_MESSAGES_AS_LIST)
+
+    assert mock_handle_sqs_message.call_count == len(
+        TEST_SQS_MESSAGES_AS_LIST
+    )
+    mock_handle_sqs_message.assert_called_with(
+        TEST_SQS_MESSAGES_AS_LIST[2]
+    )
+
+
+def test_lambda_handler_handle_pds_too_many_requests_exception(
+        set_env, mock_handle_sqs_message, mock_back_to_queue
+):
+    # emulate that unexpected error happen at 7th message
+    mock_handle_sqs_message.side_effect = (
+            [None] * 6 + [PdsTooManyRequestsException] + [None] * 3
+    )
+    expected_handled_messages = TEST_SQS_10_MESSAGES_AS_LIST[0:6]
+    expected_unhandled_message = TEST_SQS_10_MESSAGES_AS_LIST[6:]
+
+    service = BulkUploadService()
+    service.process_message_queue(TEST_SQS_10_MESSAGES_AS_LIST)
+
+    assert mock_handle_sqs_message.call_count == 7
+
+    for message in expected_handled_messages:
+        mock_handle_sqs_message.assert_any_call(message)
+
+    for message in expected_unhandled_message:
+        mock_back_to_queue.assert_any_call(message)
 
 
 def test_handle_sqs_message_happy_path(
@@ -462,6 +530,7 @@ def test_put_staging_metadata_back_to_queue_and_increases_retries(set_env, mocke
         message_body=metadata_copy.model_dump_json(by_alias=True),
         nhs_number=TEST_STAGING_METADATA.nhs_number,
     )
+
 
 @freeze_time("2023-10-2 13:00:00")
 def test_reports_failure_when_max_retries_reached(set_env, mocker, mock_uuid):

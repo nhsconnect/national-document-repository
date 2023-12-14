@@ -63,7 +63,6 @@ class BulkUploadService:
             ) as error:
                 logger.info(f"Fail to process current message due to error: {error}")
                 logger.info("Continue on next message")
-                raise error
 
     def handle_sqs_message(self, message: dict):
 

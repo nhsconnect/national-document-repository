@@ -16,7 +16,7 @@ def lambda_handler(event, _context):
     http_status_code = 200
     response_body = f"Finished processing all {len(event['Records'])} messages"
 
-    if "Records" not in event:
+    if "Records" not in event or len(event["Records"]) < 1:
         http_status_code = 400
         response_body = f"No sqs messages found in event: {event}. Will ignore this event"
         logger.error(response_body)
