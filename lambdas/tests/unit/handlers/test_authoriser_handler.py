@@ -122,7 +122,7 @@ def test_valid_pcse_token_return_deny_policy(set_env, mocker, context):
 def test_return_deny_all_policy_pcse_user_when_auth_exception(set_env, mocker, context):
     mock_auth_service = mocker.patch(
         "services.authoriser_service.AuthoriserService.auth_request",
-        side_effect=AuthorisationException,
+        side_effect=AuthorisationException(),
     )
 
     test_event = {

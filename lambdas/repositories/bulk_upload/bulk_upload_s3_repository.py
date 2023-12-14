@@ -1,20 +1,23 @@
 import os
 
 from botocore.exceptions import ClientError
-
-from enums.virus_scan_result import VirusScanResult, SCAN_RESULT_TAG_KEY
+from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import StagingMetadata
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import DocumentInfectedException, VirusScanFailedException, TagNotFoundException, \
-    VirusScanNoResultException, S3FileNotFoundException
+from utils.exceptions import (
+    DocumentInfectedException,
+    S3FileNotFoundException,
+    TagNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+)
 
 _logger = LoggingService(__name__)
 
 
 class BulkUploadS3Repository:
-
     def __init__(self):
         self.s3_repository = S3Service()
         self.staging_bucket_name = os.environ["STAGING_STORE_BUCKET_NAME"]
@@ -24,7 +27,9 @@ class BulkUploadS3Repository:
         self.source_bucket_files_in_transaction = []
         self.dest_bucket_files_in_transaction = []
 
-    def check_virus_result(self, staging_metadata: StagingMetadata, file_path_cache: dict):
+    def check_virus_result(
+        self, staging_metadata: StagingMetadata, file_path_cache: dict
+    ):
         for file_metadata in staging_metadata.files:
             file_path = file_metadata.file_path
             source_file_key = file_path_cache[file_path]

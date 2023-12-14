@@ -1,14 +1,14 @@
-
 from handlers.back_channel_logout_handler import (
-    lambda_handler,
     back_channel_logout_service,
+    lambda_handler,
 )
-
 from utils.exceptions import LogoutFailureException
 from utils.lambda_response import ApiGatewayResponse
 
-error_string = """{"error": "failed logout", "error_description":""" + \
-               """ "An error occurred due to missing request body/logout token"}"""
+error_string = (
+    """{"error": "failed logout", "error_description":"""
+    + """ "An error occurred due to missing request body/logout token"}"""
+)
 
 
 def test_return_400_when_missing_event(set_env, event, context):

@@ -3,26 +3,32 @@ import uuid
 
 import pydantic
 from botocore.exceptions import ClientError
-
 from enums.virus_scan_result import VirusScanResult
 from models.nhs_document_reference import NHSDocumentReference
-from models.staging_metadata import StagingMetadata, MetadataFile
-from repositories.bulk_upload.bulk_upload_dynamo_repository import BulkUploadDynamoRepository
+from models.staging_metadata import MetadataFile, StagingMetadata
+from repositories.bulk_upload.bulk_upload_dynamo_repository import (
+    BulkUploadDynamoRepository,
+)
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from utils import lloyd_george_validator
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException,
-                              PatientRecordAlreadyExistException,
-                              PdsTooManyRequestsException,
-                              S3FileNotFoundException,
-                              VirusScanFailedException,
-                              VirusScanNoResultException)
+from utils.exceptions import (
+    DocumentInfectedException,
+    InvalidMessageException,
+    PatientRecordAlreadyExistException,
+    PdsTooManyRequestsException,
+    S3FileNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+)
 from utils.lloyd_george_validator import LGInvalidFilesException
 from utils.request_context import request_context
-from utils.unicode_utils import (contains_accent_char, convert_to_nfc_form,
-                                 convert_to_nfd_form)
+from utils.unicode_utils import (
+    contains_accent_char,
+    convert_to_nfc_form,
+    convert_to_nfd_form,
+)
 
 logger = LoggingService(__name__)
 
@@ -49,23 +55,24 @@ class BulkUploadService:
                     "All remaining messages in this batch will be returned to sqs queue to retry later."
                 )
 
-                all_unprocessed_message = records[index - 1:]
+                all_unprocessed_message = records[index - 1 :]
                 for unprocessed_message in all_unprocessed_message:
-                    self.sqs_repository.put_sqs_message_back_to_queue(unprocessed_message)
+                    self.sqs_repository.put_sqs_message_back_to_queue(
+                        unprocessed_message
+                    )
                 return
             except (
-                    ClientError,
-                    InvalidMessageException,
-                    LGInvalidFilesException,
-                    KeyError,
-                    TypeError,
-                    AttributeError,
+                ClientError,
+                InvalidMessageException,
+                LGInvalidFilesException,
+                KeyError,
+                TypeError,
+                AttributeError,
             ) as error:
                 logger.info(f"Fail to process current message due to error: {error}")
                 logger.info("Continue on next message")
 
     def handle_sqs_message(self, message: dict):
-
         logger.info("Validating SQS event")
         try:
             staging_metadata_json = message["body"]
@@ -94,21 +101,29 @@ class BulkUploadService:
             logger.info("Will stop processing Lloyd George record for this patient.")
 
             failure_reason = str(error)
-            self.dynamo_repository.report_upload_failure(staging_metadata, failure_reason)
+            self.dynamo_repository.report_upload_failure(
+                staging_metadata, failure_reason
+            )
             return
 
-        logger.info("NHS Number and filename validation complete. Checking virus scan has marked files as Clean")
+        logger.info(
+            "NHS Number and filename validation complete. Checking virus scan has marked files as Clean"
+        )
 
         try:
             self.resolve_source_file_path(staging_metadata)
-            self.s3_repository.check_virus_result(staging_metadata, self.file_path_cache)
+            self.s3_repository.check_virus_result(
+                staging_metadata, self.file_path_cache
+            )
         except VirusScanNoResultException as e:
             logger.info(e)
             logger.info(
                 f"Waiting on virus scan results for: {staging_metadata.nhs_number}, adding message back to queue"
             )
             if staging_metadata.retries > 14:
-                err = "File was not scanned for viruses before maximum retries attempted"
+                err = (
+                    "File was not scanned for viruses before maximum retries attempted"
+                )
                 self.dynamo_repository.report_upload_failure(staging_metadata, err)
             else:
                 self.sqs_repository.put_staging_metadata_back_to_queue(staging_metadata)
@@ -137,14 +152,14 @@ class BulkUploadService:
             )
             return
 
-        logger.info(
-            "Virus result validation complete. Initialising transaction"
-        )
+        logger.info("Virus result validation complete. Initialising transaction")
 
         self.s3_repository.init_transaction()
         self.dynamo_repository.init_transaction()
 
-        logger.info("Transaction initialised. Transfering files to main S3 bucket and creating metadata")
+        logger.info(
+            "Transaction initialised. Transfering files to main S3 bucket and creating metadata"
+        )
 
         try:
             self.create_lg_records_and_copy_files(staging_metadata)
@@ -166,7 +181,9 @@ class BulkUploadService:
             )
             return
 
-        logger.info("File transfer complete. Removing uploaded files from staging bucket")
+        logger.info(
+            "File transfer complete. Removing uploaded files from staging bucket"
+        )
         self.s3_repository.remove_ingested_file_from_source_bucket()
 
         logger.info(
@@ -201,7 +218,9 @@ class BulkUploadService:
 
             if self.s3_repository.file_exists_on_staging_bucket(file_path_in_nfc_form):
                 resolved_file_paths[file_path_in_metadata] = file_path_in_nfc_form
-            elif self.s3_repository.file_exists_on_staging_bucket(file_path_in_nfd_form):
+            elif self.s3_repository.file_exists_on_staging_bucket(
+                file_path_in_nfd_form
+            ):
                 resolved_file_paths[file_path_in_metadata] = file_path_in_nfd_form
             else:
                 logger.info(
@@ -243,7 +262,7 @@ class BulkUploadService:
 
     @staticmethod
     def convert_to_document_reference(
-            file_metadata: MetadataFile, nhs_number: str, s3_bucket_name: str
+        file_metadata: MetadataFile, nhs_number: str, s3_bucket_name: str
     ) -> NHSDocumentReference:
         file_name = os.path.basename(file_metadata.file_path)
 

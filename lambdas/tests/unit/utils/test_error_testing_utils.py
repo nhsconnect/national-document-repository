@@ -1,5 +1,4 @@
-from utils.error_testing_utils import (check_manual_error_conditions,
-                                       trigger_400)
+from utils.error_testing_utils import check_manual_error_conditions, trigger_400
 
 
 def test_check_manual_error_conditions_memory(mocker):

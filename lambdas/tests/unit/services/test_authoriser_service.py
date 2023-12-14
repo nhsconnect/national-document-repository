@@ -106,9 +106,6 @@ def test_deny_access_policy_returns_false_for_gp_clinical_on_search_path(
     assert expected == actual
 
 
-############### PCSE user allow/deny ###############
-
-
 @pytest.mark.parametrize(
     "test_path",
     ["/DocumentManifest", "/DocumentDelete", "/DocumentReference", "/SearchPatient"],
@@ -122,7 +119,6 @@ def test_deny_access_policy_returns_false_for_pcse_on_all_paths(
     assert expected == actual
 
 
-############### Unhappy paths ###############
 def test_deny_access_policy_returns_false_for_unrecognised_path(
     mock_auth_service: AuthoriserService,
 ):
@@ -234,7 +230,7 @@ def test_return_deny_policy_when_no_session_found(
 
     mock_find_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.find_login_session",
-        side_effect=AuthorisationException,
+        side_effect=AuthorisationException(),
     )
     mock_validate_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.validate_login_session"
@@ -253,9 +249,6 @@ def test_return_deny_policy_when_no_session_found(
         mock_deny_access_policy.assert_not_called()
 
 
-############### GP Clinical user allow/deny ###############
-
-
 @pytest.mark.parametrize("test_path", ["/SearchPatient"])
 def test_raise_exception_when_user_session_is_expired(
     test_path,
@@ -271,7 +264,7 @@ def test_raise_exception_when_user_session_is_expired(
     )
     mock_validate_login_session = mocker.patch(
         "services.authoriser_service.AuthoriserService.validate_login_session",
-        side_effect=AuthorisationException,
+        side_effect=AuthorisationException(),
     )
     mock_deny_access_policy = mocker.patch(
         "services.authoriser_service.AuthoriserService.deny_access_policy"
@@ -288,7 +281,7 @@ def test_raise_exception_when_user_session_is_expired(
 
 
 @pytest.mark.parametrize("test_path", ["/SearchPatient"])
-def test_invalid_token__raise_exception(
+def test_invalid_token_raise_exception(
     test_path, mocker, mock_jwt_decode, mock_auth_service: AuthoriserService
 ):
     auth_token = "invalid_token"

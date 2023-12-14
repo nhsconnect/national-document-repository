@@ -11,7 +11,6 @@ _logger = LoggingService(__name__)
 
 
 class BulkUploadDynamoRepository:
-
     def __init__(self):
         self.bulk_upload_report_dynamo_table = os.environ["BULK_UPLOAD_DYNAMODB_NAME"]
         self.lg_dynamo_table = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
@@ -21,7 +20,7 @@ class BulkUploadDynamoRepository:
         self.dynamo_repository = DynamoDBService()
 
     def create_record_in_lg_dynamo_table(
-            self, document_reference: NHSDocumentReference
+        self, document_reference: NHSDocumentReference
     ):
         self.dynamo_repository.create_item(
             table_name=self.lg_dynamo_table, item=document_reference.to_dict()
@@ -37,11 +36,11 @@ class BulkUploadDynamoRepository:
             )
             self.dynamo_repository.create_item(
                 table_name=self.bulk_upload_report_dynamo_table,
-                item=dynamo_record.model_dump(by_alias=True)
+                item=dynamo_record.model_dump(by_alias=True),
             )
 
     def report_upload_failure(
-            self, staging_metadata: StagingMetadata, failure_reason: str
+        self, staging_metadata: StagingMetadata, failure_reason: str
     ):
         nhs_number = staging_metadata.nhs_number
 
@@ -53,7 +52,7 @@ class BulkUploadDynamoRepository:
             )
             self.dynamo_repository.create_item(
                 table_name=self.bulk_upload_report_dynamo_table,
-                item=dynamo_record.model_dump(by_alias=True)
+                item=dynamo_record.model_dump(by_alias=True),
             )
 
     def init_transaction(self):

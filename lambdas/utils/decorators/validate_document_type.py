@@ -69,3 +69,7 @@ def extract_document_type(value: str) -> str:
         and SupportedDocumentTypes.ARF.value in doc_type_intersection
     ):
         return str(SupportedDocumentTypes.ALL.value)
+
+
+def extract_document_type_as_enum(value: str) -> SupportedDocumentTypes:
+    return SupportedDocumentTypes(extract_document_type(value))

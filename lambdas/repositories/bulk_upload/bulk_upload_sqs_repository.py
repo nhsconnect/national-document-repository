@@ -10,7 +10,6 @@ _logger = LoggingService(__name__)
 
 
 class BulkUploadSqsRepository:
-
     def __init__(self):
         self.sqs_service = SQSService()
         self.invalid_queue_url = os.environ["INVALID_SQS_QUEUE_URL"]
