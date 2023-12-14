@@ -6,7 +6,7 @@ import requests
 from models.oidc_models import AccessToken, IdTokenClaimSet
 from requests import Response
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import AuthorisationException
+from utils.exceptions import AuthorisationException, OidcApiException
 
 logger = LoggingService(__name__)
 
@@ -47,9 +47,7 @@ class OidcService:
                 f"Got error response from OIDC provider: {access_token_response.status_code} "
                 f"{access_token_response.content}"
             )
-            raise AuthorisationException(
-                "Failed to retrieve access token from ID Provider"
-            )
+            raise OidcApiException("Failed to retrieve access token from ID Provider")
 
     def parse_fetch_tokens_response(
         self, fetch_token_response: Response
@@ -67,9 +65,7 @@ class OidcService:
 
             return access_token, id_token_claims_set
         except KeyError:
-            raise AuthorisationException(
-                "Access Token not found in ID Provider's response"
-            )
+            raise OidcApiException("Access Token not found in ID Provider's response")
 
     def validate_and_decode_token(self, signed_token: str) -> Dict:
         try:
@@ -88,7 +84,7 @@ class OidcService:
             )
         except jwt.exceptions.PyJWTError as err:
             logger.error(err)
-            raise AuthorisationException("The given JWT is invalid or expired.")
+            raise OidcApiException("The JWT provided by CIS2 is invalid or expired.")
 
     def fetch_user_org_codes(
         self, access_token: str, id_token_claim_set: IdTokenClaimSet
@@ -144,7 +140,7 @@ class OidcService:
                 return role_code, user_id
 
         raise AuthorisationException(
-            f"Role codes have been found for the user but not with prefix {prefix_character.upper()}"
+            f"Role codes have been found for the user but not with prefix {prefix_character.upper()}",
         )
 
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
@@ -164,7 +160,7 @@ class OidcService:
                 f"Got error response from OIDC provider: {userinfo_response.status_code} "
                 f"{userinfo_response.content}"
             )
-            raise AuthorisationException("Failed to retrieve userinfo")
+            raise OidcApiException("Failed to retrieve userinfo")
 
     # TODO Move to SSM service, example in token_handler_ssm_service
     def fetch_oidc_parameters(self, ssm_service_class):

@@ -18,6 +18,13 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
+  check_packages:
+    uses: ./.github/workflows/lambdas-check-packages.yml
+    with:
+      environment: development
+      python_version: 3.11
+      build_branch: ${{github.event.pull_request.head.ref}}
+
   run_tests:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:

@@ -13,6 +13,7 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
     const auth: UserAuth = {
         role: REPOSITORY_ROLE.GP_ADMIN,
+        isBSOL: false,
         authorisation_token: '111xxx222',
         ...userAuthOverride,
     };
