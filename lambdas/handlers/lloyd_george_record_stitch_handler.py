@@ -9,10 +9,11 @@ from enums.logging_app_interaction import LoggingAppInteraction
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from pypdf.errors import PyPdfError
 from services.dynamo_service import DynamoDBService
-from services.pdf_stitch_service import stitch_pdf
+from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import (
@@ -21,7 +22,6 @@ from utils.decorators.validate_patient_id import (
 )
 from utils.exceptions import DynamoDbException
 from utils.lambda_response import ApiGatewayResponse
-from utils.order_response_by_filenames import order_response_by_filenames
 from utils.request_context import request_context
 
 logger = LoggingService(__name__)
@@ -30,6 +30,7 @@ logger = LoggingService(__name__)
 @set_request_context_for_logging
 @validate_patient_id
 @override_error_check
+@handle_lambda_exceptions
 @ensure_environment_variables(
     names=["LLOYD_GEORGE_DYNAMODB_NAME", "LLOYD_GEORGE_BUCKET_NAME"]
 )
@@ -37,24 +38,29 @@ def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.VIEW_LG_RECORD.value
     nhs_number = extract_nhs_number_from_event(event)
     request_context.patient_nhs_no = nhs_number
-    lloyd_george_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-    lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
+    os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+    os.environ["LLOYD_GEORGE_BUCKET_NAME"]
+
+    stitch_service = LloydGeorgeStitchService()
 
     try:
-        response = get_lloyd_george_records_for_patient(
-            lloyd_george_table_name, nhs_number
-        )
-        if len(response["Items"]) == 0:
+        # response = get_lloyd_george_records_for_patient(
+        #     lloyd_george_table_name, nhs_number
+        # )
+        lg_records = stitch_service.get_lloyd_george_record_for_patient(nhs_number)
+        if len(lg_records) == 0:
             return ApiGatewayResponse(
                 404, f"Lloyd george record not found for patient {nhs_number}", "GET"
             ).create_api_gateway_response()
 
-        ordered_lg_records = order_response_by_filenames(response["Items"])
+        # ordered_lg_records = order_response_by_filenames(response["Items"])
+        ordered_lg_records = stitch_service.sort_documents_by_filenames(lg_records)
+        all_lg_parts = stitch_service.download_lloyd_george_files(ordered_lg_records)
 
-        s3_service = S3Service()
-        all_lg_parts = download_lloyd_george_files(
-            lloyd_george_bucket_name, ordered_lg_records, s3_service
-        )
+        # s3_service = S3Service()
+        # all_lg_parts = download_lloyd_george_files(
+        #     lloyd_george_bucket_name, ordered_lg_records, s3_service
+        # )
     except (ClientError, DynamoDbException) as e:
         logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
         return ApiGatewayResponse(
@@ -62,17 +68,28 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
 
     try:
-        filename_for_stitched_file = make_filename_for_stitched_file(response["Items"])
-        stitched_lg_record = stitch_pdf(all_lg_parts)
+        # filename_for_stitched_file = make_filename_for_stitched_file(response["Items"])
+        filename_for_stitched_file = stitch_service.make_filename_for_stitched_file(
+            lg_records
+        )
+        # stitched_lg_record = stitch_pdf(all_lg_parts)
+        stitched_lg_record = stitch_service.stitch_pdf(all_lg_parts)
 
-        number_of_files = len(response["Items"])
-        last_updated = get_most_recent_created_date(response["Items"])
-        total_file_size = get_total_file_size(all_lg_parts)
-        presign_url = upload_stitched_lg_record_and_retrieve_presign_url(
+        # number_of_files = len(response["Items"])
+        number_of_files = len(all_lg_parts)
+        # last_updated = get_most_recent_created_date(response["Items"])
+        last_updated = stitch_service.get_most_recent_created_date(lg_records)
+        # total_file_size = get_total_file_size(all_lg_parts)
+        total_file_size = stitch_service.get_total_file_size(all_lg_parts)
+        # presign_url = upload_stitched_lg_record_and_retrieve_presign_url(
+        #     stitched_lg_record=stitched_lg_record,
+        #     filename_on_bucket=f"{nhs_number}/{filename_for_stitched_file}",
+        #     upload_bucket_name=lloyd_george_bucket_name,
+        #     s3_service=s3_service,
+        # )
+        presign_url = stitch_service.upload_stitched_lg_record_and_retrieve_presign_url(
             stitched_lg_record=stitched_lg_record,
             filename_on_bucket=f"{nhs_number}/{filename_for_stitched_file}",
-            upload_bucket_name=lloyd_george_bucket_name,
-            s3_service=s3_service,
         )
         response = json.dumps(
             {

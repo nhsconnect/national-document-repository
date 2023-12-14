@@ -118,6 +118,10 @@ class DocumentManifestServiceException(LambdaException):
     pass
 
 
+class LGStitchServiceException(LambdaException):
+    pass
+
+
 class OidcApiException(Exception):
     pass
 

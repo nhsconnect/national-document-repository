@@ -1,14 +1,16 @@
 import json
 import tempfile
-from unittest.mock import patch
 
 import pypdf.errors
 import pytest
 from botocore.exceptions import ClientError
 from handlers.lloyd_george_record_stitch_handler import lambda_handler
-from services.dynamo_service import DynamoDBService
+from services.document_service import DocumentService
+from services.lloyd_george_stitch_service import LloydGeorgeStitchService
+from services.s3_service import S3Service
 from tests.unit.conftest import MOCK_LG_BUCKET
 from tests.unit.services.test_s3_service import MOCK_PRESIGNED_URL_RESPONSE
+from unit.helpers.data.test_documents import create_test_lloyd_george_doc_store_refs
 from utils.lambda_response import ApiGatewayResponse
 
 
@@ -16,7 +18,7 @@ def test_respond_200_with_presign_url(
     valid_id_event_without_auth_header,
     context,
     set_env,
-    mock_dynamo_db,
+    mock_document_service,
     mock_s3,
     mock_stitch_pdf,
     mock_get_total_file_size,
@@ -25,7 +27,7 @@ def test_respond_200_with_presign_url(
 
     expected_response_object = {
         "number_of_files": 3,
-        "last_updated": "2023-10-02T09:46:17.231923Z",
+        "last_updated": "2023-08-24T14:38:04.095Z",
         "presign_url": MOCK_PRESIGNED_URL_RESPONSE,
         "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
     }
@@ -40,7 +42,7 @@ def test_aws_services_are_correctly_called(
     joe_bloggs_event,
     context,
     set_env,
-    mock_dynamo_db,
+    mock_document_service,
     mock_s3,
     mock_stitch_pdf,
     mock_tempfile,
@@ -48,18 +50,11 @@ def test_aws_services_are_correctly_called(
 ):
     lambda_handler(joe_bloggs_event, context)
 
-    mock_dynamo_db.assert_called_once()
+    mock_document_service.assert_called_once()
 
-    assert mock_s3.download_file.call_count == len(MOCK_LG_DYNAMODB_RESPONSE["Items"])
-    for mock_record in MOCK_LG_DYNAMODB_RESPONSE["Items"]:
-        file_name_on_s3 = mock_record["NhsNumber"] + "/" + mock_record["ID"]
-        local_filename = "/tmp/" + mock_record["FileName"]
-        mock_s3.download_file.assert_any_call(
-            MOCK_LG_BUCKET, file_name_on_s3, local_filename
-        )
-
+    assert mock_s3.download_file.call_count == len(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)
     mock_s3.upload_file_with_extra_args.assert_called_with(
-        file_key="1234567890/Combined_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
+        file_key="9000000009/Combined_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[30-12-2019].pdf",
         file_name=MOCK_STITCHED_FILE,
         s3_bucket_name=MOCK_LG_BUCKET,
         extra_args={
@@ -100,32 +95,32 @@ def test_respond_400_throws_error_when_nhs_number_not_valid(invalid_id_event, co
     assert actual == expected
 
 
-def test_respond_500_throws_error_when_dynamo_service_fails_to_connect(
-    joe_bloggs_event, context, set_env, mock_dynamo_db
+def test_respond_500_throws_error_when_failed_to_retrieve_lg_record(
+    joe_bloggs_event, context, set_env, mock_document_service
 ):
-    mock_dynamo_db.side_effect = MOCK_CLIENT_ERROR
+    mock_document_service.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
-        500, "Unable to retrieve documents for patient 1234567890", "GET"
+        500, "Unable to retrieve documents for patient 9000000009", "GET"
     ).create_api_gateway_response()
     assert actual == expected
 
 
 def test_respond_500_throws_error_when_fail_to_download_lloyd_george_file(
-    joe_bloggs_event, context, set_env, mock_dynamo_db, mock_s3
+    joe_bloggs_event, context, set_env, mock_document_service, mock_s3
 ):
     mock_s3.download_file.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
-        500, "Unable to retrieve documents for patient 1234567890", "GET"
+        500, "Unable to retrieve documents for patient 9000000009", "GET"
     ).create_api_gateway_response()
     assert actual == expected
 
 
 def test_respond_404_throws_error_when_no_lloyd_george_for_patient_in_record(
-    valid_id_event_without_auth_header, context, set_env, mock_dynamo_db
+    valid_id_event_without_auth_header, context, set_env, mock_document_service
 ):
-    mock_dynamo_db.return_value = MOCK_LG_DYNAMODB_RESPONSE_NO_RECORD
+    mock_document_service.return_value = []
     actual = lambda_handler(valid_id_event_without_auth_header, context)
     expected = ApiGatewayResponse(
         404, "Lloyd george record not found for patient 9000000009", "GET"
@@ -137,7 +132,7 @@ def test_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
     valid_id_event_without_auth_header,
     context,
     set_env,
-    mock_dynamo_db,
+    mock_document_service,
     mock_s3,
     mock_stitch_pdf,
 ):
@@ -151,7 +146,7 @@ def test_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
 
 
 def test_respond_500_throws_error_when_fail_to_upload_lloyd_george_file(
-    joe_bloggs_event, context, set_env, mock_dynamo_db, mock_s3, mock_stitch_pdf
+    joe_bloggs_event, context, set_env, mock_document_service, mock_s3, mock_stitch_pdf
 ):
     mock_s3.upload_file_with_extra_args.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
@@ -167,83 +162,58 @@ MOCK_CLIENT_ERROR = ClientError(
 
 MOCK_LG_DYNAMODB_RESPONSE_NO_RECORD = {"Items": [], "Count": 0}
 
-MOCK_LG_DYNAMODB_RESPONSE = {
-    "Items": [
-        {
-            "ID": "uuid_for_page_3",
-            "NhsNumber": "1234567890",
-            "FileLocation": f"s3://{MOCK_LG_BUCKET}/1234567890/uuid_for_page_3",
-            "FileName": "3of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
-            "Created": "2023-10-02T09:46:17.231923Z",
-        },
-        {
-            "ID": "uuid_for_page_1",
-            "NhsNumber": "1234567890",
-            "FileLocation": f"s3://{MOCK_LG_BUCKET}/1234567890/uuid_for_page_1",
-            "FileName": "1of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
-            "Created": "2023-10-02T09:46:17.231921Z",
-        },
-        {
-            "ID": "uuid_for_page_2",
-            "NhsNumber": "1234567890",
-            "FileLocation": f"s3://{MOCK_LG_BUCKET}/1234567890/uuid_for_page_2",
-            "FileName": "2of3_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
-            "Created": "2023-10-02T09:46:17.231922Z",
-        },
-    ]
-}
+MOCK_LLOYD_GEORGE_DOCUMENT_REFS = create_test_lloyd_george_doc_store_refs()
 
 MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"
 MOCK_TOTAL_FILE_SIZE = 1024 * 256
 
 
 @pytest.fixture
-def mock_dynamo_db():
-    with patch.object(
-        DynamoDBService, "query_with_requested_fields"
-    ) as mocked_query_service:
-        mocked_query_service.return_value = MOCK_LG_DYNAMODB_RESPONSE
-        yield mocked_query_service
+def mock_document_service(mocker):
+    mocked_method = mocker.patch.object(
+        DocumentService, "fetch_available_document_references_by_type"
+    )
+    mocked_method.return_value = MOCK_LLOYD_GEORGE_DOCUMENT_REFS
+    yield mocked_method
 
 
 @pytest.fixture
-def mock_s3():
-    with patch("handlers.lloyd_george_record_stitch_handler.S3Service") as mock_class:
-        mock_s3_service_instance = mock_class.return_value
-        mock_s3_service_instance.create_download_presigned_url.return_value = (
-            MOCK_PRESIGNED_URL_RESPONSE
-        )
-        yield mock_s3_service_instance
+def mock_s3(mocker):
+    mocked_instance = mocker.patch(
+        "services.lloyd_george_stitch_service.S3Service", spec=S3Service
+    ).return_value
+    # mocked_instance.download_file.return_value =
+    mocked_instance.create_download_presigned_url.return_value = (
+        MOCK_PRESIGNED_URL_RESPONSE
+    )
+    yield mocked_instance
 
 
 @pytest.fixture
-def mock_stitch_pdf():
-    with patch(
-        "handlers.lloyd_george_record_stitch_handler.stitch_pdf"
-    ) as mocked_stitch_pdf:
-        mocked_stitch_pdf.return_value = MOCK_STITCHED_FILE
-        yield mocked_stitch_pdf
+def mock_stitch_pdf(mocker):
+    yield mocker.patch.object(
+        LloydGeorgeStitchService, "stitch_pdf", return_value=MOCK_STITCHED_FILE
+    )
 
 
 @pytest.fixture
-def mock_tempfile():
-    with patch.object(tempfile, "mkdtemp", return_value="/tmp/"):
-        yield
+def mock_tempfile(mocker):
+    yield mocker.patch.object(tempfile, "mkdtemp", return_value="/tmp/")
 
 
 @pytest.fixture
 def joe_bloggs_event():
     api_gateway_proxy_event = {
         "httpMethod": "GET",
-        "queryStringParameters": {"patientId": "1234567890"},
+        "queryStringParameters": {"patientId": "9000000009"},
     }
     return api_gateway_proxy_event
 
 
 @pytest.fixture
-def mock_get_total_file_size():
-    with patch(
-        "handlers.lloyd_george_record_stitch_handler.get_total_file_size"
-    ) as patched:
-        patched.return_value = MOCK_TOTAL_FILE_SIZE
-        yield patched
+def mock_get_total_file_size(mocker):
+    yield mocker.patch.object(
+        LloydGeorgeStitchService,
+        "get_total_file_size",
+        return_value=MOCK_TOTAL_FILE_SIZE,
+    )
