@@ -38,7 +38,7 @@ class DocumentDeletionService:
         doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
     ) -> list[DocumentReference]:
         results = self.document_service.fetch_available_document_references_by_type(
-            nhs_number, doc_type.value
+            nhs_number, doc_type
         )
 
         if not results:
