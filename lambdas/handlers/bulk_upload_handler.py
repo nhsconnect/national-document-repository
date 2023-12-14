@@ -1,4 +1,3 @@
-from botocore.exceptions import ClientError
 from services.bulk_upload_service import BulkUploadService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.override_error_check import override_error_check

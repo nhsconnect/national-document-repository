@@ -18,7 +18,6 @@ from tests.unit.conftest import (
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_DOCUMENT_REFERENCE,
     TEST_DOCUMENT_REFERENCE_LIST,
-    TEST_EVENT_WITH_SQS_MESSAGES,
     TEST_FILE_METADATA,
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
     TEST_SQS_10_MESSAGES_AS_LIST,
