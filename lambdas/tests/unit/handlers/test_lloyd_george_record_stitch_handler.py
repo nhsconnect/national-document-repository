@@ -20,7 +20,7 @@ def test_respond_200_with_presign_url(
     valid_id_event_without_auth_header,
     context,
     set_env,
-    mock_document_service,
+    fetch_available_document_references_by_type,
     mock_s3,
     mock_stitch_pdf,
     mock_get_total_file_size,
@@ -44,7 +44,7 @@ def test_aws_services_are_correctly_called(
     joe_bloggs_event,
     context,
     set_env,
-    mock_document_service,
+    fetch_available_document_references_by_type,
     mock_s3,
     mock_stitch_pdf,
     mock_tempfile,
@@ -52,7 +52,7 @@ def test_aws_services_are_correctly_called(
 ):
     lambda_handler(joe_bloggs_event, context)
 
-    mock_document_service.assert_called_once()
+    fetch_available_document_references_by_type.assert_called_once()
 
     assert mock_s3.download_file.call_count == len(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)
     mock_s3.upload_file_with_extra_args.assert_called_with(
@@ -98,9 +98,9 @@ def test_respond_400_throws_error_when_nhs_number_not_valid(invalid_id_event, co
 
 
 def test_respond_500_throws_error_when_failed_to_retrieve_lg_record(
-    joe_bloggs_event, context, set_env, mock_document_service
+    joe_bloggs_event, context, set_env, fetch_available_document_references_by_type
 ):
-    mock_document_service.side_effect = MOCK_CLIENT_ERROR
+    fetch_available_document_references_by_type.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
         500, "Unable to retrieve documents for patient 9000000009", "GET"
@@ -109,7 +109,11 @@ def test_respond_500_throws_error_when_failed_to_retrieve_lg_record(
 
 
 def test_respond_500_throws_error_when_fail_to_download_lloyd_george_file(
-    joe_bloggs_event, context, set_env, mock_document_service, mock_s3
+    joe_bloggs_event,
+    context,
+    set_env,
+    fetch_available_document_references_by_type,
+    mock_s3,
 ):
     mock_s3.download_file.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
@@ -120,9 +124,12 @@ def test_respond_500_throws_error_when_fail_to_download_lloyd_george_file(
 
 
 def test_respond_404_throws_error_when_no_lloyd_george_for_patient_in_record(
-    valid_id_event_without_auth_header, context, set_env, mock_document_service
+    valid_id_event_without_auth_header,
+    context,
+    set_env,
+    fetch_available_document_references_by_type,
 ):
-    mock_document_service.return_value = []
+    fetch_available_document_references_by_type.return_value = []
     actual = lambda_handler(valid_id_event_without_auth_header, context)
     expected = ApiGatewayResponse(
         404, "Lloyd george record not found for patient 9000000009", "GET"
@@ -134,7 +141,7 @@ def test_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
     valid_id_event_without_auth_header,
     context,
     set_env,
-    mock_document_service,
+    fetch_available_document_references_by_type,
     mock_s3,
     mock_stitch_pdf,
 ):
@@ -148,7 +155,12 @@ def test_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
 
 
 def test_respond_500_throws_error_when_fail_to_upload_lloyd_george_file(
-    joe_bloggs_event, context, set_env, mock_document_service, mock_s3, mock_stitch_pdf
+    joe_bloggs_event,
+    context,
+    set_env,
+    fetch_available_document_references_by_type,
+    mock_s3,
+    mock_stitch_pdf,
 ):
     mock_s3.upload_file_with_extra_args.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
@@ -161,17 +173,14 @@ def test_respond_500_throws_error_when_fail_to_upload_lloyd_george_file(
 MOCK_CLIENT_ERROR = ClientError(
     {"Error": {"Code": "500", "Message": "test error"}}, "testing"
 )
-
 MOCK_LG_DYNAMODB_RESPONSE_NO_RECORD = {"Items": [], "Count": 0}
-
 MOCK_LLOYD_GEORGE_DOCUMENT_REFS = create_test_lloyd_george_doc_store_refs()
-
 MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"
 MOCK_TOTAL_FILE_SIZE = 1024 * 256
 
 
 @pytest.fixture
-def mock_document_service(mocker):
+def fetch_available_document_references_by_type(mocker):
     mocked_method = mocker.patch.object(
         DocumentService, "fetch_available_document_references_by_type"
     )
@@ -193,8 +202,9 @@ def mock_s3(mocker):
 
 @pytest.fixture
 def mock_stitch_pdf(mocker):
-    yield mocker.patch.object(
-        LloydGeorgeStitchService, "stitch_pdf", return_value=MOCK_STITCHED_FILE
+    yield mocker.patch(
+        "services.lloyd_george_stitch_service.stitch_pdf",
+        return_value=MOCK_STITCHED_FILE,
     )
 
 

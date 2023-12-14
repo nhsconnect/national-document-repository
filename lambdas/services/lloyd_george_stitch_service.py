@@ -7,9 +7,9 @@ from urllib.parse import urlparse
 from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
-from pypdf import PdfWriter
 from pypdf.errors import PyPdfError
 from services.document_service import DocumentService
+from services.pdf_stitch_service import stitch_pdf
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import LGStitchServiceException
@@ -31,7 +31,7 @@ class LloydGeorgeStitchService:
         self.document_service = DocumentService()
         self.temp_folder = tempfile.mkdtemp()
 
-    def stitch_lloyd_george_record(self, nhs_number: str):
+    def stitch_lloyd_george_record(self, nhs_number: str) -> dict:
         try:
             lg_records = self.get_lloyd_george_record_for_patient(nhs_number)
             if len(lg_records) == 0:
@@ -51,8 +51,7 @@ class LloydGeorgeStitchService:
             filename_for_stitched_file = self.make_filename_for_stitched_file(
                 lg_records
             )
-            stitched_lg_record = self.stitch_pdf(all_lg_parts)
-
+            stitched_lg_record = stitch_pdf(all_lg_parts, self.temp_folder)
             number_of_files = len(all_lg_parts)
             last_updated = self.get_most_recent_created_date(lg_records)
             total_file_size = self.get_total_file_size(all_lg_parts)
@@ -136,19 +135,11 @@ class LloydGeorgeStitchService:
 
         return "Combined" + base_filename[end_of_total_page_numbers:]
 
-    def stitch_pdf(self, filenames: list[str]) -> str:
-        merger = PdfWriter()
-        for filename in filenames:
-            merger.append(filename)
-        output_filename = os.path.join(self.temp_folder, create_reference_id())
-        merger.write(output_filename)
-        return output_filename
-
     def upload_stitched_lg_record_and_retrieve_presign_url(
         self,
         stitched_lg_record: str,
         filename_on_bucket: str,
-    ):
+    ) -> str:
         extra_args = {
             "Tagging": parse.urlencode({self.lifecycle_policy_tag: "true"}),
             "ContentDisposition": "inline",
