@@ -195,8 +195,6 @@ def test_exchange_token_raises_login_error_when_given_state_is_not_in_state_tabl
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
-
-
 def test_exchange_token_raises_login_error_when_user_doesnt_have_a_valid_role_to_login(
     mock_aws_infras,
     mock_oidc_service,
