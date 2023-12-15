@@ -14,6 +14,7 @@ TEST_NHS_NUMBER_WITH_NO_RECORD = "1234567890"
 TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD = "234567890"
 
 
+
 def test_handle_delete_for_all_doc_type(
     set_env, mock_delete_specific_doc_type, mock_deletion_service
 ):

@@ -256,15 +256,16 @@ def test_get_table_when_table_exists_then_table_is_returned_successfully(
 def test_get_table_when_table_does_not_exists_then_exception_is_raised(
     mock_service, mock_dynamo_service
 ):
-    error = {"Error": {"Code": 500, "Message": "Table not found"}}
-    expected_response = ClientError(error, "Query")
+    error_message = {"Error": {"Code": 500, "Message": "Table not found"}}
+    expected_response = ClientError(error_message, "Query")
     mock_dynamo_service.Table.side_effect = expected_response
 
-    with pytest.raises(ClientError):
-        actual = mock_service.get_table(
+    with pytest.raises(ClientError) as actual_response:
+        mock_service.get_table(
             MOCK_TABLE_NAME,
         )
-        assert expected_response == actual
+
+    assert expected_response == actual_response.value
 
 
 def test_dynamo_service_singleton_instance(mocker):
