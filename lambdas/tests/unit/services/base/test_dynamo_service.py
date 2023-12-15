@@ -7,6 +7,10 @@ from tests.unit.conftest import MOCK_TABLE_NAME, TEST_NHS_NUMBER
 from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
 from utils.exceptions import DynamoServiceException
 
+MOCK_CLIENT_ERROR = ClientError(
+    {"Error": {"Code": 500, "Message": "Test error message"}}, "Query"
+)
+
 
 @pytest.fixture
 def mock_service(set_env, mocker):
@@ -137,6 +141,27 @@ def test_query_with_requested_fields_raises_exception_when_fields_requested_is_n
         )
 
 
+def test_query_with_requested_fields_client_error_raises_exception(
+    mock_service, mock_table
+):
+    expected_response = MOCK_CLIENT_ERROR
+    mock_table.return_value.query.side_effect = MOCK_CLIENT_ERROR
+
+    with pytest.raises(ClientError) as actual_response:
+        mock_service.query_with_requested_fields(
+            MOCK_TABLE_NAME,
+            "NhsNumberIndex",
+            "NhsNumber",
+            TEST_NHS_NUMBER,
+            [
+                DocumentReferenceMetadataFields.FILE_NAME.value,
+                DocumentReferenceMetadataFields.CREATED.value,
+            ],
+        )
+
+    assert expected_response == actual_response.value
+
+
 def test_simple_query_is_called_with_correct_parameters(mock_service, mock_table):
     mock_table.return_value.query.return_value = {
         "Items": [{"id": "fake_test_item"}],
@@ -163,6 +188,16 @@ def test_simple_query_raises_exception_when_results_are_empty(mock_service, mock
     )
 
 
+def test_simple_query_client_error_raises_exception(mock_service, mock_table):
+    expected_response = MOCK_CLIENT_ERROR
+    mock_table.return_value.query.side_effect = MOCK_CLIENT_ERROR
+
+    with pytest.raises(ClientError) as actual_response:
+        mock_service.simple_query(MOCK_TABLE_NAME, "test_key_condition_expression")
+
+    assert expected_response == actual_response.value
+
+
 def test_create_item_is_called_with_correct_parameters(mock_service, mock_table):
     mock_service.create_item(MOCK_TABLE_NAME, {"NhsNumber": TEST_NHS_NUMBER})
 
@@ -179,6 +214,16 @@ def test_delete_item_is_called_with_correct_parameters(mock_service, mock_table)
     mock_table.return_value.delete_item.assert_called_once_with(
         Key={"NhsNumber": TEST_NHS_NUMBER}
     )
+
+
+def test_delete_item_client_error_raises_exception(mock_service, mock_table):
+    expected_response = MOCK_CLIENT_ERROR
+    mock_table.return_value.delete_item.side_effect = MOCK_CLIENT_ERROR
+
+    with pytest.raises(ClientError) as actual_response:
+        mock_service.delete_item(MOCK_TABLE_NAME, {"NhsNumber": TEST_NHS_NUMBER})
+
+    assert expected_response == actual_response.value
 
 
 def test_update_item_is_called_with_correct_parameters(mock_service, mock_table):
@@ -211,6 +256,23 @@ def test_update_item_is_called_with_correct_parameters(mock_service, mock_table)
         ExpressionAttributeNames=expected_expr_attr_names,
         ExpressionAttributeValues=expected_expr_attr_values,
     )
+
+
+def test_update_item_client_error_raises_exception(mock_service, mock_table):
+    expected_response = MOCK_CLIENT_ERROR
+    mock_table.return_value.update_item.side_effect = MOCK_CLIENT_ERROR
+
+    with pytest.raises(ClientError) as actual_response:
+        mock_service.update_item(
+            MOCK_TABLE_NAME,
+            TEST_NHS_NUMBER,
+            {
+                DocumentReferenceMetadataFields.FILE_NAME.value: "test-filename",
+                DocumentReferenceMetadataFields.DELETED.value: "test-delete",
+            },
+        )
+
+    assert expected_response == actual_response.value
 
 
 def test_scan_table_is_called_with_correct_no_args(mock_service, mock_table):
@@ -254,6 +316,20 @@ def test_scan_table_is_called_correctly_with_start_key_and_filter(
     )
 
 
+def test_scan_table_client_error_raises_exception(mock_service, mock_table):
+    expected_response = MOCK_CLIENT_ERROR
+    mock_table.return_value.scan.side_effect = expected_response
+
+    with pytest.raises(ClientError) as actual_response:
+        mock_service.scan_table(
+            MOCK_TABLE_NAME,
+            exclusive_start_key={"key": "exclusive_start_key"},
+            filter_expression="filter_test",
+        )
+
+    assert expected_response == actual_response.value
+
+
 def test_get_table_when_table_exists_then_table_is_returned_successfully(
     mock_service, mock_dynamo_service
 ):
@@ -267,8 +343,7 @@ def test_get_table_when_table_exists_then_table_is_returned_successfully(
 def test_get_table_when_table_does_not_exists_then_exception_is_raised(
     mock_service, mock_dynamo_service
 ):
-    error_message = {"Error": {"Code": 500, "Message": "Table not found"}}
-    expected_response = ClientError(error_message, "Query")
+    expected_response = MOCK_CLIENT_ERROR
     mock_dynamo_service.Table.side_effect = expected_response
 
     with pytest.raises(ClientError) as actual_response:
