@@ -60,14 +60,12 @@ class LloydGeorgeStitchService:
                 stitched_lg_record=stitched_lg_record,
                 filename_on_bucket=f"{nhs_number}/{filename_for_stitched_file}",
             )
-            response = json.dumps(
-                {
-                    "number_of_files": number_of_files,
-                    "last_updated": last_updated,
-                    "presign_url": presign_url,
-                    "total_file_size_in_byte": total_file_size,
-                }
-            )
+            response = {
+                "number_of_files": number_of_files,
+                "last_updated": last_updated,
+                "presign_url": presign_url,
+                "total_file_size_in_byte": total_file_size,
+            }
             logger.audit_splunk_info(
                 "User has viewed Lloyd George records",
                 {"Result": "Successful viewing LG"},

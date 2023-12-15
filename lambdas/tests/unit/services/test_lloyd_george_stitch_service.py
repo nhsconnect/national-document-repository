@@ -1,3 +1,4 @@
+import json
 import tempfile
 
 import pytest
@@ -6,6 +7,27 @@ from models.document_reference import DocumentReference
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
+
+
+def test_stitch_lloyd_george_record_happy_path(
+    mock_fetch_doc_ref_by_type,
+    mock_s3,
+    mock_tempfile,
+    mock_stitch_pdf,
+    mock_get_total_file_size,
+    stitch_service,
+):
+    expected = {
+        "number_of_files": 3,
+        "last_updated": "2023-08-23T13:38:04.095Z",
+        "presign_url": MOCK_PRESIGNED_URL,
+        "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
+    }
+    actual = stitch_service.stitch_lloyd_george_record(TEST_NHS_NUMBER)
+
+    assert actual == expected
+
+    # stitch_service.get_lloyd_george_record_for_patient.assert_called_with(TEST_NHS_NUMBER)
 
 
 def test_get_lloyd_george_record_for_patient(
@@ -126,6 +148,9 @@ def test_upload_stitched_lg_record_and_retrieve_presign_url(mock_s3, stitch_serv
     )
 
 
+# BELOW ARE FIXTURES AND HELPER FUNCTIONS
+
+
 def build_lg_doc_ref_list(page_numbers: list[int]) -> list[DocumentReference]:
     total_page_number = len(page_numbers)
     return [build_lg_doc_ref(page_no, total_page_number) for page_no in page_numbers]
@@ -208,4 +233,13 @@ def mock_stitch_pdf(mocker):
     yield mocker.patch(
         "services.lloyd_george_stitch_service.stitch_pdf",
         return_value=MOCK_STITCHED_FILE,
+    )
+
+
+@pytest.fixture
+def mock_get_total_file_size(mocker):
+    yield mocker.patch.object(
+        LloydGeorgeStitchService,
+        "get_total_file_size",
+        return_value=MOCK_TOTAL_FILE_SIZE,
     )
