@@ -175,7 +175,7 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
-    def batch_writing(self, table_name, item_list):
+    def batch_writing(self, table_name: str, item_list: list[dict]):
         try:
             table = self.get_table(table_name)
             logger.info(f"Writing item to table: {table_name}")

@@ -23,8 +23,7 @@ def mock_dynamo_service(mocker, mock_service):
 
 @pytest.fixture
 def mock_table(mocker, mock_service):
-    table = mocker.patch.object(mock_service, "get_table")
-    yield table
+    yield mocker.patch.object(mock_service, "get_table")
 
 
 def test_query_with_requested_fields_returns_items_from_dynamo(
@@ -145,6 +144,18 @@ def test_simple_query_is_called_with_correct_parameters(mock_service, mock_table
     }
 
     mock_service.simple_query(MOCK_TABLE_NAME, "test_key_condition_expression")
+
+    mock_table.assert_called_with(MOCK_TABLE_NAME)
+    mock_table.return_value.query.assert_called_once_with(
+        KeyConditionExpression="test_key_condition_expression"
+    )
+
+
+def test_simple_query_raises_exception_when_results_are_empty(mock_service, mock_table):
+    mock_table.return_value.query.return_value = []
+
+    with pytest.raises(DynamoServiceException):
+        mock_service.simple_query(MOCK_TABLE_NAME, "test_key_condition_expression")
 
     mock_table.assert_called_with(MOCK_TABLE_NAME)
     mock_table.return_value.query.assert_called_once_with(
