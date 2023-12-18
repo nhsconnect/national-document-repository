@@ -1,8 +1,8 @@
 import os
 import time
 import uuid
-import jwt
 
+import jwt
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from enums.repository_role import RepositoryRole
@@ -105,6 +105,9 @@ class LoginService:
             user_id,
         )
 
+        logger.info(
+            "Updating is_BSOL so it will now only return true if the org is part of BSOL AND user role is GP admin"
+        )
         is_bsol = (
             repository_role.value == RepositoryRole.GP_ADMIN.value
             and permitted_orgs_details["is_BSOL"]
@@ -116,6 +119,7 @@ class LoginService:
             "role": repository_role.value,
             "authorisation_token": authorisation_token,
         }
+        logger.info(f"Response: {response}")
         return response
 
     def have_matching_state_value_in_record(self, state: str) -> bool:
