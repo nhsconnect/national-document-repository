@@ -1,4 +1,10 @@
 import { defineConfig } from 'cypress';
+import * as dotenv from 'dotenv';
+
+function getBaseUrlFromEnv() {
+    dotenv.config();
+    return process.env.CYPRESS_BASE_URL;
+}
 
 export default defineConfig({
     e2e: {
@@ -7,7 +13,7 @@ export default defineConfig({
         },
         downloadsFolder: 'cypress/downloads',
         trashAssetsBeforeRuns: true,
-        baseUrl: process.env.CYPRESS_BASE_URL,
+        baseUrl: getBaseUrlFromEnv(),
     },
 
     component: {
