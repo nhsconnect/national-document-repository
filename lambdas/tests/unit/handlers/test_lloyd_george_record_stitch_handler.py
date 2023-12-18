@@ -15,14 +15,8 @@ from tests.unit.helpers.data.test_documents import (
 from utils.lambda_response import ApiGatewayResponse
 
 
-def test_respond_200_with_presign_url(
-    valid_id_event_without_auth_header,
-    context,
-    set_env,
-    fetch_available_document_references_by_type,
-    mock_s3,
-    mock_stitch_pdf,
-    mock_get_total_file_size,
+def test_lambda_handler_respond_with_200_and_presign_url(
+    valid_id_event_without_auth_header, context, set_env, mock_stitch_service
 ):
     actual = lambda_handler(valid_id_event_without_auth_header, context)
 
@@ -38,35 +32,10 @@ def test_respond_200_with_presign_url(
 
     assert actual == expected
 
-
-def test_aws_services_are_correctly_called(
-    joe_bloggs_event,
-    context,
-    set_env,
-    fetch_available_document_references_by_type,
-    mock_s3,
-    mock_stitch_pdf,
-    mock_tempfile,
-    mock_get_total_file_size,
-):
-    lambda_handler(joe_bloggs_event, context)
-
-    fetch_available_document_references_by_type.assert_called_once()
-
-    assert mock_s3.download_file.call_count == len(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)
-    mock_s3.upload_file_with_extra_args.assert_called_with(
-        file_key="9000000009/Combined_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[30-12-2019].pdf",
-        file_name=MOCK_STITCHED_FILE,
-        s3_bucket_name=MOCK_LG_BUCKET,
-        extra_args={
-            "Tagging": "autodelete=true",
-            "ContentDisposition": "inline",
-            "ContentType": "application/pdf",
-        },
-    )
+    mock_stitch_service.assert_called_with(TEST_NHS_NUMBER)
 
 
-def test_respond_400_throws_error_when_no_nhs_number_supplied(
+def test_lambda_handler_respond_400_when_no_nhs_number_supplied(
     missing_id_event, context
 ):
     actual = lambda_handler(missing_id_event, context)
@@ -76,7 +45,7 @@ def test_respond_400_throws_error_when_no_nhs_number_supplied(
     assert actual == expected
 
 
-def test_respond_500_throws_error_when_environment_variables_not_set(
+def test_lambda_handler_respond_500_when_environment_variables_not_set(
     joe_bloggs_event, context
 ):
     actual = lambda_handler(joe_bloggs_event, context)
@@ -88,7 +57,9 @@ def test_respond_500_throws_error_when_environment_variables_not_set(
     assert actual == expected
 
 
-def test_respond_400_throws_error_when_nhs_number_not_valid(invalid_id_event, context):
+def test_lambda_handler_respond_400_when_nhs_number_not_valid(
+    invalid_id_event, context
+):
     actual = lambda_handler(invalid_id_event, context)
     expected = ApiGatewayResponse(
         400, "Invalid NHS number", "GET"
@@ -96,7 +67,7 @@ def test_respond_400_throws_error_when_nhs_number_not_valid(invalid_id_event, co
     assert actual == expected
 
 
-def test_respond_500_throws_error_when_failed_to_retrieve_lg_record(
+def test_lambda_handler_respond_500_when_failed_to_retrieve_lg_record(
     joe_bloggs_event, context, set_env, fetch_available_document_references_by_type
 ):
     fetch_available_document_references_by_type.side_effect = MOCK_CLIENT_ERROR
@@ -107,7 +78,7 @@ def test_respond_500_throws_error_when_failed_to_retrieve_lg_record(
     assert actual == expected
 
 
-def test_respond_500_throws_error_when_fail_to_download_lloyd_george_file(
+def test_lambda_handler_respond_500_throws_error_when_fail_to_download_lloyd_george_file(
     joe_bloggs_event,
     context,
     set_env,
@@ -122,7 +93,7 @@ def test_respond_500_throws_error_when_fail_to_download_lloyd_george_file(
     assert actual == expected
 
 
-def test_respond_404_throws_error_when_no_lloyd_george_for_patient_in_record(
+def test_lambda_handler_respond_404_throws_error_when_no_lloyd_george_for_patient_in_record(
     valid_id_event_without_auth_header,
     context,
     set_env,
@@ -136,7 +107,7 @@ def test_respond_404_throws_error_when_no_lloyd_george_for_patient_in_record(
     assert actual == expected
 
 
-def test_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
+def test_lambda_handler_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
     valid_id_event_without_auth_header,
     context,
     set_env,
@@ -153,7 +124,7 @@ def test_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
     assert actual == expected
 
 
-def test_respond_500_throws_error_when_fail_to_upload_lloyd_george_file(
+def test_lambda_handler_respond_500_throws_error_when_fail_to_upload_lloyd_george_file(
     joe_bloggs_event,
     context,
     set_env,
@@ -179,6 +150,23 @@ MOCK_TOTAL_FILE_SIZE = 1024 * 256
 MOCK_PRESIGNED_URL = (
     f"https://{MOCK_LG_BUCKET}.s3.amazonaws.com/{TEST_NHS_NUMBER}/abcd-1234-5678"
 )
+MOCK_STITCH_SERVICE_RESPONSE = json.dumps(
+    {
+        "number_of_files": 3,
+        "last_updated": "2023-08-24T14:38:04.095Z",
+        "presign_url": MOCK_PRESIGNED_URL,
+        "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
+    }
+)
+
+
+@pytest.fixture
+def mock_stitch_service(mocker):
+    yield mocker.patch.object(
+        LloydGeorgeStitchService,
+        "stitch_lloyd_george_record",
+        return_value=MOCK_STITCH_SERVICE_RESPONSE,
+    )
 
 
 @pytest.fixture
