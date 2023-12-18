@@ -31,7 +31,7 @@ class LloydGeorgeStitchService:
         self.document_service = DocumentService()
         self.temp_folder = tempfile.mkdtemp()
 
-    def stitch_lloyd_george_record(self, nhs_number: str) -> dict:
+    def stitch_lloyd_george_record(self, nhs_number: str) -> str:
         try:
             lg_records = self.get_lloyd_george_record_for_patient(nhs_number)
             if len(lg_records) == 0:
@@ -70,7 +70,7 @@ class LloydGeorgeStitchService:
                 "User has viewed Lloyd George records",
                 {"Result": "Successful viewing LG"},
             )
-            return response
+            return json.dumps(response)
         except (ClientError, PyPdfError, FileNotFoundError) as e:
             logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
             raise LGStitchServiceException(

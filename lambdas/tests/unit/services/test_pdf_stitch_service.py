@@ -1,6 +1,7 @@
 import os
 
 import pytest
+from pypdf.errors import PyPdfError
 from services.pdf_stitch_service import count_page_number, stitch_pdf
 
 
@@ -17,6 +18,16 @@ def test_stitch_pdf():
     )
 
     os.remove(stitched_file)
+
+
+def test_stitch_pdf_raise_error_if_fail_to_perform_stitching():
+    test_pdf_folder = "tests/unit/helpers/data/pdf/"
+    input_test_files = [
+        f"{test_pdf_folder}/{filename}" for filename in ["invalid_pdf.pdf", "file1.pdf"]
+    ]
+
+    with pytest.raises(PyPdfError):
+        stitch_pdf(input_test_files)
 
 
 def test_stitch_pdf_raise_error_when_input_file_not_found():

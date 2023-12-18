@@ -8,11 +8,10 @@ from handlers.lloyd_george_record_stitch_handler import lambda_handler
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from services.s3_service import S3Service
-from tests.unit.conftest import MOCK_LG_BUCKET
+from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER
 from tests.unit.helpers.data.test_documents import (
     create_test_lloyd_george_doc_store_refs,
 )
-from tests.unit.services.test_s3_service import MOCK_PRESIGNED_URL_RESPONSE
 from utils.lambda_response import ApiGatewayResponse
 
 
@@ -30,7 +29,7 @@ def test_respond_200_with_presign_url(
     expected_response_object = {
         "number_of_files": 3,
         "last_updated": "2023-08-24T14:38:04.095Z",
-        "presign_url": MOCK_PRESIGNED_URL_RESPONSE,
+        "presign_url": MOCK_PRESIGNED_URL,
         "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
     }
     expected = ApiGatewayResponse(
@@ -177,6 +176,9 @@ MOCK_LG_DYNAMODB_RESPONSE_NO_RECORD = {"Items": [], "Count": 0}
 MOCK_LLOYD_GEORGE_DOCUMENT_REFS = create_test_lloyd_george_doc_store_refs()
 MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"
 MOCK_TOTAL_FILE_SIZE = 1024 * 256
+MOCK_PRESIGNED_URL = (
+    f"https://{MOCK_LG_BUCKET}.s3.amazonaws.com/{TEST_NHS_NUMBER}/abcd-1234-5678"
+)
 
 
 @pytest.fixture
@@ -194,9 +196,7 @@ def mock_s3(mocker):
         "services.lloyd_george_stitch_service.S3Service", spec=S3Service
     ).return_value
     # mocked_instance.download_file.return_value =
-    mocked_instance.create_download_presigned_url.return_value = (
-        MOCK_PRESIGNED_URL_RESPONSE
-    )
+    mocked_instance.create_download_presigned_url.return_value = MOCK_PRESIGNED_URL
     yield mocked_instance
 
 
