@@ -63,6 +63,12 @@ There are also Cypress end-to-end tests written against each user journey and it
 make cypress-open
 ```
 
+If you wish to run a CLI only test run, you can use the following command
+
+```bash
+make cypress-run
+```
+
 This will open a new Chromium window with the options to either run the E2E tests or Component tests
 
 ## Accessibility
