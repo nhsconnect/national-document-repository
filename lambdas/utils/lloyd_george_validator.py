@@ -26,12 +26,13 @@ class LGInvalidFilesException(Exception):
     pass
 
 
-file_name_invalid = "One or more of the files do not match the required file type"
+file_name_invalid = "One or more of the files do not match naming convention"
+file_type_invalid = "One or more of the files do not match the required file type"
 
 
 def validate_lg_file_type(file_type: str):
     if file_type != "application/pdf":
-        raise LGInvalidFilesException(file_name_invalid)
+        raise LGInvalidFilesException(file_type_invalid)
 
 
 def validate_file_name(name: str):
