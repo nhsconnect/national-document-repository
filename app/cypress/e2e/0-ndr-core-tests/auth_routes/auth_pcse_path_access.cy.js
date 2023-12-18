@@ -10,28 +10,26 @@ const patient = {
     active: false,
 };
 
-const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
-const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+const baseUrl = Cypress.config('baseUrl');
+
 const forbiddenRoutes = [
-    'search/patient/lloyd-george-record',
-    'search/upload',
-    'search/upload/result',
-    'upload/submit',
+    '/search/patient/lloyd-george-record',
+    '/search/upload',
+    '/search/upload/result',
+    '/upload/submit',
 ];
 
 describe('PCSE user role has access to the expected GP_ADMIN workflow paths', () => {
     context('PCSE role has access to expected routes', () => {
-        it('PCSE role has access to Download View', () => {
-            if (!smokeTest) {
-                cy.intercept('GET', '/SearchPatient*', {
-                    statusCode: 200,
-                    body: patient,
-                }).as('search');
-            }
+        it('PCSE role has access to Download View', { tags: 'regression' }, () => {
+            cy.intercept('GET', '/SearchPatient*', {
+                statusCode: 200,
+                body: patient,
+            }).as('search');
 
             cy.login('PCSE');
 
-            cy.url().should('eq', baseUrl + 'search/patient');
+            cy.url().should('eq', baseUrl + '/search/patient');
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
@@ -39,7 +37,7 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
             cy.wait('@search');
 
             cy.get('#verify-submit').click();
-            cy.url().should('eq', baseUrl + 'search/results');
+            cy.url().should('eq', baseUrl + '/search/results');
         });
     });
 });
@@ -47,9 +45,9 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
 describe('PCSE user role cannot access expected forbidden routes', () => {
     context('PCSE role has no access to forbidden routes', () => {
         forbiddenRoutes.forEach((forbiddenRoute) => {
-            it('PCSE role cannot access route' + forbiddenRoute, () => {
+            it('PCSE role cannot access route' + forbiddenRoute, { tags: 'regression' }, () => {
                 cy.login('PCSE');
-                cy.visit(baseUrl + forbiddenRoute);
+                cy.visit(forbiddenRoute);
                 cy.url().should('include', 'unauthorised');
             });
         });

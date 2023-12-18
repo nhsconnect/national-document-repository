@@ -1,8 +1,8 @@
 import os
 import time
 import uuid
-import jwt
 
+import jwt
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from enums.repository_role import RepositoryRole

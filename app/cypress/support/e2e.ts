@@ -26,14 +26,14 @@ Cypress.Commands.add('getByTestId', (selector, ...args) => {
 
 Cypress.Commands.add('login', (role) => {
     if (role === 'GP_ADMIN' || role === 'GP_CLINICAL' || role === 'PCSE') {
-        const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
+        const baseUrl = Cypress.config('baseUrl');
 
         // login and navigate to search
         cy.intercept('GET', '/Auth/TokenRequest*', {
             statusCode: 200,
             fixture: 'requests/auth/GET_TokenRequest_' + role + '.json',
         }).as('auth');
-        cy.visit(baseUrl + 'auth-callback');
+        cy.visit(baseUrl + '/auth-callback');
         cy.wait('@auth');
     } else {
         throw new Error("Invalid role for login. Only 'gp' or 'pcse' are allowed.");
