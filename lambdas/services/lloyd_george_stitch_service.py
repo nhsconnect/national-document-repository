@@ -13,7 +13,7 @@ from services.pdf_stitch_service import stitch_pdf
 from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import LGStitchServiceException
-from utils.order_response_by_filenames import extract_page_number
+from utils.filename_utils import extract_page_number
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)

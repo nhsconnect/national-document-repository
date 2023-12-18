@@ -1,4 +1,5 @@
 import os
+import tempfile
 
 import pytest
 from pypdf.errors import PyPdfError
@@ -16,6 +17,22 @@ def test_stitch_pdf():
     assert count_page_number(stitched_file) == sum(
         count_page_number(filepath) for filepath in input_test_files
     )
+
+    os.remove(stitched_file)
+
+
+def test_stitch_pdf_with_given_desc_folder():
+    test_pdf_folder = "tests/unit/helpers/data/pdf/"
+    test_desc_folder = tempfile.mkdtemp()
+
+    input_test_files = [
+        f"{test_pdf_folder}/{filename}"
+        for filename in ["file1.pdf", "file2.pdf", "file3.pdf"]
+    ]
+
+    stitched_file = stitch_pdf(input_test_files, test_desc_folder)
+
+    assert stitched_file.startswith(test_desc_folder)
 
     os.remove(stitched_file)
 
