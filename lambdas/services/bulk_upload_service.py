@@ -55,7 +55,7 @@ class BulkUploadService:
                     "All remaining messages in this batch will be returned to sqs queue to retry later."
                 )
 
-                all_unprocessed_message = records[index - 1 :]
+                all_unprocessed_message = records[index - 1:]
                 for unprocessed_message in all_unprocessed_message:
                     self.sqs_repository.put_sqs_message_back_to_queue(
                         unprocessed_message
@@ -237,9 +237,8 @@ class BulkUploadService:
         nhs_number = staging_metadata.nhs_number
 
         for file_metadata in staging_metadata.files:
-            s3_bucket_name = self.s3_repository.lg_bucket_name
             document_reference = self.convert_to_document_reference(
-                file_metadata, nhs_number, s3_bucket_name
+                file_metadata, nhs_number
             )
 
             source_file_key = self.file_path_cache[file_metadata.file_path]
@@ -260,10 +259,11 @@ class BulkUploadService:
                 f"Failed to rollback the incomplete transaction due to error: {e}"
             )
 
-    @staticmethod
     def convert_to_document_reference(
-        file_metadata: MetadataFile, nhs_number: str, s3_bucket_name: str
+        self, file_metadata: MetadataFile, nhs_number: str
     ) -> NHSDocumentReference:
+
+        s3_bucket_name = self.s3_repository.lg_bucket_name
         file_name = os.path.basename(file_metadata.file_path)
 
         document_reference = NHSDocumentReference(

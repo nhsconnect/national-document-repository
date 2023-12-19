@@ -8,6 +8,7 @@ from services.document_service import DocumentService
 from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
+from unit.helpers.data.bulk_upload.test_data import TEST_STAGING_METADATA_WITH_INVALID_FILENAME
 from utils.exceptions import (
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
@@ -21,7 +22,7 @@ from utils.lloyd_george_validator import (
     extract_info_from_filename,
     validate_file_name,
     validate_lg_file_type,
-    validate_with_pds_service,
+    validate_with_pds_service, validate_bulk_uploaded_files,
 )
 
 
@@ -169,16 +170,16 @@ def test_files_without_missing_files():
     ["file_name", "patient_name"],
     [
         (
-            "123of456_Lloyd_George_Record_[James O'Brien]_[1111111111]_[25-12-2019].pdf",
-            "James O'Brien",
+                "123of456_Lloyd_George_Record_[James O'Brien]_[1111111111]_[25-12-2019].pdf",
+                "James O'Brien",
         ),
         (
-            "123of456_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf",
-            "Joé Blöggês-Glüë",
+                "123of456_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf",
+                "Joé Blöggês-Glüë",
         ),
         (
-            "123of456_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf",
-            "Joé Blöggês-Glüë",
+                "123of456_Lloyd_George_Record_[Joé Blöggês-Glüë]_[1111111111]_[25-12-2019].pdf",
+                "Joé Blöggês-Glüë",
         ),  # same string in NFD form
     ],
     ids=[
@@ -364,7 +365,7 @@ def test_raise_client_error_from_ssm_with_pds_service(mocker, mock_pds_call):
 
 
 def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
-    mocker, mock_pds_call
+        mocker, mock_pds_call
 ):
     response = Response()
     response.status_code = 429
@@ -384,7 +385,7 @@ def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
 
 
 def test_check_for_patient_already_exist_in_repo_return_none_when_patient_record_not_exist(
-    set_env, mock_fetch_available_document_references_by_type
+        set_env, mock_fetch_available_document_references_by_type
 ):
     mock_fetch_available_document_references_by_type.return_value = []
     expected = None
@@ -398,7 +399,7 @@ def test_check_for_patient_already_exist_in_repo_return_none_when_patient_record
 
 
 def test_check_check_for_patient_already_exist_in_repo_raise_exception_when_patient_record_already_exist(
-    set_env, mock_fetch_available_document_references_by_type
+        set_env, mock_fetch_available_document_references_by_type
 ):
     mock_fetch_available_document_references_by_type.return_value = [
         MOCK_DOCUMENT_REFERENCE
@@ -410,6 +411,18 @@ def test_check_check_for_patient_already_exist_in_repo_raise_exception_when_pati
     mock_fetch_available_document_references_by_type.assert_called_with(
         nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG.value
     )
+
+
+def test_validate_bulk_files_raises_PatientRecordAlreadyExistException_when_patient_record_already_exists(
+        set_env, mocker
+):
+    mocker.patch(
+        "utils.lloyd_george_validator.check_for_patient_already_exist_in_repo",
+        side_effect=PatientRecordAlreadyExistException,
+    )
+
+    with pytest.raises(PatientRecordAlreadyExistException):
+        validate_bulk_uploaded_files(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
 
 
 @pytest.fixture
