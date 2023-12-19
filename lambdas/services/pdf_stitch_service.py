@@ -8,8 +8,17 @@ logger = LoggingService(__name__)
 
 
 def stitch_pdf(filenames: list[str], temp_folder: str = "/tmp/") -> str:
-    # Given a list of local pdf files, stitch them into one file and return the local file path of resulting file.
-    # Using /tmp/ as it is the only writable location on lambdas.
+    """
+    Given a list of local pdf files, stitch them into one file and return the local file path of resulting file.
+
+    example usage:
+        filenames = ["file1.pdf", "file2.pdf", "file3.pdf"]
+        tmp_folder = "/tmp/"
+        stitch_pdf(filename, tmp_folder)
+
+    result:
+        "/tmp/(filename_of_stitched_file).pdf"
+    """
     merger = PdfWriter()
     for filename in filenames:
         merger.append(filename)
@@ -19,4 +28,7 @@ def stitch_pdf(filenames: list[str], temp_folder: str = "/tmp/") -> str:
 
 
 def count_page_number(filename: str) -> int:
+    """
+    Return the total number of pages in a pdf file
+    """
     return len(PdfReader(filename).pages)
