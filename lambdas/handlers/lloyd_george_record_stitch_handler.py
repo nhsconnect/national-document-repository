@@ -22,7 +22,7 @@ logger = LoggingService(__name__)
 @ensure_environment_variables(
     names=["LLOYD_GEORGE_DYNAMODB_NAME", "LLOYD_GEORGE_BUCKET_NAME"]
 )
-def lambda_handler(event, _context):
+def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.VIEW_LG_RECORD.value
     nhs_number = extract_nhs_number_from_event(event)
     request_context.patient_nhs_no = nhs_number
