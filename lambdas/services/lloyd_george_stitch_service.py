@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import tempfile
 from urllib import parse
 from urllib.parse import urlparse
@@ -70,12 +71,15 @@ class LloydGeorgeStitchService:
                 "User has viewed Lloyd George records",
                 {"Result": "Successful viewing LG"},
             )
+
             return json.dumps(response)
         except (ClientError, PyPdfError, FileNotFoundError) as e:
             logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
             raise LGStitchServiceException(
                 500, "Unable to return stitched pdf file due to internal error"
             )
+        finally:
+            shutil.rmtree(self.temp_folder)
 
     def get_lloyd_george_record_for_patient(
         self, nhs_number: str

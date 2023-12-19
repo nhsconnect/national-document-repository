@@ -339,6 +339,7 @@ def mock_s3(mocker, mock_tempfile):
 
 @pytest.fixture
 def mock_tempfile(mocker):
+    mocker.patch("shutil.rmtree")
     yield mocker.patch.object(tempfile, "mkdtemp", return_value=MOCK_TEMP_FOLDER)
 
 
