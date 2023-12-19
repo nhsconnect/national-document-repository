@@ -54,13 +54,36 @@ declare global {
             login(role: string): Chainable<Subject>;
             /**
              * Add file to s3 bucket
+             * @param {string} bucketName - Name of the target S3 bucket
+             * @param {string} fileName - Filepath of the file to upload
+             * @param {string} fileContent - Content of the file to upload
              */
-            uploadFileToS3ViaNode(): Chainable<Subject>;
+            addFileToS3(
+                bucketName: string,
+                fileName: string,
+                fileContent: string,
+            ): Chainable<Subject>;
             /**
              * Add dynamoDB entry
-             * @param {string} item - dynamoDB entry
+             * @param {string} tableName - Name of the target dynamoDB table
+             * @param {{ [key: string]: any; }} item - dynamoDB item to upload
              */
-            addDynamoDBEntry(item: string): Chainable<Subject>;
+            addItemToDynamoDb(
+                tableName: string,
+                item: { [key: string]: string },
+            ): Chainable<Subject>;
+            /**
+             * Delete file from S3 bucket
+             * @param {string} bucketName - Name of the target S3 bucket
+             * @param {string} fileName - Filepath of the file to delete
+             */
+            deleteFileFromS3(bucketName: string, fileName: string): Chainable<Subject>;
+            /**
+             * Delete item from DynamoDB table
+             * @param {string} tableName - Name of the target DynamoDB table
+             * @param {string} itemId - ID of the item to delete
+             */
+            deleteItemFromDynamoDb(tableName: string, itemId: string): Chainable<Subject>;
         }
     }
 }

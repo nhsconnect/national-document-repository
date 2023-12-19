@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
 
-// set as env vars
+// need to get from env vars
 AWS.config.update({
     accessKeyId: '',
     secretAccessKey: '',
