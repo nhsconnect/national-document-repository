@@ -1,5 +1,8 @@
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
+    const username = Cypress.env('USERNAME');
+    const password = Cypress.env('PASSWORD');
+
     const homeUrl = '/';
     beforeEach(() => {
         cy.visit(homeUrl);
@@ -22,6 +25,8 @@ describe('Home Page', () => {
                 'Access and store digital GP records',
             );
 
+            cy.getByTestId('start-btn').should('exist');
+            cy.getByTestId('start-btn').click();
             // Restore once login steps implemented
             // cy.get('.nhsuk-header__navigation').should('have.length', 1);
             // cy.get('.nhsuk-header__navigation-list').should('have.length', 1);
