@@ -205,7 +205,7 @@ def mock_tempfile(mocker):
 def joe_bloggs_event():
     api_gateway_proxy_event = {
         "httpMethod": "GET",
-        "queryStringParameters": {"patientId": "9000000009"},
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
     }
     return api_gateway_proxy_event
 
