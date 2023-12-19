@@ -34,6 +34,6 @@ jobs:
       environment: prod
       python_version: "3.11"
       build_branch: ${{ inputs.tag_version }}
-      sandbox: ndr-prod
+      sandbox: prod
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
