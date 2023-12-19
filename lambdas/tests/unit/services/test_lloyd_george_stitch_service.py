@@ -10,6 +10,130 @@ from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
 from utils.exceptions import LGStitchServiceException
 
+# Constants, helper and fixtures
+
+
+def build_lg_doc_ref_list(page_numbers: list[int]) -> list[DocumentReference]:
+    total_page_number = len(page_numbers)
+    return [build_lg_doc_ref(page_no, total_page_number) for page_no in page_numbers]
+
+
+def build_lg_doc_ref(
+    curr_page_number: int, total_page_number: int
+) -> DocumentReference:
+    file_name = (
+        f"{curr_page_number}of{total_page_number}_"
+        f"Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[30-12-2019].pdf"
+    )
+    return DocumentReference.model_validate(
+        {
+            "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
+            "ContentType": "type",
+            "Created": "2023-08-23T13:38:04.095Z",
+            "Deleted": "",
+            "FileLocation": f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/{TEST_OBJECT_KEY}",
+            "FileName": file_name,
+            "NhsNumber": TEST_NHS_NUMBER,
+            "VirusScannerResult": "Clean",
+        },
+    )
+
+
+MOCK_LLOYD_GEORGE_DOCUMENT_REFS = build_lg_doc_ref_list(page_numbers=[1, 2, 3])
+MOCK_TEMP_FOLDER = "/tmp"
+MOCK_DOWNLOADED_LLOYD_GEORGE_FILES = [
+    f"{MOCK_TEMP_FOLDER}/mock_downloaded_file{i}" for i in range(1, 3 + 1)
+]
+MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"
+MOCK_STITCHED_FILE_ON_S3 = (
+    f"Combined_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[30-12-2019].pdf"
+)
+MOCK_TOTAL_FILE_SIZE = 1024 * 256
+MOCK_PRESIGNED_URL = (
+    f"https://{MOCK_LG_BUCKET}.s3.amazonaws.com/{TEST_NHS_NUMBER}/abcd-1234-5678"
+)
+
+
+@pytest.fixture
+def stitch_service(set_env):
+    yield LloydGeorgeStitchService()
+
+
+@pytest.fixture
+def patched_stitch_service(set_env, mocker):
+    mocker.patch.object(
+        LloydGeorgeStitchService,
+        "get_lloyd_george_record_for_patient",
+        return_value=MOCK_LLOYD_GEORGE_DOCUMENT_REFS,
+    )
+    mocker.patch.object(
+        LloydGeorgeStitchService,
+        "download_lloyd_george_files",
+        return_value=MOCK_DOWNLOADED_LLOYD_GEORGE_FILES,
+    )
+    mocker.patch.object(
+        LloydGeorgeStitchService,
+        "upload_stitched_lg_record_and_retrieve_presign_url",
+        return_value=MOCK_PRESIGNED_URL,
+    )
+    yield LloydGeorgeStitchService()
+
+
+@pytest.fixture
+def mock_fetch_doc_ref_by_type(mocker):
+    def mocked_method(nhs_number: str, doc_type: str):
+        if nhs_number == TEST_NHS_NUMBER and doc_type == "LG":
+            return MOCK_LLOYD_GEORGE_DOCUMENT_REFS
+        return []
+
+    yield mocker.patch.object(
+        DocumentService,
+        "fetch_available_document_references_by_type",
+        side_effect=mocked_method,
+    )
+
+
+@pytest.fixture
+def mock_s3(mocker, mock_tempfile):
+    mocked_instance = mocker.patch(
+        "services.lloyd_george_stitch_service.S3Service"
+    ).return_value
+    mocked_instance.create_download_presigned_url.return_value = MOCK_PRESIGNED_URL
+    yield mocked_instance
+
+
+@pytest.fixture
+def mock_tempfile(mocker):
+    mocker.patch("shutil.rmtree")
+    yield mocker.patch.object(tempfile, "mkdtemp", return_value=MOCK_TEMP_FOLDER)
+
+
+@pytest.fixture
+def mock_uuid(mocker):
+    uuid = "12345678-ABCD-8765-43210EDC"
+    mocker.patch("uuid.uuid4", return_value=uuid)
+    return uuid
+
+
+@pytest.fixture
+def mock_stitch_pdf(mocker):
+    yield mocker.patch(
+        "services.lloyd_george_stitch_service.stitch_pdf",
+        return_value=MOCK_STITCHED_FILE,
+    )
+
+
+@pytest.fixture
+def mock_get_total_file_size(mocker):
+    yield mocker.patch.object(
+        LloydGeorgeStitchService,
+        "get_total_file_size",
+        return_value=MOCK_TOTAL_FILE_SIZE,
+    )
+
+
+# Unit tests begin here
+
 
 def test_stitch_lloyd_george_record_happy_path(
     mock_tempfile,
@@ -242,126 +366,4 @@ def test_upload_stitched_lg_record_and_retrieve_presign_url(mock_s3, stitch_serv
             "ContentDisposition": "inline",
             "ContentType": "application/pdf",
         },
-    )
-
-
-# BELOW ARE FIXTURES AND HELPER FUNCTIONS
-
-
-def build_lg_doc_ref_list(page_numbers: list[int]) -> list[DocumentReference]:
-    total_page_number = len(page_numbers)
-    return [build_lg_doc_ref(page_no, total_page_number) for page_no in page_numbers]
-
-
-def build_lg_doc_ref(
-    curr_page_number: int, total_page_number: int
-) -> DocumentReference:
-    file_name = (
-        f"{curr_page_number}of{total_page_number}_"
-        f"Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[30-12-2019].pdf"
-    )
-    return DocumentReference.model_validate(
-        {
-            "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
-            "ContentType": "type",
-            "Created": "2023-08-23T13:38:04.095Z",
-            "Deleted": "",
-            "FileLocation": f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/{TEST_OBJECT_KEY}",
-            "FileName": file_name,
-            "NhsNumber": TEST_NHS_NUMBER,
-            "VirusScannerResult": "Clean",
-        },
-    )
-
-
-MOCK_LLOYD_GEORGE_DOCUMENT_REFS = build_lg_doc_ref_list(page_numbers=[1, 2, 3])
-MOCK_TEMP_FOLDER = "/tmp"
-MOCK_DOWNLOADED_LLOYD_GEORGE_FILES = [
-    f"{MOCK_TEMP_FOLDER}/mock_downloaded_file{i}" for i in range(1, 3 + 1)
-]
-MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"
-MOCK_STITCHED_FILE_ON_S3 = (
-    f"Combined_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[30-12-2019].pdf"
-)
-MOCK_TOTAL_FILE_SIZE = 1024 * 256
-MOCK_PRESIGNED_URL = (
-    f"https://{MOCK_LG_BUCKET}.s3.amazonaws.com/{TEST_NHS_NUMBER}/abcd-1234-5678"
-)
-
-
-@pytest.fixture
-def stitch_service(set_env):
-    yield LloydGeorgeStitchService()
-
-
-@pytest.fixture
-def patched_stitch_service(set_env, mocker):
-    mocker.patch.object(
-        LloydGeorgeStitchService,
-        "get_lloyd_george_record_for_patient",
-        return_value=MOCK_LLOYD_GEORGE_DOCUMENT_REFS,
-    )
-    mocker.patch.object(
-        LloydGeorgeStitchService,
-        "download_lloyd_george_files",
-        return_value=MOCK_DOWNLOADED_LLOYD_GEORGE_FILES,
-    )
-    mocker.patch.object(
-        LloydGeorgeStitchService,
-        "upload_stitched_lg_record_and_retrieve_presign_url",
-        return_value=MOCK_PRESIGNED_URL,
-    )
-    yield LloydGeorgeStitchService()
-
-
-@pytest.fixture
-def mock_fetch_doc_ref_by_type(mocker):
-    def mocked_method(nhs_number: str, doc_type: str):
-        if nhs_number == TEST_NHS_NUMBER and doc_type == "LG":
-            return MOCK_LLOYD_GEORGE_DOCUMENT_REFS
-        return []
-
-    yield mocker.patch.object(
-        DocumentService,
-        "fetch_available_document_references_by_type",
-        side_effect=mocked_method,
-    )
-
-
-@pytest.fixture
-def mock_s3(mocker, mock_tempfile):
-    mocked_instance = mocker.patch(
-        "services.lloyd_george_stitch_service.S3Service"
-    ).return_value
-    mocked_instance.create_download_presigned_url.return_value = MOCK_PRESIGNED_URL
-    yield mocked_instance
-
-
-@pytest.fixture
-def mock_tempfile(mocker):
-    mocker.patch("shutil.rmtree")
-    yield mocker.patch.object(tempfile, "mkdtemp", return_value=MOCK_TEMP_FOLDER)
-
-
-@pytest.fixture
-def mock_uuid(mocker):
-    uuid = "12345678-ABCD-8765-43210EDC"
-    mocker.patch("uuid.uuid4", return_value=uuid)
-    return uuid
-
-
-@pytest.fixture
-def mock_stitch_pdf(mocker):
-    yield mocker.patch(
-        "services.lloyd_george_stitch_service.stitch_pdf",
-        return_value=MOCK_STITCHED_FILE,
-    )
-
-
-@pytest.fixture
-def mock_get_total_file_size(mocker):
-    yield mocker.patch.object(
-        LloydGeorgeStitchService,
-        "get_total_file_size",
-        return_value=MOCK_TOTAL_FILE_SIZE,
     )

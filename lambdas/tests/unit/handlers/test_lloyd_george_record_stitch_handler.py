@@ -14,6 +14,89 @@ from tests.unit.helpers.data.test_documents import (
 )
 from utils.lambda_response import ApiGatewayResponse
 
+# Constants and fixtures
+
+MOCK_CLIENT_ERROR = ClientError(
+    {"Error": {"Code": "500", "Message": "test error"}}, "testing"
+)
+MOCK_LG_DYNAMODB_RESPONSE_NO_RECORD = {"Items": [], "Count": 0}
+MOCK_LLOYD_GEORGE_DOCUMENT_REFS = create_test_lloyd_george_doc_store_refs()
+MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"
+MOCK_TOTAL_FILE_SIZE = 1024 * 256
+MOCK_PRESIGNED_URL = (
+    f"https://{MOCK_LG_BUCKET}.s3.amazonaws.com/{TEST_NHS_NUMBER}/abcd-1234-5678"
+)
+MOCK_STITCH_SERVICE_RESPONSE = json.dumps(
+    {
+        "number_of_files": 3,
+        "last_updated": "2023-08-24T14:38:04.095Z",
+        "presign_url": MOCK_PRESIGNED_URL,
+        "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
+    }
+)
+
+
+@pytest.fixture
+def mock_stitch_service(mocker):
+    yield mocker.patch.object(
+        LloydGeorgeStitchService,
+        "stitch_lloyd_george_record",
+        return_value=MOCK_STITCH_SERVICE_RESPONSE,
+    )
+
+
+@pytest.fixture
+def fetch_available_document_references_by_type(mocker):
+    mocked_method = mocker.patch.object(
+        DocumentService, "fetch_available_document_references_by_type"
+    )
+    mocked_method.return_value = MOCK_LLOYD_GEORGE_DOCUMENT_REFS
+    yield mocked_method
+
+
+@pytest.fixture
+def mock_s3(mocker):
+    mocked_instance = mocker.patch(
+        "services.lloyd_george_stitch_service.S3Service", spec=S3Service
+    ).return_value
+    # mocked_instance.download_file.return_value =
+    mocked_instance.create_download_presigned_url.return_value = MOCK_PRESIGNED_URL
+    yield mocked_instance
+
+
+@pytest.fixture
+def mock_stitch_pdf(mocker):
+    yield mocker.patch(
+        "services.lloyd_george_stitch_service.stitch_pdf",
+        return_value=MOCK_STITCHED_FILE,
+    )
+
+
+@pytest.fixture
+def mock_tempfile(mocker):
+    yield mocker.patch.object(tempfile, "mkdtemp", return_value="/tmp/")
+
+
+@pytest.fixture
+def joe_bloggs_event():
+    api_gateway_proxy_event = {
+        "httpMethod": "GET",
+        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def mock_get_total_file_size(mocker):
+    yield mocker.patch.object(
+        LloydGeorgeStitchService,
+        "get_total_file_size",
+        return_value=MOCK_TOTAL_FILE_SIZE,
+    )
+
+
+# Unit tests begin here
+
 
 def test_lambda_handler_respond_with_200_and_presign_url(
     valid_id_event_without_auth_header, context, set_env, mock_stitch_service
@@ -138,82 +221,3 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_upload_lloyd_georg
         500, "Unable to return stitched pdf file due to internal error", "GET"
     ).create_api_gateway_response()
     assert actual == expected
-
-
-MOCK_CLIENT_ERROR = ClientError(
-    {"Error": {"Code": "500", "Message": "test error"}}, "testing"
-)
-MOCK_LG_DYNAMODB_RESPONSE_NO_RECORD = {"Items": [], "Count": 0}
-MOCK_LLOYD_GEORGE_DOCUMENT_REFS = create_test_lloyd_george_doc_store_refs()
-MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"
-MOCK_TOTAL_FILE_SIZE = 1024 * 256
-MOCK_PRESIGNED_URL = (
-    f"https://{MOCK_LG_BUCKET}.s3.amazonaws.com/{TEST_NHS_NUMBER}/abcd-1234-5678"
-)
-MOCK_STITCH_SERVICE_RESPONSE = json.dumps(
-    {
-        "number_of_files": 3,
-        "last_updated": "2023-08-24T14:38:04.095Z",
-        "presign_url": MOCK_PRESIGNED_URL,
-        "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
-    }
-)
-
-
-@pytest.fixture
-def mock_stitch_service(mocker):
-    yield mocker.patch.object(
-        LloydGeorgeStitchService,
-        "stitch_lloyd_george_record",
-        return_value=MOCK_STITCH_SERVICE_RESPONSE,
-    )
-
-
-@pytest.fixture
-def fetch_available_document_references_by_type(mocker):
-    mocked_method = mocker.patch.object(
-        DocumentService, "fetch_available_document_references_by_type"
-    )
-    mocked_method.return_value = MOCK_LLOYD_GEORGE_DOCUMENT_REFS
-    yield mocked_method
-
-
-@pytest.fixture
-def mock_s3(mocker):
-    mocked_instance = mocker.patch(
-        "services.lloyd_george_stitch_service.S3Service", spec=S3Service
-    ).return_value
-    # mocked_instance.download_file.return_value =
-    mocked_instance.create_download_presigned_url.return_value = MOCK_PRESIGNED_URL
-    yield mocked_instance
-
-
-@pytest.fixture
-def mock_stitch_pdf(mocker):
-    yield mocker.patch(
-        "services.lloyd_george_stitch_service.stitch_pdf",
-        return_value=MOCK_STITCHED_FILE,
-    )
-
-
-@pytest.fixture
-def mock_tempfile(mocker):
-    yield mocker.patch.object(tempfile, "mkdtemp", return_value="/tmp/")
-
-
-@pytest.fixture
-def joe_bloggs_event():
-    api_gateway_proxy_event = {
-        "httpMethod": "GET",
-        "queryStringParameters": {"patientId": TEST_NHS_NUMBER},
-    }
-    return api_gateway_proxy_event
-
-
-@pytest.fixture
-def mock_get_total_file_size(mocker):
-    yield mocker.patch.object(
-        LloydGeorgeStitchService,
-        "get_total_file_size",
-        return_value=MOCK_TOTAL_FILE_SIZE,
-    )
