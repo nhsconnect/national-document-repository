@@ -1,3 +1,5 @@
+import { Roles } from '../../../support/roles';
+
 // env vars
 const baseUrl = Cypress.config('baseUrl');
 
@@ -82,7 +84,7 @@ const uploadedFileNames = {
     ],
 };
 
-const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
+const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
 describe('GP Workflow: Upload docs and verify', () => {
     gpRoles.forEach((role) => {

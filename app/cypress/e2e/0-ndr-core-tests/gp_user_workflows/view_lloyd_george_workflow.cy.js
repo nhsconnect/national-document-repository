@@ -3,7 +3,7 @@ import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.j
 import { Roles } from '../../../support/roles';
 
 const baseUrl = Cypress.config('baseUrl');
-const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
+const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
 describe('GP Workflow: View Lloyd George record', () => {
     const assertEmptyLloydGeorgeCard = () => {

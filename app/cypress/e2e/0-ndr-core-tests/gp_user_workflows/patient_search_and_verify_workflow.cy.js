@@ -1,7 +1,9 @@
+import { Roles } from '../../../support/roles';
+
 describe('GP Workflow: Patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
-    const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
+    const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
     const noPatientError = 400;
     const testNotFoundPatient = '1000000001';
