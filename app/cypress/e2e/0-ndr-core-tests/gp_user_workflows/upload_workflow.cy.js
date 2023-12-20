@@ -94,7 +94,7 @@ describe('GP Workflow: Upload docs and verify', () => {
         });
 
         it(
-            'On Start now button click as ' + role + ', redirect to uploads is successful',
+            `On Start now button click as ${cy.roleName(role)} redirect to uploads is successful`,
             { tags: 'regression' },
             () => {
                 cy.url().should('include', 'upload');

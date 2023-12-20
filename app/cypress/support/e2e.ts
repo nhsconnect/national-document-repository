@@ -41,6 +41,11 @@ Cypress.Commands.add('login', (role) => {
     }
 });
 
+Cypress.Commands.add(
+    'roleName',
+    (role) => roleList.find((roleName) => Roles[roleName] === role) ?? '',
+);
+
 Cypress.Commands.add('smokeLogin', (role) => {
     // Login for smoke tests
     if (roleIds.includes(role)) {
@@ -94,6 +99,13 @@ declare global {
              * @return {HTMLElement} - Target DOM element.
              */
             getByTestId(value: string);
+            /**
+             * Get name of role from value of role
+             *
+             * @param {Roles}  role - The user role to login with. Must be an enum of Roles
+             * @return {string}  - Role name as string
+             */
+            roleName(role: Roles);
             /**
              * Mock user login by intercepting the {baseUrl}/auth-callback request
              * @param {Roles} role - The user role to login with. Must be an enum of Roles

@@ -59,7 +59,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             beforeEachConfiguration(role);
         });
 
-        context('View Lloyd George document for ' + role + ' role', () => {
+        context(`View Lloyd George document for ${cy.roleName(role)} role`, () => {
             it(
                 role + ' can view a Lloyd George document of an active patient',
                 { tags: 'regression' },
@@ -114,7 +114,9 @@ describe('GP Workflow: View Lloyd George record', () => {
             );
 
             it(
-                'It displays an error when the Lloyd George Stitch API call fails for a ' + role,
+                `It displays an error when the Lloyd George Stitch API call fails for a ${cy.roleName(
+                    role,
+                )}`,
                 { tags: 'regression' },
                 () => {
                     cy.intercept('GET', '/LloydGeorgeStitch*', {
