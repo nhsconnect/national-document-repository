@@ -16,7 +16,6 @@ describe('Home Page', () => {
             'should display patient search page with navigation after user log in',
             { tags: 'regression' },
             () => {
-                cy.visit(homeUrl);
                 cy.get('header').should('exist');
 
                 cy.get('.nhsuk-logo__background').should('exist');

@@ -1,5 +1,5 @@
 export enum Roles {
-    'GP_ADMIN' = 0,
+    'GP_ADMIN' = 555053928105,
     'GP_CLINICAL' = 555053929106,
-    'PCSE' = 2,
+    'PCSE' = 555053983103,
 }

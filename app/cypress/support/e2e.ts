@@ -50,14 +50,16 @@ Cypress.Commands.add('smokeLogin', (role) => {
         const authCallback = '/auth-callback';
         const searchUrl = '/search/upload';
         cy.visit(homeUrl);
-        cy.getByTestId('start-btn').should('exist');
-        cy.getByTestId('start-btn').click();
+        // cy.getByTestId('start-btn').should('exist');
+        // cy.getByTestId('start-btn').click();
+        cy.get('#start-button').should('exist');
+        cy.get('#start-button').click();
         cy.origin(
             'https://am.nhsdev.auth-ptl.cis2.spineservices.nhs.uk',
-            { args: { username, password } },
+            { args: { username, password, role } },
             (args) => {
                 Cypress.on('uncaught:exception', () => false);
-                const { username, password } = args;
+                const { username, password, role } = args;
                 cy.url().should('include', 'cis2.spineservices.nhs.uk');
                 cy.get('.nhsuk-cis2-cia-header-text').should('exist');
                 cy.get('.nhsuk-cis2-cia-header-text').should(

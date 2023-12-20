@@ -4,8 +4,10 @@ describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
     const homeUrl = '/';
 
-    it('[Smoke] should visit expected URL', { tags: 'smoke' }, () => {
+    beforeEach(() => {
         cy.visit(homeUrl);
+    });
+    it('[Smoke] should visit expected URL', { tags: 'smoke' }, () => {
         cy.url().should('eq', baseUrl + homeUrl);
     });
 
