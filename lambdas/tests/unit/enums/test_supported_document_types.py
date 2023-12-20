@@ -5,7 +5,7 @@ from tests.unit.conftest import (
     MOCK_LG_TABLE_NAME,
     MOCK_LG_TABLE_NAME_ENV_NAME,
 )
-from utils.exceptions import InvalidDocTypeException
+from utils.lambda_exceptions import InvalidDocTypeException
 
 
 @pytest.mark.parametrize(

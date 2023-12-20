@@ -19,7 +19,7 @@ from tests.unit.helpers.data.create_document_reference import (
     LG_MOCK_EVENT_BODY,
     MOCK_EVENT_BODY,
 )
-from utils.exceptions import CreateDocumentRefException
+from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_ARF_BUCKET}/{TEST_OBJECT_KEY}"

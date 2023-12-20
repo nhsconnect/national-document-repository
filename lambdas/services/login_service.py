@@ -8,20 +8,20 @@ from botocore.exceptions import ClientError
 from enums.repository_role import RepositoryRole
 from models.oidc_models import IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
-from services.dynamo_service import DynamoDBService
+from services.base.dynamo_service import DynamoDBService
+from services.base.ssm_service import SSMService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
-from services.ssm_service import SSMService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
     AuthorisationException,
-    LoginException,
     OdsErrorException,
     OidcApiException,
     OrganisationNotFoundException,
     TooManyOrgsException,
 )
+from utils.lambda_exceptions import LoginException
 
 logger = LoggingService(__name__)
 

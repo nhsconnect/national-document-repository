@@ -1,6 +1,6 @@
 from typing import Callable
 
-from utils.exceptions import LambdaException
+from utils.lambda_exceptions import LambdaException
 from utils.lambda_response import ApiGatewayResponse
 
 

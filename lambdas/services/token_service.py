@@ -1,6 +1,6 @@
 import jwt
 from botocore.exceptions import ClientError
-from services.ssm_service import SSMService
+from services.base.ssm_service import SSMService
 
 ssm_service = SSMService()
 
