@@ -16,6 +16,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
+import { Roles } from './roles';
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
@@ -25,7 +26,7 @@ Cypress.Commands.add('getByTestId', (selector, ...args) => {
 });
 
 Cypress.Commands.add('login', (role) => {
-    if (role === 'GP_ADMIN' || role === 'GP_CLINICAL' || role === 'PCSE') {
+    if (Object.values(Roles).includes(role)) {
         const baseUrl = Cypress.config('baseUrl');
 
         // login and navigate to search
@@ -40,6 +41,48 @@ Cypress.Commands.add('login', (role) => {
     }
 });
 
+Cypress.Commands.add('smokeLogin', (role) => {
+    if (Object.values(Roles).includes(role)) {
+        const baseUrl = Cypress.config('baseUrl');
+        const username = Cypress.env('USERNAME');
+        const password = Cypress.env('PASSWORD');
+        const homeUrl = '/';
+        const authCallback = '/auth-callback';
+        const searchUrl = '/search/upload';
+        cy.visit(homeUrl);
+        cy.getByTestId('start-btn').should('exist');
+        cy.getByTestId('start-btn').click();
+        cy.origin(
+            'https://am.nhsdev.auth-ptl.cis2.spineservices.nhs.uk',
+            { args: { username, password } },
+            (args) => {
+                Cypress.on('uncaught:exception', () => false);
+                const { username, password } = args;
+                cy.url().should('include', 'cis2.spineservices.nhs.uk');
+                cy.get('.nhsuk-cis2-cia-header-text').should('exist');
+                cy.get('.nhsuk-cis2-cia-header-text').should(
+                    'have.text',
+                    'CIS2 - Care Identity Authentication',
+                );
+                cy.get('#floatingLabelInput19').should('exist');
+                cy.get('#floatingLabelInput19').type(username);
+                cy.get('#floatingLabelInput25').should('exist');
+                cy.get('#floatingLabelInput25').type(password);
+
+                cy.get('.nhsuk-button').should('exist');
+                cy.get('.nhsuk-button').invoke('attr', 'type').should('eq', 'submit');
+                cy.get('.nhsuk-button').click();
+                cy.get(`#nhsRoleId_${role}`).should('exist');
+                cy.get(`#nhsRoleId_${role}`).click();
+            },
+        );
+        cy.url().should('contain', baseUrl + authCallback);
+        cy.url({ timeout: 10000 }).should('eq', baseUrl + searchUrl);
+    } else {
+        throw new Error("Invalid role for login. Only 'gp' or 'pcse' are allowed.");
+    }
+});
+
 declare global {
     namespace Cypress {
         interface Chainable {
@@ -49,12 +92,17 @@ declare global {
              * @param {string} value - The value of the data-testid attribute of the target DOM element.
              * @return {HTMLElement} - Target DOM element.
              */
-            getByTestId(value: string): Chainable<Subject>;
+            getByTestId(value: string);
             /**
-             * Mock user login via CIS2 and return to base URL.
-             * @param {string} role - The user role to login with. Must be either 'gp' or 'pcse'
+             * Mock user login by intercepting the {baseUrl}/auth-callback request
+             * @param {Roles} role - The user role to login with. Must be an enum of Roles
              */
-            login(role: string): Chainable<Subject>;
+            login(role: Roles);
+            /**
+             * Real user login via CIS2 and redirect back to {baseUrl}/auth-callback.
+             * @param {Roles} role - The user role to login with. Must be an enum of Roles
+             */
+            smokeLogin(role: Roles);
         }
     }
 }

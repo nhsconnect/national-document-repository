@@ -1,3 +1,5 @@
+const { Roles } = require('../../../support/roles');
+
 describe('PCSE Workflow: patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
@@ -26,7 +28,7 @@ describe('PCSE Workflow: patient search and verify', () => {
                 body: patient,
             }).as('search');
 
-            cy.login('PCSE');
+            cy.login(Roles.PCSE);
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
 
@@ -48,7 +50,7 @@ describe('PCSE Workflow: patient search and verify', () => {
         'It shows the download documents page when download patient is verified by a PCSE user',
         { tags: 'regression' },
         () => {
-            cy.login('PCSE');
+            cy.login(Roles.PCSE);
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
                 body: patient,
@@ -73,7 +75,7 @@ describe('PCSE Workflow: patient search and verify', () => {
                 body: patient,
             }).as('search');
 
-            cy.login('PCSE');
+            cy.login(Roles.PCSE);
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
 
@@ -96,7 +98,7 @@ describe('PCSE Workflow: patient search and verify', () => {
                 },
             }).as('search');
 
-            cy.login('PCSE');
+            cy.login(Roles.PCSE);
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
 
@@ -119,7 +121,7 @@ describe('PCSE Workflow: patient search and verify', () => {
                 },
             }).as('search');
 
-            cy.login('PCSE');
+            cy.login(Roles.PCSE);
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
 

@@ -1,5 +1,6 @@
 import viewLloydGeorgePayload from '../../../fixtures/requests/GET_LloydGeorgeStitch.json';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
+import { Roles } from '../../../support/roles';
 
 const baseUrl = Cypress.config('baseUrl');
 const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
@@ -134,7 +135,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'It displays an error with a download link when a Lloyd George stitching timeout occures via the API Gatway for a GP_ADMIN',
             { tags: 'regression' },
             () => {
-                beforeEachConfiguration('GP_ADMIN');
+                beforeEachConfiguration(Roles.GP_ADMIN);
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 504,
                 });
@@ -149,7 +150,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'It displays an error with download link when a Lloyd George stitching timeout occures via the API Gatway for a GP_CLINICAL but link access is denied',
             { tags: 'regression' },
             () => {
-                beforeEachConfiguration('GP_CLINICAL');
+                beforeEachConfiguration(Roles.GP_CLINICAL);
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 504,
                 });
@@ -166,7 +167,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'A GP ADMIN user can delete the Lloyd George document of an active patient',
             { tags: 'regression' },
             () => {
-                beforeEachConfiguration('GP_ADMIN');
+                beforeEachConfiguration(Roles.GP_ADMIN);
 
                 let request = 0;
                 const replies = [
@@ -226,7 +227,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'Page returns user to view Lloyd George page on the cancel action of delete as a GP ADMIN',
             { tags: 'regression' },
             () => {
-                beforeEachConfiguration('GP_ADMIN');
+                beforeEachConfiguration(Roles.GP_ADMIN);
 
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 200,
@@ -254,7 +255,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'It displays an error when the delete Lloyd George document API call fails as A GP ADMIN',
             { tags: 'regression' },
             () => {
-                beforeEachConfiguration('GP_ADMIN');
+                beforeEachConfiguration(Roles.GP_ADMIN);
 
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 200,
@@ -290,7 +291,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'No download option or menu exists when no Lloyd George record exists for the patient for a GP CLINICAL user',
             { tags: 'regression' },
             () => {
-                beforeEachConfiguration('GP_CLINICAL');
+                beforeEachConfiguration(Roles.GP_CLINICAL);
 
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 404,
@@ -307,7 +308,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'No download option exists when a Lloyd George record exists for a GP CLINICAL user',
             { tags: 'regression' },
             () => {
-                beforeEachConfiguration('GP_CLINICAL');
+                beforeEachConfiguration(Roles.GP_CLINICAL);
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 200,
                     body: viewLloydGeorgePayload,

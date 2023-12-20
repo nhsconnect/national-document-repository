@@ -1,3 +1,5 @@
+const { Roles } = require('../../../support/roles');
+
 const testPatient = '9000000009';
 const patient = {
     birthDate: '1970-01-01',
@@ -22,7 +24,7 @@ describe('GP Admin user role has access to the expected GP_ADMIM workflow paths'
                 body: patient,
             }).as('search');
 
-            cy.login('GP_ADMIN');
+            cy.login(Roles.GP_ADMIN);
             cy.url().should('eq', baseUrl + '/search/upload');
 
             cy.get('#nhs-number-input').click();
@@ -48,7 +50,7 @@ describe('GP Admin user role cannot access expected forbidden routes', () => {
                 'GP Admin role cannot access route ' + forbiddenRoute,
                 { tags: 'regression' },
                 () => {
-                    cy.login('GP_ADMIN');
+                    cy.login(Roles.GP_ADMIN);
                     cy.visit(forbiddenRoute);
                     cy.url().should('include', 'unauthorised');
                 },

@@ -1,4 +1,5 @@
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
+import { Roles } from '../../../support/roles';
 
 describe('PCSE Workflow: Access and download found files', () => {
     // env vars
@@ -36,7 +37,7 @@ describe('PCSE Workflow: Access and download found files', () => {
     const homeUrl = '/';
 
     beforeEach(() => {
-        cy.login('PCSE');
+        cy.login(Roles.PCSE);
     });
 
     const navigateToVerify = (role) => {
