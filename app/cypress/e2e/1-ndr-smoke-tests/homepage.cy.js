@@ -3,6 +3,7 @@ const { Roles } = require('../../support/roles');
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
     const homeUrl = '/';
+    const searchUrl = '/search/upload';
 
     beforeEach(() => {
         cy.visit(homeUrl);
@@ -13,7 +14,7 @@ describe('Home Page', () => {
     });
 
     it(
-        '[Smoke] should display patient search page with navigation after user log in',
+        '[Smoke] should display patient search page with navigation after user log in from homepage',
         { tags: 'smoke' },
         () => {
             cy.get('header').should('exist');
@@ -31,6 +32,7 @@ describe('Home Page', () => {
 
             cy.smokeLogin(Roles.GP_CLINICAL);
 
+            cy.url().should('eq', baseUrl + searchUrl);
             cy.get('.nhsuk-header__navigation').should('exist');
             cy.get('.nhsuk-header__navigation-list').should('exist');
         },

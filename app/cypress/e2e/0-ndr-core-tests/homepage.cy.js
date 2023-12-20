@@ -14,7 +14,7 @@ describe('Home Page', () => {
 
     context('Login tests', () => {
         it(
-            'should display patient search page with navigation after user log in',
+            'should display patient search page with navigation after user log in from homepage',
             { tags: 'regression' },
             () => {
                 cy.get('header').should('exist');
@@ -33,6 +33,7 @@ describe('Home Page', () => {
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');
 
                 cy.login(Roles.GP_CLINICAL);
+
                 cy.url().should('eq', baseUrl + searchUrl);
                 cy.get('.nhsuk-header__navigation').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
