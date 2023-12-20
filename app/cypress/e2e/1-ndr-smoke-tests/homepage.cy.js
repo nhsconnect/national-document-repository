@@ -7,6 +7,7 @@ describe('Home Page', () => {
     beforeEach(() => {
         cy.visit(homeUrl);
     });
+
     it('[Smoke] should visit expected URL', { tags: 'smoke' }, () => {
         cy.url().should('eq', baseUrl + homeUrl);
     });
@@ -33,5 +34,7 @@ describe('Home Page', () => {
             cy.get('.nhsuk-header__navigation').should('exist');
             cy.get('.nhsuk-header__navigation-list').should('exist');
         },
+
+        //TODO: Add logout test
     );
 });

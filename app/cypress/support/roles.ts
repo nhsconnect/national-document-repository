@@ -4,4 +4,4 @@ export enum Roles {
     'PCSE' = 555053983103,
 }
 
-export const roleIds = Object.values(Roles) as Array<Roles>;
+export const roleList = Object.values(Roles) as Array<Roles>;

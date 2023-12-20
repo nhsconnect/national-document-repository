@@ -16,7 +16,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
-import { Roles, roleIds } from './roles';
+import { Roles, roleList } from './roles';
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
@@ -26,7 +26,7 @@ Cypress.Commands.add('getByTestId', (selector, ...args) => {
 });
 
 Cypress.Commands.add('login', (role) => {
-    if (roleIds.includes(role)) {
+    if (roleList.includes(role)) {
         const baseUrl = Cypress.config('baseUrl');
 
         // login and navigate to search
@@ -42,7 +42,7 @@ Cypress.Commands.add('login', (role) => {
 });
 
 Cypress.Commands.add('smokeLogin', (role) => {
-    if (roleIds.includes(role)) {
+    if (roleList.includes(role)) {
         const baseUrl = Cypress.config('baseUrl');
         const username = Cypress.env('USERNAME');
         const password = Cypress.env('PASSWORD');
