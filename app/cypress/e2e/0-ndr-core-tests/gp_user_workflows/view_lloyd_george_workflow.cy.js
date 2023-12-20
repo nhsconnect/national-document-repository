@@ -61,7 +61,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
         context(`View Lloyd George document for ${cy.roleName(role)} role`, () => {
             it(
-                role + ' can view a Lloyd George document of an active patient',
+                cy.roleName(role) + ' can view a Lloyd George document of an active patient',
                 { tags: 'regression' },
                 () => {
                     cy.intercept('GET', '/LloydGeorgeStitch*', {
@@ -98,8 +98,9 @@ describe('GP Workflow: View Lloyd George record', () => {
             );
 
             it(
-                'It displays an empty Lloyd George card when no Lloyd George record exists for the patient for a ' +
+                `It displays an empty Lloyd George card when no Lloyd George record exists for the patient for a ${cy.roleName(
                     role,
+                )}`,
                 { tags: 'regression' },
                 () => {
                     cy.intercept('GET', '/LloydGeorgeStitch*', {
