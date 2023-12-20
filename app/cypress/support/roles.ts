@@ -3,3 +3,5 @@ export enum Roles {
     'GP_CLINICAL' = 555053929106,
     'PCSE' = 555053983103,
 }
+
+export const roleIds = Object.values(Roles) as Array<Roles>;
