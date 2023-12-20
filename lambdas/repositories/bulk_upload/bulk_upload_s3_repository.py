@@ -4,7 +4,7 @@ from botocore.exceptions import ClientError
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import StagingMetadata
-from services.s3_service import S3Service
+from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
     DocumentInfectedException,

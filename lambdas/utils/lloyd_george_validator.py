@@ -9,8 +9,8 @@ from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient
 from models.staging_metadata import StagingMetadata
 from requests import HTTPError
+from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
-from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
     PatientRecordAlreadyExistException,

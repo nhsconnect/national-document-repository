@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 import pytest
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.s3_lifecycle_tags import S3LifecycleDays, S3LifecycleTags
+from enums.supported_document_types import SupportedDocumentTypes
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
 from tests.unit.conftest import (
@@ -58,7 +59,7 @@ def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_refe
     mock_dynamo_service.query_with_requested_fields.return_value = MOCK_SEARCH_RESPONSE
 
     results = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, "LG"
+        TEST_NHS_NUMBER, SupportedDocumentTypes.LG
     )
 
     assert len(results) == 3
@@ -81,7 +82,7 @@ def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_ref
     mock_dynamo_service.query_with_requested_fields.return_value = MOCK_SEARCH_RESPONSE
 
     results = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, "ARF"
+        TEST_NHS_NUMBER, SupportedDocumentTypes.ARF
     )
 
     assert len(results) == 3
@@ -104,7 +105,7 @@ def test_fetch_available_document_references_by_type_all_returns_list_of_doc_ref
     mock_dynamo_service.query_with_requested_fields.return_value = MOCK_SEARCH_RESPONSE
 
     results = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, "ALL"
+        TEST_NHS_NUMBER, SupportedDocumentTypes.ALL
     )
 
     assert len(results) == 6
@@ -144,7 +145,7 @@ def test_fetch_available_document_references_by_type_all_only_one_result_is_retu
     ]
 
     results = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, "ALL"
+        TEST_NHS_NUMBER, SupportedDocumentTypes.ALL
     )
 
     assert len(results) == 3
@@ -181,7 +182,7 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
     mock_dynamo_service.query_with_requested_fields.return_value = MOCK_EMPTY_RESPONSE
 
     result = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, "LG"
+        TEST_NHS_NUMBER, SupportedDocumentTypes.LG
     )
 
     assert len(result) == 0
@@ -193,17 +194,6 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
         requested_fields=DocumentReferenceMetadataFields.list(),
         filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
     )
-
-
-def test_fetch_available_document_references_by_type_when_invalid_doctype_supplied_returns_empty_list(
-    mock_service, mock_dynamo_service
-):
-    result = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, "INVALID"
-    )
-
-    assert len(result) == 0
-    mock_dynamo_service.query_with_requested_fields.assert_not_called()
 
 
 @freeze_time("2023-10-1 13:00:00")

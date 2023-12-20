@@ -6,7 +6,7 @@ from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
     LG_FILE_LIST,
 )
-from utils.exceptions import CreateDocumentRefException
+from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException
 
 
@@ -17,6 +17,14 @@ def mock_create_doc_ref_service(mocker, set_env):
     mocker.patch.object(create_doc_ref_service, "s3_service")
     mocker.patch.object(create_doc_ref_service, "dynamo_service")
     yield create_doc_ref_service
+
+
+@pytest.fixture
+def mock_s3(mocker, mock_create_doc_ref_service):
+    mocker.patch.object(
+        mock_create_doc_ref_service.s3_service, "create_upload_presigned_url"
+    )
+    yield mock_create_doc_ref_service.s3_service
 
 
 @pytest.fixture()
@@ -250,27 +258,21 @@ def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
     )
 
 
-def test_prepare_pre_signed_url(mock_create_doc_ref_service, mocker):
-    mock_create_doc_ref_service.s3_service.create_document_presigned_url_handler = (
-        mocker.MagicMock()
-    )
-    mock_create_doc_ref_service.s3_service.create_document_presigned_url_handler.return_value = (
-        "test_url"
-    )
+def test_prepare_pre_signed_url(mock_create_doc_ref_service, mocker, mock_s3):
+    mock_s3.create_upload_presigned_url.return_value = "test_url"
     mock_document = mocker.MagicMock()
     mock_document.file_name = "test_name"
 
     mock_create_doc_ref_service.prepare_pre_signed_url(mock_document)
 
-    mock_create_doc_ref_service.s3_service.create_document_presigned_url_handler.assert_called_once()
+    mock_s3.create_upload_presigned_url.assert_called_once()
     assert mock_create_doc_ref_service.url_responses["test_name"] == "test_url"
 
 
-def test_prepare_pre_signed_url_raise_error(mock_create_doc_ref_service, mocker):
-    mock_create_doc_ref_service.s3_service.create_document_presigned_url_handler = (
-        mocker.MagicMock()
-    )
-    mock_create_doc_ref_service.s3_service.create_document_presigned_url_handler.side_effect = ClientError(
+def test_prepare_pre_signed_url_raise_error(
+    mock_create_doc_ref_service, mocker, mock_s3
+):
+    mock_s3.create_upload_presigned_url.side_effect = ClientError(
         {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
     )
     mock_document = mocker.MagicMock()
@@ -278,7 +280,7 @@ def test_prepare_pre_signed_url_raise_error(mock_create_doc_ref_service, mocker)
     with pytest.raises(CreateDocumentRefException):
         mock_create_doc_ref_service.prepare_pre_signed_url(mock_document)
 
-    mock_create_doc_ref_service.s3_service.create_document_presigned_url_handler.assert_called_once()
+    mock_s3.create_upload_presigned_url.assert_called_once()
     assert len(mock_create_doc_ref_service.url_responses) == 0
 
 

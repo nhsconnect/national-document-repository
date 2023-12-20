@@ -4,32 +4,36 @@ import tempfile
 import zipfile
 
 from botocore.exceptions import ClientError
+from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.zip_trace import ZipTrace
 from pydantic import ValidationError
+from services.base.dynamo_service import DynamoDBService
+from services.base.s3_service import S3Service
 from services.document_service import DocumentService
-from services.dynamo_service import DynamoDBService
-from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import DocumentManifestServiceException, DynamoDbException
+from utils.exceptions import DynamoServiceException
+from utils.lambda_exceptions import DocumentManifestServiceException
 
 logger = LoggingService(__name__)
 
 
 class DocumentManifestService:
     def __init__(self, nhs_number):
+        self.nhs_number = nhs_number
         self.s3_service = S3Service()
         self.dynamo_service = DynamoDBService()
         self.document_service = DocumentService()
 
-        self.nhs_number = nhs_number
         self.zip_file_name = f"patient-record-{self.nhs_number}.zip"
         self.temp_downloads_dir = tempfile.mkdtemp()
         self.temp_output_dir = tempfile.mkdtemp()
         self.zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
         self.zip_trace_table = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
 
-    def create_document_manifest_presigned_url(self, doc_type: str) -> str:
+    def create_document_manifest_presigned_url(
+        self, doc_type: SupportedDocumentTypes
+    ) -> str:
         try:
             documents = (
                 self.document_service.fetch_available_document_references_by_type(
@@ -46,7 +50,7 @@ class DocumentManifestService:
                 status_code=500,
                 message="Failed to parse document reference from from DynamoDb response",
             )
-        except DynamoDbException as e:
+        except DynamoServiceException as e:
             raise DocumentManifestServiceException(
                 status_code=500,
                 message=str(e),

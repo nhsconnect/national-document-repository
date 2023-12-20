@@ -5,16 +5,17 @@ from typing import Optional
 
 from boto3.dynamodb.conditions import Attr
 from models.bulk_upload_status import FieldNamesForBulkUploadReport
-from services.dynamo_service import DynamoDBService
-from services.s3_service import S3Service
+from services.base.dynamo_service import DynamoDBService
+from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
 
 
 class BulkUploadReportService:
-    db_service = DynamoDBService()
-    s3_service = S3Service()
+    def __init__(self):
+        self.db_service = DynamoDBService()
+        self.s3_service = S3Service()
 
     def report_handler(self):
         staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")

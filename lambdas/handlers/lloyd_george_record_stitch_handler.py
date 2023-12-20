@@ -8,9 +8,9 @@ from botocore.exceptions import ClientError
 from enums.logging_app_interaction import LoggingAppInteraction
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from pypdf.errors import PyPdfError
-from services.dynamo_service import DynamoDBService
+from services.base.dynamo_service import DynamoDBService
+from services.base.s3_service import S3Service
 from services.pdf_stitch_service import stitch_pdf
-from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check
@@ -19,7 +19,7 @@ from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event,
     validate_patient_id,
 )
-from utils.exceptions import DynamoDbException
+from utils.exceptions import DynamoServiceException
 from utils.lambda_response import ApiGatewayResponse
 from utils.order_response_by_filenames import order_response_by_filenames
 from utils.request_context import request_context
@@ -55,7 +55,7 @@ def lambda_handler(event, context):
         all_lg_parts = download_lloyd_george_files(
             lloyd_george_bucket_name, ordered_lg_records, s3_service
         )
-    except (ClientError, DynamoDbException) as e:
+    except (ClientError, DynamoServiceException) as e:
         logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
         return ApiGatewayResponse(
             500, f"Unable to retrieve documents for patient {nhs_number}", "GET"
@@ -121,10 +121,12 @@ def get_lloyd_george_records_for_patient(
                     "Result": "Unsuccessful viewing LG due to Unrecognised response from DynamoDB"
                 },
             )
-            raise DynamoDbException("Unrecognised response from DynamoDB")
+            raise DynamoServiceException("Unrecognised response from DynamoDB")
         return response
     except ClientError:
-        raise DynamoDbException("Unexpected error when getting Lloyd George record")
+        raise DynamoServiceException(
+            "Unexpected error when getting Lloyd George record"
+        )
 
 
 def download_lloyd_george_files(

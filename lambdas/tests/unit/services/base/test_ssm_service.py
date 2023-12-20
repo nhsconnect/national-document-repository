@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from services.ssm_service import SSMService
+from services.base.ssm_service import SSMService
 
 MOCK_SSM_PARAMETERS_RESPONSE = {
     "Parameters": [

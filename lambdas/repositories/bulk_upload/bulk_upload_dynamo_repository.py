@@ -4,7 +4,7 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.bulk_upload_status import FailedUpload, SuccessfulUpload
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import StagingMetadata
-from services.dynamo_service import DynamoDBService
+from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
 
 _logger = LoggingService(__name__)

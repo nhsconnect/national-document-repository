@@ -2,7 +2,7 @@ import os
 import uuid
 
 from models.staging_metadata import StagingMetadata
-from services.sqs_service import SQSService
+from services.base.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
 from utils.request_context import request_context
 

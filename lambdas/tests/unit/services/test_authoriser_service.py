@@ -1,7 +1,7 @@
 import pytest
 from enums.repository_role import RepositoryRole
 from services.authoriser_service import AuthoriserService
-from services.dynamo_service import DynamoDBService
+from services.base.dynamo_service import DynamoDBService
 from utils.exceptions import AuthorisationException
 
 MOCK_METHOD_ARN_PREFIX = "arn:aws:execute-api:eu-west-2:74747474747474:<<restApiId>/dev"
@@ -26,13 +26,13 @@ MOCK_CURRENT_SESSION = {
 
 
 @pytest.fixture(scope="function")
-def mock_auth_service():
+def mock_auth_service(set_env):
     mock_test_auth_service = AuthoriserService()
     yield mock_test_auth_service
 
 
 @pytest.fixture()
-def mock_dynamo(mocker):
+def mock_dynamo_service(mocker):
     valid_session_record = {
         "Count": 1,
         "Items": [
@@ -129,7 +129,7 @@ def test_deny_access_policy_returns_false_for_unrecognised_path(
     assert expected == actual
 
 
-def test_find_login_session(set_env, mock_dynamo, mock_auth_service: AuthoriserService):
+def test_find_login_session(mock_dynamo_service, mock_auth_service: AuthoriserService):
     expected = MOCK_CURRENT_SESSION
     actual = mock_auth_service.find_login_session(MOCK_SESSION_ID)
 
@@ -137,7 +137,7 @@ def test_find_login_session(set_env, mock_dynamo, mock_auth_service: AuthoriserS
 
 
 def test_find_login_session_raises_auth_exception(
-    mocker, set_env, mock_auth_service: AuthoriserService
+    mocker, mock_auth_service: AuthoriserService
 ):
     invalid_session_record = {
         "Count": 1,

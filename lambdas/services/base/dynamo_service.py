@@ -2,20 +2,30 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from utils.audit_logging_setup import LoggingService
-from utils.dynamo import (
+from utils.dynamo_utils import (
+    create_attribute_filter,
     create_expression_attribute_values,
     create_expressions,
-    create_nonexistant_or_empty_attr_filter,
     create_update_expression,
 )
-from utils.exceptions import DynamoDbException, InvalidResourceIdException
+from utils.exceptions import DynamoServiceException
 
 logger = LoggingService(__name__)
 
 
 class DynamoDBService:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.initialised = False
+        return cls._instance
+
     def __init__(self):
-        self.dynamodb = boto3.resource("dynamodb", region_name="eu-west-2")
+        if not self.initialised:
+            self.dynamodb = boto3.resource("dynamodb", region_name="eu-west-2")
+            self.initialised = True
 
     def get_table(self, table_name):
         try:
@@ -38,7 +48,10 @@ class DynamoDBService:
             table = self.get_table(table_name)
 
             if requested_fields is None or len(requested_fields) == 0:
-                raise InvalidResourceIdException
+                logger.error("Unable to query DynamoDB with empty requested fields")
+                raise DynamoServiceException(
+                    "Unable to query DynamoDB with empty requested fields"
+                )
 
             projection_expression, expression_attribute_names = create_expressions(
                 requested_fields
@@ -52,15 +65,9 @@ class DynamoDBService:
                     ProjectionExpression=projection_expression,
                 )
             else:
-                filtered_field_names = list(filtered_fields.keys())
-                filtered_field_values = list(filtered_fields.values())
-
-                fields_filter = create_nonexistant_or_empty_attr_filter(
-                    filtered_field_names
-                )
-
+                fields_filter = create_attribute_filter(filtered_fields)
                 expression_attribute_values = create_expression_attribute_values(
-                    filtered_field_names, filtered_field_values
+                    filtered_fields
                 )
 
                 results = table.query(
@@ -74,7 +81,7 @@ class DynamoDBService:
 
             if results is None or "Items" not in results:
                 logger.error(f"Unusable results in DynamoDB: {results!r}")
-                raise DynamoDbException("Unrecognised response from DynamoDB")
+                raise DynamoServiceException("Unrecognised response from DynamoDB")
 
             return results
         except ClientError as e:
@@ -102,7 +109,7 @@ class DynamoDBService:
             results = table.query(KeyConditionExpression=key_condition_expression)
             if results is None or "Items" not in results:
                 logger.error(f"Unusable results in DynamoDB: {results!r}")
-                raise DynamoDbException("Unrecognised response from DynamoDB")
+                raise DynamoServiceException("Unrecognised response from DynamoDB")
             return results
         except ClientError as e:
             logger.error(f"Unable to query table: {table_name}")
@@ -123,14 +130,10 @@ class DynamoDBService:
         table = self.get_table(table_name)
 
         updated_field_names = list(updated_fields.keys())
-        updated_field_values = list(updated_fields.values())
 
         update_expression = create_update_expression(updated_field_names)
-
         _, expression_attribute_names = create_expressions(updated_field_names)
-        expression_attribute_values = create_expression_attribute_values(
-            updated_field_names, updated_field_values
-        )
+        expression_attribute_values = create_expression_attribute_values(updated_fields)
 
         table.update_item(
             Key={"ID": key},
@@ -172,7 +175,7 @@ class DynamoDBService:
             logger.error(e)
             raise e
 
-    def batch_writing(self, table_name, item_list):
+    def batch_writing(self, table_name: str, item_list: list[dict]):
         try:
             table = self.get_table(table_name)
             logger.info(f"Writing item to table: {table_name}")

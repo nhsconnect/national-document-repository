@@ -1,6 +1,6 @@
 import logging
 
-from services.ssm_service import SSMService
+from services.base.ssm_service import SSMService
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

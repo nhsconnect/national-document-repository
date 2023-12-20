@@ -119,8 +119,8 @@ jobs:
           browser: chrome
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'http://localhost:3000'
-          CYPRESS_RUN_AS_SMOKETEST: false
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
+          CYPRESS_grepTags: 'regression'
 
   cypress-run-firefox:
     runs-on: ubuntu-22.04
@@ -152,8 +152,8 @@ jobs:
           browser: firefox
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'http://localhost:3000'
-          CYPRESS_RUN_AS_SMOKETEST: false
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
+          CYPRESS_grepTags: 'regression'
 
   cypress-run-edge:
     runs-on: ubuntu-22.04
@@ -185,8 +185,8 @@ jobs:
           browser: edge
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'http://localhost:3000'
-          CYPRESS_RUN_AS_SMOKETEST: false
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
+          CYPRESS_grepTags: 'regression'
 
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest
@@ -215,7 +215,8 @@ jobs:
 
       - uses: dkershner6/aws-ssm-getparameters-action@v1
         with:
-          parameterPairs: '/ndr/${{ vars.BUILD_ENV }}/api_endpoint = DOC_STORE_API_ENDPOINT'
+          parameterPairs: '/ndr/${{ vars.BUILD_ENV }}/api_endpoint = DOC_STORE_API_ENDPOINT, 
+            /ndr/${{ vars.BUILD_ENV }}/container_port = CONTAINER_PORT'
           withDecryption: 'true' # defaults to true
 
       - name: Configure React environment vars
@@ -234,8 +235,9 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.AWS_ECR_REPO_NAME }}
           IMAGE_TAG: prod-${{ github.event.inputs.tagVersion}}
+          CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker build --build-arg="CONTAINER_PORT=$CONTAINER_PORT" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
