@@ -13,7 +13,7 @@
         "build-storybook": "storybook build",
         "format": "prettier --write \"**/*.+(ts|tsx|js|scss|json|css|md)\"",
         "prepare": "cd ../ && husky install ./app/.husky",
-        "cypress": "cypress open --env grepTags=regression",
+        "cypress": "cypress open",
         "cypress-run": "cypress run --env grepTags=regression --browser chrome",
         "cypress-report-run": "cypress run --reporter mochawesome --env grepTags=regression",
         "cypress-report-merge": "npx mochawesome-merge \"cypress/results/*.json\" > mochawesomemerged.json",

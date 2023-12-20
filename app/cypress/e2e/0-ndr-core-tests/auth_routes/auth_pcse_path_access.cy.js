@@ -1,3 +1,5 @@
+const { Roles } = require('../../../support/roles');
+
 const testPatient = '9000000009';
 const patient = {
     birthDate: '1970-01-01',
@@ -27,7 +29,7 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
                 body: patient,
             }).as('search');
 
-            cy.login('PCSE');
+            cy.login(Roles.PCSE);
 
             cy.url().should('eq', baseUrl + '/search/patient');
 
@@ -46,7 +48,7 @@ describe('PCSE user role cannot access expected forbidden routes', () => {
     context('PCSE role has no access to forbidden routes', () => {
         forbiddenRoutes.forEach((forbiddenRoute) => {
             it('PCSE role cannot access route' + forbiddenRoute, { tags: 'regression' }, () => {
-                cy.login('PCSE');
+                cy.login(Roles.PCSE);
                 cy.visit(forbiddenRoute);
                 cy.url().should('include', 'unauthorised');
             });

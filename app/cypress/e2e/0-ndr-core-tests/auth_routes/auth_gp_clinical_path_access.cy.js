@@ -1,3 +1,5 @@
+const { Roles } = require('../../../support/roles');
+
 const testPatient = '9000000009';
 const patient = {
     birthDate: '1970-01-01',
@@ -22,7 +24,7 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
                 body: patient,
             }).as('search');
 
-            cy.login('GP_CLINICAL');
+            cy.login(Roles.GP_CLINICAL);
             cy.url().should('eq', baseUrl + '/search/upload');
 
             cy.get('#nhs-number-input').click();
@@ -48,7 +50,7 @@ describe('GP Clinical user role cannot access expected forbidden routes', () => 
                 'GP Clinical role cannot access route ' + forbiddenRoute,
                 { tags: 'regression' },
                 () => {
-                    cy.login('GP_CLINICAL');
+                    cy.login(Roles.GP_CLINICAL);
                     cy.visit(forbiddenRoute);
                     cy.url().should('include', 'unauthorised');
                 },
