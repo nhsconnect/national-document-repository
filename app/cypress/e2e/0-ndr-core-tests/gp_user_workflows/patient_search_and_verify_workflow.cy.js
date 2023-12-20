@@ -1,4 +1,4 @@
-import { Roles } from '../../../support/roles';
+import { Roles, roleName } from '../../../support/roles';
 
 describe('GP Workflow: Patient search and verify', () => {
     // env vars
@@ -27,10 +27,9 @@ describe('GP Workflow: Patient search and verify', () => {
         afterEach(() => {
             patient.active = false;
         });
-
         it(
             `Shows patient upload screen when patient search is used by as a
-               ${cy.roleName(role)} and patient response is inactive`,
+               ${roleName(role)} and patient response is inactive`,
             { tags: 'regression' },
             () => {
                 cy.intercept('GET', '/SearchPatient*', {
@@ -59,7 +58,7 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            `Does not show verify patient view when the search finds no patient as ${cy.roleName(
+            `Does not show verify patient view when the search finds no patient as ${roleName(
                 role,
             )}`,
             { tags: 'regression' },
@@ -85,7 +84,7 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            `Shows the upload documents page when upload patient is verified and inactive as a ${cy.roleName(
+            `Shows the upload documents page when upload patient is verified and inactive as a ${roleName(
                 role,
             )} `,
             { tags: 'regression' },
@@ -108,7 +107,7 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            `Shows the Lloyd george view page when upload patient is verified and active as a ${cy.roleName(
+            `Shows the Lloyd george view page when upload patient is verified and active as a ${roleName(
                 role,
             )} `,
             { tags: 'regression' },
@@ -133,7 +132,7 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            `Search validation is shown when the user does not enter an nhs number as a ${cy.roleName(
+            `Search validation is shown when the user does not enter an nhs number as a ${roleName(
                 role,
             )}`,
             { tags: 'regression' },
@@ -148,7 +147,7 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            `Search validation is shown when the user enters an invalid nhs number as a ${cy.roleName(
+            `Search validation is shown when the user enters an invalid nhs number as a ${roleName(
                 role,
             )} `,
             { tags: 'regression' },

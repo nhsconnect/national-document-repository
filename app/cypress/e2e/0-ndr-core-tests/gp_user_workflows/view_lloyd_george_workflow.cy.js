@@ -1,6 +1,6 @@
 import viewLloydGeorgePayload from '../../../fixtures/requests/GET_LloydGeorgeStitch.json';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
-import { Roles } from '../../../support/roles';
+import { Roles, roleName } from '../../../support/roles';
 
 const baseUrl = Cypress.config('baseUrl');
 const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
@@ -58,10 +58,9 @@ describe('GP Workflow: View Lloyd George record', () => {
         beforeEach(() => {
             beforeEachConfiguration(role);
         });
-
-        context(`View Lloyd George document for ${cy.roleName(role)} role`, () => {
+        context(`View Lloyd George document for ${roleName(role)} role`, () => {
             it(
-                cy.roleName(role) + ' can view a Lloyd George document of an active patient',
+                roleName(role) + ' can view a Lloyd George document of an active patient',
                 { tags: 'regression' },
                 () => {
                     cy.intercept('GET', '/LloydGeorgeStitch*', {
@@ -98,7 +97,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             );
 
             it(
-                `It displays an empty Lloyd George card when no Lloyd George record exists for the patient for a ${cy.roleName(
+                `It displays an empty Lloyd George card when no Lloyd George record exists for the patient for a ${roleName(
                     role,
                 )}`,
                 { tags: 'regression' },
@@ -115,7 +114,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             );
 
             it(
-                `It displays an error when the Lloyd George Stitch API call fails for a ${cy.roleName(
+                `It displays an error when the Lloyd George Stitch API call fails for a ${roleName(
                     role,
                 )}`,
                 { tags: 'regression' },

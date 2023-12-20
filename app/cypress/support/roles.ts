@@ -6,3 +6,5 @@ export enum Roles {
 
 export const roleIds = Object.values(Roles) as Array<Roles>;
 export const roleList = Object.keys(Roles) as Array<string>;
+export const roleName = (role: Roles) =>
+    roleList.find((roleName) => Roles[roleName] === role) ?? '';

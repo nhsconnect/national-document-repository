@@ -1,4 +1,4 @@
-import { Roles } from '../../../support/roles';
+import { Roles, roleName } from '../../../support/roles';
 
 // env vars
 const baseUrl = Cypress.config('baseUrl');
@@ -92,9 +92,8 @@ describe('GP Workflow: Upload docs and verify', () => {
             cy.login(role);
             navigateToUploadPage();
         });
-
         it(
-            `On Start now button click as ${cy.roleName(role)} redirect to uploads is successful`,
+            `On Start now button click as ${roleName(role)} redirect to uploads is successful`,
             { tags: 'regression' },
             () => {
                 cy.url().should('include', 'upload');
@@ -103,7 +102,7 @@ describe('GP Workflow: Upload docs and verify', () => {
         );
 
         it.skip(
-            `On Upload button click with a single file for ARF and LG, renders 'Upload Summary' screen for successful upload as a ${cy.roleName(
+            `On Upload button click with a single file for ARF and LG, renders 'Upload Summary' screen for successful upload as a ${roleName(
                 role,
             )}`,
             { tags: 'regression' },
@@ -156,7 +155,7 @@ describe('GP Workflow: Upload docs and verify', () => {
         Object.values(formTypes).forEach((type) => {
             describe(`[${type}] Upload: `, () => {
                 it(
-                    `Single file: On Choose files button click, file selection is visible for ${type} input as a ${cy.roleName(
+                    `Single file: On Choose files button click, file selection is visible for ${type} input as a ${roleName(
                         role,
                     )} `,
                     { tags: 'regression' },
@@ -179,7 +178,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 500 for ${type} input as a ${cy.roleName(
+                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 500 for ${type} input as a ${roleName(
                         role,
                     )} `,
                     { tags: 'regression' },
@@ -214,7 +213,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 404 for ${type} input as a ${cy.roleName(
+                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 404 for ${type} input as a ${roleName(
                         role,
                     )} `,
                     { tags: 'regression' },
@@ -249,7 +248,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when the S3 bucket POST request fails for ${type} input as a ${cy.roleName(
+                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when the S3 bucket POST request fails for ${type} input as a ${roleName(
                         role,
                     )} `,
                     { tags: 'regression' },
@@ -287,7 +286,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `Multiple files: On Choose files button click, file selection is visible for ${type} input as a ${cy.roleName(
+                    `Multiple files: On Choose files button click, file selection is visible for ${type} input as a ${roleName(
                         role,
                     )}`,
                     { tags: 'regression' },
@@ -313,7 +312,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it.skip(
-                    `Multiple files: On Upload button click, renders 'Upload Summary' view for successful upload for ${type} input as a ${cy.roleName(
+                    `Multiple files: On Upload button click, renders 'Upload Summary' view for successful upload for ${type} input as a ${roleName(
                         role,
                     )}`,
                     { tags: 'regression' },
@@ -360,7 +359,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `Multiple files: On Upload button click, renders Uploading Stage for ${type} input as a ${cy.roleName(
+                    `Multiple files: On Upload button click, renders Uploading Stage for ${type} input as a ${roleName(
                         role,
                     )}`,
                     { tags: 'regression' },
@@ -396,7 +395,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `Multiple files: On Upload button click, renders 'Upload Summary' view  with error box when DocumentReference returns a 500 for ${type} input as a ${cy.roleName(
+                    `Multiple files: On Upload button click, renders 'Upload Summary' view  with error box when DocumentReference returns a 500 for ${type} input as a ${roleName(
                         role,
                     )}`,
                     { tags: 'regression' },
@@ -483,7 +482,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it.skip(
-                    `Multiple files: On Upload button click, renders 'Upload Summary' view with both failed and successful documents for ${type} input as a ${cy.roleName(
+                    `Multiple files: On Upload button click, renders 'Upload Summary' view with both failed and successful documents for ${type} input as a ${roleName(
                         role,
                     )}`,
                     { tags: 'regression' },
