@@ -1,11 +1,9 @@
-import copy
 import json
 
 import pytest
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
-
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from services.bulk_upload_service import BulkUploadService
@@ -80,13 +78,13 @@ def mock_back_to_queue(mocker):
 
 
 def build_resolved_file_names_cache(
-        file_path_in_metadata: list[str], file_path_in_s3: list[str]
+    file_path_in_metadata: list[str], file_path_in_s3: list[str]
 ) -> dict:
     return dict(zip(file_path_in_metadata, file_path_in_s3))
 
 
 def test_lambda_handler_process_each_sqs_message_one_by_one(
-        set_env, mock_handle_sqs_message
+    set_env, mock_handle_sqs_message
 ):
     service = BulkUploadService()
 
@@ -98,7 +96,7 @@ def test_lambda_handler_process_each_sqs_message_one_by_one(
 
 
 def test_lambda_handler_continue_process_next_message_after_handled_error(
-        set_env, mock_handle_sqs_message
+    set_env, mock_handle_sqs_message
 ):
     # emulate that unexpected error happen at 2nd message
     mock_handle_sqs_message.side_effect = [
@@ -114,11 +112,11 @@ def test_lambda_handler_continue_process_next_message_after_handled_error(
 
 
 def test_lambda_handler_handle_pds_too_many_requests_exception(
-        set_env, mock_handle_sqs_message, mock_back_to_queue
+    set_env, mock_handle_sqs_message, mock_back_to_queue
 ):
     # emulate that unexpected error happen at 7th message
     mock_handle_sqs_message.side_effect = (
-            [None] * 6 + [PdsTooManyRequestsException] + [None] * 3
+        [None] * 6 + [PdsTooManyRequestsException] + [None] * 3
     )
     expected_handled_messages = TEST_SQS_10_MESSAGES_AS_LIST[0:6]
     expected_unhandled_message = TEST_SQS_10_MESSAGES_AS_LIST[6:]
@@ -136,7 +134,7 @@ def test_lambda_handler_handle_pds_too_many_requests_exception(
 
 
 def test_handle_sqs_message_happy_path(
-        set_env, mocker, mock_uuid, repo_under_test, mock_validate_files
+    set_env, mocker, mock_uuid, repo_under_test, mock_validate_files
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -148,9 +146,7 @@ def test_handle_sqs_message_happy_path(
     mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
         repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
     )
-    mocker.patch.object(
-        repo_under_test.s3_repository, "check_virus_result"
-    )
+    mocker.patch.object(repo_under_test.s3_repository, "check_virus_result")
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
     mock_create_lg_records_and_copy_files.assert_called_with(TEST_STAGING_METADATA)
@@ -159,7 +155,7 @@ def test_handle_sqs_message_happy_path(
 
 
 def set_up_mocks_for_non_ascii_files(
-        service: BulkUploadService, mocker, patient_name_on_s3: str
+    service: BulkUploadService, mocker, patient_name_on_s3: str
 ):
     service.s3_service = mocker.MagicMock()
     service.dynamo_repository = mocker.MagicMock()
@@ -173,9 +169,9 @@ def set_up_mocks_for_non_ascii_files(
 
     def mock_get_tag_value(s3_bucket_name: str, file_key: str, tag_key: str) -> str:
         if (
-                s3_bucket_name == MOCK_LG_STAGING_STORE_BUCKET
-                and tag_key == SCAN_RESULT_TAG_KEY
-                and file_key in expected_s3_file_paths
+            s3_bucket_name == MOCK_LG_STAGING_STORE_BUCKET
+            and tag_key == SCAN_RESULT_TAG_KEY
+            and file_key in expected_s3_file_paths
         ):
             return VirusScanResult.CLEAN
 
@@ -184,12 +180,12 @@ def set_up_mocks_for_non_ascii_files(
         )
 
     def mock_copy_across_bucket(
-            source_bucket: str, source_file_key: str, dest_bucket: str, **_kwargs
+        source_bucket: str, source_file_key: str, dest_bucket: str, **_kwargs
     ):
         if (
-                source_bucket == MOCK_LG_STAGING_STORE_BUCKET
-                and dest_bucket == MOCK_LG_BUCKET
-                and source_file_key in expected_s3_file_paths
+            source_bucket == MOCK_LG_STAGING_STORE_BUCKET
+            and dest_bucket == MOCK_LG_BUCKET
+            and source_file_key in expected_s3_file_paths
         ):
             return
 
@@ -211,12 +207,12 @@ def set_up_mocks_for_non_ascii_files(
     ids=["NFC --> NFC", "NFC --> NFD", "NFD --> NFC", "NFD --> NFD"],
 )
 def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
-        repo_under_test,
-        set_env,
-        mocker,
-        mock_validate_files,
-        patient_name_on_s3,
-        patient_name_in_metadata_file,
+    repo_under_test,
+    set_env,
+    mocker,
+    mock_validate_files,
+    patient_name_on_s3,
+    patient_name_in_metadata_file,
 ):
     mock_validate_files.return_value = None
 
@@ -234,7 +230,7 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_already_in_repo(
-        repo_under_test, set_env, mocker, mock_uuid, mock_validate_files
+    repo_under_test, set_env, mocker, mock_uuid, mock_validate_files
 ):
     TEST_STAGING_METADATA.retries = 0
 
@@ -264,7 +260,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
-        repo_under_test, set_env, mocker, mock_uuid, mock_validate_files
+    repo_under_test, set_env, mocker, mock_uuid, mock_validate_files
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -292,7 +288,12 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
 
 
 def test_handle_sqs_message_report_failure_when_document_is_infected(
-        repo_under_test, set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result
+    repo_under_test,
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_validate_files,
+    mock_check_virus_result,
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_report_upload_failure = mocker.patch.object(
@@ -304,7 +305,9 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
         repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
     )
-    repo_under_test.s3_repository.check_virus_result.side_effect = DocumentInfectedException
+    repo_under_test.s3_repository.check_virus_result.side_effect = (
+        DocumentInfectedException
+    )
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
@@ -316,10 +319,17 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
 
 
 def test_handle_sqs_message_report_failure_when_document_not_exist(
-        repo_under_test, set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result
+    repo_under_test,
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_validate_files,
+    mock_check_virus_result,
 ):
     TEST_STAGING_METADATA.retries = 0
-    repo_under_test.s3_repository.check_virus_result.side_effect = S3FileNotFoundException
+    repo_under_test.s3_repository.check_virus_result.side_effect = (
+        S3FileNotFoundException
+    )
     mock_report_upload_failure = mocker.patch.object(
         repo_under_test.dynamo_repository, "report_upload_failure"
     )
@@ -333,10 +343,17 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
 
 
 def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_result_not_available(
-        repo_under_test, set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result
+    repo_under_test,
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_validate_files,
+    mock_check_virus_result,
 ):
     TEST_STAGING_METADATA.retries = 0
-    repo_under_test.s3_repository.check_virus_result.side_effect = VirusScanNoResultException
+    repo_under_test.s3_repository.check_virus_result.side_effect = (
+        VirusScanNoResultException
+    )
     mock_report_upload_failure = mocker.patch.object(
         repo_under_test.dynamo_repository, "report_upload_failure"
     )
@@ -360,7 +377,12 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
 
 
 def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(
-        repo_under_test, set_env, mocker, mock_uuid, mock_check_virus_result, mock_validate_files
+    repo_under_test,
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_check_virus_result,
+    mock_validate_files,
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_rollback_transaction_s3 = mocker.patch.object(
@@ -382,7 +404,11 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     )
 
     # simulate a client error occur when copying the 3rd file
-    repo_under_test.s3_repository.copy_to_lg_bucket.side_effect = [None, None, mock_client_error]
+    repo_under_test.s3_repository.copy_to_lg_bucket.side_effect = [
+        None,
+        None,
+        mock_client_error,
+    ]
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
@@ -396,7 +422,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
 
 
 def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract_data_from_message(
-        repo_under_test, set_env, mocker
+    repo_under_test, set_env, mocker
 ):
     invalid_message = {"body": "invalid content"}
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -410,17 +436,21 @@ def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract
 
 
 def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(
-        repo_under_test, set_env, mock_validate_files
+    repo_under_test, set_env, mock_validate_files
 ):
     TEST_STAGING_METADATA.retries = 0
-    invalid_file_name_metadata_as_json = json.dumps(TEST_STAGING_METADATA_WITH_INVALID_FILENAME.dict())
+    invalid_file_name_metadata_as_json = json.dumps(
+        TEST_STAGING_METADATA_WITH_INVALID_FILENAME.dict()
+    )
     mock_validate_files.side_effect = LGInvalidFilesException
     repo_under_test.handle_sqs_message({"body": invalid_file_name_metadata_as_json})
     repo_under_test.dynamo_repository.report_upload_failure.assert_called()
 
 
 @freeze_time("2023-10-2 13:00:00")
-def test_reports_failure_when_max_retries_reached(set_env, mocker, mock_uuid, repo_under_test, mock_validate_files):
+def test_reports_failure_when_max_retries_reached(
+    set_env, mocker, mock_uuid, repo_under_test, mock_validate_files
+):
     mocker.patch("uuid.uuid4", return_value="123412342")
 
     TEST_STAGING_METADATA.retries = 15
@@ -432,7 +462,9 @@ def test_reports_failure_when_max_retries_reached(set_env, mocker, mock_uuid, re
     repo_under_test.dynamo_repository.report_upload_failure.assert_called()
 
 
-def test_resolve_source_file_path_when_filenames_dont_have_accented_chars(set_env, repo_under_test):
+def test_resolve_source_file_path_when_filenames_dont_have_accented_chars(
+    set_env, repo_under_test
+):
     expected = {
         file.file_path: file.file_path.lstrip("/")
         for file in TEST_STAGING_METADATA.files
@@ -455,15 +487,16 @@ def test_resolve_source_file_path_when_filenames_dont_have_accented_chars(set_en
     ids=["NFC --> NFC", "NFC --> NFD", "NFD --> NFC", "NFD --> NFD"],
 )
 def test_resolve_source_file_path_when_filenames_have_accented_chars(
-        set_env, mocker, patient_name_on_s3, patient_name_in_metadata_file, repo_under_test
+    set_env, mocker, patient_name_on_s3, patient_name_in_metadata_file, repo_under_test
 ):
+    patient_name = "Évèlynêë François Ågāřdñ"
     expected_cache = {}
     for i in range(1, 4):
         file_path_in_metadata = (
             f"/9000000009/{i}of3_Lloyd_George_Record_"
             f"[{patient_name_in_metadata_file}]_[9000000009]_[22-10-2010].pdf"
         )
-        file_path_on_s3 = f"9000000009/{i}of3_Lloyd_George_Record_[{patient_name_on_s3}]_[9000000009]_[22-10-2010].pdf"
+        file_path_on_s3 = f"9000000009/{i}of3_Lloyd_George_Record_[{patient_name}]_[9000000009]_[22-10-2010].pdf"
         expected_cache[file_path_in_metadata] = file_path_on_s3
 
     set_up_mocks_for_non_ascii_files(repo_under_test, mocker, patient_name_on_s3)
@@ -477,7 +510,7 @@ def test_resolve_source_file_path_when_filenames_have_accented_chars(
 
 
 def test_resolves_source_file_path_raise_S3FileNotFoundException_if_filename_cant_match(
-        set_env, mocker, repo_under_test
+    set_env, mocker, repo_under_test
 ):
     patient_name_on_s3 = "Some Name That Not Matching Metadata File"
     patient_name_in_metadata_file = NAME_WITH_ACCENT_NFC_FORM
@@ -516,15 +549,19 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under
     repo_under_test.dynamo_repository.create_record_in_lg_dynamo_table.assert_any_call(
         TEST_DOCUMENT_REFERENCE
     )
-    assert repo_under_test.dynamo_repository.create_record_in_lg_dynamo_table.call_count == 3
+    assert (
+        repo_under_test.dynamo_repository.create_record_in_lg_dynamo_table.call_count
+        == 3
+    )
 
 
 def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
     TEST_STAGING_METADATA.retries = 0
-    repo_under_test.s3_repository.lg_bucket_name = 'test_lg_s3_bucket'
+    repo_under_test.s3_repository.lg_bucket_name = "test_lg_s3_bucket"
     expected = TEST_DOCUMENT_REFERENCE
     actual = repo_under_test.convert_to_document_reference(
-        file_metadata=TEST_FILE_METADATA, nhs_number=TEST_STAGING_METADATA.nhs_number,
+        file_metadata=TEST_FILE_METADATA,
+        nhs_number=TEST_STAGING_METADATA.nhs_number,
     )
 
     # exclude the `created` timestamp from comparison

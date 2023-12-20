@@ -1,11 +1,13 @@
 import copy
 
 import pytest
-
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, TEST_OBJECT_KEY
-from tests.unit.helpers.data.bulk_upload.test_data import TEST_STAGING_METADATA, TEST_SQS_MESSAGE, \
-    TEST_NHS_NUMBER_FOR_BULK_UPLOAD
+from tests.unit.helpers.data.bulk_upload.test_data import (
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
+    TEST_SQS_MESSAGE,
+    TEST_STAGING_METADATA,
+)
 
 
 @pytest.fixture
@@ -22,7 +24,7 @@ def mock_uuid(mocker):
 
 
 def test_put_staging_metadata_back_to_queue_and_increases_retries(
-        set_env, mock_uuid, repo_under_test
+    set_env, mock_uuid, repo_under_test
 ):
     TEST_STAGING_METADATA.retries = 2
     metadata_copy = copy.deepcopy(TEST_STAGING_METADATA)

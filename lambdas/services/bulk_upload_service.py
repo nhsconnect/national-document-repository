@@ -55,7 +55,7 @@ class BulkUploadService:
                     "All remaining messages in this batch will be returned to sqs queue to retry later."
                 )
 
-                all_unprocessed_message = records[index - 1:]
+                all_unprocessed_message = records[index - 1 :]
                 for unprocessed_message in all_unprocessed_message:
                     self.sqs_repository.put_sqs_message_back_to_queue(
                         unprocessed_message
@@ -262,7 +262,6 @@ class BulkUploadService:
     def convert_to_document_reference(
         self, file_metadata: MetadataFile, nhs_number: str
     ) -> NHSDocumentReference:
-
         s3_bucket_name = self.s3_repository.lg_bucket_name
         file_name = os.path.basename(file_metadata.file_path)
 

@@ -1,14 +1,27 @@
-import pytest
-
-from enums.virus_scan_result import VirusScanResult
-from botocore.exceptions import ClientError
-from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
-from tests.unit.helpers.data.bulk_upload.test_data import TEST_STAGING_METADATA, TEST_DOCUMENT_REFERENCE, \
-    TEST_NHS_NUMBER_FOR_BULK_UPLOAD, TEST_DOCUMENT_REFERENCE_LIST
-from tests.unit.conftest import TEST_OBJECT_KEY, MOCK_LG_BUCKET, MOCK_LG_STAGING_STORE_BUCKET
-from utils.exceptions import TagNotFoundException, VirusScanNoResultException, DocumentInfectedException, \
-    VirusScanFailedException, S3FileNotFoundException
 from unittest.mock import call
+
+import pytest
+from botocore.exceptions import ClientError
+from enums.virus_scan_result import VirusScanResult
+from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
+from tests.unit.conftest import (
+    MOCK_LG_BUCKET,
+    MOCK_LG_STAGING_STORE_BUCKET,
+    TEST_OBJECT_KEY,
+)
+from tests.unit.helpers.data.bulk_upload.test_data import (
+    TEST_DOCUMENT_REFERENCE,
+    TEST_DOCUMENT_REFERENCE_LIST,
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
+    TEST_STAGING_METADATA,
+)
+from utils.exceptions import (
+    DocumentInfectedException,
+    S3FileNotFoundException,
+    TagNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+)
 
 
 @pytest.fixture
@@ -34,7 +47,7 @@ def mock_file_path_cache():
 
 
 def test_check_virus_result_raise_no_error_when_all_files_are_clean(
-        repo_under_test, set_env, caplog, mock_file_path_cache
+    repo_under_test, set_env, caplog, mock_file_path_cache
 ):
     repo_under_test.s3_repository.get_tag_value.return_value = VirusScanResult.CLEAN
 
@@ -46,7 +59,7 @@ def test_check_virus_result_raise_no_error_when_all_files_are_clean(
 
 
 def test_check_virus_result_raise_VirusScanNoResultException_when_one_file_not_scanned(
-        repo_under_test, set_env, mock_file_path_cache
+    repo_under_test, set_env, mock_file_path_cache
 ):
     repo_under_test.s3_repository.get_tag_value.side_effect = [
         VirusScanResult.CLEAN,
@@ -59,7 +72,7 @@ def test_check_virus_result_raise_VirusScanNoResultException_when_one_file_not_s
 
 
 def test_check_virus_result_raise_DocumentInfectedException_when_one_file_was_infected(
-        repo_under_test, set_env, mock_file_path_cache
+    repo_under_test, set_env, mock_file_path_cache
 ):
     repo_under_test.s3_repository.get_tag_value.side_effect = [
         VirusScanResult.CLEAN,
@@ -72,7 +85,7 @@ def test_check_virus_result_raise_DocumentInfectedException_when_one_file_was_in
 
 
 def test_check_virus_result_raise_S3FileNotFoundException_when_one_file_not_exist_in_bucket(
-        repo_under_test, set_env, mock_file_path_cache
+    repo_under_test, set_env, mock_file_path_cache
 ):
     mock_s3_exception = ClientError(
         {"Error": {"Code": "AccessDenied", "Message": "Access Denied"}},
@@ -90,7 +103,7 @@ def test_check_virus_result_raise_S3FileNotFoundException_when_one_file_not_exis
 
 
 def test_check_virus_result_raise_VirusScanFailedException_for_special_cases(
-        repo_under_test, set_env, mock_file_path_cache
+    repo_under_test, set_env, mock_file_path_cache
 ):
     cases_to_test_for = [
         VirusScanResult.UNSCANNABLE,
@@ -102,7 +115,9 @@ def test_check_virus_result_raise_VirusScanFailedException_for_special_cases(
     for tag_value in cases_to_test_for:
         repo_under_test.s3_repository.get_tag_value.return_value = tag_value
         with pytest.raises(VirusScanFailedException):
-            repo_under_test.check_virus_result(TEST_STAGING_METADATA, mock_file_path_cache)
+            repo_under_test.check_virus_result(
+                TEST_STAGING_METADATA, mock_file_path_cache
+            )
 
 
 def test_remove_ingested_file_from_source_bucket(repo_under_test, set_env):
@@ -119,7 +134,9 @@ def test_remove_ingested_file_from_source_bucket(repo_under_test, set_env):
 
     repo_under_test.remove_ingested_file_from_source_bucket()
 
-    repo_under_test.s3_repository.delete_object.assert_has_calls(expected_deletion_calls)
+    repo_under_test.s3_repository.delete_object.assert_has_calls(
+        expected_deletion_calls
+    )
 
 
 def test_rollback_transaction(repo_under_test, set_env, mock_uuid):
@@ -143,15 +160,12 @@ def test_rollback_transaction(repo_under_test, set_env, mock_uuid):
 
 
 def test_create_lg_records_and_copy_files_keep_track_of_successfully_ingested_files(
-        set_env, mocker, mock_uuid, repo_under_test, mock_file_path_cache
+    set_env, mocker, mock_uuid, repo_under_test, mock_file_path_cache
 ):
     repo_under_test.convert_to_document_reference = mocker.MagicMock(
         return_value=TEST_DOCUMENT_REFERENCE
     )
-    expected = [
-        file_path
-        for file_path in mock_file_path_cache
-    ]
+    expected = [file_path for file_path in mock_file_path_cache]
 
     for file_path in mock_file_path_cache:
         repo_under_test.copy_to_lg_bucket(file_path, file_path)

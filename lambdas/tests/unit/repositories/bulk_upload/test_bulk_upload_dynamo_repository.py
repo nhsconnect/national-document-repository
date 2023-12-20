@@ -1,10 +1,18 @@
 import pytest
 from freezegun import freeze_time
-
-from repositories.bulk_upload.bulk_upload_dynamo_repository import BulkUploadDynamoRepository
-from tests.unit.conftest import MOCK_BULK_REPORT_TABLE_NAME, TEST_OBJECT_KEY, MOCK_LG_TABLE_NAME, MOCK_LG_BUCKET
-from tests.unit.helpers.data.bulk_upload.test_data import TEST_STAGING_METADATA, TEST_DOCUMENT_REFERENCE_LIST, \
-    TEST_NHS_NUMBER_FOR_BULK_UPLOAD
+from repositories.bulk_upload.bulk_upload_dynamo_repository import (
+    BulkUploadDynamoRepository,
+)
+from tests.unit.conftest import (
+    MOCK_BULK_REPORT_TABLE_NAME,
+    MOCK_LG_TABLE_NAME,
+    TEST_OBJECT_KEY,
+)
+from tests.unit.helpers.data.bulk_upload.test_data import (
+    TEST_DOCUMENT_REFERENCE_LIST,
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
+    TEST_STAGING_METADATA,
+)
 
 
 @pytest.fixture
@@ -22,7 +30,9 @@ def repo_under_test(set_env, mocker):
 
 
 @freeze_time("2023-10-1 13:00:00")
-def test_report_upload_complete_add_record_to_dynamodb(repo_under_test, set_env, mock_uuid):
+def test_report_upload_complete_add_record_to_dynamodb(
+    repo_under_test, set_env, mock_uuid
+):
     repo_under_test.report_upload_complete(TEST_STAGING_METADATA)
 
     assert repo_under_test.dynamo_repository.create_item.call_count == len(
@@ -44,7 +54,9 @@ def test_report_upload_complete_add_record_to_dynamodb(repo_under_test, set_env,
 
 
 @freeze_time("2023-10-2 13:00:00")
-def test_report_upload_failure_add_record_to_dynamodb(repo_under_test, set_env, mock_uuid):
+def test_report_upload_failure_add_record_to_dynamodb(
+    repo_under_test, set_env, mock_uuid
+):
     mock_failure_reason = "File name invalid"
     repo_under_test.report_upload_failure(
         TEST_STAGING_METADATA, failure_reason=mock_failure_reason
@@ -61,11 +73,11 @@ def test_report_upload_failure_add_record_to_dynamodb(repo_under_test, set_env, 
             "FailureReason": mock_failure_reason,
         }
         repo_under_test.dynamo_repository.create_item.assert_any_call(
-            item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME)
+            item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME
+        )
 
 
 def test_rollback_transaction(repo_under_test, set_env, mock_uuid):
-
     repo_under_test.dynamo_records_in_transaction = TEST_DOCUMENT_REFERENCE_LIST
     repo_under_test.dest_bucket_files_in_transaction = [
         f"{TEST_NHS_NUMBER_FOR_BULK_UPLOAD}/mock_uuid_1",
