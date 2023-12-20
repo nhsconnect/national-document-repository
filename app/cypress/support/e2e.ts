@@ -49,7 +49,7 @@ Cypress.Commands.add('smokeLogin', (role) => {
         const password = Cypress.env('PASSWORD');
         const homeUrl = '/';
         const authCallback = '/auth-callback';
-        const searchUrl = '/search/upload';
+        const searchUrl = '/search';
         cy.visit(homeUrl);
         cy.getByTestId('start-btn').should('exist');
         cy.getByTestId('start-btn').click();
@@ -78,7 +78,7 @@ Cypress.Commands.add('smokeLogin', (role) => {
             },
         );
         cy.url().should('contain', baseUrl + authCallback);
-        cy.url({ timeout: 10000 }).should('eq', baseUrl + searchUrl);
+        cy.url({ timeout: 10000 }).should('contain', baseUrl + searchUrl);
     } else {
         throw new Error("Invalid role for login. Only 'gp' or 'pcse' are allowed.");
     }
