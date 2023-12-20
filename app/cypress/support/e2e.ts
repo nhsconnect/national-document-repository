@@ -16,7 +16,7 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands';
-import { Roles, roleList } from './roles';
+import { Roles, roleIds, roleList } from './roles';
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
@@ -26,12 +26,13 @@ Cypress.Commands.add('getByTestId', (selector, ...args) => {
 });
 
 Cypress.Commands.add('login', (role) => {
-    if (roleList.includes(role)) {
+    if (roleIds.includes(role)) {
+        const roleName = roleList.find((roleName) => Roles[roleName] === role);
         // Login for regression tests
         const authCallback = '/auth-callback';
         cy.intercept('GET', '/Auth/TokenRequest*', {
             statusCode: 200,
-            fixture: 'requests/auth/GET_TokenRequest_' + role + '.json',
+            fixture: 'requests/auth/GET_TokenRequest_' + roleName + '.json',
         }).as('auth');
         cy.visit(authCallback);
         cy.wait('@auth');
@@ -42,7 +43,7 @@ Cypress.Commands.add('login', (role) => {
 
 Cypress.Commands.add('smokeLogin', (role) => {
     // Login for smoke tests
-    if (roleList.includes(role)) {
+    if (roleIds.includes(role)) {
         const baseUrl = Cypress.config('baseUrl');
         const username = Cypress.env('USERNAME');
         const password = Cypress.env('PASSWORD');
