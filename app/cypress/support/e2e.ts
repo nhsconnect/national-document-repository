@@ -27,14 +27,13 @@ Cypress.Commands.add('getByTestId', (selector, ...args) => {
 
 Cypress.Commands.add('login', (role) => {
     if (roleList.includes(role)) {
-        const baseUrl = Cypress.config('baseUrl');
-
-        // login and navigate to search
+        // Login for regression tests
+        const authCallback = '/auth-callback';
         cy.intercept('GET', '/Auth/TokenRequest*', {
             statusCode: 200,
             fixture: 'requests/auth/GET_TokenRequest_' + role + '.json',
         }).as('auth');
-        cy.visit(baseUrl + '/auth-callback');
+        cy.visit(authCallback);
         cy.wait('@auth');
     } else {
         throw new Error("Invalid role for login. Only 'gp' or 'pcse' are allowed.");
@@ -42,6 +41,7 @@ Cypress.Commands.add('login', (role) => {
 });
 
 Cypress.Commands.add('smokeLogin', (role) => {
+    // Login for smoke tests
     if (roleList.includes(role)) {
         const baseUrl = Cypress.config('baseUrl');
         const username = Cypress.env('USERNAME');
@@ -50,10 +50,8 @@ Cypress.Commands.add('smokeLogin', (role) => {
         const authCallback = '/auth-callback';
         const searchUrl = '/search/upload';
         cy.visit(homeUrl);
-        // cy.getByTestId('start-btn').should('exist');
-        // cy.getByTestId('start-btn').click();
-        cy.get('#start-button').should('exist');
-        cy.get('#start-button').click();
+        cy.getByTestId('start-btn').should('exist');
+        cy.getByTestId('start-btn').click();
         cy.origin(
             'https://am.nhsdev.auth-ptl.cis2.spineservices.nhs.uk',
             { args: { username, password, role } },
