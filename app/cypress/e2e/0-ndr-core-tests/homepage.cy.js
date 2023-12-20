@@ -3,6 +3,7 @@ const { Roles } = require('../../support/roles');
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
     const homeUrl = '/';
+    const searchUrl = '/search/upload';
 
     beforeEach(() => {
         cy.visit(homeUrl);
@@ -32,7 +33,7 @@ describe('Home Page', () => {
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');
 
                 cy.login(Roles.GP_CLINICAL);
-
+                cy.url().should('eq', baseUrl + searchUrl);
                 cy.get('.nhsuk-header__navigation').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
             },
