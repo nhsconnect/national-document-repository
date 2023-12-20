@@ -11,7 +11,7 @@ _logger = LoggingService(__name__)
 
 class BulkUploadSqsRepository:
     def __init__(self):
-        self.sqs_service = SQSService()
+        self.sqs_repository = SQSService()
         self.invalid_queue_url = os.environ["INVALID_SQS_QUEUE_URL"]
         self.metadata_queue_url = os.environ["METADATA_SQS_QUEUE_URL"]
 
@@ -19,7 +19,7 @@ class BulkUploadSqsRepository:
         request_context.patient_nhs_no = staging_metadata.nhs_number
         setattr(staging_metadata, "retries", (staging_metadata.retries + 1))
         _logger.info("Returning message to sqs queue...")
-        self.sqs_service.send_message_with_nhs_number_attr_fifo(
+        self.sqs_repository.send_message_with_nhs_number_attr_fifo(
             queue_url=self.metadata_queue_url,
             message_body=staging_metadata.model_dump_json(by_alias=True),
             nhs_number=staging_metadata.nhs_number,
@@ -34,7 +34,7 @@ class BulkUploadSqsRepository:
             nhs_number = ""
 
         _logger.info("Returning message to sqs queue...")
-        self.sqs_service.send_message_with_nhs_number_attr_fifo(
+        self.sqs_repository.send_message_with_nhs_number_attr_fifo(
             queue_url=self.metadata_queue_url,
             message_body=sqs_message["body"],
             nhs_number=nhs_number,

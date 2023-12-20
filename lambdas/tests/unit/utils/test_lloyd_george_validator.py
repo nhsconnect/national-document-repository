@@ -8,7 +8,7 @@ from services.document_service import DocumentService
 from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
-from unit.helpers.data.bulk_upload.test_data import TEST_STAGING_METADATA_WITH_INVALID_FILENAME
+from tests.unit.helpers.data.bulk_upload.test_data import TEST_STAGING_METADATA_WITH_INVALID_FILENAME
 from utils.exceptions import (
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,

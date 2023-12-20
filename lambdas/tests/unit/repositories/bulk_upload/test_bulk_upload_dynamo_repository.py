@@ -1,11 +1,31 @@
+import pytest
+from freezegun import freeze_time
+
+from repositories.bulk_upload.bulk_upload_dynamo_repository import BulkUploadDynamoRepository
+from tests.unit.conftest import MOCK_BULK_REPORT_TABLE_NAME, TEST_OBJECT_KEY, MOCK_LG_TABLE_NAME, MOCK_LG_BUCKET
+from tests.unit.helpers.data.bulk_upload.test_data import TEST_STAGING_METADATA, TEST_DOCUMENT_REFERENCE_LIST, \
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD
+
+
+@pytest.fixture
+def mock_uuid(mocker):
+    test_uuid = TEST_OBJECT_KEY
+    mocker.patch("uuid.uuid4", return_value=test_uuid)
+    yield test_uuid
+
+
+@pytest.fixture
+def repo_under_test(set_env, mocker):
+    repo = BulkUploadDynamoRepository()
+    mocker.patch.object(repo, "dynamo_repository")
+    yield repo
+
+
 @freeze_time("2023-10-1 13:00:00")
-def test_report_upload_complete_add_record_to_dynamodb(set_env, mocker, mock_uuid):
-    service = BulkUploadService()
-    service.dynamo_repository = mocker.MagicMock()
+def test_report_upload_complete_add_record_to_dynamodb(repo_under_test, set_env, mock_uuid):
+    repo_under_test.report_upload_complete(TEST_STAGING_METADATA)
 
-    service.report_upload_complete(TEST_STAGING_METADATA)
-
-    assert service.dynamo_repository.create_item.call_count == len(
+    assert repo_under_test.dynamo_repository.create_item.call_count == len(
         TEST_STAGING_METADATA.files
     )
 
@@ -18,17 +38,15 @@ def test_report_upload_complete_add_record_to_dynamodb(set_env, mocker, mock_uui
             "Timestamp": 1696165200,
             "UploadStatus": "complete",
         }
-        service.dynamo_repository.report_upload_complete.assert_any_call(
+        repo_under_test.dynamo_repository.create_item.assert_any_call(
             item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME
         )
 
-@freeze_time("2023-10-2 13:00:00")
-def test_report_upload_failure_add_record_to_dynamodb(set_env, mocker, mock_uuid):
-    service = BulkUploadService()
-    service.dynamo_repository = mocker.MagicMock()
 
+@freeze_time("2023-10-2 13:00:00")
+def test_report_upload_failure_add_record_to_dynamodb(repo_under_test, set_env, mock_uuid):
     mock_failure_reason = "File name invalid"
-    service.report_upload_failure(
+    repo_under_test.report_upload_failure(
         TEST_STAGING_METADATA, failure_reason=mock_failure_reason
     )
 
@@ -42,5 +60,23 @@ def test_report_upload_failure_add_record_to_dynamodb(set_env, mocker, mock_uuid
             "UploadStatus": "failed",
             "FailureReason": mock_failure_reason,
         }
-        service.dynamo_repository.create_item.assert_any_call(
-            item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME
+        repo_under_test.dynamo_repository.create_item.assert_any_call(
+            item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME)
+
+
+def test_rollback_transaction(repo_under_test, set_env, mock_uuid):
+
+    repo_under_test.dynamo_records_in_transaction = TEST_DOCUMENT_REFERENCE_LIST
+    repo_under_test.dest_bucket_files_in_transaction = [
+        f"{TEST_NHS_NUMBER_FOR_BULK_UPLOAD}/mock_uuid_1",
+        f"{TEST_NHS_NUMBER_FOR_BULK_UPLOAD}/mock_uuid_2",
+    ]
+
+    repo_under_test.rollback_transaction()
+
+    repo_under_test.dynamo_repository.delete_item.assert_called_with(
+        table_name=MOCK_LG_TABLE_NAME, key={"ID": mock_uuid}
+    )
+    assert repo_under_test.dynamo_repository.delete_item.call_count == len(
+        TEST_DOCUMENT_REFERENCE_LIST
+    )
