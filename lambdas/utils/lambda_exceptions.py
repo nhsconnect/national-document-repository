@@ -26,3 +26,7 @@ class DocumentManifestServiceException(LambdaException):
 
 class LoginException(LambdaException):
     pass
+
+
+class LGStitchServiceException(LambdaException):
+    pass

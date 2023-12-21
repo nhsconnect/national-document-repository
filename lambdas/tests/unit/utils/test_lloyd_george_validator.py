@@ -393,7 +393,7 @@ def test_check_for_patient_already_exist_in_repo_return_none_when_patient_record
     assert actual == expected
 
     mock_fetch_available_document_references_by_type.assert_called_with(
-        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG.value
+        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG
     )
 
 
@@ -408,7 +408,7 @@ def test_check_check_for_patient_already_exist_in_repo_raise_exception_when_pati
         check_for_patient_already_exist_in_repo(TEST_NHS_NUMBER)
 
     mock_fetch_available_document_references_by_type.assert_called_with(
-        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG.value
+        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG
     )
 
 
