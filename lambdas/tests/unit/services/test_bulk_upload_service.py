@@ -164,7 +164,7 @@ def set_up_mocks_for_non_ascii_files(
         make_valid_lg_file_names(total_number=3, patient_name=patient_name_on_s3)
     )
 
-    def mock_file_exist_on_s3(s3_bucket_name: str, file_key: str) -> bool:
+    def mock_file_exist_on_s3(file_key: str) -> bool:
         return file_key in expected_s3_file_paths
 
     def mock_get_tag_value(s3_bucket_name: str, file_key: str, tag_key: str) -> str:
@@ -440,7 +440,7 @@ def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(
 ):
     TEST_STAGING_METADATA.retries = 0
     invalid_file_name_metadata_as_json = json.dumps(
-        TEST_STAGING_METADATA_WITH_INVALID_FILENAME.dict()
+        TEST_STAGING_METADATA_WITH_INVALID_FILENAME.model_dump()
     )
     mock_validate_files.side_effect = LGInvalidFilesException
     repo_under_test.handle_sqs_message({"body": invalid_file_name_metadata_as_json})
@@ -454,7 +454,7 @@ def test_reports_failure_when_max_retries_reached(
     mocker.patch("uuid.uuid4", return_value="123412342")
 
     TEST_STAGING_METADATA.retries = 15
-    metadata_as_json = json.dumps(TEST_STAGING_METADATA.dict())
+    metadata_as_json = json.dumps(TEST_STAGING_METADATA.model_dump())
     mock_validate_files.side_effect = LGInvalidFilesException
     repo_under_test.handle_sqs_message({"body": metadata_as_json})
 
