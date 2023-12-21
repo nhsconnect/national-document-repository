@@ -1,3 +1,5 @@
+import os
+
 import pytest
 from freezegun import freeze_time
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
@@ -11,7 +13,7 @@ from tests.unit.conftest import (
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_DOCUMENT_REFERENCE_LIST,
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
-    TEST_STAGING_METADATA,
+    TEST_STAGING_METADATA, TEST_DOCUMENT_REFERENCE,
 )
 
 
@@ -29,9 +31,19 @@ def repo_under_test(set_env, mocker):
     yield repo
 
 
+def test_create_record_in_dynamodb_table(set_env, repo_under_test):
+    repo_under_test.create_record_in_lg_dynamo_table(TEST_DOCUMENT_REFERENCE)
+
+    assert TEST_DOCUMENT_REFERENCE in repo_under_test.dynamo_records_in_transaction
+
+    repo_under_test.dynamo_repository.create_item.assert_called_with(
+        table_name=MOCK_LG_TABLE_NAME, item=TEST_DOCUMENT_REFERENCE.to_dict()
+    )
+
+
 @freeze_time("2023-10-1 13:00:00")
 def test_report_upload_complete_add_record_to_dynamodb(
-    repo_under_test, set_env, mock_uuid
+        repo_under_test, set_env, mock_uuid
 ):
     repo_under_test.report_upload_complete(TEST_STAGING_METADATA)
 
@@ -55,7 +67,7 @@ def test_report_upload_complete_add_record_to_dynamodb(
 
 @freeze_time("2023-10-2 13:00:00")
 def test_report_upload_failure_add_record_to_dynamodb(
-    repo_under_test, set_env, mock_uuid
+        repo_under_test, set_env, mock_uuid
 ):
     mock_failure_reason = "File name invalid"
     repo_under_test.report_upload_failure(
