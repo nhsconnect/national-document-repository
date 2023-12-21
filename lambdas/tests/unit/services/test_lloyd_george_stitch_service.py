@@ -8,7 +8,7 @@ from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
-from utils.exceptions import LGStitchServiceException
+from utils.lambda_exceptions import LGStitchServiceException
 
 # Constants, helper and fixtures
 

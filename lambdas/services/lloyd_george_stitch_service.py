@@ -9,12 +9,12 @@ from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from pypdf.errors import PyPdfError
+from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from services.pdf_stitch_service import stitch_pdf
-from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import LGStitchServiceException
 from utils.filename_utils import extract_page_number
+from utils.lambda_exceptions import LGStitchServiceException
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
