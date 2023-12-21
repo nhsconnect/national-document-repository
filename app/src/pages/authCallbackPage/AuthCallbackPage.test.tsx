@@ -19,7 +19,7 @@ const params = {
 
 const codeAndStateQueryParams = `code=${params.code}&state=${params.state}`;
 const allQueryParams = `?${codeAndStateQueryParams}&client_id=${params.id}`;
-const baseUiUrl = 'http://localhost:3000' + allQueryParams;
+const baseUiUrl = 'http://localhost' + allQueryParams;
 const originalWindowLocation = window.location;
 
 const currentPage = '/example';

@@ -30,7 +30,7 @@ class OdsErrorException(Exception):
     pass
 
 
-class DynamoDbException(Exception):
+class DynamoServiceException(Exception):
     pass
 
 
@@ -110,21 +110,5 @@ class LogoutFailureException(Exception):
     pass
 
 
-class LoginRedirectException(LambdaException):
-    pass
-
-
-class DocumentManifestServiceException(LambdaException):
-    pass
-
-
-class LGStitchServiceException(LambdaException):
-    pass
-
-
 class OidcApiException(Exception):
-    pass
-
-
-class LoginException(LambdaException):
     pass

@@ -5,13 +5,7 @@ import pypdf.errors
 import pytest
 from botocore.exceptions import ClientError
 from handlers.lloyd_george_record_stitch_handler import lambda_handler
-from services.document_service import DocumentService
-from services.lloyd_george_stitch_service import LloydGeorgeStitchService
-from services.s3_service import S3Service
-from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER
-from tests.unit.helpers.data.test_documents import (
-    create_test_lloyd_george_doc_store_refs,
-)
+from tests.unit.conftest import MOCK_LG_BUCKET
 from utils.lambda_response import ApiGatewayResponse
 
 # Constants and fixtures

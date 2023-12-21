@@ -1,7 +1,7 @@
 from botocore.exceptions import ClientError
 from handlers.logout_handler import lambda_handler
 from jwt.exceptions import PyJWTError
-from tests.unit.helpers.ssm_responses import (
+from tests.unit.helpers.data.ssm_responses import (
     MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE,
 )
 from utils.lambda_response import ApiGatewayResponse

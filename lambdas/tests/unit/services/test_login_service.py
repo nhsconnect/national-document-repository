@@ -4,13 +4,14 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.repository_role import RepositoryRole
 from models.oidc_models import IdTokenClaimSet
-from services.dynamo_service import DynamoDBService
+from services.base.dynamo_service import DynamoDBService
 from services.login_service import LoginService
 from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import AuthorisationException, LoginException
+from utils.exceptions import AuthorisationException
+from utils.lambda_exceptions import LoginException
 
 
 @pytest.fixture
@@ -102,7 +103,6 @@ def mock_logging_service(mocker):
 
 
 def test_exchange_token_respond_with_auth_token_and_repo_role(
-    set_env,
     mock_aws_infras,
     mock_oidc_service,
     mock_ods_api_service,
@@ -177,7 +177,7 @@ def test_exchange_token_raises_exception_when_token_exchange_with_oidc_provider_
 
 
 def test_exchange_token_raises_login_error_when_given_state_is_not_in_state_table(
-    mock_aws_infras, mock_oidc_service, set_env, mocker
+    mock_aws_infras, mock_oidc_service, mocker
 ):
     mocker.patch.object(
         DynamoDBService, "simple_query", return_value={"Count": 0, "Items": []}
@@ -185,9 +185,10 @@ def test_exchange_token_raises_login_error_when_given_state_is_not_in_state_tabl
 
     login_service = LoginService()
 
-    with pytest.raises(LoginException):
-        error = login_service.generate_session("auth_code", "state")
-        assert error.status_code == 401
+    with pytest.raises(LoginException) as actual:
+        login_service.generate_session("auth_code", "state")
+
+    assert actual.value.status_code == 401
 
     mock_oidc_service["fetch_token"].assert_not_called()
     mock_oidc_service["fetch_user_org_codes"].assert_not_called()
@@ -217,10 +218,10 @@ def test_exchange_token_raises_login_error_when_user_doesnt_have_a_valid_role_to
 
     login_service = LoginService()
 
-    with pytest.raises(LoginException):
-        error = login_service.generate_session("auth_code", "state")
-        assert error.status_code == 401
+    with pytest.raises(LoginException) as actual:
+        login_service.generate_session("auth_code", "state")
 
+    assert actual.value.status_code == 401
     mock_aws_infras["session_table"].post.assert_not_called()
 
 
@@ -248,9 +249,10 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
 
     login_service = LoginService()
 
-    with pytest.raises(LoginException):
-        error = login_service.generate_session("auth_code", "state")
-        assert error.status_code == 500
+    with pytest.raises(LoginException) as actual:
+        login_service.generate_session("auth_code", "state")
+
+    assert actual.value.status_code == 500
 
 
 def test_generate_repository_role_gp_admin(mock_logging_service, set_env, mocker):

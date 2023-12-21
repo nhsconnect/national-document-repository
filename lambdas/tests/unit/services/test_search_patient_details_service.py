@@ -5,9 +5,9 @@ from utils.exceptions import (
     InvalidResourceIdException,
     PatientNotFoundException,
     PdsErrorException,
-    SearchPatientException,
     UserNotAuthorisedException,
 )
+from utils.lambda_exceptions import SearchPatientException
 
 
 @pytest.fixture(scope="function")

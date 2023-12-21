@@ -1,6 +1,7 @@
+import { Roles, roleName } from '../../../support/roles';
+
 // env vars
-const baseUrl = Cypress.env('CYPRESS_BASE_URL') ?? 'http://localhost:3000/';
-const smokeTest = Cypress.env('CYPRESS_RUN_AS_SMOKETEST') ?? false;
+const baseUrl = Cypress.config('baseUrl');
 
 const formTypes = Object.freeze({
     LG: 'LG',
@@ -22,6 +23,7 @@ const patient = {
 const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
 const serverError = 500;
 const successNoContent = 204;
+const homeUrl = '/';
 
 const selectForm = (formType) => cy.get(`#${formType}-documents-input`);
 
@@ -48,7 +50,7 @@ const clickUploadButton = () => {
 const testStartAgainButton = () => {
     cy.get('#start-again-button').should('have.text', 'Start Again');
     cy.get('#start-again-button').click();
-    cy.url().should('eq', baseUrl);
+    cy.url().should('eq', baseUrl + homeUrl);
 };
 
 const singleFileUsecaseIndex = 0;
@@ -82,7 +84,7 @@ const uploadedFileNames = {
     ],
 };
 
-const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
+const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
 describe('GP Workflow: Upload docs and verify', () => {
     gpRoles.forEach((role) => {
@@ -90,44 +92,39 @@ describe('GP Workflow: Upload docs and verify', () => {
             cy.login(role);
             navigateToUploadPage();
         });
-
         it(
-            '(Smoke test) On Start now button click as ' +
-                role +
-                ', redirect to uploads is successful',
+            `On Start now button click as ${roleName(role)} redirect to uploads is successful`,
+            { tags: 'regression' },
             () => {
                 cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + 'upload/submit');
+                cy.url().should('eq', baseUrl + '/upload/submit');
             },
         );
 
         it.skip(
-            "(Smoke test) On Upload button click with a single file for ARF and LG, renders 'Upload Summary' screen for successful upload as a " +
-                role +
-                ' role',
+            `On Upload button click with a single file for ARF and LG, renders 'Upload Summary' screen for successful upload as a ${roleName(
+                role,
+            )}`,
+            { tags: 'regression' },
             () => {
-                if (smokeTest === false) {
-                    cy.intercept('POST', '**/DocumentReference**', {
-                        statusCode: 200,
-                        body: {
-                            url: 'http://' + bucketUrlIdentifer,
-                            fields: {
-                                key: 'test key',
-                                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
-                                'x-amz-credential':
-                                    'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
-                                'x-amz-date': '20230904T125954Z',
-                                'x-amz-security-token': 'xxxxxxxxx',
-                                'x-amz-signature': '9xxxxxxxx',
-                            },
+                cy.intercept('POST', '**/DocumentReference**', {
+                    statusCode: 200,
+                    body: {
+                        url: 'http://' + bucketUrlIdentifer,
+                        fields: {
+                            key: 'test key',
+                            'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                            'x-amz-credential': 'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                            'x-amz-date': '20230904T125954Z',
+                            'x-amz-security-token': 'xxxxxxxxx',
+                            'x-amz-signature': '9xxxxxxxx',
                         },
-                    });
+                    },
+                });
 
-                    cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
-                        statusCode: 204,
-                    });
-                }
-
+                cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
+                    statusCode: 204,
+                });
                 selectForm(formTypes.ARF).selectFile(
                     uploadedFilePathNames.ARF[singleFileUsecaseIndex],
                 );
@@ -158,8 +155,10 @@ describe('GP Workflow: Upload docs and verify', () => {
         Object.values(formTypes).forEach((type) => {
             describe(`[${type}] Upload: `, () => {
                 it(
-                    `(Smoke test) Single file: On Choose files button click, file selection is visible for ${type} input as a ` +
+                    `Single file: On Choose files button click, file selection is visible for ${type} input as a ${roleName(
                         role,
+                    )} `,
+                    { tags: 'regression' },
                     () => {
                         cy.get('#selected-documents-table').should('not.exist');
                         selectForm(type).selectFile(
@@ -179,8 +178,10 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 500 for ${type} input as a ` +
+                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 500 for ${type} input as a ${roleName(
                         role,
+                    )} `,
+                    { tags: 'regression' },
                     () => {
                         // intercept this response and return an error
                         cy.intercept('POST', '*/DocumentReference*', {
@@ -212,8 +213,10 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 404 for ${type} input as a ` +
+                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 404 for ${type} input as a ${roleName(
                         role,
+                    )} `,
+                    { tags: 'regression' },
                     () => {
                         // intercept this response and return an error
                         cy.intercept('POST', '*/DocumentReference*', {
@@ -245,8 +248,10 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when the S3 bucket POST request fails for ${type} input as a ` +
+                    `Single file: On Upload button click, renders 'Upload Summary' view with error box when the S3 bucket POST request fails for ${type} input as a ${roleName(
                         role,
+                    )} `,
+                    { tags: 'regression' },
                     () => {
                         // intercept this response and return an error
                         cy.intercept('POST', bucketUrlIdentifer, {
@@ -281,8 +286,10 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `(Smoke test) Multiple files: On Choose files button click, file selection is visible for ${type} input as a ` +
+                    `Multiple files: On Choose files button click, file selection is visible for ${type} input as a ${roleName(
                         role,
+                    )}`,
+                    { tags: 'regression' },
                     () => {
                         cy.get('#selected-documents-table').should('not.exist');
                         selectForm(type).selectFile(
@@ -305,30 +312,30 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it.skip(
-                    `(Smoke test) Multiple files: On Upload button click, renders 'Upload Summary' view for successful upload for ${type} input as a ` +
+                    `Multiple files: On Upload button click, renders 'Upload Summary' view for successful upload for ${type} input as a ${roleName(
                         role,
+                    )}`,
+                    { tags: 'regression' },
                     () => {
-                        if (smokeTest === false) {
-                            cy.intercept('POST', '**/DocumentReference**', {
-                                statusCode: 200,
-                                body: {
-                                    url: 'http://' + bucketUrlIdentifer,
-                                    fields: {
-                                        key: 'test key',
-                                        'x-amz-algorithm': 'xxxx-xxxx-SHA256',
-                                        'x-amz-credential':
-                                            'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
-                                        'x-amz-date': '20230904T125954Z',
-                                        'x-amz-security-token': 'xxxxxxxxx',
-                                        'x-amz-signature': '9xxxxxxxx',
-                                    },
+                        cy.intercept('POST', '**/DocumentReference**', {
+                            statusCode: 200,
+                            body: {
+                                url: 'http://' + bucketUrlIdentifer,
+                                fields: {
+                                    key: 'test key',
+                                    'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                                    'x-amz-credential':
+                                        'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                                    'x-amz-date': '20230904T125954Z',
+                                    'x-amz-security-token': 'xxxxxxxxx',
+                                    'x-amz-signature': '9xxxxxxxx',
                                 },
-                            });
+                            },
+                        });
 
-                            cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
-                                statusCode: 204,
-                            });
-                        }
+                        cy.intercept('POST', '**' + bucketUrlIdentifer + '**', {
+                            statusCode: 204,
+                        });
 
                         selectForm(type).selectFile(
                             uploadedFilePathNames[type][multiFileUSecaseIndex],
@@ -352,8 +359,10 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `(Smoke test) Multiple files: On Upload button click, renders Uploading Stage for ${type} input as a ` +
+                    `Multiple files: On Upload button click, renders Uploading Stage for ${type} input as a ${roleName(
                         role,
+                    )}`,
+                    { tags: 'regression' },
                     () => {
                         cy.intercept('POST', '**/DocumentReference*', (req) => {
                             req.reply({
@@ -386,8 +395,10 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it(
-                    `Multiple files: On Upload button click, renders 'Upload Summary' view  with error box when DocumentReference returns a 500 for ${type} input as a ` +
+                    `Multiple files: On Upload button click, renders 'Upload Summary' view  with error box when DocumentReference returns a 500 for ${type} input as a ${roleName(
                         role,
+                    )}`,
+                    { tags: 'regression' },
                     () => {
                         // intercept this response and return an error
                         cy.intercept('POST', '*/DocumentReference*', {
@@ -429,6 +440,7 @@ describe('GP Workflow: Upload docs and verify', () => {
                 it(
                     `Multiple files: On Upload button click, renders 'Upload Summary' view with error box when DocumentReference returns a 404 for ${type} input as a ` +
                         role,
+                    { tags: 'regression' },
                     () => {
                         // intercept this response and return an error
                         cy.intercept('POST', '*/DocumentReference*', {
@@ -470,8 +482,10 @@ describe('GP Workflow: Upload docs and verify', () => {
                 );
 
                 it.skip(
-                    `Multiple files: On Upload button click, renders 'Upload Summary' view with both failed and successful documents for ${type} input as a ` +
+                    `Multiple files: On Upload button click, renders 'Upload Summary' view with both failed and successful documents for ${type} input as a ${roleName(
                         role,
+                    )}`,
+                    { tags: 'regression' },
                     () => {
                         cy.intercept('POST', '**/DocumentReference*', {
                             statusCode: 200,

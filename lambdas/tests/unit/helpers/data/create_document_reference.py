@@ -1,4 +1,5 @@
 from tests.unit.conftest import TEST_NHS_NUMBER
+from tests.unit.helpers.data.s3_responses import MOCK_PRESIGNED_URL_RESPONSE
 
 MOCK_EVENT_BODY = {
     "resourceType": "DocumentReference",
@@ -167,36 +168,23 @@ ARF_MOCK_EVENT_BODY = {
     "created": "2023-10-02T15:55:30.650Z",
 }
 
-MOCK_PRESIGNED_POST_RESPONSE = {
-    "url": "https://ndr-dev-document-store.s3.amazonaws.com/",
-    "fields": {
-        "key": "0abed67c-0d0b-4a11-a600-a2f19ee61281",
-        "x-amz-algorithm": "AWS4-HMAC-SHA256",
-        "x-amz-credential": "ASIAXYSUA44VTL5M5LWL/20230911/eu-west-2/s3/aws4_request",
-        "x-amz-date": "20230911T084756Z",
-        "x-amz-security-token": "test-security-token",
-        "policy": "test-policy",
-        "x-amz-signature": "b6afcf8b27fc883b0e0a25a789dd2ab272ea4c605a8c68267f73641d7471132f",
-    },
-}
-
 LG_AND_ARF_MOCK_RESPONSE = {
-    "test1.txt": MOCK_PRESIGNED_POST_RESPONSE,
-    "test2.txt": MOCK_PRESIGNED_POST_RESPONSE,
-    "test3.txt": MOCK_PRESIGNED_POST_RESPONSE,
-    f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
-    f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
-    f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
+    "test1.txt": MOCK_PRESIGNED_URL_RESPONSE,
+    "test2.txt": MOCK_PRESIGNED_URL_RESPONSE,
+    "test3.txt": MOCK_PRESIGNED_URL_RESPONSE,
+    f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_URL_RESPONSE,
+    f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_URL_RESPONSE,
+    f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_URL_RESPONSE,
 }
 
 ARF_MOCK_RESPONSE = {
-    "test1.txt": MOCK_PRESIGNED_POST_RESPONSE,
-    "test2.txt": MOCK_PRESIGNED_POST_RESPONSE,
-    "test3.txt": MOCK_PRESIGNED_POST_RESPONSE,
+    "test1.txt": MOCK_PRESIGNED_URL_RESPONSE,
+    "test2.txt": MOCK_PRESIGNED_URL_RESPONSE,
+    "test3.txt": MOCK_PRESIGNED_URL_RESPONSE,
 }
 
 LG_MOCK_RESPONSE = {
-    f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
-    f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
-    f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_POST_RESPONSE,
+    f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_URL_RESPONSE,
+    f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_URL_RESPONSE,
+    f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf": MOCK_PRESIGNED_URL_RESPONSE,
 }

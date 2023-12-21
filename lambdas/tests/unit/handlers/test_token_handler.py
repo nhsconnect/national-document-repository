@@ -3,7 +3,7 @@ import json
 import pytest
 from enums.repository_role import RepositoryRole
 from handlers.token_handler import lambda_handler
-from utils.exceptions import LoginException
+from utils.lambda_exceptions import LoginException
 from utils.lambda_response import ApiGatewayResponse
 
 

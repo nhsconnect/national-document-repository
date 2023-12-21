@@ -22,7 +22,7 @@ The National Document Repository user interface (UI) has been developed with Rea
 
 ### 1. Set Env Variables
 
-Create a `.env` file by duplicating [.env.example](.env_example) and adding any missing values. This file is sourced to
+Create a `.env` file by duplicating [.env.template](.env.template) and adding any missing values. This file is sourced to
 your shell env so make sure it doesn't have any extra whitespace, comments etc.
 The `local` environment variable will allow your local app to bypass auth and mock most lambda requests.
 
@@ -40,7 +40,7 @@ Once the packages have been installed, you can then run the app through the foll
 make start
 ```
 
-Once everything is up and running you should see a prompt in the CLI that the app is running on http://localhost:3000. You should now be able to visit the site in a browser of your choice.
+Once everything is up and running you should see a prompt in the CLI that the app is running on http://localhost:xxxx, where xxxx is the value of PORT specified in `.env` file. You should now be able to visit the site in a browser of your choice.
 
 ## Testing
 
@@ -57,10 +57,19 @@ The applications unit tests will also run automatically every-time a push is mad
 
 ### 2. E2E Tests
 
-There are also Cypress end-to-end tests written against each user journey and it's functionality. You can run these by running
+There are also Cypress end-to-end tests written against each user journey and it's functionality.
+
+Before running the E2E tests, please make sure you have got the value `CYPRESS_BASE_URL=http://localhost:xxxx` set up in your .env file.  
+You can then start the E2E tests by running
 
 ```bash
 make cypress-open
+```
+
+If you wish to run a CLI only test run, you can use the following command
+
+```bash
+make cypress-run
 ```
 
 This will open a new Chromium window with the options to either run the E2E tests or Component tests

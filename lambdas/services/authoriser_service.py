@@ -3,7 +3,7 @@ import time
 
 from boto3.dynamodb.conditions import Key
 from enums.repository_role import RepositoryRole
-from services.dynamo_service import DynamoDBService
+from services.base.dynamo_service import DynamoDBService
 from services.token_service import TokenService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException

@@ -4,10 +4,11 @@ from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
 from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
 from pydantic import ValidationError
-from services.dynamo_service import DynamoDBService
-from services.s3_service import S3Service
+from services.base.dynamo_service import DynamoDBService
+from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import CreateDocumentRefException, InvalidResourceIdException
+from utils.exceptions import InvalidResourceIdException
+from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_files
 from utils.utilities import create_reference_id, validate_id
 
@@ -17,18 +18,18 @@ logger = LoggingService(__name__)
 class CreateDocumentReferenceService:
     def __init__(self, nhs_number):
         self.nhs_number = nhs_number
+        self.s3_service = S3Service()
+        self.dynamo_service = DynamoDBService()
+
         self.lg_s3_bucket_name = os.getenv("LLOYD_GEORGE_BUCKET_NAME")
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_s3_bucket_name = os.getenv("DOCUMENT_STORE_BUCKET_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
+
         self.arf_documents: list[NHSDocumentReference] = []
         self.arf_documents_dict_format: list = []
-
         self.lg_documents: list[NHSDocumentReference] = []
         self.lg_documents_dict_format: list = []
-
-        self.s3_service = S3Service()
-        self.dynamo_service = DynamoDBService()
         self.url_responses = {}
 
     def create_document_reference_request(self, documents_list: list[dict]):
@@ -89,7 +90,7 @@ class CreateDocumentReferenceService:
 
     def prepare_pre_signed_url(self, document_reference: NHSDocumentReference):
         try:
-            s3_response = self.s3_service.create_document_presigned_url_handler(
+            s3_response = self.s3_service.create_upload_presigned_url(
                 document_reference.s3_bucket_name,
                 document_reference.nhs_number + "/" + document_reference.id,
             )

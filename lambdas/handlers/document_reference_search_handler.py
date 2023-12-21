@@ -16,7 +16,7 @@ from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event,
     validate_patient_id,
 )
-from utils.exceptions import DynamoDbException, InvalidResourceIdException
+from utils.exceptions import DynamoServiceException, InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -77,7 +77,7 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(
             500, "An error occurred when searching for available documents", "GET"
         ).create_api_gateway_response()
-    except DynamoDbException as e:
+    except DynamoServiceException as e:
         logger.error(
             f"An error occurred when querying DynamoDB: {str(e)}",
             {"Result": f"Unsuccessful viewing docs due to {str(e)}"},

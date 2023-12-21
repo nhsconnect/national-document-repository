@@ -104,7 +104,8 @@ jobs:
 
       - uses: dkershner6/aws-ssm-getparameters-action@v1
         with:
-          parameterPairs: '/ndr/${{ inputs.sandbox }}/api_endpoint = DOC_STORE_API_ENDPOINT'
+          parameterPairs: '/ndr/${{ inputs.sandbox }}/api_endpoint = DOC_STORE_API_ENDPOINT, 
+            /ndr/${{ inputs.sandbox }}/container_port = CONTAINER_PORT'
           withDecryption: 'true' # defaults to true
 
       - name: Configure React environment vars
@@ -124,8 +125,9 @@ jobs:
           ECR_REPOSITORY: ndr-${{ inputs.sandbox }}-app
           IMAGE_TAG: latest
           IMAGE_TAG_SHA: ${{ github.sha }}
+          CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
+          docker build --build-arg="CONTAINER_PORT=$CONTAINER_PORT" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" >> $GITHUB_OUTPUT
