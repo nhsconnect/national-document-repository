@@ -10,7 +10,7 @@ from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event,
     validate_patient_id,
 )
-from utils.exceptions import DocumentRefSearchException
+from utils.lambda_exceptions import DocumentRefSearchException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 

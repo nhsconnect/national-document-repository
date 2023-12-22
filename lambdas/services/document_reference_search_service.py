@@ -8,11 +8,8 @@ from models.document_reference import DocumentReference
 from pydantic import ValidationError
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (
-    DocumentRefSearchException,
-    DynamoDbException,
-    InvalidResourceIdException,
-)
+from utils.exceptions import DynamoServiceException
+from utils.lambda_exceptions import DocumentRefSearchException
 
 logger = LoggingService(__name__)
 
@@ -44,9 +41,8 @@ class DocumentReferenceSearchService(DocumentService):
         except (
             JSONDecodeError,
             ValidationError,
-            InvalidResourceIdException,
             ClientError,
-            DynamoDbException,
+            DynamoServiceException,
         ) as e:
             logger.error(
                 f"An error occurred when using document reference search service: {str(e)}",

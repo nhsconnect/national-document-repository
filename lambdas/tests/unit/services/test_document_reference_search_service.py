@@ -4,11 +4,8 @@ import pytest
 from botocore.exceptions import ClientError
 from models.document_reference import DocumentReference
 from services.document_reference_search_service import DocumentReferenceSearchService
-from utils.exceptions import (
-    DocumentRefSearchException,
-    DynamoDbException,
-    InvalidResourceIdException,
-)
+from utils.exceptions import DynamoServiceException
+from utils.lambda_exceptions import DocumentRefSearchException
 
 MOCK_DATA = {
     "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
@@ -57,14 +54,6 @@ def test_get_document_references_raise_validation_error(
         patched_service.get_document_references("111111111")
 
 
-def test_get_document_references_raise_invalid_resource_error(patched_service):
-    patched_service.fetch_documents_from_table_with_filter.side_effect = (
-        InvalidResourceIdException()
-    )
-    with pytest.raises(DocumentRefSearchException):
-        patched_service.get_document_references("111111111")
-
-
 def test_get_document_references_raise_client_error(patched_service):
     patched_service.fetch_documents_from_table_with_filter.side_effect = ClientError(
         {
@@ -81,7 +70,7 @@ def test_get_document_references_raise_client_error(patched_service):
 
 def test_get_document_references_raise_dynamodb_error(patched_service):
     patched_service.fetch_documents_from_table_with_filter.side_effect = (
-        DynamoDbException()
+        DynamoServiceException()
     )
     with pytest.raises(DocumentRefSearchException):
         patched_service.get_document_references("111111111")

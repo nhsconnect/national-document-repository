@@ -98,7 +98,3 @@ class OidcApiException(Exception):
 
 class LoginException(Exception):
     pass
-
-
-class DocumentRefSearchException(Exception):
-    pass

@@ -30,3 +30,7 @@ class LoginException(LambdaException):
 
 class LGStitchServiceException(LambdaException):
     pass
+
+
+class DocumentRefSearchException(LambdaException):
+    pass
