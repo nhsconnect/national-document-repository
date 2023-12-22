@@ -94,3 +94,7 @@ class LogoutFailureException(Exception):
 
 class OidcApiException(Exception):
     pass
+
+
+class LoginException(Exception):
+    pass
