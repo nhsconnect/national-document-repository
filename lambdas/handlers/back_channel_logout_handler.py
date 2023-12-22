@@ -5,6 +5,7 @@ from enums.logging_app_interaction import LoggingAppInteraction
 from services.back_channel_logout_service import BackChannelLogoutService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import LogoutFailureException
@@ -18,6 +19,7 @@ back_channel_logout_service = BackChannelLogoutService()
 @set_request_context_for_logging
 @ensure_environment_variables(names=["OIDC_CALLBACK_URL", "AUTH_DYNAMODB_NAME"])
 @override_error_check
+@handle_lambda_exceptions
 def lambda_handler(event, context):
     try:
         request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
@@ -38,7 +40,6 @@ def lambda_handler(event, context):
         back_channel_logout_service.logout_handler(token)
 
         return ApiGatewayResponse(200, "", "POST").create_api_gateway_response()
-
     except LogoutFailureException as e:
         logger.error(e, {"Result": "Unsuccessful logout"})
         return ApiGatewayResponse(

@@ -31,7 +31,7 @@ class BackChannelLogoutService:
             self.remove_session_from_dynamo_db(session_id)
 
         except AuthorisationException as e:
-            logger.error(f"error while decoding JWT: {e}")
+            logger.error(f"Error while decoding JWT: {e}")
             raise LogoutFailureException("JWT was invalid")
         except ClientError as e:
             logger.error(f"Error logging out user: {e}")

@@ -1,10 +1,13 @@
 from typing import Literal
 
+from botocore.exceptions import ClientError
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.exceptions import DynamoServiceException
+from utils.lambda_exceptions import DocumentDeletionServiceException
 
 logger = LoggingService(__name__)
 
@@ -37,21 +40,25 @@ class DocumentDeletionService:
         nhs_number: str,
         doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
     ) -> list[DocumentReference]:
-        results = self.document_service.fetch_available_document_references_by_type(
-            nhs_number, doc_type
-        )
+        try:
+            results = self.document_service.fetch_available_document_references_by_type(
+                nhs_number, doc_type
+            )
 
-        if not results:
-            return []
+            if not results:
+                return []
 
-        self.document_service.delete_documents(
-            table_name=doc_type.get_dynamodb_table_name(),
-            document_references=results,
-            type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
-        )
+            self.document_service.delete_documents(
+                table_name=doc_type.get_dynamodb_table_name(),
+                document_references=results,
+                type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
+            )
 
-        logger.info(
-            f"Deleted document of type {doc_type.value}",
-            {"Result": "Successful deletion"},
-        )
-        return results
+            logger.info(
+                f"Deleted document of type {doc_type.value}",
+                {"Result": "Successful deletion"},
+            )
+            return results
+        except (ClientError, DynamoServiceException) as e:
+            logger.error(e, {"Results": f"Failed to delete documents: {str(e)}"})
+            raise DocumentDeletionServiceException(500, "Failed to delete documents")

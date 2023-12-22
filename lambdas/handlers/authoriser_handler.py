@@ -11,6 +11,7 @@ See the License for the specific language governing permissions and limitations 
 
 import os
 
+from botocore.exceptions import ClientError
 from enums.logging_app_interaction import LoggingAppInteraction
 from models.auth_policy import AuthPolicy
 from services.authoriser_service import AuthoriserService
@@ -22,7 +23,6 @@ from utils.exceptions import AuthorisationException
 from utils.request_context import request_context
 
 logger = LoggingService(__name__)
-authoriser_service = AuthoriserService()
 
 
 @set_request_context_for_logging
@@ -30,6 +30,8 @@ authoriser_service = AuthoriserService()
 @override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
+    authoriser_service = AuthoriserService()
+
     logger.info("Authoriser handler triggered")
     ssm_jwt_public_key_parameter = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
     auth_token = event.get("authorizationToken")
@@ -53,8 +55,8 @@ def lambda_handler(event, context):
         else:
             policy.deny_method(_http_verb, path)
 
-    except AuthorisationException as e:
-        logger.error(f"failed to authenticate user due to: {e}")
+    except (AuthorisationException, ClientError) as e:
+        logger.error(e, {"Result": f"Failed to authenticate user due to: {e}"})
         policy.deny_all_methods()
 
     auth_response = policy.build()

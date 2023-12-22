@@ -121,6 +121,7 @@ class S3Service:
                 or "An error occurred (404)" in error_message
             ):
                 return False
-            logger.error("Got unexpected error when try to check file existence on s3:")
-            logger.error(e)
+            logger.error(
+                e, {"Result": "Unexpected error when try to check file existence on s3"}
+            )
             raise e

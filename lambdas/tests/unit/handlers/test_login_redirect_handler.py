@@ -24,4 +24,4 @@ def test_login_redirect_lambda_handler_exception(mocker, set_env, event, context
 
     mock_prepare_redirect_response.assert_called_once()
     assert response["statusCode"] == 500
-    assert response["body"] == "An error occurred due to: test"
+    assert response["body"] == "test"

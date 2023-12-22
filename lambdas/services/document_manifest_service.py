@@ -90,13 +90,12 @@ class DocumentManifestService:
                 self.s3_service.download_file(
                     document.get_file_bucket(), document.get_file_key(), download_path
                 )
-            except ClientError:
-                logger.error(
-                    f"{document.get_file_key()} may reference missing file in s3 bucket {document.get_file_bucket()}"
-                )
+            except ClientError as e:
+                msg = f"{document.get_file_key()} may reference missing file in s3 bucket: {document.get_file_bucket()}"
+                logger.error(e, {"Result": msg})
                 raise DocumentManifestServiceException(
                     status_code=500,
-                    message=f"Reference to {document.file_key} that doesn't exist in s3",
+                    message=msg,
                 )
 
     def upload_zip_file(self):

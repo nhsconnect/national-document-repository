@@ -1,12 +1,16 @@
 from typing import Callable
 
+from botocore.exceptions import ClientError
+from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import LambdaException
 from utils.lambda_response import ApiGatewayResponse
+
+logger = LoggingService(__name__)
 
 
 def handle_lambda_exceptions(lambda_func: Callable):
     """A decorator for lambda handler.
-    Catch our custom LambdaException and return an API gateway response according to the exception
+    Catch custom Lambda Exceptions or AWS ClientError that may be unhandled or raised
 
     Usage:
     @handle_lambda_exceptions
@@ -19,7 +23,18 @@ def handle_lambda_exceptions(lambda_func: Callable):
             return lambda_func(event, context)
         except LambdaException as e:
             return ApiGatewayResponse(
-                e.status_code, e.message, event.get("httpMethod", "GET")
+                status_code=e.status_code,
+                body=e.message,
+                methods=event.get("httpMethod", "GET"),
+            ).create_api_gateway_response()
+        except ClientError as e:
+            logger.error(
+                str(e), {"Result": f"Failed to utilise AWS client/resource: {str(e)}"}
+            )
+            return ApiGatewayResponse(
+                status_code=500,
+                body="Failed to utilise AWS client/resource",
+                methods=event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
 
     return interceptor

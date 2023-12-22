@@ -29,5 +29,7 @@ def lambda_handler(event, context):
 
     stitch_service = LloydGeorgeStitchService()
 
+    logger.info("Lloyd George stitching handler triggered")
     stitch_result = stitch_service.stitch_lloyd_george_record(nhs_number)
+
     return ApiGatewayResponse(200, stitch_result, "GET").create_api_gateway_response()
