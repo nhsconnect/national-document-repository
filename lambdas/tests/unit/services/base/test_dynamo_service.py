@@ -207,6 +207,21 @@ def test_create_item_is_called_with_correct_parameters(mock_service, mock_table)
     )
 
 
+def test_create_item_raise_client_error(mock_service, mock_table):
+    mock_service.create_item(MOCK_TABLE_NAME, {"NhsNumber": TEST_NHS_NUMBER})
+    mock_table.return_value.put_item.side_effect = MOCK_CLIENT_ERROR
+
+    mock_table.assert_called_with(MOCK_TABLE_NAME)
+    mock_table.return_value.put_item.assert_called_once_with(
+        Item={"NhsNumber": TEST_NHS_NUMBER}
+    )
+
+    with pytest.raises(ClientError) as actual_response:
+        mock_service.create_item(MOCK_TABLE_NAME, {"NhsNumber": TEST_NHS_NUMBER})
+
+    assert MOCK_CLIENT_ERROR == actual_response.value
+
+
 def test_delete_item_is_called_with_correct_parameters(mock_service, mock_table):
     mock_service.delete_item(MOCK_TABLE_NAME, {"NhsNumber": TEST_NHS_NUMBER})
 
