@@ -6,24 +6,24 @@ from pydantic import BaseModel, Field
 from utils.exceptions import InvalidDocumentReferenceException
 
 
-class DocumentReferenceSearchResult(BaseModel):
-    created: str = Field(..., alias="created")
-    fileName: str = Field(..., alias="file_name")
-    virusScannerResult: str = Field(..., alias="virus_scanner_result")
-
-
 class DocumentReference(BaseModel):
     id: str = Field(..., alias=str(DocumentReferenceMetadataFields.ID.value))
     content_type: str = Field(
         ..., alias=str(DocumentReferenceMetadataFields.CONTENT_TYPE.value)
     )
-    created: str = Field(..., alias=str(DocumentReferenceMetadataFields.CREATED.value))
+    created: str = Field(
+        ...,
+        alias=str(DocumentReferenceMetadataFields.CREATED.value),
+        serialization_alias="created",
+    )
     deleted: str = Field(..., alias=str(DocumentReferenceMetadataFields.DELETED.value))
     file_location: str = Field(
         ..., alias=str(DocumentReferenceMetadataFields.FILE_LOCATION.value)
     )
     file_name: str = Field(
-        ..., alias=str(DocumentReferenceMetadataFields.FILE_NAME.value)
+        ...,
+        alias=str(DocumentReferenceMetadataFields.FILE_NAME.value),
+        serialization_alias="fileName",
     )
     nhs_number: str = Field(
         ..., alias=str(DocumentReferenceMetadataFields.NHS_NUMBER.value)
@@ -32,7 +32,9 @@ class DocumentReference(BaseModel):
         alias=str(DocumentReferenceMetadataFields.TTL.value), default=None
     )
     virus_scanner_result: str = Field(
-        ..., alias=str(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value)
+        ...,
+        alias=str(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value),
+        serialization_alias="virusScannerResult",
     )
 
     def get_file_name_path(self):

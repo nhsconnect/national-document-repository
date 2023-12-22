@@ -6,6 +6,7 @@ from enums.s3_lifecycle_tags import S3LifecycleDays, S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
+from services.document_service import DocumentService
 from tests.unit.conftest import (
     MOCK_ARF_TABLE_NAME,
     MOCK_LG_TABLE_NAME,
@@ -16,8 +17,6 @@ from tests.unit.helpers.data.dynamo_responses import (
     MOCK_EMPTY_RESPONSE,
     MOCK_SEARCH_RESPONSE,
 )
-
-from lambdas.services.document_service import DocumentService
 
 MOCK_DOCUMENT = {
     "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",

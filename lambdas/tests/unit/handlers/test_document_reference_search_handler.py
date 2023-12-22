@@ -1,23 +1,25 @@
 import json
 
-from botocore.exceptions import ClientError
+import pytest
 from handlers.document_reference_search_handler import lambda_handler
-from tests.unit.helpers.data.dynamo_responses import (
-    EXPECTED_RESPONSE,
-    MOCK_EMPTY_RESPONSE,
-    MOCK_SEARCH_RESPONSE,
-)
-from utils.exceptions import DynamoServiceException, InvalidResourceIdException
+from tests.unit.helpers.data.dynamo_responses import EXPECTED_RESPONSE
+from utils.exceptions import DocumentRefSearchException
 from utils.lambda_response import ApiGatewayResponse
 
 
-def test_lambda_handler_returns_items_from_dynamo_returns_200(
-    set_env, valid_id_event_without_auth_header, context, mocker
-):
-    mock_dynamo = mocker.patch(
-        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
+@pytest.fixture
+def mocked_service(set_env, mocker):
+    mocked_class = mocker.patch(
+        "handlers.document_reference_search_handler.DocumentReferenceSearchService"
     )
-    mock_dynamo.return_value = MOCK_SEARCH_RESPONSE
+    mocked_service = mocked_class.return_value
+    yield mocked_service
+
+
+def test_lambda_handler_returns_200(
+    mocked_service, valid_id_event_without_auth_header, context
+):
+    mocked_service.get_document_references.return_value = EXPECTED_RESPONSE * 2
 
     expected = ApiGatewayResponse(
         200, json.dumps(EXPECTED_RESPONSE * 2), "GET"
@@ -28,16 +30,13 @@ def test_lambda_handler_returns_items_from_dynamo_returns_200(
     assert expected == actual
 
 
-def test_lambda_handler_returns_items_from_doc_store_only_returns_200(
-    set_env, valid_id_event_without_auth_header, context, mocker
+def test_lambda_handler_returns_204(
+    mocked_service, valid_id_event_without_auth_header, context
 ):
-    mock_dynamo = mocker.patch(
-        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
-    )
-    mock_dynamo.side_effect = [MOCK_SEARCH_RESPONSE, MOCK_EMPTY_RESPONSE]
+    mocked_service.get_document_references.return_value = []
 
     expected = ApiGatewayResponse(
-        200, json.dumps(EXPECTED_RESPONSE), "GET"
+        204, json.dumps([]), "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_event_without_auth_header, context)
@@ -45,70 +44,16 @@ def test_lambda_handler_returns_items_from_doc_store_only_returns_200(
     assert expected == actual
 
 
-def test_lambda_handler_when_dynamo_returns_no_records_returns_204(
-    set_env, valid_id_event_without_auth_header, context, mocker
+def test_lambda_handler_raises_exception_returns_500(
+    mocked_service, valid_id_event_without_auth_header, context
 ):
-    mock_dynamo = mocker.patch(
-        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
+    mocked_service.get_document_references.side_effect = DocumentRefSearchException(
+        500, "test_string"
     )
-    mock_dynamo.return_value = MOCK_EMPTY_RESPONSE
-
-    expected = ApiGatewayResponse(204, "[]", "GET").create_api_gateway_response()
-
-    actual = lambda_handler(valid_id_event_without_auth_header, context)
-
-    assert expected == actual
-
-
-def test_lambda_handler_raises_dynamo_exception_returns_500(
-    set_env, valid_id_event_without_auth_header, context, mocker
-):
-    mock_dynamo = mocker.patch(
-        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
-    )
-    mock_dynamo.side_effect = DynamoServiceException
-
     expected = ApiGatewayResponse(
         500,
-        "An error occurred when searching for available documents",
+        "test_string",
         "GET",
-    ).create_api_gateway_response()
-    actual = lambda_handler(valid_id_event_without_auth_header, context)
-    assert expected == actual
-
-
-def test_lambda_handler_raises_ClientError_returns_500(
-    set_env, valid_id_event_without_auth_header, context, mocker
-):
-    mock_dynamo = mocker.patch(
-        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
-    )
-    mock_dynamo.return_value = MOCK_EMPTY_RESPONSE
-    mock_dynamo.side_effect = ClientError(
-        {"Error": {"Code": 500, "Message": "test error"}}, "testing"
-    )
-
-    expected = ApiGatewayResponse(
-        500,
-        "An error occurred when searching for available documents",
-        "GET",
-    ).create_api_gateway_response()
-    actual = lambda_handler(valid_id_event_without_auth_header, context)
-    assert expected == actual
-
-
-def test_lambda_handler_raises_InvalidResourceIdException_returns_500(
-    set_env, valid_id_event_without_auth_header, context, mocker
-):
-    exception = InvalidResourceIdException
-
-    mock_dynamo = mocker.patch(
-        "services.base.dynamo_service.DynamoDBService.query_with_requested_fields"
-    )
-    mock_dynamo.side_effect = exception
-
-    expected = ApiGatewayResponse(
-        500, "No data was requested to be returned in query", "GET"
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_event_without_auth_header, context)
     assert expected == actual
