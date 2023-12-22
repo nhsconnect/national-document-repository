@@ -86,7 +86,7 @@ class LloydGeorgeStitchService:
     ) -> list[DocumentReference]:
         try:
             return self.document_service.fetch_available_document_references_by_type(
-                nhs_number, SupportedDocumentTypes.LG.value
+                nhs_number, SupportedDocumentTypes.LG
             )
         except ClientError as e:
             logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})

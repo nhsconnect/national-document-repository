@@ -3,14 +3,13 @@ import tempfile
 
 import pytest
 from botocore.exceptions import ClientError
+from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
 from utils.lambda_exceptions import LGStitchServiceException
-
-# Constants, helper and fixtures
 
 
 def build_lg_doc_ref_list(page_numbers: list[int]) -> list[DocumentReference]:
@@ -82,7 +81,7 @@ def patched_stitch_service(set_env, mocker):
 @pytest.fixture
 def mock_fetch_doc_ref_by_type(mocker):
     def mocked_method(nhs_number: str, doc_type: str):
-        if nhs_number == TEST_NHS_NUMBER and doc_type == "LG":
+        if nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.LG:
             return MOCK_LLOYD_GEORGE_DOCUMENT_REFS
         return []
 
@@ -130,9 +129,6 @@ def mock_get_total_file_size(mocker):
         "get_total_file_size",
         return_value=MOCK_TOTAL_FILE_SIZE,
     )
-
-
-# Unit tests begin here
 
 
 def test_stitch_lloyd_george_record_happy_path(
@@ -255,7 +251,9 @@ def test_get_lloyd_george_record_for_patient(
     actual = stitch_service.get_lloyd_george_record_for_patient(TEST_NHS_NUMBER)
 
     assert actual == expected
-    mock_fetch_doc_ref_by_type.assert_called_with(TEST_NHS_NUMBER, "LG")
+    mock_fetch_doc_ref_by_type.assert_called_with(
+        TEST_NHS_NUMBER, SupportedDocumentTypes.LG
+    )
 
 
 def test_get_lloyd_george_record_for_patient_return_empty_list_if_no_record(
@@ -269,7 +267,9 @@ def test_get_lloyd_george_record_for_patient_return_empty_list_if_no_record(
     )
 
     assert actual == expected
-    mock_fetch_doc_ref_by_type.assert_called_with(nhs_number_with_no_record, "LG")
+    mock_fetch_doc_ref_by_type.assert_called_with(
+        nhs_number_with_no_record, SupportedDocumentTypes.LG
+    )
 
 
 def test_sort_documents_by_filenames_base_case(stitch_service):

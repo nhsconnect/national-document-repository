@@ -14,8 +14,6 @@ from tests.unit.helpers.data.test_documents import (
 )
 from utils.lambda_response import ApiGatewayResponse
 
-# Constants and fixtures
-
 MOCK_CLIENT_ERROR = ClientError(
     {"Error": {"Code": "500", "Message": "test error"}}, "testing"
 )
@@ -59,7 +57,6 @@ def mock_s3(mocker):
     mocked_instance = mocker.patch(
         "services.lloyd_george_stitch_service.S3Service", spec=S3Service
     ).return_value
-    # mocked_instance.download_file.return_value =
     mocked_instance.create_download_presigned_url.return_value = MOCK_PRESIGNED_URL
     yield mocked_instance
 
@@ -93,9 +90,6 @@ def mock_get_total_file_size(mocker):
         "get_total_file_size",
         return_value=MOCK_TOTAL_FILE_SIZE,
     )
-
-
-# Unit tests begin here
 
 
 def test_lambda_handler_respond_with_200_and_presign_url(
