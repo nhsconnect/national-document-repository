@@ -195,6 +195,65 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
     )
 
 
+def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
+    mocker, mock_service, mock_dynamo_service
+):
+    expected_calls = [
+        mocker.call(
+            table_name=MOCK_LG_TABLE_NAME,
+            index_name="NhsNumberIndex",
+            search_key="NhsNumber",
+            search_condition=TEST_NHS_NUMBER,
+            requested_fields=DocumentReferenceMetadataFields.list(),
+            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        )
+    ]
+
+    mock_dynamo_service.query_with_requested_fields.return_value = MOCK_SEARCH_RESPONSE
+
+    results = mock_service.fetch_documents_from_table_with_filter(
+        nhs_number=TEST_NHS_NUMBER,
+        table=MOCK_LG_TABLE_NAME,
+        attr_filter={DocumentReferenceMetadataFields.DELETED.value: ""},
+    )
+
+    assert len(results) == 3
+    for result in results:
+        assert isinstance(result, DocumentReference)
+
+    mock_dynamo_service.query_with_requested_fields.assert_has_calls(
+        expected_calls, any_order=True
+    )
+
+
+def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_references(
+    mocker, mock_service, mock_dynamo_service
+):
+    expected_calls = [
+        mocker.call(
+            table_name=MOCK_LG_TABLE_NAME,
+            index_name="NhsNumberIndex",
+            search_key="NhsNumber",
+            search_condition=TEST_NHS_NUMBER,
+            requested_fields=DocumentReferenceMetadataFields.list(),
+            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        )
+    ]
+    mock_dynamo_service.query_with_requested_fields.return_value = MOCK_EMPTY_RESPONSE
+
+    results = mock_service.fetch_documents_from_table_with_filter(
+        nhs_number=TEST_NHS_NUMBER,
+        table=MOCK_LG_TABLE_NAME,
+        attr_filter={DocumentReferenceMetadataFields.DELETED.value: ""},
+    )
+
+    assert len(results) == 0
+
+    mock_dynamo_service.query_with_requested_fields.assert_has_calls(
+        expected_calls, any_order=True
+    )
+
+
 @freeze_time("2023-10-1 13:00:00")
 def test_delete_documents_soft_delete(
     mock_service, mock_dynamo_service, mock_s3_service
