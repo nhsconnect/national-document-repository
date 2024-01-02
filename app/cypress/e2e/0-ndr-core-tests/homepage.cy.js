@@ -1,6 +1,9 @@
+const { Roles } = require('../../support/roles');
+
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
     const homeUrl = '/';
+    const searchUrl = '/search/upload';
 
     beforeEach(() => {
         cy.visit(homeUrl);
@@ -10,36 +13,38 @@ describe('Home Page', () => {
     });
 
     context('Login tests', () => {
-        beforeEach(() => {
-            cy.login('GP_ADMIN');
-        });
-
         it(
-            'displays expected page header on home page when logged in',
+            'should display patient search page with navigation after user log in from homepage',
             { tags: 'regression' },
             () => {
-                //ensure the page header is visable
-                cy.get('header').should('have.length', 1);
+                cy.get('header').should('exist');
 
-                cy.get('.nhsuk-logo__background').should('have.length', 1);
-                cy.get('.nhsuk-header__transactional-service-name').should('have.length', 1);
+                cy.get('.nhsuk-logo__background').should('exist');
+                cy.get('.nhsuk-header__transactional-service-name').should('exist');
                 cy.get('.nhsuk-header__transactional-service-name')
                     .children()
                     .should('have.length', 1);
+                cy.get('.nhsuk-header__transactional-service-name--link').should('exist');
                 cy.get('.nhsuk-header__transactional-service-name--link').should(
                     'have.text',
                     'Access and store digital GP records',
                 );
+                cy.get('.nhsuk-header__navigation').should('not.exist');
+                cy.get('.nhsuk-header__navigation-list').should('not.exist');
 
-                cy.get('.nhsuk-header__navigation').should('have.length', 1);
-                cy.get('.nhsuk-header__navigation-list').should('have.length', 1);
+                cy.login(Roles.GP_CLINICAL);
+
+                cy.url().should('eq', baseUrl + searchUrl);
+                cy.get('.nhsuk-header__navigation').should('exist');
+                cy.get('.nhsuk-header__navigation-list').should('exist');
             },
         );
     });
 
     context('Logout tests', () => {
+        // TODO: Align with smoke logout test
         it(
-            'displays page header with no navigation on home page when logged out',
+            'should display home page with no navigation after user log out',
             { tags: 'regression' },
             () => {
                 cy.get('header').should('have.length', 1);

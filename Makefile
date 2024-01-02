@@ -22,8 +22,8 @@ clean-test:
 
 format:
 	./lambdas/venv/bin/python3 -m isort --profile black lambdas/
-	./lambdas/venv/bin/python3 -m black lambdas/ &&\
-	ruff check lambdas/ --fix
+	./lambdas/venv/bin/python3 -m black lambdas/
+	./lambdas/venv/bin/ruff check lambdas/ --fix
 
 sort-requirements:
 	sort -o lambdas/requirements.txt lambdas/requirements.txt

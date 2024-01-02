@@ -1,5 +1,6 @@
 import viewLloydGeorgePayload from '../../../fixtures/requests/GET_LloydGeorgeStitch.json';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
+import { Roles } from '../../../support/roles';
 
 const baseUrl = Cypress.config('baseUrl');
 
@@ -21,7 +22,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'GP ADMIN user can download the Lloyd George document of an active patient',
             { tags: 'regression' },
             () => {
-                beforeEachConfiguration('GP_ADMIN');
+                beforeEachConfiguration(Roles.GP_ADMIN);
 
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 200,
@@ -71,7 +72,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'No download option or menu exists when no Lloyd George record exists for a patient as a GP ADMIN role',
             { tags: 'regression' },
             () => {
-                beforeEachConfiguration('GP_ADMIN');
+                beforeEachConfiguration(Roles.GP_ADMIN);
 
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 404,
@@ -88,7 +89,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             'No download option exists when a Lloyd George record exists for the patient as a GP CLINICAL role',
             { tags: 'regression' },
             () => {
-                beforeEachConfiguration('GP_CLINICAL');
+                beforeEachConfiguration(Roles.GP_CLINICAL);
 
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 200,

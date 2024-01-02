@@ -42,7 +42,7 @@ function HomePage(props: Props) {
                 <li>your NHS smartcard</li>
                 <li>patient details including their name, date of birth and NHS number</li>
             </ul>
-            <ButtonLink role="button" id="start-button" onClick={handleLogin}>
+            <ButtonLink role="button" data-testid="start-btn" onClick={handleLogin}>
                 Start now
             </ButtonLink>
             <h3>Get support with the service</h3>

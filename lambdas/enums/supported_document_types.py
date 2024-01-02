@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List
 
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import InvalidDocTypeException
+from utils.lambda_exceptions import InvalidDocTypeException
 
 logger = LoggingService(__name__)
 

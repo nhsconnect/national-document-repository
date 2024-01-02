@@ -1,6 +1,6 @@
 import json
 
-from services.sqs_service import SQSService
+from services.base.sqs_service import SQSService
 from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, TEST_NHS_NUMBER
 
 

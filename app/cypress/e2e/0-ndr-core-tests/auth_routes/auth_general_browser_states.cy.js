@@ -1,4 +1,5 @@
 import authPayload from '../../../fixtures/requests/auth/GET_TokenRequest_GP_ADMIN.json';
+import { Roles } from '../../../support/roles';
 
 describe('Authentication & Authorisation', () => {
     const baseUrl = Cypress.config('baseUrl');
@@ -8,7 +9,7 @@ describe('Authentication & Authorisation', () => {
             'sets session storage on login and clears session storage on logout',
             { tags: 'regression' },
             () => {
-                cy.login('GP_ADMIN');
+                cy.login(Roles.GP_ADMIN);
 
                 assertSessionStorage({
                     auth: authPayload,

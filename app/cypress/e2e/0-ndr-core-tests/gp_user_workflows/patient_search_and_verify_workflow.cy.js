@@ -1,7 +1,9 @@
+import { Roles, roleName } from '../../../support/roles';
+
 describe('GP Workflow: Patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
-    const gpRoles = ['GP_ADMIN', 'GP_CLINICAL'];
+    const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
     const noPatientError = 400;
     const testNotFoundPatient = '1000000001';
@@ -25,11 +27,9 @@ describe('GP Workflow: Patient search and verify', () => {
         afterEach(() => {
             patient.active = false;
         });
-
         it(
-            'Shows patient upload screen when patient search is used by a ' +
-                role +
-                ' role and patient response is inactive',
+            `Shows patient upload screen when patient search is used by as a
+               ${roleName(role)} and patient response is inactive`,
             { tags: 'regression' },
             () => {
                 cy.intercept('GET', '/SearchPatient*', {
@@ -58,9 +58,9 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            'Does not show verify patient view when the search finds no patient as a ' +
-                role +
-                ' role',
+            `Does not show verify patient view when the search finds no patient as ${roleName(
+                role,
+            )}`,
             { tags: 'regression' },
             () => {
                 cy.intercept('GET', '/SearchPatient*', {
@@ -84,9 +84,9 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            'Shows the upload documents page when upload patient is verified and inactive as a ' +
-                role +
-                ' role',
+            `Shows the upload documents page when upload patient is verified and inactive as a ${roleName(
+                role,
+            )} `,
             { tags: 'regression' },
             () => {
                 cy.intercept('GET', '/SearchPatient*', {
@@ -107,9 +107,9 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            'Shows the Lloyd george view page when upload patient is verified and active as a ' +
-                role +
-                ' role',
+            `Shows the Lloyd george view page when upload patient is verified and active as a ${roleName(
+                role,
+            )} `,
             { tags: 'regression' },
             () => {
                 patient.active = true;
@@ -132,9 +132,9 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            'Search validation is shown when the user does not enter an nhs number as a ' +
-                role +
-                ' role',
+            `Search validation is shown when the user does not enter an nhs number as a ${roleName(
+                role,
+            )}`,
             { tags: 'regression' },
             () => {
                 cy.get('#search-submit').click();
@@ -147,9 +147,9 @@ describe('GP Workflow: Patient search and verify', () => {
         );
 
         it(
-            'Search validation is shown when the user enters an invalid nhs number as a ' +
-                role +
-                ' role',
+            `Search validation is shown when the user enters an invalid nhs number as a ${roleName(
+                role,
+            )} `,
             { tags: 'regression' },
             () => {
                 cy.get('#nhs-number-input').click();
