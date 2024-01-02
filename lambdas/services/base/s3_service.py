@@ -22,7 +22,7 @@ class S3Service:
         if not self.initialised:
             config = BotoConfig(
                 retries={"max_attempts": 3, "mode": "standard"},
-                s3={"addressing_style": "path"},
+                s3={"addressing_style": "virtual"},
                 signature_version="s3v4",
             )
             self.client = boto3.client("s3", config=config)
