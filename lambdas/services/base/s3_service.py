@@ -20,7 +20,11 @@ class S3Service:
 
     def __init__(self):
         if not self.initialised:
-            config = BotoConfig(retries={"max_attempts": 3, "mode": "standard"})
+            config = BotoConfig(
+                retries={"max_attempts": 3, "mode": "standard"},
+                s3={"addressing_style": "path"},
+                signature_version="s3v4",
+            )
             self.client = boto3.client("s3", config=config)
             self.presigned_url_expiry = 1800
             self.initialised = True
