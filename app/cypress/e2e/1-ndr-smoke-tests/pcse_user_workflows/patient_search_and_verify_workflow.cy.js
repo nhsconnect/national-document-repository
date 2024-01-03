@@ -37,10 +37,11 @@ describe('PCSE Workflow: patient search and verify', () => {
             cy.get('#nhs-number-input').type(activePatient);
 
             cy.get('#search-submit').click();
-            cy.wait('@search');
+            cy.url({ timeout: 10000 }).should('eq', baseUrl + '/search/patient/result');
+            cy.get('#gp-message').should('not.exist');
 
-            cy.url().should('include', 'result');
-            cy.url().should('eq', baseUrl + '/search/patient/result');
+            cy.get('#verify-submit').click();
+            cy.url({ timeout: 10000 }).should('eq', baseUrl + '/search/results');
         },
     );
 
@@ -55,9 +56,11 @@ describe('PCSE Workflow: patient search and verify', () => {
             cy.get('#nhs-number-input').type(activePatient);
 
             cy.get('#search-submit').click();
+            cy.url({ timeout: 10000 }).should('eq', baseUrl + '/search/patient/result');
+            cy.get('#gp-message').should('not.exist');
 
-            cy.url().should('include', 'result');
-            cy.url().should('eq', baseUrl + '/search/patient/result');
+            cy.get('#verify-submit').click();
+            cy.url({ timeout: 10000 }).should('eq', baseUrl + '/search/results');
         },
     );
 });
