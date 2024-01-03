@@ -18,6 +18,8 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.PATIENT_SEARCH.value
+    logger.info("Starting patient search process")
+
     nhs_number = event["queryStringParameters"]["patientId"]
     request_context.patient_nhs_no = nhs_number
     user_ods_code, user_role = "", ""

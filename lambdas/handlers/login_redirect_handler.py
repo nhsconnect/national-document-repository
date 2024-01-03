@@ -17,6 +17,8 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
+    logger.info("Login Redirect handler triggered")
+
     login_redirect_service = LoginRedirectService()
     location_header = login_redirect_service.prepare_redirect_response()
     return ApiGatewayResponse(303, "", "GET").create_api_gateway_response(

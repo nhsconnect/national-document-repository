@@ -22,6 +22,7 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
+    logger.info("Token request handler triggered")
 
     missing_value_response_body = (
         "No auth code and/or state in the query string parameters"
