@@ -64,6 +64,13 @@ jobs:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ github.event.inputs.build_branch}}
 
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
       - name: Cypress install
         run: |
           npm install --legacy-peer-deps
