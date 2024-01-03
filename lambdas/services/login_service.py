@@ -38,6 +38,9 @@ class LoginService:
         logger.info("Login process started")
 
         try:
+            logger.info(
+                f"Looking for state {state} in record"
+            )
             if not self.have_matching_state_value_in_record(state):
                 logger.info(
                     f"Mismatching state values. Cannot find state {state} in record"
@@ -45,9 +48,13 @@ class LoginService:
                 raise LoginException(401, "Unrecognised state value")
         except ClientError:
             logger.info(
-                f"Error trying to match state"
+                "Error trying to match state"
             )
             raise LoginException(500, "Unable to validate state")
+
+        logger.info(
+            "Setting up oidc service"
+        )
 
         self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
 
