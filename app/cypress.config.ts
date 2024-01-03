@@ -14,6 +14,7 @@ export default defineConfig({
     env: {
         USERNAME: process.env.CYPRESS_USERNAME,
         PASSWORD: process.env.CYPRESS_PASSWORD,
+        WORKSPACE: process.env.CYPRESS_WORKSPACE ?? 'local',
     },
     component: {
         devServer: {

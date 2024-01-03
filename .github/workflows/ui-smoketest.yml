@@ -26,7 +26,6 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-    
   cypress-run-chrome:
     runs-on: ubuntu-22.04
     environment: ${{ github.event.inputs.environment }}
@@ -51,6 +50,7 @@ jobs:
         env:
           CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
+          CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
 
@@ -78,6 +78,7 @@ jobs:
         env:
           CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
+          CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
 
@@ -105,5 +106,6 @@ jobs:
         env:
           CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
+          CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
