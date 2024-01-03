@@ -10,7 +10,7 @@ describe('PCSE Workflow: patient search and verify', () => {
     });
 
     it(
-        '[Smoke] It redirects to the patient download screen when patient search successfully by a PCSE user',
+        '[Smoke] It shows the download documents page when download patient is verified by a PCSE user',
         { tags: 'smoke' },
         () => {
             const activePatient = '9449305552';
