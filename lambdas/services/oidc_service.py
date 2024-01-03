@@ -169,6 +169,8 @@ class OidcService:
             raise OidcApiException("Failed to retrieve userinfo")
 
     def validate_acr(self, acr):
+        logger.info(f"ACR from CIS2: {acr}")
+        logger.info(f"Workspace: {self.workspace}")
         if self.workspace == "pre-prod" or self.workspace == "development" or acr == "AAL3":
             return True
         else:
