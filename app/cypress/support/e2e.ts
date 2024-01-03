@@ -18,7 +18,6 @@ import './commands';
 import './aws.commands';
 import { Roles, roleIds, roleList } from './roles';
 
-
 Cypress.Commands.add('getByTestId', (selector, ...args) => {
     return cy.get(`[data-testid=${selector}]`, ...args);
 });
@@ -108,32 +107,25 @@ declare global {
              * @param {string} fileName - Filepath of the file to upload
              * @param {string} fileContent - Content of the file to upload
              */
-            addFileToS3(
-                bucketName: string,
-                fileName: string,
-                fileContent: string,
-            ): Chainable<Subject>;
+            addFileToS3(bucketName: string, fileName: string, fileContent: AWS.S3.Body);
             /**
              * Add dynamoDB entry
              * @param {string} tableName - Name of the target dynamoDB table
              * @param {{ [key: string]: any; }} item - dynamoDB item to upload
              */
-            addItemToDynamoDb(
-                tableName: string,
-                item: { [key: string]: string },
-            ): Chainable<Subject>;
+            addItemToDynamoDb(tableName: string, item: AWS.DynamoDB.PutItemInputAttributeMap);
             /**
              * Delete file from S3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
              * @param {string} fileName - Filepath of the file to delete
              */
-            deleteFileFromS3(bucketName: string, fileName: string): Chainable<Subject>;
+            deleteFileFromS3(bucketName: string, fileName: string);
             /**
              * Delete item from DynamoDB table
              * @param {string} tableName - Name of the target DynamoDB table
              * @param {string} itemId - ID of the item to delete
              */
-            deleteItemFromDynamoDb(tableName: string, itemId: string): Chainable<Subject>;
+            deleteItemFromDynamoDb(tableName: string, itemId: string);
         }
     }
 }

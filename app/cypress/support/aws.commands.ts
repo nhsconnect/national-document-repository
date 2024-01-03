@@ -2,34 +2,40 @@
 
 import AWS from './aws.config';
 
-Cypress.Commands.add('addFileToS3', (bucketName, fileName, fileContent) => {
-    const s3 = new AWS.S3();
+Cypress.Commands.add(
+    'addFileToS3',
+    (bucketName: string, fileName: string, fileContent: AWS.S3.Body) => {
+        const s3 = new AWS.S3();
 
-    const params: AWS.S3.Types.PutObjectRequest = {
-        Bucket: bucketName,
-        Key: fileName,
-        Body: fileContent,
-    };
+        const params: AWS.S3.Types.PutObjectRequest = {
+            Bucket: bucketName,
+            Key: fileName,
+            Body: fileContent,
+        };
 
-    s3.upload(params, (err, data) => {
-        if (err) {
-            console.error('Error uploading file to S3:', err);
-        } else {
-            console.log('File uploaded successfully to S3:', data.Location);
-        }
-    });
-});
+        s3.upload(params, (err, data) => {
+            if (err) {
+                console.error('Error uploading file to S3:', err);
+            } else {
+                console.log('File uploaded successfully to S3:', data.Location);
+            }
+        });
+    },
+);
 
-Cypress.Commands.add('addItemToDynamoDb', (tableName, item) => {
-    const dynamoDB = new AWS.DynamoDB();
+Cypress.Commands.add(
+    'addItemToDynamoDb',
+    (tableName: string, item: AWS.DynamoDB.PutItemInputAttributeMap) => {
+        const dynamoDB = new AWS.DynamoDB();
 
-    const params = {
-        TableName: tableName,
-        Item: AWS.DynamoDB.Converter.marshall(item),
-    };
+        const params: AWS.DynamoDB.PutItemInput = {
+            TableName: tableName,
+            Item: AWS.DynamoDB.Converter.marshall(item),
+        };
 
-    return cy.wrap(dynamoDB.putItem(params).promise(), { timeout: 10000 });
-});
+        return cy.wrap(dynamoDB.putItem(params).promise(), { timeout: 10000 });
+    },
+);
 
 Cypress.Commands.add('deleteFileFromS3', (bucketName: string, fileName: string) => {
     const s3 = new AWS.S3();
