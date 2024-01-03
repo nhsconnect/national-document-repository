@@ -44,6 +44,9 @@ class LoginService:
                 )
                 raise LoginException(401, "Unrecognised state value")
         except ClientError:
+            logger.info(
+                f"Error trying to match state"
+            )
             raise LoginException(500, "Unable to validate state")
 
         self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
