@@ -184,7 +184,6 @@ class OidcService:
             "OIDC_TOKEN_URL",
             "OIDC_USER_INFO_URL",
             "OIDC_JWKS_URL",
-            "WORKSPACE"
         ]
 
         oidc_parameters = ssm_service.get_ssm_parameters(
@@ -193,7 +192,8 @@ class OidcService:
 
         # Callback url is different in sandbox/dev/test. This env var is to be supplied by terraform.
         oidc_parameters["OIDC_CALLBACK_URL"] = os.environ["OIDC_CALLBACK_URL"]
-        
+        oidc_parameters["WORKSPACE"] = os.environ["WORKSPACE"]
+
         logger.info(f"OIDC param list: {oidc_parameters}")
         return oidc_parameters
 
