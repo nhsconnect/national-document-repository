@@ -21,6 +21,12 @@ class OidcService:
         "verify_iss": True,
     }
 
+    aal_exempt_workspaces = ["ndra",
+                             "ndrb",
+                             "ndrc",
+                             "ndrd",
+                             "pre-prod"]
+
     def __init__(self):
         self._client_id = ""
         self._client_secret = ""
@@ -171,7 +177,7 @@ class OidcService:
     def validate_acr(self, acr):
         logger.info(f"ACR from CIS2: {acr}")
         logger.info(f"Workspace: {self.workspace}")
-        if self.workspace == "pre-prod" or self.workspace == "development" or acr == "AAL3":
+        if self.workspace in self.aal_exempt_workspaces  or acr == "AAL3":
             return True
         else:
             raise OidcApiException(f"ACR value {acr} is incorrect for the current workspace {self.workspace}")
