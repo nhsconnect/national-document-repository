@@ -14,6 +14,7 @@ from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRep
 from utils import lloyd_george_validator
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
+    BulkUploadException,
     DocumentInfectedException,
     InvalidMessageException,
     PatientRecordAlreadyExistException,
@@ -55,12 +56,14 @@ class BulkUploadService:
                     "All remaining messages in this batch will be returned to sqs queue to retry later."
                 )
 
-                all_unprocessed_message = records[index - 1 :]
+                all_unprocessed_message = records[index - 1:]
                 for unprocessed_message in all_unprocessed_message:
                     self.sqs_repository.put_sqs_message_back_to_queue(
                         unprocessed_message
                     )
-                return
+                raise BulkUploadException(
+                    "Bulk upload process paused due to PDS rate limit reached"
+                )
             except (
                 ClientError,
                 InvalidMessageException,

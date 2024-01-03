@@ -13,20 +13,22 @@ logger = LoggingService(__name__)
 def lambda_handler(event, _context):
     logger.info("Received event. Starting bulk upload process")
 
-    http_status_code = 200
-    response_body = f"Finished processing all {len(event['Records'])} messages"
-
     if "Records" not in event or len(event["Records"]) < 1:
         http_status_code = 400
         response_body = (
             f"No sqs messages found in event: {event}. Will ignore this event"
         )
         logger.error(response_body)
+        return ApiGatewayResponse(
+            status_code=http_status_code, body=response_body, methods="GET"
+        ).create_api_gateway_response()
 
     bulk_upload_service = BulkUploadService()
 
     try:
         bulk_upload_service.process_message_queue(event["Records"])
+        http_status_code = 200
+        response_body = f"Finished processing all {len(event['Records'])} messages"
         logger.info(response_body)
     except BulkUploadException as error:
         http_status_code = 500

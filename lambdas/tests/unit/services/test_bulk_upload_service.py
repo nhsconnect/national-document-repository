@@ -31,6 +31,7 @@ from tests.unit.utils.test_unicode_utils import (
     NAME_WITH_ACCENT_NFD_FORM,
 )
 from utils.exceptions import (
+    BulkUploadException,
     DocumentInfectedException,
     InvalidMessageException,
     PatientRecordAlreadyExistException,
@@ -122,7 +123,8 @@ def test_lambda_handler_handle_pds_too_many_requests_exception(
     expected_unhandled_message = TEST_SQS_10_MESSAGES_AS_LIST[6:]
 
     service = BulkUploadService()
-    service.process_message_queue(TEST_SQS_10_MESSAGES_AS_LIST)
+    with pytest.raises(BulkUploadException):
+        service.process_message_queue(TEST_SQS_10_MESSAGES_AS_LIST)
 
     assert mock_handle_sqs_message.call_count == 7
 

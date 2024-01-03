@@ -8,6 +8,7 @@ from enums.supported_document_types import SupportedDocumentTypes
 from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient
 from models.staging_metadata import StagingMetadata
+from pydantic import ValidationError
 from requests import HTTPError
 from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
@@ -173,7 +174,7 @@ def validate_with_pds_service(file_name_list: list[str], nhs_number: str):
         if patient_details.general_practice_ods != current_user_ods:
             raise LGInvalidFilesException("User is not allowed to access patient")
 
-    except (ClientError, ValueError) as e:
+    except (ValidationError, ClientError, ValueError) as e:
         logger.error(e)
         raise LGInvalidFilesException(e)
     except HTTPError as e:

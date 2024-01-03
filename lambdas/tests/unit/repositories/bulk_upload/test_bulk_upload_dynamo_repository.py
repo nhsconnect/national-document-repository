@@ -1,5 +1,3 @@
-import os
-
 import pytest
 from freezegun import freeze_time
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
@@ -11,9 +9,10 @@ from tests.unit.conftest import (
     TEST_OBJECT_KEY,
 )
 from tests.unit.helpers.data.bulk_upload.test_data import (
+    TEST_DOCUMENT_REFERENCE,
     TEST_DOCUMENT_REFERENCE_LIST,
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
-    TEST_STAGING_METADATA, TEST_DOCUMENT_REFERENCE,
+    TEST_STAGING_METADATA,
 )
 
 
@@ -43,7 +42,7 @@ def test_create_record_in_dynamodb_table(set_env, repo_under_test):
 
 @freeze_time("2023-10-1 13:00:00")
 def test_report_upload_complete_add_record_to_dynamodb(
-        repo_under_test, set_env, mock_uuid
+    repo_under_test, set_env, mock_uuid
 ):
     repo_under_test.report_upload_complete(TEST_STAGING_METADATA)
 
@@ -67,7 +66,7 @@ def test_report_upload_complete_add_record_to_dynamodb(
 
 @freeze_time("2023-10-2 13:00:00")
 def test_report_upload_failure_add_record_to_dynamodb(
-        repo_under_test, set_env, mock_uuid
+    repo_under_test, set_env, mock_uuid
 ):
     mock_failure_reason = "File name invalid"
     repo_under_test.report_upload_failure(
