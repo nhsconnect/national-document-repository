@@ -30,9 +30,10 @@ logger = LoggingService(__name__)
 @override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
+    logger.info("Authoriser handler triggered")
+
     authoriser_service = AuthoriserService()
 
-    logger.info("Authoriser handler triggered")
     ssm_jwt_public_key_parameter = os.environ["SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"]
     auth_token = event.get("authorizationToken")
     if event.get("methodArn") is None:

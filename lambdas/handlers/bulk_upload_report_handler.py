@@ -19,6 +19,8 @@ logger = LoggingService(__name__)
 @override_error_check
 @handle_lambda_exceptions
 def lambda_handler(event, context):
+    logger.info("Starting bulk upload report process")
+
     bulk_upload_report_service = BulkUploadReportService()
     bulk_upload_report_service.report_handler()
 

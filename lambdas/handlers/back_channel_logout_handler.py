@@ -13,7 +13,6 @@ from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
 logger = LoggingService(__name__)
-back_channel_logout_service = BackChannelLogoutService()
 
 
 @set_request_context_for_logging
@@ -21,8 +20,12 @@ back_channel_logout_service = BackChannelLogoutService()
 @override_error_check
 @handle_lambda_exceptions
 def lambda_handler(event, context):
+    request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
+    logger.info("Back channel logout handler triggered")
+
+    back_channel_logout_service = BackChannelLogoutService()
+
     try:
-        request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
         logger.info(f"incoming event {event}")
         body = parse_qs(event.get("body", None))
         if not body:
