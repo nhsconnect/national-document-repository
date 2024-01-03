@@ -186,13 +186,15 @@ class OidcService:
             "OIDC_JWKS_URL",
             "WORKSPACE"
         ]
+
         oidc_parameters = ssm_service.get_ssm_parameters(
             parameters_names, with_decryption=True
         )
 
         # Callback url is different in sandbox/dev/test. This env var is to be supplied by terraform.
         oidc_parameters["OIDC_CALLBACK_URL"] = os.environ["OIDC_CALLBACK_URL"]
-
+        
+        logger.info(f"OIDC param list: {oidc_parameters}")
         return oidc_parameters
 
     def set_up_oidc_parameters(self, ssm_service_class, web_application_client_class):
@@ -205,9 +207,7 @@ class OidcService:
         self._oidc_callback_uri = oidc_parameters["OIDC_CALLBACK_URL"]
         self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
         self.oidc_client = web_application_client_class(client_id=self._client_id)
-        logger.info("Finding val of workspace")
         self.workspace = oidc_parameters["WORKSPACE"]
-        logger.info(f"workspace = {self.workspace}")
 
 
 def get_selected_roleid(id_token_claim_set: IdTokenClaimSet):
