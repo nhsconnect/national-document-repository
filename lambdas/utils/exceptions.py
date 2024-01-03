@@ -92,6 +92,10 @@ class LogoutFailureException(Exception):
     pass
 
 
+class BulkUploadException(Exception):
+    pass
+
+
 class OidcApiException(Exception):
     pass
 

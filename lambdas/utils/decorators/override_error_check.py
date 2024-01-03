@@ -14,7 +14,7 @@ def override_error_check(lambda_func: Callable):
     a manual error
 
     Usage:
-    @validate_patient_id
+    @override_error_check
     def lambda_handler(event, context):
         ...
     """
