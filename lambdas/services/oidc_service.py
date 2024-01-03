@@ -205,7 +205,9 @@ class OidcService:
         self._oidc_callback_uri = oidc_parameters["OIDC_CALLBACK_URL"]
         self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
         self.oidc_client = web_application_client_class(client_id=self._client_id)
+        logger.info("Finding val of workspace")
         self.workspace = oidc_parameters["WORKSPACE"]
+        logger.info(f"workspace = {self.workspace}")
 
 
 def get_selected_roleid(id_token_claim_set: IdTokenClaimSet):
