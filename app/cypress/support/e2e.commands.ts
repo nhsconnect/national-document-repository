@@ -92,6 +92,7 @@ declare global {
              * @param {string} bucketName - Name of the target S3 bucket
              * @param {string} fileName - Filepath of the file to upload
              * @param {string} fileContent - Content of the file to upload
+             * @return {Promise<SendData>} - S3 response for s3.upload
              */
             addFileToS3(
                 bucketName: string,
@@ -102,6 +103,7 @@ declare global {
              * Add dynamoDB entry
              * @param {string} tableName - Name of the target dynamoDB table
              * @param {{ [key: string]: any; }} item - dynamoDB item to upload
+             * @return {Promise<PutItemOutput>} - Dynamo response for dynamoDB.putItem
              */
             addItemToDynamoDb(
                 tableName: string,
@@ -111,6 +113,7 @@ declare global {
              * Delete file from S3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
              * @param {string} fileName - Filepath of the file to delete
+             * @return {Promise<DeleteObjectOutput>} - S3 response for s3.deleteObject
              */
             deleteFileFromS3(
                 bucketName: string,
@@ -120,6 +123,7 @@ declare global {
              * Delete item from DynamoDB table
              * @param {string} tableName - Name of the target DynamoDB table
              * @param {string} itemId - ID of the item to delete
+             * @return {Promise<DeleteItemOutput>} - Dynamo response for dynamoDB.deleteItem
              */
             deleteItemFromDynamoDb(
                 tableName: string,
