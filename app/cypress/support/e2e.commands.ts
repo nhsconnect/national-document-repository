@@ -1,22 +1,8 @@
-/// <reference types="cypress" />
-// ***********************************************************
-// This example support/e2e.ts is processed and
-// loaded automatically before your test files.
-//
-// This is a great place to put global configuration and
-// behavior that modifies Cypress.
-//
-// You can change the location of this file or turn off
-// automatically serving support files with the
-// 'supportFile' configuration option.
-//
-// You can read more here:
-// https://on.cypress.io/configuration
-// ***********************************************************
-
-import './commands';
-import './aws.commands';
 import { Roles, roleIds, roleList } from './roles';
+import Bluebird from 'cypress/types/bluebird';
+/// <reference types="cypress" />
+const registerCypressGrep = require('@cypress/grep');
+registerCypressGrep();
 
 Cypress.Commands.add('getByTestId', (selector, ...args) => {
     return cy.get(`[data-testid=${selector}]`, ...args);
@@ -90,42 +76,55 @@ declare global {
              * @param {string} value - The value of the data-testid attribute of the target DOM element.
              * @return {HTMLElement} - Target DOM element.
              */
-            getByTestId(value: string);
+            getByTestId(value: string): Chainable<JQuery<HTMLElement>>;
             /**
              * Mock user login by intercepting the {baseUrl}/auth-callback request
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
              */
-            login(role: Roles);
+            login(role: Roles): Chainable<void>;
             /**
              * Real user login via CIS2 and redirect back to {baseUrl}/auth-callback.
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
              */
-            smokeLogin(role: Roles);
+            smokeLogin(role: Roles): Chainable<void>;
             /**
              * Add file to s3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
              * @param {string} fileName - Filepath of the file to upload
              * @param {string} fileContent - Content of the file to upload
              */
-            addFileToS3(bucketName: string, fileName: string, fileContent: AWS.S3.Body);
+            addFileToS3(
+                bucketName: string,
+                fileName: string,
+                fileContent: AWS.S3.Body,
+            ): Chainable<Bluebird<AWS.S3.ManagedUpload.SendData>>;
             /**
              * Add dynamoDB entry
              * @param {string} tableName - Name of the target dynamoDB table
              * @param {{ [key: string]: any; }} item - dynamoDB item to upload
              */
-            addItemToDynamoDb(tableName: string, item: AWS.DynamoDB.PutItemInputAttributeMap);
+            addItemToDynamoDb(
+                tableName: string,
+                item: AWS.DynamoDB.PutItemInputAttributeMap,
+            ): Chainable<Bluebird<AWS.DynamoDB.PutItemOutput>>;
             /**
              * Delete file from S3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
              * @param {string} fileName - Filepath of the file to delete
              */
-            deleteFileFromS3(bucketName: string, fileName: string);
+            deleteFileFromS3(
+                bucketName: string,
+                fileName: string,
+            ): Chainable<Bluebird<AWS.S3.DeleteObjectOutput>>;
             /**
              * Delete item from DynamoDB table
              * @param {string} tableName - Name of the target DynamoDB table
              * @param {string} itemId - ID of the item to delete
              */
-            deleteItemFromDynamoDb(tableName: string, itemId: string);
+            deleteItemFromDynamoDb(
+                tableName: string,
+                itemId: string,
+            ): Chainable<Bluebird<AWS.DynamoDB.DeleteItemOutput>>;
         }
     }
 }

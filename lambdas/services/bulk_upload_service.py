@@ -56,7 +56,7 @@ class BulkUploadService:
                     "All remaining messages in this batch will be returned to sqs queue to retry later."
                 )
 
-                all_unprocessed_message = records[index - 1:]
+                all_unprocessed_message = records[index - 1 :]
                 for unprocessed_message in all_unprocessed_message:
                     self.sqs_repository.put_sqs_message_back_to_queue(
                         unprocessed_message
