@@ -14,6 +14,7 @@ const mockPatientDetails = buildPatientDetails();
 
 jest.mock('../../../helpers/hooks/useRole');
 jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../helpers/hooks/useIsBSOL');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 

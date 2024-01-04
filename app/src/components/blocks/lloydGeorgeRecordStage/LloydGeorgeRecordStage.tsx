@@ -9,7 +9,6 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
 import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordError';
 import useRole from '../../../helpers/hooks/useRole';
-import { useSessionContext } from '../../../providers/sessionProvider/SessionProvider';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 
