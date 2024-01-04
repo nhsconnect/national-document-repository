@@ -13,6 +13,7 @@ export type Props = {
     numberOfFiles: number;
     totalFileSizeInByte: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    userIsGpAdminNonBsol?: boolean;
 };
 
 function LloydGeorgeRecordDetails({
@@ -20,6 +21,7 @@ function LloydGeorgeRecordDetails({
     numberOfFiles,
     totalFileSizeInByte,
     setStage,
+    userIsGpAdminNonBsol,
 }: Props) {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
@@ -45,52 +47,58 @@ function LloydGeorgeRecordDetails({
                     {' |'}
                 </div>
             </div>
-            <div className="lloydgeorge_record-details_actions">
-                <div
-                    data-testid="actions-menu"
-                    className={`nhsuk-select lloydgeorge_record-details_actions-select ${
-                        showActionsMenu ? 'lloydgeorge_record-details_actions-select--selected' : ''
-                    }`}
-                    onClick={handleMoreActions}
-                >
+            {userIsGpAdminNonBsol ? (
+                <div>test</div>
+            ) : (
+                <div className="lloydgeorge_record-details_actions">
                     <div
-                        className={`lloydgeorge_record-details_actions-select_border ${
+                        data-testid="actions-menu"
+                        className={`nhsuk-select lloydgeorge_record-details_actions-select ${
                             showActionsMenu
-                                ? 'lloydgeorge_record-details_actions-select_border--selected'
+                                ? 'lloydgeorge_record-details_actions-select--selected'
                                 : ''
                         }`}
-                    />
-                    <span className="lloydgeorge_record-details_actions-select_placeholder">
-                        Select an action...
-                    </span>
-                    <Chevron className="lloydgeorge_record-details_actions-select_icon" />
-                </div>
-                {showActionsMenu && (
-                    <div ref={actionsRef}>
-                        <Card className="lloydgeorge_record-details_actions-menu">
-                            <Card.Content>
-                                <ol>
-                                    {actionLinks.map((link) =>
-                                        role && !link.unauthorised?.includes(role) ? (
-                                            <li key={link.key} data-testid={link.key}>
-                                                <Link
-                                                    to="#"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        setStage(link.stage);
-                                                    }}
-                                                >
-                                                    {link.label}
-                                                </Link>
-                                            </li>
-                                        ) : null,
-                                    )}
-                                </ol>
-                            </Card.Content>
-                        </Card>
+                        onClick={handleMoreActions}
+                    >
+                        <div
+                            className={`lloydgeorge_record-details_actions-select_border ${
+                                showActionsMenu
+                                    ? 'lloydgeorge_record-details_actions-select_border--selected'
+                                    : ''
+                            }`}
+                        />
+                        <span className="lloydgeorge_record-details_actions-select_placeholder">
+                            Select an action...
+                        </span>
+                        <Chevron className="lloydgeorge_record-details_actions-select_icon" />
                     </div>
-                )}
-            </div>
+                    {showActionsMenu && (
+                        <div ref={actionsRef}>
+                            <Card className="lloydgeorge_record-details_actions-menu">
+                                <Card.Content>
+                                    <ol>
+                                        {actionLinks.map((link) =>
+                                            role && !link.unauthorised?.includes(role) ? (
+                                                <li key={link.key} data-testid={link.key}>
+                                                    <Link
+                                                        to="#"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setStage(link.stage);
+                                                        }}
+                                                    >
+                                                        {link.label}
+                                                    </Link>
+                                                </li>
+                                            ) : null,
+                                        )}
+                                    </ol>
+                                </Card.Content>
+                            </Card>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
