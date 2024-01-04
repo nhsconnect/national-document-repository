@@ -11,6 +11,7 @@ import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordE
 import useRole from '../../../helpers/hooks/useRole';
 import { useSessionContext } from '../../../providers/sessionProvider/SessionProvider';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -41,9 +42,8 @@ function LloydGeorgeRecordStage({
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
     const role = useRole();
-    // const [session] = useSessionContext();
-    // const userIsGpAdminNonBsol = role === REPOSITORY_ROLE.GP_ADMIN && session.auth?.isBSOL;
-    const userIsGpAdminNonBsol = true;
+    const isBSOL = useIsBSOL();
+    const userIsGpAdminNonBsol = role === REPOSITORY_ROLE.GP_CLINICAL && !isBSOL;
 
     const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.PENDING) {
