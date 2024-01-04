@@ -76,10 +76,7 @@ function LloydGeorgeRecordStage({
                 </BackLink>
             )}
             {!fullScreen && userIsGpAdminNonBsol && (
-                <div
-                    id="gp-admin-non-bsol-lg"
-                    className="lloydgeorge_record-stage_gp-admin-non-bsol"
-                >
+                <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
                     <WarningCallout id="close-page-warning">
                         <WarningCallout.Label headingLevel="h2">
                             Before downloading
