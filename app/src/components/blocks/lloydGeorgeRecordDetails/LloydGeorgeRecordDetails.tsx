@@ -48,9 +48,11 @@ function LloydGeorgeRecordDetails({
                 </div>
             </div>
             {userIsGpAdminNonBsol ? (
-                <Button className="lloydgeorge_record-details_download-remove-button">
-                    Download and remove record
-                </Button>
+                <div className="lloydgeorge_record-details_download-remove-button">
+                    <Button className="lloydgeorge_record-details_download-remove-button-content">
+                        Download and remove record
+                    </Button>
+                </div>
             ) : (
                 <div className="lloydgeorge_record-details_actions">
                     <div

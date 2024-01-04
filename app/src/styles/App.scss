@@ -192,6 +192,9 @@ $govuk-compatibility-govukelements: true;
             position: absolute;
             top: 80px;
             right: 32px;
+            &_content {
+                position: relative;
+            }
         }
         &_actions {
             position: absolute;
