@@ -21,7 +21,7 @@ class OidcService:
         "verify_iss": True,
     }
 
-    aal_exempt_environments = ["development"]
+    aal_exempt_environments = ["dev"]
 
     def __init__(self):
         self._client_id = ""
