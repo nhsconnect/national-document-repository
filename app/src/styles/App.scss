@@ -188,6 +188,11 @@ $govuk-compatibility-govukelements: true;
                 color: #4c6272;
             }
         }
+        &_download-remove-button {
+            position: absolute;
+            top: 32px;
+            right: 32px;
+        }
         &_actions {
             position: absolute;
             top: 32px;

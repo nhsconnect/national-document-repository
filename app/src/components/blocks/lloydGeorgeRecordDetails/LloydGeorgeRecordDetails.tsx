@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction, useRef, useState } from 'react';
 import { ReactComponent as Chevron } from '../../../styles/down-chevron.svg';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import { useOnClickOutside } from 'usehooks-ts';
-import { Card } from 'nhsuk-react-components';
+import { Card, Button } from 'nhsuk-react-components';
 import { Link } from 'react-router-dom';
 import useRole from '../../../helpers/hooks/useRole';
 import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
@@ -48,7 +48,9 @@ function LloydGeorgeRecordDetails({
                 </div>
             </div>
             {userIsGpAdminNonBsol ? (
-                <div>test</div>
+                <Button className="lloydgeorge_record-details_download-remove-button">
+                    Download and remove record
+                </Button>
             ) : (
                 <div className="lloydgeorge_record-details_actions">
                     <div
