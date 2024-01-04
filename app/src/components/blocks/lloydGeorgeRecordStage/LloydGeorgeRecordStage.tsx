@@ -42,7 +42,7 @@ function LloydGeorgeRecordStage({
 
     const role = useRole();
     const isBSOL = useIsBSOL();
-    const userIsGpAdminNonBsol = role === REPOSITORY_ROLE.GP_CLINICAL && !isBSOL;
+    const userIsGpAdminNonBsol = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
     const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.PENDING) {
