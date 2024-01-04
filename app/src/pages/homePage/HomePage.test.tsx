@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import HomePage from './HomePage';
 import { useNavigate } from 'react-router';
+
 jest.mock('react-router');
 const mockNavigate = useNavigate as jest.Mock<typeof useNavigate>;
 
@@ -28,21 +29,34 @@ describe('StartPage', () => {
         mockNavigate.mockImplementation(() => mockUseNavigate);
 
         const contentStrings = [
-            'This service gives you access to Lloyd George digital health records.',
-            'You can use this service if you are:',
-            'part of a GP practise and need to view, download or remove a patient record',
-            'managing records on behalf of NHS England and need to download a patient record',
+            'This service gives you access to Lloyd George digital health records. ' +
+                'You may have received a note within a patient record, stating that the record has been digitised.',
+            'If you are part of a GP practice, you can use this service to:',
+            'view a patient record',
+            'remove a patient record',
+            'If you are managing records on behalf of NHS England, you can:',
             'Not every patient will have a digital record available.',
-            'Before You Start',
+            'Before you start',
             "You'll be asked for:",
             'your NHS smartcard',
             'patient details including their name, date of birth and NHS number',
         ];
 
+        const contentStringsAppearMoreThanOnce = {
+            'download a patient record': 2,
+        };
+
         render(<HomePage />);
+
         contentStrings.forEach((s) => {
             expect(screen.getByText(s)).toBeInTheDocument();
         });
+        Object.entries(contentStringsAppearMoreThanOnce).forEach(([s, count]) => {
+            const foundElements = screen.getAllByText(s);
+            expect(foundElements).toHaveLength(count);
+            foundElements.forEach((element) => expect(element).toBeInTheDocument());
+        });
+
         expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
         expect(
             screen.getByRole('link', {
@@ -50,7 +64,7 @@ describe('StartPage', () => {
             }),
         ).toBeInTheDocument();
         expect(
-            screen.getByText(/if there is an issue with this service or call 0300 303 5678/i),
+            screen.getByText(/if there is an issue with this service or call 0300 303 5678\./i),
         ).toBeInTheDocument();
     });
 
