@@ -32,7 +32,7 @@ class OidcService:
         self._oidc_callback_uri = ""
         self._oidc_jwks_url = ""
         self.oidc_client = None
-        self.workspace = ""
+        self.environment = ""
 
     def fetch_tokens(self, auth_code: str) -> Tuple[AccessToken, IdTokenClaimSet]:
         url, headers, body = self.oidc_client.prepare_token_request(
@@ -77,12 +77,12 @@ class OidcService:
         acr = decoded_token["acr"]
 
         logger.info(f"ACR from CIS2: {acr}")
-        logger.info(f"Workspace: {self.workspace}")
+        logger.info(f"Env: {self.environment}")
 
-        if self.workspace in self.aal_exempt_environments or acr == "AAL3":
+        if self.environment in self.aal_exempt_environments or "aal3" in acr.lower():
             return decoded_token
         else:
-            raise OidcApiException(f"ACR value {acr} is incorrect for the current workspace {self.workspace}")
+            raise OidcApiException(f"ACR value {acr} is incorrect for the current deployment environment {self.environment}")
 
     def validate_and_decode_token(self, signed_token: str) -> Dict:
         try:
@@ -216,7 +216,7 @@ class OidcService:
         self._oidc_callback_uri = oidc_parameters["OIDC_CALLBACK_URL"]
         self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
         self.oidc_client = web_application_client_class(client_id=self._client_id)
-        self.workspace = oidc_parameters["ENVIRONMENT"]
+        self.environment = oidc_parameters["ENVIRONMENT"]
 
 
 def get_selected_roleid(id_token_claim_set: IdTokenClaimSet):
