@@ -24,8 +24,7 @@ class OidcService:
     aal_exempt_workspaces = ["ndra",
                              "ndrb",
                              "ndrc",
-                             "ndrd",
-                             "pre-prod"]
+                             "ndrd",]
 
     def __init__(self):
         self._client_id = ""
@@ -64,7 +63,7 @@ class OidcService:
             access_token: AccessToken = response_content["access_token"]
             raw_id_token = response_content["id_token"]
 
-            decoded_token = self.validate_and_decode_token(raw_id_token)
+            decoded_token = self.validate_and_decode_token_with_acr(raw_id_token)
 
             logger.info(f"Decoded token: {decoded_token}")
             id_token_claims_set: IdTokenClaimSet = IdTokenClaimSet.model_validate(
@@ -74,6 +73,19 @@ class OidcService:
             return access_token, id_token_claims_set
         except KeyError:
             raise OidcApiException("Access Token not found in ID Provider's response")
+
+    def validate_and_decode_token_with_acr(self, signed_token: str) -> Dict:
+        decoded_token = self.validate_and_decode_token(signed_token)
+
+        acr = decoded_token["acr"]
+
+        logger.info(f"ACR from CIS2: {acr}")
+        logger.info(f"Workspace: {self.workspace}")
+
+        if self.workspace in self.aal_exempt_workspaces or acr == "AAL3":
+            return decoded_token
+        else:
+            raise OidcApiException(f"ACR value {acr} is incorrect for the current workspace {self.workspace}")
 
     def validate_and_decode_token(self, signed_token: str) -> Dict:
         try:
@@ -91,8 +103,7 @@ class OidcService:
                 options=self.VERIFY_ALL,
             )
 
-            if self.validate_acr(decoded_token["acr"]):
-                return decoded_token
+            return decoded_token
 
         except jwt.exceptions.PyJWTError as err:
             logger.error(err)
@@ -174,13 +185,6 @@ class OidcService:
             )
             raise OidcApiException("Failed to retrieve userinfo")
 
-    def validate_acr(self, acr):
-        logger.info(f"ACR from CIS2: {acr}")
-        logger.info(f"Workspace: {self.workspace}")
-        if self.workspace in self.aal_exempt_workspaces  or acr == "AAL3":
-            return True
-        else:
-            raise OidcApiException(f"ACR value {acr} is incorrect for the current workspace {self.workspace}")
 
     # TODO Move to SSM service, example in token_handler_ssm_service
     def fetch_oidc_parameters(self, ssm_service_class):
