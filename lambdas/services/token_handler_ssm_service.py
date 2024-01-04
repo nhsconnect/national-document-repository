@@ -32,9 +32,10 @@ class TokenHandlerSSMService(SSMService):
         logger.info(
             "starting ssm request to retrieve required smartcard role code gp admin"
         )
-        params = self.get_ssm_parameters(["/auth/smartcard/role/gp_admin"])
-
-        response = params["/auth/smartcard/role/gp_admin"]
+        params = self.get_ssm_parameters(["/auth/smartcard/role/gp_admin_multiple"])
+        print(params)
+        response = params["/auth/smartcard/role/gp_admin_multiple"]
+        print(response)
         return response
 
     def get_smartcard_role_gp_clinical(self) -> str:
