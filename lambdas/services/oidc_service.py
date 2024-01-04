@@ -21,10 +21,7 @@ class OidcService:
         "verify_iss": True,
     }
 
-    aal_exempt_workspaces = ["ndra",
-                             "ndrb",
-                             "ndrc",
-                             "ndrd",]
+    aal_exempt_environments = ["development"]
 
     def __init__(self):
         self._client_id = ""
@@ -82,7 +79,7 @@ class OidcService:
         logger.info(f"ACR from CIS2: {acr}")
         logger.info(f"Workspace: {self.workspace}")
 
-        if self.workspace in self.aal_exempt_workspaces or acr == "AAL3":
+        if self.workspace in self.aal_exempt_environments or acr == "AAL3":
             return decoded_token
         else:
             raise OidcApiException(f"ACR value {acr} is incorrect for the current workspace {self.workspace}")
@@ -204,7 +201,7 @@ class OidcService:
 
         # Callback url is different in sandbox/dev/test. This env var is to be supplied by terraform.
         oidc_parameters["OIDC_CALLBACK_URL"] = os.environ["OIDC_CALLBACK_URL"]
-        oidc_parameters["WORKSPACE"] = os.environ["WORKSPACE"]
+        oidc_parameters["ENVIRONMENT"] = os.environ["ENVIRONMENT"]
 
         logger.info(f"OIDC param list: {oidc_parameters}")
         return oidc_parameters
@@ -219,7 +216,7 @@ class OidcService:
         self._oidc_callback_uri = oidc_parameters["OIDC_CALLBACK_URL"]
         self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
         self.oidc_client = web_application_client_class(client_id=self._client_id)
-        self.workspace = oidc_parameters["WORKSPACE"]
+        self.workspace = oidc_parameters["ENVIRONMENT"]
 
 
 def get_selected_roleid(id_token_claim_set: IdTokenClaimSet):

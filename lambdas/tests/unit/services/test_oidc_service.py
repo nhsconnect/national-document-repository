@@ -64,6 +64,7 @@ def test_fetch_tokens_successfully(mocker, oidc_service):
         "sub": "fake_cis2_login_id",
         "exp": 1234567890,
         "selected_roleid": "012345678901",
+        "acr": "AAL3",
     }
 
     mocker.patch("requests.post", return_value=mock_cis2_response)
@@ -237,7 +238,7 @@ def test_oidc_service_validate_and_decode_token_raises_exception_for_expired_id_
 
 def test_parse_fetch_tokens_response(mocker, oidc_service, mock_id_tokens):
     mock_access_token = "mock_access_token"
-    mock_id_token = "mock_id_token"
+    mock_id_token = {"acr": "AAL3"}
     mock_cis2_response = Response()
     mock_cis2_response.status_code = 200
     mock_cis2_response._content = json.dumps(
