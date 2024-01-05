@@ -55,7 +55,7 @@ class SupportedDocumentTypes(Enum):
 
         except KeyError as e:
             logger.error(
-                e,
+                str(e),
                 {
                     "Result": f"An error occurred due to missing environment variable for doc_type {self.value}"
                 },

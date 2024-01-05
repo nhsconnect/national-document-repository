@@ -112,7 +112,7 @@ class S3Service:
                 return True
             return False
         except (KeyError, AttributeError) as e:
-            logger.info(e)
+            logger.info(str(e), {"Result": "Failed to check if file exists on s3"})
             return False
         except ClientError as e:
             error_message = str(e)
@@ -121,7 +121,5 @@ class S3Service:
                 or "An error occurred (404)" in error_message
             ):
                 return False
-            logger.error(
-                e, {"Result": "Unexpected error when try to check file existence on s3"}
-            )
+            logger.error(str(e), {"Result": "Failed to check if file exists on s3"})
             raise e
