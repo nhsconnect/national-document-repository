@@ -13,6 +13,7 @@ jest.mock('../../../helpers/hooks/useRole');
 const mockedUseNavigate = jest.fn();
 const mockPdf = buildLgSearchResult();
 const mockSetStage = jest.fn();
+const mockSetDownloadRemoveButtonClicked = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
@@ -142,6 +143,7 @@ describe('LloydGeorgeRecordDetails', () => {
                     totalFileSizeInByte={mockPdf.total_file_size_in_byte}
                     setStage={mockSetStage}
                     userIsGpAdminNonBSOL={true}
+                    setDownloadRemoveButtonClicked={mockSetDownloadRemoveButtonClicked}
                 />,
             );
 
@@ -161,12 +163,18 @@ describe('LloydGeorgeRecordDetails', () => {
     });
 });
 
-const TestApp = (props: Omit<Props, 'setStage'>) => {
-    return <LgRecordDetails {...props} setStage={mockSetStage} />;
+const TestApp = (props: Omit<Props, 'setStage' | 'setDownloadRemoveButtonClicked'>) => {
+    return (
+        <LgRecordDetails
+            {...props}
+            setStage={mockSetStage}
+            setDownloadRemoveButtonClicked={mockSetDownloadRemoveButtonClicked}
+        />
+    );
 };
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
-    const props: Omit<Props, 'setStage' | 'stage'> = {
+    const props: Omit<Props, 'setStage' | 'stage' | 'setDownloadRemoveButtonClicked'> = {
         lastUpdated: mockPdf.last_updated,
         numberOfFiles: mockPdf.number_of_files,
         totalFileSizeInByte: mockPdf.total_file_size_in_byte,
