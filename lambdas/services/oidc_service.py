@@ -79,8 +79,7 @@ class OidcService:
         logger.info(f"ACR from CIS2: {acr}")
         logger.info(f"Env: {self.environment}")
 
-        #if self.environment in self.AAL_EXEMPT_ENVIRONMENTS or
-        if "aal3" in acr.lower():
+        if self.environment in self.AAL_EXEMPT_ENVIRONMENTS or "aal3" in acr.lower():
             return decoded_token
         else:
             raise OidcApiException(f"ACR value {acr} is incorrect for the current deployment environment {self.environment}")
