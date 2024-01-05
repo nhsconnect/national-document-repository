@@ -57,21 +57,21 @@ jobs:
 
       - name: Cypress artifacts
         run: |
-          mv /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots /home/runner/work/national-document-repository/national-document-repository/app/cypress/chrome-screenshots \
-          mv /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos /home/runner/work/national-document-repository/national-document-repository/app/cypress/chrome-videos
+          cd /home/runner/work/national-document-repository/national-document-repository/app/cypress
+            mkdir chrome \
+            mv /screenshots /chrome/chrome-screenshots \
+            mv /videos /chrome/chrome-videos \
       - uses: actions/upload-artifact@v4
-        id: cypress-screenshots-edge
         if: failure()
         with:
           name: cypress-screenshots
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/chrome-screenshots
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/chrome
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
-        id: cypress-videos-edge
         if: failure()
         with:
           name: cypress-videos
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/chrome-videos
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/chrome
           if-no-files-found: ignore
 
   cypress-run-firefox:
@@ -112,21 +112,21 @@ jobs:
 
       - name: Cypress artifacts
         run: |
-          mv /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots /home/runner/work/national-document-repository/national-document-repository/app/cypress/firefox-screenshots \
-          mv /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos /home/runner/work/national-document-repository/national-document-repository/app/cypress/firefox-videos
+          cd /home/runner/work/national-document-repository/national-document-repository/app/cypress \
+            mkdir firefox \
+            mv /screenshots /firefox/firefox-screenshots \
+            mv /videos /firefox/firefox-videos \
       - uses: actions/upload-artifact@v4
-        id: cypress-screenshots-edge
         if: failure()
         with:
           name: cypress-screenshots
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/firefox-screenshots
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/firefox
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
-        id: cypress-videos-edge
         if: failure()
         with:
           name: cypress-videos
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/firefox-videos
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/firefox
           if-no-files-found: ignore
 
   cypress-run-edge:
@@ -160,8 +160,10 @@ jobs:
 
       - name: Cypress artifacts
         run: |
-          mv /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots /home/runner/work/national-document-repository/national-document-repository/app/cypress/edge-screenshots \
-          mv /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos /home/runner/work/national-document-repository/national-document-repository/app/cypress/edge-videos
+          cd /home/runner/work/national-document-repository/national-document-repository/app/cypress \
+            mkdir edge \
+            mv /screenshots /edge/edge-screenshots \
+            mv /videos /edge/edge-videos \
       - uses: actions/upload-artifact@v4
         id: cypress-screenshots-edge
         if: failure()
@@ -170,9 +172,8 @@ jobs:
           path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/edge-screenshots
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
-        id: cypress-videos-edge
         if: failure()
         with:
           name: cypress-videos
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/edge-videos
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/edge
           if-no-files-found: ignore
