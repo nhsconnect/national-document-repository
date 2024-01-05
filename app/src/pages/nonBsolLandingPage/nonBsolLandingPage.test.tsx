@@ -1,18 +1,19 @@
-import { render, screen } from '@testing-library/react';
-import { useNavigate } from 'react-router';
+import { render, screen, waitFor } from '@testing-library/react';
 import NonBsolLandingPage from './NonBsolLandingPage';
-import HomePage from '../homePage/HomePage';
+import { routes } from '../../types/generic/routes';
 
-jest.mock('react-router');
-const mockNavigate = useNavigate as jest.Mock<typeof useNavigate>;
-//
+const mockedNavigate = jest.fn();
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedNavigate,
+}));
+
 describe('NonBsolLandingPage', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
 
     it('renders the page header', () => {
-        renderNonBsolLandingPage();
+        render(<NonBsolLandingPage />);
 
         expect(
             screen.getByRole('heading', {
@@ -34,7 +35,7 @@ describe('NonBsolLandingPage', () => {
             'Get support with the service',
         ];
 
-        renderNonBsolLandingPage();
+        render(<NonBsolLandingPage />);
 
         contentStrings.forEach((s) => {
             expect(screen.getByText(s)).toBeInTheDocument();
@@ -51,10 +52,7 @@ describe('NonBsolLandingPage', () => {
     });
 
     it('renders a service link that takes you to service help-desk in a new tab', () => {
-        const mockUseNavigate = jest.fn();
-        mockNavigate.mockImplementation(() => mockUseNavigate);
-
-        render(<HomePage />);
+        render(<NonBsolLandingPage />);
 
         expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
         const nationalServiceDeskLink = screen.getByRole('link', {
@@ -71,16 +69,16 @@ describe('NonBsolLandingPage', () => {
         expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
     });
 
-    it('renders a primary button that takes you to the search patient page', () => {
-        const mockNavigateToNextPage = jest.fn();
+    it('renders a primary button that takes user to the upload search patient page', async () => {
+        render(<NonBsolLandingPage />);
 
-        render(<NonBsolLandingPage next={mockNavigateToNextPage} />);
+        const button = screen.getByRole('button', { name: 'Search for a patient' });
+        expect(button).toBeInTheDocument();
 
-        const searchButton = screen.getByRole('button', { name: 'Search for a patient' });
-        expect(searchButton).toBeInTheDocument();
+        button.click();
+
+        await waitFor(() => {
+            expect(mockedNavigate).toHaveBeenCalledWith(routes.UPLOAD_SEARCH);
+        });
     });
 });
-
-const renderNonBsolLandingPage = () => {
-    render(<NonBsolLandingPage next={(e) => {}} />);
-};

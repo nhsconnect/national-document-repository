@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import getAuthToken, { AuthTokenArgs } from '../../helpers/requests/getAuthToken';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
 import { routes } from '../../types/generic/routes';
-import { NavigateFunction, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import Spinner from '../../components/generic/spinner/Spinner';
 import { isMock } from '../../helpers/utils/isLocal';
 import { AxiosError } from 'axios';
@@ -35,7 +35,8 @@ const AuthCallbackPage = (props: Props) => {
             });
 
             if (isBSOLOrPCSE(auth)) {
-                continueToNextPage(auth, navigate);
+                const nextPage = searchPatientPageByUserRole(auth);
+                navigate(nextPage);
             }
         };
 
@@ -59,38 +60,25 @@ const AuthCallbackPage = (props: Props) => {
         void handleCallback({ baseUrl, code, state });
     }, [baseUrl, setSession, navigate]);
 
-    const confirmedAuth = session?.auth!;
+    const confirmedAuth: UserAuth = session?.auth!;
     const shouldShowNonBSOLPage = confirmedAuth && !isBSOLOrPCSE(confirmedAuth);
 
-    return shouldShowNonBSOLPage ? (
-        <NonBsolLandingPage next={() => continueToNextPage(confirmedAuth, navigate)} />
-    ) : (
-        <Spinner status="Logging in..." />
-    );
+    return shouldShowNonBSOLPage ? <NonBsolLandingPage /> : <Spinner status="Logging in..." />;
 };
 
-function isBSOLOrPCSE(auth: UserAuth): boolean {
+const isBSOLOrPCSE = (auth: UserAuth): boolean => {
     return auth.isBSOL || auth.role === REPOSITORY_ROLE.PCSE;
-}
+};
 
-const continueToNextPage = (auth: UserAuth, navigate: NavigateFunction) => {
-    if (!auth) {
-        navigate(routes.AUTH_ERROR);
-    }
-
-    switch (auth.role) {
+const searchPatientPageByUserRole = (auth: UserAuth): routes => {
+    switch (auth?.role) {
         case REPOSITORY_ROLE.GP_ADMIN:
-            navigate(routes.UPLOAD_SEARCH);
-            break;
         case REPOSITORY_ROLE.GP_CLINICAL:
-            navigate(routes.UPLOAD_SEARCH);
-            break;
+            return routes.UPLOAD_SEARCH;
         case REPOSITORY_ROLE.PCSE:
-            navigate(routes.DOWNLOAD_SEARCH);
-            break;
+            return routes.DOWNLOAD_SEARCH;
         default:
-            navigate(routes.AUTH_ERROR);
-            break;
+            return routes.AUTH_ERROR;
     }
 };
 

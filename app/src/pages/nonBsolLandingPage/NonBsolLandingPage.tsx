@@ -1,10 +1,13 @@
 import WarningText from '../../components/generic/warningText/WarningText';
 import { ButtonLink } from 'nhsuk-react-components';
-import { MouseEventHandler } from 'react';
+import { useNavigate } from 'react-router';
+import { routes } from '../../types/generic/routes';
 
-type Props = { next: MouseEventHandler<HTMLAnchorElement> };
+type Props = {};
 
-const NonBsolLandingPage = ({ next }: Props) => {
+const NonBsolLandingPage = (props: Props) => {
+    const navigate = useNavigate();
+
     return (
         <>
             <h1>You’re outside of Birmingham and Solihull (BSOL)</h1>
@@ -27,7 +30,11 @@ const NonBsolLandingPage = ({ next }: Props) => {
 
             <WarningText text="Downloading a record will remove it from our storage" />
 
-            <ButtonLink role="button" data-testid="search-patient-btn" onClick={next}>
+            <ButtonLink
+                role="button"
+                data-testid="search-patient-btn"
+                onClick={() => navigate(routes.UPLOAD_SEARCH)}
+            >
                 Search for a patient
             </ButtonLink>
 
