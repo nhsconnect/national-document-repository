@@ -18,7 +18,7 @@ MOCK_PARAMETERS = {
     "OIDC_USER_INFO_URL": "https://localhost:3000/mock_userinfo_url",
     "OIDC_CALLBACK_URL": "https://localhost:3000/mock_callback_url",
     "OIDC_JWKS_URL": "https://localhost:3000/mock_jwks_url",
-    "WORKSPACE" : "production"
+    "ENVIRONMENT": "prod"
 }
 
 
