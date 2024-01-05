@@ -1,3 +1,4 @@
+import { DynamoDB, S3 } from 'aws-sdk';
 import { Roles, roleIds, roleList } from './roles';
 import Bluebird from 'cypress/types/bluebird';
 /// <reference types="cypress" />
@@ -97,8 +98,8 @@ declare global {
             addFileToS3(
                 bucketName: string,
                 fileName: string,
-                fileContent: AWS.S3.Body,
-            ): Chainable<Bluebird<AWS.S3.ManagedUpload.SendData>>;
+                fileContent: S3.Body,
+            ): Chainable<Bluebird<S3.ManagedUpload.SendData>>;
             /**
              * Add dynamoDB entry
              * @param {string} tableName - Name of the target dynamoDB table
@@ -107,8 +108,8 @@ declare global {
              */
             addItemToDynamoDb(
                 tableName: string,
-                item: AWS.DynamoDB.PutItemInputAttributeMap,
-            ): Chainable<Bluebird<AWS.DynamoDB.PutItemOutput>>;
+                item: DynamoDB.PutItemInputAttributeMap,
+            ): Chainable<Bluebird<DynamoDB.PutItemOutput>>;
             /**
              * Delete file from S3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
@@ -118,7 +119,7 @@ declare global {
             deleteFileFromS3(
                 bucketName: string,
                 fileName: string,
-            ): Chainable<Bluebird<AWS.S3.DeleteObjectOutput>>;
+            ): Chainable<Bluebird<S3.DeleteObjectOutput>>;
             /**
              * Delete item from DynamoDB table
              * @param {string} tableName - Name of the target DynamoDB table
@@ -128,7 +129,7 @@ declare global {
             deleteItemFromDynamoDb(
                 tableName: string,
                 itemId: string,
-            ): Chainable<Bluebird<AWS.DynamoDB.DeleteItemOutput>>;
+            ): Chainable<Bluebird<DynamoDB.DeleteItemOutput>>;
         }
     }
 }

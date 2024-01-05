@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 
 import AWS from './aws.config';
+
 Cypress.Commands.add(
     'addFileToS3',
     (bucketName: string, fileName: string, fileContent: AWS.S3.Body) => {

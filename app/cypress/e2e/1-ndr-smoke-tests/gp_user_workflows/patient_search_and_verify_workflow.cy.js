@@ -6,7 +6,7 @@ describe('GP Workflow: Patient search and verify', () => {
     const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
     const workspace = Cypress.env('WORKSPACE');
-    const activePatient = workspace === 'ndr-dev' ? '9730153817' : '9449305552';
+    const activePatient = workspace === 'ndr-dev' ? '9730153817' : '9000000002';
 
     gpRoles.forEach((role) => {
         it(
