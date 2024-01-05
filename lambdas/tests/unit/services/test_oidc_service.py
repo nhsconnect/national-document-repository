@@ -18,7 +18,7 @@ MOCK_PARAMETERS = {
     "OIDC_USER_INFO_URL": "https://localhost/mock_userinfo_url",
     "OIDC_CALLBACK_URL": "https://localhost/mock_callback_url",
     "OIDC_JWKS_URL": "https://localhost/mock_jwks_url",
-    "ENVIRONMENT": "prod"
+    "ENVIRONMENT": "prod",
 }
 
 
@@ -173,7 +173,7 @@ def mock_cis2_public_key_and_id_tokens():
         "iss": MOCK_PARAMETERS["OIDC_ISSUER_URL"],
         "aud": MOCK_PARAMETERS["OIDC_CLIENT_ID"],
         "exp": time.time() + 3600,
-        "acr": "AAL3"
+        "acr": "AAL3",
     }
     valid_id_token = jwt.encode(claim_set, key=mock_cis2_private_key, algorithm="RS256")
 
@@ -253,7 +253,9 @@ def test_parse_fetch_tokens_response(mocker, oidc_service, mock_id_tokens):
 
     mock_decoded_token = {"token_field": "mock_content"}
     mock_decoder = mocker.patch.object(
-        OidcService, "validate_and_decode_token_with_acr", return_value=mock_decoded_token
+        OidcService,
+        "validate_and_decode_token_with_acr",
+        return_value=mock_decoded_token,
     )
     mock_id_token_claimset = mocker.patch.object(
         IdTokenClaimSet, "model_validate", return_value=mock_id_token
@@ -269,8 +271,10 @@ def test_parse_fetch_tokens_response(mocker, oidc_service, mock_id_tokens):
     mock_decoder.assert_called_with(mock_id_token)
     mock_id_token_claimset.assert_called_with(mock_decoded_token)
 
-def test_validate_and_decode_token_with_acr_rejects_none_aal3_for_none_exempt_env(mocker, oidc_service, mock_id_tokens):
 
+def test_validate_and_decode_token_with_acr_rejects_none_aal3_for_none_exempt_env(
+    mocker, oidc_service, mock_id_tokens
+):
     mock_id_token = "mock_id_token"
     mock_decoded_token = {"acr": "aal1"}
 

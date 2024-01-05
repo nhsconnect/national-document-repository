@@ -82,7 +82,9 @@ class OidcService:
         if self.environment in self.AAL_EXEMPT_ENVIRONMENTS or "aal3" in acr.lower():
             return decoded_token
         else:
-            raise OidcApiException(f"ACR value {acr} is incorrect for the current deployment environment {self.environment}")
+            raise OidcApiException(
+                f"ACR value {acr} is incorrect for the current deployment environment {self.environment}"
+            )
 
     def validate_and_decode_token(self, signed_token: str) -> Dict:
         try:
@@ -181,7 +183,6 @@ class OidcService:
                 f"{userinfo_response.content}"
             )
             raise OidcApiException("Failed to retrieve userinfo")
-
 
     # TODO Move to SSM service, example in token_handler_ssm_service
     def fetch_oidc_parameters(self, ssm_service_class):
