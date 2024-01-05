@@ -47,6 +47,8 @@ class LoginService:
             logger.error(str(e), {"Result": "Unsuccessful login"})
             raise LoginException(500, "Unable to validate state")
 
+        logger.info("Setting up oidc service")
+
         self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
 
         logger.info("Fetching access token from OIDC Provider")
