@@ -149,7 +149,7 @@ def lambda_handler(event, context):
 def generate_repository_role(organisation: dict, smartcart_role: str):
     logger.info(f"Smartcard Role: {smartcart_role}")
 
-    if token_handler_ssm_service.get_smartcard_role_gp_admin() == smartcart_role:
+    if smartcart_role in token_handler_ssm_service.get_smartcard_role_gp_admin():
         logger.info("GP Admin: smartcard ODS identified")
         if has_role_org_role_code(
             organisation, token_handler_ssm_service.get_org_role_codes()[0]
