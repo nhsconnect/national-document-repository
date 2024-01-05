@@ -27,7 +27,7 @@ const NonBsolLandingPage = ({ next }: Props) => {
 
             <WarningText text="Downloading a record will remove it from our storage" />
 
-            <ButtonLink role="button" data-testid="start-btn" onClick={next}>
+            <ButtonLink role="button" data-testid="search-patient-btn" onClick={next}>
                 Search for a patient
             </ButtonLink>
 
