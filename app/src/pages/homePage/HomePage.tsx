@@ -43,7 +43,7 @@ function HomePage(props: Props) {
             </ul>
             <p>Not every patient will have a digital record available.</p>
             <h2>Before you start</h2>
-            <p>You'll be asked for:</p>
+            <p>You’ll be asked for:</p>
             <ul>
                 <li>your NHS smartcard</li>
                 <li>patient details including their name, date of birth and NHS number</li>

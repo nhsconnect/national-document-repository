@@ -37,7 +37,7 @@ describe('StartPage', () => {
             'If you are managing records on behalf of NHS England, you can:',
             'Not every patient will have a digital record available.',
             'Before you start',
-            "You'll be asked for:",
+            'You’ll be asked for:',
             'your NHS smartcard',
             'patient details including their name, date of birth and NHS number',
         ];
