@@ -54,12 +54,14 @@ jobs:
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
       - uses: actions/upload-artifact@v4
+        id: cypress-screenshots-chrome
         if: failure()
         with:
           name: cypress-screenshots
           path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
+        id: cypress-videos-chrome
         if: failure()
         with:
           name: cypress-videos
@@ -101,16 +103,18 @@ jobs:
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
       - uses: actions/upload-artifact@v4
+        id: cypress-screenshots-firefox
         if: failure()
         with:
           name: cypress-screenshots
           path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
+        id: cypress-videos-firefox
         if: failure()
         with:
           name: cypress-videos
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots/videos
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos
           if-no-files-found: ignore
 
   cypress-run-edge:
@@ -141,14 +145,16 @@ jobs:
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
       - uses: actions/upload-artifact@v4
+        id: cypress-screenshots-edge
         if: failure()
         with:
           name: cypress-screenshots
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
+        id: cypress-videos-edge
         if: failure()
         with:
           name: cypress-videos
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots/videos
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos
           if-no-files-found: ignore
