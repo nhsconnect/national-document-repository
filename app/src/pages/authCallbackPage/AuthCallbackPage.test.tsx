@@ -1,9 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import AuthCallbackPage from './AuthCallbackPage';
-import SessionProvider from '../../providers/sessionProvider/SessionProvider';
+import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
 import axios from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { routes } from '../../types/generic/routes';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('axios');
@@ -22,8 +23,6 @@ const allQueryParams = `?${codeAndStateQueryParams}&client_id=${params.id}`;
 const baseUiUrl = 'http://localhost' + allQueryParams;
 const originalWindowLocation = window.location;
 
-const currentPage = '/example';
-
 describe('AuthCallbackPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -33,9 +32,11 @@ describe('AuthCallbackPage', () => {
             enumerable: true,
             value: new URL(baseUiUrl),
         });
+        window.sessionStorage.clear();
     });
     afterEach(() => {
         jest.clearAllMocks();
+        window.sessionStorage.clear();
         Object.defineProperty(window, 'location', {
             configurable: true,
             enumerable: true,
@@ -63,6 +64,38 @@ describe('AuthCallbackPage', () => {
 
         await waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UPLOAD_SEARCH);
+        });
+    });
+
+    it('navigates to DOWNLOAD_SEARCH when callback token request is successful and user role is PCSE', async () => {
+        mockedAxios.get.mockImplementationOnce(() =>
+            Promise.resolve({
+                data: buildUserAuth({ role: REPOSITORY_ROLE.PCSE }),
+            }),
+        );
+        renderCallbackPage();
+
+        expect(screen.getByRole('status')).toBeInTheDocument();
+        expect(screen.getByText('Logging in...')).toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.DOWNLOAD_SEARCH);
+        });
+    });
+
+    it('display non-BSOL landing page when user role is GP and isBSOL is false', async () => {
+        mockedAxios.get.mockImplementationOnce(() =>
+            Promise.resolve({ data: buildUserAuth({ isBSOL: false }) }),
+        );
+        renderCallbackPage();
+
+        expect(screen.getByRole('status')).toBeInTheDocument();
+        expect(screen.getByText('Logging in...')).toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(
+                screen.getByText('You’re outside of Birmingham and Solihull (BSOL)'),
+            ).toBeInTheDocument();
         });
     });
 

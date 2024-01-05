@@ -1,5 +1,6 @@
 $govuk-compatibility-govukelements: true;
 @import 'node_modules/govuk-frontend/govuk/components/phase-banner/phase-banner';
+@import 'node_modules/govuk-frontend/govuk/components/warning-text/warning-text';
 
 @import 'node_modules/nhsuk-frontend/packages/nhsuk';
 @import 'node_modules/nhsuk-frontend/packages/core/all';
@@ -299,4 +300,10 @@ $govuk-compatibility-govukelements: true;
 .govuk-phase-banner {
     background: #fff;
     border: none;
+}
+
+.govuk-warning-text__icon {
+    border: 3px solid $color_nhsuk-yellow;
+    background: $color_nhsuk-yellow;
+    color: $nhsuk-text-color;
 }
