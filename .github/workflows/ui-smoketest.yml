@@ -57,13 +57,13 @@ jobs:
         if: failure()
         with:
           name: cypress-screenshots
-          path: cypress/screenshots
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-videos
-          path: cypress/videos
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos
           if-no-files-found: ignore
 
   cypress-run-firefox:
@@ -104,13 +104,13 @@ jobs:
         if: failure()
         with:
           name: cypress-screenshots
-          path: cypress/screenshots
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-videos
-          path: cypress/videos
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots/videos
           if-no-files-found: ignore
 
   cypress-run-edge:
@@ -144,11 +144,11 @@ jobs:
         if: failure()
         with:
           name: cypress-screenshots
-          path: cypress/screenshots
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-videos
-          path: cypress/videos
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots/videos
           if-no-files-found: ignore
