@@ -1,5 +1,5 @@
 from handlers.login_redirect_handler import lambda_handler
-from utils.exceptions import LoginRedirectException
+from utils.lambda_exceptions import LoginRedirectException
 
 
 def test_login_redirect_lambda_handler_valid(mocker, set_env, event, context):

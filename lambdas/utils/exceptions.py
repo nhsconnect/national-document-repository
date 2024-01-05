@@ -30,7 +30,7 @@ class OdsErrorException(Exception):
     pass
 
 
-class DynamoDbException(Exception):
+class DynamoServiceException(Exception):
     pass
 
 
@@ -88,33 +88,11 @@ class TagNotFoundException(Exception):
     pass
 
 
-class LambdaException(Exception):
-    def __init__(self, status_code, message):
-        self.status_code = status_code
-        self.message = message
-
-
-class CreateDocumentRefException(LambdaException):
-    pass
-
-
-class SearchPatientException(LambdaException):
-    pass
-
-
-class InvalidDocTypeException(LambdaException):
-    pass
-
-
 class LogoutFailureException(Exception):
     pass
 
 
-class LoginRedirectException(LambdaException):
-    pass
-
-
-class DocumentManifestServiceException(LambdaException):
+class BulkUploadException(Exception):
     pass
 
 
@@ -122,5 +100,5 @@ class OidcApiException(Exception):
     pass
 
 
-class LoginException(LambdaException):
+class LoginException(Exception):
     pass

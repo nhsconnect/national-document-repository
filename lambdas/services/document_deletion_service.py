@@ -11,7 +11,6 @@ logger = LoggingService(__name__)
 
 class DocumentDeletionService:
     def __init__(self):
-        super().__init__()
         self.document_service = DocumentService()
 
     def handle_delete(
@@ -39,7 +38,7 @@ class DocumentDeletionService:
         doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
     ) -> list[DocumentReference]:
         results = self.document_service.fetch_available_document_references_by_type(
-            nhs_number, doc_type.value
+            nhs_number, doc_type
         )
 
         if not results:

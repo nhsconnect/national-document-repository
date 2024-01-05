@@ -10,16 +10,28 @@ logger = LoggingService(__name__)
 
 
 class S3Service:
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.initialised = False
+        return cls._instance
+
     def __init__(self):
-        config = BotoConfig(retries={"max_attempts": 3, "mode": "standard"})
-        self.client = boto3.client("s3", config=config)
-        self.presigned_url_expiry = 1800
+        if not self.initialised:
+            config = BotoConfig(
+                retries={"max_attempts": 3, "mode": "standard"},
+                s3={"addressing_style": "virtual"},
+                signature_version="s3v4",
+            )
+            self.client = boto3.client("s3", config=config)
+            self.presigned_url_expiry = 1800
+            self.initialised = True
 
     # S3 Location should be a minimum of a s3_object_key but can also be a directory location in the form of
     # {{directory}}/{{s3_object_key}}
-    def create_document_presigned_url_handler(
-        self, s3_bucket_name: str, s3_object_location: str
-    ):
+    def create_upload_presigned_url(self, s3_bucket_name: str, s3_object_location: str):
         return self.client.generate_presigned_post(
             s3_bucket_name,
             s3_object_location,

@@ -30,22 +30,36 @@ def create_expressions(requested_fields: list) -> tuple[str, dict]:
     return projection_expression, expression_attribute_names
 
 
-def create_nonexistant_or_empty_attr_filter(field_names: list):
+def create_attribute_filter(filtered_fields: dict) -> str:
     """
-    Creates a filter for dynamodb queries in which an attribute may not yet exist for an item
-        :param field_names: List of fields which may not yet exist in the table
+    Creates a filter for dynamodb queries for existing and non-existing attributes
+        :param filtered_fields: Dictionary of filtered fields
 
     example usage:
-        field_names = ["Name", "Age"...]
-        fields_filter = create_nonexistant_or_empty_attr_filter(field_names)
+        fields_filter = {
+            DocumentReferenceMetadataFields.DELETED.value: "",
+            DocumentReferenceMetadataFields.FILENAME.value: "Test Filename"
+        }
+        attribute_filter = create_attribute_filter(fields_filter)
 
     result:
-        "attribute_not_exists(Name) OR Name = :Name_val"
+        "attribute_not_exists(Deleted) OR Deleted = :Deleted_val AND "
+        "Filename = :Filename_val"
 
     """
     attr_filter = ""
-    for field in field_names:
-        filter_string = f"attribute_not_exists({field}) OR {field} = {create_expression_value_placeholder(field)}"
+
+    for field_name, field_value in filtered_fields.items():
+        base_filter_string = (
+            f"{field_name} = {create_expression_value_placeholder(field_name)}"
+        )
+        if not field_value:
+            filter_string = (
+                f"attribute_not_exists({field_name}) OR {base_filter_string}"
+            )
+        else:
+            filter_string = base_filter_string
+
         if not attr_filter:
             attr_filter = filter_string
         else:
@@ -54,7 +68,7 @@ def create_nonexistant_or_empty_attr_filter(field_names: list):
     return attr_filter
 
 
-def create_update_expression(field_names: list):
+def create_update_expression(field_names: list) -> str:
     """
     Creates an expression for dynamodb queries to SET a new value for an item
         :param field_names: List of fields to update
@@ -78,30 +92,29 @@ def create_update_expression(field_names: list):
     return update_expression
 
 
-def create_expression_attribute_values(
-    expression_names: list[str], expression_values: list[str]
-):
+def create_expression_attribute_values(attribute_field_values: dict) -> dict:
     """
-    Maps a list of expression names and expression values to create a dictionary to pass into query
-        :param expression_names: List of expression names
-        :param expression_values: List of expression values
+    Maps a dict of expression names and expression values to create a dictionary to pass into query
+        :param attribute_field_values: Dictionary of attribute field names and values
 
     example usage:
-        field_names = ["Deleted", "VirusScanResult"...]
-        field_values = ["", "Scanned"]
-        expression_attribute_values = create_expression_attribute_values(field_names)
+        attribute_field_values = {
+                DocumentReferenceMetadataFields.DELETED.value: "",
+                DocumentReferenceMetadataFields.FILENAME.value: "Test Filename"
+            }
+        expression_attribute_values = create_expression_attribute_values(attribute_field_values)
 
     result:
         {
             ":Deleted_val" : ""
-            ":VirusScannerResult_val" : "Scanned"
+            ":FileName_val" : "Test Filename"
         }
     """
     expression_attribute_values = {}
-    for name, value in zip(expression_names, expression_values):
+    for field_name, field_value in attribute_field_values.items():
         expression_attribute_values[
-            f"{create_expression_value_placeholder(name)}"
-        ] = value
+            f"{create_expression_value_placeholder(field_name)}"
+        ] = field_value
 
     return expression_attribute_values
 

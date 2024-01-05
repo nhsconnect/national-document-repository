@@ -1,5 +1,5 @@
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
-from utils.exceptions import LambdaException
+from utils.lambda_exceptions import LambdaException
 from utils.lambda_response import ApiGatewayResponse
 
 

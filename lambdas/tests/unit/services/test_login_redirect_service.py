@@ -2,7 +2,7 @@ import pytest
 from botocore.exceptions import ClientError
 from oauthlib.oauth2 import InsecureTransportError
 from services.login_redirect_service import LoginRedirectService
-from utils.exceptions import LoginRedirectException
+from utils.lambda_exceptions import LoginRedirectException
 
 RETURN_URL = (
     "https://www.string_value_1.com?"

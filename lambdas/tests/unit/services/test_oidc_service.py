@@ -13,11 +13,11 @@ from utils.exceptions import AuthorisationException, OidcApiException
 MOCK_PARAMETERS = {
     "OIDC_CLIENT_ID": "mock_client_id",
     "OIDC_CLIENT_SECRET": "mock_client_secret",
-    "OIDC_ISSUER_URL": "https://localhost:3000/mock_issuer_url",
-    "OIDC_TOKEN_URL": "https://localhost:3000/mock_token_url",
-    "OIDC_USER_INFO_URL": "https://localhost:3000/mock_userinfo_url",
-    "OIDC_CALLBACK_URL": "https://localhost:3000/mock_callback_url",
-    "OIDC_JWKS_URL": "https://localhost:3000/mock_jwks_url",
+    "OIDC_ISSUER_URL": "https://localhost/mock_issuer_url",
+    "OIDC_TOKEN_URL": "https://localhost/mock_token_url",
+    "OIDC_USER_INFO_URL": "https://localhost/mock_userinfo_url",
+    "OIDC_CALLBACK_URL": "https://localhost/mock_callback_url",
+    "OIDC_JWKS_URL": "https://localhost/mock_jwks_url",
     "ENVIRONMENT": "prod"
 }
 

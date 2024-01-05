@@ -4,7 +4,7 @@ from services.token_service import TokenService
 def test_get_public_key_and_decode_auth_token(mocker):
     mock_jwt_decode = mocker.patch("jwt.decode", return_value="decoded token")
     mocker.patch(
-        "services.ssm_service.SSMService.get_ssm_parameter",
+        "services.base.ssm_service.SSMService.get_ssm_parameter",
         return_value="test_value_param_key",
     )
     token_service = TokenService()

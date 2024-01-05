@@ -7,10 +7,11 @@ from enums.pds_ssm_parameters import SSMParameter
 from enums.supported_document_types import SupportedDocumentTypes
 from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient
+from models.staging_metadata import StagingMetadata
 from pydantic import ValidationError
 from requests import HTTPError
+from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
-from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
     PatientRecordAlreadyExistException,
@@ -26,20 +27,20 @@ class LGInvalidFilesException(Exception):
     pass
 
 
+file_name_invalid = "One or more of the files do not match naming convention"
+file_type_invalid = "One or more of the files do not match the required file type"
+
+
 def validate_lg_file_type(file_type: str):
     if file_type != "application/pdf":
-        raise LGInvalidFilesException(
-            "One or more of the files do not match the required file type"
-        )
+        raise LGInvalidFilesException(file_type_invalid)
 
 
 def validate_file_name(name: str):
     nhs_number_pattern = "[0-9]{10}"
     lg_regex = rf"[0-9]+of[0-9]+_Lloyd_George_Record_\[{REGEX_PATIENT_NAME_PATTERN}\]_\[{nhs_number_pattern}\]_\[\d\d-\d\d-\d\d\d\d].pdf"
     if not re.fullmatch(lg_regex, name):
-        raise LGInvalidFilesException(
-            "One or more of the files do not match naming convention"
-        )
+        raise LGInvalidFilesException(file_name_invalid)
 
 
 def check_for_duplicate_files(file_list: list[str]):
@@ -59,15 +60,13 @@ def check_for_number_of_files_match_expected(file_name: str, total_files_number:
                 "There are more files than the total number in file name"
             )
     except (AttributeError, IndexError, ValueError):
-        raise LGInvalidFilesException(
-            "One or more of the files do not match naming convention"
-        )
+        raise LGInvalidFilesException(file_name_invalid)
 
 
 def check_for_patient_already_exist_in_repo(nhs_number: str):
     document_service = DocumentService()
     documents_found = document_service.fetch_available_document_references_by_type(
-        nhs_number=nhs_number, doc_type=SupportedDocumentTypes.LG.value
+        nhs_number=nhs_number, doc_type=SupportedDocumentTypes.LG
     )
 
     if documents_found:
@@ -98,6 +97,16 @@ def validate_lg_file_names(file_name_list: list[str], nhs_number: str):
     validate_with_pds_service(file_name_list, nhs_number)
 
 
+def validate_bulk_uploaded_files(staging_metadata: StagingMetadata):
+    # Delegate to lloyd_george_validator service
+    # Expect LGInvalidFilesException to be raised when validation fails
+    file_names = [
+        os.path.basename(metadata.file_path) for metadata in staging_metadata.files
+    ]
+
+    validate_lg_file_names(file_names, staging_metadata.nhs_number)
+
+
 def extract_info_from_filename(filename: str) -> dict:
     page_number = r"(?P<page_no>[1-9][0-9]*)"
     total_page_number = r"(?P<total_page_no>[1-9][0-9]*)"
@@ -111,9 +120,7 @@ def extract_info_from_filename(filename: str) -> dict:
     if match := re.fullmatch(lg_regex, filename):
         return match.groupdict()
     else:
-        raise LGInvalidFilesException(
-            "One or more of the files do not match naming convention"
-        )
+        raise LGInvalidFilesException(file_name_invalid)
 
 
 def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):

@@ -6,6 +6,9 @@ from enums.supported_document_types import SupportedDocumentTypes
 from requests import Response
 from services.document_service import DocumentService
 from tests.unit.conftest import TEST_NHS_NUMBER
+from tests.unit.helpers.data.bulk_upload.test_data import (
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
+)
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
 from utils.exceptions import (
@@ -19,6 +22,7 @@ from utils.lloyd_george_validator import (
     check_for_number_of_files_match_expected,
     check_for_patient_already_exist_in_repo,
     extract_info_from_filename,
+    validate_bulk_uploaded_files,
     validate_file_name,
     validate_lg_file_type,
     validate_with_pds_service,
@@ -393,7 +397,7 @@ def test_check_for_patient_already_exist_in_repo_return_none_when_patient_record
     assert actual == expected
 
     mock_fetch_available_document_references_by_type.assert_called_with(
-        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG.value
+        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG
     )
 
 
@@ -408,8 +412,20 @@ def test_check_check_for_patient_already_exist_in_repo_raise_exception_when_pati
         check_for_patient_already_exist_in_repo(TEST_NHS_NUMBER)
 
     mock_fetch_available_document_references_by_type.assert_called_with(
-        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG.value
+        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG
     )
+
+
+def test_validate_bulk_files_raises_PatientRecordAlreadyExistException_when_patient_record_already_exists(
+    set_env, mocker
+):
+    mocker.patch(
+        "utils.lloyd_george_validator.check_for_patient_already_exist_in_repo",
+        side_effect=PatientRecordAlreadyExistException,
+    )
+
+    with pytest.raises(PatientRecordAlreadyExistException):
+        validate_bulk_uploaded_files(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
 
 
 @pytest.fixture

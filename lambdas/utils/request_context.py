@@ -13,7 +13,7 @@ class RequestContext:
 
     def __getitem__(self, __name: str) -> Any:
         context_var = self._data.get(__name)
-        if type(context_var) == ContextVar:
+        if isinstance(context_var, ContextVar):
             return context_var.get(None)
         return None
 
