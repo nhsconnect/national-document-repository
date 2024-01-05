@@ -76,9 +76,6 @@ class OidcService:
 
         acr = decoded_token["acr"]
 
-        logger.info(f"ACR from CIS2: {acr}")
-        logger.info(f"Env: {self.environment}")
-
         if self.environment in self.AAL_EXEMPT_ENVIRONMENTS or "aal3" in acr.lower():
             return decoded_token
         else:
