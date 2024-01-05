@@ -1,5 +1,4 @@
 import { render, screen } from '@testing-library/react';
-import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
 import { buildUserAuth } from '../test/testBuilders';
 import useIsBSOL from './useIsBSOL';
