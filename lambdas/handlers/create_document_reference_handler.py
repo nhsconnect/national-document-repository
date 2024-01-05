@@ -59,8 +59,14 @@ def processing_event_details(event):
         return nhs_number, doc_list
 
     except (JSONDecodeError, AttributeError) as e:
-        logger.error(e, {"Result": f"Invalid json in body: {str(e)}"})
-        raise CreateDocumentRefException(400, f"Invalid json in body: {str(e)}")
+        logger.error(
+            f"Invalid json in body: {str(e)}",
+            {"Result": "Create document reference failed"},
+        )
+        raise CreateDocumentRefException(400, "Invalid json in body")
     except (KeyError, TypeError) as e:
-        logger.error(e, {"Result": "Request body missing some properties"})
+        logger.error(
+            f"Request body missing some properties: {str(e)}",
+            {"Result": "Create document reference failed"},
+        )
         raise CreateDocumentRefException(400, "Request body missing some properties")

@@ -44,7 +44,7 @@ def lambda_handler(event, context):
 
         return ApiGatewayResponse(200, "", "POST").create_api_gateway_response()
     except LogoutFailureException as e:
-        logger.error(e, {"Result": "Unsuccessful logout"})
+        logger.error(str(e), {"Result": "Unsuccessful logout"})
         return ApiGatewayResponse(
             400,
             json.dumps({"error": "failed logout", "error_description": str(e)}),

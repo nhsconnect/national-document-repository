@@ -44,12 +44,7 @@ class DocumentReferenceSearchService(DocumentService):
             ClientError,
             DynamoServiceException,
         ) as e:
-            logger.error(
-                e,
-                {
-                    "Result": f"An error occurred when using document reference search service: {str(e)}"
-                },
-            )
+            logger.error(str(e), {"Result": "Document reference search failed"})
             raise DocumentRefSearchException(
                 500, "An error occurred when searching for available documents"
             )

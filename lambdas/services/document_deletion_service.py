@@ -60,5 +60,5 @@ class DocumentDeletionService:
             )
             return results
         except (ClientError, DynamoServiceException) as e:
-            logger.error(e, {"Results": f"Failed to delete documents: {str(e)}"})
+            logger.error(str(e), {"Results": "Failed to delete documents"})
             raise DocumentDeletionServiceException(500, "Failed to delete documents")

@@ -31,10 +31,10 @@ class BackChannelLogoutService:
             self.remove_session_from_dynamo_db(session_id)
 
         except AuthorisationException as e:
-            logger.error(f"Error while decoding JWT: {e}")
+            logger.error(f"Error while decoding JWT: {str(e)}")
             raise LogoutFailureException("JWT was invalid")
         except ClientError as e:
-            logger.error(f"Error logging out user: {e}")
+            logger.error(f"Error logging out user: {str(e)}")
             raise LogoutFailureException("Internal error logging user out")
 
     def finding_session_id_by_sid(self, sid):

@@ -18,7 +18,7 @@ def lambda_handler(event, _context):
         response_body = (
             f"No sqs messages found in event: {event}. Will ignore this event"
         )
-        logger.error(response_body)
+        logger.error(response_body, {"Result": "Bulk upload failed"})
         return ApiGatewayResponse(
             status_code=http_status_code, body=response_body, methods="GET"
         ).create_api_gateway_response()
@@ -33,7 +33,7 @@ def lambda_handler(event, _context):
     except BulkUploadException as e:
         http_status_code = 500
         response_body = f"Bulk upload failed with error: {e}"
-        logger.error(e, {"Result": f"Bulk upload failed with error: {str(e)}"})
+        logger.error(str(e), {"Result": "Bulk upload failed"})
 
     return ApiGatewayResponse(
         status_code=http_status_code, body=response_body, methods="GET"

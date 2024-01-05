@@ -48,7 +48,7 @@ class PdsApiService(PatientSearch):
             return pds_response
 
         except (ClientError, JSONDecodeError) as e:
-            logger.error(e, {"Results": f"Error when getting ssm parameters {e}"})
+            logger.error(str(e), {"Results": "Error when getting ssm parameters"})
             raise PdsErrorException("Failed to preform patient search")
 
     def get_new_access_token(self):
@@ -69,7 +69,7 @@ class PdsApiService(PatientSearch):
             self.update_access_token_ssm(json.dumps(token_access_response))
         except HTTPError as e:
             logger.error(
-                e, {"Results": f"Issue while creating new access token: {e.response}"}
+                e.response, {"Results": "Issue while creating new access token"}
             )
             raise PdsErrorException("Error accessing PDS API")
         return token_access_response["access_token"]

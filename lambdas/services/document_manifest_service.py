@@ -45,12 +45,14 @@ class DocumentManifestService:
                     status_code=404,
                     message="No documents found for given NHS number and document type",
                 )
-        except ValidationError:
+        except ValidationError as e:
+            logger.error(str(e), {"Result": "Failed to create document manifest"})
             raise DocumentManifestServiceException(
                 status_code=500,
                 message="Failed to parse document reference from from DynamoDb response",
             )
         except DynamoServiceException as e:
+            logger.error(str(e), {"Result": "Failed to create document manifest"})
             raise DocumentManifestServiceException(
                 status_code=500,
                 message=str(e),
@@ -90,9 +92,9 @@ class DocumentManifestService:
                 self.s3_service.download_file(
                     document.get_file_bucket(), document.get_file_key(), download_path
                 )
-            except ClientError as e:
+            except ClientError:
                 msg = f"{document.get_file_key()} may reference missing file in s3 bucket: {document.get_file_bucket()}"
-                logger.error(e, {"Result": msg})
+                logger.error(msg, {"Result": "Failed to create document manifest"})
                 raise DocumentManifestServiceException(
                     status_code=500,
                     message=msg,
