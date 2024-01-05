@@ -14,14 +14,14 @@ class TokenHandlerSSMService(SSMService):
         logger.info("starting ssm request to retrieve required smartcard role codes")
         params = self.get_ssm_parameters(
             [
-                "/auth/smartcard/role/gp_admin",
+                "/auth/smartcard/role/gp_admin_multiple",
                 "/auth/smartcard/role/gp_clinical",
                 "/auth/smartcard/role/pcse",
             ]
         )
 
         response = [
-            params["/auth/smartcard/role/gp_admin"],
+            params["/auth/smartcard/role/gp_admin_multiple"],
             params["/auth/smartcard/role/gp_clinical"],
             params["/auth/smartcard/role/pcse"],
         ]
