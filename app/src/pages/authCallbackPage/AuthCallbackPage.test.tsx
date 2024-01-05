@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import AuthCallbackPage from './AuthCallbackPage';
-import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
+import SessionProvider from '../../providers/sessionProvider/SessionProvider';
 import axios from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { routes } from '../../types/generic/routes';
@@ -45,7 +45,9 @@ describe('AuthCallbackPage', () => {
     });
 
     it('returns a loading state until redirection to token request handler', async () => {
-        mockedAxios.get.mockImplementation(() => Promise.resolve({ data: buildUserAuth() }));
+        mockedAxios.get.mockImplementation(() =>
+            Promise.resolve({ data: buildUserAuth({ isBSOL: true }) }),
+        );
         renderCallbackPage();
         expect(screen.getByRole('status')).toBeInTheDocument();
         expect(screen.getByText('Logging in...')).toBeInTheDocument();
@@ -55,8 +57,12 @@ describe('AuthCallbackPage', () => {
         });
     });
 
-    it('navigates to the select role page when callback token request is successful', async () => {
-        mockedAxios.get.mockImplementation(() => Promise.resolve({ data: buildUserAuth() }));
+    it('navigates to UPLOAD_SEARCH page when callback token request is successful and user is GP and isBSOL', async () => {
+        mockedAxios.get.mockImplementation(() =>
+            Promise.resolve({
+                data: buildUserAuth({ isBSOL: true, role: REPOSITORY_ROLE.GP_ADMIN }),
+            }),
+        );
         renderCallbackPage();
 
         expect(screen.getByRole('status')).toBeInTheDocument();
@@ -67,7 +73,7 @@ describe('AuthCallbackPage', () => {
         });
     });
 
-    it('navigates to DOWNLOAD_SEARCH when callback token request is successful and user role is PCSE', async () => {
+    it('navigates to DOWNLOAD_SEARCH page when callback token request is successful and user role is PCSE', async () => {
         mockedAxios.get.mockImplementationOnce(() =>
             Promise.resolve({
                 data: buildUserAuth({ role: REPOSITORY_ROLE.PCSE }),
