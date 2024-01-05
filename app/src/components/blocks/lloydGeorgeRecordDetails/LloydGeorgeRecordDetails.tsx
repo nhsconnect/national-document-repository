@@ -14,6 +14,7 @@ export type Props = {
     totalFileSizeInByte: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     userIsGpAdminNonBSOL?: boolean;
+    setDownloadRemoveButtonClicked: Dispatch<SetStateAction<boolean>>;
 };
 
 function LloydGeorgeRecordDetails({
@@ -22,6 +23,7 @@ function LloydGeorgeRecordDetails({
     totalFileSizeInByte,
     setStage,
     userIsGpAdminNonBSOL,
+    setDownloadRemoveButtonClicked,
 }: Props) {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
@@ -32,6 +34,11 @@ function LloydGeorgeRecordDetails({
     useOnClickOutside(actionsRef, (e) => {
         setShowActionsMenu(false);
     });
+
+    const handleDownloadAndRemoveRecordButton = () => {
+        setDownloadRemoveButtonClicked(true);
+    };
+
     return (
         <div className="lloydgeorge_record-details">
             <div className="lloydgeorge_record-details_details">
@@ -49,7 +56,10 @@ function LloydGeorgeRecordDetails({
             </div>
             {userIsGpAdminNonBSOL ? (
                 <div className="lloydgeorge_record-details_download-remove-button">
-                    <Button className="lloydgeorge_record-details_download-remove-button-content">
+                    <Button
+                        onClick={handleDownloadAndRemoveRecordButton}
+                        className="lloydgeorge_record-details_download-remove-button-content"
+                    >
                         Download and remove record
                     </Button>
                 </div>

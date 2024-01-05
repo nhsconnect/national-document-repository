@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-import { BackLink, Card, Details, WarningCallout } from 'nhsuk-react-components';
+import { BackLink, Card, Details, WarningCallout, InsetText } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
@@ -32,6 +32,7 @@ function LloydGeorgeRecordStage({
     stage,
 }: Props) {
     const [fullScreen, setFullScreen] = useState(false);
+    const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
     const patientDetails = usePatient();
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
@@ -53,7 +54,8 @@ function LloydGeorgeRecordStage({
                 numberOfFiles,
                 totalFileSizeInByte,
                 setStage,
-                userIsGpAdminNonBSOL: userIsGpAdminNonBSOL,
+                userIsGpAdminNonBSOL,
+                setDownloadRemoveButtonClicked,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         } else {
@@ -89,6 +91,7 @@ function LloydGeorgeRecordStage({
                             should follow data protection principles as outlined in UK General Data
                             Protection Regulation (GDPR).
                         </p>
+                        {downloadRemoveButtonClicked && <InsetText>Test</InsetText>}
                     </WarningCallout>
                     <h1>Available records</h1>
                 </div>
