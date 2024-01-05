@@ -12,7 +12,7 @@ jest.mock('../../../helpers/hooks/useRole');
 
 const mockedUseNavigate = jest.fn();
 const mockPdf = buildLgSearchResult();
-const mockSetStaqe = jest.fn();
+const mockSetStage = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
@@ -96,7 +96,7 @@ describe('LloydGeorgeRecordDetails', () => {
                     userEvent.click(screen.getByText(action.label));
                 });
                 await waitFor(async () => {
-                    expect(mockSetStaqe).toHaveBeenCalledWith(action.stage);
+                    expect(mockSetStage).toHaveBeenCalledWith(action.stage);
                 });
             },
         );
@@ -132,10 +132,37 @@ describe('LloydGeorgeRecordDetails', () => {
             },
         );
     });
+
+    describe('GP admin non BSOL user', () => {
+        it('renders the record details component with button', () => {
+            render(
+                <LgRecordDetails
+                    lastUpdated={mockPdf.last_updated}
+                    numberOfFiles={mockPdf.number_of_files}
+                    totalFileSizeInByte={mockPdf.total_file_size_in_byte}
+                    setStage={mockSetStage}
+                    userIsGpAdminNonBSOL={true}
+                />,
+            );
+
+            expect(screen.getByText(`Last updated: ${mockPdf.last_updated}`)).toBeInTheDocument();
+            expect(screen.getByText(`${mockPdf.number_of_files} files`)).toBeInTheDocument();
+            expect(
+                screen.getByText(`File size: ${formatFileSize(mockPdf.total_file_size_in_byte)}`),
+            ).toBeInTheDocument();
+            expect(screen.getByText('File format: PDF')).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Download and remove record' }),
+            ).toBeInTheDocument();
+
+            expect(screen.queryByText(`Select an action...`)).not.toBeInTheDocument();
+            expect(screen.queryByTestId('actions-menu')).not.toBeInTheDocument();
+        });
+    });
 });
 
 const TestApp = (props: Omit<Props, 'setStage'>) => {
-    return <LgRecordDetails {...props} setStage={mockSetStaqe} />;
+    return <LgRecordDetails {...props} setStage={mockSetStage} />;
 };
 
 const renderComponent = (propsOverride?: Partial<Props>) => {

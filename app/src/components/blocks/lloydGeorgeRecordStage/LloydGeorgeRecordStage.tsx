@@ -42,7 +42,7 @@ function LloydGeorgeRecordStage({
 
     const role = useRole();
     const isBSOL = useIsBSOL();
-    const userIsGpAdminNonBsol = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
+    const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
     const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.PENDING) {
@@ -53,7 +53,7 @@ function LloydGeorgeRecordStage({
                 numberOfFiles,
                 totalFileSizeInByte,
                 setStage,
-                userIsGpAdminNonBsol,
+                userIsGpAdminNonBSOL: userIsGpAdminNonBSOL,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         } else {
@@ -74,7 +74,7 @@ function LloydGeorgeRecordStage({
                     Go back
                 </BackLink>
             )}
-            {!fullScreen && userIsGpAdminNonBsol && (
+            {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
                     <WarningCallout id="close-page-warning">
                         <WarningCallout.Label headingLevel="h2">

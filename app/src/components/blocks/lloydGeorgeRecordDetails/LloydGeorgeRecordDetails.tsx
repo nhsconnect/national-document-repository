@@ -13,7 +13,7 @@ export type Props = {
     numberOfFiles: number;
     totalFileSizeInByte: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    userIsGpAdminNonBsol?: boolean;
+    userIsGpAdminNonBSOL?: boolean;
 };
 
 function LloydGeorgeRecordDetails({
@@ -21,7 +21,7 @@ function LloydGeorgeRecordDetails({
     numberOfFiles,
     totalFileSizeInByte,
     setStage,
-    userIsGpAdminNonBsol,
+    userIsGpAdminNonBSOL,
 }: Props) {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
@@ -47,7 +47,7 @@ function LloydGeorgeRecordDetails({
                     {' |'}
                 </div>
             </div>
-            {userIsGpAdminNonBsol ? (
+            {userIsGpAdminNonBSOL ? (
                 <div className="lloydgeorge_record-details_download-remove-button">
                     <Button className="lloydgeorge_record-details_download-remove-button-content">
                         Download and remove record

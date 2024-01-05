@@ -9,6 +9,9 @@ import formatFileSize from '../../../helpers/utils/formatFileSize';
 import { act } from 'react-dom/test-utils';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
+import useRole from '../../../helpers/hooks/useRole';
+import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
+import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 
@@ -17,6 +20,8 @@ jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('../../../helpers/hooks/useIsBSOL');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
+const mockedUseRole = useRole as jest.Mock;
+const mockedIsBSOL = useIsBSOL as jest.Mock;
 
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
@@ -107,6 +112,58 @@ describe('LloydGeorgeRecordStage', () => {
         await waitFor(() => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
+    });
+
+    it('renders warning callout, header and button when user is GP admin and non BSOL', async () => {
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+        mockedIsBSOL.mockReturnValue(false);
+
+        renderComponent();
+
+        expect(screen.getByText('Before downloading')).toBeInTheDocument();
+        expect(screen.getByText('Available records')).toBeInTheDocument();
+        expect(
+            screen.getByRole('button', { name: 'Download and remove record' }),
+        ).toBeInTheDocument();
+    });
+
+    it('does not render warning callout, header and button when user is GP admin and BSOL', async () => {
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+        mockedIsBSOL.mockReturnValue(true);
+
+        renderComponent();
+
+        expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
+        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Download and remove record' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('does not render warning callout, header and button when user is GP clinical and non BSOL', async () => {
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+        mockedIsBSOL.mockReturnValue(false);
+
+        renderComponent();
+
+        expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
+        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Download and remove record' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('does not render warning callout, header and button when user is GP clinical and BSOL', async () => {
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+        mockedIsBSOL.mockReturnValue(true);
+
+        renderComponent();
+
+        expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
+        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Download and remove record' }),
+        ).not.toBeInTheDocument();
     });
 });
 const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
