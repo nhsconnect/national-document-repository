@@ -49,7 +49,7 @@ class CreateDocumentReferenceService:
                 )
 
         except (InvalidResourceIdException, LGInvalidFilesException) as e:
-            logger.error(f"{str(e)}", {"Result": "Create document reference failed"})
+            logger.error(str(e), {"Result": "Create document reference failed"})
             raise CreateDocumentRefException(400, e)
 
     def prepare_doc_object(self, document: dict) -> NHSDocumentReference:
@@ -58,7 +58,7 @@ class CreateDocumentReferenceService:
                 document
             )
         except ValidationError as e:
-            logger.error(f"{str(e)}", {"Result": "Create document reference failed"})
+            logger.error(str(e), {"Result": "Create document reference failed"})
             raise CreateDocumentRefException(
                 400, "Failed to parse document upload request data"
             )

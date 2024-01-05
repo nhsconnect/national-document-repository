@@ -84,7 +84,7 @@ class DynamoDBService:
 
             return results
         except ClientError as e:
-            logger.error(e, {"Result": f"Unable to query table: {table_name}"})
+            logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
             raise e
 
     def simple_query(self, table_name: str, key_condition_expression):
