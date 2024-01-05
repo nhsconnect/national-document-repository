@@ -269,33 +269,19 @@ def test_parse_fetch_tokens_response(mocker, oidc_service, mock_id_tokens):
     mock_decoder.assert_called_with(mock_id_token)
     mock_id_token_claimset.assert_called_with(mock_decoded_token)
 
-def test_acr_rejects_none_aal3_for_none_exempt_env(mocker, oidc_service, mock_id_tokens):
-    mock_access_token = "mock_access_token"
+def test_validate_and_decode_token_with_acr_rejects_none_aal3_for_none_exempt_env(mocker, oidc_service, mock_id_tokens):
+
     mock_id_token = "mock_id_token"
-    mock_cis2_response = Response()
-    mock_cis2_response.status_code = 200
-    mock_cis2_response._content = json.dumps(
-        {
-            "access_token": mock_access_token,
-            "scope": "openid",
-            "id_token": mock_id_token,
-            "token_type": "Bearer",
-            "expires_in": 3599,
-        }
-    ).encode("utf-8")
+    mock_decoded_token = {"acr": "aal1"}
 
-    mock_decoded_token = {"acr": "not_aal3"}
     mock_decoder = mocker.patch.object(
-        OidcService, "validate_and_decode_token_with_acr", return_value=mock_decoded_token
-    )
-    mock_id_token_claimset = mocker.patch.object(
-        IdTokenClaimSet, "model_validate", return_value=mock_id_token
+        OidcService, "validate_and_decode_token", return_value=mock_decoded_token
     )
 
-    oidc_service.parse_fetch_tokens_response(mock_cis2_response)
+    with pytest.raises(OidcApiException):
+        oidc_service.validate_and_decode_token_with_acr(mock_id_token)
 
     mock_decoder.assert_called_with(mock_id_token)
-    mock_id_token_claimset.assert_called_with(mock_decoded_token)
 
 
 def test_fetch_tokens_response_throws_authorisation_exception_when_access_token_is_missing(
