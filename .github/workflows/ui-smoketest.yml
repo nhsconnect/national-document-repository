@@ -53,6 +53,7 @@ jobs:
           CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
+          CYPRESS_OUTPUT_VIDEO: true
       - uses: actions/upload-artifact@v4
         id: cypress-screenshots-chrome
         if: failure()
@@ -102,6 +103,7 @@ jobs:
           CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
+          CYPRESS_OUTPUT_VIDEO: true
       - uses: actions/upload-artifact@v4
         id: cypress-screenshots-firefox
         if: failure()
@@ -144,6 +146,7 @@ jobs:
           CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
+          CYPRESS_OUTPUT_VIDEO: true
       - uses: actions/upload-artifact@v4
         id: cypress-screenshots-edge
         if: failure()

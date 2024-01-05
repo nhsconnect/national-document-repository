@@ -33,4 +33,5 @@ export default defineConfig({
         html: false,
         json: true,
     },
+    video: process.env.CYPRESS_OUTPUT_VIDEO ? true : false,
 });
