@@ -70,7 +70,7 @@ describe('Home Page', () => {
 
                 cy.getByTestId('logout-btn').should('exist');
                 cy.getByTestId('logout-btn').click();
-                cy.url({ timeout: 20000 }).should('contain', baseUrl + homeUrl);
+                cy.url({ timeout: 10000 }).should('eq', baseUrl + homeUrl);
 
                 cy.get('.nhsuk-header__navigation').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');
