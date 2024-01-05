@@ -20,10 +20,13 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#nhs-number-input').type(activePatient);
                 cy.get('#search-submit').click();
 
+                cy.url({ timeout: 10000 }).should('eq', baseUrl + '/search/upload/result');
                 cy.get('#verify-submit').click();
 
-                cy.url().should('include', 'lloyd-george-record');
-                cy.url().should('eq', baseUrl + '/search/patient/lloyd-george-record');
+                cy.url({ timeout: 10000 }).should(
+                    'eq',
+                    baseUrl + '/search/patient/lloyd-george-record',
+                );
             },
         );
     });
