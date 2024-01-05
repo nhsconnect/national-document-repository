@@ -264,7 +264,7 @@ def test_generate_repository_role_gp_admin(mock_logging_service, set_env, mocker
     mocker.patch.object(
         TokenHandlerSSMService,
         "get_smartcard_role_gp_admin",
-        return_value=user_role_code,
+        return_value=[user_role_code],
     )
     mocker.patch.object(
         TokenHandlerSSMService, "get_org_role_codes", return_value=[org_role_code]
@@ -286,7 +286,7 @@ def test_generate_repository_role_gp_clinical(mock_logging_service, set_env, moc
     mocker.patch.object(
         TokenHandlerSSMService,
         "get_smartcard_role_gp_admin",
-        return_value="wrong_role_code",
+        return_value=["wrong_role_code"],
     )
     mocker.patch.object(
         TokenHandlerSSMService,
@@ -313,7 +313,7 @@ def test_generate_repository_role_pcse(mock_logging_service, set_env, mocker):
     mocker.patch.object(
         TokenHandlerSSMService,
         "get_smartcard_role_gp_admin",
-        return_value="wrong_role_code",
+        return_value=["wrong_role_code"],
     )
     mocker.patch.object(
         TokenHandlerSSMService,
@@ -341,7 +341,7 @@ def test_generate_repository_role_no_role(mock_logging_service, set_env, mocker)
     mocker.patch.object(
         TokenHandlerSSMService,
         "get_smartcard_role_gp_admin",
-        return_value="wrong_role_code",
+        return_value=["wrong_role_code"],
     )
     mocker.patch.object(
         TokenHandlerSSMService,
