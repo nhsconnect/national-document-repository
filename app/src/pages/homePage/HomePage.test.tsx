@@ -42,20 +42,14 @@ describe('StartPage', () => {
             'patient details including their name, date of birth and NHS number',
         ];
 
-        const contentStringsAppearMoreThanOnce = {
-            'download a patient record': 2,
-        };
-
         render(<HomePage />);
 
         contentStrings.forEach((s) => {
             expect(screen.getByText(s)).toBeInTheDocument();
         });
-        Object.entries(contentStringsAppearMoreThanOnce).forEach(([s, count]) => {
-            const foundElements = screen.getAllByText(s);
-            expect(foundElements).toHaveLength(count);
-            foundElements.forEach((element) => expect(element).toBeInTheDocument());
-        });
+
+        const downloadPatientRecord = screen.getAllByText('download a patient record');
+        expect(downloadPatientRecord).toHaveLength(2);
 
         expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
         expect(
