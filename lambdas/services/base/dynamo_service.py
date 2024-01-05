@@ -31,8 +31,7 @@ class DynamoDBService:
         try:
             return self.dynamodb.Table(table_name)
         except ClientError as e:
-            logger.error("Unable to connect to DB")
-            logger.error(e)
+            logger.error(str(e), {"Result": "Unable to connect to DB"})
             raise e
 
     def query_with_requested_fields(
@@ -85,8 +84,7 @@ class DynamoDBService:
 
             return results
         except ClientError as e:
-            logger.error(f"Unable to query table: {table_name}")
-            logger.error(e)
+            logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
             raise e
 
     def simple_query(self, table_name: str, key_condition_expression):
@@ -112,8 +110,7 @@ class DynamoDBService:
                 raise DynamoServiceException("Unrecognised response from DynamoDB")
             return results
         except ClientError as e:
-            logger.error(f"Unable to query table: {table_name}")
-            logger.error(e)
+            logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
             raise e
 
     def create_item(self, table_name, item):
@@ -122,8 +119,9 @@ class DynamoDBService:
             logger.info(f"Writing item to table: {table_name}")
             table.put_item(Item=item)
         except ClientError as e:
-            logger.error(f"Unable to write item to table: {table_name}")
-            logger.error(e)
+            logger.error(
+                str(e), {"Result": f"Unable to write item to table: {table_name}"}
+            )
             raise e
 
     def update_item(self, table_name: str, key: str, updated_fields: dict):
@@ -148,8 +146,9 @@ class DynamoDBService:
             table.delete_item(Key=key)
             logger.info(f"Deleting item in table: {table_name}")
         except ClientError as e:
-            logger.error(f"Unable to delete item in table: {table_name}")
-            logger.error(e)
+            logger.error(
+                str(e), {"Result": f"Unable to delete item in table: {table_name}"}
+            )
             raise e
 
     def scan_table(
@@ -171,8 +170,7 @@ class DynamoDBService:
                 ExclusiveStartKey=exclusive_start_key,
             )
         except ClientError as e:
-            logger.error(f"Unable to scan table: {table_name}")
-            logger.error(e)
+            logger.error(str(e), {"Result": f"Unable to scan table: {table_name}"})
             raise e
 
     def batch_writing(self, table_name: str, item_list: list[dict]):
@@ -183,6 +181,7 @@ class DynamoDBService:
                 for item in item_list:
                     batch.put_item(Item=item)
         except ClientError as e:
-            logger.error(f"Unable to write item to table: {table_name}")
-            logger.error(e)
+            logger.error(
+                str(e), {"Result": f"Unable to write item to table: {table_name}"}
+            )
             raise e

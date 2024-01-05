@@ -41,15 +41,15 @@ class BulkUploadMetadataService:
             self.clear_temp_storage()
 
         except pydantic.ValidationError as e:
-            logger.info(
-                "Failed to parse metadata.csv", {"Result": "Unsuccessful bulk upload"}
+            logger.error(
+                f"Failed to parse metadata.csv: {str(e)}",
+                {"Result": "Unsuccessful bulk upload"},
             )
-            logger.error(str(e))
         except KeyError as e:
-            logger.info(
-                "Failed due to missing key", {"Result": "Unsuccessful bulk upload"}
+            logger.error(
+                f"Failed due to missing key: {str(e)}",
+                {"Result": "Unsuccessful bulk upload"},
             )
-            logger.error(str(e))
         except ClientError as e:
             logger.error(str(e))
             if "HeadObject" in str(e):

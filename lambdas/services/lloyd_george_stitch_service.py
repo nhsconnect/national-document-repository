@@ -43,7 +43,7 @@ class LloydGeorgeStitchService:
             ordered_lg_records = self.sort_documents_by_filenames(lg_records)
             all_lg_parts = self.download_lloyd_george_files(ordered_lg_records)
         except ClientError as e:
-            logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
+            logger.error(str(e), {"Result": "Lloyd George stitching failed"})
             raise LGStitchServiceException(
                 500, f"Unable to retrieve documents for patient {nhs_number}"
             )
@@ -74,7 +74,7 @@ class LloydGeorgeStitchService:
 
             return json.dumps(response)
         except (ClientError, PyPdfError, FileNotFoundError) as e:
-            logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
+            logger.error(str(e), {"Result": "Lloyd George stitching failed"})
             raise LGStitchServiceException(
                 500, "Unable to return stitched pdf file due to internal error"
             )
@@ -89,7 +89,7 @@ class LloydGeorgeStitchService:
                 nhs_number, SupportedDocumentTypes.LG
             )
         except ClientError as e:
-            logger.error(e, {"Result": f"Unsuccessful viewing LG due to {str(e)}"})
+            logger.error(str(e), {"Result": "Lloyd George stitching failed"})
             raise LGStitchServiceException(
                 500, f"Unable to retrieve documents for patient {nhs_number}"
             )
@@ -103,10 +103,8 @@ class LloydGeorgeStitchService:
         except (KeyError, ValueError) as e:
             nhs_number = documents[0].nhs_number
             logger.error(
-                e,
-                {
-                    "Result": "Unsuccessful viewing LG due to some filenames not following naming convention"
-                },
+                f"Lloyd George filenames not following naming convention: {str(e)}",
+                {"Result": "Lloyd George stitching failed"},
             )
             raise LGStitchServiceException(
                 500, f"Unable to stitch documents for patient {nhs_number}"

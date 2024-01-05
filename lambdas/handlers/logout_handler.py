@@ -18,6 +18,8 @@ logger = LoggingService(__name__)
 @override_error_check
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
+    logger.info("Logout handler triggered")
+
     token = None
     headers = event.get("headers")
     if headers:
