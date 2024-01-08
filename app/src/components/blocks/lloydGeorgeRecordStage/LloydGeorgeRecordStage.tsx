@@ -155,9 +155,10 @@ function LloydGeorgeRecordStage({
                             </form>
                         </InsetText>
                     </WarningCallout>
+
+                    <h1>Available records</h1>
                 </div>
             )}
-            <h1>Available records</h1>
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
                 <p data-testid="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
