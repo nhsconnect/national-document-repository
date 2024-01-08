@@ -160,6 +160,15 @@ $govuk-compatibility-govukelements: true;
                 top: 30px;
             }
         }
+        &_gp-admin-non-bsol {
+            &_inset-text {
+                padding-bottom: 0;
+                padding-top: 0;
+                &_yes-download-remove-button {
+                    background-color: #d5281b;
+                }
+            }
+        }
     }
     &_downloadall-stage {
         &_header {

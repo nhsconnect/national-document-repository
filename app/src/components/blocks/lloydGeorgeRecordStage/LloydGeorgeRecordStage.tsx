@@ -101,7 +101,7 @@ function LloydGeorgeRecordStage({
                             Protection Regulation (GDPR).
                         </p>
                         {downloadRemoveButtonClicked && (
-                            <InsetText>
+                            <InsetText className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text">
                                 <h3>Are you sure you want to download and remove this record?</h3>
                                 <p>
                                     If you download this record, it will remove from our storage.
@@ -113,12 +113,12 @@ function LloydGeorgeRecordStage({
                                         storage.
                                     </Checkboxes.Box>
                                 </Checkboxes>
-                                <Button className="lloydgeorge_record-details_yes-download-remove-button">
+                                <Button className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_yes-download-remove-button">
                                     Yes, download and remove
                                 </Button>
                                 <ButtonLink
                                     className="nhsuk-button nhsuk-button--secondary"
-                                    style={{ marginLeft: 72 }}
+                                    style={{ marginLeft: 30 }}
                                     role="button"
                                 >
                                     Cancel
