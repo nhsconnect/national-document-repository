@@ -55,23 +55,17 @@ jobs:
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
           CYPRESS_OUTPUT_VIDEO: true
 
-      - name: Cypress artifacts
-        run: |
-          cd /home/runner/work/national-document-repository/national-document-repository/app/cypress \
-            mkdir chrome \
-            mv /screenshots /chrome/chrome-screenshots \
-            mv /videos /chrome/chrome-videos \
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-screenshots
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/chrome
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots
           if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cypress-videos
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/chrome
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos
           if-no-files-found: ignore
 
   cypress-run-firefox:
@@ -108,30 +102,7 @@ jobs:
           CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
-          CYPRESS_OUTPUT_VIDEO: true
-
-      - name: Cypress artifacts
-        working-directory: ./app/cypress
-        run: |
-          mkdir firefox \
-            mv /screenshots /firefox/firefox-screenshots \
-            mv /videos /firefox/firefox-videos \
-
-      - name: Cypress screenshots
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/firefox
-          if-no-files-found: ignore
-
-      - name: Cypress videos
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-videos
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/firefox
-          if-no-files-found: ignore
+          CYPRESS_OUTPUT_VIDEO: false
 
   cypress-run-edge:
     runs-on: ubuntu-22.04
@@ -160,27 +131,4 @@ jobs:
           CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
-          CYPRESS_OUTPUT_VIDEO: true
-
-      - name: Cypress artifacts
-        working-directory: ./app/cypress
-        run: |
-          mkdir edge \
-            mv /screenshots /edge/edge-screenshots \
-            mv /videos /edge/edge-videos \
-
-      - name: Cypress screenshots
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/edge
-          if-no-files-found: ignore
-
-      - name: Cypress videos
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-videos
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/edge
-          if-no-files-found: ignore
+          CYPRESS_OUTPUT_VIDEO: false
