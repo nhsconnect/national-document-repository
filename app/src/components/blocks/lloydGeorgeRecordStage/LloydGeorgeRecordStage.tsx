@@ -20,6 +20,7 @@ import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordE
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
+import WarningText from '../../generic/warningText/WarningText';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -105,10 +106,10 @@ function LloydGeorgeRecordStage({
                         {downloadRemoveButtonClicked && (
                             <InsetText className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text">
                                 <h3>Are you sure you want to download and remove this record?</h3>
-                                <p>
-                                    If you download this record, it will remove from our storage.
-                                    You must keep the patient's record safe.
-                                </p>
+                                <WarningText
+                                    text="If you download this record, it will remove from our storage.
+                                    You must keep the patient's record safe."
+                                />
                                 <Checkboxes
                                     name="confirm-download-remove"
                                     id="confirm-download-remove"
