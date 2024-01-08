@@ -12,7 +12,7 @@ const meta = {
 
 type Story = StoryObj<typeof meta>;
 
-export const OrgSelectPage: Story = {
+export const WarningText: Story = {
     args: {
         text: 'Some warning text',
         iconFallbackText: 'warning',
