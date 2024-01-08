@@ -1,13 +1,14 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import {
     BackLink,
-    Card,
-    Details,
-    WarningCallout,
-    InsetText,
-    Checkboxes,
     Button,
     ButtonLink,
+    Card,
+    Checkboxes,
+    Details,
+    Fieldset,
+    InsetText,
+    WarningCallout,
 } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
@@ -21,6 +22,9 @@ import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 import WarningText from '../../generic/warningText/WarningText';
+import ErrorBox from '../../layout/errorBox/ErrorBox';
+import { useForm } from 'react-hook-form';
+import { InputRef } from '../../../types/generic/inputRef';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -48,6 +52,13 @@ function LloydGeorgeRecordStage({
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({ reValidateMode: 'onSubmit' });
+    const { ref: inputRef, ...checkboxProps } = register('confirmBsol', { required: true });
+
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
@@ -73,10 +84,19 @@ function LloydGeorgeRecordStage({
         }
     };
 
-    const handleConfirmDownloadAndRemoveButton = () => {};
+    const handleConfirmDownloadAndRemoveButton = () => {
+        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+    };
 
     return (
         <div className="lloydgeorge_record-stage">
+            {errors.confirmBsol && (
+                <ErrorBox
+                    errorBoxSummaryId="78"
+                    messageTitle="There is a problem"
+                    errorBody="You must confirm if you want to download and remove this record"
+                />
+            )}
             {fullScreen && (
                 <BackLink
                     data-testid="back-link"
@@ -105,33 +125,58 @@ function LloydGeorgeRecordStage({
                         </p>
                         {downloadRemoveButtonClicked && (
                             <InsetText className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text">
-                                <h3>Are you sure you want to download and remove this record?</h3>
-                                <WarningText
-                                    text="If you download this record, it will remove from our storage.
-                                    You must keep the patient's record safe."
-                                />
-                                <Checkboxes
-                                    name="confirm-download-remove"
-                                    id="confirm-download-remove"
+                                <form
+                                    onSubmit={handleConfirmDownloadAndRemoveButton}
+                                    className={
+                                        errors.confirmBsol
+                                            ? 'nhsuk-form-group--error'
+                                            : 'nhsuk-form-group'
+                                    }
                                 >
-                                    <Checkboxes.Box value="confirm-download-remove">
-                                        I understand that downloading this record removes it from
-                                        storage.
-                                    </Checkboxes.Box>
-                                </Checkboxes>
-                                <Button
-                                    onClick={handleConfirmDownloadAndRemoveButton}
-                                    className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_confirm-download-remove-button"
-                                >
-                                    Yes, download and remove
-                                </Button>
-                                <ButtonLink
-                                    className="nhsuk-button nhsuk-button--secondary"
-                                    style={{ marginLeft: 30 }}
-                                    role="button"
-                                >
-                                    Cancel
-                                </ButtonLink>
+                                    <Fieldset aria-describedby="waste-hint">
+                                        <h4>
+                                            Are you sure you want to download and remove this
+                                            record?
+                                        </h4>
+                                        <WarningText
+                                            text="If you download this record, it will remove from our storage.
+                                            You must keep the patient's record safe."
+                                        />
+                                        <Checkboxes
+                                            name="confirm-download-remove"
+                                            id="confirm-download-remove"
+                                            error={
+                                                errors.confirmBsol
+                                                    ? 'Confirm if you want to download and remove this record'
+                                                    : undefined
+                                            }
+                                        >
+                                            <Checkboxes.Box
+                                                value="confirm-download-remove"
+                                                inputRef={inputRef as InputRef}
+                                                {...checkboxProps}
+                                            >
+                                                I understand that downloading this record removes it
+                                                from storage.
+                                            </Checkboxes.Box>
+                                        </Checkboxes>
+                                    </Fieldset>
+                                    <Button
+                                        type="submit"
+                                        id="confirm-download-remove-button"
+                                        onClick={handleConfirmDownloadAndRemoveButton}
+                                        className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_confirm-download-remove-button"
+                                    >
+                                        Yes, download and remove
+                                    </Button>
+                                    <ButtonLink
+                                        className="nhsuk-button nhsuk-button--secondary"
+                                        style={{ marginLeft: 30 }}
+                                        role="button"
+                                    >
+                                        Cancel
+                                    </ButtonLink>
+                                </form>
                             </InsetText>
                         )}
                     </WarningCallout>
