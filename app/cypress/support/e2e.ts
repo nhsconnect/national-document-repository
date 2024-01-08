@@ -9,14 +9,19 @@ Cypress.Commands.add('getByTestId', (selector, ...args) => {
     return cy.get(`[data-testid=${selector}]`, ...args);
 });
 
-Cypress.Commands.add('login', (role) => {
+Cypress.Commands.add('login', (role, isBSOL = true) => {
     if (roleIds.includes(role)) {
         const roleName = roleList.find((roleName) => Roles[roleName] === role);
         // Login for regression tests
         const authCallback = '/auth-callback';
+        const fixturePath =
+            role === Roles.GP_ADMIN && !isBSOL
+                ? 'requests/auth/GET_TokenRequest_GP_ADMIN_non_bsol.json'
+                : 'requests/auth/GET_TokenRequest_' + roleName + '.json';
+
         cy.intercept('GET', '/Auth/TokenRequest*', {
             statusCode: 200,
-            fixture: 'requests/auth/GET_TokenRequest_' + roleName + '.json',
+            fixture: fixturePath,
         }).as('auth');
         cy.visit(authCallback);
         cy.wait('@auth');
@@ -81,8 +86,10 @@ declare global {
             /**
              * Mock user login by intercepting the {baseUrl}/auth-callback request
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
+             * @param {boolean} isBSOL - Whether the user GP is located in BSOL area
              */
-            login(role: Roles): Chainable<void>;
+            login(role: Roles, isBSOL?: boolean);
+
             /**
              * Real user login via CIS2 and redirect back to {baseUrl}/auth-callback.
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
