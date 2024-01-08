@@ -113,15 +113,8 @@ describe('LloydGeorgeRecordDetails', () => {
 
                 renderComponent();
 
-                expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-                expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-
-                act(() => {
-                    userEvent.click(screen.getByTestId('actions-menu'));
-                });
-                await waitFor(async () => {
-                    expect(screen.queryByText(action.label)).not.toBeInTheDocument();
-                });
+                expect(screen.queryByText(`Select an action...`)).not.toBeInTheDocument();
+                expect(screen.queryByTestId('actions-menu')).not.toBeInTheDocument();
             },
         );
 
