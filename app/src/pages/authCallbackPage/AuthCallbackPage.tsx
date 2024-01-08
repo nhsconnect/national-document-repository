@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import getAuthToken, { AuthTokenArgs } from '../../helpers/requests/getAuthToken';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
 import { routes } from '../../types/generic/routes';
@@ -17,6 +17,7 @@ type Props = {};
 const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
     const [session, setSession] = useSessionContext();
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -34,6 +35,7 @@ const AuthCallbackPage = (props: Props) => {
                 isLoggedIn: true,
             });
 
+            setIsLoading(false);
             if (isBSOLOrPCSE(auth)) {
                 const nextPage = searchPatientPageByUserRole(auth);
                 navigate(nextPage);
@@ -61,7 +63,7 @@ const AuthCallbackPage = (props: Props) => {
     }, [baseUrl, setSession, navigate]);
 
     const confirmedAuth: UserAuth = session?.auth!;
-    const shouldShowNonBSOLPage = confirmedAuth && !isBSOLOrPCSE(confirmedAuth);
+    const shouldShowNonBSOLPage = !isLoading && confirmedAuth && !isBSOLOrPCSE(confirmedAuth);
 
     return shouldShowNonBSOLPage ? <NonBsolLandingPage /> : <Spinner status="Logging in..." />;
 };
