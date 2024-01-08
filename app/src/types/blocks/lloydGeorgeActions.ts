@@ -10,11 +10,6 @@ type PdfActionLink = {
 
 export const actionLinks: Array<PdfActionLink> = [
     {
-        label: 'See all files',
-        key: 'see-all-files-link',
-        stage: LG_RECORD_STAGE.SEE_ALL,
-    },
-    {
         label: 'Download all files',
         key: 'download-all-files-link',
         stage: LG_RECORD_STAGE.DOWNLOAD_ALL,
