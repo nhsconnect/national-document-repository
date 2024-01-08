@@ -107,13 +107,3 @@ const renderComponent = (propsOverride?: Partial<Props>) => {
 
     return render(<LgDownloadAllStage {...props} setStage={mockSetStage} />);
 };
-
-const renderComponentForDelete = (propsOverride?: Partial<Props>) => {
-    const props: Omit<Props, 'setStage'> = {
-        numberOfFiles: mockPdf.number_of_files,
-        deleteAfterDownload: true,
-        ...propsOverride,
-    };
-
-    return render(<LgDownloadAllStage {...props} setStage={mockSetStage} />);
-};
