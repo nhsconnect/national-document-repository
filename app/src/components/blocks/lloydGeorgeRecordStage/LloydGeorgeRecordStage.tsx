@@ -1,5 +1,13 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-import { BackLink, Card, Details, WarningCallout } from 'nhsuk-react-components';
+import {
+    BackLink,
+    Card,
+    Checkboxes,
+    Details,
+    Fieldset,
+    InsetText,
+    WarningCallout,
+} from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
@@ -11,6 +19,7 @@ import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordE
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
+import ErrorBox from '../../layout/errorBox/ErrorBox';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -32,6 +41,7 @@ function LloydGeorgeRecordStage({
     stage,
 }: Props) {
     const [fullScreen, setFullScreen] = useState(false);
+    const [isBSOLError, setIsBSOLError] = useState(false);
     const patientDetails = usePatient();
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
@@ -63,6 +73,20 @@ function LloydGeorgeRecordStage({
 
     return (
         <div className="lloydgeorge_record-stage">
+            <button
+                onClick={() => {
+                    setIsBSOLError(!isBSOLError);
+                }}
+            >
+                Test error button
+            </button>
+            {isBSOLError && (
+                <ErrorBox
+                    errorBoxSummaryId="78"
+                    messageTitle="There is a problem"
+                    errorBody="You must confirm if you want to download and remove this record"
+                />
+            )}
             {fullScreen && (
                 <BackLink
                     data-testid="back-link"
@@ -89,10 +113,35 @@ function LloydGeorgeRecordStage({
                             should follow data protection principles as outlined in UK General Data
                             Protection Regulation (GDPR).
                         </p>
+
+                        <InsetText>
+                            <div
+                                className={
+                                    isBSOLError ? 'nhsuk-form-group--error' : 'nhsuk-form-group'
+                                }
+                            >
+                                <Fieldset aria-describedby="waste-hint">
+                                    <h4>
+                                        Are you sure you want to download and remove this record?
+                                    </h4>
+                                    <Checkboxes
+                                        error={
+                                            isBSOLError
+                                                ? 'Confirm if you want to download and remove this record'
+                                                : undefined
+                                        }
+                                        id="waste"
+                                        name="waste"
+                                    >
+                                        <Checkboxes.Box value="test">Test</Checkboxes.Box>
+                                    </Checkboxes>
+                                </Fieldset>
+                            </div>
+                        </InsetText>
                     </WarningCallout>
-                    <h1>Available records</h1>
                 </div>
             )}
+            <h1>Available records</h1>
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
                 <p data-testid="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
