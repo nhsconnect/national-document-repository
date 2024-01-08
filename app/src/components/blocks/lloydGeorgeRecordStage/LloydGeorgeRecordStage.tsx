@@ -72,6 +72,8 @@ function LloydGeorgeRecordStage({
         }
     };
 
+    const handleConfirmDownloadAndRemoveButton = () => {};
+
     return (
         <div className="lloydgeorge_record-stage">
             {fullScreen && (
@@ -107,13 +109,19 @@ function LloydGeorgeRecordStage({
                                     If you download this record, it will remove from our storage.
                                     You must keep the patient's record safe.
                                 </p>
-                                <Checkboxes name="yes-download-remove" id="yes-download-remove">
-                                    <Checkboxes.Box value="yes-download-remove">
+                                <Checkboxes
+                                    name="confirm-download-remove"
+                                    id="confirm-download-remove"
+                                >
+                                    <Checkboxes.Box value="confirm-download-remove">
                                         I understand that downloading this record removes it from
                                         storage.
                                     </Checkboxes.Box>
                                 </Checkboxes>
-                                <Button className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_yes-download-remove-button">
+                                <Button
+                                    onClick={handleConfirmDownloadAndRemoveButton}
+                                    className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_confirm-download-remove-button"
+                                >
                                     Yes, download and remove
                                 </Button>
                                 <ButtonLink
