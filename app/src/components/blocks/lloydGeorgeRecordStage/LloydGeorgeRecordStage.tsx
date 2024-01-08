@@ -20,6 +20,8 @@ import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
+import { useForm } from 'react-hook-form';
+import { InputRef } from '../../../types/generic/inputRef';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -41,11 +43,17 @@ function LloydGeorgeRecordStage({
     stage,
 }: Props) {
     const [fullScreen, setFullScreen] = useState(false);
-    const [isBSOLError, setIsBSOLError] = useState(false);
     const patientDetails = usePatient();
     const dob: String = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({ reValidateMode: 'onSubmit' });
+    const { ref: inputRef, ...checkboxProps } = register('confirmBsol', { required: true });
 
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
@@ -73,14 +81,7 @@ function LloydGeorgeRecordStage({
 
     return (
         <div className="lloydgeorge_record-stage">
-            <button
-                onClick={() => {
-                    setIsBSOLError(!isBSOLError);
-                }}
-            >
-                Test error button
-            </button>
-            {isBSOLError && (
+            {errors.confirmBsol && (
                 <ErrorBox
                     errorBoxSummaryId="78"
                     messageTitle="There is a problem"
@@ -115,9 +116,12 @@ function LloydGeorgeRecordStage({
                         </p>
 
                         <InsetText>
-                            <div
+                            <form
+                                onSubmit={handleSubmit(() => console.log(errors))}
                                 className={
-                                    isBSOLError ? 'nhsuk-form-group--error' : 'nhsuk-form-group'
+                                    errors.confirmBsol
+                                        ? 'nhsuk-form-group--error'
+                                        : 'nhsuk-form-group'
                                 }
                             >
                                 <Fieldset aria-describedby="waste-hint">
@@ -126,17 +130,25 @@ function LloydGeorgeRecordStage({
                                     </h4>
                                     <Checkboxes
                                         error={
-                                            isBSOLError
+                                            errors.confirmBsol
                                                 ? 'Confirm if you want to download and remove this record'
                                                 : undefined
                                         }
                                         id="waste"
                                         name="waste"
                                     >
-                                        <Checkboxes.Box value="test">Test</Checkboxes.Box>
+                                        <Checkboxes.Box
+                                            inputRef={inputRef as InputRef}
+                                            {...checkboxProps}
+                                        >
+                                            I understand that downloading this record removes it
+                                            from storage
+                                        </Checkboxes.Box>
                                     </Checkboxes>
                                 </Fieldset>
-                            </div>
+
+                                <button type="submit">Test submit button</button>
+                            </form>
                         </InsetText>
                     </WarningCallout>
                 </div>
