@@ -118,7 +118,9 @@ function LloydGeorgeRecordStage({
 
                         <InsetText>
                             <form
-                                onSubmit={handleSubmit(() => console.log(errors))}
+                                onSubmit={handleSubmit(() => {
+                                    // Success handler here
+                                })}
                                 className={
                                     errors.confirmBsol
                                         ? 'nhsuk-form-group--error'
