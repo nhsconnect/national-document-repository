@@ -119,7 +119,7 @@ def test_get_ssm_parameters(mock_service, mock_ssm):
 
     mock_ssm.get_parameters.assert_called_once_with(
         Names=[
-            "/auth/smartcard/role/gp_admin_multiple",
+            "/auth/smartcard/role/gp_admin",
             "/auth/smartcard/role/gp_clinical",
             "/auth/smartcard/role/pcse",
         ],
@@ -135,7 +135,7 @@ def test_get_smartcard_role_gp_admin(mock_service, mock_ssm):
     actual = mock_service.get_smartcard_role_gp_admin()
 
     mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/smartcard/role/gp_admin_multiple"], WithDecryption=False
+        Names=["/auth/smartcard/role/gp_admin"], WithDecryption=False
     )
 
     assert actual == expected
@@ -149,7 +149,7 @@ def test_get_smartcard_role_gp_admin_raises_login_exception(mock_service, mock_s
         mock_service.get_smartcard_role_gp_admin()
 
     mock_ssm.get_parameters.assert_called_once_with(
-        Names=["/auth/smartcard/role/gp_admin_multiple"], WithDecryption=False
+        Names=["/auth/smartcard/role/gp_admin"], WithDecryption=False
     )
 
     assert actual.value.__dict__ == expected.__dict__
