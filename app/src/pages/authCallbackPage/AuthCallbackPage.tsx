@@ -57,7 +57,7 @@ const AuthCallbackPage = (props: Props) => {
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
-                    handleSuccess(buildUserAuth({ role: REPOSITORY_ROLE.GP_CLINICAL }));
+                    handleSuccess(buildUserAuth());
                 } else {
                     handleError();
                 }
