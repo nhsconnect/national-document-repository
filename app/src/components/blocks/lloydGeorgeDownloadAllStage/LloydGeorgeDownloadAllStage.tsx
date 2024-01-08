@@ -16,7 +16,6 @@ import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownlo
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../helpers/hooks/usePatient';
-import { AxiosError } from 'axios';
 import deleteAllDocuments from '../../../helpers/requests/deleteAllDocuments';
 
 const FakeProgress = require('fake-progress');
