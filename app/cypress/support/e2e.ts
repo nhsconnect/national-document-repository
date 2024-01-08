@@ -18,19 +18,23 @@ import './commands';
 import './aws.commands';
 import { Roles, roleIds, roleList } from './roles';
 
-
 Cypress.Commands.add('getByTestId', (selector, ...args) => {
     return cy.get(`[data-testid=${selector}]`, ...args);
 });
 
-Cypress.Commands.add('login', (role) => {
+Cypress.Commands.add('login', (role, isBSOL = true) => {
     if (roleIds.includes(role)) {
         const roleName = roleList.find((roleName) => Roles[roleName] === role);
         // Login for regression tests
         const authCallback = '/auth-callback';
+        const fixturePath =
+            role === Roles.GP_ADMIN && !isBSOL
+                ? 'requests/auth/GET_TokenRequest_GP_ADMIN_non_bsol.json'
+                : 'requests/auth/GET_TokenRequest_' + roleName + '.json';
+
         cy.intercept('GET', '/Auth/TokenRequest*', {
             statusCode: 200,
-            fixture: 'requests/auth/GET_TokenRequest_' + roleName + '.json',
+            fixture: fixturePath,
         }).as('auth');
         cy.visit(authCallback);
         cy.wait('@auth');
@@ -92,16 +96,20 @@ declare global {
              * @return {HTMLElement} - Target DOM element.
              */
             getByTestId(value: string);
+
             /**
              * Mock user login by intercepting the {baseUrl}/auth-callback request
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
+             * @param {boolean} isBSOL - Whether the user GP is located in BSOL area
              */
-            login(role: Roles);
+            login(role: Roles, isBSOL?: boolean);
+
             /**
              * Real user login via CIS2 and redirect back to {baseUrl}/auth-callback.
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
              */
             smokeLogin(role: Roles);
+
             /**
              * Add file to s3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
@@ -113,6 +121,7 @@ declare global {
                 fileName: string,
                 fileContent: string,
             ): Chainable<Subject>;
+
             /**
              * Add dynamoDB entry
              * @param {string} tableName - Name of the target dynamoDB table
@@ -122,12 +131,14 @@ declare global {
                 tableName: string,
                 item: { [key: string]: string },
             ): Chainable<Subject>;
+
             /**
              * Delete file from S3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
              * @param {string} fileName - Filepath of the file to delete
              */
             deleteFileFromS3(bucketName: string, fileName: string): Chainable<Subject>;
+
             /**
              * Delete item from DynamoDB table
              * @param {string} tableName - Name of the target DynamoDB table
