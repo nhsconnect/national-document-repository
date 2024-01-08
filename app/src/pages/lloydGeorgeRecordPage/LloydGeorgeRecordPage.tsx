@@ -29,11 +29,7 @@ function LloydGeorgeRecordPage() {
 
     const role = useRole();
     const isBSOL = useIsBSOL();
-
-    console.log(role);
-    console.log(isBSOL);
     const deleteAfterDownload = role === REPOSITORY_ROLE.GP_ADMIN && isBSOL === false;
-    console.log(deleteAfterDownload);
 
     useEffect(() => {
         const onPageLoad = async () => {

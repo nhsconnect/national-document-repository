@@ -101,10 +101,7 @@ function LloydGeorgeDownloadAllStage({
                             baseUrl,
                             baseHeaders,
                         });
-                    } catch (e) {
-                        const error = e as AxiosError;
-                        console.log(error);
-                    }
+                    } catch (e) {} // This is fail and forget at this point in time.
                 }
             } catch (e) {}
         };
@@ -117,7 +114,7 @@ function LloydGeorgeDownloadAllStage({
             const delayTimer = setTimeout(onPageLoad, timeToComplete + delay);
             setDelayTimer(delayTimer);
         }
-    }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer]);
+    }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer, deleteAfterDownload]);
 
     return inProgress ? (
         <div className="lloydgeorge_downloadall-stage">
