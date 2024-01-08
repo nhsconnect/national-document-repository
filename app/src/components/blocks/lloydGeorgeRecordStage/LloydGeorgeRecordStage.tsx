@@ -107,13 +107,10 @@ function LloydGeorgeRecordStage({
                                     If you download this record, it will remove from our storage.
                                     You must keep the patient's record safe.
                                 </p>
-                                <Checkboxes>
-                                    <Checkboxes.Box>
-                                        <input className="lloydgeorge_record-stage_gp-admin-non-bsol_checkbox"></input>
-                                        <label>
-                                            I understand that downloading this record removes it
-                                            from storage.
-                                        </label>
+                                <Checkboxes name="yes-download-remove" id="yes-download-remove">
+                                    <Checkboxes.Box value="yes-download-remove">
+                                        I understand that downloading this record removes it from
+                                        storage.
                                     </Checkboxes.Box>
                                 </Checkboxes>
                                 <Button className="lloydgeorge_record-details_yes-download-remove-button">
