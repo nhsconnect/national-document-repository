@@ -2,34 +2,60 @@
 
 import AWS from './aws.config';
 
-Cypress.Commands.add('addFileToS3', (bucketName, fileName, fileContent) => {
-    const s3 = new AWS.S3();
+Cypress.Commands.add(
+    'addFileToS3',
+    (bucketName: string, fileName: string, fileContent: AWS.S3.Body) => {
+        const s3 = new AWS.S3();
 
-    const params: AWS.S3.Types.PutObjectRequest = {
-        Bucket: bucketName,
-        Key: fileName,
-        Body: fileContent,
-    };
+        const params: AWS.S3.Types.PutObjectRequest = {
+            Bucket: bucketName,
+            Key: fileName,
+            Body: fileContent,
+        };
 
-    s3.upload(params, (err, data) => {
-        if (err) {
-            console.error('Error uploading file to S3:', err);
-        } else {
-            console.log('File uploaded successfully to S3:', data.Location);
-        }
-    });
-});
+        return cy.wrap(
+            new Cypress.Promise((resolve, reject) => {
+                s3.upload(params, (err, data) => {
+                    if (err) {
+                        const message = 'Error uploading file to S3:' + err;
+                        console.error(message);
+                        reject(message);
+                    } else {
+                        console.log('File uploaded successfully to S3:', data.Location);
+                        resolve(data);
+                    }
+                });
+            }),
+        );
+    },
+);
 
-Cypress.Commands.add('addItemToDynamoDb', (tableName, item) => {
-    const dynamoDB = new AWS.DynamoDB();
+Cypress.Commands.add(
+    'addItemToDynamoDb',
+    (tableName: string, item: AWS.DynamoDB.PutItemInputAttributeMap) => {
+        const dynamoDB = new AWS.DynamoDB();
 
-    const params = {
-        TableName: tableName,
-        Item: AWS.DynamoDB.Converter.marshall(item),
-    };
+        const params: AWS.DynamoDB.PutItemInput = {
+            TableName: tableName,
+            Item: AWS.DynamoDB.Converter.marshall(item),
+        };
 
-    return cy.wrap(dynamoDB.putItem(params).promise(), { timeout: 10000 });
-});
+        return cy.wrap(
+            new Cypress.Promise((resolve, reject) => {
+                dynamoDB.putItem(params, (err, data) => {
+                    if (err) {
+                        const message = 'Error uploading to Dynamo:' + tableName;
+                        console.error(message);
+                        reject(message);
+                    } else {
+                        console.log('Upload to Dynamo success:', tableName);
+                        resolve(data);
+                    }
+                });
+            }),
+        );
+    },
+);
 
 Cypress.Commands.add('deleteFileFromS3', (bucketName: string, fileName: string) => {
     const s3 = new AWS.S3();
@@ -39,9 +65,20 @@ Cypress.Commands.add('deleteFileFromS3', (bucketName: string, fileName: string) 
         Key: fileName,
     };
 
-    return cy.wrap(s3.deleteObject(params).promise(), { timeout: 10000 }).then(() => {
-        console.log('File deleted successfully from S3:', fileName);
-    });
+    return cy.wrap(
+        new Cypress.Promise((resolve, reject) => {
+            s3.deleteObject(params, (err, data) => {
+                if (err) {
+                    const message = 'Error uploading to S3:' + bucketName;
+                    console.error(message);
+                    reject(message);
+                } else {
+                    console.log('Upload to S3 success:', bucketName);
+                    resolve(data);
+                }
+            });
+        }),
+    );
 });
 
 Cypress.Commands.add('deleteItemFromDynamoDb', (tableName: string, itemId: string) => {
@@ -54,7 +91,18 @@ Cypress.Commands.add('deleteItemFromDynamoDb', (tableName: string, itemId: strin
         },
     };
 
-    return cy.wrap(dynamoDB.deleteItem(params).promise(), { timeout: 10000 }).then(() => {
-        console.log('Item deleted successfully from DynamoDB:', itemId);
-    });
+    return cy.wrap(
+        new Cypress.Promise((resolve, reject) => {
+            dynamoDB.deleteItem(params, (err, data) => {
+                if (err) {
+                    const message = 'Error uploading to Dynamo:' + tableName;
+                    console.error(message);
+                    reject(message);
+                } else {
+                    console.log('Upload to Dynamo success:', tableName);
+                    resolve(data);
+                }
+            });
+        }),
+    );
 });
