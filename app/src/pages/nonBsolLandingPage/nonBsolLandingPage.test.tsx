@@ -31,7 +31,7 @@ describe('NonBsolLandingPage', () => {
             'name',
             'date of birth',
             'NHS number',
-            'Downloading a record will remove it from our storage',
+            'Downloading a record will remove it from our storage.',
             'Get support with the service',
         ];
 
