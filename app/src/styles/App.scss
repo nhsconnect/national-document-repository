@@ -166,7 +166,11 @@ $govuk-compatibility-govukelements: true;
                 padding-bottom: 0;
                 padding-top: 0;
                 &_confirm-download-remove-button {
-                    background-color: #d5281b;
+                    background-color: #b61105;
+                    box-shadow: #9a0c02;
+                    &:hover {
+                        background-color: #9a0c02;
+                    }
                 }
             }
         }
