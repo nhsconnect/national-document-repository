@@ -16,11 +16,15 @@ import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownlo
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../helpers/hooks/usePatient';
+import { AxiosError } from 'axios';
+import deleteAllDocuments from '../../../helpers/requests/deleteAllDocuments';
+
 const FakeProgress = require('fake-progress');
 
 export type Props = {
     numberOfFiles: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    deleteAfterDownload: boolean;
 };
 
 type DownloadLinkAttributes = {
@@ -28,7 +32,11 @@ type DownloadLinkAttributes = {
     filename: string;
 };
 
-function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage }: Props) {
+function LloydGeorgeDownloadAllStage({
+    numberOfFiles,
+    setStage,
+    deleteAfterDownload = false,
+}: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     const baseUrl = useBaseAPIUrl();
@@ -85,6 +93,19 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage }: Props) {
 
                 const filename = `patient-record-${nhsNumber}`;
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
+                if (deleteAfterDownload) {
+                    try {
+                        await deleteAllDocuments({
+                            docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                            nhsNumber: nhsNumber,
+                            baseUrl,
+                            baseHeaders,
+                        });
+                    } catch (e) {
+                        const error = e as AxiosError;
+                        console.log(error);
+                    }
+                }
             } catch (e) {}
         };
 
