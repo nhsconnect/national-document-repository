@@ -5,6 +5,7 @@ import axios from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { routes } from '../../types/generic/routes';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { UserAuth } from '../../types/blocks/userAuth';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('axios');
@@ -32,11 +33,9 @@ describe('AuthCallbackPage', () => {
             enumerable: true,
             value: new URL(baseUiUrl),
         });
-        window.sessionStorage.clear();
     });
     afterEach(() => {
         jest.clearAllMocks();
-        window.sessionStorage.clear();
         Object.defineProperty(window, 'location', {
             configurable: true,
             enumerable: true,
@@ -57,41 +56,39 @@ describe('AuthCallbackPage', () => {
         });
     });
 
-    it('navigates to UPLOAD_SEARCH page when callback token request is successful and user is GP and isBSOL', async () => {
-        mockedAxios.get.mockImplementation(() =>
-            Promise.resolve({
-                data: buildUserAuth({ isBSOL: true, role: REPOSITORY_ROLE.GP_ADMIN }),
-            }),
-        );
-        renderCallbackPage();
+    const testCases: Array<[Partial<UserAuth>, routes]> = [
+        [{ isBSOL: true, role: REPOSITORY_ROLE.GP_ADMIN }, routes.UPLOAD_SEARCH],
+        [{ isBSOL: false, role: REPOSITORY_ROLE.GP_CLINICAL }, routes.UPLOAD_SEARCH],
+        [{ isBSOL: false, role: REPOSITORY_ROLE.PCSE }, routes.DOWNLOAD_SEARCH],
+        // below two cases are not supposed to happen in current implementation, but anyway check that they don't cause odd result
+        [{ isBSOL: true, role: REPOSITORY_ROLE.GP_CLINICAL }, routes.UPLOAD_SEARCH],
+        [{ isBSOL: true, role: REPOSITORY_ROLE.PCSE }, routes.DOWNLOAD_SEARCH],
+    ];
 
-        expect(screen.getByRole('status')).toBeInTheDocument();
-        expect(screen.getByText('Logging in...')).toBeInTheDocument();
+    it.each(testCases)(
+        'navigates to the correct search patient page according to user role, case: %p',
+        async (authOverride, expectedRoute) => {
+            mockedAxios.get.mockImplementation(() =>
+                Promise.resolve({
+                    data: buildUserAuth(authOverride),
+                }),
+            );
+            renderCallbackPage();
 
-        await waitFor(() => {
-            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UPLOAD_SEARCH);
-        });
-    });
+            expect(screen.getByRole('status')).toBeInTheDocument();
+            expect(screen.getByText('Logging in...')).toBeInTheDocument();
 
-    it('navigates to DOWNLOAD_SEARCH page when callback token request is successful and user role is PCSE', async () => {
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(expectedRoute);
+            });
+        },
+    );
+
+    it('display non-BSOL landing page when user role is GP Admin and isBSOL is false', async () => {
         mockedAxios.get.mockImplementationOnce(() =>
             Promise.resolve({
-                data: buildUserAuth({ role: REPOSITORY_ROLE.PCSE }),
+                data: buildUserAuth({ isBSOL: false, role: REPOSITORY_ROLE.GP_ADMIN }),
             }),
-        );
-        renderCallbackPage();
-
-        expect(screen.getByRole('status')).toBeInTheDocument();
-        expect(screen.getByText('Logging in...')).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.DOWNLOAD_SEARCH);
-        });
-    });
-
-    it('display non-BSOL landing page when user role is GP and isBSOL is false', async () => {
-        mockedAxios.get.mockImplementationOnce(() =>
-            Promise.resolve({ data: buildUserAuth({ isBSOL: false }) }),
         );
         renderCallbackPage();
 
