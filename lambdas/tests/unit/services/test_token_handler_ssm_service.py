@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.constants.ssm import (
-    GP_ADMIN_USER_ROLE_CODE,
+    GP_ADMIN_USER_ROLE_CODES,
     GP_CLINICAL_USER_ROLE_CODE,
     GP_ORG_ROLE_CODE,
     PCSE_ODS_CODE,
@@ -36,7 +36,7 @@ MOCK_ROLE_CODE_RESPONSE = {
             "DataType": "string",
         },
         {
-            "Name": GP_ADMIN_USER_ROLE_CODE,
+            "Name": GP_ADMIN_USER_ROLE_CODES,
             "Type": "StringList",
             "Value": "R0001,R0002,R0003",
             "Version": 123,

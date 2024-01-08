@@ -1,7 +1,7 @@
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.constants.ssm import (
-    GP_ADMIN_USER_ROLE_CODE,
+    GP_ADMIN_USER_ROLE_CODES,
     GP_CLINICAL_USER_ROLE_CODE,
     GP_ORG_ROLE_CODE,
     PCSE_ODS_CODE,
@@ -20,14 +20,14 @@ class TokenHandlerSSMService(SSMService):
         logger.info("starting ssm request to retrieve required smartcard role codes")
         params = self.get_ssm_parameters(
             [
-                GP_ADMIN_USER_ROLE_CODE,
+                GP_ADMIN_USER_ROLE_CODES,
                 GP_CLINICAL_USER_ROLE_CODE,
                 PCSE_USER_ROLE_CODE,
             ]
         )
 
         response = [
-            params.get(GP_ADMIN_USER_ROLE_CODE),
+            params.get(GP_ADMIN_USER_ROLE_CODES),
             params.get(GP_CLINICAL_USER_ROLE_CODE),
             params.get(PCSE_USER_ROLE_CODE),
         ]
@@ -47,8 +47,8 @@ class TokenHandlerSSMService(SSMService):
         logger.info(
             "starting ssm request to retrieve required smartcard role code gp admin"
         )
-        params = self.get_ssm_parameters([GP_ADMIN_USER_ROLE_CODE])
-        values = params.get(GP_ADMIN_USER_ROLE_CODE)
+        params = self.get_ssm_parameters([GP_ADMIN_USER_ROLE_CODES])
+        values = params.get(GP_ADMIN_USER_ROLE_CODES)
 
         if values is None:
             logger.error(
