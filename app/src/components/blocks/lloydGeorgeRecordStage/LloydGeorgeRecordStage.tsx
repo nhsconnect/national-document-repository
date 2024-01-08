@@ -126,7 +126,7 @@ function LloydGeorgeRecordStage({
                         {downloadRemoveButtonClicked && (
                             <InsetText className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text">
                                 <form
-                                    onSubmit={handleConfirmDownloadAndRemoveButton}
+                                    onSubmit={handleSubmit(handleConfirmDownloadAndRemoveButton)}
                                     className={
                                         errors.confirmBsol
                                             ? 'nhsuk-form-group--error'
@@ -163,7 +163,7 @@ function LloydGeorgeRecordStage({
                                     </Fieldset>
                                     <Button
                                         type="submit"
-                                        id="confirm-download-remove-button"
+                                        id="confirm-download-remove"
                                         onClick={handleConfirmDownloadAndRemoveButton}
                                         className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_confirm-download-remove-button"
                                     >
