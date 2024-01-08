@@ -135,8 +135,6 @@ function LloydGeorgeRecordStage({
                                                 ? 'Confirm if you want to download and remove this record'
                                                 : undefined
                                         }
-                                        id="waste"
-                                        name="waste"
                                     >
                                         <Checkboxes.Box
                                             inputRef={inputRef as InputRef}
