@@ -10,6 +10,7 @@ import {
 } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
+import { Button } from 'nhsuk-react-components';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
@@ -147,7 +148,10 @@ function LloydGeorgeRecordStage({
                                     </Checkboxes>
                                 </Fieldset>
 
-                                <button type="submit">Test submit button</button>
+                                <Button type="submit" id="blah">
+                                    {' '}
+                                    Test submit button{' '}
+                                </Button>
                             </form>
                         </InsetText>
                     </WarningCallout>
