@@ -1,5 +1,14 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
-import { BackLink, Card, Details, WarningCallout, InsetText } from 'nhsuk-react-components';
+import {
+    BackLink,
+    Card,
+    Details,
+    WarningCallout,
+    InsetText,
+    Checkboxes,
+    Button,
+    ButtonLink,
+} from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../../generic/pdfViewer/PdfViewer';
@@ -78,7 +87,7 @@ function LloydGeorgeRecordStage({
             )}
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
-                    <WarningCallout id="close-page-warning">
+                    <WarningCallout id="before-downloading-warning">
                         <WarningCallout.Label headingLevel="h2">
                             Before downloading
                         </WarningCallout.Label>
@@ -91,7 +100,34 @@ function LloydGeorgeRecordStage({
                             should follow data protection principles as outlined in UK General Data
                             Protection Regulation (GDPR).
                         </p>
-                        {downloadRemoveButtonClicked && <InsetText>Test</InsetText>}
+                        {downloadRemoveButtonClicked && (
+                            <InsetText>
+                                <h3>Are you sure you want to download and remove this record?</h3>
+                                <p>
+                                    If you download this record, it will remove from our storage.
+                                    You must keep the patient's record safe.
+                                </p>
+                                <Checkboxes>
+                                    <Checkboxes.Box>
+                                        <input className="lloydgeorge_record-stage_gp-admin-non-bsol_checkbox"></input>
+                                        <label>
+                                            I understand that downloading this record removes it
+                                            from storage.
+                                        </label>
+                                    </Checkboxes.Box>
+                                </Checkboxes>
+                                <Button className="lloydgeorge_record-details_yes-download-remove-button">
+                                    Yes, download and remove
+                                </Button>
+                                <ButtonLink
+                                    className="nhsuk-button nhsuk-button--secondary"
+                                    style={{ marginLeft: 72 }}
+                                    role="button"
+                                >
+                                    Cancel
+                                </ButtonLink>
+                            </InsetText>
+                        )}
                     </WarningCallout>
                     <h1>Available records</h1>
                 </div>
