@@ -11,6 +11,9 @@ import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../helpers/hooks/usePatient';
 import { AxiosError } from 'axios';
+import useRole from '../../helpers/hooks/useRole';
+import useIsBSOL from '../../helpers/hooks/useIsBSOL';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -23,6 +26,10 @@ function LloydGeorgeRecordPage() {
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
+
+    const role = useRole();
+    const isBSOL = useIsBSOL();
+    const deleteAfterDownload = role === REPOSITORY_ROLE.GP_ADMIN && isBSOL === false;
 
     useEffect(() => {
         const onPageLoad = async () => {
@@ -86,7 +93,11 @@ function LloydGeorgeRecordPage() {
             );
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
             return (
-                <LloydGeorgeDownloadAllStage numberOfFiles={numberOfFiles} setStage={setStage} />
+                <LloydGeorgeDownloadAllStage
+                    numberOfFiles={numberOfFiles}
+                    setStage={setStage}
+                    deleteAfterDownload={deleteAfterDownload}
+                />
             );
         case LG_RECORD_STAGE.DELETE_ALL:
             return (
