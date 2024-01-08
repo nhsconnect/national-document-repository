@@ -51,7 +51,7 @@ const AuthCallbackPage = (props: Props) => {
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
-                    handleSuccess(buildUserAuth({ isBSOL: true }));
+                    handleSuccess(buildUserAuth());
                 } else {
                     handleError();
                 }
