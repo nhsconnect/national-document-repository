@@ -19,9 +19,8 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(activePatient);
                 cy.get('#search-submit').click();
-                cy.url({ timeout: 10000 }).should('eq', baseUrl + '/fake/test/output');
 
-                // cy.url({ timeout: 10000 }).should('eq', baseUrl + '/search/upload/result');
+                cy.url({ timeout: 10000 }).should('eq', baseUrl + '/search/upload/result');
                 cy.get('#verify-submit').click();
 
                 cy.url({ timeout: 10000 }).should(
