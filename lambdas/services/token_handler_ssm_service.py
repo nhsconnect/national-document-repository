@@ -1,9 +1,15 @@
-import logging
-
 from services.base.ssm_service import SSMService
+from utils.audit_logging_setup import LoggingService
+from utils.constants.ssm import (
+    GP_ADMIN_USER_ROLE_CODES,
+    GP_CLINICAL_USER_ROLE_CODE,
+    GP_ORG_ROLE_CODE,
+    PCSE_ODS_CODE,
+    PCSE_USER_ROLE_CODE,
+)
+from utils.lambda_exceptions import LoginException
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
 class TokenHandlerSSMService(SSMService):
@@ -14,68 +20,116 @@ class TokenHandlerSSMService(SSMService):
         logger.info("starting ssm request to retrieve required smartcard role codes")
         params = self.get_ssm_parameters(
             [
-                "/auth/smartcard/role/gp_admin",
-                "/auth/smartcard/role/gp_clinical",
-                "/auth/smartcard/role/pcse",
+                GP_ADMIN_USER_ROLE_CODES,
+                GP_CLINICAL_USER_ROLE_CODE,
+                PCSE_USER_ROLE_CODE,
             ]
         )
 
         response = [
-            params["/auth/smartcard/role/gp_admin"],
-            params["/auth/smartcard/role/gp_clinical"],
-            params["/auth/smartcard/role/pcse"],
+            params.get(GP_ADMIN_USER_ROLE_CODES),
+            params.get(GP_CLINICAL_USER_ROLE_CODE),
+            params.get(PCSE_USER_ROLE_CODE),
         ]
+
+        if None in response:
+            logger.error(
+                "SSM parameter values for GP admin/clinical or PSCE roles may not exist",
+                {"Result": "Unsuccessful login"},
+            )
+            raise LoginException(
+                500, "Failed to find SSM parameter value for user role"
+            )
 
         return response
 
-    def get_smartcard_role_gp_admin(self) -> str:
+    def get_smartcard_role_gp_admin(self) -> list[str]:
         logger.info(
             "starting ssm request to retrieve required smartcard role code gp admin"
         )
-        params = self.get_ssm_parameters(["/auth/smartcard/role/gp_admin"])
+        params = self.get_ssm_parameters([GP_ADMIN_USER_ROLE_CODES])
+        values = params.get(GP_ADMIN_USER_ROLE_CODES)
 
-        response = params["/auth/smartcard/role/gp_admin"]
+        if values is None:
+            logger.error(
+                "SSM parameter values for GP admin role may not exist",
+                {"Result": "Unsuccessful login"},
+            )
+            raise LoginException(
+                500, "Failed to find SSM parameter value for user role"
+            )
+
+        response = values.split(",")
         return response
 
     def get_smartcard_role_gp_clinical(self) -> str:
         logger.info(
             "starting ssm request to retrieve required smartcard role code gp clinical"
         )
-        params = self.get_ssm_parameters(["/auth/smartcard/role/gp_clinical"])
+        params = self.get_ssm_parameters([GP_CLINICAL_USER_ROLE_CODE])
 
-        logger.info(f"Params: {params}")
-        response = params["/auth/smartcard/role/gp_clinical"]
+        response = params.get(GP_CLINICAL_USER_ROLE_CODE)
+        if response is None:
+            logger.error(
+                "SSM parameter values for GP clinical user role may not exist",
+                {"Result": "Unsuccessful login"},
+            )
+            raise LoginException(
+                500, "Failed to find SSM parameter value for user role"
+            )
+
         return response
 
     def get_smartcard_role_pcse(self) -> str:
         logger.info(
             "starting ssm request to retrieve required smartcard role code pcse"
         )
-        params = self.get_ssm_parameters(["/auth/smartcard/role/pcse"])
-
-        response = params["/auth/smartcard/role/pcse"]
+        params = self.get_ssm_parameters([PCSE_USER_ROLE_CODE])
+        response = params.get(PCSE_USER_ROLE_CODE)
+        if response is None:
+            logger.error(
+                "SSM parameter values for PCSE user role may not exist",
+                {"Result": "Unsuccessful login"},
+            )
+            raise LoginException(
+                500, "Failed to find SSM parameter value for user role"
+            )
         return response
 
     def get_org_role_codes(self) -> list[str]:
         logger.info("starting ssm request to retrieve required org roles codes")
         params = self.get_ssm_parameters(
             [
-                "/auth/org/role_code/gpp",
+                GP_ORG_ROLE_CODE,
             ]
         )
-
-        response = [params["/auth/org/role_code/gpp"]]
+        response = [params.get(GP_ORG_ROLE_CODE)]
+        if None in response:
+            logger.error(
+                "SSM parameter values for GP organisation role code may not exist",
+                {"Result": "Unsuccessful login"},
+            )
+            raise LoginException(
+                500, "Failed to find SSM parameter value for GP org role"
+            )
         return response
 
     def get_org_ods_codes(self) -> list[str]:
         logger.info("starting ssm request to retrieve required org ods codes")
         params = self.get_ssm_parameters(
             [
-                "/auth/org/ods_code/pcse",
+                PCSE_ODS_CODE,
             ]
         )
-
-        response = [params["/auth/org/ods_code/pcse"]]
+        response = [params.get(PCSE_ODS_CODE)]
+        if None in response:
+            logger.error(
+                "SSM parameter values for PSCE ODS code may not exist",
+                {"Result": "Unsuccessful login"},
+            )
+            raise LoginException(
+                500, "SSM parameter values for PSCE ODS code may not exist"
+            )
         return response
 
     def get_jwt_private_key(self) -> list[str]:

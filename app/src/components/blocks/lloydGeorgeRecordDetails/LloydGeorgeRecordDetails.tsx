@@ -8,6 +8,7 @@ import useRole from '../../../helpers/hooks/useRole';
 import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { FieldValues, useForm, UseFormSetError, UseFormSetFocus } from 'react-hook-form';
+import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 
 export type Props = {
     lastUpdated: string;
@@ -75,54 +76,56 @@ function LloydGeorgeRecordDetails({
                     </Button>
                 </div>
             ) : (
-                <div className="lloydgeorge_record-details_actions">
-                    <div
-                        data-testid="actions-menu"
-                        className={`nhsuk-select lloydgeorge_record-details_actions-select ${
-                            showActionsMenu
-                                ? 'lloydgeorge_record-details_actions-select--selected'
-                                : ''
-                        }`}
-                        onClick={handleMoreActions}
-                    >
+                role !== REPOSITORY_ROLE.GP_CLINICAL && (
+                    <div className="lloydgeorge_record-details_actions">
                         <div
-                            className={`lloydgeorge_record-details_actions-select_border ${
+                            data-testid="actions-menu"
+                            className={`nhsuk-select lloydgeorge_record-details_actions-select ${
                                 showActionsMenu
-                                    ? 'lloydgeorge_record-details_actions-select_border--selected'
+                                    ? 'lloydgeorge_record-details_actions-select--selected'
                                     : ''
                             }`}
-                        />
-                        <span className="lloydgeorge_record-details_actions-select_placeholder">
-                            Select an action...
-                        </span>
-                        <Chevron className="lloydgeorge_record-details_actions-select_icon" />
-                    </div>
-                    {showActionsMenu && (
-                        <div ref={actionsRef}>
-                            <Card className="lloydgeorge_record-details_actions-menu">
-                                <Card.Content>
-                                    <ol>
-                                        {actionLinks.map((link) =>
-                                            role && !link.unauthorised?.includes(role) ? (
-                                                <li key={link.key} data-testid={link.key}>
-                                                    <Link
-                                                        to="#"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setStage(link.stage);
-                                                        }}
-                                                    >
-                                                        {link.label}
-                                                    </Link>
-                                                </li>
-                                            ) : null,
-                                        )}
-                                    </ol>
-                                </Card.Content>
-                            </Card>
+                            onClick={handleMoreActions}
+                        >
+                            <div
+                                className={`lloydgeorge_record-details_actions-select_border ${
+                                    showActionsMenu
+                                        ? 'lloydgeorge_record-details_actions-select_border--selected'
+                                        : ''
+                                }`}
+                            />
+                            <span className="lloydgeorge_record-details_actions-select_placeholder">
+                                Select an action...
+                            </span>
+                            <Chevron className="lloydgeorge_record-details_actions-select_icon" />
                         </div>
-                    )}
-                </div>
+                        {showActionsMenu && (
+                            <div ref={actionsRef}>
+                                <Card className="lloydgeorge_record-details_actions-menu">
+                                    <Card.Content>
+                                        <ol>
+                                            {actionLinks.map((link) =>
+                                                role && !link.unauthorised?.includes(role) ? (
+                                                    <li key={link.key} data-testid={link.key}>
+                                                        <Link
+                                                            to="#placeholder"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                setStage(link.stage);
+                                                            }}
+                                                        >
+                                                            {link.label}
+                                                        </Link>
+                                                    </li>
+                                                ) : null,
+                                            )}
+                                        </ol>
+                                    </Card.Content>
+                                </Card>
+                            </div>
+                        )}
+                    </div>
+                )
             )}
         </div>
     );

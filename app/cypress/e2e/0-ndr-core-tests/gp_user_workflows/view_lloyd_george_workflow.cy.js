@@ -319,8 +319,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').click();
-                cy.getByTestId('download-all-files-link').should('not.exist');
+                cy.getByTestId('actions-menu').should('not.exist');
             },
         );
     });
