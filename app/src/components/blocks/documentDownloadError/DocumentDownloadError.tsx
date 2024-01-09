@@ -1,4 +1,4 @@
-import ErrorBox from "../../layout/errorBox/ErrorBox";
+import ErrorBox from '../../layout/errorBox/ErrorBox';
 
 function DocumentDownloadError() {
     return (
