@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import useRole from '../../../helpers/hooks/useRole';
 import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import { FieldValues, UseFormSetError } from 'react-hook-form';
 
 export type Props = {
     lastUpdated: string;
@@ -15,6 +16,8 @@ export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     userIsGpAdminNonBSOL?: boolean;
     setDownloadRemoveButtonClicked: Dispatch<SetStateAction<boolean>>;
+    downloadRemoveButtonClicked: boolean;
+    setError: UseFormSetError<FieldValues>;
 };
 
 function LloydGeorgeRecordDetails({
@@ -24,6 +27,8 @@ function LloydGeorgeRecordDetails({
     setStage,
     userIsGpAdminNonBSOL,
     setDownloadRemoveButtonClicked,
+    downloadRemoveButtonClicked,
+    setError,
 }: Props) {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
@@ -36,6 +41,9 @@ function LloydGeorgeRecordDetails({
     });
 
     const handleDownloadAndRemoveRecordButton = () => {
+        if (downloadRemoveButtonClicked) {
+            setError('confirmDownloadRemove', { type: 'custom', message: 'true' });
+        }
         setDownloadRemoveButtonClicked(true);
     };
 
