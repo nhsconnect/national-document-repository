@@ -52,7 +52,7 @@ function LloydGeorgeRecordStage({
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 
-    const { register, handleSubmit, formState, getFieldState } = useForm({
+    const { register, handleSubmit, formState, getFieldState, clearErrors } = useForm({
         reValidateMode: 'onSubmit',
     });
     const { ref: inputRef, ...checkboxProps } = register('confirmDownloadRemove', {
@@ -91,9 +91,14 @@ function LloydGeorgeRecordStage({
         }
     };
 
+    const handleCancelButton = () => {
+        setDownloadRemoveButtonClicked(false);
+        clearErrors('confirmDownloadRemove');
+    };
+
     return (
         <div className="lloydgeorge_record-stage">
-            {formState.errors.confirmDownloadRemove && downloadRemoveButtonClicked && (
+            {formState.errors.confirmDownloadRemove && (
                 <ErrorBox
                     errorBoxSummaryId="confirm-download-and-remove"
                     messageTitle="There is a problem"
@@ -173,9 +178,7 @@ function LloydGeorgeRecordStage({
                                         Yes, download and remove
                                     </Button>
                                     <ButtonLink
-                                        onClick={() => {
-                                            setDownloadRemoveButtonClicked(false);
-                                        }}
+                                        onClick={handleCancelButton}
                                         className="nhsuk-button nhsuk-button--secondary"
                                         style={{ marginLeft: 30 }}
                                         role="button"
