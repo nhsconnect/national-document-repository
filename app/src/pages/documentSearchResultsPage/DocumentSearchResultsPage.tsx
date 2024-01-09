@@ -16,6 +16,7 @@ import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/D
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import DocumentDownloadError from "../../components/blocks/documentDownloadError/DocumentDownloadError";
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
@@ -79,6 +80,7 @@ function DocumentSearchResultsPage() {
                 downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
 
             {<PatientSummary />}
+            {<DocumentDownloadError />}
 
             {submissionState === SUBMISSION_STATE.PENDING && (
                 <ProgressBar status="Loading..."></ProgressBar>
