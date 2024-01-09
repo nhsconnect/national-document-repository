@@ -52,12 +52,13 @@ function LloydGeorgeRecordStage({
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-    } = useForm({ reValidateMode: 'onSubmit' });
-    const { ref: inputRef, ...checkboxProps } = register('confirmBsol', { required: true });
+    const { register, handleSubmit, formState, getFieldState } = useForm({
+        reValidateMode: 'onSubmit',
+    });
+    const { ref: inputRef, ...checkboxProps } = register('confirmDownloadRemove', {
+        required: true,
+    });
+    const { isDirty: isCheckboxDirty } = getFieldState('confirmDownloadRemove', formState);
 
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
@@ -85,12 +86,14 @@ function LloydGeorgeRecordStage({
     };
 
     const handleConfirmDownloadAndRemoveButton = () => {
-        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+        if (isCheckboxDirty) {
+            setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+        }
     };
 
     return (
         <div className="lloydgeorge_record-stage">
-            {errors.confirmBsol && (
+            {formState.errors.confirmDownloadRemove && (
                 <ErrorBox
                     errorBoxSummaryId="78"
                     messageTitle="There is a problem"
@@ -128,7 +131,7 @@ function LloydGeorgeRecordStage({
                                 <form
                                     onSubmit={handleSubmit(handleConfirmDownloadAndRemoveButton)}
                                     className={
-                                        errors.confirmBsol
+                                        formState.errors.confirmDownloadRemove
                                             ? 'nhsuk-form-group--error'
                                             : 'nhsuk-form-group'
                                     }
@@ -146,7 +149,7 @@ function LloydGeorgeRecordStage({
                                             name="confirm-download-remove"
                                             id="confirm-download-remove"
                                             error={
-                                                errors.confirmBsol
+                                                formState.errors.confirmDownloadRemove
                                                     ? 'Confirm if you want to download and remove this record'
                                                     : undefined
                                             }
