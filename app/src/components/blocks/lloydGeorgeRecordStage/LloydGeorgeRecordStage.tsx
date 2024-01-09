@@ -52,10 +52,9 @@ function LloydGeorgeRecordStage({
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 
-    const { register, handleSubmit, formState, getFieldState, clearErrors, setError, setFocus } =
-        useForm({
-            reValidateMode: 'onSubmit',
-        });
+    const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
+        reValidateMode: 'onSubmit',
+    });
     const { ref: inputRef, ...checkboxProps } = register('confirmDownloadRemove', {
         required: true,
     });
@@ -174,7 +173,6 @@ function LloydGeorgeRecordStage({
                                     <Button
                                         type="submit"
                                         id="confirm-download-remove"
-                                        // onClick={handleConfirmDownloadAndRemoveButton}
                                         className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_confirm-download-remove-button"
                                     >
                                         Yes, download and remove

@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import useRole from '../../../helpers/hooks/useRole';
 import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
-import { FieldValues, useForm, UseFormSetError, UseFormSetFocus } from 'react-hook-form';
+import { FieldValues, UseFormSetError, UseFormSetFocus } from 'react-hook-form';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 
 export type Props = {
