@@ -78,7 +78,7 @@ describe('Home Page', () => {
 
                 cy.getByTestId('search-patient-btn').click();
 
-                cy.url().should('eq', baseUrl + '/search/upload');
+                cy.url().should('eq', baseUrl + searchUrl);
 
                 cy.get('.nhsuk-header__navigation').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
@@ -90,7 +90,7 @@ describe('Home Page', () => {
             () => {
                 cy.login(Roles.GP_ADMIN, true);
 
-                cy.url().should('eq', baseUrl + '/search/upload');
+                cy.url().should('eq', baseUrl + searchUrl);
                 cy.get('h1').should(
                     'not.include.text',
                     'You’re outside of Birmingham and Solihull (BSOL)',
