@@ -1,36 +1,27 @@
-/// <reference types="cypress" />
-// ***********************************************************
-// This example support/e2e.ts is processed and
-// loaded automatically before your test files.
-//
-// This is a great place to put global configuration and
-// behavior that modifies Cypress.
-//
-// You can change the location of this file or turn off
-// automatically serving support files with the
-// 'supportFile' configuration option.
-//
-// You can read more here:
-// https://on.cypress.io/configuration
-// ***********************************************************
-
-import './commands';
-import './aws.commands';
+import { DynamoDB, S3 } from 'aws-sdk';
 import { Roles, roleIds, roleList } from './roles';
-
+import Bluebird from 'cypress/types/bluebird';
+/// <reference types="cypress" />
+const registerCypressGrep = require('@cypress/grep');
+registerCypressGrep();
 
 Cypress.Commands.add('getByTestId', (selector, ...args) => {
     return cy.get(`[data-testid=${selector}]`, ...args);
 });
 
-Cypress.Commands.add('login', (role) => {
+Cypress.Commands.add('login', (role, isBSOL = true) => {
     if (roleIds.includes(role)) {
         const roleName = roleList.find((roleName) => Roles[roleName] === role);
         // Login for regression tests
         const authCallback = '/auth-callback';
+        const fixturePath =
+            role === Roles.GP_ADMIN && !isBSOL
+                ? 'requests/auth/GET_TokenRequest_GP_ADMIN_non_bsol.json'
+                : 'requests/auth/GET_TokenRequest_' + roleName + '.json';
+
         cy.intercept('GET', '/Auth/TokenRequest*', {
             statusCode: 200,
-            fixture: 'requests/auth/GET_TokenRequest_' + roleName + '.json',
+            fixture: fixturePath,
         }).as('auth');
         cy.visit(authCallback);
         cy.wait('@auth');
@@ -91,49 +82,61 @@ declare global {
              * @param {string} value - The value of the data-testid attribute of the target DOM element.
              * @return {HTMLElement} - Target DOM element.
              */
-            getByTestId(value: string);
+            getByTestId(value: string): Chainable<JQuery<HTMLElement>>;
             /**
              * Mock user login by intercepting the {baseUrl}/auth-callback request
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
+             * @param {boolean} isBSOL - Whether the user GP is located in BSOL area
              */
-            login(role: Roles);
+            login(role: Roles, isBSOL?: boolean): Chainable<void>;
+
             /**
              * Real user login via CIS2 and redirect back to {baseUrl}/auth-callback.
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
              */
-            smokeLogin(role: Roles);
+            smokeLogin(role: Roles): Chainable<void>;
             /**
              * Add file to s3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
              * @param {string} fileName - Filepath of the file to upload
              * @param {string} fileContent - Content of the file to upload
+             * @return {Promise<SendData>} - S3 response for s3.upload
              */
             addFileToS3(
                 bucketName: string,
                 fileName: string,
-                fileContent: string,
-            ): Chainable<Subject>;
+                fileContent: S3.Body,
+            ): Chainable<Bluebird<S3.ManagedUpload.SendData>>;
             /**
              * Add dynamoDB entry
              * @param {string} tableName - Name of the target dynamoDB table
              * @param {{ [key: string]: any; }} item - dynamoDB item to upload
+             * @return {Promise<PutItemOutput>} - Dynamo response for dynamoDB.putItem
              */
             addItemToDynamoDb(
                 tableName: string,
-                item: { [key: string]: string },
-            ): Chainable<Subject>;
+                item: DynamoDB.PutItemInputAttributeMap,
+            ): Chainable<Bluebird<DynamoDB.PutItemOutput>>;
             /**
              * Delete file from S3 bucket
              * @param {string} bucketName - Name of the target S3 bucket
              * @param {string} fileName - Filepath of the file to delete
+             * @return {Promise<DeleteObjectOutput>} - S3 response for s3.deleteObject
              */
-            deleteFileFromS3(bucketName: string, fileName: string): Chainable<Subject>;
+            deleteFileFromS3(
+                bucketName: string,
+                fileName: string,
+            ): Chainable<Bluebird<S3.DeleteObjectOutput>>;
             /**
              * Delete item from DynamoDB table
              * @param {string} tableName - Name of the target DynamoDB table
              * @param {string} itemId - ID of the item to delete
+             * @return {Promise<DeleteItemOutput>} - Dynamo response for dynamoDB.deleteItem
              */
-            deleteItemFromDynamoDb(tableName: string, itemId: string): Chainable<Subject>;
+            deleteItemFromDynamoDb(
+                tableName: string,
+                itemId: string,
+            ): Chainable<Bluebird<DynamoDB.DeleteItemOutput>>;
         }
     }
 }

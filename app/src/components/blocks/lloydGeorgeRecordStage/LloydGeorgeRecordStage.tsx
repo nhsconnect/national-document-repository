@@ -118,7 +118,9 @@ function LloydGeorgeRecordStage({
 
                         <InsetText>
                             <form
-                                onSubmit={handleSubmit(() => console.log(errors))}
+                                onSubmit={handleSubmit(() => {
+                                    // Success handler here
+                                })}
                                 className={
                                     errors.confirmBsol
                                         ? 'nhsuk-form-group--error'
@@ -135,8 +137,6 @@ function LloydGeorgeRecordStage({
                                                 ? 'Confirm if you want to download and remove this record'
                                                 : undefined
                                         }
-                                        id="waste"
-                                        name="waste"
                                     >
                                         <Checkboxes.Box
                                             inputRef={inputRef as InputRef}
@@ -155,9 +155,10 @@ function LloydGeorgeRecordStage({
                             </form>
                         </InsetText>
                     </WarningCallout>
+
+                    <h1>Available records</h1>
                 </div>
             )}
-            <h1>Available records</h1>
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
                 <p data-testid="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}

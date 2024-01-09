@@ -157,8 +157,8 @@ class LoginService:
         logger.info(f"Smartcard Role: {smartcard_role}")
 
         if (
-            self.token_handler_ssm_service.get_smartcard_role_gp_admin()
-            == smartcard_role
+            smartcard_role
+            in self.token_handler_ssm_service.get_smartcard_role_gp_admin()
         ):
             logger.info("GP Admin: smartcard ODS identified")
             if self.has_role_org_role_code(
