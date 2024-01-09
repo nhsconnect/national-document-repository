@@ -171,6 +171,9 @@ $govuk-compatibility-govukelements: true;
                     &:hover {
                         background-color: #9a0c02;
                     }
+                    &:active {
+                        background-color: #9a0c02;
+                    }
                 }
                 &_checkbox {
                     margin-bottom: 20px;
