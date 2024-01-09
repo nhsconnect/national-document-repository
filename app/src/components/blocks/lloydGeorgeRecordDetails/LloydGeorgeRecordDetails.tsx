@@ -46,8 +46,8 @@ function LloydGeorgeRecordDetails({
     const handleDownloadAndRemoveRecordButton = () => {
         if (downloadRemoveButtonClicked) {
             setError('confirmDownloadRemove', { type: 'custom', message: 'true' });
-            setFocus('confirmDownloadRemove');
         }
+        setFocus('confirmDownloadRemove');
         setDownloadRemoveButtonClicked(true);
     };
 
