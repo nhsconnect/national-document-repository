@@ -52,7 +52,7 @@ function LloydGeorgeRecordStage({
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 
-    const { register, handleSubmit, formState, getFieldState, clearErrors, setError } = useForm({
+    const { register, handleSubmit, formState, getFieldState, clearErrors } = useForm({
         reValidateMode: 'onSubmit',
     });
     const { ref: inputRef, ...checkboxProps } = register('confirmDownloadRemove', {
@@ -79,7 +79,6 @@ function LloydGeorgeRecordStage({
                 userIsGpAdminNonBSOL,
                 setDownloadRemoveButtonClicked,
                 downloadRemoveButtonClicked,
-                setError,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         } else {
