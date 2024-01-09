@@ -32,35 +32,35 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.DOWNLOAD_RECORD.value
     logger.info("Starting document manifest process")
-    try:
-        nhs_number = event["queryStringParameters"]["patientId"]
-        doc_type = extract_document_type_as_enum(
-            event["queryStringParameters"]["docType"]
-        )
-        request_context.patient_nhs_no = nhs_number
-
-        document_manifest_service = DocumentManifestService(nhs_number)
-        response = document_manifest_service.create_document_manifest_presigned_url(
-            doc_type
-        )
-
-        logger.audit_splunk_info(
-            "User has downloaded Lloyd George records",
-            {"Result": "Successful download"},
-        )
-
-        return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
-
-    except DocumentManifestServiceException as e:
-        logger.error(str(e), {"Result": f"Unsuccessful download due to {str(e)}"})
-        return ApiGatewayResponse(
-            e.status_code,
-            f"An error occurred when creating document manifest: {str(e.message)}",
-            "GET",
-        ).create_api_gateway_response()
-    except ClientError as e:
-        logger.error(str(e), {"Result": f"Unsuccessful download due to {str(e)}"})
-        response = ApiGatewayResponse(
-            500, f"An error occurred when creating document manifest: {str(e)}", "GET"
-        ).create_api_gateway_response()
-        return response
+    # try:
+    #     nhs_number = event["queryStringParameters"]["patientId"]
+    #     doc_type = extract_document_type_as_enum(
+    #         event["queryStringParameters"]["docType"]
+    #     )
+    #     request_context.patient_nhs_no = nhs_number
+    #
+    #     document_manifest_service = DocumentManifestService(nhs_number)
+    #     response = document_manifest_service.create_document_manifest_presigned_url(
+    #         doc_type
+    #     )
+    #
+    #     logger.audit_splunk_info(
+    #         "User has downloaded Lloyd George records",
+    #         {"Result": "Successful download"},
+    #     )
+    #
+    #     return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
+    #
+    # except DocumentManifestServiceException as e:
+    #     logger.error(str(e), {"Result": f"Unsuccessful download due to {str(e)}"})
+    #     return ApiGatewayResponse(
+    #         e.status_code,
+    #         f"An error occurred when creating document manifest: {str(e.message)}",
+    #         "GET",
+    #     ).create_api_gateway_response()
+    # except ClientError as e:
+    #logger.error(str(e), {"Result": f"Unsuccessful download due to {str(e)}"})
+    response = ApiGatewayResponse(
+        500, "An error occurred when creating document manifest", "GET"
+    ).create_api_gateway_response()
+    return response
