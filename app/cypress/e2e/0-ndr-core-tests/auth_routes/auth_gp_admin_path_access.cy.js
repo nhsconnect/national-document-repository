@@ -16,45 +16,57 @@ const baseUrl = Cypress.config('baseUrl');
 
 const forbiddenRoutes = ['/search/patient', '/search/patient/result', '/search/results'];
 
-describe('GP Admin user role has access to the expected GP_ADMIM workflow paths', () => {
-    context('GP Admin role has access to expected routes', () => {
-        it('GP Admin role has access to Lloyd George View', { tags: 'regression' }, () => {
-            cy.intercept('GET', '/SearchPatient*', {
-                statusCode: 200,
-                body: patient,
-            }).as('search');
+const bsolOptions = [true, false];
 
-            cy.login(Roles.GP_ADMIN);
-            cy.url().should('eq', baseUrl + '/search/upload');
+describe('GP Admin user role has access to the expected GP_ADMIN workflow paths', () => {
+    bsolOptions.forEach((isBSOL) => {
+        const prefix = isBSOL ? '[BSOL]' : '[Non-BSOL]';
+        context(`${prefix} GP Admin role has access to expected routes`, () => {
+            it('GP Admin role has access to Lloyd George View', { tags: 'regression' }, () => {
+                cy.intercept('GET', '/SearchPatient*', {
+                    statusCode: 200,
+                    body: patient,
+                }).as('search');
 
-            cy.get('#nhs-number-input').click();
-            cy.get('#nhs-number-input').type(testPatient);
-            cy.get('#search-submit').click();
-            cy.wait('@search');
+                cy.login(Roles.GP_ADMIN, isBSOL);
+                if (!isBSOL) {
+                    cy.getByTestId('search-patient-btn').click();
+                }
 
-            cy.url().should('include', 'upload');
-            cy.url().should('eq', baseUrl + '/search/upload/result');
+                cy.url().should('eq', baseUrl + '/search/upload');
 
-            cy.get('#verify-submit').click();
+                cy.get('#nhs-number-input').click();
+                cy.get('#nhs-number-input').type(testPatient);
+                cy.get('#search-submit').click();
+                cy.wait('@search');
 
-            cy.url().should('include', 'lloyd-george-record');
-            cy.url().should('eq', baseUrl + '/search/patient/lloyd-george-record');
+                cy.url().should('include', 'upload');
+                cy.url().should('eq', baseUrl + '/search/upload/result');
+
+                cy.get('#verify-submit').click();
+
+                cy.url().should('include', 'lloyd-george-record');
+                cy.url().should('eq', baseUrl + '/search/patient/lloyd-george-record');
+            });
         });
     });
 });
 
 describe('GP Admin user role cannot access expected forbidden routes', () => {
-    context('GP Admin role has no access to forbidden routes', () => {
-        forbiddenRoutes.forEach((forbiddenRoute) => {
-            it(
-                'GP Admin role cannot access route ' + forbiddenRoute,
-                { tags: 'regression' },
-                () => {
-                    cy.login(Roles.GP_ADMIN);
-                    cy.visit(forbiddenRoute);
-                    cy.url().should('include', 'unauthorised');
-                },
-            );
+    bsolOptions.forEach((isBSOL) => {
+        const prefix = isBSOL ? '[BSOL]' : '[Non-BSOL]';
+        context(`${prefix} GP Admin role has no access to forbidden routes`, () => {
+            forbiddenRoutes.forEach((forbiddenRoute) => {
+                it(
+                    'GP Admin role cannot access route ' + forbiddenRoute,
+                    { tags: 'regression' },
+                    () => {
+                        cy.login(Roles.GP_ADMIN, isBSOL);
+                        cy.visit(forbiddenRoute);
+                        cy.url().should('include', 'unauthorised');
+                    },
+                );
+            });
         });
     });
 });

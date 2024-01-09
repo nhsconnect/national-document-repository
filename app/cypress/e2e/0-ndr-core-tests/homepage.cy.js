@@ -58,6 +58,48 @@ describe('Home Page', () => {
                 cy.get('.nhsuk-header__navigation-list').should('exist');
             },
         );
+
+        it(
+            'should display non-BSOL landing page when user is GP_ADMIN role in non-BSOL area',
+            { tags: 'regression' },
+            () => {
+                cy.login(Roles.GP_ADMIN, false);
+
+                cy.get('h1').should(
+                    'include.text',
+                    'You’re outside of Birmingham and Solihull (BSOL)',
+                );
+
+                cy.get('.govuk-warning-text__text').should('exist');
+                cy.get('.govuk-warning-text__text').should(
+                    'include.text',
+                    'Downloading a record will remove it from our storage.',
+                );
+
+                cy.getByTestId('search-patient-btn').click();
+
+                cy.url().should('eq', baseUrl + searchUrl);
+
+                cy.get('.nhsuk-header__navigation').should('exist');
+                cy.get('.nhsuk-header__navigation-list').should('exist');
+            },
+        );
+        it(
+            'should display patient search page when user is GP_ADMIN role in BSOL area',
+            { tags: 'regression' },
+            () => {
+                cy.login(Roles.GP_ADMIN, true);
+
+                cy.url().should('eq', baseUrl + searchUrl);
+                cy.get('h1').should(
+                    'not.include.text',
+                    'You’re outside of Birmingham and Solihull (BSOL)',
+                );
+
+                cy.get('.nhsuk-header__navigation').should('exist');
+                cy.get('.nhsuk-header__navigation-list').should('exist');
+            },
+        );
     });
 
     context('Logout tests', () => {
