@@ -47,7 +47,7 @@ function LloydGeorgeRecordDetails({
         if (downloadRemoveButtonClicked) {
             setError('confirmDownloadRemove', { type: 'custom', message: 'true' });
         }
-        setFocus('inputRef');
+        setFocus('confirmDownloadRemove');
         setDownloadRemoveButtonClicked(true);
     };
 

@@ -169,7 +169,7 @@ describe('LloydGeorgeRecordDetails', () => {
                 type: 'custom',
                 message: 'true',
             });
-            expect(mockSetFocus).toHaveBeenCalledWith('inputRef');
+            expect(mockSetFocus).toHaveBeenCalledWith('confirmDownloadRemove');
         });
     });
 });
