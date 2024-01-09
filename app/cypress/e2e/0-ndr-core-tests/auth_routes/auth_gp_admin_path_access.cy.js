@@ -16,10 +16,6 @@ const baseUrl = Cypress.config('baseUrl');
 
 const forbiddenRoutes = ['/search/patient', '/search/patient/result', '/search/results'];
 
-const clickSearchPatientButton = async () => {
-    cy.getByTestId('search-patient-btn').click();
-};
-
 const bsolOptions = [true, false];
 
 describe('GP Admin user role has access to the expected GP_ADMIN workflow paths', () => {
@@ -34,7 +30,7 @@ describe('GP Admin user role has access to the expected GP_ADMIN workflow paths'
 
                 cy.login(Roles.GP_ADMIN, isBSOL);
                 if (!isBSOL) {
-                    clickSearchPatientButton();
+                    cy.getByTestId('search-patient-btn').click();
                 }
 
                 cy.url().should('eq', baseUrl + '/search/upload');
