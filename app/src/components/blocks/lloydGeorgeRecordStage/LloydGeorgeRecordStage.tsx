@@ -173,6 +173,9 @@ function LloydGeorgeRecordStage({
                                         Yes, download and remove
                                     </Button>
                                     <ButtonLink
+                                        onClick={() => {
+                                            setDownloadRemoveButtonClicked(false);
+                                        }}
                                         className="nhsuk-button nhsuk-button--secondary"
                                         style={{ marginLeft: 30 }}
                                         role="button"
