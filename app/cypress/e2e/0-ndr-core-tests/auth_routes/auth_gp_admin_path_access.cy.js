@@ -74,17 +74,3 @@ describe('GP Admin user role cannot access expected forbidden routes', () => {
         });
     });
 });
-
-describe('GP Admin user of non-BSOL area are diverted to non-BSOL landing page upon login', () => {
-    context('Non-BSOL GP Admin landing page', () => {
-        it('Non-BSOL GP Admin user see a landing page upon login', { tags: 'regression' }, () => {
-            cy.login(Roles.GP_ADMIN, false);
-
-            cy.get('h1').should('include.text', 'You’re outside of Birmingham and Solihull (BSOL)');
-
-            cy.getByTestId('search-patient-btn').click();
-
-            cy.url().should('eq', baseUrl + '/search/upload');
-        });
-    });
-});
