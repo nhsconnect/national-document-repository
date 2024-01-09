@@ -17,6 +17,7 @@ import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import DocumentDownloadError from "../../components/blocks/documentDownloadError/DocumentDownloadError";
+import BackButton from "../../components/generic/backButton/BackButton";
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
@@ -81,6 +82,7 @@ function DocumentSearchResultsPage() {
 
             {<PatientSummary />}
             {<DocumentDownloadError />}
+            {<BackButton/>}
 
             {submissionState === SUBMISSION_STATE.PENDING && (
                 <ProgressBar status="Loading..."></ProgressBar>
