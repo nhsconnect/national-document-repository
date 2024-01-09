@@ -88,7 +88,7 @@ declare global {
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
              * @param {boolean} isBSOL - Whether the user GP is located in BSOL area
              */
-            login(role: Roles, isBSOL?: boolean);
+            login(role: Roles, isBSOL?: boolean): Chainable<void>;
 
             /**
              * Real user login via CIS2 and redirect back to {baseUrl}/auth-callback.
