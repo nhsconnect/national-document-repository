@@ -155,6 +155,7 @@ function LloydGeorgeRecordStage({
                                             You must keep the patient's record safe."
                                         />
                                         <Checkboxes
+                                            className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_checkbox"
                                             name="confirm-download-remove"
                                             id="confirm-download-remove"
                                             error={
@@ -164,7 +165,6 @@ function LloydGeorgeRecordStage({
                                             }
                                         >
                                             <Checkboxes.Box
-                                                className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_checkbox"
                                                 value="confirm-download-remove"
                                                 inputRef={inputRef as InputRef}
                                                 {...checkboxProps}
