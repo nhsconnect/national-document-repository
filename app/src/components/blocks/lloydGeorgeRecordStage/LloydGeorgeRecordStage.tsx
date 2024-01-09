@@ -59,7 +59,6 @@ function LloydGeorgeRecordStage({
     const { ref: inputRef, ...checkboxProps } = register('confirmDownloadRemove', {
         required: true,
     });
-    const { isDirty: isCheckboxDirty } = getFieldState('confirmDownloadRemove', formState);
 
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
@@ -90,9 +89,7 @@ function LloydGeorgeRecordStage({
     };
 
     const handleConfirmDownloadAndRemoveButton = () => {
-        if (isCheckboxDirty) {
-            setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
-        }
+        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
     };
 
     const handleCancelButton = () => {
@@ -177,7 +174,7 @@ function LloydGeorgeRecordStage({
                                     <Button
                                         type="submit"
                                         id="confirm-download-remove"
-                                        onClick={handleConfirmDownloadAndRemoveButton}
+                                        // onClick={handleConfirmDownloadAndRemoveButton}
                                         className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_confirm-download-remove-button"
                                     >
                                         Yes, download and remove
