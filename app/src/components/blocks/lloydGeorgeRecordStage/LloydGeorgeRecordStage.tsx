@@ -93,9 +93,9 @@ function LloydGeorgeRecordStage({
 
     return (
         <div className="lloydgeorge_record-stage">
-            {formState.errors.confirmDownloadRemove && (
+            {formState.errors.confirmDownloadRemove && downloadRemoveButtonClicked && (
                 <ErrorBox
-                    errorBoxSummaryId="78"
+                    errorBoxSummaryId="confirm-download-and-remove"
                     messageTitle="There is a problem"
                     errorBody="You must confirm if you want to download and remove this record"
                 />
