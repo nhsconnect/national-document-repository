@@ -172,6 +172,9 @@ $govuk-compatibility-govukelements: true;
                         background-color: #9a0c02;
                     }
                 }
+                &_checkbox {
+                    margin-bottom: 20px;
+                }
             }
         }
     }
@@ -319,4 +322,9 @@ $govuk-compatibility-govukelements: true;
     border: 3px solid $color_nhsuk-yellow;
     background: $color_nhsuk-yellow;
     color: $nhsuk-text-color;
+}
+
+.govuk-warning-text {
+    display: flex;
+    align-items: center;
 }
