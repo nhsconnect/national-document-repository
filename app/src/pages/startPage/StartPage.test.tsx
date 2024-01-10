@@ -1,9 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import HomePage from './StartPage';
-import { useNavigate } from 'react-router';
+import StartPage from './StartPage';
 
 jest.mock('react-router');
-const mockNavigate = useNavigate as jest.Mock<typeof useNavigate>;
 
 describe('StartPage', () => {
     afterEach(() => {
@@ -11,10 +9,7 @@ describe('StartPage', () => {
     });
 
     it('renders the page header', () => {
-        const mockUseNavigate = jest.fn();
-        mockNavigate.mockImplementation(() => mockUseNavigate);
-
-        render(<HomePage />);
+        render(<StartPage />);
 
         expect(
             screen.getByRole('heading', {
@@ -23,11 +18,7 @@ describe('StartPage', () => {
         ).toBeInTheDocument();
     });
 
-    it('renders home page content', () => {
-        const mockNavigate = jest.fn();
-        const mockUseNavigate = jest.fn();
-        mockNavigate.mockImplementation(() => mockUseNavigate);
-
+    it('renders start page content', () => {
         const contentStrings = [
             'This service gives you access to Lloyd George digital health records. ' +
                 'You may have received a note within a patient record, stating that the record has been digitised.',
@@ -42,7 +33,7 @@ describe('StartPage', () => {
             'patient details including their name, date of birth and NHS number',
         ];
 
-        render(<HomePage />);
+        render(<StartPage />);
 
         contentStrings.forEach((s) => {
             expect(screen.getByText(s)).toBeInTheDocument();
@@ -63,10 +54,7 @@ describe('StartPage', () => {
     });
 
     it('renders a service link that takes you to service help-desk in a new tab', () => {
-        const mockUseNavigate = jest.fn();
-        mockNavigate.mockImplementation(() => mockUseNavigate);
-
-        render(<HomePage />);
+        render(<StartPage />);
 
         expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
         const nationalServiceDeskLink = screen.getByRole('link', {

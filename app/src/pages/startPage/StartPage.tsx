@@ -10,7 +10,7 @@ import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 type Props = {};
 
-function HomePage(props: Props) {
+function StartPage(props: Props) {
     const navigate = useNavigate();
     const baseAPIUrl = useBaseAPIUrl();
     const [isLoading, setIsLoading] = useState(false);
@@ -83,4 +83,4 @@ function HomePage(props: Props) {
     );
 }
 
-export default HomePage;
+export default StartPage;
