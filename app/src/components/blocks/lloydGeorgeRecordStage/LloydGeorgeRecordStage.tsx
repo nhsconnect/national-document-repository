@@ -147,7 +147,7 @@ function LloydGeorgeRecordStage({
                                             record?
                                         </h4>
                                         <WarningText
-                                            text="If you download this record, it will remove from our storage.
+                                            text="If you download this record, it removes from our storage.
                                             You must keep the patient's record safe."
                                         />
                                         <Checkboxes

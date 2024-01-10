@@ -175,7 +175,7 @@ describe('LloydGeorgeRecordStage', () => {
             });
             expect(
                 screen.getByText(
-                    "If you download this record, it will remove from our storage. You must keep the patient's record safe.",
+                    "If you download this record, it removes from our storage. You must keep the patient's record safe.",
                 ),
             ).toBeInTheDocument();
             expect(
@@ -300,7 +300,6 @@ describe('LloydGeorgeRecordStage', () => {
     });
 });
 const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
-    // const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
     return <LgRecordStage {...props} setStage={mockSetStage} stage={LG_RECORD_STAGE.RECORD} />;
 };
 
