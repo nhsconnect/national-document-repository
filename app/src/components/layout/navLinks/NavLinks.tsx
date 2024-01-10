@@ -16,7 +16,7 @@ const NavLinks = () => {
 
     return session.isLoggedIn ? (
         <Header.Nav>
-            <Header.NavItem role="link" className="clickable" onClick={(e) => nav(e, routes.START)}>
+            <Header.NavItem role="link" className="clickable" onClick={(e) => nav(e, routes.HOME)}>
                 Home
             </Header.NavItem>
             <Header.NavItem
