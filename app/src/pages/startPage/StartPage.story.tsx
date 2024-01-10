@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Component from './HomePage';
+import Component from './StartPage';
 
 const meta = {
     title: 'Pages/HomePage',

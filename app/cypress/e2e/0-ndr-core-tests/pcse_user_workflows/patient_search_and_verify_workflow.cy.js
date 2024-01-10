@@ -16,6 +16,10 @@ describe('PCSE Workflow: patient search and verify', () => {
 
     beforeEach(() => {
         cy.visit(homeUrl);
+        cy.login(Roles.PCSE);
+
+        cy.getByTestId('search-patient-btn').should('exist');
+        cy.getByTestId('search-patient-btn').click();
     });
 
     it(
@@ -23,11 +27,11 @@ describe('PCSE Workflow: patient search and verify', () => {
         { tags: 'regression' },
         () => {
             const testPatient = '9000000009';
-            cy.login(Roles.PCSE);
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
                 body: patient,
             }).as('search');
+
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
             cy.get('#search-submit').click();
@@ -51,7 +55,6 @@ describe('PCSE Workflow: patient search and verify', () => {
                 },
             }).as('search');
 
-            cy.login(Roles.PCSE);
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
 
@@ -75,7 +78,6 @@ describe('PCSE Workflow: patient search and verify', () => {
                 },
             }).as('search');
 
-            cy.login(Roles.PCSE);
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
 

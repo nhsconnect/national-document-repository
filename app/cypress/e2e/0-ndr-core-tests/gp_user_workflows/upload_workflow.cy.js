@@ -33,6 +33,8 @@ const navigateToUploadPage = () => {
         body: patient,
     }).as('search');
 
+    cy.getByTestId('search-patient-btn').should('exist');
+    cy.getByTestId('search-patient-btn').click();
     cy.get('#nhs-number-input').click();
     cy.get('#nhs-number-input').type(testPatient);
 

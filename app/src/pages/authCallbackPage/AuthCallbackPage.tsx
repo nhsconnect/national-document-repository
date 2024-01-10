@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import getAuthToken, { AuthTokenArgs } from '../../helpers/requests/getAuthToken';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
 import { routes } from '../../types/generic/routes';
@@ -8,19 +8,15 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { AxiosError } from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
-import NonBsolLandingPage from '../nonBsolLandingPage/NonBsolLandingPage';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 type Props = {};
 
 const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
-    const [session, setSession] = useSessionContext();
-    const [isLoading, setIsLoading] = useState(true);
-    const shouldShowNonBSOLPage = !isLoading && userIsGpAdminNonBSOL(session?.auth);
+    const [, setSession] = useSessionContext();
     const navigate = useNavigate();
-
     useEffect(() => {
         const handleError = () => {
             setSession({
@@ -31,16 +27,16 @@ const AuthCallbackPage = (props: Props) => {
             navigate(routes.AUTH_ERROR);
         };
         const handleSuccess = (auth: UserAuth) => {
+            const { GP_ADMIN, GP_CLINICAL, PCSE } = REPOSITORY_ROLE;
             setSession({
                 auth: auth,
                 isLoggedIn: true,
             });
 
-            setIsLoading(false);
-
-            if (!userIsGpAdminNonBSOL(auth)) {
-                const nextPage = searchPatientPageByUserRole(auth);
-                navigate(nextPage);
+            if ([GP_ADMIN, GP_CLINICAL, PCSE].includes(auth.role)) {
+                navigate(routes.HOME);
+            } else {
+                navigate(routes.AUTH_ERROR);
             }
         };
 
@@ -64,27 +60,7 @@ const AuthCallbackPage = (props: Props) => {
         void handleCallback({ baseUrl, code, state });
     }, [baseUrl, setSession, navigate]);
 
-    return shouldShowNonBSOLPage ? <NonBsolLandingPage /> : <Spinner status="Logging in..." />;
-};
-
-const userIsGpAdminNonBSOL = (auth: UserAuth | null): boolean => {
-    if (!auth) {
-        return false;
-    }
-
-    return auth.role === REPOSITORY_ROLE.GP_ADMIN && !auth.isBSOL;
-};
-
-const searchPatientPageByUserRole = (auth: UserAuth): routes => {
-    switch (auth?.role) {
-        case REPOSITORY_ROLE.GP_ADMIN:
-        case REPOSITORY_ROLE.GP_CLINICAL:
-            return routes.UPLOAD_SEARCH;
-        case REPOSITORY_ROLE.PCSE:
-            return routes.DOWNLOAD_SEARCH;
-        default:
-            return routes.AUTH_ERROR;
-    }
+    return <Spinner status="Logging in..." />;
 };
 
 export default AuthCallbackPage;

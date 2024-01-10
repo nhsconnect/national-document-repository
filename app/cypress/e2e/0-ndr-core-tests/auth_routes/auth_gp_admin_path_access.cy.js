@@ -29,10 +29,9 @@ describe('GP Admin user role has access to the expected GP_ADMIN workflow paths'
                 }).as('search');
 
                 cy.login(Roles.GP_ADMIN, isBSOL);
-                if (!isBSOL) {
-                    cy.getByTestId('search-patient-btn').click();
-                }
 
+                cy.getByTestId('search-patient-btn').should('exist');
+                cy.getByTestId('search-patient-btn').click();
                 cy.url().should('eq', baseUrl + '/search/upload');
 
                 cy.get('#nhs-number-input').click();
