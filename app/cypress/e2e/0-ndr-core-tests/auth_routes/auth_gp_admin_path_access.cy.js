@@ -30,6 +30,7 @@ describe('GP Admin user role has access to the expected GP_ADMIN workflow paths'
 
                 cy.login(Roles.GP_ADMIN, isBSOL);
                 if (!isBSOL) {
+                    cy.url().should('eq', baseUrl + '/non-bsol');
                     cy.getByTestId('search-patient-btn').click();
                 }
 

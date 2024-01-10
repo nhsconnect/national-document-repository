@@ -4,6 +4,7 @@ describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
     const homeUrl = '/';
     const searchUrl = '/search/upload';
+    const nonBsolUrl = '/non-bsol';
 
     beforeEach(() => {
         cy.visit(homeUrl);
@@ -65,6 +66,7 @@ describe('Home Page', () => {
             () => {
                 cy.login(Roles.GP_ADMIN, false);
 
+                cy.url().should('eq', baseUrl + nonBsolUrl);
                 cy.get('h1').should(
                     'include.text',
                     'You’re outside of Birmingham and Solihull (BSOL)',
