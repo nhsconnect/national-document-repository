@@ -212,7 +212,8 @@ jobs:
 
       - uses: dkershner6/aws-ssm-getparameters-action@v1
         with:
-          parameterPairs: '/ndr/${{ vars.BUILD_ENV }}/api_endpoint = DOC_STORE_API_ENDPOINT'
+          parameterPairs: '/ndr/${{ vars.BUILD_ENV }}/api_endpoint = DOC_STORE_API_ENDPOINT,
+            /ndr/${{ vars.BUILD_ENV }}/container_port = CONTAINER_PORT'
           withDecryption: 'true' # defaults to true
 
       - name: Configure React environment vars
