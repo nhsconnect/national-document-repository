@@ -20,6 +20,7 @@ MOCK_DATA_FAILED_UPLOAD = {
     "UploadStatus": "failed",
     "FailureReason": MOCK_FAILURE_REASON,
     "FilePath": "/9000000025/invalid_filename.pdf",
+    "OdsCode": "",
 }
 
 
@@ -47,6 +48,7 @@ def test_create_failed_upload():
         upload_status="failed",
         failure_reason=MOCK_FAILURE_REASON,
         file_path="/9000000025/invalid_filename.pdf",
+        ods_code=""
     ).model_dump(by_alias=True)
 
     assert actual == expected
@@ -74,6 +76,7 @@ def test_failed_upload_ids_and_timestamp_are_auto_populated_if_not_given(mocker)
         nhs_number="9000000025",
         file_path="/9000000025/invalid_filename.pdf",
         failure_reason=MOCK_FAILURE_REASON,
+        ods_code=""
     ).model_dump(by_alias=True)
 
     assert actual == expected

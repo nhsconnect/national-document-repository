@@ -42,8 +42,15 @@ def mock_check_virus_result(mocker):
 
 @pytest.fixture
 def mock_validate_files(mocker):
-    yield mocker.patch.object(BulkUploadService, "validate_files")
+    yield mocker.patch("services.bulk_upload_service.validate_lg_file_names")
 
+@pytest.fixture
+def mock_pds_service(mocker):
+    yield mocker.patch("services.bulk_upload_service.getting_patient_info_from_pds")
+
+@pytest.fixture
+def mock_pds_validation(mocker):
+    yield mocker.patch("services.bulk_upload_service.validate_with_pds_service")
 
 def build_resolved_file_names_cache(
         file_path_in_metadata: list[str], file_path_in_s3: list[str]
@@ -52,7 +59,7 @@ def build_resolved_file_names_cache(
 
 
 def test_handle_sqs_message_happy_path(
-        set_env, mocker, mock_uuid, mock_check_virus_result, mock_validate_files
+        set_env, mocker, mock_uuid, mock_check_virus_result, mock_validate_files, mock_pds_service, mock_pds_validation
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
@@ -131,6 +138,8 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
         set_env,
         mocker,
         mock_validate_files,
+        mock_pds_service,
+        mock_pds_validation,
         patient_name_on_s3,
         patient_name_in_metadata_file,
 ):
@@ -154,7 +163,7 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_already_in_repo(
-        set_env, mocker, mock_uuid, mock_validate_files
+        set_env, mocker, mock_uuid, mock_validate_files, mock_pds_service, mock_pds_validation
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
@@ -183,7 +192,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
-        set_env, mocker, mock_uuid, mock_validate_files
+        set_env, mocker, mock_uuid, mock_validate_files, mock_pds_service, mock_pds_validation
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
@@ -211,7 +220,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
 
 
 def test_handle_sqs_message_report_failure_when_document_is_infected(
-        set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result
+        set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result, mock_pds_service, mock_pds_validation
 ):
     mock_report_upload_failure = mocker.patch.object(
         BulkUploadService, "report_upload_failure"
@@ -235,7 +244,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
 
 
 def test_handle_sqs_message_report_failure_when_document_not_exist(
-        set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result
+        set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result, mock_pds_service, mock_pds_validation
 ):
     mock_check_virus_result.side_effect = S3FileNotFoundException
     mock_report_upload_failure = mocker.patch.object(
@@ -252,7 +261,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
 
 
 def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_result_not_available(
-        set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result
+        set_env, mocker, mock_uuid, mock_validate_files, mock_check_virus_result, mock_pds_service, mock_pds_validation
 ):
     mock_check_virus_result.side_effect = VirusScanNoResultException
     mock_report_upload_failure = mocker.patch.object(
@@ -279,7 +288,7 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
 
 
 def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(
-        set_env, mocker, mock_uuid, mock_check_virus_result
+        set_env, mocker, mock_uuid, mock_check_virus_result, mock_pds_service, mock_validate_files, mock_pds_validation
 ):
     mock_rollback_transaction = mocker.patch.object(
         BulkUploadService, "rollback_transaction"
@@ -293,7 +302,6 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     service = BulkUploadService()
     service.s3_service = mocker.MagicMock()
     service.dynamo_service = mocker.MagicMock()
-    service.validate_files = mocker.MagicMock()
 
     mock_client_error = ClientError(
         {"Error": {"Code": "AccessDenied", "Message": "Access Denied"}},
@@ -336,22 +344,26 @@ def test_validate_files_propagate_PatientRecordAlreadyExistException_when_patien
         side_effect=PatientRecordAlreadyExistException,
     )
     service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+    service.dynamo_service = mocker.MagicMock()
 
     with pytest.raises(PatientRecordAlreadyExistException):
-        service.validate_files(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+        service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
 
 def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(
         set_env, mocker
 ):
+    service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+    service.dynamo_service = mocker.MagicMock()
     mocker.patch(
         "utils.lloyd_george_validator.check_for_patient_already_exist_in_repo",
-        return_value=None,
+        side_effect=LGInvalidFilesException,
     )
-    service = BulkUploadService()
 
     with pytest.raises(LGInvalidFilesException):
-        service.validate_files(TEST_STAGING_METADATA_WITH_INVALID_FILENAME)
+        service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
 
 def test_check_virus_result_raise_no_error_when_all_files_are_clean(
@@ -487,6 +499,7 @@ def test_reports_failure_when_max_retries_reached(set_env, mocker, mock_uuid):
             "Timestamp": 1696251600,
             "UploadStatus": "failed",
             "FailureReason": mock_failure_reason,
+            "OdsCode": ""
         }
         service.dynamo_service.create_item.assert_any_call(
             item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME
@@ -731,6 +744,7 @@ def test_report_upload_failure_add_record_to_dynamodb(set_env, mocker, mock_uuid
             "Timestamp": 1696251600,
             "UploadStatus": "failed",
             "FailureReason": mock_failure_reason,
+            "OdsCode": ""
         }
         service.dynamo_service.create_item.assert_any_call(
             item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME

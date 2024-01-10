@@ -1,3 +1,3 @@
-NhsNumber,UploadStatus,FailureReason,FilePath,Date,Timestamp,ID
-9000000009,complete,,/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf,2023-10-30,1698661500,1234-4567-8912-HSDF-TEST
-9000000025,failed,File name not matching Lloyd George naming convention,/9000000025/invalid_filename.pdf,2023-10-30,1698661500,1234-4567-8912-HSDF-TEST
+NhsNumber,UploadStatus,FailureReason,FilePath,Date,Timestamp,ID,OdsCode
+9000000009,complete,,/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf,2023-10-30,1698661500,1234-4567-8912-HSDF-TEST,
+9000000025,failed,File name not matching Lloyd George naming convention,/9000000025/invalid_filename.pdf,2023-10-30,1698661500,1234-4567-8912-HSDF-TEST,

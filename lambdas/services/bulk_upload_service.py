@@ -20,7 +20,8 @@ from utils.exceptions import (DocumentInfectedException,
                               VirusScanFailedException,
                               VirusScanNoResultException)
 from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names)
+                                          validate_lg_file_names, validate_with_pds_service,
+                                          getting_patient_info_from_pds)
 from utils.request_context import request_context
 from utils.unicode_utils import (contains_accent_char, convert_to_nfc_form,
                                  convert_to_nfd_form)
@@ -65,7 +66,13 @@ class BulkUploadService:
         try:
             request_context.patient_nhs_no = staging_metadata.nhs_number
             logger.info("Running validation for file names...")
-            self.validate_files(staging_metadata)
+            file_names = [
+                os.path.basename(metadata.file_path) for metadata in staging_metadata.files
+            ]
+            validate_lg_file_names(file_names, staging_metadata.nhs_number)
+            pds_patient_details = getting_patient_info_from_pds(staging_metadata.nhs_number)
+            validate_with_pds_service(file_names, pds_patient_details)
+
         except PdsTooManyRequestsException as error:
             logger.info(
                 "Cannot validate patient due to PDS responded with Too Many Requests"
@@ -154,15 +161,6 @@ class BulkUploadService:
             {"Result": "Successful upload"},
         )
         self.report_upload_complete(staging_metadata)
-
-    def validate_files(self, staging_metadata: StagingMetadata):
-        # Delegate to lloyd_george_validator service
-        # Expect LGInvalidFilesException to be raised when validation fails
-        file_names = [
-            os.path.basename(metadata.file_path) for metadata in staging_metadata.files
-        ]
-
-        validate_lg_file_names(file_names, staging_metadata.nhs_number)
 
     def check_virus_result(self, staging_metadata: StagingMetadata):
         for file_metadata in staging_metadata.files:
@@ -367,7 +365,7 @@ class BulkUploadService:
             )
 
     def report_upload_failure(
-        self, staging_metadata: StagingMetadata, failure_reason: str
+        self, staging_metadata: StagingMetadata, failure_reason: str, ods_code: str = ""
     ):
         nhs_number = staging_metadata.nhs_number
 
@@ -376,6 +374,7 @@ class BulkUploadService:
                 nhs_number=nhs_number,
                 failure_reason=failure_reason,
                 file_path=file.file_path,
+                ods_code=ods_code
             )
             self.dynamo_service.create_item(
                 table_name=self.bulk_upload_report_dynamo_table,

@@ -24,6 +24,7 @@ class SuccessfulUpload(UploadStatusBaseClass):
 class FailedUpload(UploadStatusBaseClass):
     upload_status: Literal["failed"] = "failed"
     failure_reason: str
+    ods_code: str
 
 
 FieldNamesForBulkUploadReport = [
@@ -34,6 +35,7 @@ FieldNamesForBulkUploadReport = [
     "Date",
     "Timestamp",
     "ID",
+    "OdsCode"
 ]
 
 
