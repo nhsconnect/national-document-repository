@@ -1,15 +1,14 @@
 import { REPOSITORY_ROLE } from './authRole';
 
 export enum routes {
-    HOME = '/',
+    START = '/',
+    HOME = '/home',
     AUTH_CALLBACK = '/auth-callback',
     NOT_FOUND = '/*',
     UNAUTHORISED = '/unauthorised',
     AUTH_ERROR = '/auth-error',
 
     LOGOUT = '/logout',
-
-    NON_BSOL_LANDING = '/non-bsol',
 
     DOWNLOAD_SEARCH = '/search/patient',
     DOWNLOAD_VERIFY = '/search/patient/result',

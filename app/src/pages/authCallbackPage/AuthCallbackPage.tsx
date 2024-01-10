@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import getAuthToken, { AuthTokenArgs } from '../../helpers/requests/getAuthToken';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
 import { routes } from '../../types/generic/routes';
@@ -8,7 +8,6 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { AxiosError } from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 type Props = {};
@@ -33,8 +32,7 @@ const AuthCallbackPage = (props: Props) => {
                 isLoggedIn: true,
             });
 
-            const nextPage = searchPatientPageByUserRole(auth);
-            navigate(nextPage);
+            navigate(routes.HOME);
         };
 
         const handleCallback = async (args: AuthTokenArgs) => {
@@ -58,19 +56,6 @@ const AuthCallbackPage = (props: Props) => {
     }, [baseUrl, setSession, navigate]);
 
     return <Spinner status="Logging in..." />;
-};
-
-const searchPatientPageByUserRole = (auth: UserAuth): routes => {
-    switch (auth?.role) {
-        case REPOSITORY_ROLE.GP_ADMIN:
-            return auth.isBSOL ? routes.UPLOAD_SEARCH : routes.NON_BSOL_LANDING;
-        case REPOSITORY_ROLE.GP_CLINICAL:
-            return routes.UPLOAD_SEARCH;
-        case REPOSITORY_ROLE.PCSE:
-            return routes.DOWNLOAD_SEARCH;
-        default:
-            return routes.AUTH_ERROR;
-    }
 };
 
 export default AuthCallbackPage;
