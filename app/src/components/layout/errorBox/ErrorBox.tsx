@@ -8,6 +8,7 @@ type Props = {
     messageLinkBody?: string;
     errorInputLink?: string;
     errorBody?: string;
+    dataTestId?: string;
 };
 
 // @ts-ignore
@@ -18,10 +19,11 @@ const ErrorBox = ({
     messageBody,
     messageLinkBody,
     errorBody,
+    dataTestId,
 }: Props) => {
     const hasInputLink = errorInputLink && messageLinkBody;
     return (
-        <div id="error-box">
+        <div id="error-box" data-testid={dataTestId}>
             <ErrorSummary aria-labelledby={errorBoxSummaryId} role="alert" tabIndex={-1}>
                 <ErrorSummary.Title id={errorBoxSummaryId}>{messageTitle}</ErrorSummary.Title>
                 <ErrorSummary.Body>

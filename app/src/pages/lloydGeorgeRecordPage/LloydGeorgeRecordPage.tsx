@@ -63,8 +63,10 @@ function LloydGeorgeRecordPage() {
 
         if (!mounted.current || downloadStage === DOWNLOAD_STAGE.REFRESH) {
             mounted.current = true;
-            setDownloadStage(DOWNLOAD_STAGE.PENDING);
-            void onPageLoad();
+            if (!deleteAfterDownload) {
+                setDownloadStage(DOWNLOAD_STAGE.PENDING);
+                void onPageLoad();
+            }
         }
     }, [
         patientDetails,

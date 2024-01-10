@@ -116,7 +116,7 @@ function LloydGeorgeDownloadAllStage({
     }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer, deleteAfterDownload]);
 
     return inProgress ? (
-        <div className="lloydgeorge_downloadall-stage">
+        <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
             <div className="lloydgeorge_downloadall-stage_header">
                 <h1>Downloading documents</h1>
                 <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>

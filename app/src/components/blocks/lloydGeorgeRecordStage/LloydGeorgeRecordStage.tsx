@@ -100,6 +100,7 @@ function LloydGeorgeRecordStage({
         <div className="lloydgeorge_record-stage">
             {formState.errors.confirmDownloadRemove && (
                 <ErrorBox
+                    dataTestId="confirm-download-and-remove-error"
                     errorBoxSummaryId="confirm-download-and-remove"
                     messageTitle="There is a problem"
                     errorBody="You must confirm if you want to download and remove this record"
@@ -118,7 +119,10 @@ function LloydGeorgeRecordStage({
             )}
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
-                    <WarningCallout id="before-downloading-warning">
+                    <WarningCallout
+                        id="before-downloading-warning"
+                        data-testid="before-downloading-warning"
+                    >
                         <WarningCallout.Label headingLevel="h2">
                             Before downloading
                         </WarningCallout.Label>
@@ -151,6 +155,7 @@ function LloydGeorgeRecordStage({
                                             You must keep the patient's record safe."
                                         />
                                         <Checkboxes
+                                            data-testid="confirm-download-and-remove-checkbox"
                                             className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_checkbox"
                                             name="confirm-download-remove"
                                             id="confirm-download-remove"
@@ -171,6 +176,7 @@ function LloydGeorgeRecordStage({
                                         </Checkboxes>
                                     </Fieldset>
                                     <Button
+                                        data-testid="confirm-download-and-remove-btn"
                                         type="submit"
                                         id="confirm-download-remove"
                                         className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text_confirm-download-remove-button"
