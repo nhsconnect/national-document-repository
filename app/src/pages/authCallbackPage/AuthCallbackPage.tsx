@@ -9,6 +9,7 @@ import { AxiosError } from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 type Props = {};
 
@@ -16,7 +17,6 @@ const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
     const [, setSession] = useSessionContext();
     const navigate = useNavigate();
-
     useEffect(() => {
         const handleError = () => {
             setSession({
@@ -27,12 +27,17 @@ const AuthCallbackPage = (props: Props) => {
             navigate(routes.AUTH_ERROR);
         };
         const handleSuccess = (auth: UserAuth) => {
+            const { GP_ADMIN, GP_CLINICAL, PCSE } = REPOSITORY_ROLE;
             setSession({
                 auth: auth,
                 isLoggedIn: true,
             });
 
-            navigate(routes.HOME);
+            if ([GP_ADMIN, GP_CLINICAL, PCSE].includes(auth.role)) {
+                navigate(routes.HOME);
+            } else {
+                navigate(routes.AUTH_ERROR);
+            }
         };
 
         const handleCallback = async (args: AuthTokenArgs) => {
