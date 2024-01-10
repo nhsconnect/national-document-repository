@@ -43,7 +43,7 @@ describe('Header', () => {
             userEvent.click(screen.getByRole('img', { name: 'NHS Logo' }));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
             });
         });
     });
