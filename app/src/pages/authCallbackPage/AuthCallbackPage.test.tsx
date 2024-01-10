@@ -58,6 +58,7 @@ describe('AuthCallbackPage', () => {
 
     const testCases: Array<[Partial<UserAuth>, routes]> = [
         [{ isBSOL: true, role: REPOSITORY_ROLE.GP_ADMIN }, routes.UPLOAD_SEARCH],
+        [{ isBSOL: false, role: REPOSITORY_ROLE.GP_ADMIN }, routes.NON_BSOL_LANDING],
         [{ isBSOL: false, role: REPOSITORY_ROLE.GP_CLINICAL }, routes.UPLOAD_SEARCH],
         [{ isBSOL: false, role: REPOSITORY_ROLE.PCSE }, routes.DOWNLOAD_SEARCH],
         // below two cases are not supposed to happen in current implementation, but anyway check that they don't cause odd result
@@ -83,24 +84,6 @@ describe('AuthCallbackPage', () => {
             });
         },
     );
-
-    it('display non-BSOL landing page when user role is GP Admin and isBSOL is false', async () => {
-        mockedAxios.get.mockImplementationOnce(() =>
-            Promise.resolve({
-                data: buildUserAuth({ isBSOL: false, role: REPOSITORY_ROLE.GP_ADMIN }),
-            }),
-        );
-        renderCallbackPage();
-
-        expect(screen.getByRole('status')).toBeInTheDocument();
-        expect(screen.getByText('Logging in...')).toBeInTheDocument();
-
-        await waitFor(() => {
-            expect(
-                screen.getByText('You’re outside of Birmingham and Solihull (BSOL)'),
-            ).toBeInTheDocument();
-        });
-    });
 
     it('navigates to auth error page when callback token request is unsuccessful', async () => {
         const errorResponse = {

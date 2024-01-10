@@ -10,15 +10,12 @@ import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
-import NonBsolLandingPage from '../nonBsolLandingPage/NonBsolLandingPage';
 
 type Props = {};
 
 const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
-    const [session, setSession] = useSessionContext();
-    const [isLoading, setIsLoading] = useState(true);
-    const shouldShowNonBSOLPage = !isLoading && userIsGpAdminNonBSOL(session?.auth);
+    const [, setSession] = useSessionContext();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -36,12 +33,8 @@ const AuthCallbackPage = (props: Props) => {
                 isLoggedIn: true,
             });
 
-            setIsLoading(false);
-
-            if (!userIsGpAdminNonBSOL(auth)) {
-                const nextPage = searchPatientPageByUserRole(auth);
-                navigate(nextPage);
-            }
+            const nextPage = searchPatientPageByUserRole(auth);
+            navigate(nextPage);
         };
 
         const handleCallback = async (args: AuthTokenArgs) => {
@@ -64,20 +57,13 @@ const AuthCallbackPage = (props: Props) => {
         void handleCallback({ baseUrl, code, state });
     }, [baseUrl, setSession, navigate]);
 
-    return shouldShowNonBSOLPage ? <NonBsolLandingPage /> : <Spinner status="Logging in..." />;
-};
-
-const userIsGpAdminNonBSOL = (auth: UserAuth | null): boolean => {
-    if (!auth) {
-        return false;
-    }
-
-    return auth.role === REPOSITORY_ROLE.GP_ADMIN && !auth.isBSOL;
+    return <Spinner status="Logging in..." />;
 };
 
 const searchPatientPageByUserRole = (auth: UserAuth): routes => {
     switch (auth?.role) {
         case REPOSITORY_ROLE.GP_ADMIN:
+            return auth.isBSOL ? routes.UPLOAD_SEARCH : routes.NON_BSOL_LANDING;
         case REPOSITORY_ROLE.GP_CLINICAL:
             return routes.UPLOAD_SEARCH;
         case REPOSITORY_ROLE.PCSE:

@@ -17,6 +17,8 @@ import AuthGuard from './guards/authGuard/AuthGuard';
 import PatientGuard from './guards/patientGuard/PatientGuard';
 import { REPOSITORY_ROLE } from '../types/generic/authRole';
 import RoleGuard from './guards/roleGuard/RoleGuard';
+import NonBsolLandingPage from '../pages/nonBsolLandingPage/NonBsolLandingPage';
+
 const {
     HOME,
     AUTH_CALLBACK,
@@ -24,6 +26,7 @@ const {
     UNAUTHORISED,
     AUTH_ERROR,
     LOGOUT,
+    NON_BSOL_LANDING,
     DOWNLOAD_SEARCH,
     DOWNLOAD_VERIFY,
     DOWNLOAD_DOCUMENTS,
@@ -67,6 +70,10 @@ export const routeMap: Routes = {
     },
 
     // App guard routes
+    [NON_BSOL_LANDING]: {
+        page: <NonBsolLandingPage />,
+        type: ROUTE_TYPE.PRIVATE,
+    },
     [DOWNLOAD_SEARCH]: {
         page: <PatientSearchPage />,
         type: ROUTE_TYPE.PRIVATE,

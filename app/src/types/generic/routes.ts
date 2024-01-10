@@ -9,6 +9,8 @@ export enum routes {
 
     LOGOUT = '/logout',
 
+    NON_BSOL_LANDING = '/non-bsol',
+
     DOWNLOAD_SEARCH = '/search/patient',
     DOWNLOAD_VERIFY = '/search/patient/result',
     DOWNLOAD_DOCUMENTS = '/search/results',
