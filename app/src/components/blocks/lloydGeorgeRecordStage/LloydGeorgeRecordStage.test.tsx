@@ -23,6 +23,7 @@ const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
 const mockedIsBSOL = useIsBSOL as jest.Mock;
+const mockSetStage = jest.fn();
 
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
@@ -205,23 +206,57 @@ describe('LloydGeorgeRecordStage', () => {
             expect(
                 screen.getByText('Confirm if you want to download and remove this record'),
             ).toBeInTheDocument();
+            expect(mockSetStage).not.toBeCalled();
         });
 
         it('when checkbox is checked, clicking red download button should proceed to download and delete process', async () => {
-            const mockedSetStage = jest.fn();
+            renderComponentForNonBSOLGPAdmin();
+            await showConfirmationMessage();
+
+            act(() => {
+                userEvent.click(screen.getByRole('checkbox'));
+            });
+
+            clickRedDownloadButton();
+
+            await waitFor(() => {
+                expect(mockSetStage).toBeCalledWith(LG_RECORD_STAGE.DOWNLOAD_ALL);
+            });
+        });
+
+        it('when checkbox is toggled 2 times ( = unchecked), red download button should not proceed to download', async () => {
             renderComponentForNonBSOLGPAdmin();
             await showConfirmationMessage();
 
             const checkBox = screen.getByRole('checkbox');
-
             act(() => {
+                userEvent.click(checkBox);
                 userEvent.click(checkBox);
             });
 
             clickRedDownloadButton();
 
-            // TODO: plugin the mocked method and assert it's been called
-            expect(mockedSetStage).toBeCalledWith(LG_RECORD_STAGE.DOWNLOAD_ALL);
+            await waitFor(() => {
+                expect(
+                    screen.getByRole('alert', { name: 'There is a problem' }),
+                ).toBeInTheDocument();
+            });
+            expect(mockSetStage).not.toBeCalled();
+        });
+
+        it('clicking cancel button will hide the confirmation message', async () => {
+            renderComponentForNonBSOLGPAdmin();
+            await showConfirmationMessage();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.queryByText('Are you sure you want to download and remove this record?'),
+                ).not.toBeInTheDocument();
+            });
         });
     });
 
@@ -265,8 +300,8 @@ describe('LloydGeorgeRecordStage', () => {
     });
 });
 const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
-    const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
-    return <LgRecordStage {...props} setStage={setStage} stage={stage} />;
+    // const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
+    return <LgRecordStage {...props} setStage={mockSetStage} stage={LG_RECORD_STAGE.RECORD} />;
 };
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
