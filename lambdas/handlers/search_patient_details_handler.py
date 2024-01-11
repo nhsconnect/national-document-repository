@@ -34,6 +34,8 @@ def lambda_handler(event, context):
         user_role = request_context.authorization["repository_role"]
 
         logger.info("Patient Search First Point")
+        logger.info("patientID:" + nhs_number)
+        
         pds_api_service = get_pds_service()(SSMService())
         patient_details = pds_api_service.fetch_patient_details(nhs_number)
 

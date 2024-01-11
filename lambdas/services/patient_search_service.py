@@ -11,6 +11,10 @@ class PatientSearch:
         self,
         nhs_number: str,
     ) -> PatientDetails:
+        
+        logger.info("Fetch Patient Details")
+        logger.info("patientID:" + nhs_number)
+        
         response = self.pds_request(nhs_number, retry_on_expired=True)
         return self.handle_response(response, nhs_number)
 
@@ -18,7 +22,7 @@ class PatientSearch:
 
         logger.info("Patient Search Response")
         logger.info("Patient Search Response Status:" + str(response.status_code))
-        # logger.info("Patient Search Response Response:" + response.__str__)
+        logger.info("Patient Search Response Response:" + response.__str__())
 
         if response.status_code == 200:
             patient = Patient.model_validate(response.json())

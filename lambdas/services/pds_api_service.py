@@ -20,8 +20,11 @@ class PdsApiService(PatientSearch):
 
     def pds_request(self, nhs_number: str, retry_on_expired: bool):
         try:
+            logger.info("PDS Request Triggered")
             endpoint, access_token_response = self.get_parameters_for_pds_api_request()
+            logger.info("Access Token Response" + str(access_token_response))
             access_token_response = json.loads(access_token_response)
+            logger.info("access token decoded")
             access_token = access_token_response["access_token"]
             access_token_expiration = (
                 int(access_token_response["expires_in"])
