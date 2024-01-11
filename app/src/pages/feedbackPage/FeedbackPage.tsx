@@ -17,10 +17,23 @@ const choicesForHowSatisfied = [
 ];
 
 function FeedbackPage() {
-    const { handleSubmit, register } = useForm<FormData>();
+    const {
+        handleSubmit,
+        register,
+        formState: { errors },
+    } = useForm<FormData>();
 
-    const submit: SubmitHandler<FormData> = async (data) => {
-        console.log(data);
+    const sendEmail = async (formData: FormData) => {
+        console.log(`got feedback from user: ${formData}}`);
+        return { status: 200 };
+    };
+    const submit: SubmitHandler<FormData> = async (formData) => {
+        sendEmail(formData)
+            .then(() => {
+                console.log('Successfully sent email');
+                console.log('move to confirmation screen');
+            })
+            .catch((e) => console.error(`got error: {e}`));
     };
 
     const renameRefKey = (props: UseFormRegisterReturn, refKey: string) => {
@@ -32,18 +45,18 @@ function FeedbackPage() {
     };
 
     const feedbackContentProps = renameRefKey(
-        register('feedbackContent', { required: true }),
+        register('feedbackContent', { required: 'Please enter your feedback here' }),
         'textareaRef',
     );
     const howSatisfiedProps = renameRefKey(
-        register('howSatisfied', { required: true }),
+        register('howSatisfied', { required: 'Please select an option' }),
         'inputRef',
     );
     const respondentNameProps = renameRefKey(register('respondentName'), 'inputRef');
     const respondentEmailProps = renameRefKey(register('respondentEmail'), 'inputRef');
 
     return (
-        <>
+        <div id="feedback-form">
             <h1>Give feedback on accessing Lloyd George digital patient records</h1>
 
             <form onSubmit={handleSubmit(submit)}>
@@ -54,6 +67,7 @@ function FeedbackPage() {
                         label="Tell us how we could improve this service or explain your experience using it. You
                 can also give feedback about a specific page or section in the service."
                         rows={7}
+                        error={errors.feedbackContent?.message}
                         {...feedbackContentProps}
                     />
                 </Fieldset>
@@ -62,9 +76,9 @@ function FeedbackPage() {
                     <Fieldset.Legend size="m">
                         How satisfied were you with your overall experience of using this service?
                     </Fieldset.Legend>
-                    <Radios id="select-how-satisfied">
-                        {choicesForHowSatisfied.map((choice) => (
-                            <Radios.Radio key={choice} value={choice} {...howSatisfiedProps}>
+                    <Radios id="select-how-satisfied" error={errors.howSatisfied?.message}>
+                        {choicesForHowSatisfied.map((choice, i) => (
+                            <Radios.Radio key={i} value={choice} {...howSatisfiedProps}>
                                 {choice}
                             </Radios.Radio>
                         ))}
@@ -93,7 +107,7 @@ function FeedbackPage() {
                     Send feedback
                 </Button>
             </form>
-        </>
+        </div>
     );
 }
 
