@@ -69,6 +69,7 @@ function LloydGeorgeRecordDetails({
             {userIsGpAdminNonBSOL ? (
                 <div className="lloydgeorge_record-details_download-remove-button">
                     <Button
+                        data-testid="download-and-remove-record-btn"
                         onClick={handleDownloadAndRemoveRecordButton}
                         className="lloydgeorge_record-details_download-remove-button-content"
                     >
