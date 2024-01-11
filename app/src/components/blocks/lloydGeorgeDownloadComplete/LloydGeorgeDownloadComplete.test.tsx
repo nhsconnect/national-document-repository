@@ -5,11 +5,12 @@ import LgDownloadComplete from './LloydGeorgeDownloadComplete';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
+import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 
 jest.mock('../../../helpers/hooks/usePatient');
 
 const mockSetStage = jest.fn();
-const mockDownloadStage = jest.fn();
+const mockSetDownloadStage = jest.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
 
@@ -26,7 +27,7 @@ describe('LloydGeorgeDownloadComplete', () => {
         render(
             <LgDownloadComplete
                 setStage={mockSetStage}
-                setDownloadStage={mockDownloadStage}
+                setDownloadStage={mockSetDownloadStage}
                 deleteAfterDownload={false}
             />,
         );
@@ -45,7 +46,7 @@ describe('LloydGeorgeDownloadComplete', () => {
         render(
             <LgDownloadComplete
                 setStage={mockSetStage}
-                setDownloadStage={mockDownloadStage}
+                setDownloadStage={mockSetDownloadStage}
                 deleteAfterDownload={false}
             />,
         );
@@ -67,6 +68,39 @@ describe('LloydGeorgeDownloadComplete', () => {
 
         await waitFor(async () => {
             expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
+        });
+    });
+
+    it('refreshes the download stage view when return to medical records is clicked and deleteAfterDownload is true', async () => {
+        render(
+            <LgDownloadComplete
+                setStage={mockSetStage}
+                setDownloadStage={mockSetDownloadStage}
+                deleteAfterDownload={true}
+            />,
+        );
+
+        expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
+        expect(screen.getByText('Documents from the Lloyd George record of:')).toBeInTheDocument();
+        expect(
+            screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
+        ).toBeInTheDocument();
+
+        const returnToRecordButton = screen.getByRole('button', {
+            name: "Return to patient's available medical records",
+        });
+        expect(returnToRecordButton).toBeInTheDocument();
+
+        act(() => {
+            userEvent.click(returnToRecordButton);
+        });
+
+        await waitFor(async () => {
+            expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
+        });
+
+        await waitFor(async () => {
+            expect(mockSetDownloadStage).toHaveBeenCalledWith(DOWNLOAD_STAGE.REFRESH);
         });
     });
 });
