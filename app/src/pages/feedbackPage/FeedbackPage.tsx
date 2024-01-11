@@ -1,6 +1,7 @@
 import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-components';
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import { FORM_FIELDS, FormData, SATISFACTION_CHOICES } from '../../types/pages/feedbackPage/types';
+import sendEmail from '../../helpers/requests/sendEmail';
 
 function FeedbackPage() {
     const {
@@ -11,10 +12,6 @@ function FeedbackPage() {
 
     /* eslint-disable no-console */
     // using console.log as placeholder until we got the send email solution in place
-    const sendEmail = async (formData: FormData) => {
-        console.log(`sending feedback from user by email: ${JSON.stringify(formData)}}`);
-        return { status: 200 };
-    };
     const submit: SubmitHandler<FormData> = async (formData) => {
         sendEmail(formData)
             .then(() => {
@@ -27,7 +24,7 @@ function FeedbackPage() {
 
     const feedbackContentProps = renameRefKey(
         register(FORM_FIELDS.feedbackContent, {
-            required: 'Please enter your feedback here',
+            required: 'Please enter your feedback',
         }),
         'textareaRef',
     );
@@ -46,7 +43,7 @@ function FeedbackPage() {
                 <Fieldset>
                     <Fieldset.Legend size="m">What is your feedback?</Fieldset.Legend>
                     <Textarea
-                        id="feedback-content"
+                        data-testid={FORM_FIELDS.feedbackContent}
                         label="Tell us how we could improve this service or explain your experience using it. You
                 can also give feedback about a specific page or section in the service."
                         rows={7}
@@ -76,12 +73,16 @@ function FeedbackPage() {
                         service, please leave your details below.
                     </p>
 
-                    <Input id="respondent-name" label="Your name" {...respondentNameProps} />
+                    <Input
+                        label="Your name"
+                        data-testid={FORM_FIELDS.respondentName}
+                        {...respondentNameProps}
+                    />
 
                     <Input
-                        id="respondent-email"
                         label="Your email address"
                         hint="We’ll only use this to speak to you about your feedback"
+                        data-testid={FORM_FIELDS.respondentEmail}
                         {...respondentEmailProps}
                     />
                 </Fieldset>

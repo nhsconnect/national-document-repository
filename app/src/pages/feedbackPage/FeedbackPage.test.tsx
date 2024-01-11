@@ -1,6 +1,11 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import FeedbackPage from './FeedbackPage';
-import { FORM_FIELDS, SATISFACTION_CHOICES } from '../../types/pages/feedbackPage/types';
+import { FORM_FIELDS, SATISFACTION_CHOICES, FormData } from '../../types/pages/feedbackPage/types';
+import userEvent from '@testing-library/user-event';
+import sendEmail from '../../helpers/requests/sendEmail';
+
+jest.mock('../../helpers/requests/sendEmail');
+const mockSendEmail = sendEmail as jest.Mock;
 
 describe('<Feedbackpage />', () => {
     beforeEach(() => {
@@ -56,4 +61,80 @@ describe('<Feedbackpage />', () => {
 
         expect(screen.getByRole('button', { name: 'Send feedback' })).toBeInTheDocument();
     });
+
+    describe('user interactions', () => {
+        it('on submit, call sendEmail() with the data that user had filled in', async () => {
+            const mockInputData = {
+                feedbackContent: 'Mock feedback content',
+                howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
+                respondentName: 'Jane Smith',
+                respondentEmail: 'jane_smith@testing.com',
+            };
+            mockSendEmail.mockReturnValue(Promise.resolve());
+
+            render(<FeedbackPage />);
+
+            act(() => {
+                fillInData(mockInputData);
+                clickSubmitButton();
+            });
+
+            await waitFor(() => expect(mockSendEmail).toBeCalledWith(mockInputData));
+        });
+
+        it('display an error message on submit if feedback content is empty', async () => {
+            const mockInputData = {
+                howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
+                respondentName: 'Jane Smith',
+                respondentEmail: 'jane_smith@testing.com',
+            };
+            mockSendEmail.mockReturnValue(Promise.resolve());
+
+            render(<FeedbackPage />);
+
+            act(() => {
+                fillInData(mockInputData);
+                clickSubmitButton();
+            });
+
+            await waitFor(() => {
+                expect(screen.getByText('Please enter your feedback')).toBeInTheDocument();
+            });
+        });
+
+        it('display an error message on submit if user have not chosen a howSatisfied option', async () => {
+            const mockInputData = {
+                feedbackContent: 'Mock feedback content',
+                respondentName: 'Jane Smith',
+                respondentEmail: 'jane_smith@testing.com',
+            };
+            mockSendEmail.mockReturnValue(Promise.resolve());
+
+            render(<FeedbackPage />);
+
+            act(() => {
+                fillInData(mockInputData);
+                clickSubmitButton();
+            });
+
+            await waitFor(() => {
+                expect(screen.getByText('Please select an option')).toBeInTheDocument();
+            });
+        });
+    });
 });
+
+const clickSubmitButton = () => {
+    userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
+};
+
+const fillInData = (data: Partial<FormData>) => {
+    for (const [fieldName, value] of Object.entries(data)) {
+        if (fieldName === FORM_FIELDS.howSatisfied) {
+            userEvent.click(screen.getByRole('radio', { name: value }));
+        } else {
+            userEvent.click(screen.getByTestId(fieldName));
+            userEvent.type(screen.getByTestId(fieldName), value);
+        }
+    }
+};
