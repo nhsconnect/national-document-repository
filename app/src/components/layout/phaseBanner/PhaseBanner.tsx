@@ -9,7 +9,11 @@ function PhaseBanner() {
                         New Service
                     </strong>
                     <span className="govuk-phase-banner__text">
-                        Your feedback will help us to improve this service.
+                        Your{' '}
+                        <a href="./feedback" target="_blank" rel="noreferrer">
+                            feedback
+                        </a>{' '}
+                        will help us to improve this service.
                     </span>
                 </p>
             </div>

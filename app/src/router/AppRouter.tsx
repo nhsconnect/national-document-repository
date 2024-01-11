@@ -18,6 +18,7 @@ import PatientGuard from './guards/patientGuard/PatientGuard';
 import { REPOSITORY_ROLE } from '../types/generic/authRole';
 import RoleGuard from './guards/roleGuard/RoleGuard';
 import HomePage from '../pages/homePage/HomePage';
+import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
 
 const {
     START,
@@ -26,6 +27,7 @@ const {
     NOT_FOUND,
     UNAUTHORISED,
     AUTH_ERROR,
+    FEEDBACK,
     LOGOUT,
     DOWNLOAD_SEARCH,
     DOWNLOAD_VERIFY,
@@ -60,6 +62,10 @@ export const routeMap: Routes = {
     },
     [UNAUTHORISED]: {
         page: <UnauthorisedPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
+    [FEEDBACK]: {
+        page: <FeedbackPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
 
