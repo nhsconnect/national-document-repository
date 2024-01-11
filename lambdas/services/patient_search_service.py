@@ -18,7 +18,7 @@ class PatientSearch:
 
         logger.info("Patient Search Response")
         logger.info("Patient Search Response Status:" + str(response.status_code))
-        logger.info("Patient Search Response Response:" + response.__str__)
+        # logger.info("Patient Search Response Response:" + response.__str__)
 
         if response.status_code == 200:
             patient = Patient.model_validate(response.json())
