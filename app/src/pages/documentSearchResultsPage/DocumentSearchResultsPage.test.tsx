@@ -93,7 +93,7 @@ describe('<DocumentSearchResultsPage />', () => {
             ).not.toBeInTheDocument();
         });
 
-        it('displays a error message when a document search fails', async () => {
+        it('displays a error messages when a document search fails', async () => {
             const errorResponse = {
                 response: {
                     status: 400,
@@ -104,7 +104,7 @@ describe('<DocumentSearchResultsPage />', () => {
 
             render(<DocumentSearchResultsPage />);
 
-            expect(await screen.findByRole('alert')).toBeInTheDocument();
+            expect(await screen.findAllByRole('alert')).toHaveLength(2);
             expect(
                 screen.queryByRole('button', { name: 'Download All Documents' }),
             ).not.toBeInTheDocument();
