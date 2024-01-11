@@ -170,9 +170,7 @@ def test_lambda_handler_when_deletion_service_throw_client_error_return_500(
     )
     mock_handle_delete.side_effect = mock_error
     expected = ApiGatewayResponse(
-        500,
-        "Failed to utilise AWS client/resource",
-        "GET",
+        500, "Failed to utilise AWS client/resource", "GET", "ERR_AWS_CLIENT"
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)
     assert expected == actual

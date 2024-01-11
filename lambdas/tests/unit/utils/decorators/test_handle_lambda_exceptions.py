@@ -30,9 +30,7 @@ def test_handle_lambda_exceptions_catch_and_handle_client_error(
     test_event["queryStringParameters"]["patientId"] = "1234567890"
 
     expected = ApiGatewayResponse(
-        500,
-        "Failed to utilise AWS client/resource",
-        "GET",
+        500, "Failed to utilise AWS client/resource", "GET", "ERR_AWS_CLIENT"
     ).create_api_gateway_response()
     actual = lambda_handler(test_event, context)
 

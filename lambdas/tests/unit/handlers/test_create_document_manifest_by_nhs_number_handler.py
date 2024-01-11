@@ -60,9 +60,7 @@ def test_lambda_handler_when_service_raises_client_error_returns_correct_respons
     mock_service.create_document_manifest_presigned_url.side_effect = exception
 
     expected = ApiGatewayResponse(
-        500,
-        "Failed to utilise AWS client/resource",
-        "GET",
+        500, "Failed to utilise AWS client/resource", "GET", "ERR_AWS_CLIENT"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)

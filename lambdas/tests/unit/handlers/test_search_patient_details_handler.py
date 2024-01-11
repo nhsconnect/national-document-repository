@@ -70,9 +70,7 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
     )
 
     expected = ApiGatewayResponse(
-        404,
-        "Patient does not exist for given NHS number",
-        "GET",
+        404, "Patient does not exist for given NHS number", "GET", "ERR_SEARCH"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_event_with_auth_header, context)
@@ -101,7 +99,7 @@ def test_lambda_handler_missing_auth_returns_400(
         "handlers.search_patient_details_handler.request_context", mocked_context
     )
     expected = ApiGatewayResponse(
-        400, "Missing user details", "GET"
+        400, "Missing user details", "GET", "ERR_SEARCH"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_event_with_auth_header, context)

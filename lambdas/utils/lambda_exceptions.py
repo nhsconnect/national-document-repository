@@ -1,7 +1,11 @@
 class LambdaException(Exception):
-    def __init__(self, status_code, message):
+    def __init__(self, status_code, message, err_code: str | None = None):
         self.status_code = status_code
+        self.err_code = err_code
         self.message = message
+
+    def __str__(self):
+        return repr(self.err_code + ": " + self.message)
 
 
 class CreateDocumentRefException(LambdaException):
@@ -9,7 +13,8 @@ class CreateDocumentRefException(LambdaException):
 
 
 class SearchPatientException(LambdaException):
-    pass
+    def __init__(self, status_code, message):
+        LambdaException.__init__(self, status_code, message, "ERR_SEARCH")
 
 
 class InvalidDocTypeException(LambdaException):
