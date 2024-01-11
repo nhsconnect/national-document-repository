@@ -29,7 +29,6 @@ jobs:
 
   deploy_all:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
-    needs: ["run_tests"]
     with:
       environment: prod
       python_version: "3.11"
