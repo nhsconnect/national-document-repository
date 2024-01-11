@@ -2,15 +2,15 @@ const { Roles } = require('../../support/roles');
 
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
-    const homeUrl = '/';
-    const searchUrl = '/search/upload';
+    const startUrl = '/';
+    const homeUrl = '/home';
 
     beforeEach(() => {
-        cy.visit(homeUrl);
+        cy.visit(startUrl);
     });
 
     it('[Smoke] should visit expected URL', { tags: 'smoke' }, () => {
-        cy.url().should('eq', baseUrl + homeUrl);
+        cy.url().should('eq', baseUrl + startUrl);
     });
 
     context('Login tests', () => {
@@ -35,7 +35,7 @@ describe('Home Page', () => {
 
                 cy.smokeLogin(Roles.GP_CLINICAL);
 
-                cy.url().should('eq', baseUrl + searchUrl);
+                cy.url().should('eq', baseUrl + homeUrl);
                 cy.get('.nhsuk-header__navigation').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
             },
@@ -64,13 +64,13 @@ describe('Home Page', () => {
 
                 cy.smokeLogin(Roles.GP_CLINICAL);
 
-                cy.url().should('eq', baseUrl + searchUrl);
+                cy.url().should('eq', baseUrl + homeUrl);
                 cy.get('.nhsuk-header__navigation').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
 
                 cy.getByTestId('logout-btn').should('exist');
                 cy.getByTestId('logout-btn').click();
-                cy.url({ timeout: 10000 }).should('eq', baseUrl + homeUrl);
+                cy.url({ timeout: 10000 }).should('eq', baseUrl + startUrl);
 
                 cy.get('.nhsuk-header__navigation').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');
