@@ -17,9 +17,9 @@ class PatientSearch:
     def handle_response(self, response: Response, nhs_number: str) -> PatientDetails:
 
         logger.info("Patient Search Response")
-        logger.info("Patient Search Response Status:" + response.status_code)
+        logger.info("Patient Search Response Status:" + str(response.status_code))
         logger.info("Patient Search Response Response:" + response)
-        
+
         if response.status_code == 200:
             patient = Patient.model_validate(response.json())
             patient_details = patient.get_patient_details(nhs_number)
