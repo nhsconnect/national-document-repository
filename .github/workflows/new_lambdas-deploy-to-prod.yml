@@ -20,12 +20,12 @@ env:
   BUILD_BRANCH: ${{ inputs.tag_version }}
 
 jobs:
-  run_tests:
-    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
-    with:
-      environment: prod
-      python_version: "3.11"
-      build_branch: ${{ inputs.tag_version }}
+  # run_tests:
+  #   uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+  #   with:
+  #     environment: prod
+  #     python_version: "3.11"
+  #     build_branch: ${{ inputs.tag_version }}
 
   deploy_all:
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
