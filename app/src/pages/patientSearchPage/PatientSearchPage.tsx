@@ -139,6 +139,7 @@ function PatientSearchPage() {
                             submissionState === SEARCH_STATES.SUCCEEDED ||
                             submissionState === SEARCH_STATES.SEARCHING
                         }
+                        autoComplete="off"
                     />
                 </Fieldset>
                 {submissionState === SEARCH_STATES.SEARCHING ? (
