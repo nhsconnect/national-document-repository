@@ -1,20 +1,6 @@
 import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-components';
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
-
-type FormData = {
-    feedbackContent: string;
-    howSatisfied: string;
-    respondentName: string;
-    respondentEmail: string;
-};
-
-const choicesForHowSatisfied = [
-    'Very satisfied',
-    'Satisfied',
-    'Neither satisfied or dissatisfied',
-    'Dissatisfied',
-    'Very dissatisfied',
-];
+import { FORM_FIELDS, FormData, SATISFACTION_CHOICES } from '../../types/pages/feedbackPage/types';
 
 function FeedbackPage() {
     const {
@@ -23,6 +9,8 @@ function FeedbackPage() {
         formState: { errors },
     } = useForm<FormData>();
 
+    /* eslint-disable no-console */
+    // using console.log as placeholder until we got the send email solution in place
     const sendEmail = async (formData: FormData) => {
         console.log(`sending feedback from user by email: ${JSON.stringify(formData)}}`);
         return { status: 200 };
@@ -33,27 +21,22 @@ function FeedbackPage() {
                 console.log('Successfully sent email');
                 console.log('will move to confirmation screen');
             })
-            .catch((e) => console.error(`got error: {e}`));
+            .catch((e) => console.error(`got error: ${e}`));
     };
-
-    const renameRefKey = (props: UseFormRegisterReturn, refKey: string) => {
-        const { ref, ...otherProps } = props;
-        return {
-            [refKey]: ref,
-            ...otherProps,
-        };
-    };
+    /* eslint-enable no-console */
 
     const feedbackContentProps = renameRefKey(
-        register('feedbackContent', { required: 'Please enter your feedback here' }),
+        register(FORM_FIELDS.feedbackContent, {
+            required: 'Please enter your feedback here',
+        }),
         'textareaRef',
     );
     const howSatisfiedProps = renameRefKey(
-        register('howSatisfied', { required: 'Please select an option' }),
+        register(FORM_FIELDS.howSatisfied, { required: 'Please select an option' }),
         'inputRef',
     );
-    const respondentNameProps = renameRefKey(register('respondentName'), 'inputRef');
-    const respondentEmailProps = renameRefKey(register('respondentEmail'), 'inputRef');
+    const respondentNameProps = renameRefKey(register(FORM_FIELDS.respondentName), 'inputRef');
+    const respondentEmailProps = renameRefKey(register(FORM_FIELDS.respondentEmail), 'inputRef');
 
     return (
         <div id="feedback-form">
@@ -77,7 +60,7 @@ function FeedbackPage() {
                         How satisfied were you with your overall experience of using this service?
                     </Fieldset.Legend>
                     <Radios id="select-how-satisfied" error={errors.howSatisfied?.message}>
-                        {choicesForHowSatisfied.map((choice, i) => (
+                        {Object.values(SATISFACTION_CHOICES).map((choice, i) => (
                             <Radios.Radio key={i} value={choice} {...howSatisfiedProps}>
                                 {choice}
                             </Radios.Radio>
@@ -89,7 +72,7 @@ function FeedbackPage() {
                     <Fieldset.Legend size="m">Leave your details (optional)</Fieldset.Legend>
 
                     <p>
-                        If you're happy to speak to us about your feedback so we can improve this
+                        If you’re happy to speak to us about your feedback so we can improve this
                         service, please leave your details below.
                     </p>
 
@@ -110,5 +93,16 @@ function FeedbackPage() {
         </div>
     );
 }
+
+const renameRefKey = (
+    props: UseFormRegisterReturn,
+    newRefKey: string,
+): Partial<UseFormRegisterReturn> => {
+    const { ref, ...otherProps } = props;
+    return {
+        [newRefKey]: ref,
+        ...otherProps,
+    };
+};
 
 export default FeedbackPage;
