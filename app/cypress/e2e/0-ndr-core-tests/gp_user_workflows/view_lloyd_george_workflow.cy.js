@@ -289,6 +289,22 @@ describe('GP Workflow: View Lloyd George record', () => {
             },
         );
 
+        it.skip('displays an error when the document manifest backend API call fails', () => {
+            cy.intercept('GET', '/DocumentManifest*', {
+                statusCode: 500,
+            }).as('documentManifest');
+
+            cy.getByTestId('actions-menu').click();
+            cy.getByTestId('download-all-files-link').click();
+
+            cy.wait('@documentManifest');
+
+            // Assert
+            cy.contains(
+                'appropriate error for when the document manifest backend API call fails',
+            ).should('be.visible');
+        });
+
         it(
             'No download option or menu exists when no Lloyd George record exists for the patient for a GP CLINICAL user',
             { tags: 'regression' },
