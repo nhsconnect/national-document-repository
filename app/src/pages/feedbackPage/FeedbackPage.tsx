@@ -24,14 +24,14 @@ function FeedbackPage() {
     } = useForm<FormData>();
 
     const sendEmail = async (formData: FormData) => {
-        console.log(`got feedback from user: ${formData}}`);
+        console.log(`sending feedback from user by email: ${JSON.stringify(formData)}}`);
         return { status: 200 };
     };
     const submit: SubmitHandler<FormData> = async (formData) => {
         sendEmail(formData)
             .then(() => {
                 console.log('Successfully sent email');
-                console.log('move to confirmation screen');
+                console.log('will move to confirmation screen');
             })
             .catch((e) => console.error(`got error: {e}`));
     };
@@ -39,8 +39,8 @@ function FeedbackPage() {
     const renameRefKey = (props: UseFormRegisterReturn, refKey: string) => {
         const { ref, ...otherProps } = props;
         return {
-            ...otherProps,
             [refKey]: ref,
+            ...otherProps,
         };
     };
 
