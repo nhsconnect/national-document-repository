@@ -1,30 +1,36 @@
-import React, { useState } from 'react';
-import type { MouseEvent } from 'react';
+import WarningText from '../../components/generic/warningText/WarningText';
 import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
-import Spinner from '../../components/generic/spinner/Spinner';
 import { routes } from '../../types/generic/routes';
-import { endpoints } from '../../types/generic/endpoints';
-import { isLocal } from '../../helpers/utils/isLocal';
-import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import useIsBSOL from '../../helpers/hooks/useIsBSOL';
+import useRole from '../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 type Props = {};
 
-function HomePage(props: Props) {
+const HomePage = (props: Props) => {
     const navigate = useNavigate();
-    const baseAPIUrl = useBaseAPIUrl();
-    const [isLoading, setIsLoading] = useState(false);
+    const { GP_ADMIN, GP_CLINICAL } = REPOSITORY_ROLE;
+    const isBsol = useIsBSOL();
+    const role = useRole();
 
-    const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
-        setIsLoading(true);
-        e.preventDefault();
-        if (isLocal) {
-            navigate(routes.AUTH_CALLBACK);
-        } else {
-            window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
-        }
-    };
-    return !isLoading ? (
+    const SearchButton = () => (
+        <ButtonLink
+            role="button"
+            data-testid="search-patient-btn"
+            onClick={() => {
+                if (role && [GP_ADMIN, GP_CLINICAL].includes(role)) {
+                    navigate(routes.UPLOAD_SEARCH);
+                } else {
+                    navigate(routes.DOWNLOAD_SEARCH);
+                }
+            }}
+        >
+            Search for a patient
+        </ButtonLink>
+    );
+
+    const BsolContent = () => (
         <>
             <h1>Access and store digital GP records</h1>
             <p>
@@ -48,9 +54,8 @@ function HomePage(props: Props) {
                 <li>your NHS smartcard</li>
                 <li>patient details including their name, date of birth and NHS number</li>
             </ul>
-            <ButtonLink role="button" data-testid="start-btn" onClick={handleLogin}>
-                Start now
-            </ButtonLink>
+
+            <SearchButton />
             <h3>Get support with the service</h3>
             {'Contact the '}
             <a
@@ -61,26 +66,47 @@ function HomePage(props: Props) {
                 NHS National Service Desk
             </a>
             {' if there is an issue with this service or call 0300 303 5678.'}
-            {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
-                process.env.REACT_APP_ENVIRONMENT === 'development' ||
-                process.env.REACT_APP_ENVIRONMENT === 'test') && (
-                <div>
-                    <br />
-                    <br />
-                    <br />
-                    <h2>Test Panel</h2>
-                    <p>
-                        This section should only be displayed on a test/dev environment and should
-                        be used for displaying test configurations
-                    </p>
-                    <p> API endpoint: {process.env.REACT_APP_DOC_STORE_API_ENDPOINT}</p>
-                    <p> Image Version: {process.env.REACT_APP_IMAGE_VERSION}</p>
-                </div>
-            )}
         </>
-    ) : (
-        <Spinner status="Logging in..." />
     );
-}
+
+    const NonBsolContent = () => (
+        <>
+            <h1>You’re outside of Birmingham and Solihull (BSOL)</h1>
+            <p>
+                As you’re outside Birmingham and Solihull, the pilot area for this service, you can
+                use this service to:
+            </p>
+
+            <ul>
+                <li>view records if the patient joins your practice</li>
+
+                <li>download records if a patient leaves your practice</li>
+            </ul>
+            <p>You’ll be asked for patient details, including their:</p>
+            <ul>
+                <li>name</li>
+                <li>date of birth</li>
+                <li>NHS number</li>
+            </ul>
+
+            <WarningText text="Downloading a record will remove it from our storage." />
+
+            <SearchButton />
+
+            <h3>Get support with the service</h3>
+            {'Contact the '}
+            <a
+                href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
+                target="_blank"
+                rel="noreferrer"
+            >
+                NHS National Service Desk
+            </a>
+            {' if there is an issue with this service or call 0300 303 5678.'}
+        </>
+    );
+
+    return isBsol ? <BsolContent /> : <NonBsolContent />;
+};
 
 export default HomePage;

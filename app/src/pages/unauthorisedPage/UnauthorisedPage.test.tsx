@@ -44,7 +44,7 @@ describe('UnauthorisedPage', () => {
             });
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
             });
         });
     });

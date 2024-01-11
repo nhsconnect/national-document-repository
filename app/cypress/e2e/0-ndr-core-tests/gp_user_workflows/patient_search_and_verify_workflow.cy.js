@@ -22,6 +22,9 @@ describe('GP Workflow: Patient search and verify', () => {
     gpRoles.forEach((role) => {
         beforeEach(() => {
             cy.login(role);
+
+            cy.getByTestId('search-patient-btn').should('exist');
+            cy.getByTestId('search-patient-btn').click();
         });
 
         afterEach(() => {

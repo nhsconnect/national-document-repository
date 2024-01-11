@@ -38,6 +38,8 @@ describe('PCSE Workflow: Access and download found files', () => {
 
     beforeEach(() => {
         cy.login(Roles.PCSE);
+        cy.getByTestId('search-patient-btn').should('exist');
+        cy.getByTestId('search-patient-btn').click();
     });
 
     const navigateToVerify = () => {
