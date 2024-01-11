@@ -1,3 +1,6 @@
+from utils.error_codes import error_codes_dict
+
+
 class LambdaException(Exception):
     def __init__(self, status_code, message, err_code: str | None = None):
         self.status_code = status_code
@@ -14,7 +17,12 @@ class CreateDocumentRefException(LambdaException):
 
 class SearchPatientException(LambdaException):
     def __init__(self, status_code, message):
-        LambdaException.__init__(self, status_code, message, "ERR_SEARCH")
+        LambdaException.__init__(
+            self,
+            status_code,
+            message,
+            error_codes_dict[SearchPatientException.__name__][status_code],
+        )
 
 
 class InvalidDocTypeException(LambdaException):

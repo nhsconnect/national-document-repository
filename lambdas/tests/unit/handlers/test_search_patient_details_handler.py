@@ -70,7 +70,7 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
     )
 
     expected = ApiGatewayResponse(
-        404, "Patient does not exist for given NHS number", "GET", "ERR_SEARCH"
+        404, "Patient does not exist for given NHS number", "GET", "ERR_PATIENT"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_event_with_auth_header, context)
