@@ -9,6 +9,7 @@ import { act } from 'react-dom/test-utils';
 jest.mock('../../../helpers/hooks/usePatient');
 
 const mockSetStage = jest.fn();
+const mockDownloadStage = jest.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
 
@@ -22,7 +23,13 @@ describe('LloydGeorgeDownloadComplete', () => {
     });
 
     it('renders the component', () => {
-        render(<LgDownloadComplete setStage={mockSetStage} />);
+        render(
+            <LgDownloadComplete
+                setStage={mockSetStage}
+                setDownloadStage={mockDownloadStage}
+                deleteAfterDownload={false}
+            />,
+        );
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
         expect(screen.getByText('Documents from the Lloyd George record of:')).toBeInTheDocument();
@@ -35,7 +42,13 @@ describe('LloydGeorgeDownloadComplete', () => {
     });
 
     it('updates the download stage view when return to medical records is clicked', async () => {
-        render(<LgDownloadComplete setStage={mockSetStage} />);
+        render(
+            <LgDownloadComplete
+                setStage={mockSetStage}
+                setDownloadStage={mockDownloadStage}
+                deleteAfterDownload={false}
+            />,
+        );
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
         expect(screen.getByText('Documents from the Lloyd George record of:')).toBeInTheDocument();

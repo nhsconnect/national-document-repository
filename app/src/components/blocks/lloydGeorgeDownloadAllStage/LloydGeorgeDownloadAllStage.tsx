@@ -17,6 +17,7 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../helpers/hooks/usePatient';
 import deleteAllDocuments from '../../../helpers/requests/deleteAllDocuments';
+import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 
 const FakeProgress = require('fake-progress');
 
@@ -24,6 +25,7 @@ export type Props = {
     numberOfFiles: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     deleteAfterDownload: boolean;
+    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
 type DownloadLinkAttributes = {
@@ -35,6 +37,7 @@ function LloydGeorgeDownloadAllStage({
     numberOfFiles,
     setStage,
     deleteAfterDownload = false,
+    setDownloadStage,
 }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
@@ -162,7 +165,11 @@ function LloydGeorgeDownloadAllStage({
             </Card>
         </div>
     ) : (
-        <LgDownloadComplete setStage={setStage} />
+        <LgDownloadComplete
+            setStage={setStage}
+            setDownloadStage={setDownloadStage}
+            deleteAfterDownload={deleteAfterDownload}
+        />
     );
 }
 

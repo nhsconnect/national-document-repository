@@ -25,6 +25,7 @@ const mockedUsePatient = usePatient as jest.Mock;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
 const mockSetStage = jest.fn();
+const mockDownloadStage = jest.fn();
 
 describe('LloydGeorgeDownloadAllStage', () => {
     beforeEach(() => {
@@ -99,11 +100,17 @@ describe('LloydGeorgeDownloadAllStage', () => {
 });
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
-    const props: Omit<Props, 'setStage'> = {
+    const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
         numberOfFiles: mockPdf.number_of_files,
         deleteAfterDownload: false,
         ...propsOverride,
     };
 
-    return render(<LgDownloadAllStage {...props} setStage={mockSetStage} />);
+    return render(
+        <LgDownloadAllStage
+            {...props}
+            setStage={mockSetStage}
+            setDownloadStage={mockDownloadStage}
+        />,
+    );
 };
