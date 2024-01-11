@@ -31,6 +31,8 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
 
             cy.login(Roles.PCSE);
 
+            cy.getByTestId('search-patient-btn').should('exist');
+            cy.getByTestId('search-patient-btn').click();
             cy.url().should('eq', baseUrl + '/search/patient');
 
             cy.get('#nhs-number-input').click();

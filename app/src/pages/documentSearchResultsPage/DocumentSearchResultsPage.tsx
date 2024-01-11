@@ -51,7 +51,7 @@ function DocumentSearchResultsPage() {
             } catch (e) {
                 const error = e as AxiosError;
                 if (error.response?.status === 403) {
-                    navigate(routes.HOME);
+                    navigate(routes.START);
                 }
                 setSubmissionState(SUBMISSION_STATE.FAILED);
             }
@@ -125,7 +125,7 @@ function DocumentSearchResultsPage() {
                         to=""
                         onClick={(e) => {
                             e.preventDefault();
-                            navigate(routes.HOME);
+                            navigate(routes.START);
                         }}
                     >
                         Start Again

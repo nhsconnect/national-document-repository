@@ -34,3 +34,7 @@ class LGStitchServiceException(LambdaException):
 
 class DocumentRefSearchException(LambdaException):
     pass
+
+
+class DocumentDeletionServiceException(LambdaException):
+    pass

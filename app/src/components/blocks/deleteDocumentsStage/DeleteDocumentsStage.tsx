@@ -88,7 +88,7 @@ function DeleteDocumentsStage({
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
-                navigate(routes.HOME);
+                navigate(routes.START);
             }
             setDeletionStage(SUBMISSION_STATE.FAILED);
         }

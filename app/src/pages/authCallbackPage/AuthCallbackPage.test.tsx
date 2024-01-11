@@ -22,8 +22,6 @@ const allQueryParams = `?${codeAndStateQueryParams}&client_id=${params.id}`;
 const baseUiUrl = 'http://localhost' + allQueryParams;
 const originalWindowLocation = window.location;
 
-const currentPage = '/example';
-
 describe('AuthCallbackPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -50,7 +48,7 @@ describe('AuthCallbackPage', () => {
         expect(screen.getByText('Logging in...')).toBeInTheDocument();
 
         await waitFor(() => {
-            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UPLOAD_SEARCH);
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
         });
     });
 
@@ -62,7 +60,7 @@ describe('AuthCallbackPage', () => {
         expect(screen.getByText('Logging in...')).toBeInTheDocument();
 
         await waitFor(() => {
-            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UPLOAD_SEARCH);
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
         });
     });
 

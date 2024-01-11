@@ -45,7 +45,7 @@ def test_lambda_handler_when_service_raises_document_manifest_exception_returns_
     mock_service.create_document_manifest_presigned_url.side_effect = exception
 
     expected = ApiGatewayResponse(
-        404, "An error occurred when creating document manifest: No documents", "GET"
+        404, "No documents", "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)
@@ -61,8 +61,7 @@ def test_lambda_handler_when_service_raises_client_error_returns_correct_respons
 
     expected = ApiGatewayResponse(
         500,
-        "An error occurred when creating document manifest: "
-        "An error occurred (Unknown) when calling the test operation: Unknown",
+        "Failed to utilise AWS client/resource",
         "GET",
     ).create_api_gateway_response()
 

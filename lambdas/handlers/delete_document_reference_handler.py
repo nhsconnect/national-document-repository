@@ -1,4 +1,3 @@
-from botocore.exceptions import ClientError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.document_deletion_service import DocumentDeletionService
 from utils.audit_logging_setup import LoggingService
@@ -43,26 +42,19 @@ def lambda_handler(event, context):
 
     deletion_service = DocumentDeletionService()
 
-    try:
-        files_deleted = deletion_service.handle_delete(nhs_number, doc_type)
-        if files_deleted:
-            logger.info(
-                "Documents were deleted successfully", {"Result": "Successful deletion"}
-            )
-            return ApiGatewayResponse(
-                200, "Success", "DELETE"
-            ).create_api_gateway_response()
-        else:
-            logger.info(
-                "No records was found for given patient. No document deleted.",
-                {"Result": "No documents available"},
-            )
-            return ApiGatewayResponse(
-                404, "No documents available", "DELETE"
-            ).create_api_gateway_response()
-
-    except ClientError as e:
-        logger.info(str(e), {"Result": f"Unsuccessful deletion due to {str(e)}"})
+    files_deleted = deletion_service.handle_delete(nhs_number, doc_type)
+    if files_deleted:
+        logger.info(
+            "Documents were deleted successfully", {"Result": "Successful deletion"}
+        )
         return ApiGatewayResponse(
-            500, "Failed to delete documents", "DELETE"
+            200, "Success", "DELETE"
+        ).create_api_gateway_response()
+    else:
+        logger.info(
+            "No records was found for given patient. No document deleted.",
+            {"Result": "No documents available"},
+        )
+        return ApiGatewayResponse(
+            404, "No documents available", "DELETE"
         ).create_api_gateway_response()

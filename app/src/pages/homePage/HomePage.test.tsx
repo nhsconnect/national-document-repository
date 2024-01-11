@@ -1,77 +1,157 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import HomePage from './HomePage';
-import { useNavigate } from 'react-router';
-jest.mock('react-router');
-const mockNavigate = useNavigate as jest.Mock<typeof useNavigate>;
+import useIsBSOL from '../../helpers/hooks/useIsBSOL';
+import useRole from '../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { routes } from '../../types/generic/routes';
 
-describe('StartPage', () => {
+const mockedUseNavigate = jest.fn();
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
+
+jest.mock('../../helpers/hooks/useIsBSOL');
+const mockUseIsBsol = useIsBSOL as jest.Mock;
+
+jest.mock('../../helpers/hooks/useRole');
+const mockUseRole = useRole as jest.Mock;
+
+describe('HomePage', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
-
-    it('renders the page header', () => {
-        const mockUseNavigate = jest.fn();
-        mockNavigate.mockImplementation(() => mockUseNavigate);
-
-        render(<HomePage />);
-
-        expect(
-            screen.getByRole('heading', {
-                name: 'Access and store digital GP records',
-            }),
-        ).toBeInTheDocument();
-    });
-
-    it('renders home page content', () => {
-        const mockNavigate = jest.fn();
-        const mockUseNavigate = jest.fn();
-        mockNavigate.mockImplementation(() => mockUseNavigate);
-
-        const contentStrings = [
-            'This service gives you access to Lloyd George digital health records.',
-            'You can use this service if you are:',
-            'part of a GP practise and need to view, download or remove a patient record',
-            'managing records on behalf of NHS England and need to download a patient record',
-            'Not every patient will have a digital record available.',
-            'Before You Start',
-            "You'll be asked for:",
-            'your NHS smartcard',
-            'patient details including their name, date of birth and NHS number',
-        ];
-
-        render(<HomePage />);
-        contentStrings.forEach((s) => {
-            expect(screen.getByText(s)).toBeInTheDocument();
+    describe('BSOL Rendering', () => {
+        beforeEach(() => {
+            mockUseIsBsol.mockReturnValue(true);
+            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
         });
-        expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
-        expect(
-            screen.getByRole('link', {
+
+        it('renders homepage content', () => {
+            const contentStrings = [
+                'This service gives you access to Lloyd George digital health records. ' +
+                    'You may have received a note within a patient record, stating that the record has been digitised.',
+                'If you are part of a GP practice, you can use this service to:',
+                'view a patient record',
+                'remove a patient record',
+                'If you are managing records on behalf of NHS England, you can:',
+                'Not every patient will have a digital record available.',
+                'Before you start',
+                'You’ll be asked for:',
+                'your NHS smartcard',
+                'patient details including their name, date of birth and NHS number',
+            ];
+
+            render(<HomePage />);
+
+            contentStrings.forEach((s) => {
+                expect(screen.getByText(s)).toBeInTheDocument();
+            });
+
+            const downloadPatientRecord = screen.getAllByText('download a patient record');
+            expect(downloadPatientRecord).toHaveLength(2);
+
+            expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
+            expect(
+                screen.getByRole('link', {
+                    name: /NHS National Service Desk/i,
+                }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(/if there is an issue with this service or call 0300 303 5678\./i),
+            ).toBeInTheDocument();
+
+            expect(screen.getByTestId('search-patient-btn')).toBeInTheDocument();
+        });
+
+        it('renders a service link that takes you to service help-desk in a new tab', () => {
+            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            render(<HomePage />);
+
+            expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
+            const nationalServiceDeskLink = screen.getByRole('link', {
                 name: /NHS National Service Desk/i,
-            }),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText(/if there is an issue with this service or call 0300 303 5678/i),
-        ).toBeInTheDocument();
+            });
+            expect(
+                screen.getByText(/if there is an issue with this service or call 0300 303 5678/i),
+            ).toBeInTheDocument();
+
+            expect(nationalServiceDeskLink).toHaveAttribute(
+                'href',
+                'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
+            );
+            expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
+        });
     });
 
-    it('renders a service link that takes you to service help-desk in a new tab', () => {
-        const mockUseNavigate = jest.fn();
-        mockNavigate.mockImplementation(() => mockUseNavigate);
-
-        render(<HomePage />);
-
-        expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
-        const nationalServiceDeskLink = screen.getByRole('link', {
-            name: /NHS National Service Desk/i,
+    describe('Non-BSOL Rendering', () => {
+        beforeEach(() => {
+            mockUseIsBsol.mockReturnValue(false);
+            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
         });
-        expect(
-            screen.getByText(/if there is an issue with this service or call 0300 303 5678/i),
-        ).toBeInTheDocument();
 
-        expect(nationalServiceDeskLink).toHaveAttribute(
-            'href',
-            'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
+        it('renders page content', () => {
+            const contentStrings = [
+                'As you’re outside Birmingham and Solihull, the pilot area for this service, you can use this service to:',
+                'view records if the patient joins your practice',
+                'download records if a patient leaves your practice',
+                'You’ll be asked for patient details, including their:',
+                'name',
+                'date of birth',
+                'NHS number',
+                'Downloading a record will remove it from our storage.',
+                'Get support with the service',
+            ];
+
+            render(<HomePage />);
+
+            contentStrings.forEach((s) => {
+                expect(screen.getByText(s)).toBeInTheDocument();
+            });
+            expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
+            expect(
+                screen.getByRole('link', {
+                    name: /NHS National Service Desk/i,
+                }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(/if there is an issue with this service or call 0300 303 5678\./i),
+            ).toBeInTheDocument();
+        });
+
+        it('renders a service link that takes you to service help-desk in a new tab', () => {
+            render(<HomePage />);
+
+            expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
+            const nationalServiceDeskLink = screen.getByRole('link', {
+                name: /NHS National Service Desk/i,
+            });
+            expect(
+                screen.getByText(/if there is an issue with this service or call 0300 303 5678/i),
+            ).toBeInTheDocument();
+
+            expect(nationalServiceDeskLink).toHaveAttribute(
+                'href',
+                'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
+            );
+            expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
+        });
+    });
+
+    describe('Navigation', () => {
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL, REPOSITORY_ROLE.PCSE])(
+            "navigates to correct search page when user role is '%s'",
+            async (role) => {
+                const route =
+                    role === REPOSITORY_ROLE.PCSE ? routes.DOWNLOAD_SEARCH : routes.UPLOAD_SEARCH;
+                mockUseRole.mockReturnValue(role);
+                render(<HomePage />);
+
+                expect(screen.getByTestId('search-patient-btn')).toBeInTheDocument();
+                screen.getByTestId('search-patient-btn').click();
+                await waitFor(() => {
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(route);
+                });
+            },
         );
-        expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
     });
 });

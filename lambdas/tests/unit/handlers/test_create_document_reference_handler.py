@@ -170,7 +170,7 @@ def test_lambda_handler_processing_event_details_raise_error(
     mock_processing_event_details.side_effect = CreateDocumentRefException(400, "test")
     expected = ApiGatewayResponse(
         400,
-        "An error occurred due to: test",
+        "test",
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)
@@ -189,7 +189,7 @@ def test_lambda_handler_service_raise_error(
     )
     expected = ApiGatewayResponse(
         400,
-        "An error occurred due to: test",
+        "test",
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)

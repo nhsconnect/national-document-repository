@@ -8,11 +8,15 @@ import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useRole from '../../../helpers/hooks/useRole';
 import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
 import { LinkProps } from 'react-router-dom';
+
 jest.mock('../../../helpers/hooks/useRole');
 
 const mockedUseNavigate = jest.fn();
 const mockPdf = buildLgSearchResult();
-const mockSetStaqe = jest.fn();
+const mockSetStage = jest.fn();
+const mockSetDownloadRemoveButtonClicked = jest.fn();
+const mockSetError = jest.fn();
+const mockSetFocus = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
@@ -96,7 +100,7 @@ describe('LloydGeorgeRecordDetails', () => {
                     userEvent.click(screen.getByText(action.label));
                 });
                 await waitFor(async () => {
-                    expect(mockSetStaqe).toHaveBeenCalledWith(action.stage);
+                    expect(mockSetStage).toHaveBeenCalledWith(action.stage);
                 });
             },
         );
@@ -113,15 +117,8 @@ describe('LloydGeorgeRecordDetails', () => {
 
                 renderComponent();
 
-                expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-                expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-
-                act(() => {
-                    userEvent.click(screen.getByTestId('actions-menu'));
-                });
-                await waitFor(async () => {
-                    expect(screen.queryByText(action.label)).not.toBeInTheDocument();
-                });
+                expect(screen.queryByText(`Select an action...`)).not.toBeInTheDocument();
+                expect(screen.queryByTestId('actions-menu')).not.toBeInTheDocument();
             },
         );
 
@@ -132,18 +129,73 @@ describe('LloydGeorgeRecordDetails', () => {
             },
         );
     });
+
+    describe('GP admin non BSOL user', () => {
+        it('renders the record details component with button', () => {
+            renderComponent({ userIsGpAdminNonBSOL: true });
+
+            expect(screen.getByText(`Last updated: ${mockPdf.last_updated}`)).toBeInTheDocument();
+            expect(screen.getByText(`${mockPdf.number_of_files} files`)).toBeInTheDocument();
+            expect(
+                screen.getByText(`File size: ${formatFileSize(mockPdf.total_file_size_in_byte)}`),
+            ).toBeInTheDocument();
+            expect(screen.getByText('File format: PDF')).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Download and remove record' }),
+            ).toBeInTheDocument();
+
+            expect(screen.queryByText(`Select an action...`)).not.toBeInTheDocument();
+            expect(screen.queryByTestId('actions-menu')).not.toBeInTheDocument();
+        });
+
+        it('set downloadRemoveButtonClicked to true when button is clicked', () => {
+            renderComponent({ userIsGpAdminNonBSOL: true });
+
+            const button = screen.getByRole('button', { name: 'Download and remove record' });
+
+            button.click();
+
+            expect(mockSetDownloadRemoveButtonClicked).toHaveBeenCalledWith(true);
+        });
+
+        it('calls setFocus and setError when the button is clicked again after warning box shown up', () => {
+            renderComponent({ userIsGpAdminNonBSOL: true, downloadRemoveButtonClicked: true });
+
+            const button = screen.getByRole('button', { name: 'Download and remove record' });
+
+            button.click();
+
+            expect(mockSetError).toHaveBeenCalledWith('confirmDownloadRemove', {
+                type: 'custom',
+                message: 'true',
+            });
+            expect(mockSetFocus).toHaveBeenCalledWith('confirmDownloadRemove');
+        });
+    });
 });
 
-const TestApp = (props: Omit<Props, 'setStage'>) => {
-    return <LgRecordDetails {...props} setStage={mockSetStaqe} />;
+type mockedProps = Omit<
+    Props,
+    'setStage' | 'stage' | 'setDownloadRemoveButtonClicked' | 'setError' | 'setFocus'
+>;
+const TestApp = (props: mockedProps) => {
+    return (
+        <LgRecordDetails
+            {...props}
+            setStage={mockSetStage}
+            setDownloadRemoveButtonClicked={mockSetDownloadRemoveButtonClicked}
+            setError={mockSetError}
+            setFocus={mockSetFocus}
+        />
+    );
 };
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
-    const props: Omit<Props, 'setStage' | 'stage'> = {
+    const props: mockedProps = {
         lastUpdated: mockPdf.last_updated,
         numberOfFiles: mockPdf.number_of_files,
         totalFileSizeInByte: mockPdf.total_file_size_in_byte,
-
+        downloadRemoveButtonClicked: false,
         ...propsOverride,
     };
     return render(<TestApp {...props} />);

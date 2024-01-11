@@ -49,6 +49,7 @@ class CreateDocumentReferenceService:
                 )
 
         except (InvalidResourceIdException, LGInvalidFilesException) as e:
+            logger.error(str(e), {"Result": "Create document reference failed"})
             raise CreateDocumentRefException(400, e)
 
     def prepare_doc_object(self, document: dict) -> NHSDocumentReference:
@@ -56,7 +57,8 @@ class CreateDocumentReferenceService:
             validated_doc: UploadRequestDocument = UploadRequestDocument.model_validate(
                 document
             )
-        except ValidationError:
+        except ValidationError as e:
+            logger.error(str(e), {"Result": "Create document reference failed"})
             raise CreateDocumentRefException(
                 400, "Failed to parse document upload request data"
             )
@@ -100,8 +102,7 @@ class CreateDocumentReferenceService:
             logger.error(
                 str(e),
                 {
-                    "Result": f"An error occurred when creating pre-signed url for document reference Upload "
-                    f"Unsuccessful due to {str(e)}"
+                    "Result": "An error occurred when creating pre-signed url for document reference"
                 },
             )
             raise CreateDocumentRefException(500, "Internal error")

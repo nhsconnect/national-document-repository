@@ -1,6 +1,7 @@
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.search_patient_details_service import SearchPatientDetailsService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import validate_patient_id
@@ -14,32 +15,25 @@ logger = LoggingService(__name__)
 @set_request_context_for_logging
 @validate_patient_id
 @override_error_check
+@handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.PATIENT_SEARCH.value
+    logger.info("Starting patient search process")
 
-    try:
-        nhs_number = event["queryStringParameters"]["patientId"]
-        request_context.patient_nhs_no = nhs_number
-        user_ods_code, user_role = "", ""
-        if isinstance(request_context.authorization, dict):
-            user_ods_code = request_context.authorization.get(
-                "selected_organisation", {}
-            ).get("org_ods_code", "")
-            user_role = request_context.authorization.get("repository_role", "")
-        if not user_role or not user_ods_code:
-            raise SearchPatientException(400, "Missing user details")
+    nhs_number = event["queryStringParameters"]["patientId"]
+    request_context.patient_nhs_no = nhs_number
+    user_ods_code, user_role = "", ""
+    if isinstance(request_context.authorization, dict):
+        user_ods_code = request_context.authorization.get(
+            "selected_organisation", {}
+        ).get("org_ods_code", "")
+        user_role = request_context.authorization.get("repository_role", "")
+    if not user_role or not user_ods_code:
+        raise SearchPatientException(400, "Missing user details")
 
-        search_service = SearchPatientDetailsService(
-            user_role=user_role, user_ods_code=user_ods_code
-        )
-        response = search_service.handle_search_patient_request(nhs_number)
+    search_service = SearchPatientDetailsService(
+        user_role=user_role, user_ods_code=user_ods_code
+    )
+    response = search_service.handle_search_patient_request(nhs_number)
 
-        return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
-
-    except SearchPatientException as e:
-        logger.error(
-            e.message, {"Result": f"Unsuccessful search due to {str(e.message)}"}
-        )
-        return ApiGatewayResponse(
-            e.status_code, f"An error occurred due to: {str(e.message)}", "GET"
-        ).create_api_gateway_response()
+    return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()

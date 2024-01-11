@@ -24,10 +24,12 @@ logger = LoggingService(__name__)
 )
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.VIEW_LG_RECORD.value
+    logger.info("Lloyd George stitching handler triggered")
+
     nhs_number = extract_nhs_number_from_event(event)
     request_context.patient_nhs_no = nhs_number
 
     stitch_service = LloydGeorgeStitchService()
-
     stitch_result = stitch_service.stitch_lloyd_george_record(nhs_number)
+
     return ApiGatewayResponse(200, stitch_result, "GET").create_api_gateway_response()

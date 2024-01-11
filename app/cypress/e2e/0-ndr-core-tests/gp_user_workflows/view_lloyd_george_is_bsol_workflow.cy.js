@@ -49,6 +49,8 @@ describe('GP Workflow: View Lloyd George record', () => {
             statusCode: 200,
             body: searchPatientPayload,
         }).as('search');
+        cy.getByTestId('search-patient-btn').should('exist');
+        cy.getByTestId('search-patient-btn').click();
         cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
         cy.getByTestId('search-submit-btn').click();
         cy.wait('@search');
@@ -341,8 +343,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').click();
-                cy.getByTestId('download-all-files-link').should('not.exist');
+                cy.getByTestId('actions-menu').should('not.exist');
             },
         );
     });

@@ -145,6 +145,9 @@ jobs:
           start: serve -s build
           browser: chrome
           working-directory: ./app
+        env:
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
+          CYPRESS_grepTags: 'regression'
 
   cypress-run-firefox:
     runs-on: ubuntu-22.04

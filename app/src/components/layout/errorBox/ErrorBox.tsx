@@ -1,4 +1,5 @@
 import { ErrorSummary } from 'nhsuk-react-components';
+import { MouseEvent } from 'react';
 
 type Props = {
     errorBoxSummaryId: string;
@@ -6,6 +7,8 @@ type Props = {
     messageBody?: string;
     messageLinkBody?: string;
     errorInputLink?: string;
+    errorBody?: string;
+    dataTestId?: string;
 };
 
 // @ts-ignore
@@ -15,20 +18,32 @@ const ErrorBox = ({
     messageTitle,
     messageBody,
     messageLinkBody,
+    errorBody,
+    dataTestId,
 }: Props) => {
     const hasInputLink = errorInputLink && messageLinkBody;
     return (
-        <div id="error-box">
+        <div id="error-box" data-testid={dataTestId}>
             <ErrorSummary aria-labelledby={errorBoxSummaryId} role="alert" tabIndex={-1}>
                 <ErrorSummary.Title id={errorBoxSummaryId}>{messageTitle}</ErrorSummary.Title>
                 <ErrorSummary.Body>
                     <ErrorSummary.List>
-                        {messageBody && <p>{messageBody}</p>}
+                        {errorBody && (
+                            <ErrorSummary.Item
+                                href="#"
+                                onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+                                    e.preventDefault();
+                                }}
+                            >
+                                {errorBody}
+                            </ErrorSummary.Item>
+                        )}
                         {hasInputLink && (
                             <ErrorSummary.Item href={errorInputLink}>
                                 <p>{messageLinkBody}</p>
                             </ErrorSummary.Item>
                         )}
+                        {messageBody && <p>{messageBody}</p>}
                     </ErrorSummary.List>
                 </ErrorSummary.Body>
             </ErrorSummary>

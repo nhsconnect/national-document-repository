@@ -6,7 +6,7 @@ from tests.unit.helpers.data.test_documents import (
     create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
 )
-from utils.lambda_exceptions import LambdaException
+from utils.lambda_exceptions import DocumentDeletionServiceException
 from utils.lambda_response import ApiGatewayResponse
 
 TEST_DOC_STORE_REFERENCES = create_test_doc_store_refs()
@@ -171,8 +171,8 @@ def test_lambda_handler_when_deletion_service_throw_client_error_return_500(
     mock_handle_delete.side_effect = mock_error
     expected = ApiGatewayResponse(
         500,
-        "Failed to delete documents",
-        "DELETE",
+        "Failed to utilise AWS client/resource",
+        "GET",
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)
     assert expected == actual
@@ -181,7 +181,9 @@ def test_lambda_handler_when_deletion_service_throw_client_error_return_500(
 def test_lambda_handler_handle_lambda_exception(
     set_env, valid_id_and_lg_doctype_delete_event, context, mock_handle_delete
 ):
-    mock_error = LambdaException(status_code=404, message="Mock error message")
+    mock_error = DocumentDeletionServiceException(
+        status_code=404, message="Mock error message"
+    )
     mock_handle_delete.side_effect = mock_error
     expected = ApiGatewayResponse(
         404,

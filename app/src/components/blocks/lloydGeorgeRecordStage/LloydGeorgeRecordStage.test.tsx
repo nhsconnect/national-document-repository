@@ -9,13 +9,21 @@ import formatFileSize from '../../../helpers/utils/formatFileSize';
 import { act } from 'react-dom/test-utils';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
+import useRole from '../../../helpers/hooks/useRole';
+import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
+import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 
 jest.mock('../../../helpers/hooks/useRole');
 jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../helpers/hooks/useIsBSOL');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
+const mockedUseRole = useRole as jest.Mock;
+const mockedIsBSOL = useIsBSOL as jest.Mock;
+const mockSetStage = jest.fn();
 
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
@@ -107,10 +115,192 @@ describe('LloydGeorgeRecordStage', () => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
     });
+    describe('User is GP admin and non BSOL', () => {
+        const renderComponentForNonBSOLGPAdmin = () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            mockedIsBSOL.mockReturnValue(false);
+            renderComponent();
+        };
+
+        const showConfirmationMessage = async () => {
+            const greenDownloadButton = screen.getByRole('button', {
+                name: 'Download and remove record',
+            });
+
+            act(() => {
+                userEvent.click(greenDownloadButton);
+            });
+            await waitFor(() => {
+                expect(
+                    screen.getByText('Are you sure you want to download and remove this record?'),
+                ).toBeInTheDocument();
+            });
+        };
+
+        const clickRedDownloadButton = () => {
+            const redDownloadButton = screen.getByRole('button', {
+                name: 'Yes, download and remove',
+            });
+
+            act(() => {
+                userEvent.click(redDownloadButton);
+            });
+        };
+
+        it('renders warning callout, header and button', async () => {
+            renderComponentForNonBSOLGPAdmin();
+
+            expect(screen.getByText('Before downloading')).toBeInTheDocument();
+            expect(screen.getByText('Available records')).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Download and remove record' }),
+            ).toBeInTheDocument();
+        });
+
+        it('clicking the green download button should show confirmation message, checkbox, red download button and cancel button', async () => {
+            renderComponentForNonBSOLGPAdmin();
+
+            const downloadButton = screen.getByRole('button', {
+                name: 'Download and remove record',
+            });
+
+            act(() => {
+                userEvent.click(downloadButton);
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.getByText('Are you sure you want to download and remove this record?'),
+                ).toBeInTheDocument();
+            });
+            expect(
+                screen.getByText(
+                    "If you download this record, it removes from our storage. You must keep the patient's record safe.",
+                ),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('checkbox', {
+                    name: 'I understand that downloading this record removes it from storage.',
+                }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Yes, download and remove' }),
+            ).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Cancel' })).toBeInTheDocument();
+        });
+
+        it('when checkbox is unchecked, clicking red download button should show an alert and not allowing download', async () => {
+            renderComponentForNonBSOLGPAdmin();
+            await showConfirmationMessage();
+
+            clickRedDownloadButton();
+
+            await waitFor(() => {
+                expect(
+                    screen.getByRole('alert', { name: 'There is a problem' }),
+                ).toBeInTheDocument();
+            });
+            expect(
+                screen.getByText('You must confirm if you want to download and remove this record'),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText('Confirm if you want to download and remove this record'),
+            ).toBeInTheDocument();
+            expect(mockSetStage).not.toBeCalled();
+        });
+
+        it('when checkbox is checked, clicking red download button should proceed to download and delete process', async () => {
+            renderComponentForNonBSOLGPAdmin();
+            await showConfirmationMessage();
+
+            act(() => {
+                userEvent.click(screen.getByRole('checkbox'));
+            });
+
+            clickRedDownloadButton();
+
+            await waitFor(() => {
+                expect(mockSetStage).toBeCalledWith(LG_RECORD_STAGE.DOWNLOAD_ALL);
+            });
+        });
+
+        it('when checkbox is toggled 2 times ( = unchecked), red download button should not proceed to download', async () => {
+            renderComponentForNonBSOLGPAdmin();
+            await showConfirmationMessage();
+
+            const checkBox = screen.getByRole('checkbox');
+            act(() => {
+                userEvent.click(checkBox);
+                userEvent.click(checkBox);
+            });
+
+            clickRedDownloadButton();
+
+            await waitFor(() => {
+                expect(
+                    screen.getByRole('alert', { name: 'There is a problem' }),
+                ).toBeInTheDocument();
+            });
+            expect(mockSetStage).not.toBeCalled();
+        });
+
+        it('clicking cancel button will hide the confirmation message', async () => {
+            renderComponentForNonBSOLGPAdmin();
+            await showConfirmationMessage();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+            });
+
+            await waitFor(() => {
+                expect(
+                    screen.queryByText('Are you sure you want to download and remove this record?'),
+                ).not.toBeInTheDocument();
+            });
+        });
+    });
+
+    it('does not render warning callout, header and button when user is GP admin and BSOL', async () => {
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+        mockedIsBSOL.mockReturnValue(true);
+
+        renderComponent();
+
+        expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
+        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Download and remove record' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('does not render warning callout, header and button when user is GP clinical and non BSOL', async () => {
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+        mockedIsBSOL.mockReturnValue(false);
+
+        renderComponent();
+
+        expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
+        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Download and remove record' }),
+        ).not.toBeInTheDocument();
+    });
+
+    it('does not render warning callout, header and button when user is GP clinical and BSOL', async () => {
+        mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+        mockedIsBSOL.mockReturnValue(true);
+
+        renderComponent();
+
+        expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
+        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
+        expect(
+            screen.queryByRole('button', { name: 'Download and remove record' }),
+        ).not.toBeInTheDocument();
+    });
 });
 const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
-    const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
-    return <LgRecordStage {...props} setStage={setStage} stage={stage} />;
+    return <LgRecordStage {...props} setStage={mockSetStage} stage={LG_RECORD_STAGE.RECORD} />;
 };
 
 const renderComponent = (propsOverride?: Partial<Props>) => {

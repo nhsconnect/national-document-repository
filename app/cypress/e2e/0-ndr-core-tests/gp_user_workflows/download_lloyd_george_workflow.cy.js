@@ -7,6 +7,9 @@ const baseUrl = Cypress.config('baseUrl');
 describe('GP Workflow: View Lloyd George record', () => {
     const beforeEachConfiguration = (role) => {
         cy.login(role);
+
+        cy.getByTestId('search-patient-btn').should('exist');
+        cy.getByTestId('search-patient-btn').click();
         // search patient
         cy.intercept('GET', '/SearchPatient*', {
             statusCode: 200,
@@ -99,8 +102,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').click();
-                cy.getByTestId('download-all-files-link').should('not.exist');
+                cy.getByTestId('actions-menu').should('not.exist');
             },
         );
 

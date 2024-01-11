@@ -16,11 +16,16 @@ import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownlo
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../helpers/hooks/usePatient';
+import deleteAllDocuments from '../../../helpers/requests/deleteAllDocuments';
+import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
+
 const FakeProgress = require('fake-progress');
 
 export type Props = {
     numberOfFiles: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    deleteAfterDownload: boolean;
+    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
 type DownloadLinkAttributes = {
@@ -28,7 +33,12 @@ type DownloadLinkAttributes = {
     filename: string;
 };
 
-function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage }: Props) {
+function LloydGeorgeDownloadAllStage({
+    numberOfFiles,
+    setStage,
+    deleteAfterDownload = false,
+    setDownloadStage,
+}: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     const baseUrl = useBaseAPIUrl();
@@ -85,6 +95,16 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage }: Props) {
 
                 const filename = `patient-record-${nhsNumber}`;
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
+                if (deleteAfterDownload) {
+                    try {
+                        await deleteAllDocuments({
+                            docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                            nhsNumber: nhsNumber,
+                            baseUrl,
+                            baseHeaders,
+                        });
+                    } catch (e) {} // This is fail and forget at this point in time.
+                }
             } catch (e) {}
         };
 
@@ -96,10 +116,10 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage }: Props) {
             const delayTimer = setTimeout(onPageLoad, timeToComplete + delay);
             setDelayTimer(delayTimer);
         }
-    }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer]);
+    }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer, deleteAfterDownload]);
 
     return inProgress ? (
-        <div className="lloydgeorge_downloadall-stage">
+        <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
             <div className="lloydgeorge_downloadall-stage_header">
                 <h1>Downloading documents</h1>
                 <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
@@ -145,7 +165,11 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, setStage }: Props) {
             </Card>
         </div>
     ) : (
-        <LgDownloadComplete setStage={setStage} />
+        <LgDownloadComplete
+            setStage={setStage}
+            setDownloadStage={setDownloadStage}
+            deleteAfterDownload={deleteAfterDownload}
+        />
     );
 }
 

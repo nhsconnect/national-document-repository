@@ -28,7 +28,7 @@ class AuthoriserService:
                 ssm_public_key_parameter=ssm_jwt_public_key_parameter,
             )
             if decoded_token is None:
-                raise AuthorisationException("error while decoding JWT")
+                raise AuthorisationException("Error while decoding JWT")
             request_context.authorization = decoded_token
 
             ndr_session_id = decoded_token.get("ndr_session_id")

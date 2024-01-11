@@ -25,7 +25,7 @@ const LogoutPage = () => {
                     auth: null,
                     isLoggedIn: false,
                 });
-                navigate(routes.HOME);
+                navigate(routes.START);
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
@@ -33,7 +33,7 @@ const LogoutPage = () => {
                         auth: null,
                         isLoggedIn: false,
                     });
-                    navigate(routes.HOME);
+                    navigate(routes.START);
                 } else {
                     navigate(-1);
                 }

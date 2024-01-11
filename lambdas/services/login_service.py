@@ -38,12 +38,16 @@ class LoginService:
 
         try:
             if not self.have_matching_state_value_in_record(state):
-                logger.info(
-                    f"Mismatching state values. Cannot find state {state} in record"
+                logger.error(
+                    f"Mismatching state values. Cannot find state {state} in record",
+                    {"Result": "Unsuccessful login"},
                 )
                 raise LoginException(401, "Unrecognised state value")
-        except ClientError:
+        except ClientError as e:
+            logger.error(str(e), {"Result": "Unsuccessful login"})
             raise LoginException(500, "Unable to validate state")
+
+        logger.info("Setting up oidc service")
 
         self.oidc_service.set_up_oidc_parameters(SSMService, WebApplicationClient)
 
@@ -62,9 +66,11 @@ class LoginService:
             smartcard_role_code, user_id = self.oidc_service.fetch_user_role_code(
                 access_token, id_token_claim_set, "R"
             )
-        except OidcApiException:
+        except OidcApiException as e:
+            logger.error(str(e), {"Result": "Unsuccessful login"})
             raise LoginException(500, "Issue when contacting CIS2")
-        except AuthorisationException:
+        except AuthorisationException as e:
+            logger.error(str(e), {"Result": "Unsuccessful login"})
             raise LoginException(
                 401, "Cannot log user in, expected information from CIS2 is missing"
             )
@@ -75,9 +81,11 @@ class LoginService:
                     org_ods_codes
                 )
             )
-        except (TooManyOrgsException, OdsErrorException):
+        except (TooManyOrgsException, OdsErrorException) as e:
+            logger.error(str(e), {"Result": "Unsuccessful login"})
             raise LoginException(500, "Bad response from ODS API")
-        except OrganisationNotFoundException:
+        except OrganisationNotFoundException as e:
+            logger.error(str(e), {"Result": "Unsuccessful login"})
             raise LoginException(401, "No org found for given ODS code")
 
         logger.info(f"Permitted_orgs_details: {permitted_orgs_details}")
@@ -134,7 +142,8 @@ class LoginService:
         if state_match:
             try:
                 self.remove_used_state(state)
-            except ClientError:
+            except ClientError as e:
+                logger.error(str(e), {"Result": "Unsuccessful login"})
                 raise LoginException(500, "Unable to remove used state value")
 
         return state_match
@@ -148,8 +157,8 @@ class LoginService:
         logger.info(f"Smartcard Role: {smartcard_role}")
 
         if (
-            self.token_handler_ssm_service.get_smartcard_role_gp_admin()
-            == smartcard_role
+            smartcard_role
+            in self.token_handler_ssm_service.get_smartcard_role_gp_admin()
         ):
             logger.info("GP Admin: smartcard ODS identified")
             if self.has_role_org_role_code(

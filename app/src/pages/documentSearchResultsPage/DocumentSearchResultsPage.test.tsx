@@ -130,7 +130,7 @@ describe('<DocumentSearchResultsPage />', () => {
             userEvent.click(screen.getByRole('link', { name: 'Start Again' }));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
             });
         });
     });

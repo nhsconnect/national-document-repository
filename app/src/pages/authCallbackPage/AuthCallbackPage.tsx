@@ -8,8 +8,8 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { AxiosError } from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 type Props = {};
 
@@ -17,7 +17,6 @@ const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
     const [, setSession] = useSessionContext();
     const navigate = useNavigate();
-
     useEffect(() => {
         const handleError = () => {
             setSession({
@@ -28,24 +27,16 @@ const AuthCallbackPage = (props: Props) => {
             navigate(routes.AUTH_ERROR);
         };
         const handleSuccess = (auth: UserAuth) => {
+            const { GP_ADMIN, GP_CLINICAL, PCSE } = REPOSITORY_ROLE;
             setSession({
                 auth: auth,
                 isLoggedIn: true,
             });
 
-            switch (auth.role) {
-                case REPOSITORY_ROLE.GP_ADMIN:
-                    navigate(routes.UPLOAD_SEARCH);
-                    break;
-                case REPOSITORY_ROLE.GP_CLINICAL:
-                    navigate(routes.UPLOAD_SEARCH);
-                    break;
-                case REPOSITORY_ROLE.PCSE:
-                    navigate(routes.DOWNLOAD_SEARCH);
-                    break;
-                default:
-                    navigate(routes.AUTH_ERROR);
-                    break;
+            if ([GP_ADMIN, GP_CLINICAL, PCSE].includes(auth.role)) {
+                navigate(routes.HOME);
+            } else {
+                navigate(routes.AUTH_ERROR);
             }
         };
 
@@ -66,7 +57,7 @@ const AuthCallbackPage = (props: Props) => {
         const urlSearchParams = new URLSearchParams(window.location.search);
         const code = urlSearchParams.get('code') ?? '';
         const state = urlSearchParams.get('state') ?? '';
-        handleCallback({ baseUrl, code, state });
+        void handleCallback({ baseUrl, code, state });
     }, [baseUrl, setSession, navigate]);
 
     return <Spinner status="Logging in..." />;

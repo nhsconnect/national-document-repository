@@ -35,8 +35,7 @@ def test_get_dynamodb_table_name_raise_error_when_env_var_is_missing(
     with pytest.raises(InvalidDocTypeException):
         SupportedDocumentTypes.LG.get_dynamodb_table_name()
 
-    assert (
-        caplog.records[-1].msg
-        == "An error occurred due to missing environment variable for doc_type LG"
-    )
+    assert caplog.records[-1].custom_args == {
+        "Result": "An error occurred due to missing environment variable for doc_type LG"
+    }
     assert caplog.records[-1].levelname == "ERROR"
