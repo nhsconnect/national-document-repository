@@ -2,6 +2,7 @@ import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-component
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import { FORM_FIELDS, FormData, SATISFACTION_CHOICES } from '../../types/pages/feedbackPage/types';
 import sendEmail from '../../helpers/requests/sendEmail';
+import { useState } from 'react';
 
 function FeedbackPage() {
     const {
@@ -10,17 +11,15 @@ function FeedbackPage() {
         formState: { errors },
     } = useForm<FormData>();
 
-    /* eslint-disable no-console */
-    // using console.log as placeholder until we got the send email solution in place
+    // a placeholder to show result until we got the confirmation page place
+    const [result, setResult] = useState<FormData | null>(null);
+
     const submit: SubmitHandler<FormData> = async (formData) => {
-        sendEmail(formData)
-            .then(() => {
-                console.log('Successfully sent email');
-                console.log('will move to confirmation screen');
-            })
-            .catch((e) => console.error(`got error: ${e}`));
+        sendEmail(formData).then(() => {
+            setResult(formData);
+            // navigate to confirmation page
+        });
     };
-    /* eslint-enable no-console */
 
     const feedbackContentProps = renameRefKey(
         register(FORM_FIELDS.feedbackContent, {
@@ -58,7 +57,7 @@ function FeedbackPage() {
                     </Fieldset.Legend>
                     <Radios id="select-how-satisfied" error={errors.howSatisfied?.message}>
                         {Object.values(SATISFACTION_CHOICES).map((choice, i) => (
-                            <Radios.Radio key={i} value={choice} {...howSatisfiedProps}>
+                            <Radios.Radio key={choice} value={choice} {...howSatisfiedProps}>
                                 {choice}
                             </Radios.Radio>
                         ))}
@@ -91,14 +90,12 @@ function FeedbackPage() {
                     Send feedback
                 </Button>
             </form>
+            {result && <p>{`Successfully sent feedback: \n${JSON.stringify(result)}`}</p>}
         </div>
     );
 }
 
-const renameRefKey = (
-    props: UseFormRegisterReturn,
-    newRefKey: string,
-): Partial<UseFormRegisterReturn> => {
+const renameRefKey = (props: UseFormRegisterReturn, newRefKey: string) => {
     const { ref, ...otherProps } = props;
     return {
         [newRefKey]: ref,
