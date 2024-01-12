@@ -90,9 +90,7 @@ function FeedbackPage() {
                     />
                 </Fieldset>
 
-                <Button type="submit" id="feedback-submit-btn" data-testid="feedback-submit-btn">
-                    Send feedback
-                </Button>
+                <Button type="submit">Send feedback</Button>
             </form>
             {/*// to be removed when we got the confirmation page in place. */}
             {result && (
