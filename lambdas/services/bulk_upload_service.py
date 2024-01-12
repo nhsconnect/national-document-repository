@@ -11,7 +11,6 @@ from repositories.bulk_upload.bulk_upload_dynamo_repository import (
 )
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
-from utils import lloyd_george_validator
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
     BulkUploadException,
@@ -23,7 +22,8 @@ from utils.exceptions import (
     VirusScanFailedException,
     VirusScanNoResultException,
 )
-from utils.lloyd_george_validator import LGInvalidFilesException
+from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names, validate_with_pds_service, \
+    getting_patient_info_from_pds
 from utils.request_context import request_context
 from utils.unicode_utils import (
     contains_accent_char,
@@ -77,6 +77,7 @@ class BulkUploadService:
 
     def handle_sqs_message(self, message: dict):
         logger.info("Validating SQS event")
+        patient_ods_code = ""
         try:
             staging_metadata_json = message["body"]
             staging_metadata = StagingMetadata.model_validate_json(
@@ -89,8 +90,17 @@ class BulkUploadService:
 
         logger.info("SQS event is valid. Validating NHS number and file names")
         try:
+
+            file_names = [
+                os.path.basename(metadata.file_path) for metadata in staging_metadata.files
+            ]
+            validate_lg_file_names(file_names, staging_metadata.nhs_number)
             request_context.patient_nhs_no = staging_metadata.nhs_number
-            lloyd_george_validator.validate_bulk_uploaded_files(staging_metadata)
+
+            pds_patient_details = getting_patient_info_from_pds(staging_metadata.nhs_number)
+            patient_ods_code = pds_patient_details.general_practice_ods
+            validate_with_pds_service(file_names, pds_patient_details)
+
         except PdsTooManyRequestsException as error:
             logger.info(
                 "Cannot validate patient due to PDS responded with Too Many Requests"
@@ -105,7 +115,7 @@ class BulkUploadService:
 
             failure_reason = str(error)
             self.dynamo_repository.report_upload_failure(
-                staging_metadata, failure_reason
+                staging_metadata, failure_reason, patient_ods_code
             )
             return
 
