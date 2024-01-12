@@ -7,6 +7,13 @@ export enum FORM_FIELDS {
     respondentEmail = 'respondentEmail',
 }
 
+export enum SUBMIT_STAGE {
+    NotSubmitted,
+    Submitting,
+    Successful,
+    Failure,
+}
+
 export enum SATISFACTION_CHOICES {
     VerySatisfied = 'Very satisfied',
     Satisfied = 'Satisfied',

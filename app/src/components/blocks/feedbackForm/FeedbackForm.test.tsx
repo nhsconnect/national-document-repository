@@ -1,11 +1,17 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
-import FeedbackPage from './FeedbackPage';
-import { FORM_FIELDS, SATISFACTION_CHOICES, FormData } from '../../types/pages/feedbackPage/types';
+import {
+    FORM_FIELDS,
+    SATISFACTION_CHOICES,
+    FormData,
+    SUBMIT_STAGE,
+} from '../../../types/pages/feedbackPage/types';
 import userEvent from '@testing-library/user-event';
-import sendEmail from '../../helpers/requests/sendEmail';
+import sendEmail from '../../../helpers/requests/sendEmail';
+import FeedbackForm from './FeedbackForm';
 
-jest.mock('../../helpers/requests/sendEmail');
+jest.mock('../../../helpers/requests/sendEmail');
 const mockSendEmail = sendEmail as jest.Mock;
+const mockSetStage = jest.fn();
 
 const clickSubmitButton = () => {
     userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
@@ -22,7 +28,11 @@ const fillInForm = (data: Partial<FormData>) => {
     }
 };
 
-describe('<Feedbackpage />', () => {
+const renderComponent = () => {
+    return render(<FeedbackForm stage={SUBMIT_STAGE.NotSubmitted} setStage={mockSetStage} />);
+};
+
+describe('<FeedbackForm />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockSendEmail.mockReturnValueOnce(Promise.resolve());
@@ -32,7 +42,7 @@ describe('<Feedbackpage />', () => {
     });
 
     it('renders the page header', () => {
-        render(<FeedbackPage />);
+        renderComponent();
 
         expect(
             screen.getByRole('heading', {
@@ -54,7 +64,7 @@ describe('<Feedbackpage />', () => {
             'We’ll only use this to speak to you about your feedback',
         ];
 
-        render(<FeedbackPage />);
+        renderComponent();
 
         contentStrings.forEach((s) => {
             expect(screen.getByText(s)).toBeInTheDocument();
@@ -73,7 +83,7 @@ describe('<Feedbackpage />', () => {
     });
 
     it('renders a primary button for submit', () => {
-        render(<FeedbackPage />);
+        renderComponent();
 
         expect(screen.getByRole('button', { name: 'Send feedback' })).toBeInTheDocument();
     });
@@ -87,7 +97,7 @@ describe('<Feedbackpage />', () => {
                 respondentEmail: 'jane_smith@testing.com',
             };
 
-            render(<FeedbackPage />);
+            renderComponent();
 
             act(() => {
                 fillInForm(mockInputData);
@@ -104,7 +114,7 @@ describe('<Feedbackpage />', () => {
                 respondentEmail: 'jane_smith@testing.com',
             };
 
-            render(<FeedbackPage />);
+            renderComponent();
 
             act(() => {
                 fillInForm(mockInputData);
@@ -124,7 +134,7 @@ describe('<Feedbackpage />', () => {
                 respondentEmail: 'jane_smith@testing.com',
             };
 
-            render(<FeedbackPage />);
+            renderComponent();
 
             act(() => {
                 fillInForm(mockInputData);
@@ -148,7 +158,7 @@ describe('<Feedbackpage />', () => {
                 respondentEmail: '',
             };
 
-            render(<FeedbackPage />);
+            renderComponent();
 
             act(() => {
                 fillInForm(mockInputData);
