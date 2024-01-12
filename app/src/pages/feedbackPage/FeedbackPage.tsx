@@ -11,7 +11,7 @@ function FeedbackPage() {
         formState: { errors },
     } = useForm<FormData>();
 
-    // a placeholder to show result until we got the confirmation page place
+    // a placeholder to test form submit until we got the confirmation page in place
     const [result, setResult] = useState<FormData | null>(null);
 
     const submit: SubmitHandler<FormData> = async (formData) => {
@@ -90,6 +90,7 @@ function FeedbackPage() {
                     Send feedback
                 </Button>
             </form>
+            {/*// to be removed when we got the confirmation page in place. */}
             {result && <p>{`Successfully sent feedback: \n${JSON.stringify(result)}`}</p>}
         </div>
     );
