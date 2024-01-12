@@ -53,7 +53,7 @@ function PatientSearchPage() {
         // GP Role
         if (userIsGPAdmin || userIsGPClinical) {
             // Make PDS patient search request to upload documents to patient
-            navigate(routes.UPLOAD_VERIFY);
+            navigate(routes.VERIFY_PATIENT);
         }
 
         // PCSE Role

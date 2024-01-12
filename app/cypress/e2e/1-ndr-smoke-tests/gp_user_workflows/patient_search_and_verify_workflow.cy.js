@@ -8,12 +8,12 @@ describe('GP Workflow: Patient search and verify', () => {
     const workspace = Cypress.env('WORKSPACE');
     const activePatient = workspace === 'ndr-dev' ? '9730153817' : '9000000002';
     const homeUrl = '/home';
-    const uploadSearchUrl = '/search/upload/result';
+    const verifyPatientUrl = '/search/result';
     const lloydGeorgeUrl = '/search/patient/lloyd-george-record';
 
     gpRoles.forEach((role) => {
         it(
-            `[Smoke] Shows the Lloyd george view page when upload patient is verified and active as a ${roleName(
+            `[Smoke] Shows the Lloyd george view page when patient is verified and active as a ${roleName(
                 role,
             )} `,
             { tags: 'smoke' },
@@ -28,7 +28,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#nhs-number-input').type(activePatient);
                 cy.get('#search-submit').click();
 
-                cy.url({ timeout: 10000 }).should('eq', baseUrl + uploadSearchUrl);
+                cy.url({ timeout: 10000 }).should('eq', baseUrl + verifyPatientUrl);
                 cy.get('#verify-submit').click();
 
                 cy.url({ timeout: 10000 }).should('eq', baseUrl + lloydGeorgeUrl);

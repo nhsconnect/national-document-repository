@@ -48,7 +48,7 @@ describe('Authentication & Authorisation', () => {
             '/search/results',
             '/search/patient/lloyd-george-record',
             '/search/upload',
-            '/search/upload/result',
+            '/search/result',
             '/upload/submit',
         ];
 

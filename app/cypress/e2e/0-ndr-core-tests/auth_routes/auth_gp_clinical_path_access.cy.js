@@ -35,8 +35,8 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
             cy.get('#search-submit').click();
             cy.wait('@search');
 
-            cy.url().should('include', 'upload');
-            cy.url().should('eq', baseUrl + '/search/upload/result');
+            cy.url().should('include', 'result');
+            cy.url().should('eq', baseUrl + '/search/result');
 
             cy.get('#verify-submit').click();
 

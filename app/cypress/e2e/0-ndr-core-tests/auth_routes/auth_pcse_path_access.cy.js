@@ -17,7 +17,7 @@ const baseUrl = Cypress.config('baseUrl');
 const forbiddenRoutes = [
     '/search/patient/lloyd-george-record',
     '/search/upload',
-    '/search/upload/result',
+    '/search/result',
     '/upload/submit',
 ];
 

@@ -46,8 +46,8 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#search-submit').click();
                 cy.wait('@search');
 
-                cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + '/search/upload/result');
+                cy.url().should('include', 'result');
+                cy.url().should('eq', baseUrl + '/search/result');
                 cy.get('#gp-message').should('be.visible');
                 cy.get('#gp-message').should(
                     'have.text',
