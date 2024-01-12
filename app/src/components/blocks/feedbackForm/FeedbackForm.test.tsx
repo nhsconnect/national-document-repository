@@ -105,6 +105,7 @@ describe('<FeedbackForm />', () => {
             });
 
             await waitFor(() => expect(mockSendEmail).toBeCalledWith(mockInputData));
+            expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
         });
 
         it("on submit, if feedback content is empty, display an error message and don't send email", async () => {
@@ -125,6 +126,7 @@ describe('<FeedbackForm />', () => {
                 expect(screen.getByText('Please enter your feedback')).toBeInTheDocument();
             });
             expect(mockSendEmail).not.toBeCalled();
+            expect(mockSetStage).not.toBeCalled();
         });
 
         it("on submit, if user haven't chosen an option for howSatisfied, display an error message and don't send email", async () => {
@@ -145,6 +147,7 @@ describe('<FeedbackForm />', () => {
                 expect(screen.getByText('Please select an option')).toBeInTheDocument();
             });
             expect(mockSendEmail).not.toBeCalled();
+            expect(mockSetStage).not.toBeCalled();
         });
 
         it('on submit, allows the respondent name and email to be not filled in', async () => {
@@ -166,6 +169,7 @@ describe('<FeedbackForm />', () => {
             });
 
             await waitFor(() => expect(mockSendEmail).toBeCalledWith(expectedEmailContent));
+            expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
         });
     });
 });
