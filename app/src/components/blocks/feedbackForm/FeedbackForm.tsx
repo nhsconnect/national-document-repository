@@ -2,18 +2,17 @@ import {
     FORM_FIELDS,
     FormData,
     SATISFACTION_CHOICES,
-    SUBMIT_STAGE,
+    SUBMISSION_STAGE,
 } from '../../../types/pages/feedbackPage/types';
 import React, { Dispatch, useState } from 'react';
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import sendEmail from '../../../helpers/requests/sendEmail';
 import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-components';
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
-import FeedbackPage from '../../../pages/feedbackPage/FeedbackPage';
 
 type Props = {
-    stage: SUBMIT_STAGE;
-    setStage: Dispatch<SUBMIT_STAGE>;
+    stage: SUBMISSION_STAGE;
+    setStage: Dispatch<SUBMISSION_STAGE>;
 };
 
 function FeedbackForm({ stage, setStage }: Props) {
@@ -27,15 +26,15 @@ function FeedbackForm({ stage, setStage }: Props) {
     const [result, setResult] = useState<FormData | null>(null);
 
     const submit: SubmitHandler<FormData> = async (formData) => {
-        setStage(SUBMIT_STAGE.Submitting);
+        setStage(SUBMISSION_STAGE.Submitting);
 
         sendEmail(formData)
             .then(() => {
-                setStage(SUBMIT_STAGE.Successful);
+                setStage(SUBMISSION_STAGE.Successful);
                 setResult(formData);
             })
             .catch((e) => {
-                setStage(SUBMIT_STAGE.Failure);
+                setStage(SUBMISSION_STAGE.Failure);
             });
     };
 
@@ -107,7 +106,7 @@ function FeedbackForm({ stage, setStage }: Props) {
                         {...respondentEmailProps}
                     />
                 </Fieldset>
-                {stage !== SUBMIT_STAGE.Submitting ? (
+                {stage !== SUBMISSION_STAGE.Submitting ? (
                     <Button type="submit">Send feedback</Button>
                 ) : (
                     <SpinnerButton
@@ -117,7 +116,7 @@ function FeedbackForm({ stage, setStage }: Props) {
                     />
                 )}
             </form>
-            {/*// to be removed when we got the confirmation page in place. */}
+            {/* to be removed when we got the confirmation page in place. */}
             {result && (
                 <p>{`[Placeholder] called sendEmail() with data: \n${JSON.stringify(result)}`}</p>
             )}

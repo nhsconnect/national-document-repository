@@ -7,7 +7,7 @@ export enum FORM_FIELDS {
     respondentEmail = 'respondentEmail',
 }
 
-export enum SUBMIT_STAGE {
+export enum SUBMISSION_STAGE {
     NotSubmitted,
     Submitting,
     Successful,

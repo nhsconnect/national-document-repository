@@ -3,7 +3,7 @@ import {
     FORM_FIELDS,
     SATISFACTION_CHOICES,
     FormData,
-    SUBMIT_STAGE,
+    SUBMISSION_STAGE,
 } from '../../../types/pages/feedbackPage/types';
 import userEvent from '@testing-library/user-event';
 import sendEmail from '../../../helpers/requests/sendEmail';
@@ -29,7 +29,7 @@ const fillInForm = (data: Partial<FormData>) => {
 };
 
 const renderComponent = () => {
-    return render(<FeedbackForm stage={SUBMIT_STAGE.NotSubmitted} setStage={mockSetStage} />);
+    return render(<FeedbackForm stage={SUBMISSION_STAGE.NotSubmitted} setStage={mockSetStage} />);
 };
 
 describe('<FeedbackForm />', () => {
