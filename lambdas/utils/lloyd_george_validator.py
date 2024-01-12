@@ -146,7 +146,7 @@ def validate_with_pds_service(file_name_list: list[str], patient_details: Patien
 
         current_user_ods = get_user_ods_code()
         if patient_details.general_practice_ods != current_user_ods:
-            raise LGInvalidFilesException("User is not allowed to access patient")
+            raise LGInvalidFilesException("Patient not registered at your practice")
 
     except (ValidationError, ClientError, ValueError) as e:
         logger.error(e)

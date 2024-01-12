@@ -5,6 +5,8 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
+
+from models.pds_models import Patient
 from services.bulk_upload_service import BulkUploadService
 from tests.unit.conftest import (MOCK_BULK_REPORT_TABLE_NAME, MOCK_LG_BUCKET,
                                  MOCK_LG_METADATA_SQS_QUEUE,
@@ -19,6 +21,7 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     make_valid_lg_file_names)
 from tests.unit.utils.test_unicode_utils import (NAME_WITH_ACCENT_NFC_FORM,
                                                  NAME_WITH_ACCENT_NFD_FORM)
+from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from utils.exceptions import (DocumentInfectedException,
                               InvalidMessageException,
                               PatientRecordAlreadyExistException,
@@ -46,7 +49,10 @@ def mock_validate_files(mocker):
 
 @pytest.fixture
 def mock_pds_service(mocker):
-    yield mocker.patch("services.bulk_upload_service.getting_patient_info_from_pds")
+    patient = Patient.model_validate(PDS_PATIENT)
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    mocker.patch("services.bulk_upload_service.getting_patient_info_from_pds", return_value=patient_details)
+    yield patient_details
 
 @pytest.fixture
 def mock_pds_validation(mocker):
@@ -163,7 +169,7 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_already_in_repo(
-        set_env, mocker, mock_uuid, mock_validate_files, mock_pds_service, mock_pds_validation
+        set_env, mocker, mock_uuid, mock_validate_files, mock_pds_validation
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
@@ -181,18 +187,20 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
     mock_validate_files.side_effect = mocked_error
 
     service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
 
     mock_report_upload_failure.assert_called_with(
-        TEST_STAGING_METADATA, str(mocked_error)
+        TEST_STAGING_METADATA, str(mocked_error), ""
     )
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
-        set_env, mocker, mock_uuid, mock_validate_files, mock_pds_service, mock_pds_validation
+        set_env, mocker, mock_uuid, mock_validate_files, mock_pds_validation
 ):
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
@@ -215,7 +223,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
 
     mock_report_upload_failure.assert_called_with(
-        TEST_STAGING_METADATA_WITH_INVALID_FILENAME, str(mocked_error)
+        TEST_STAGING_METADATA_WITH_INVALID_FILENAME, str(mocked_error), ""
     )
 
 
@@ -237,7 +245,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
     mock_report_upload_failure.assert_called_with(
-        TEST_STAGING_METADATA, "One or more of the files failed virus scanner check"
+        TEST_STAGING_METADATA, "One or more of the files failed virus scanner check", mock_pds_service.general_practice_ods
     )
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
@@ -252,11 +260,14 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
     )
 
     service = BulkUploadService()
+    service.s3_service = mocker.MagicMock()
+    service.dynamo_service = mocker.MagicMock()
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA,
         "One or more of the files is not accessible from staging bucket",
+        mock_pds_service.general_practice_ods
     )
 
 
@@ -280,7 +291,7 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
     service = BulkUploadService()
     service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
-    mock_put_staging_metadata_back_to_queue.assert_called_with(TEST_STAGING_METADATA)
+    mock_put_staging_metadata_back_to_queue.assert_called_with(TEST_STAGING_METADATA, mock_pds_service.general_practice_ods)
 
     mock_report_upload_failure.assert_not_called()
     mock_create_lg_records_and_copy_files.assert_not_called()
@@ -317,6 +328,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA,
         "Validation passed but error occurred during file transfer",
+        mock_pds_service.general_practice_ods
     )
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
 
@@ -337,34 +349,42 @@ def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract
 
 
 def test_validate_files_propagate_PatientRecordAlreadyExistException_when_patient_record_already_in_repo(
-        set_env, mocker
+        set_env, mocker, mock_validate_files
 ):
-    mocker.patch(
-        "utils.lloyd_george_validator.check_for_patient_already_exist_in_repo",
-        side_effect=PatientRecordAlreadyExistException,
-    )
+
+    mock_validate_files.side_effect = PatientRecordAlreadyExistException("test text")
     service = BulkUploadService()
     service.s3_service = mocker.MagicMock()
     service.dynamo_service = mocker.MagicMock()
+    mock_report_upload_failure = mocker.patch.object(
+        BulkUploadService, "report_upload_failure"
+    )
+    service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
-    with pytest.raises(PatientRecordAlreadyExistException):
-        service.handle_sqs_message(message=TEST_SQS_MESSAGE)
+    mock_report_upload_failure.assert_called_with(
+        TEST_STAGING_METADATA,
+        "test text",
+        ""
+    )
 
 
 def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(
-        set_env, mocker
+        set_env, mocker, mock_validate_files
 ):
     service = BulkUploadService()
     service.s3_service = mocker.MagicMock()
     service.dynamo_service = mocker.MagicMock()
-    mocker.patch(
-        "utils.lloyd_george_validator.check_for_patient_already_exist_in_repo",
-        side_effect=LGInvalidFilesException,
+    mock_validate_files.side_effect=LGInvalidFilesException("test text")
+    mock_report_upload_failure = mocker.patch.object(
+        BulkUploadService, "report_upload_failure"
     )
+    service.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
-    with pytest.raises(LGInvalidFilesException):
-        service.handle_sqs_message(message=TEST_SQS_MESSAGE)
-
+    mock_report_upload_failure.assert_called_with(
+        TEST_STAGING_METADATA,
+        "test text",
+        ""
+    )
 
 def test_check_virus_result_raise_no_error_when_all_files_are_clean(
         set_env, mocker, caplog
@@ -466,7 +486,7 @@ def test_put_staging_metadata_back_to_queue_and_increases_retries(set_env, mocke
     metadata_copy = copy.deepcopy(TEST_STAGING_METADATA)
     metadata_copy.retries = 3
 
-    service.put_staging_metadata_back_to_queue(TEST_STAGING_METADATA)
+    service.put_staging_metadata_back_to_queue(TEST_STAGING_METADATA, "")
 
     service.sqs_service.send_message_with_nhs_number_attr_fifo.assert_called_with(
         group_id="back_to_queue_bulk_upload_123412342",
@@ -486,7 +506,7 @@ def test_reports_failure_when_max_retries_reached(set_env, mocker, mock_uuid):
 
     mocker.patch("uuid.uuid4", return_value="123412342")
 
-    service.put_staging_metadata_back_to_queue(TEST_STAGING_METADATA)
+    service.put_staging_metadata_back_to_queue(TEST_STAGING_METADATA, "test_ods")
 
     service.sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
@@ -499,7 +519,7 @@ def test_reports_failure_when_max_retries_reached(set_env, mocker, mock_uuid):
             "Timestamp": 1696251600,
             "UploadStatus": "failed",
             "FailureReason": mock_failure_reason,
-            "OdsCode": ""
+            "OdsCode": "test_ods"
         }
         service.dynamo_service.create_item.assert_any_call(
             item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME

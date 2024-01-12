@@ -3,7 +3,7 @@ import json
 import pytest
 from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
-from requests import Response
+from requests import Response, HTTPError
 
 from models.pds_models import Patient
 from services.document_service import DocumentService
@@ -17,7 +17,8 @@ from utils.lloyd_george_validator import (
     check_for_file_names_agrees_with_each_other,
     check_for_number_of_files_match_expected,
     check_for_patient_already_exist_in_repo, extract_info_from_filename,
-    validate_file_name, validate_lg_file_type, validate_with_pds_service)
+    validate_file_name, validate_lg_file_type, validate_with_pds_service, getting_patient_info_from_pds,
+    validate_lg_file_names)
 
 @pytest.fixture()
 def mock_pds_patient_details():
@@ -212,42 +213,39 @@ def test_files_for_different_patients():
         check_for_file_names_agrees_with_each_other(lg_file_list)
     assert str(e.value) == "File names does not match with each other"
 
-#
-# def test_validate_nhs_id_with_pds_service(mocker, mock_pds_call):
-#     response = Response()
-#     response.status_code = 200
-#     response._content = json.dumps(PDS_PATIENT).encode("utf-8")
-#     patient = Patient.model_validate(response.json())
-#     patient_details = patient.get_minimum_patient_details("9000000009")
-#     lg_file_list = [
-#         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-#         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-#     ]
-#     mock_pds_call.return_value = response
-#     mock_odc_code = mocker.patch(
-#         "utils.lloyd_george_validator.get_user_ods_code", return_value="Y12345"
-#     )
-#
-#     validate_with_pds_service(lg_file_list, patient_details)
-#
-#     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
-#     mock_odc_code.assert_called_once()
+
+def test_validate_nhs_id_with_pds_service(mocker):
+    response = Response()
+    response.status_code = 200
+    response._content = json.dumps(PDS_PATIENT).encode("utf-8")
+    patient = Patient.model_validate(response.json())
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+    ]
+    mock_pds_call.return_value = response
+    mock_odc_code = mocker.patch(
+        "utils.lloyd_george_validator.get_user_ods_code", return_value="Y12345"
+    )
+
+    validate_with_pds_service(lg_file_list, patient_details)
+
+    mock_odc_code.assert_called_once()
 
 
-# def test_mismatch_nhs_id_no_pds_service(mocker, mock_pds_call):
-#     lg_file_list = [
-#         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000005]_[22-10-2010].pdf",
-#         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000005]_[22-10-2010].pdf",
-#     ]
-#     mock_odc_code = mocker.patch(
-#         "utils.lloyd_george_validator.get_user_ods_code", return_value="Y12345"
-#     )
-#
-#     with pytest.raises(LGInvalidFilesException):
-#         validate_with_pds_service(lg_file_list, "9000000009")
-#
-#     mock_pds_call.assert_not_called()
-#     mock_odc_code.assert_not_called()
+def test_mismatch_nhs_id_no_pds_service(mocker):
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jane Smith]_[9000000005]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jane Smith]_[9000000005]_[22-10-2010].pdf",
+    ]
+
+    mocker.patch("utils.lloyd_george_validator.check_for_patient_already_exist_in_repo")
+    mocker.patch("utils.lloyd_george_validator.check_for_number_of_files_match_expected")
+    mocker.patch("utils.lloyd_george_validator.validate_file_name")
+
+    with pytest.raises(LGInvalidFilesException):
+        validate_lg_file_names(lg_file_list, "9000000009")
 
 
 def test_mismatch_name_with_pds_service(mocker, mock_pds_patient_details):
@@ -295,38 +293,25 @@ def test_mismatch_dob_with_pds_service(mocker, mock_pds_patient_details):
     mock_odc_code.assert_not_called()
 
 
-# def test_patient_not_found_with_pds_service(mocker, mock_pds_patient_details):
-#     response = Response()
-#     response.status_code = 404
-#     lg_file_list = [
-#         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-#         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-#     ]
-#     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
-#
-#     with pytest.raises(LGInvalidFilesException) as e:
-#         validate_with_pds_service(lg_file_list, mock_pds_patient_details)
-#     assert str(e.value) == "Could not find the given patient on PDS"
-#
-#     mock_odc_code.assert_not_called()
+def test_patient_not_found_with_pds_service(mock_pds_call):
+    response = Response()
+    response.status_code = 404
+    mock_pds_call.return_value = response
 
-#
-# def test_bad_request_with_pds_service(mocker, mock_pds_patient_details):
-#     response = Response()
-#     response.status_code = 400
-#     lg_file_list = [
-#         "1of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[22-10-2010].pdf",
-#         "2of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[22-10-2010].pdf",
-#     ]
-#     mock_pds_call.return_value = response
-#     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
-#
-#     with pytest.raises(LGInvalidFilesException) as e:
-#         validate_with_pds_service(lg_file_list, mock_pds_patient_details)
-#     assert str(e.value) == "Failed to retrieve patient data from PDS"
-#
-#     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
-#     mock_odc_code.assert_not_called()
+    with pytest.raises(HTTPError):
+        getting_patient_info_from_pds("9000000009")
+    mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
+
+
+def test_bad_request_with_pds_service(mock_pds_patient_details, mock_pds_call):
+    response = Response()
+    response.status_code = 400
+    mock_pds_call.return_value = response
+
+    with pytest.raises(HTTPError):
+        getting_patient_info_from_pds("9000000009")
+
+    mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
 
 
 def test_raise_client_error_from_ssm_with_pds_service(mocker, mock_pds_patient_details):
@@ -347,24 +332,20 @@ def test_raise_client_error_from_ssm_with_pds_service(mocker, mock_pds_patient_d
     mock_odc_code.assert_called_once()
 
 
-# def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
-#     mocker, mock_pds_call
-# ):
-#     response = Response()
-#     response.status_code = 429
-#     response._content = b"Too Many Requests"
-#     lg_file_list = [
-#         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-#         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-#     ]
-#     mock_pds_call.return_value = response
-#
-#     mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
-#
-#     with pytest.raises(PdsTooManyRequestsException):
-#         validate_with_pds_service(lg_file_list, "9000000009")
-#
-#     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
+def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
+    mocker, mock_pds_call
+):
+    response = Response()
+    response.status_code = 429
+    response._content = b"Too Many Requests"
+    mock_pds_call.return_value = response
+
+    mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
+
+    with pytest.raises(PdsTooManyRequestsException):
+        getting_patient_info_from_pds("9000000009")
+
+    mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
 
 
 def test_check_for_patient_already_exist_in_repo_return_none_when_patient_record_not_exist(
