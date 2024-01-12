@@ -91,7 +91,9 @@ function FeedbackPage() {
                 </Button>
             </form>
             {/*// to be removed when we got the confirmation page in place. */}
-            {result && <p>{`Successfully sent feedback: \n${JSON.stringify(result)}`}</p>}
+            {result && (
+                <p>{`(Placeholder) called sendEmail() with data: \n${JSON.stringify(result)}`}</p>
+            )}
         </div>
     );
 }
