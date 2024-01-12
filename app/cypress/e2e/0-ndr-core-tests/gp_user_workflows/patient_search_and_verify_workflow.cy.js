@@ -51,7 +51,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#gp-message').should('be.visible');
                 cy.get('#gp-message').should(
                     'have.text',
-                    'Ensure these patient details match the records and attachments that you upload',
+                    'Check these patient details match the records or attachments you plan to use',
                 );
                 cy.get('#verify-submit').click();
 
