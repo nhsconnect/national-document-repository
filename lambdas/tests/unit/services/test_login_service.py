@@ -359,6 +359,6 @@ def test_generate_repository_role_no_role_raises_auth_error(
     login_service = LoginService()
 
     with pytest.raises(LoginException) as actual:
-        actual = login_service.generate_repository_role(org, user_role_code)
+        login_service.generate_repository_role(org, user_role_code)
 
     assert actual.value.status_code == 401
