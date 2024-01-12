@@ -7,9 +7,25 @@ import sendEmail from '../../helpers/requests/sendEmail';
 jest.mock('../../helpers/requests/sendEmail');
 const mockSendEmail = sendEmail as jest.Mock;
 
+const clickSubmitButton = () => {
+    userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
+};
+
+const fillInForm = (data: Partial<FormData>) => {
+    for (const [fieldName, value] of Object.entries(data)) {
+        if (fieldName === FORM_FIELDS.howSatisfied) {
+            userEvent.click(screen.getByRole('radio', { name: value }));
+        } else {
+            userEvent.click(screen.getByTestId(fieldName));
+            userEvent.type(screen.getByTestId(fieldName), value);
+        }
+    }
+};
+
 describe('<Feedbackpage />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockSendEmail.mockReturnValueOnce(Promise.resolve());
     });
     afterEach(() => {
         jest.clearAllMocks();
@@ -62,7 +78,7 @@ describe('<Feedbackpage />', () => {
         expect(screen.getByRole('button', { name: 'Send feedback' })).toBeInTheDocument();
     });
 
-    describe('user interactions', () => {
+    describe('User interactions', () => {
         it('on submit, call sendEmail() with the data that user had filled in', async () => {
             const mockInputData = {
                 feedbackContent: 'Mock feedback content',
@@ -70,71 +86,76 @@ describe('<Feedbackpage />', () => {
                 respondentName: 'Jane Smith',
                 respondentEmail: 'jane_smith@testing.com',
             };
-            mockSendEmail.mockReturnValue(Promise.resolve());
 
             render(<FeedbackPage />);
 
             act(() => {
-                fillInData(mockInputData);
+                fillInForm(mockInputData);
                 clickSubmitButton();
             });
 
             await waitFor(() => expect(mockSendEmail).toBeCalledWith(mockInputData));
         });
 
-        it('display an error message on submit if feedback content is empty', async () => {
+        it("on submit, if feedback content is empty, display an error message and don't send email", async () => {
             const mockInputData = {
-                howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
+                howSatisfied: SATISFACTION_CHOICES.Neither,
                 respondentName: 'Jane Smith',
                 respondentEmail: 'jane_smith@testing.com',
             };
-            mockSendEmail.mockReturnValue(Promise.resolve());
 
             render(<FeedbackPage />);
 
             act(() => {
-                fillInData(mockInputData);
+                fillInForm(mockInputData);
                 clickSubmitButton();
             });
 
             await waitFor(() => {
                 expect(screen.getByText('Please enter your feedback')).toBeInTheDocument();
             });
+            expect(mockSendEmail).not.toBeCalled();
         });
 
-        it('display an error message on submit if user have not chosen a howSatisfied option', async () => {
+        it("on submit, if user haven't chosen an option for howSatisfied, display an error message and don't send email", async () => {
             const mockInputData = {
                 feedbackContent: 'Mock feedback content',
                 respondentName: 'Jane Smith',
                 respondentEmail: 'jane_smith@testing.com',
             };
-            mockSendEmail.mockReturnValue(Promise.resolve());
 
             render(<FeedbackPage />);
 
             act(() => {
-                fillInData(mockInputData);
+                fillInForm(mockInputData);
                 clickSubmitButton();
             });
 
             await waitFor(() => {
                 expect(screen.getByText('Please select an option')).toBeInTheDocument();
             });
+            expect(mockSendEmail).not.toBeCalled();
+        });
+
+        it('on submit, allows the respondent name and email to be not filled in', async () => {
+            const mockInputData = {
+                feedbackContent: 'Mock feedback content',
+                howSatisfied: SATISFACTION_CHOICES.VeryDissatisfied,
+            };
+            const expectedEmailContent = {
+                ...mockInputData,
+                respondentName: '',
+                respondentEmail: '',
+            };
+
+            render(<FeedbackPage />);
+
+            act(() => {
+                fillInForm(mockInputData);
+                clickSubmitButton();
+            });
+
+            await waitFor(() => expect(mockSendEmail).toBeCalledWith(expectedEmailContent));
         });
     });
 });
-
-const clickSubmitButton = () => {
-    userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
-};
-
-const fillInData = (data: Partial<FormData>) => {
-    for (const [fieldName, value] of Object.entries(data)) {
-        if (fieldName === FORM_FIELDS.howSatisfied) {
-            userEvent.click(screen.getByRole('radio', { name: value }));
-        } else {
-            userEvent.click(screen.getByTestId(fieldName));
-            userEvent.type(screen.getByTestId(fieldName), value);
-        }
-    }
-};
