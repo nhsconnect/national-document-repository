@@ -31,7 +31,7 @@ const {
     DOWNLOAD_VERIFY,
     DOWNLOAD_DOCUMENTS,
     LLOYD_GEORGE,
-    UPLOAD_SEARCH,
+    PATIENT_SEARCH,
     VERIFY_PATIENT,
     UPLOAD_DOCUMENTS,
 } = routes;
@@ -79,7 +79,7 @@ export const routeMap: Routes = {
         type: ROUTE_TYPE.PRIVATE,
         unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
     },
-    [UPLOAD_SEARCH]: {
+    [PATIENT_SEARCH]: {
         page: <PatientSearchPage />,
         type: ROUTE_TYPE.PRIVATE,
         unauthorized: [REPOSITORY_ROLE.PCSE],

@@ -28,7 +28,7 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
 
             cy.getByTestId('search-patient-btn').should('exist');
             cy.getByTestId('search-patient-btn').click();
-            cy.url().should('eq', baseUrl + '/search/upload');
+            cy.url().should('eq', baseUrl + '/search');
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);

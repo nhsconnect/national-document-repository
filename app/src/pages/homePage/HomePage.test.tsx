@@ -142,7 +142,7 @@ describe('HomePage', () => {
             "navigates to correct search page when user role is '%s'",
             async (role) => {
                 const route =
-                    role === REPOSITORY_ROLE.PCSE ? routes.DOWNLOAD_SEARCH : routes.UPLOAD_SEARCH;
+                    role === REPOSITORY_ROLE.PCSE ? routes.DOWNLOAD_SEARCH : routes.PATIENT_SEARCH;
                 mockUseRole.mockReturnValue(role);
                 render(<HomePage />);
 

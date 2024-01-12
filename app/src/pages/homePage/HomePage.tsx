@@ -20,7 +20,7 @@ const HomePage = (props: Props) => {
             data-testid="search-patient-btn"
             onClick={() => {
                 if (role && [GP_ADMIN, GP_CLINICAL].includes(role)) {
-                    navigate(routes.UPLOAD_SEARCH);
+                    navigate(routes.PATIENT_SEARCH);
                 } else {
                     navigate(routes.DOWNLOAD_SEARCH);
                 }
