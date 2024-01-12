@@ -56,7 +56,7 @@ function FeedbackPage() {
                         How satisfied were you with your overall experience of using this service?
                     </Fieldset.Legend>
                     <Radios id="select-how-satisfied" error={errors.howSatisfied?.message}>
-                        {Object.values(SATISFACTION_CHOICES).map((choice, i) => (
+                        {Object.values(SATISFACTION_CHOICES).map((choice) => (
                             <Radios.Radio key={choice} value={choice} {...howSatisfiedProps}>
                                 {choice}
                             </Radios.Radio>
