@@ -187,7 +187,7 @@ class LoginService:
             return RepositoryRole.NONE
 
         logger.info("Role: No smartcard role found")
-        return RepositoryRole.NONE
+        raise LoginException(401, "No repository role found for user's selected role and organisation")
 
     @staticmethod
     def has_role_org_role_code(organisation: dict, role_code: str) -> bool:
