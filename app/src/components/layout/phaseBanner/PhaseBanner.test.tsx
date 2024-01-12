@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import PhaseBanner from './PhaseBanner';
+import { routes } from '../../../types/generic/routes';
 
 describe('PhaseBanner', () => {
     beforeEach(() => {
@@ -20,18 +21,13 @@ describe('PhaseBanner', () => {
         });
     });
     describe('Navigation', () => {
-        it.skip('renders an external  link with a feedback href', () => {
-            /**
-             * Remove skip once feedback link attribute has been verified by Product team
-             */
+        it('renders a link to the feedback form page', () => {
             render(<PhaseBanner />);
             const feedbackLink = screen.getByRole('link', {
                 name: 'feedback',
             });
-            expect(feedbackLink).toHaveAttribute(
-                'href',
-                'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
-            );
+
+            expect(feedbackLink).toHaveAttribute('href', routes.FEEDBACK);
             expect(feedbackLink).toHaveAttribute('target', '_blank');
         });
     });

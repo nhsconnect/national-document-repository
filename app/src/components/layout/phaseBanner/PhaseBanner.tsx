@@ -1,4 +1,5 @@
 import React from 'react';
+import { routes } from '../../../types/generic/routes';
 
 function PhaseBanner() {
     return (
@@ -10,7 +11,7 @@ function PhaseBanner() {
                     </strong>
                     <span className="govuk-phase-banner__text">
                         Your{' '}
-                        <a href="./feedback" target="_blank" rel="noreferrer">
+                        <a href={routes.FEEDBACK} target="_blank" rel="noreferrer">
                             feedback
                         </a>{' '}
                         will help us to improve this service.
