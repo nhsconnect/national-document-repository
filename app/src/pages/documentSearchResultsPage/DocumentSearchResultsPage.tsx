@@ -108,8 +108,7 @@ function DocumentSearchResultsPage() {
                 </>
             )}
 
-            {(submissionState === SUBMISSION_STATE.FAILED ||
-                downloadState === SUBMISSION_STATE.FAILED) && (
+            {downloadState === SUBMISSION_STATE.FAILED && (
                 <ErrorBox
                     messageTitle={'There is a problem with the documents'}
                     messageBody={'An error has occurred while preparing your download'}
