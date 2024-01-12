@@ -334,7 +334,9 @@ def test_generate_repository_role_pcse(mock_logging_service, set_env, mocker):
     assert expected == actual
 
 
-def test_generate_repository_role_no_role_raises_auth_error(mock_logging_service, set_env, mocker):
+def test_generate_repository_role_no_role_raises_auth_error(
+    mock_logging_service, set_env, mocker
+):
     user_role_code = "role_code"
     org = {"org_ods_code": "ods_code", "role_code": "not_gp_or_pcse"}
 
