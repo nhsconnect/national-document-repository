@@ -75,6 +75,8 @@ function FeedbackPage() {
                     <Input
                         label="Your name"
                         data-testid={FORM_FIELDS.respondentName}
+                        autoComplete="name"
+                        spellCheck={false}
                         {...respondentNameProps}
                     />
 
@@ -82,6 +84,8 @@ function FeedbackPage() {
                         label="Your email address"
                         hint="We’ll only use this to speak to you about your feedback"
                         data-testid={FORM_FIELDS.respondentEmail}
+                        autoComplete="email"
+                        spellCheck={false}
                         {...respondentEmailProps}
                     />
                 </Fieldset>
@@ -92,7 +96,7 @@ function FeedbackPage() {
             </form>
             {/*// to be removed when we got the confirmation page in place. */}
             {result && (
-                <p>{`(Placeholder) called sendEmail() with data: \n${JSON.stringify(result)}`}</p>
+                <p>{`[Placeholder] called sendEmail() with data: \n${JSON.stringify(result)}`}</p>
             )}
         </div>
     );
