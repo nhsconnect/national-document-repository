@@ -16,7 +16,6 @@ import { PatientDetails } from '../../types/generic/patientDetails';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { isMock } from '../../helpers/utils/isLocal';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import useRole from '../../helpers/hooks/useRole';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
