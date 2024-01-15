@@ -10,21 +10,31 @@ from services.document_service import DocumentService
 from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
-from utils.exceptions import (PatientRecordAlreadyExistException,
-                              PdsTooManyRequestsException)
+from utils.exceptions import (
+    PatientRecordAlreadyExistException,
+    PdsTooManyRequestsException,
+)
 from utils.lloyd_george_validator import (
-    LGInvalidFilesException, check_for_duplicate_files,
+    LGInvalidFilesException,
+    check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
     check_for_number_of_files_match_expected,
-    check_for_patient_already_exist_in_repo, extract_info_from_filename,
-    validate_file_name, validate_lg_file_type, validate_with_pds_service, getting_patient_info_from_pds,
-    validate_lg_file_names)
+    check_for_patient_already_exist_in_repo,
+    extract_info_from_filename,
+    validate_file_name,
+    validate_lg_file_type,
+    validate_with_pds_service,
+    getting_patient_info_from_pds,
+    validate_lg_file_names,
+)
+
 
 @pytest.fixture()
 def mock_pds_patient_details():
     patient = Patient.model_validate(PDS_PATIENT)
     patient_details = patient.get_minimum_patient_details("9000000009")
     return patient_details
+
 
 def test_catching_error_when_file_type_not_pdf():
     with pytest.raises(LGInvalidFilesException):
@@ -241,7 +251,9 @@ def test_mismatch_nhs_id_no_pds_service(mocker):
     ]
 
     mocker.patch("utils.lloyd_george_validator.check_for_patient_already_exist_in_repo")
-    mocker.patch("utils.lloyd_george_validator.check_for_number_of_files_match_expected")
+    mocker.patch(
+        "utils.lloyd_george_validator.check_for_number_of_files_match_expected"
+    )
     mocker.patch("utils.lloyd_george_validator.validate_file_name")
 
     with pytest.raises(LGInvalidFilesException):
@@ -280,7 +292,6 @@ def test_mismatch_ods_with_pds_service(mocker, mock_pds_patient_details):
 
 
 def test_mismatch_dob_with_pds_service(mocker, mock_pds_patient_details):
-
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[14-01-2000].pdf",
         "2of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[14-01-2000].pdf",
@@ -298,7 +309,7 @@ def test_patient_not_found_with_pds_service(mock_pds_call):
     response.status_code = 404
     mock_pds_call.return_value = response
 
-    with pytest.raises(HTTPError):
+    with pytest.raises(LGInvalidFilesException):
         getting_patient_info_from_pds("9000000009")
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
 
@@ -308,7 +319,7 @@ def test_bad_request_with_pds_service(mock_pds_patient_details, mock_pds_call):
     response.status_code = 400
     mock_pds_call.return_value = response
 
-    with pytest.raises(HTTPError):
+    with pytest.raises(LGInvalidFilesException):
         getting_patient_info_from_pds("9000000009")
 
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)

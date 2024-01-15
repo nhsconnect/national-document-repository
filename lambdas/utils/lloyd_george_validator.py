@@ -12,8 +12,10 @@ from requests import HTTPError
 from services.document_service import DocumentService
 from services.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (PatientRecordAlreadyExistException,
-                              PdsTooManyRequestsException)
+from utils.exceptions import (
+    PatientRecordAlreadyExistException,
+    PdsTooManyRequestsException,
+)
 from utils.unicode_utils import REGEX_PATIENT_NAME_PATTERN, names_are_matching
 from utils.utilities import get_pds_service
 
@@ -98,6 +100,7 @@ def validate_lg_file_names(file_name_list: list[str], nhs_number: str):
     check_for_duplicate_files(file_name_list)
     check_for_file_names_agrees_with_each_other(file_name_list)
 
+
 def extract_info_from_filename(filename: str) -> dict:
     page_number = r"(?P<page_no>[1-9][0-9]*)"
     total_page_number = r"(?P<total_page_no>[1-9][0-9]*)"
@@ -124,7 +127,9 @@ def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
         raise LGInvalidFilesException("File names does not match with each other")
 
 
-def validate_with_pds_service(file_name_list: list[str], patient_details: PatientDetails):
+def validate_with_pds_service(
+    file_name_list: list[str], patient_details: PatientDetails
+):
     try:
         file_name_info = extract_info_from_filename(file_name_list[0])
 
@@ -151,30 +156,30 @@ def validate_with_pds_service(file_name_list: list[str], patient_details: Patien
     except (ValidationError, ClientError, ValueError) as e:
         logger.error(e)
         raise LGInvalidFilesException(e)
-    except HTTPError as e:
-        logger.error(e)
-        if "404" in str(e):
-            raise LGInvalidFilesException("Could not find the given patient on PDS")
-        else:
-            raise LGInvalidFilesException("Failed to retrieve patient data from PDS")
+
 
 def getting_patient_info_from_pds(nhs_number: str):
     pds_service_class = get_pds_service()
     pds_service = pds_service_class(SSMService())
-    pds_response = pds_service.pds_request(
-        nhs_number=nhs_number, retry_on_expired=True
-    )
+    pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)
 
     if pds_response.status_code == 429:
         logger.error("Got 429 Too Many Requests error from PDS.")
         raise PdsTooManyRequestsException(
             "Failed to validate filename against PDS record due to too many requests"
         )
-
-    pds_response.raise_for_status()
+    try:
+        pds_response.raise_for_status()
+    except HTTPError as e:
+        logger.error(e)
+        if "404" in str(e):
+            raise LGInvalidFilesException("Could not find the given patient on PDS")
+        else:
+            raise LGInvalidFilesException("Failed to retrieve patient data from PDS")
     patient = Patient.model_validate(pds_response.json())
     patient_details = patient.get_minimum_patient_details(nhs_number)
     return patient_details
+
 
 def get_user_ods_code():
     if os.getenv("PDS_FHIR_IS_STUBBED") in ["True", "true"]:

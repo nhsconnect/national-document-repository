@@ -15,6 +15,7 @@ class UploadStatusBaseClass(BaseModel):
     timestamp: int = Field(default_factory=lambda: int(datetime.now().timestamp()))
     date: str = Field(default_factory=lambda: date_string_yyyymmdd(datetime.now()))
     file_path: str
+    ods_code: str = ""
 
 
 class SuccessfulUpload(UploadStatusBaseClass):
@@ -24,7 +25,6 @@ class SuccessfulUpload(UploadStatusBaseClass):
 class FailedUpload(UploadStatusBaseClass):
     upload_status: Literal["failed"] = "failed"
     failure_reason: str
-    ods_code: str
 
 
 FieldNamesForBulkUploadReport = [
@@ -35,7 +35,7 @@ FieldNamesForBulkUploadReport = [
     "Date",
     "Timestamp",
     "ID",
-    "OdsCode"
+    "OdsCode",
 ]
 
 

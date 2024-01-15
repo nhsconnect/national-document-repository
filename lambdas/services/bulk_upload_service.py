@@ -12,19 +12,28 @@ from services.dynamo_service import DynamoDBService
 from services.s3_service import S3Service
 from services.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import (DocumentInfectedException,
-                              InvalidMessageException,
-                              PatientRecordAlreadyExistException,
-                              PdsTooManyRequestsException,
-                              S3FileNotFoundException, TagNotFoundException,
-                              VirusScanFailedException,
-                              VirusScanNoResultException)
-from utils.lloyd_george_validator import (LGInvalidFilesException,
-                                          validate_lg_file_names, validate_with_pds_service,
-                                          getting_patient_info_from_pds)
+from utils.exceptions import (
+    DocumentInfectedException,
+    InvalidMessageException,
+    PatientRecordAlreadyExistException,
+    PdsTooManyRequestsException,
+    S3FileNotFoundException,
+    TagNotFoundException,
+    VirusScanFailedException,
+    VirusScanNoResultException,
+)
+from utils.lloyd_george_validator import (
+    LGInvalidFilesException,
+    validate_lg_file_names,
+    validate_with_pds_service,
+    getting_patient_info_from_pds,
+)
 from utils.request_context import request_context
-from utils.unicode_utils import (contains_accent_char, convert_to_nfc_form,
-                                 convert_to_nfd_form)
+from utils.unicode_utils import (
+    contains_accent_char,
+    convert_to_nfc_form,
+    convert_to_nfd_form,
+)
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -69,10 +78,13 @@ class BulkUploadService:
             request_context.patient_nhs_no = staging_metadata.nhs_number
             logger.info("Running validation for file names...")
             file_names = [
-                os.path.basename(metadata.file_path) for metadata in staging_metadata.files
+                os.path.basename(metadata.file_path)
+                for metadata in staging_metadata.files
             ]
             validate_lg_file_names(file_names, staging_metadata.nhs_number)
-            pds_patient_details = getting_patient_info_from_pds(staging_metadata.nhs_number)
+            pds_patient_details = getting_patient_info_from_pds(
+                staging_metadata.nhs_number
+            )
             patient_ods_code = pds_patient_details.general_practice_ods
             validate_with_pds_service(file_names, pds_patient_details)
 
@@ -89,9 +101,10 @@ class BulkUploadService:
             logger.info("Will stop processing Lloyd George record for this patient.")
 
             failure_reason = str(error)
-            self.report_upload_failure(staging_metadata, failure_reason, patient_ods_code)
+            self.report_upload_failure(
+                staging_metadata, failure_reason, patient_ods_code
+            )
             return
-
 
         logger.info("File validation complete. Checking virus scan results")
 
@@ -115,7 +128,9 @@ class BulkUploadService:
             logger.info("Will stop processing Lloyd George record for this patient")
 
             self.report_upload_failure(
-                staging_metadata, "One or more of the files failed virus scanner check", patient_ods_code
+                staging_metadata,
+                "One or more of the files failed virus scanner check",
+                patient_ods_code,
             )
             return
         except S3FileNotFoundException as e:
@@ -128,7 +143,7 @@ class BulkUploadService:
             self.report_upload_failure(
                 staging_metadata,
                 "One or more of the files is not accessible from staging bucket",
-                patient_ods_code
+                patient_ods_code,
             )
             return
 
@@ -155,7 +170,7 @@ class BulkUploadService:
             self.report_upload_failure(
                 staging_metadata,
                 "Validation passed but error occurred during file transfer",
-                patient_ods_code
+                patient_ods_code,
             )
             return
 
@@ -207,7 +222,9 @@ class BulkUploadService:
             f"Verified that all documents for patient {staging_metadata.nhs_number} are clean."
         )
 
-    def put_staging_metadata_back_to_queue(self, staging_metadata: StagingMetadata, patient_ods_code: str):
+    def put_staging_metadata_back_to_queue(
+        self, staging_metadata: StagingMetadata, patient_ods_code: str
+    ):
         if staging_metadata.retries > 14:
             err = "File was not scanned for viruses before maximum retries attempted"
             self.report_upload_failure(staging_metadata, err, patient_ods_code)
@@ -358,13 +375,13 @@ class BulkUploadService:
                 f"Failed to rollback the incomplete transaction due to error: {e}"
             )
 
-    def report_upload_complete(self, staging_metadata: StagingMetadata, ods_code: str = ""):
+    def report_upload_complete(
+        self, staging_metadata: StagingMetadata, ods_code: str = ""
+    ):
         nhs_number = staging_metadata.nhs_number
         for file in staging_metadata.files:
             dynamo_record = SuccessfulUpload(
-                nhs_number=nhs_number,
-                file_path=file.file_path,
-                ods_code=ods_code
+                nhs_number=nhs_number, file_path=file.file_path, ods_code=ods_code
             )
             self.dynamo_service.create_item(
                 table_name=self.bulk_upload_report_dynamo_table,
@@ -381,7 +398,7 @@ class BulkUploadService:
                 nhs_number=nhs_number,
                 failure_reason=failure_reason,
                 file_path=file.file_path,
-                ods_code=ods_code
+                ods_code=ods_code,
             )
             self.dynamo_service.create_item(
                 table_name=self.bulk_upload_report_dynamo_table,
