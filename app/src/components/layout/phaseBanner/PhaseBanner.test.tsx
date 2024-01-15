@@ -1,17 +1,19 @@
 import { render, screen } from '@testing-library/react';
 import PhaseBanner from './PhaseBanner';
 import { routes } from '../../../types/generic/routes';
+import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
 
 describe('PhaseBanner', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        window.sessionStorage.clear();
     });
     afterEach(() => {
         jest.clearAllMocks();
     });
     describe('Rendering', () => {
         it('renders PhaseBanner with content', () => {
-            render(<PhaseBanner />);
+            renderComponent();
 
             expect(screen.getByText('New Service')).toBeInTheDocument();
 
@@ -21,8 +23,8 @@ describe('PhaseBanner', () => {
         });
     });
     describe('Navigation', () => {
-        it('renders a link to the feedback form page', () => {
-            render(<PhaseBanner />);
+        it('renders a link to the feedback form page if user is logged in', () => {
+            renderComponent({ isLoggedIn: true });
             const feedbackLink = screen.getByRole('link', {
                 name: 'feedback',
             });
@@ -30,5 +32,18 @@ describe('PhaseBanner', () => {
             expect(feedbackLink).toHaveAttribute('href', routes.FEEDBACK);
             expect(feedbackLink).toHaveAttribute('target', '_blank');
         });
+
+        it('does not render a link if user is not logged in', () => {
+            renderComponent({ isLoggedIn: false });
+            expect(screen.queryByRole('link', { name: 'feedback' })).not.toBeInTheDocument();
+        });
     });
 });
+
+const renderComponent = (sessionOverride: Partial<Session> = { isLoggedIn: true }) => {
+    render(
+        <SessionProvider sessionOverride={sessionOverride}>
+            <PhaseBanner />
+        </SessionProvider>,
+    );
+};
