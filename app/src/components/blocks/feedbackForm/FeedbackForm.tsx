@@ -26,16 +26,12 @@ function FeedbackForm({ stage, setStage }: Props) {
         reValidateMode: 'onSubmit',
     });
 
-    // a placeholder to test form submit until we got the confirmation page in place
-    const [result, setResult] = useState<FormData | null>(null);
-
     const submit: SubmitHandler<FormData> = async (formData) => {
         setStage(SUBMISSION_STAGE.Submitting);
 
         sendEmail(formData)
             .then(() => {
                 setStage(SUBMISSION_STAGE.Successful);
-                setResult(formData);
             })
             .catch((e) => {
                 setStage(SUBMISSION_STAGE.Failure);
@@ -139,10 +135,6 @@ function FeedbackForm({ stage, setStage }: Props) {
                     />
                 )}
             </form>
-            {/* to be removed when we got the confirmation page in place. */}
-            {result && (
-                <p>{`[Placeholder] called sendEmail() with data: \n${JSON.stringify(result)}`}</p>
-            )}
         </div>
     );
 }
