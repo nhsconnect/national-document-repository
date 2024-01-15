@@ -15,6 +15,7 @@ class UploadStatusBaseClass(BaseModel):
     timestamp: int = Field(default_factory=lambda: int(datetime.now().timestamp()))
     date: str = Field(default_factory=lambda: date_string_yyyymmdd(datetime.now()))
     file_path: str
+    ods_code: str = ""
 
 
 class SuccessfulUpload(UploadStatusBaseClass):
@@ -34,6 +35,7 @@ FieldNamesForBulkUploadReport = [
     "Date",
     "Timestamp",
     "ID",
+    "OdsCode",
 ]
 
 

@@ -22,8 +22,12 @@ from utils.exceptions import (
     VirusScanFailedException,
     VirusScanNoResultException,
 )
-from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_file_names, validate_with_pds_service, \
-    getting_patient_info_from_pds
+from utils.lloyd_george_validator import (
+    LGInvalidFilesException,
+    getting_patient_info_from_pds,
+    validate_lg_file_names,
+    validate_with_pds_service,
+)
 from utils.request_context import request_context
 from utils.unicode_utils import (
     contains_accent_char,
@@ -90,14 +94,16 @@ class BulkUploadService:
 
         logger.info("SQS event is valid. Validating NHS number and file names")
         try:
-
             file_names = [
-                os.path.basename(metadata.file_path) for metadata in staging_metadata.files
+                os.path.basename(metadata.file_path)
+                for metadata in staging_metadata.files
             ]
             validate_lg_file_names(file_names, staging_metadata.nhs_number)
             request_context.patient_nhs_no = staging_metadata.nhs_number
 
-            pds_patient_details = getting_patient_info_from_pds(staging_metadata.nhs_number)
+            pds_patient_details = getting_patient_info_from_pds(
+                staging_metadata.nhs_number
+            )
             patient_ods_code = pds_patient_details.general_practice_ods
             validate_with_pds_service(file_names, pds_patient_details)
 
@@ -137,7 +143,7 @@ class BulkUploadService:
                 err = (
                     "File was not scanned for viruses before maximum retries attempted"
                 )
-                self.dynamo_repository.report_upload_failure(staging_metadata, err)
+                self.dynamo_repository.report_upload_failure(staging_metadata, err, patient_ods_code)
             else:
                 self.sqs_repository.put_staging_metadata_back_to_queue(staging_metadata)
             return
@@ -149,7 +155,7 @@ class BulkUploadService:
             logger.info("Will stop processing Lloyd George record for this patient")
 
             self.dynamo_repository.report_upload_failure(
-                staging_metadata, "One or more of the files failed virus scanner check"
+                staging_metadata, "One or more of the files failed virus scanner check", patient_ods_code
             )
             return
         except S3FileNotFoundException as e:
@@ -162,6 +168,7 @@ class BulkUploadService:
             self.dynamo_repository.report_upload_failure(
                 staging_metadata,
                 "One or more of the files is not accessible from staging bucket",
+                patient_ods_code
             )
             return
 
@@ -191,6 +198,7 @@ class BulkUploadService:
             self.dynamo_repository.report_upload_failure(
                 staging_metadata,
                 "Validation passed but error occurred during file transfer",
+                patient_ods_code
             )
             return
 
@@ -204,7 +212,7 @@ class BulkUploadService:
             {"Result": "Successful upload"},
         )
         logger.info("Reporting transaction successful")
-        self.dynamo_repository.report_upload_complete(staging_metadata)
+        self.dynamo_repository.report_upload_complete(staging_metadata, patient_ods_code)
 
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
         sample_file_path = staging_metadata.files[0].file_path

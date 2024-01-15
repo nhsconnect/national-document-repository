@@ -7,7 +7,6 @@ from enums.pds_ssm_parameters import SSMParameter
 from enums.supported_document_types import SupportedDocumentTypes
 from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient, PatientDetails
-from models.staging_metadata import StagingMetadata
 from pydantic import ValidationError
 from requests import HTTPError
 from services.base.ssm_service import SSMService
@@ -124,7 +123,9 @@ def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
         raise LGInvalidFilesException("File names does not match with each other")
 
 
-def validate_with_pds_service(file_name_list: list[str], patient_details: PatientDetails):
+def validate_with_pds_service(
+    file_name_list: list[str], patient_details: PatientDetails
+):
     try:
         file_name_info = extract_info_from_filename(file_name_list[0])
         patient_name = file_name_info["patient_name"]
@@ -150,27 +151,27 @@ def validate_with_pds_service(file_name_list: list[str], patient_details: Patien
     except (ValidationError, ClientError, ValueError) as e:
         logger.error(e)
         raise LGInvalidFilesException(e)
-    except HTTPError as e:
-        logger.error(e)
-        if "404" in str(e):
-            raise LGInvalidFilesException("Could not find the given patient on PDS")
-        else:
-            raise LGInvalidFilesException("Failed to retrieve patient data from PDS")
 
 
 def getting_patient_info_from_pds(nhs_number: str):
     pds_service_class = get_pds_service()
     pds_service = pds_service_class(SSMService())
-    pds_response = pds_service.pds_request(
-        nhs_number=nhs_number, retry_on_expired=True
-    )
+    pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)
     if pds_response.status_code == 429:
         logger.error("Got 429 Too Many Requests error from PDS.")
         raise PdsTooManyRequestsException(
             "Failed to validate filename against PDS record due to too many requests"
         )
-
-    pds_response.raise_for_status()
+    elif pds_response.status_code == 404:
+        logger.error("Got 404, Could not find the given patient on PDS.")
+        raise LGInvalidFilesException(
+            "Could not find the given patient on PDS"
+        )
+    try:
+        pds_response.raise_for_status()
+    except HTTPError as e:
+        logger.error(e)
+        raise LGInvalidFilesException("Failed to retrieve patient data from PDS")
     patient = Patient.model_validate(pds_response.json())
     patient_details = patient.get_minimum_patient_details(nhs_number)
     return patient_details

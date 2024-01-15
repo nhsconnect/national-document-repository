@@ -27,12 +27,13 @@ class BulkUploadDynamoRepository:
         )
         self.dynamo_records_in_transaction.append(document_reference)
 
-    def report_upload_complete(self, staging_metadata: StagingMetadata):
+    def report_upload_complete(self, staging_metadata: StagingMetadata, ods_code: str = ""):
         nhs_number = staging_metadata.nhs_number
         for file in staging_metadata.files:
             dynamo_record = SuccessfulUpload(
                 nhs_number=nhs_number,
                 file_path=file.file_path,
+                ods_code=ods_code
             )
             self.dynamo_repository.create_item(
                 table_name=self.bulk_upload_report_dynamo_table,
@@ -40,7 +41,7 @@ class BulkUploadDynamoRepository:
             )
 
     def report_upload_failure(
-        self, staging_metadata: StagingMetadata, failure_reason: str
+        self, staging_metadata: StagingMetadata, failure_reason: str, ods_code: str = ""
     ):
         nhs_number = staging_metadata.nhs_number
 
@@ -49,6 +50,7 @@ class BulkUploadDynamoRepository:
                 nhs_number=nhs_number,
                 failure_reason=failure_reason,
                 file_path=file.file_path,
+                ods_code=ods_code,
             )
             self.dynamo_repository.create_item(
                 table_name=self.bulk_upload_report_dynamo_table,
