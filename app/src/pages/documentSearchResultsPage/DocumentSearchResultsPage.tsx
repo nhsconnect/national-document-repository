@@ -16,6 +16,7 @@ import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/D
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
@@ -78,7 +79,7 @@ function DocumentSearchResultsPage() {
             {(submissionState === SUBMISSION_STATE.FAILED ||
                 downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
 
-            {<PatientSummary />}
+            <PatientSummary />
 
             {submissionState === SUBMISSION_STATE.PENDING && (
                 <ProgressBar status="Loading..."></ProgressBar>
@@ -105,6 +106,14 @@ function DocumentSearchResultsPage() {
                         </p>
                     )}
                 </>
+            )}
+
+            {downloadState === SUBMISSION_STATE.FAILED && (
+                <ErrorBox
+                    messageTitle={'There is a problem with the documents'}
+                    messageBody={'An error has occurred while preparing your download'}
+                    errorBoxSummaryId={'error-box-summary'}
+                />
             )}
 
             {(submissionState === SUBMISSION_STATE.FAILED ||

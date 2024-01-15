@@ -82,6 +82,24 @@ describe('AuthCallbackPage', () => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.AUTH_ERROR);
         });
     });
+    it('navigates to unauthorised login page when callback token request is 401', async () => {
+        const errorResponse = {
+            response: {
+                status: 401,
+                message: '401 Unauthorised',
+            },
+        };
+
+        mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+        renderCallbackPage();
+
+        expect(screen.getByRole('status')).toBeInTheDocument();
+        expect(screen.getByText('Logging in...')).toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UNAUTHORISED_LOGIN);
+        });
+    });
 });
 
 const renderCallbackPage = () => {
