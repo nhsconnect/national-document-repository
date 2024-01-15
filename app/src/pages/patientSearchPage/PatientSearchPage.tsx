@@ -23,7 +23,6 @@ export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
 function PatientSearchPage() {
     const [, setPatientDetails] = usePatientDetailsContext();
-    const role = useRole();
     const [submissionState, setSubmissionState] = useState<SEARCH_STATES>(SEARCH_STATES.IDLE);
     const [statusCode, setStatusCode] = useState<null | number>(null);
     const [inputError, setInputError] = useState<null | string>(null);
