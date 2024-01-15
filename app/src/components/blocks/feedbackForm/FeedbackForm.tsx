@@ -11,8 +11,8 @@ import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-component
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 
 export type Props = {
-    stage: SUBMISSION_STAGE;
-    setStage: Dispatch<SUBMISSION_STAGE>;
+    readonly stage: SUBMISSION_STAGE;
+    readonly setStage: Dispatch<SUBMISSION_STAGE>;
 };
 
 function FeedbackForm({ stage, setStage }: Props) {
