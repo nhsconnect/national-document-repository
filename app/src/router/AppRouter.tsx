@@ -25,6 +25,7 @@ const {
     AUTH_CALLBACK,
     NOT_FOUND,
     UNAUTHORISED,
+    UNAUTHORISED_LOGIN,
     AUTH_ERROR,
     LOGOUT,
     DOWNLOAD_SEARCH,
@@ -62,7 +63,10 @@ export const routeMap: Routes = {
         page: <UnauthorisedPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
-
+    [UNAUTHORISED_LOGIN]: {
+        page: <UnauthorisedPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
     // Auth guard routes
     [LOGOUT]: {
         page: <LogoutPage />,
