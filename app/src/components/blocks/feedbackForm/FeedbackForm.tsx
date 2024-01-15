@@ -6,6 +6,8 @@ import {
 } from '../../../types/pages/feedbackPage/types';
 import React, { Dispatch, useState } from 'react';
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
+import isEmail from 'validator/lib/isEmail';
+
 import sendEmail from '../../../helpers/requests/sendEmail';
 import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-components';
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
@@ -20,7 +22,9 @@ function FeedbackForm({ stage, setStage }: Props) {
         handleSubmit,
         register,
         formState: { errors },
-    } = useForm<FormData>();
+    } = useForm<FormData>({
+        reValidateMode: 'onSubmit',
+    });
 
     // a placeholder to test form submit until we got the confirmation page in place
     const [result, setResult] = useState<FormData | null>(null);
@@ -49,7 +53,17 @@ function FeedbackForm({ stage, setStage }: Props) {
         'inputRef',
     );
     const respondentNameProps = renameRefKey(register(FORM_FIELDS.respondentName), 'inputRef');
-    const respondentEmailProps = renameRefKey(register(FORM_FIELDS.respondentEmail), 'inputRef');
+    const respondentEmailProps = renameRefKey(
+        register(FORM_FIELDS.respondentEmail, {
+            validate: (value) => {
+                if (value === '') {
+                    return true; // allow email address to be blank
+                }
+                return isEmail(value) ? true : 'Enter a valid email address';
+            },
+        }),
+        'inputRef',
+    );
 
     return (
         <div id="feedback-form">
@@ -103,6 +117,7 @@ function FeedbackForm({ stage, setStage }: Props) {
                         data-testid={FORM_FIELDS.respondentEmail}
                         autoComplete="email"
                         spellCheck={false}
+                        error={errors.respondentEmail?.message}
                         {...respondentEmailProps}
                     />
                 </Fieldset>

@@ -14,10 +14,10 @@ export enum SUBMISSION_STAGE {
     Failure,
 }
 
-export enum SATISFACTION_CHOICES {
-    VerySatisfied = 'Very satisfied',
-    Satisfied = 'Satisfied',
-    Neither = 'Neither satisfied or dissatisfied',
-    Dissatisfied = 'Dissatisfied',
-    VeryDissatisfied = 'Very dissatisfied',
-}
+export const SATISFACTION_CHOICES = {
+    VerySatisfied: 'Very satisfied',
+    Satisfied: 'Satisfied',
+    Neither: 'Neither satisfied or dissatisfied',
+    Dissatisfied: 'Dissatisfied',
+    VeryDissatisfied: 'Very dissatisfied',
+};
