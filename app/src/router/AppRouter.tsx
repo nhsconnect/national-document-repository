@@ -64,10 +64,6 @@ export const routeMap: Routes = {
         page: <UnauthorisedPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
-    [FEEDBACK]: {
-        page: <FeedbackPage />,
-        type: ROUTE_TYPE.PUBLIC,
-    },
 
     // Auth guard routes
     [LOGOUT]: {
@@ -76,6 +72,10 @@ export const routeMap: Routes = {
     },
     [HOME]: {
         page: <HomePage />,
+        type: ROUTE_TYPE.PRIVATE,
+    },
+    [FEEDBACK]: {
+        page: <FeedbackPage />,
         type: ROUTE_TYPE.PRIVATE,
     },
 

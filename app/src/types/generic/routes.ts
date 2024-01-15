@@ -7,9 +7,9 @@ export enum routes {
     NOT_FOUND = '/*',
     UNAUTHORISED = '/unauthorised',
     AUTH_ERROR = '/auth-error',
-    FEEDBACK = '/feedback',
 
     LOGOUT = '/logout',
+    FEEDBACK = '/feedback',
 
     DOWNLOAD_SEARCH = '/search/patient',
     DOWNLOAD_VERIFY = '/search/patient/result',
