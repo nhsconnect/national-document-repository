@@ -1,15 +1,16 @@
 import React from 'react';
 import { routes } from '../../../types/generic/routes';
 import { useSessionContext } from '../../../providers/sessionProvider/SessionProvider';
+import { Link } from 'react-router-dom';
 
 function PhaseBanner() {
     const [session] = useSessionContext();
     const { isLoggedIn } = session;
     const linkToFeedbackPage = isLoggedIn ? (
         <>
-            <a href={routes.FEEDBACK} target="_blank" rel="noreferrer">
+            <Link to={routes.FEEDBACK} target="_blank" rel="noreferrer">
                 feedback
-            </a>
+            </Link>
         </>
     ) : (
         'feedback'

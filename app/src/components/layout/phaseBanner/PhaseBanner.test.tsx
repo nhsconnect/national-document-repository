@@ -2,6 +2,12 @@ import { render, screen } from '@testing-library/react';
 import PhaseBanner from './PhaseBanner';
 import { routes } from '../../../types/generic/routes';
 import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
+import { LinkProps } from 'react-router-dom';
+
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} href={props.to as string} role="link" />,
+}));
 
 describe('PhaseBanner', () => {
     beforeEach(() => {
