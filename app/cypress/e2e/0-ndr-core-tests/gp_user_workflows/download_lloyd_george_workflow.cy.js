@@ -106,21 +106,23 @@ describe('GP Workflow: View Lloyd George record', () => {
             },
         );
 
-        it.skip(
-            'It displays an error when the document manifest API call fails as a GP CLINICAL role',
+        it(
+            'It displays an error when the document manifest API call fails as a GP ADMIN role',
             { tags: 'regression' },
             () => {
+                beforeEachConfiguration(Roles.GP_ADMIN);
+
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 200,
                     body: viewLloydGeorgePayload,
                 }).as('lloydGeorgeStitch');
 
+                cy.get('#verify-submit').click();
+                cy.wait('@lloydGeorgeStitch');
+
                 cy.intercept('GET', '/DocumentManifest*', {
                     statusCode: 500,
                 }).as('documentManifest');
-
-                cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
 
                 cy.getByTestId('actions-menu').click();
                 cy.getByTestId('download-all-files-link').click();
@@ -129,7 +131,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 // Assert
                 cy.contains(
-                    'appropriate error for when the document manifest API call fails',
+                    cy.contains('An error has occurred while preparing your download'),
                 ).should('be.visible');
             },
         );
