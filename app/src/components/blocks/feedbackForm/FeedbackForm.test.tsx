@@ -8,6 +8,7 @@ import {
 import userEvent from '@testing-library/user-event';
 import sendEmail from '../../../helpers/requests/sendEmail';
 import FeedbackForm, { Props } from './FeedbackForm';
+import { fillInForm } from '../../../helpers/test/formUtils';
 
 jest.mock('../../../helpers/requests/sendEmail');
 const mockSendEmail = sendEmail as jest.Mock;

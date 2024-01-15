@@ -6,7 +6,6 @@ import FeedbackConfirmation from '../../components/blocks/feedbackConfirmation/F
 function FeedbackPage() {
     const [stage, setStage] = useState(SUBMISSION_STAGE.NotSubmitted);
 
-    // to render confirmation screen if SUBMISSION_STAGE is successful
     return stage === SUBMISSION_STAGE.Successful ? (
         <FeedbackConfirmation />
     ) : (

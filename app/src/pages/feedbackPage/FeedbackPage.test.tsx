@@ -1,6 +1,10 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+import { SATISFACTION_CHOICES } from '../../types/pages/feedbackPage/types';
 import FeedbackPage from './FeedbackPage';
 import sendEmail from '../../helpers/requests/sendEmail';
+import { fillInForm } from '../../helpers/test/formUtils';
 
 jest.mock('../../helpers/requests/sendEmail');
 const mockSendEmail = sendEmail as jest.Mock;
@@ -23,7 +27,21 @@ describe('<FeedbackPage />', () => {
         ).toBeInTheDocument();
     });
 
-    it.skip('renders the confirmation page when the feedback form was submitted', async () => {
-        // to be implemented in PRMDR-578
+    it('renders the confirmation page when the feedback form was submitted', async () => {
+        render(<FeedbackPage />);
+
+        act(() => {
+            fillInForm(mockInputData);
+            userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
+        });
+
+        await screen.findByText('We’ve received your feedback');
     });
 });
+
+const mockInputData = {
+    feedbackContent: 'Mock feedback content',
+    howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
+    respondentName: 'Jane Smith',
+    respondentEmail: 'jane_smith@testing.com',
+};
