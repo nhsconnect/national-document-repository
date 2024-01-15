@@ -62,5 +62,6 @@ class SupportedDocumentTypes(Enum):
             )
             raise InvalidDocTypeException(
                 status_code=500,
+                err_code="DT_5001",
                 message=f"Failed to resolve dynamodb table name for doc_type {self.value}",
             )

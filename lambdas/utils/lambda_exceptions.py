@@ -1,44 +1,46 @@
-from utils.error_codes import error_codes_dict
-
-
 class LambdaException(Exception):
-    def __init__(self, status_code, message, err_code: str | None = None):
+    def __init__(
+        self,
+        status_code,
+        message: str | None = None,
+        err_code: str | None = None,
+    ):
         self.status_code = status_code
-        self.err_code = err_code
         self.message = message
+        self.err_code = err_code
 
     def __str__(self):
-        return repr(self.err_code + ": " + self.message)
+        return repr("Error': " + self.error_code)
 
 
 class CreateDocumentRefException(LambdaException):
-    pass
+    def __init__(self, status_code, err_code, message):
+        LambdaException.__init__(self, status_code, message, err_code)
 
 
 class SearchPatientException(LambdaException):
-    def __init__(self, status_code, message):
-        LambdaException.__init__(
-            self,
-            status_code,
-            message,
-            error_codes_dict[SearchPatientException.__name__][status_code],
-        )
+    def __init__(self, status_code, err_code, message):
+        LambdaException.__init__(self, status_code, message, err_code)
 
 
 class InvalidDocTypeException(LambdaException):
-    pass
+    def __init__(self, status_code, err_code, message):
+        LambdaException.__init__(self, status_code, message, err_code)
 
 
 class LoginRedirectException(LambdaException):
-    pass
+    def __init__(self, status_code, err_code, message):
+        LambdaException.__init__(self, status_code, message, err_code)
 
 
 class DocumentManifestServiceException(LambdaException):
-    pass
+    def __init__(self, status_code, err_code, message):
+        LambdaException.__init__(self, status_code, message, err_code)
 
 
 class LoginException(LambdaException):
-    pass
+    def __init__(self, status_code, err_code, message):
+        LambdaException.__init__(self, status_code, message, err_code)
 
 
 class LGStitchServiceException(LambdaException):

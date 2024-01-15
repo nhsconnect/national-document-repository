@@ -52,7 +52,7 @@ class LoginRedirectService:
 
         except (ClientError, InsecureTransportError) as e:
             logger.error(str(e), {"Result": "Unsuccessful redirect"})
-            raise LoginRedirectException(500, "Server error")
+            raise LoginRedirectException(500, "LR_5001", "Server error")
 
         return location_header
 

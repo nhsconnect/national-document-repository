@@ -42,10 +42,10 @@ class LoginService:
                     f"Mismatching state values. Cannot find state {state} in record",
                     {"Result": "Unsuccessful login"},
                 )
-                raise LoginException(401, "Unrecognised state value")
+                raise LoginException(401, "LI_2001", "Unrecognised state value")
         except ClientError as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(500, "Unable to validate state")
+            raise LoginException(500, "LI_5001", "Unable to validate state")
 
         logger.info("Setting up oidc service")
 
@@ -68,11 +68,13 @@ class LoginService:
             )
         except OidcApiException as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(500, "Issue when contacting CIS2")
+            raise LoginException(500, "LI_5002", "Issue when contacting CIS2")
         except AuthorisationException as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
             raise LoginException(
-                401, "Cannot log user in, expected information from CIS2 is missing"
+                401,
+                "LI_2002",
+                "Cannot log user in, expected information from CIS2 is missing",
             )
 
         try:
@@ -83,17 +85,19 @@ class LoginService:
             )
         except (TooManyOrgsException, OdsErrorException) as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(500, "Bad response from ODS API")
+            raise LoginException(500, "LI_5003", "Bad response from ODS API")
         except OrganisationNotFoundException as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(401, "No org found for given ODS code")
+            raise LoginException(401, "LI_2002", "No org found for given ODS code")
 
         logger.info(f"Permitted_orgs_details: {permitted_orgs_details}")
 
         if len(permitted_orgs_details.keys()) == 0:
             logger.info("User has no org to log in with")
             raise LoginException(
-                401, f"{permitted_orgs_details.keys()} valid organisations for user"
+                401,
+                "LI_2003",
+                f"{permitted_orgs_details.keys()} valid organisations for user",
             )
 
         session_id = self.create_login_session(id_token_claim_set)
@@ -144,7 +148,9 @@ class LoginService:
                 self.remove_used_state(state)
             except ClientError as e:
                 logger.error(str(e), {"Result": "Unsuccessful login"})
-                raise LoginException(500, "Unable to remove used state value")
+                raise LoginException(
+                    500, "LI_5004", "Unable to remove used state value"
+                )
 
         return state_match
 

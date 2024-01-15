@@ -53,7 +53,7 @@ def processing_event_details(event):
         nhs_number = body["subject"]["identifier"]["value"]
 
         if not body or not isinstance(body, dict):
-            raise CreateDocumentRefException(400, "Missing event body")
+            raise CreateDocumentRefException(400, "CDR_1001", "Missing event body")
 
         doc_list = body["content"][0]["attachment"]
         return nhs_number, doc_list
@@ -63,10 +63,12 @@ def processing_event_details(event):
             f"Invalid json in body: {str(e)}",
             {"Result": "Create document reference failed"},
         )
-        raise CreateDocumentRefException(400, "Invalid json in body")
+        raise CreateDocumentRefException(400, "CDR_1002", "Invalid json in body")
     except (KeyError, TypeError) as e:
         logger.error(
             f"Request body missing some properties: {str(e)}",
             {"Result": "Create document reference failed"},
         )
-        raise CreateDocumentRefException(400, "Request body missing some properties")
+        raise CreateDocumentRefException(
+            400, "CDR_1003" "Request body missing some properties"
+        )

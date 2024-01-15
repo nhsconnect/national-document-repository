@@ -50,7 +50,7 @@ class CreateDocumentReferenceService:
 
         except (InvalidResourceIdException, LGInvalidFilesException) as e:
             logger.error(str(e), {"Result": "Create document reference failed"})
-            raise CreateDocumentRefException(400, e)
+            raise CreateDocumentRefException(400, "CDR_1004", e)
 
     def prepare_doc_object(self, document: dict) -> NHSDocumentReference:
         try:
@@ -60,14 +60,16 @@ class CreateDocumentReferenceService:
         except ValidationError as e:
             logger.error(str(e), {"Result": "Create document reference failed"})
             raise CreateDocumentRefException(
-                400, "Failed to parse document upload request data"
+                400, "CDR_1005", "Failed to parse document upload request data"
             )
 
         document_type = SupportedDocumentTypes.get_from_field_name(
             validated_doc.docType
         )
         if document_type is None:
-            raise CreateDocumentRefException(400, "missing required document type")
+            raise CreateDocumentRefException(
+                400, "CDR_1006", "missing required document type"
+            )
 
         logger.info("Provided document is supported")
 
@@ -105,7 +107,7 @@ class CreateDocumentReferenceService:
                     "Result": "An error occurred when creating pre-signed url for document reference"
                 },
             )
-            raise CreateDocumentRefException(500, "Internal error")
+            raise CreateDocumentRefException(500, "CDR_5001", "Internal error")
 
     def create_reference_in_dynamodb(self, dynamo_table, document_list):
         try:
@@ -119,7 +121,7 @@ class CreateDocumentReferenceService:
             logger.error(
                 str(e), {"Result": "Upload reference creation was unsuccessful"}
             )
-            raise CreateDocumentRefException(500, "Internal error")
+            raise CreateDocumentRefException(500, "CDR_5002", "Internal error")
 
     def return_info_by_doc_type(self, doc_type):
         if doc_type == SupportedDocumentTypes.LG.value:
@@ -135,4 +137,4 @@ class CreateDocumentReferenceService:
                 self.arf_documents_dict_format,
             )
         else:
-            raise CreateDocumentRefException(400, "Invalid document type")
+            raise CreateDocumentRefException(400, "CDR_1007", "Invalid document type")

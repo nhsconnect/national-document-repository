@@ -32,7 +32,7 @@ def lambda_handler(event, context):
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
         if not (auth_code and state):
-            raise LoginException(400, missing_value_response_body)
+            raise LoginException(400, "LI_1001", missing_value_response_body)
 
         login_service = LoginService()
 
@@ -46,5 +46,5 @@ def lambda_handler(event, context):
 
     except (KeyError, TypeError):
         return ApiGatewayResponse(
-            400, missing_value_response_body, "GET"
+            400, missing_value_response_body, "GET", "LI_1001"
         ).create_api_gateway_response()

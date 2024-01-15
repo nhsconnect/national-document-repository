@@ -40,12 +40,15 @@ def test_lambda_handler_when_service_raises_document_manifest_exception_returns_
     mock_service, valid_id_and_arf_doctype_event, context
 ):
     exception = DocumentManifestServiceException(
-        status_code=404, message="No documents"
+        status_code=404, err_code="DRM_XXXX", message="No documents"
     )
     mock_service.create_document_manifest_presigned_url.side_effect = exception
 
     expected = ApiGatewayResponse(
-        404, "No documents", "GET"
+        404,
+        "No documents",
+        "GET",
+        "DRM_XXXX",
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)
@@ -53,6 +56,7 @@ def test_lambda_handler_when_service_raises_document_manifest_exception_returns_
     assert expected == actual
 
 
+# TODO: Test Fix find useage
 def test_lambda_handler_when_service_raises_client_error_returns_correct_response(
     mock_service, valid_id_and_arf_doctype_event, context
 ):
@@ -60,7 +64,7 @@ def test_lambda_handler_when_service_raises_client_error_returns_correct_respons
     mock_service.create_document_manifest_presigned_url.side_effect = exception
 
     expected = ApiGatewayResponse(
-        500, "Failed to utilise AWS client/resource", "GET", "ERR_AWS_CLIENT"
+        500, "Failed to utilise AWS client/resource", "GET", "GWY_5001"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_arf_doctype_event, context)
@@ -68,6 +72,7 @@ def test_lambda_handler_when_service_raises_client_error_returns_correct_respons
     assert expected == actual
 
 
+# TODO: Test Fix find useage
 def test_lambda_handler_when_doc_type_invalid_returns_400(
     mock_service, valid_id_and_invalid_doctype_event, context
 ):
@@ -127,6 +132,7 @@ def test_lambda_handler_valid_parameters_both_doc_type_request_returns_200(
     assert expected == actual
 
 
+# TODO: Test Fix find useage
 def test_lambda_handler_missing_environment_variables_returns_500(
     set_env, monkeypatch, valid_id_and_arf_doctype_event, context
 ):
@@ -140,6 +146,7 @@ def test_lambda_handler_missing_environment_variables_returns_500(
     assert expected == actual
 
 
+# TODO: Test Fix find useage
 def test_lambda_handler_id_not_valid_returns_400(set_env, invalid_id_event, context):
     expected = ApiGatewayResponse(
         400, "Invalid NHS number", "GET"
@@ -148,6 +155,7 @@ def test_lambda_handler_id_not_valid_returns_400(set_env, invalid_id_event, cont
     assert expected == actual
 
 
+# TODO: Test Fix find useage
 def test_lambda_handler_when_id_not_supplied_returns_400(
     set_env, missing_id_event, context
 ):
@@ -158,6 +166,7 @@ def test_lambda_handler_when_id_not_supplied_returns_400(
     assert expected == actual
 
 
+# TODO: Test Fix find useage
 def test_lambda_handler_returns_400_when_doc_type_not_supplied(
     set_env, valid_id_event_without_auth_header, context
 ):

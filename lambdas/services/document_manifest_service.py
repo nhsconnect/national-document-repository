@@ -43,18 +43,21 @@ class DocumentManifestService:
             if not documents:
                 raise DocumentManifestServiceException(
                     status_code=404,
+                    err_code="DMS_1001",
                     message="No documents found for given NHS number and document type",
                 )
         except ValidationError as e:
             logger.error(str(e), {"Result": "Failed to create document manifest"})
             raise DocumentManifestServiceException(
                 status_code=500,
+                err_code="DMS_5001",
                 message="Failed to parse document reference from from DynamoDb response",
             )
         except DynamoServiceException as e:
             logger.error(str(e), {"Result": "Failed to create document manifest"})
             raise DocumentManifestServiceException(
                 status_code=500,
+                err_code="DMS_5002",
                 message=str(e),
             )
 
@@ -97,6 +100,7 @@ class DocumentManifestService:
                 logger.error(msg, {"Result": "Failed to create document manifest"})
                 raise DocumentManifestServiceException(
                     status_code=500,
+                    err_code="DMS_5003",
                     message=msg,
                 )
 

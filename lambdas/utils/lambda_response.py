@@ -26,8 +26,8 @@ class ApiGatewayResponse:
 
     def __eq__(self, other):
         return (
-            self.body == other.body
-            and self.status_code == other.status_code
-            and self.err_code == other.err_code
+            self.status_code == other.status_code
+            and self.body == other.body
             and self.methods == other.methods
+            and self.err_code == other.err_code
         )

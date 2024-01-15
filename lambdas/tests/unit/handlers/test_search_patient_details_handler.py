@@ -49,6 +49,7 @@ def test_lambda_handler_valid_id_returns_200(
     assert expected == actual
 
 
+# TODO: Fix test find useage
 def test_lambda_handler_invalid_id_returns_400(invalid_id_event, context):
     expected = ApiGatewayResponse(
         400, "Invalid NHS number", "GET"
@@ -65,12 +66,14 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
     mocker.patch(
         "handlers.search_patient_details_handler.SearchPatientDetailsService.handle_search_patient_request",
         side_effect=SearchPatientException(
-            404, "Patient does not exist for given NHS number"
+            404,
+            "SP_XXXX",
+            "Patient does not exist for given NHS number",
         ),
     )
 
     expected = ApiGatewayResponse(
-        404, "Patient does not exist for given NHS number", "GET", "ERR_PATIENT"
+        404, "Patient does not exist for given NHS number", "GET", "SP_XXXX"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_event_with_auth_header, context)
@@ -78,6 +81,7 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
     assert expected == actual
 
 
+# TODO: Fix test find useage
 def test_lambda_handler_missing_id_in_query_params_returns_400(
     missing_id_event, context
 ):
@@ -99,7 +103,7 @@ def test_lambda_handler_missing_auth_returns_400(
         "handlers.search_patient_details_handler.request_context", mocked_context
     )
     expected = ApiGatewayResponse(
-        400, "Missing user details", "GET", "ERR_SEARCH"
+        400, "Missing user details", "GET", "SP_1001"
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_event_with_auth_header, context)

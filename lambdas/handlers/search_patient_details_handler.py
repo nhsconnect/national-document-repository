@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         ).get("org_ods_code", "")
         user_role = request_context.authorization.get("repository_role", "")
     if not user_role or not user_ods_code:
-        raise SearchPatientException(400, "Missing user details")
+        raise SearchPatientException(400, "SP_1001", "Missing user details")
 
     search_service = SearchPatientDetailsService(
         user_role=user_role, user_ods_code=user_ods_code

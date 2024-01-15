@@ -17,7 +17,7 @@ def test_login_redirect_lambda_handler_valid(mocker, set_env, event, context):
 def test_login_redirect_lambda_handler_exception(mocker, set_env, event, context):
     mock_prepare_redirect_response = mocker.patch(
         "services.login_redirect_service.LoginRedirectService.prepare_redirect_response",
-        side_effect=LoginRedirectException(500, "test"),
+        side_effect=LoginRedirectException(500, "LR_5001", "test"),
     )
 
     response = lambda_handler(event, context)
@@ -25,3 +25,4 @@ def test_login_redirect_lambda_handler_exception(mocker, set_env, event, context
     mock_prepare_redirect_response.assert_called_once()
     assert response["statusCode"] == 500
     assert response["body"] == "test"
+    assert response["errCode"] == "LR_5001"

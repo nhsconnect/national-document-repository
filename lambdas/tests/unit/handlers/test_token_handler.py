@@ -55,7 +55,9 @@ def test_handler_passes_error_details_in_response(
 ):
     expected_status = 400
     expected_body = "Error desc"
-    exception = LoginException(status_code=expected_status, message=expected_body)
+    exception = LoginException(
+        status_code=expected_status, err_code="LI_XXXX", message=expected_body
+    )
     mock_login_service.generate_session.side_effect = exception
 
     auth_code = "auth_code"
@@ -66,7 +68,7 @@ def test_handler_passes_error_details_in_response(
     }
 
     expected = ApiGatewayResponse(
-        expected_status, expected_body, "GET"
+        expected_status, expected_body, "GET", "LI_XXXX"
     ).create_api_gateway_response()
 
     actual = lambda_handler(test_event, context)
@@ -87,7 +89,7 @@ def test_missing_query_string_params_raise_key_error(mock_login_service, context
     }
 
     expected = ApiGatewayResponse(
-        expected_status, expected_body, "GET"
+        expected_status, expected_body, "GET", "LI_1001"
     ).create_api_gateway_response()
 
     actual = lambda_handler(test_event, context)
@@ -109,7 +111,7 @@ def test_missing_query_string_params_raise_login_error(
         "httpmethod": "GET",
     }
     expected = ApiGatewayResponse(
-        expected_status, expected_body, "GET"
+        expected_status, expected_body, "GET", "LI_1001"
     ).create_api_gateway_response()
 
     actual = lambda_handler(test_event, context)

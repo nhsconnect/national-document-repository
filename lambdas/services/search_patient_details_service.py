@@ -39,7 +39,7 @@ class SearchPatientDetailsService:
                 {"Result": "Patient not found"},
             )
             raise SearchPatientException(
-                404, "Patient does not exist for given NHS number"
+                404, "SP_2001", "Patient does not exist for given NHS number"
             )
 
         except UserNotAuthorisedException:
@@ -48,20 +48,20 @@ class SearchPatientDetailsService:
                 {"Result": "Patient found, User not authorised to view patient"},
             )
             raise SearchPatientException(
-                404, "Patient does not exist for given NHS number"
+                404, "SP_2002", "Patient does not exist for given NHS number"
             )
 
         except (InvalidResourceIdException, PdsErrorException) as e:
             logger.error(f"PDS Error: {str(e)}", {"Result": "Patient not found"})
             raise SearchPatientException(
-                400, "An error occurred while searching for patient"
+                400, "SP_1002", "An error occurred while searching for patient"
             )
 
         except (ValidationError, PydanticSerializationError) as e:
             logger.error(
                 f"Failed to parse PDS data:{str(e)}", {"Result": "Patient not found"}
             )
-            raise SearchPatientException(400, "Failed to parse PDS data")
+            raise SearchPatientException(400, "SP_1003", "Failed to parse PDS data")
 
     def check_if_user_authorise(self, gp_ods):
         match self.user_role:
