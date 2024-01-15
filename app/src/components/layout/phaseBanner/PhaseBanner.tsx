@@ -7,11 +7,9 @@ function PhaseBanner() {
     const [session] = useSessionContext();
     const { isLoggedIn } = session;
     const linkToFeedbackPage = isLoggedIn ? (
-        <>
-            <Link to={routes.FEEDBACK} target="_blank" rel="opener">
-                feedback
-            </Link>
-        </>
+        <Link to={routes.FEEDBACK} target="_blank" rel="opener">
+            feedback
+        </Link>
     ) : (
         'feedback'
     );
