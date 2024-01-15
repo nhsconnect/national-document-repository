@@ -9,9 +9,6 @@ class LambdaException(Exception):
         self.message = message
         self.err_code = err_code
 
-    def __str__(self):
-        return repr("Error': " + self.error_code)
-
 
 class CreateDocumentRefException(LambdaException):
     def __init__(self, status_code, err_code, message):

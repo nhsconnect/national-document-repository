@@ -10,7 +10,7 @@ class ApiGatewayResponse:
     def create_api_gateway_response(self, headers=None) -> dict:
         if headers is None:
             headers = {}
-        res = {
+        return {
             "isBase64Encoded": False,
             "statusCode": self.status_code,
             "headers": {
@@ -20,11 +20,8 @@ class ApiGatewayResponse:
                 "Strict-Transport-Security": "max-age=63072000",
                 **headers,
             },
-            "body": self.body,
+            "body": {"message": self.body, "errCode": self.err_code} if self.err_code else self.body,
         }
-        if self.err_code:
-            res["body"] = {"message": self.body, "errCode": self.err_code}
-        return res
 
     def __eq__(self, other):
         return (

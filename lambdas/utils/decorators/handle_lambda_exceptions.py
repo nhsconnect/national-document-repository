@@ -22,6 +22,7 @@ def handle_lambda_exceptions(lambda_func: Callable):
         try:
             return lambda_func(event, context)
         except LambdaException as e:
+            logger.error(str(e), {"LAMBDA EXCEPTION CAUGHT: ": e.err_code})
             return ApiGatewayResponse(
                 status_code=e.status_code,
                 body=e.message,
