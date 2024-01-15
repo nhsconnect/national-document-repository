@@ -194,7 +194,7 @@ class LoginService:
 
         logger.info("Role: No smartcard role found")
         raise LoginException(
-            401, "No repository role found for user's selected role and organisation"
+            401, "LI_2004", "No repository role found for user's selected role and organisation"
         )
 
     @staticmethod
