@@ -1,6 +1,7 @@
 import { routes } from '../../types/generic/routes';
 import { useNavigate } from 'react-router';
 import { ButtonLink } from 'nhsuk-react-components';
+import React from 'react';
 
 const UnauthorisedLoginPage = () => {
     const navigate = useNavigate();
@@ -26,11 +27,16 @@ const UnauthorisedLoginPage = () => {
                 </li>
             </ul>
             <p>
-                If you think you should have access to this service contact the NHS National Service
-                Desk.
+                If you think you should have access to this service contact the{' '}
+                <a
+                    href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    NHS National Service Desk.
+                </a>
             </p>
             <ButtonLink
-                to="#"
                 onClick={(e) => {
                     e.preventDefault();
                     navigate(routes.START);

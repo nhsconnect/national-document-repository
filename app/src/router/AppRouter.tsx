@@ -18,6 +18,7 @@ import PatientGuard from './guards/patientGuard/PatientGuard';
 import { REPOSITORY_ROLE } from '../types/generic/authRole';
 import RoleGuard from './guards/roleGuard/RoleGuard';
 import HomePage from '../pages/homePage/HomePage';
+import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLoginPage';
 
 const {
     START,
@@ -64,7 +65,7 @@ export const routeMap: Routes = {
         type: ROUTE_TYPE.PUBLIC,
     },
     [UNAUTHORISED_LOGIN]: {
-        page: <UnauthorisedPage />,
+        page: <UnauthorisedLoginPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
     // Auth guard routes
