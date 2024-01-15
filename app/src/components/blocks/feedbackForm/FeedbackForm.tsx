@@ -13,8 +13,8 @@ import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-component
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 
 export type Props = {
-    readonly stage: SUBMISSION_STAGE;
-    readonly setStage: Dispatch<SUBMISSION_STAGE>;
+    stage: SUBMISSION_STAGE;
+    setStage: Dispatch<SUBMISSION_STAGE>;
 };
 
 function FeedbackForm({ stage, setStage }: Props) {
@@ -51,18 +51,18 @@ function FeedbackForm({ stage, setStage }: Props) {
     };
 
     const feedbackContentProps = renameRefKey(
-        register(FORM_FIELDS.feedbackContent, {
+        register(FORM_FIELDS.FeedbackContent, {
             required: 'Please enter your feedback',
         }),
         'textareaRef',
     );
     const howSatisfiedProps = renameRefKey(
-        register(FORM_FIELDS.howSatisfied, { required: 'Please select an option' }),
+        register(FORM_FIELDS.HowSatisfied, { required: 'Please select an option' }),
         'inputRef',
     );
-    const respondentNameProps = renameRefKey(register(FORM_FIELDS.respondentName), 'inputRef');
+    const respondentNameProps = renameRefKey(register(FORM_FIELDS.RespondentName), 'inputRef');
     const respondentEmailProps = renameRefKey(
-        register(FORM_FIELDS.respondentEmail, {
+        register(FORM_FIELDS.RespondentEmail, {
             validate: (value) => {
                 if (value === '') {
                     return true; // allow email address to be blank
@@ -81,7 +81,7 @@ function FeedbackForm({ stage, setStage }: Props) {
                 <Fieldset>
                     <Fieldset.Legend size="m">What is your feedback?</Fieldset.Legend>
                     <Textarea
-                        data-testid={FORM_FIELDS.feedbackContent}
+                        data-testid={FORM_FIELDS.FeedbackContent}
                         label="Tell us how we could improve this service or explain your experience using it. You
                 can also give feedback about a specific page or section in the service."
                         rows={7}
@@ -113,7 +113,7 @@ function FeedbackForm({ stage, setStage }: Props) {
 
                     <Input
                         label="Your name"
-                        data-testid={FORM_FIELDS.respondentName}
+                        data-testid={FORM_FIELDS.RespondentName}
                         autoComplete="name"
                         spellCheck={false}
                         {...respondentNameProps}
@@ -122,7 +122,7 @@ function FeedbackForm({ stage, setStage }: Props) {
                     <Input
                         label="Your email address"
                         hint="We’ll only use this to speak to you about your feedback"
-                        data-testid={FORM_FIELDS.respondentEmail}
+                        data-testid={FORM_FIELDS.RespondentEmail}
                         autoComplete="email"
                         spellCheck={false}
                         error={errors.respondentEmail?.message}

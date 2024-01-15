@@ -1,10 +1,10 @@
 export type FormData = Record<FORM_FIELDS, string>;
 
 export enum FORM_FIELDS {
-    feedbackContent = 'feedbackContent',
-    howSatisfied = 'howSatisfied',
-    respondentName = 'respondentName',
-    respondentEmail = 'respondentEmail',
+    FeedbackContent = 'feedbackContent',
+    HowSatisfied = 'howSatisfied',
+    RespondentName = 'respondentName',
+    RespondentEmail = 'respondentEmail',
 }
 
 export enum SUBMISSION_STAGE {
