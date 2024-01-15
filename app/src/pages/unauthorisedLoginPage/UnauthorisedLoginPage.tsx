@@ -33,8 +33,9 @@ const UnauthorisedLoginPage = () => {
                     target="_blank"
                     rel="noreferrer"
                 >
-                    NHS National Service Desk.
+                    NHS National Service Desk
                 </a>
+                .
             </p>
             <ButtonLink
                 onClick={(e) => {
