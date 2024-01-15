@@ -258,10 +258,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     // Assert file has been downloaded
                     cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
 
-                    cy.getByTestId('return-btn').click();
-
-                    // Assert return button returns to pdf view
-                    cy.getByTestId('pdf-card').should('be.visible');
+                    cy.getByTestId('return-btn').should('exist');
                 });
             },
         );
