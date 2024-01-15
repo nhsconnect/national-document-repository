@@ -24,5 +24,5 @@ def test_login_redirect_lambda_handler_exception(mocker, set_env, event, context
 
     mock_prepare_redirect_response.assert_called_once()
     assert response["statusCode"] == 500
-    assert response["body"] == "test"
-    assert response["errCode"] == "LR_5001"
+    assert response["body"]["message"] == "test"
+    assert response["body"]["errCode"] == "LR_5001"

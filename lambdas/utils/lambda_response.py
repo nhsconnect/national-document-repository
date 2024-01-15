@@ -13,7 +13,6 @@ class ApiGatewayResponse:
         res = {
             "isBase64Encoded": False,
             "statusCode": self.status_code,
-            "errCode": self.err_code or "OK",
             "headers": {
                 "Content-Type": "application/fhir+json",
                 "Access-Control-Allow-Origin": "*",
@@ -23,6 +22,8 @@ class ApiGatewayResponse:
             },
             "body": self.body,
         }
+        if self.err_code:
+            res["body"] = {"message": self.body, "errCode": self.err_code}
         return res
 
     def __eq__(self, other):

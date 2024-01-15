@@ -28,4 +28,4 @@ def test_bulk_upload_report_lambda_handler_client_error(
     mock_report_handler.assert_called_once()
 
     assert response["statusCode"] == 500
-    assert response["body"] == "Failed to utilise AWS client/resource"
+    assert response["body"]["message"] == "Failed to utilise AWS client/resource"
