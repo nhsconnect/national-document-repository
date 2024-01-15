@@ -156,7 +156,29 @@ describe('<FeedbackForm />', () => {
             expect(mockSetStage).not.toBeCalled();
         });
 
-        it('on submit, allows the respondent name and email to be not filled in', async () => {
+        it("on submit, if user filled in an invalid email address,  display an error message and don't send email", async () => {
+            const mockInputData = {
+                feedbackContent: 'Mock feedback content',
+                howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
+                respondentName: 'Jane Smith',
+                respondentEmail: 'some_random_string_1234',
+            };
+
+            renderComponent();
+
+            act(() => {
+                fillInForm(mockInputData);
+                clickSubmitButton();
+            });
+
+            await waitFor(() => {
+                expect(screen.getByText('Enter a valid email address')).toBeInTheDocument();
+            });
+            expect(mockSendEmail).not.toBeCalled();
+            expect(mockSetStage).not.toBeCalled();
+        });
+
+        it('on submit, allows the respondent name and email to be blank', async () => {
             const mockInputData = {
                 feedbackContent: 'Mock feedback content',
                 howSatisfied: SATISFACTION_CHOICES.VeryDissatisfied,
@@ -177,7 +199,7 @@ describe('<FeedbackForm />', () => {
             await waitFor(() => expect(mockSendEmail).toBeCalledWith(expectedEmailContent));
             expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
         });
-        //
+
         it('show a spinner button when the form is being submitted', async () => {
             renderComponent({ stage: SUBMISSION_STAGE.Submitting });
 
