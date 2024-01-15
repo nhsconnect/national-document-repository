@@ -10,7 +10,7 @@ import sendEmail from '../../../helpers/requests/sendEmail';
 import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-components';
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 
-type Props = {
+export type Props = {
     stage: SUBMISSION_STAGE;
     setStage: Dispatch<SUBMISSION_STAGE>;
 };

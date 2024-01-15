@@ -1,13 +1,13 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import {
     FORM_FIELDS,
-    SATISFACTION_CHOICES,
     FormData,
+    SATISFACTION_CHOICES,
     SUBMISSION_STAGE,
 } from '../../../types/pages/feedbackPage/types';
 import userEvent from '@testing-library/user-event';
 import sendEmail from '../../../helpers/requests/sendEmail';
-import FeedbackForm from './FeedbackForm';
+import FeedbackForm, { Props } from './FeedbackForm';
 
 jest.mock('../../../helpers/requests/sendEmail');
 const mockSendEmail = sendEmail as jest.Mock;
@@ -28,8 +28,14 @@ const fillInForm = (data: Partial<FormData>) => {
     }
 };
 
-const renderComponent = () => {
-    return render(<FeedbackForm stage={SUBMISSION_STAGE.NotSubmitted} setStage={mockSetStage} />);
+const renderComponent = (override: Partial<Props> = {}) => {
+    return render(
+        <FeedbackForm
+            stage={SUBMISSION_STAGE.NotSubmitted}
+            setStage={mockSetStage}
+            {...override}
+        />,
+    );
 };
 
 describe('<FeedbackForm />', () => {
@@ -170,6 +176,13 @@ describe('<FeedbackForm />', () => {
 
             await waitFor(() => expect(mockSendEmail).toBeCalledWith(expectedEmailContent));
             expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
+        });
+        //
+        it('show a spinner button when the form is being submitted', async () => {
+            renderComponent({ stage: SUBMISSION_STAGE.Submitting });
+
+            expect(screen.getByRole('SpinnerButton')).toBeInTheDocument();
+            expect(screen.getByRole('SpinnerButton')).toHaveAttribute('disabled');
         });
     });
 });
