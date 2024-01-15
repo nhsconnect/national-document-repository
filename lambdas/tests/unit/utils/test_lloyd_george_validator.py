@@ -1,15 +1,14 @@
-import json
 
 import pytest
 from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
-from requests import Response
-
 from models.pds_models import Patient
+from requests import Response
 from services.document_service import DocumentService
 from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.bulk_upload.test_data import (
-    TEST_STAGING_METADATA_WITH_INVALID_FILENAME, TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
+    TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
+    TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
 )
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
@@ -24,9 +23,11 @@ from utils.lloyd_george_validator import (
     check_for_number_of_files_match_expected,
     check_for_patient_already_exist_in_repo,
     extract_info_from_filename,
+    getting_patient_info_from_pds,
     validate_file_name,
+    validate_lg_file_names,
     validate_lg_file_type,
-    validate_with_pds_service, validate_lg_file_names, getting_patient_info_from_pds,
+    validate_with_pds_service,
 )
 
 
@@ -241,7 +242,9 @@ def test_mismatch_nhs_id(mocker):
         "utils.lloyd_george_validator.get_user_ods_code", return_value="Y12345"
     )
     mocker.patch("utils.lloyd_george_validator.check_for_patient_already_exist_in_repo")
-    mocker.patch("utils.lloyd_george_validator.check_for_number_of_files_match_expected")
+    mocker.patch(
+        "utils.lloyd_george_validator.check_for_number_of_files_match_expected"
+    )
     mocker.patch("utils.lloyd_george_validator.validate_file_name")
 
     with pytest.raises(LGInvalidFilesException):
@@ -343,9 +346,8 @@ def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
     response._content = b"Too Many Requests"
     mock_pds_call.return_value = response
 
-
     with pytest.raises(PdsTooManyRequestsException):
-        getting_patient_info_from_pds( "9000000009")
+        getting_patient_info_from_pds("9000000009")
 
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
 
@@ -388,7 +390,9 @@ def test_validate_bulk_files_raises_PatientRecordAlreadyExistException_when_pati
     )
 
     with pytest.raises(PatientRecordAlreadyExistException):
-        validate_lg_file_names(TEST_STAGING_METADATA_WITH_INVALID_FILENAME, TEST_NHS_NUMBER_FOR_BULK_UPLOAD)
+        validate_lg_file_names(
+            TEST_STAGING_METADATA_WITH_INVALID_FILENAME, TEST_NHS_NUMBER_FOR_BULK_UPLOAD
+        )
 
 
 @pytest.fixture

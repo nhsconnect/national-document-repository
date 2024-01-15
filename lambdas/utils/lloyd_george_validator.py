@@ -164,9 +164,7 @@ def getting_patient_info_from_pds(nhs_number: str):
         )
     elif pds_response.status_code == 404:
         logger.error("Got 404, Could not find the given patient on PDS.")
-        raise LGInvalidFilesException(
-            "Could not find the given patient on PDS"
-        )
+        raise LGInvalidFilesException("Could not find the given patient on PDS")
     try:
         pds_response.raise_for_status()
     except HTTPError as e:

@@ -64,7 +64,7 @@ def test_successful_upload_ids_and_timestamp_are_auto_populated_if_not_given(moc
     actual = SuccessfulUpload(
         nhs_number="9000000009",
         file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
-        ods_code="Y12345"
+        ods_code="Y12345",
     ).model_dump(by_alias=True)
 
     assert actual == expected
