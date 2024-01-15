@@ -32,11 +32,7 @@ function RoleSelectPage() {
             ...session,
             isLoggedIn: true,
         });
-        if (fieldValues.organisation === 'PCSE') {
-            navigate(routes.DOWNLOAD_SEARCH);
-        } else if (fieldValues.organisation === 'GP') {
-            navigate(routes.PATIENT_SEARCH);
-        }
+        navigate(routes.SEARCH_PATIENT);
     };
 
     return (

@@ -4,13 +4,11 @@ import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import useRole from '../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 
 type Props = {};
 
 const HomePage = (props: Props) => {
     const navigate = useNavigate();
-    const { GP_ADMIN, GP_CLINICAL } = REPOSITORY_ROLE;
     const isBsol = useIsBSOL();
     const role = useRole();
 
@@ -19,10 +17,8 @@ const HomePage = (props: Props) => {
             role="button"
             data-testid="search-patient-btn"
             onClick={() => {
-                if (role && [GP_ADMIN, GP_CLINICAL].includes(role)) {
-                    navigate(routes.PATIENT_SEARCH);
-                } else {
-                    navigate(routes.DOWNLOAD_SEARCH);
+                if (role) {
+                    navigate(routes.SEARCH_PATIENT);
                 }
             }}
         >

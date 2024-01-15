@@ -139,17 +139,15 @@ describe('HomePage', () => {
 
     describe('Navigation', () => {
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL, REPOSITORY_ROLE.PCSE])(
-            "navigates to correct search page when user role is '%s'",
+            'navigates to search page when search patient button is clicked',
             async (role) => {
-                const route =
-                    role === REPOSITORY_ROLE.PCSE ? routes.DOWNLOAD_SEARCH : routes.PATIENT_SEARCH;
                 mockUseRole.mockReturnValue(role);
                 render(<HomePage />);
 
                 expect(screen.getByTestId('search-patient-btn')).toBeInTheDocument();
                 screen.getByTestId('search-patient-btn').click();
                 await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(route);
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
                 });
             },
         );

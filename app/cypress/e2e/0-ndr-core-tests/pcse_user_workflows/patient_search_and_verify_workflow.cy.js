@@ -38,8 +38,8 @@ describe('PCSE Workflow: patient search and verify', () => {
             cy.wait('@search');
             cy.get('#verify-submit').click();
 
-            cy.url().should('include', 'results');
-            cy.url().should('eq', baseUrl + '/search/results');
+            cy.url().should('include', 'download');
+            cy.url().should('eq', baseUrl + '/patient/download');
         },
     );
 
@@ -61,8 +61,8 @@ describe('PCSE Workflow: patient search and verify', () => {
             cy.get('#search-submit').click();
             cy.wait('@search');
 
-            cy.url().should('include', 'result');
-            cy.url().should('eq', baseUrl + '/search/patient/result');
+            cy.url().should('include', 'verify');
+            cy.url().should('eq', baseUrl + '/search/patient/verify');
         },
     );
 
@@ -84,8 +84,8 @@ describe('PCSE Workflow: patient search and verify', () => {
             cy.get('#search-submit').click();
             cy.wait('@search');
 
-            cy.url().should('include', 'result');
-            cy.url().should('eq', baseUrl + '/search/patient/result');
+            cy.url().should('include', 'verify');
+            cy.url().should('eq', baseUrl + '/search/patient/verify');
         },
     );
 });

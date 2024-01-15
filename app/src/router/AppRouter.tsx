@@ -27,11 +27,9 @@ const {
     UNAUTHORISED,
     AUTH_ERROR,
     LOGOUT,
-    DOWNLOAD_SEARCH,
-    DOWNLOAD_VERIFY,
     DOWNLOAD_DOCUMENTS,
     LLOYD_GEORGE,
-    PATIENT_SEARCH,
+    SEARCH_PATIENT,
     VERIFY_PATIENT,
     UPLOAD_DOCUMENTS,
 } = routes;
@@ -74,25 +72,15 @@ export const routeMap: Routes = {
     },
 
     // App guard routes
-    [DOWNLOAD_SEARCH]: {
+    [SEARCH_PATIENT]: {
         page: <PatientSearchPage />,
         type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
-    },
-    [PATIENT_SEARCH]: {
-        page: <PatientSearchPage />,
-        type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
-    },
-    [DOWNLOAD_VERIFY]: {
-        page: <PatientResultPage />,
-        type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
+        unauthorized: [],
     },
     [VERIFY_PATIENT]: {
         page: <PatientResultPage />,
         type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
+        unauthorized: [],
     },
     [UPLOAD_DOCUMENTS]: {
         page: <UploadDocumentsPage />,

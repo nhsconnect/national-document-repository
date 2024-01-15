@@ -8,8 +8,8 @@ describe('GP Workflow: Patient search and verify', () => {
     const workspace = Cypress.env('WORKSPACE');
     const activePatient = workspace === 'ndr-dev' ? '9730153817' : '9000000002';
     const homeUrl = '/home';
-    const verifyPatientUrl = '/search/result';
-    const lloydGeorgeUrl = '/search/patient/lloyd-george-record';
+    const verifyPatientUrl = '/search/patient/verify';
+    const lloydGeorgeUrl = '/patient/view/lloyd-george-record';
 
     gpRoles.forEach((role) => {
         it(

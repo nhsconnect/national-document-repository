@@ -5,8 +5,6 @@ import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { Button, Fieldset, Input } from 'nhsuk-react-components';
 import SpinnerButton from '../../components/generic/spinnerButton/SpinnerButton';
 import { InputRef } from '../../types/generic/inputRef';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-
 import { useNavigate } from 'react-router';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
@@ -40,27 +38,13 @@ function PatientSearchPage() {
         },
     });
     const navigate = useNavigate();
-    const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
-    const userIsGPAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
-    const userIsGPClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
-
     const isError = (statusCode && statusCode >= 500) || !inputError;
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const handleSuccess = (patientDetails: PatientDetails) => {
         setPatientDetails(patientDetails);
         setSubmissionState(SEARCH_STATES.SUCCEEDED);
-        // GP Role
-        if (userIsGPAdmin || userIsGPClinical) {
-            // Make PDS patient search request to upload documents to patient
-            navigate(routes.VERIFY_PATIENT);
-        }
-
-        // PCSE Role
-        else if (userIsPCSE) {
-            // Make PDS and Dynamo document store search request to download documents from patient
-            navigate(routes.DOWNLOAD_VERIFY);
-        }
+        navigate(routes.VERIFY_PATIENT);
     };
 
     const handleSearch = async (data: FieldValues) => {

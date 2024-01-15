@@ -46,8 +46,8 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#search-submit').click();
                 cy.wait('@search');
 
-                cy.url().should('include', 'result');
-                cy.url().should('eq', baseUrl + '/search/result');
+                cy.url().should('include', 'verify');
+                cy.url().should('eq', baseUrl + '/search/patient/verify');
                 cy.get('#gp-message').should('be.visible');
                 cy.get('#gp-message').should(
                     'have.text',
@@ -55,8 +55,8 @@ describe('GP Workflow: Patient search and verify', () => {
                 );
                 cy.get('#verify-submit').click();
 
-                cy.url().should('include', 'submit');
-                cy.url().should('eq', baseUrl + '/upload/submit');
+                cy.url().should('include', 'upload');
+                cy.url().should('eq', baseUrl + '/patient/upload');
             },
         );
 
@@ -104,8 +104,8 @@ describe('GP Workflow: Patient search and verify', () => {
 
                 cy.get('#verify-submit').click();
 
-                cy.url().should('include', 'submit');
-                cy.url().should('eq', baseUrl + '/upload/submit');
+                cy.url().should('include', 'upload');
+                cy.url().should('eq', baseUrl + '/patient/upload');
             },
         );
 
@@ -130,7 +130,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#verify-submit').click();
 
                 cy.url().should('include', 'lloyd-george-record');
-                cy.url().should('eq', baseUrl + '/search/patient/lloyd-george-record');
+                cy.url().should('eq', baseUrl + '/patient/view/lloyd-george-record');
             },
         );
 
