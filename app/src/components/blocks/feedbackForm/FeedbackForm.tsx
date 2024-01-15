@@ -42,6 +42,14 @@ function FeedbackForm({ stage, setStage }: Props) {
             });
     };
 
+    const renameRefKey = (props: UseFormRegisterReturn, newRefKey: string) => {
+        const { ref, ...otherProps } = props;
+        return {
+            [newRefKey]: ref,
+            ...otherProps,
+        };
+    };
+
     const feedbackContentProps = renameRefKey(
         register(FORM_FIELDS.feedbackContent, {
             required: 'Please enter your feedback',
@@ -138,13 +146,5 @@ function FeedbackForm({ stage, setStage }: Props) {
         </div>
     );
 }
-
-const renameRefKey = (props: UseFormRegisterReturn, newRefKey: string) => {
-    const { ref, ...otherProps } = props;
-    return {
-        [newRefKey]: ref,
-        ...otherProps,
-    };
-};
 
 export default FeedbackForm;
