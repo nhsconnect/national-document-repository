@@ -18,13 +18,16 @@ const AuthCallbackPage = (props: Props) => {
     const [, setSession] = useSessionContext();
     const navigate = useNavigate();
     useEffect(() => {
-        const handleError = () => {
+        const handleError = (error: AxiosError) => {
             setSession({
                 auth: null,
                 isLoggedIn: false,
             });
-
-            navigate(routes.AUTH_ERROR);
+            if (error.response?.status === 401) {
+                navigate(routes.UNAUTHORISED_LOGIN);
+            } else {
+                navigate(routes.AUTH_ERROR);
+            }
         };
         const handleSuccess = (auth: UserAuth) => {
             const { GP_ADMIN, GP_CLINICAL, PCSE } = REPOSITORY_ROLE;
@@ -49,7 +52,7 @@ const AuthCallbackPage = (props: Props) => {
                 if (isMock(error)) {
                     handleSuccess(buildUserAuth());
                 } else {
-                    handleError();
+                    handleError(error);
                 }
             }
         };

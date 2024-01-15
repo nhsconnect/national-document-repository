@@ -7,6 +7,7 @@ export enum routes {
     NOT_FOUND = '/*',
     UNAUTHORISED = '/unauthorised',
     AUTH_ERROR = '/auth-error',
+    UNAUTHORISED_LOGIN = '/unauthorised-login',
 
     LOGOUT = '/logout',
 
