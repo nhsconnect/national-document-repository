@@ -8,7 +8,7 @@ from utils.decorators.validate_patient_id import validate_patient_id
 from utils.lambda_exceptions import SearchPatientException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
-
+from utils.error_response import LambdaError
 logger = LoggingService(__name__)
 
 
@@ -29,7 +29,7 @@ def lambda_handler(event, context):
         ).get("org_ods_code", "")
         user_role = request_context.authorization.get("repository_role", "")
     if not user_role or not user_ods_code:
-        raise SearchPatientException(400, "SP_1001", "Missing user details")
+        raise SearchPatientException(400, LambdaError.SearchPatientMissing)
 
     search_service = SearchPatientDetailsService(
         user_role=user_role, user_ods_code=user_ods_code

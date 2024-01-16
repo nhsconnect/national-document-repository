@@ -1,13 +1,14 @@
+from utils.error_response import ExceptionError
+
+
 class LambdaException(Exception):
     def __init__(
         self,
         status_code,
-        err_code: str,
-        message: str | None = None,
+        error: ExceptionError
     ):
         self.status_code = status_code
-        self.message = message
-        self.err_code = err_code
+        self.error = error
 
 
 class CreateDocumentRefException(LambdaException):
