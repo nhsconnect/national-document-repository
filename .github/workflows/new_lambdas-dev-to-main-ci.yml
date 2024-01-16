@@ -44,6 +44,18 @@ jobs:
       sandbox: ndr-dev
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+  
+  smoketest:
+    uses: ./.github/workflows/ui-smoketest.yml
+    needs: ["deploy_all_lambdas"]
+    if: |
+      (github.ref == 'refs/heads/main') 
+    with:
+      build_branch: ${{github.event.pull_request.head.ref}}
+      environment: development
+      sandbox: ndr-dev
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   
 
