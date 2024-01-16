@@ -1,3 +1,5 @@
+import json
+
 class ApiGatewayResponse:
     def __init__(
         self, status_code: int, body: str, methods: str, err_code: str | None = None
@@ -10,7 +12,7 @@ class ApiGatewayResponse:
     def create_api_gateway_response(self, headers=None) -> dict:
         if headers is None:
             headers = {}
-        return {
+        res = {
             "isBase64Encoded": False,
             "statusCode": self.status_code,
             "headers": {
@@ -20,8 +22,11 @@ class ApiGatewayResponse:
                 "Strict-Transport-Security": "max-age=63072000",
                 **headers,
             },
-            "body": {"message": self.body, "errCode": self.err_code} if self.err_code else self.body,
+            "body": self.body
         }
+        if(self.err_code):
+            res["body"] = json.dumps({"message": self.body, "errCode": self.err_code})
+        return res
 
     def __eq__(self, other):
         return (
