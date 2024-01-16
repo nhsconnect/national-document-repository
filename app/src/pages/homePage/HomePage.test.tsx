@@ -1,8 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import HomePage from './HomePage';
 import useIsBSOL from '../../helpers/hooks/useIsBSOL';
-import useRole from '../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { routes } from '../../types/generic/routes';
 
 const mockedUseNavigate = jest.fn();
@@ -13,9 +11,6 @@ jest.mock('react-router', () => ({
 jest.mock('../../helpers/hooks/useIsBSOL');
 const mockUseIsBsol = useIsBSOL as jest.Mock;
 
-jest.mock('../../helpers/hooks/useRole');
-const mockUseRole = useRole as jest.Mock;
-
 describe('HomePage', () => {
     afterEach(() => {
         jest.clearAllMocks();
@@ -23,7 +18,6 @@ describe('HomePage', () => {
     describe('BSOL Rendering', () => {
         beforeEach(() => {
             mockUseIsBsol.mockReturnValue(true);
-            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
         });
 
         it('renders homepage content', () => {
@@ -64,7 +58,6 @@ describe('HomePage', () => {
         });
 
         it('renders a service link that takes you to service help-desk in a new tab', () => {
-            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
             render(<HomePage />);
 
             expect(screen.getByText(/Contact the/i)).toBeInTheDocument();
@@ -86,7 +79,6 @@ describe('HomePage', () => {
     describe('Non-BSOL Rendering', () => {
         beforeEach(() => {
             mockUseIsBsol.mockReturnValue(false);
-            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
         });
 
         it('renders page content', () => {
