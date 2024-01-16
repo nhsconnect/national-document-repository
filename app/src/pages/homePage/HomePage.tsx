@@ -3,23 +3,19 @@ import { ButtonLink } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import useIsBSOL from '../../helpers/hooks/useIsBSOL';
-import useRole from '../../helpers/hooks/useRole';
 
 type Props = {};
 
 const HomePage = (props: Props) => {
     const navigate = useNavigate();
     const isBsol = useIsBSOL();
-    const role = useRole();
 
     const SearchButton = () => (
         <ButtonLink
             role="button"
             data-testid="search-patient-btn"
             onClick={() => {
-                if (role) {
-                    navigate(routes.SEARCH_PATIENT);
-                }
+                navigate(routes.SEARCH_PATIENT);
             }}
         >
             Search for a patient
