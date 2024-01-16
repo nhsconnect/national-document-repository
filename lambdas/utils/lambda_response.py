@@ -1,7 +1,5 @@
 class ApiGatewayResponse:
-    def __init__(
-        self, status_code: int, body: str, methods: str
-    ) -> None:
+    def __init__(self, status_code: int, body: str, methods: str) -> None:
         self.status_code = status_code
         self.body = body
         self.methods = methods
@@ -19,7 +17,7 @@ class ApiGatewayResponse:
                 "Strict-Transport-Security": "max-age=63072000",
                 **headers,
             },
-            "body": self.body
+            "body": self.body,
         }
 
     def __eq__(self, other):

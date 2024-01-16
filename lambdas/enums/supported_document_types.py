@@ -3,6 +3,7 @@ from enum import Enum
 from typing import List
 
 from utils.audit_logging_setup import LoggingService
+from utils.error_response import LambdaError
 from utils.lambda_exceptions import InvalidDocTypeException
 
 logger = LoggingService(__name__)
@@ -61,7 +62,5 @@ class SupportedDocumentTypes(Enum):
                 },
             )
             raise InvalidDocTypeException(
-                status_code=500,
-                err_code="DT_5001",
-                message=f"Failed to resolve dynamodb table name for doc_type {self.value}",
+                status_code=500, error=LambdaError.DocTypeInvalid
             )

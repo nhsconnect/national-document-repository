@@ -2,11 +2,7 @@ from utils.error_response import ExceptionError
 
 
 class LambdaException(Exception):
-    def __init__(
-        self,
-        status_code,
-        error: ExceptionError
-    ):
+    def __init__(self, status_code, error: ExceptionError):
         self.status_code = status_code
         self.error = error
 

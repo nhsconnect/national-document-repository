@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
+from utils.error_response import LambdaError
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_files
@@ -50,7 +51,7 @@ class CreateDocumentReferenceService:
 
         except (InvalidResourceIdException, LGInvalidFilesException) as e:
             logger.error(str(e), {"Result": "Create document reference failed"})
-            raise CreateDocumentRefException(400, "CDR_1004", e)
+            raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
 
     def prepare_doc_object(self, document: dict) -> NHSDocumentReference:
         try:
@@ -59,17 +60,13 @@ class CreateDocumentReferenceService:
             )
         except ValidationError as e:
             logger.error(str(e), {"Result": "Create document reference failed"})
-            raise CreateDocumentRefException(
-                400, "CDR_1005", "Failed to parse document upload request data"
-            )
+            raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
 
         document_type = SupportedDocumentTypes.get_from_field_name(
             validated_doc.docType
         )
         if document_type is None:
-            raise CreateDocumentRefException(
-                400, "CDR_1006", "missing required document type"
-            )
+            raise CreateDocumentRefException(400, LambdaError.CreateDocNoType)
 
         logger.info("Provided document is supported")
 
@@ -107,7 +104,7 @@ class CreateDocumentReferenceService:
                     "Result": "An error occurred when creating pre-signed url for document reference"
                 },
             )
-            raise CreateDocumentRefException(500, "CDR_5001", "Internal error")
+            raise CreateDocumentRefException(500, LambdaError.CreateDocPresign)
 
     def create_reference_in_dynamodb(self, dynamo_table, document_list):
         try:
@@ -121,7 +118,7 @@ class CreateDocumentReferenceService:
             logger.error(
                 str(e), {"Result": "Upload reference creation was unsuccessful"}
             )
-            raise CreateDocumentRefException(500, "CDR_5002", "Internal error")
+            raise CreateDocumentRefException(500, LambdaError.CreateDocUpload)
 
     def return_info_by_doc_type(self, doc_type):
         if doc_type == SupportedDocumentTypes.LG.value:
@@ -137,4 +134,4 @@ class CreateDocumentReferenceService:
                 self.arf_documents_dict_format,
             )
         else:
-            raise CreateDocumentRefException(400, "CDR_1007", "Invalid document type")
+            raise CreateDocumentRefException(400, LambdaError.CreateDocInvalidType)
