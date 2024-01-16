@@ -1,6 +1,6 @@
 from botocore.exceptions import ClientError
 from handlers.bulk_upload_report_handler import lambda_handler
-
+import json
 
 def test_bulk_upload_report_lambda_handler_valid(set_env, mocker, event, context):
     mock_report_handler = mocker.patch(
@@ -26,6 +26,6 @@ def test_bulk_upload_report_lambda_handler_client_error(
     response = lambda_handler(event, context)
 
     mock_report_handler.assert_called_once()
-
+    responseBody = json.loads(response["body"] )
     assert response["statusCode"] == 500
-    assert response["body"]["message"] == "Failed to utilise AWS client/resource"
+    assert responseBody["message"] == "Failed to utilise AWS client/resource"

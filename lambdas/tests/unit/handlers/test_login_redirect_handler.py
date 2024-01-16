@@ -1,6 +1,6 @@
 from handlers.login_redirect_handler import lambda_handler
 from utils.lambda_exceptions import LoginRedirectException
-
+import json
 
 def test_login_redirect_lambda_handler_valid(mocker, set_env, event, context):
     mock_prepare_redirect_response = mocker.patch(
@@ -23,6 +23,8 @@ def test_login_redirect_lambda_handler_exception(mocker, set_env, event, context
     response = lambda_handler(event, context)
 
     mock_prepare_redirect_response.assert_called_once()
+    
+    responseBody = json.loads(response["body"] )
     assert response["statusCode"] == 500
-    assert response["body"]["message"] == "test"
-    assert response["body"]["errCode"] == "LR_5001"
+    assert responseBody["message"] == "test"
+    assert responseBody["errCode"] == "LR_5001"
