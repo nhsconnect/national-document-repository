@@ -75,12 +75,11 @@ export const routeMap: Routes = {
         page: <HomePage />,
         type: ROUTE_TYPE.PRIVATE,
     },
-
-    // App guard routes
     [SEARCH_PATIENT]: {
         page: <PatientSearchPage />,
         type: ROUTE_TYPE.PRIVATE,
     },
+    // App guard routes
     [VERIFY_PATIENT]: {
         page: <PatientResultPage />,
         type: ROUTE_TYPE.PATIENT,
