@@ -31,12 +31,10 @@ const {
     AUTH_ERROR,
     FEEDBACK,
     LOGOUT,
-    DOWNLOAD_SEARCH,
-    DOWNLOAD_VERIFY,
     DOWNLOAD_DOCUMENTS,
     LLOYD_GEORGE,
-    UPLOAD_SEARCH,
-    UPLOAD_VERIFY,
+    SEARCH_PATIENT,
+    VERIFY_PATIENT,
     UPLOAD_DOCUMENTS,
 } = routes;
 
@@ -79,31 +77,18 @@ export const routeMap: Routes = {
         page: <HomePage />,
         type: ROUTE_TYPE.PRIVATE,
     },
+    [SEARCH_PATIENT]: {
+        page: <PatientSearchPage />,
+        type: ROUTE_TYPE.PRIVATE,
+    },
     [FEEDBACK]: {
         page: <FeedbackPage />,
         type: ROUTE_TYPE.PRIVATE,
     },
-
     // App guard routes
-    [DOWNLOAD_SEARCH]: {
-        page: <PatientSearchPage />,
-        type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
-    },
-    [UPLOAD_SEARCH]: {
-        page: <PatientSearchPage />,
-        type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
-    },
-    [DOWNLOAD_VERIFY]: {
+    [VERIFY_PATIENT]: {
         page: <PatientResultPage />,
         type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
-    },
-    [UPLOAD_VERIFY]: {
-        page: <PatientResultPage />,
-        type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
     },
     [UPLOAD_DOCUMENTS]: {
         page: <UploadDocumentsPage />,

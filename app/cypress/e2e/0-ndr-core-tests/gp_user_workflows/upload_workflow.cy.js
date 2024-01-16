@@ -99,7 +99,7 @@ describe('GP Workflow: Upload docs and verify', () => {
             { tags: 'regression' },
             () => {
                 cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + '/upload/submit');
+                cy.url().should('eq', baseUrl + '/patient/upload');
             },
         );
 

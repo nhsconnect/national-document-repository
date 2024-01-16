@@ -44,12 +44,10 @@ describe('Authentication & Authorisation', () => {
     context('Unauthorised accesses checking when no user is logged in', () => {
         const unauthorisedRoutes = [
             '/search/patient',
-            '/search/patient/result',
-            '/search/results',
-            '/search/patient/lloyd-george-record',
-            '/search/upload',
-            '/search/upload/result',
-            '/upload/submit',
+            '/search/patient/verify',
+            '/patient/download',
+            '/patient/view/lloyd-george-record',
+            '/patient/upload',
         ];
 
         unauthorisedRoutes.forEach((route) => {

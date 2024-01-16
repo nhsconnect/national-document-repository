@@ -8,19 +8,13 @@ export enum routes {
     UNAUTHORISED = '/unauthorised',
     AUTH_ERROR = '/auth-error',
     UNAUTHORISED_LOGIN = '/unauthorised-login',
-
     LOGOUT = '/logout',
     FEEDBACK = '/feedback',
-
-    DOWNLOAD_SEARCH = '/search/patient',
-    DOWNLOAD_VERIFY = '/search/patient/result',
-    DOWNLOAD_DOCUMENTS = '/search/results',
-
-    LLOYD_GEORGE = '/search/patient/lloyd-george-record',
-
-    UPLOAD_SEARCH = '/search/upload',
-    UPLOAD_VERIFY = '/search/upload/result',
-    UPLOAD_DOCUMENTS = '/upload/submit',
+    SEARCH_PATIENT = '/search/patient',
+    VERIFY_PATIENT = '/search/patient/verify',
+    LLOYD_GEORGE = '/patient/view/lloyd-george-record',
+    DOWNLOAD_DOCUMENTS = '/patient/download',
+    UPLOAD_DOCUMENTS = '/patient/upload',
 }
 
 export enum ROUTE_TYPE {

@@ -14,12 +14,7 @@ const patient = {
 
 const baseUrl = Cypress.config('baseUrl');
 
-const forbiddenRoutes = [
-    '/search/patient/lloyd-george-record',
-    '/search/upload',
-    '/search/upload/result',
-    '/upload/submit',
-];
+const forbiddenRoutes = ['/patient/view/lloyd-george-record', '/patient/upload'];
 
 describe('PCSE user role has access to the expected GP_ADMIN workflow paths', () => {
     context('PCSE role has access to expected routes', () => {
@@ -41,7 +36,7 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
             cy.wait('@search');
 
             cy.get('#verify-submit').click();
-            cy.url().should('eq', baseUrl + '/search/results');
+            cy.url().should('eq', baseUrl + '/patient/download');
         });
     });
 });

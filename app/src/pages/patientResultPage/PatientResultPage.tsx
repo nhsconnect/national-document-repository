@@ -76,8 +76,8 @@ function PatientResultPage() {
                 {isGp && (
                     <>
                         <p id="gp-message">
-                            Ensure these patient details match the records and attachments that you
-                            upload
+                            Check these patient details match the records or attachments you plan to
+                            use
                         </p>
                     </>
                 )}
