@@ -10,7 +10,7 @@ def lambda_handler(event, context):
     if patient_id == "1234567890":
         raise ClientError({"Error": {"Code": 500, "Message": "test error"}}, "testing")
     if patient_id == "2234567890":
-        raise LambdaException(400, "lambda exception")
+        raise LambdaException(400, "ERR_CODE", "lambda exception")
     return ApiGatewayResponse(200, "OK", "GET").create_api_gateway_response()
 
 
@@ -44,9 +44,7 @@ def test_handle_lambda_exceptions_catch_and_handle_lambda_exception(
     test_event["queryStringParameters"]["patientId"] = "2234567890"
 
     expected = ApiGatewayResponse(
-        400,
-        "lambda exception",
-        "GET",
+        400, "lambda exception", "GET", "ERR_CODE"
     ).create_api_gateway_response()
     actual = lambda_handler(test_event, context)
 

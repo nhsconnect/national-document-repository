@@ -48,12 +48,10 @@ def test_lambda_handler_raises_exception_returns_500(
     mocked_service, valid_id_event_without_auth_header, context
 ):
     mocked_service.get_document_references.side_effect = DocumentRefSearchException(
-        500, "test_string"
+        500, "DFS_XXXX", "test_string"
     )
     expected = ApiGatewayResponse(
-        500,
-        "test_string",
-        "GET",
+        500, "test_string", "GET", "DFS_XXXX"
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_event_without_auth_header, context)
     assert expected == actual

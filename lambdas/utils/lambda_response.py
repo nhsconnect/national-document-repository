@@ -20,7 +20,9 @@ class ApiGatewayResponse:
                 "Strict-Transport-Security": "max-age=63072000",
                 **headers,
             },
-            "body": {"message": self.body, "errCode": self.err_code} if self.err_code else self.body,
+            "body": {"message": self.body, "errCode": self.err_code}
+            if self.err_code
+            else self.body,
         }
 
     def __eq__(self, other):
@@ -28,5 +30,4 @@ class ApiGatewayResponse:
             self.status_code == other.status_code
             and self.body == other.body
             and self.methods == other.methods
-            and self.err_code == other.err_code
         )

@@ -42,10 +42,10 @@ class LoginService:
                     f"Mismatching state values. Cannot find state {state} in record",
                     {"Result": "Unsuccessful login"},
                 )
-                raise LoginException(401, "LI_2001", "Unrecognised state value")
+                raise LoginException(401, "LIN_2001", "Unrecognised state value")
         except ClientError as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(500, "LI_5001", "Unable to validate state")
+            raise LoginException(500, "LIN_5001", "Unable to validate state")
 
         logger.info("Setting up oidc service")
 
@@ -68,12 +68,12 @@ class LoginService:
             )
         except OidcApiException as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(500, "LI_5002", "Issue when contacting CIS2")
+            raise LoginException(500, "LIN_5002", "Issue when contacting CIS2")
         except AuthorisationException as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
             raise LoginException(
                 401,
-                "LI_2002",
+                "LIN_2002",
                 "Cannot log user in, expected information from CIS2 is missing",
             )
 
@@ -85,10 +85,10 @@ class LoginService:
             )
         except (TooManyOrgsException, OdsErrorException) as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(500, "LI_5003", "Bad response from ODS API")
+            raise LoginException(500, "LIN_5003", "Bad response from ODS API")
         except OrganisationNotFoundException as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(401, "LI_2002", "No org found for given ODS code")
+            raise LoginException(401, "LIN_2002", "No org found for given ODS code")
 
         logger.info(f"Permitted_orgs_details: {permitted_orgs_details}")
 
@@ -96,7 +96,7 @@ class LoginService:
             logger.info("User has no org to log in with")
             raise LoginException(
                 401,
-                "LI_2003",
+                "LIN_2003",
                 f"{permitted_orgs_details.keys()} valid organisations for user",
             )
 
@@ -149,7 +149,7 @@ class LoginService:
             except ClientError as e:
                 logger.error(str(e), {"Result": "Unsuccessful login"})
                 raise LoginException(
-                    500, "LI_5004", "Unable to remove used state value"
+                    500, "LIN_5004", "Unable to remove used state value"
                 )
 
         return state_match
@@ -195,7 +195,7 @@ class LoginService:
         logger.info("Role: No smartcard role found")
         raise LoginException(
             401,
-            "LI_2004",
+            "LIN_2004",
             "No repository role found for user's selected role and organisation",
         )
 

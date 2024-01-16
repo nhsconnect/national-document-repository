@@ -2,8 +2,8 @@ class LambdaException(Exception):
     def __init__(
         self,
         status_code,
+        err_code: str,
         message: str | None = None,
-        err_code: str | None = None,
     ):
         self.status_code = status_code
         self.message = message
@@ -11,33 +11,27 @@ class LambdaException(Exception):
 
 
 class CreateDocumentRefException(LambdaException):
-    def __init__(self, status_code, err_code, message):
-        LambdaException.__init__(self, status_code, message, err_code)
+    pass
 
 
 class SearchPatientException(LambdaException):
-    def __init__(self, status_code, err_code, message):
-        LambdaException.__init__(self, status_code, message, err_code)
+    pass
 
 
 class InvalidDocTypeException(LambdaException):
-    def __init__(self, status_code, err_code, message):
-        LambdaException.__init__(self, status_code, message, err_code)
+    pass
 
 
 class LoginRedirectException(LambdaException):
-    def __init__(self, status_code, err_code, message):
-        LambdaException.__init__(self, status_code, message, err_code)
+    pass
 
 
 class DocumentManifestServiceException(LambdaException):
-    def __init__(self, status_code, err_code, message):
-        LambdaException.__init__(self, status_code, message, err_code)
+    pass
 
 
 class LoginException(LambdaException):
-    def __init__(self, status_code, err_code, message):
-        LambdaException.__init__(self, status_code, message, err_code)
+    pass
 
 
 class LGStitchServiceException(LambdaException):

@@ -41,14 +41,14 @@ def logout_handler(token):
     except ClientError as e:
         logger.error(f"Error logging out user: {e}", {"Result": "Unsuccessful logout"})
         return ApiGatewayResponse(
-            500, "Error logging user out", "GET"
+            500, "Error logging user out", "GET", "OUT_5001"
         ).create_api_gateway_response()
     except (jwt.PyJWTError, KeyError) as e:
         logger.error(
             f"error while decoding JWT: {e}", {"Result": "Unsuccessful logout"}
         )
         return ApiGatewayResponse(
-            400, "Invalid Authorization header", "GET"
+            400, "Invalid Authorization header", "GET", "OUT_4001"
         ).create_api_gateway_response()
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 

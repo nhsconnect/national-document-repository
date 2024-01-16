@@ -180,13 +180,11 @@ def test_lambda_handler_handle_lambda_exception(
     set_env, valid_id_and_lg_doctype_delete_event, context, mock_handle_delete
 ):
     mock_error = DocumentDeletionServiceException(
-        status_code=404, message="Mock error message"
+        status_code=404, err_code="DDS_XXXX", message="Mock error message"
     )
     mock_handle_delete.side_effect = mock_error
     expected = ApiGatewayResponse(
-        404,
-        "Mock error message",
-        "DELETE",
+        404, "Mock error message", "DELETE", "DDS_XXXX"
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_and_lg_doctype_delete_event, context)
     assert expected == actual

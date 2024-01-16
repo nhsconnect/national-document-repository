@@ -31,4 +31,6 @@ def trigger_400(http_method):
 
 
 def trigger_500(http_method):
-    return ApiGatewayResponse(500, "", http_method).create_api_gateway_response()
+    return ApiGatewayResponse(
+        500, "", http_method, "ERR_XXXX"
+    ).create_api_gateway_response()

@@ -46,5 +46,7 @@ class DocumentReferenceSearchService(DocumentService):
         ) as e:
             logger.error(str(e), {"Result": "Document reference search failed"})
             raise DocumentRefSearchException(
-                500, "An error occurred when searching for available documents"
+                500,
+                "DFS_5001",
+                "An error occurred when searching for available documents",
             )

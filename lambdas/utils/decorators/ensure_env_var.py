@@ -27,6 +27,7 @@ def ensure_environment_variables(names: list[str]) -> Callable:
                         500,
                         f"An error occurred due to missing environment variable: '{name}'",
                         event["httpMethod"],
+                        "ENV_5001",
                     ).create_api_gateway_response()
 
             # Validation done. Return control flow to original lambda handler

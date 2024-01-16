@@ -150,7 +150,7 @@ def test_lambda_handler_respond_500_when_failed_to_retrieve_lg_record(
     fetch_available_document_references_by_type.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
-        500, "Unable to retrieve documents for patient 9000000009", "GET"
+        500, "Unable to retrieve documents for patient 9000000009", "GET", "LGS_5003"
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -165,7 +165,7 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_download_lloyd_geo
     mock_s3.download_file.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
-        500, "Unable to retrieve documents for patient 9000000009", "GET"
+        500, "Unable to retrieve documents for patient 9000000009", "GET", "LGS_5001"
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -179,7 +179,7 @@ def test_lambda_handler_respond_404_throws_error_when_no_lloyd_george_for_patien
     fetch_available_document_references_by_type.return_value = []
     actual = lambda_handler(valid_id_event_without_auth_header, context)
     expected = ApiGatewayResponse(
-        404, "Lloyd george record not found for patient 9000000009", "GET"
+        404, "Lloyd george record not found for patient 9000000009", "GET", "LGS_4001"
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -196,7 +196,10 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_stitch_lloyd_georg
 
     actual = lambda_handler(valid_id_event_without_auth_header, context)
     expected = ApiGatewayResponse(
-        500, "Unable to return stitched pdf file due to internal error", "GET"
+        500,
+        "Unable to return stitched pdf file due to internal error",
+        "GET",
+        "LGS_5002",
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -212,6 +215,9 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_upload_lloyd_georg
     mock_s3.upload_file_with_extra_args.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
     expected = ApiGatewayResponse(
-        500, "Unable to return stitched pdf file due to internal error", "GET"
+        500,
+        "Unable to return stitched pdf file due to internal error",
+        "GET",
+        "LGS_5002",
     ).create_api_gateway_response()
     assert actual == expected

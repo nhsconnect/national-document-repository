@@ -38,7 +38,7 @@ class TokenHandlerSSMService(SSMService):
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(
-                500, "LI_5005", "Failed to find SSM parameter value for user role"
+                500, "LIN_5005", "Failed to find SSM parameter value for user role"
             )
 
         return response
@@ -56,7 +56,7 @@ class TokenHandlerSSMService(SSMService):
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(
-                500, "LI_5006", "Failed to find SSM parameter value for user role"
+                500, "LIN_5006", "Failed to find SSM parameter value for user role"
             )
 
         response = values.split(",")
@@ -75,7 +75,7 @@ class TokenHandlerSSMService(SSMService):
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(
-                500, "LI_5007", "Failed to find SSM parameter value for user role"
+                500, "LIN_5007", "Failed to find SSM parameter value for user role"
             )
 
         return response
@@ -92,7 +92,7 @@ class TokenHandlerSSMService(SSMService):
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(
-                500, "LI_5008", "Failed to find SSM parameter value for user role"
+                500, "LIN_5008", "Failed to find SSM parameter value for user role"
             )
         return response
 
@@ -110,7 +110,7 @@ class TokenHandlerSSMService(SSMService):
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(
-                500, "LI_5009", "Failed to find SSM parameter value for GP org role"
+                500, "LIN_5009", "Failed to find SSM parameter value for GP org role"
             )
         return response
 
@@ -128,7 +128,7 @@ class TokenHandlerSSMService(SSMService):
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(
-                500, "LI_5010", "SSM parameter values for PSCE ODS code may not exist"
+                500, "LIN_5010", "SSM parameter values for PSCE ODS code may not exist"
             )
         return response
 

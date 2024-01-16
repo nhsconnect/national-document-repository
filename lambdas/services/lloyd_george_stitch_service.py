@@ -37,7 +37,9 @@ class LloydGeorgeStitchService:
             lg_records = self.get_lloyd_george_record_for_patient(nhs_number)
             if len(lg_records) == 0:
                 raise LGStitchServiceException(
-                    404, f"Lloyd george record not found for patient {nhs_number}"
+                    404,
+                    "LGS_4001",
+                    f"Lloyd george record not found for patient {nhs_number}",
                 )
 
             ordered_lg_records = self.sort_documents_by_filenames(lg_records)
@@ -45,7 +47,9 @@ class LloydGeorgeStitchService:
         except ClientError as e:
             logger.error(str(e), {"Result": "Lloyd George stitching failed"})
             raise LGStitchServiceException(
-                500, f"Unable to retrieve documents for patient {nhs_number}"
+                500,
+                "LGS_5001",
+                f"Unable to retrieve documents for patient {nhs_number}",
             )
 
         try:
@@ -76,7 +80,9 @@ class LloydGeorgeStitchService:
         except (ClientError, PyPdfError, FileNotFoundError) as e:
             logger.error(str(e), {"Result": "Lloyd George stitching failed"})
             raise LGStitchServiceException(
-                500, "Unable to return stitched pdf file due to internal error"
+                500,
+                "LGS_5002",
+                "Unable to return stitched pdf file due to internal error",
             )
         finally:
             shutil.rmtree(self.temp_folder)
@@ -91,7 +97,9 @@ class LloydGeorgeStitchService:
         except ClientError as e:
             logger.error(str(e), {"Result": "Lloyd George stitching failed"})
             raise LGStitchServiceException(
-                500, f"Unable to retrieve documents for patient {nhs_number}"
+                500,
+                "LGS_5003",
+                f"Unable to retrieve documents for patient {nhs_number}",
             )
 
     @staticmethod
@@ -107,7 +115,7 @@ class LloydGeorgeStitchService:
                 {"Result": "Lloyd George stitching failed"},
             )
             raise LGStitchServiceException(
-                500, f"Unable to stitch documents for patient {nhs_number}"
+                500, "LGS_5004", f"Unable to stitch documents for patient {nhs_number}"
             )
 
     def download_lloyd_george_files(

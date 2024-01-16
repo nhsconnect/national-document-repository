@@ -56,5 +56,5 @@ def lambda_handler(event, context):
             {"Result": "No documents available"},
         )
         return ApiGatewayResponse(
-            404, "No documents available", "DELETE"
+            404, "No documents available", "DELETE", "DDR_4001"
         ).create_api_gateway_response()
