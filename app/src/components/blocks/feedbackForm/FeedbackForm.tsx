@@ -60,10 +60,10 @@ function FeedbackForm({ stage, setStage }: Props) {
     const respondentEmailProps = renameRefKey(
         register(FORM_FIELDS.RespondentEmail, {
             validate: (value) => {
-                if (value === '') {
-                    return true; // allow email address to be blank
+                if (value === '' || isEmail(value)) {
+                    return true; // accept either blank or a valid email
                 }
-                return isEmail(value) ? true : 'Enter a valid email address';
+                return 'Enter a valid email address';
             },
         }),
         'inputRef',

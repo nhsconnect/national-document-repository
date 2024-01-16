@@ -1,10 +1,5 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
-import {
-    FORM_FIELDS,
-    FormData,
-    SATISFACTION_CHOICES,
-    SUBMISSION_STAGE,
-} from '../../../types/pages/feedbackPage/types';
+import { SATISFACTION_CHOICES, SUBMISSION_STAGE } from '../../../types/pages/feedbackPage/types';
 import userEvent from '@testing-library/user-event';
 import sendEmail from '../../../helpers/requests/sendEmail';
 import FeedbackForm, { Props } from './FeedbackForm';
