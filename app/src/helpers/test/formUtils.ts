@@ -4,7 +4,7 @@ import { screen } from '@testing-library/react';
 
 export const fillInForm = (data: Partial<FormData>) => {
     for (const [fieldName, value] of Object.entries(data)) {
-        if (fieldName === FORM_FIELDS.howSatisfied) {
+        if (fieldName === FORM_FIELDS.HowSatisfied) {
             userEvent.click(screen.getByRole('radio', { name: value }));
         } else {
             userEvent.click(screen.getByTestId(fieldName));
