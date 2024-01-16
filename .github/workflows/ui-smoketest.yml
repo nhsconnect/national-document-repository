@@ -19,6 +19,20 @@ on:
         required: true
         type: 'string'
         default: 'ndr'
+  workflow_call:
+    inputs:
+      build_branch:
+        description: 'Branch with smoke tests.'
+        required: true
+        type: 'string'
+      environment:
+        description: 'Which Environment type are we using'
+        required: true
+        type: 'string'
+      sandbox:
+        description: 'Sandbox to run the smoke tests on.'
+        required: true
+        type: 'string'
 
 permissions:
   pull-requests: write

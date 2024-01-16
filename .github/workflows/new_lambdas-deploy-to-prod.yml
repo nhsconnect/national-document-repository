@@ -16,7 +16,7 @@ permissions:
 env:
   PYTHON_VERSION: "3.11"
   ENVIRONMENT: prod
-  SANDBOX: ndr-prod
+  SANDBOX: prod
   BUILD_BRANCH: ${{ inputs.tag_version }}
 
 jobs:
