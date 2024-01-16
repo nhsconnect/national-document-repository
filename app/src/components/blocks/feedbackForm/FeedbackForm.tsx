@@ -4,7 +4,7 @@ import {
     SATISFACTION_CHOICES,
     SUBMISSION_STAGE,
 } from '../../../types/pages/feedbackPage/types';
-import React, { Dispatch, useState } from 'react';
+import React, { Dispatch } from 'react';
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
 
