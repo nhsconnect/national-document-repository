@@ -19,6 +19,7 @@ import { REPOSITORY_ROLE } from '../types/generic/authRole';
 import RoleGuard from './guards/roleGuard/RoleGuard';
 import HomePage from '../pages/homePage/HomePage';
 import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLoginPage';
+import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
 
 const {
     START,
@@ -28,6 +29,7 @@ const {
     UNAUTHORISED,
     UNAUTHORISED_LOGIN,
     AUTH_ERROR,
+    FEEDBACK,
     LOGOUT,
     DOWNLOAD_SEARCH,
     DOWNLOAD_VERIFY,
@@ -75,6 +77,10 @@ export const routeMap: Routes = {
     },
     [HOME]: {
         page: <HomePage />,
+        type: ROUTE_TYPE.PRIVATE,
+    },
+    [FEEDBACK]: {
+        page: <FeedbackPage />,
         type: ROUTE_TYPE.PRIVATE,
     },
 

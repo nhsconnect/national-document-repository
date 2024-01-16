@@ -10,6 +10,7 @@ export enum routes {
     UNAUTHORISED_LOGIN = '/unauthorised-login',
 
     LOGOUT = '/logout',
+    FEEDBACK = '/feedback',
 
     DOWNLOAD_SEARCH = '/search/patient',
     DOWNLOAD_VERIFY = '/search/patient/result',

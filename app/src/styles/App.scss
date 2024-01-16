@@ -331,3 +331,10 @@ $govuk-compatibility-govukelements: true;
     display: flex;
     align-items: center;
 }
+
+#feedback-form {
+    max-width: 800px;
+    & form > div {
+        margin: 50px 0;
+    }
+}
