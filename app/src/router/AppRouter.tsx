@@ -80,12 +80,10 @@ export const routeMap: Routes = {
     [SEARCH_PATIENT]: {
         page: <PatientSearchPage />,
         type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [],
     },
     [VERIFY_PATIENT]: {
         page: <PatientResultPage />,
         type: ROUTE_TYPE.PATIENT,
-        unauthorized: [],
     },
     [UPLOAD_DOCUMENTS]: {
         page: <UploadDocumentsPage />,
