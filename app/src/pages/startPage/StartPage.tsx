@@ -51,6 +51,20 @@ function StartPage(props: Props) {
             <ButtonLink role="button" data-testid="start-btn" onClick={handleLogin}>
                 Start now
             </ButtonLink>
+
+            <div>
+                <ButtonLink
+                    onClick={() => navigate(routes.TEST, { state: { someKey: 'button A' } })}
+                >
+                    Button A
+                </ButtonLink>
+                <ButtonLink
+                    onClick={() => navigate(routes.TEST, { state: { someKey: 'button B' } })}
+                >
+                    Button B
+                </ButtonLink>
+            </div>
+
             <h3>Get support with the service</h3>
             {'Contact the '}
             <a

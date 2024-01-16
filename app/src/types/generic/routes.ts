@@ -2,6 +2,7 @@ import { REPOSITORY_ROLE } from './authRole';
 
 export enum routes {
     START = '/',
+    TEST = '/test',
     HOME = '/home',
     AUTH_CALLBACK = '/auth-callback',
     NOT_FOUND = '/*',

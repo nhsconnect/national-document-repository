@@ -20,9 +20,11 @@ import RoleGuard from './guards/roleGuard/RoleGuard';
 import HomePage from '../pages/homePage/HomePage';
 import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLoginPage';
 import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
+import TestPage from '../pages/testPage/TestPage';
 
 const {
     START,
+    TEST,
     HOME,
     AUTH_CALLBACK,
     NOT_FOUND,
@@ -48,6 +50,10 @@ export const routeMap: Routes = {
     // Public routes
     [START]: {
         page: <StartPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
+    [TEST]: {
+        page: <TestPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
     [AUTH_CALLBACK]: {
