@@ -26,7 +26,7 @@ on:
       CYPRESS_USERNAME:
         required: true
       CYPRESS_PASSWORD:
-      required: true
+        required: true
 
 permissions:
   pull-requests: write

@@ -24,8 +24,28 @@ on:
         required: true
         type: 'string'
         default: 'eu-west-2'
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+      CYPRESS_USERNAME:
+        required: true
+      CYPRESS_PASSWORD:
+        required: true
 
 permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
+
+jobs:
+  smoketest:
+    uses: ./.github/workflows/ui-smoketest-base.yml
+    with:
+      build_branch: ${{github.event.inputs.build_branch}}
+      environment: ${{github.event.inputs.environment}}
+      sandbox: ${{github.event.inputs.sandbox}}
+      aws_region: ${{github.event.inputs.aws_region}}
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+      CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
+      CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
