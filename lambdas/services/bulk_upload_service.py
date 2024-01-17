@@ -11,7 +11,6 @@ from repositories.bulk_upload.bulk_upload_dynamo_repository import (
 )
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
-from utils import lloyd_george_validator
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import (
     BulkUploadException,
@@ -23,7 +22,12 @@ from utils.exceptions import (
     VirusScanFailedException,
     VirusScanNoResultException,
 )
-from utils.lloyd_george_validator import LGInvalidFilesException
+from utils.lloyd_george_validator import (
+    LGInvalidFilesException,
+    getting_patient_info_from_pds,
+    validate_lg_file_names,
+    validate_filename_with_patient_details,
+)
 from utils.request_context import request_context
 from utils.unicode_utils import (
     contains_accent_char,
@@ -51,6 +55,10 @@ class BulkUploadService:
                 self.handle_sqs_message(message)
             except PdsTooManyRequestsException as error:
                 logger.error(error)
+
+                logger.info(
+                    "Cannot validate patient due to PDS responded with Too Many Requests"
+                )
                 logger.info("Cannot process for now due to PDS rate limit reached.")
                 logger.info(
                     "All remaining messages in this batch will be returned to sqs queue to retry later."
@@ -77,6 +85,7 @@ class BulkUploadService:
 
     def handle_sqs_message(self, message: dict):
         logger.info("Validating SQS event")
+        patient_ods_code = ""
         try:
             staging_metadata_json = message["body"]
             staging_metadata = StagingMetadata.model_validate_json(
@@ -89,13 +98,18 @@ class BulkUploadService:
 
         logger.info("SQS event is valid. Validating NHS number and file names")
         try:
+            file_names = [
+                os.path.basename(metadata.file_path)
+                for metadata in staging_metadata.files
+            ]
+            validate_lg_file_names(file_names, staging_metadata.nhs_number)
             request_context.patient_nhs_no = staging_metadata.nhs_number
-            lloyd_george_validator.validate_bulk_uploaded_files(staging_metadata)
-        except PdsTooManyRequestsException as error:
-            logger.info(
-                "Cannot validate patient due to PDS responded with Too Many Requests"
+
+            pds_patient_details = getting_patient_info_from_pds(
+                staging_metadata.nhs_number
             )
-            raise error
+            patient_ods_code = pds_patient_details.general_practice_ods
+            validate_filename_with_patient_details(file_names, pds_patient_details)
         except (LGInvalidFilesException, PatientRecordAlreadyExistException) as error:
             logger.info(
                 f"Detected issue related to patient number: {staging_metadata.nhs_number}"
@@ -105,7 +119,7 @@ class BulkUploadService:
 
             failure_reason = str(error)
             self.dynamo_repository.report_upload_failure(
-                staging_metadata, failure_reason
+                staging_metadata, failure_reason, patient_ods_code
             )
             return
 
@@ -127,7 +141,9 @@ class BulkUploadService:
                 err = (
                     "File was not scanned for viruses before maximum retries attempted"
                 )
-                self.dynamo_repository.report_upload_failure(staging_metadata, err)
+                self.dynamo_repository.report_upload_failure(
+                    staging_metadata, err, patient_ods_code
+                )
             else:
                 self.sqs_repository.put_staging_metadata_back_to_queue(staging_metadata)
             return
@@ -139,7 +155,9 @@ class BulkUploadService:
             logger.info("Will stop processing Lloyd George record for this patient")
 
             self.dynamo_repository.report_upload_failure(
-                staging_metadata, "One or more of the files failed virus scanner check"
+                staging_metadata,
+                "One or more of the files failed virus scanner check",
+                patient_ods_code,
             )
             return
         except S3FileNotFoundException as e:
@@ -152,6 +170,7 @@ class BulkUploadService:
             self.dynamo_repository.report_upload_failure(
                 staging_metadata,
                 "One or more of the files is not accessible from staging bucket",
+                patient_ods_code,
             )
             return
 
@@ -181,6 +200,7 @@ class BulkUploadService:
             self.dynamo_repository.report_upload_failure(
                 staging_metadata,
                 "Validation passed but error occurred during file transfer",
+                patient_ods_code,
             )
             return
 
@@ -194,7 +214,9 @@ class BulkUploadService:
             {"Result": "Successful upload"},
         )
         logger.info("Reporting transaction successful")
-        self.dynamo_repository.report_upload_complete(staging_metadata)
+        self.dynamo_repository.report_upload_complete(
+            staging_metadata, patient_ods_code
+        )
 
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
         sample_file_path = staging_metadata.files[0].file_path
