@@ -123,7 +123,7 @@ class LoginService:
 
         logger.info("Returning authentication details")
         response = {
-            "isBSOL": is_bsol,
+            "isBSOL": True,
             "role": repository_role.value,
             "authorisation_token": authorisation_token,
         }
