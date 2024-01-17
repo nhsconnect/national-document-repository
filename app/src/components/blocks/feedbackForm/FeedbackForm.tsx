@@ -126,7 +126,9 @@ function FeedbackForm({ stage, setStage }: Props) {
                     />
                 </Fieldset>
                 {stage !== SUBMISSION_STAGE.Submitting ? (
-                    <Button type="submit">Send feedback</Button>
+                    <Button type="submit" id="submit-feedback">
+                        Send feedback
+                    </Button>
                 ) : (
                     <SpinnerButton
                         id="feedback-submit-spinner"
