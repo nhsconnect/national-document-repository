@@ -181,7 +181,7 @@ class BulkUploadService:
             f"Completed file ingestion for patient {staging_metadata.nhs_number}",
             {"Result": "Successful upload"},
         )
-        self.report_upload_complete(staging_metadata)
+        self.report_upload_complete(staging_metadata, patient_ods_code)
 
     def check_virus_result(self, staging_metadata: StagingMetadata):
         for file_metadata in staging_metadata.files:

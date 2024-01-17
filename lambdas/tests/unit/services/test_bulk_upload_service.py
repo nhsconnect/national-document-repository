@@ -780,7 +780,7 @@ def test_report_upload_complete_add_record_to_dynamodb(set_env, mocker, mock_uui
     service = BulkUploadService()
     service.dynamo_service = mocker.MagicMock()
 
-    service.report_upload_complete(TEST_STAGING_METADATA)
+    service.report_upload_complete(TEST_STAGING_METADATA, "")
 
     assert service.dynamo_service.create_item.call_count == len(
         TEST_STAGING_METADATA.files
