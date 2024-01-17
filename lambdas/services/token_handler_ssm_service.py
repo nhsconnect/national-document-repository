@@ -7,6 +7,7 @@ from utils.constants.ssm import (
     PCSE_ODS_CODE,
     PCSE_USER_ROLE_CODE,
 )
+from utils.error_response import LambdaError
 from utils.lambda_exceptions import LoginException
 
 logger = LoggingService(__name__)
@@ -37,9 +38,7 @@ class TokenHandlerSSMService(SSMService):
                 "SSM parameter values for GP admin/clinical or PSCE roles may not exist",
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(
-                500, "LIN_5005", "Failed to find SSM parameter value for user role"
-            )
+            raise LoginException(500, LambdaError.LoginBadSSM)
 
         return response
 
@@ -55,9 +54,7 @@ class TokenHandlerSSMService(SSMService):
                 "SSM parameter values for GP admin role may not exist",
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(
-                500, "LIN_5006", "Failed to find SSM parameter value for user role"
-            )
+            raise LoginException(500, LambdaError.LoginNoSSM)
 
         response = values.split(",")
         return response
@@ -74,9 +71,7 @@ class TokenHandlerSSMService(SSMService):
                 "SSM parameter values for GP clinical user role may not exist",
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(
-                500, "LIN_5007", "Failed to find SSM parameter value for user role"
-            )
+            raise LoginException(500, LambdaError.LoginSmartSSM)
 
         return response
 
@@ -91,9 +86,7 @@ class TokenHandlerSSMService(SSMService):
                 "SSM parameter values for PCSE user role may not exist",
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(
-                500, "LIN_5008", "Failed to find SSM parameter value for user role"
-            )
+            raise LoginException(500, LambdaError.LoginPcseSSM)
         return response
 
     def get_org_role_codes(self) -> list[str]:
@@ -109,9 +102,7 @@ class TokenHandlerSSMService(SSMService):
                 "SSM parameter values for GP organisation role code may not exist",
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(
-                500, "LIN_5009", "Failed to find SSM parameter value for GP org role"
-            )
+            raise LoginException(500, LambdaError.LoginGpSSM)
         return response
 
     def get_org_ods_codes(self) -> list[str]:
@@ -127,9 +118,7 @@ class TokenHandlerSSMService(SSMService):
                 "SSM parameter values for PSCE ODS code may not exist",
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(
-                500, "LIN_5010", "SSM parameter values for PSCE ODS code may not exist"
-            )
+            raise LoginException(500, LambdaError.LoginPcseODS)
         return response
 
     def get_jwt_private_key(self) -> list[str]:

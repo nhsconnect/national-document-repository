@@ -82,6 +82,14 @@ class LambdaError(Enum):
         "code": "LIN_2001",
         "message": "Unrecognised state value",
     }
+
+    LoginBadAuth = {
+        "code": "LIN_2002",
+        "message": "Cannot log user in, expected information from CIS2 is missing",
+    }
+    LoginNoOrg = {"code": "LIN_2003", "message": "No org found for given ODS code"}
+    LoginNullOrgs = {"code": "LIN_2004", "message": "No orgs found for user"}
+    LoginNoRole = {"code": "LIN_2005", "message": "Unable to remove used state value"}
     LoginValidate = {
         "code": "LIN_5001",
         "message": "Unrecognised state value",
@@ -90,15 +98,32 @@ class LambdaError(Enum):
         "code": "LIN_5002",
         "message": "Issue when contacting CIS2",
     }
-    LoginBadAuth = {
-        "code": "LIN_2002",
-        "message": "Cannot log user in, expected information from CIS2 is missing",
-    }
     LoginOds = {"code": "LIN_5003", "message": "Bad response from ODS API"}
-    LoginNoOrg = {"code": "LIN_2003", "message": "No org found for given ODS code"}
-    LoginNullOrgs = {"code": "LIN_2004", "message": "No orgs found for user"}
     LoginStateFault = {
         "code": "LIN_5004",
         "message": "Unable to remove used state value",
     }
-    LoginNoRole = {"code": "LIN_2005", "message": "Unable to remove used state value"}
+    LoginBadSSM = {
+        "code": "LIN_5005",
+        "message": "Failed to find SSM parameter value for user role",
+    }
+    LoginNoSSM = {
+        "code": "LIN_5006",
+        "message": "Failed to find SSM parameter value for user role",
+    }
+    LoginSmartSSM = {
+        "code": "LIN_5007",
+        "message": "Failed to find SSM parameter value for user role",
+    }
+    LoginPcseSSM = {
+        "code": "LIN_5008",
+        "message": "Failed to find SSM parameter value for user role",
+    }
+    LoginGpSSM = {
+        "code": "LIN_5009",
+        "message": "Failed to find SSM parameter value for user role",
+    }
+    LoginPcseODS = {
+        "code": "LIN_5010",
+        "message": "SSM parameter values for PSCE ODS code may not exist",
+    }
