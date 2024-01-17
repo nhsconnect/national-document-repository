@@ -8,6 +8,7 @@ from models.document_reference import DocumentReference
 from pydantic import ValidationError
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.error_response import LambdaError
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentRefSearchException
 
@@ -45,8 +46,4 @@ class DocumentReferenceSearchService(DocumentService):
             DynamoServiceException,
         ) as e:
             logger.error(str(e), {"Result": "Document reference search failed"})
-            raise DocumentRefSearchException(
-                500,
-                "DFS_5001",
-                "An error occurred when searching for available documents",
-            )
+            raise DocumentRefSearchException(500, LambdaError.DocRefClient)

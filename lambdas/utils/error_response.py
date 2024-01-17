@@ -127,3 +127,43 @@ class LambdaError(Enum):
         "code": "LIN_5010",
         "message": "SSM parameter values for PSCE ODS code may not exist",
     }
+
+    """
+       Errors for LGStitchServiceException
+    """
+    StitchNotFound = {
+        "code": "LGS_4001",
+        "message": "Lloyd george record not found for patient",
+    }
+    StitchNoService = {
+        "code": "LGS_5001",
+        "message": "Unable to retrieve documents for patient",
+    }
+    StitchNoClient = {
+        "code": "LGS_5002",
+        "message": "Unable to return stitched pdf file due to internal error",
+    }
+    StitchClient = {
+        "code": "LGS_5003",
+        "message": "Unable to retrieve documents for patient",
+    }
+    StitchFailed = {
+        "code": "LGS_5004",
+        "message": "Unable to retrieve documents for patient",
+    }
+
+    """
+       Errors for DocumentRefSearchException
+    """
+    DocRefClient = {
+        "code": "DRS_5001",
+        "message": "An error occurred when searching for available documents",
+    }
+
+    """
+       Errors for DocumentDeletionServiceException
+    """
+    DocDelClient = {
+        "code": "DDS_5001",
+        "message": "Failed to delete documents",
+    }

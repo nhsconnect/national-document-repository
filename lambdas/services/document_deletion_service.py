@@ -6,6 +6,7 @@ from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.error_response import LambdaError
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentDeletionServiceException
 
@@ -61,6 +62,4 @@ class DocumentDeletionService:
             return results
         except (ClientError, DynamoServiceException) as e:
             logger.error(str(e), {"Results": "Failed to delete documents"})
-            raise DocumentDeletionServiceException(
-                500, "DDS_5001", "Failed to delete documents"
-            )
+            raise DocumentDeletionServiceException(500, LambdaError.DocDelClient)
