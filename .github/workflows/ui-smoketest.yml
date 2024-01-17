@@ -19,6 +19,11 @@ on:
         required: true
         type: 'string'
         default: 'ndr'
+      aws_region:
+        description: 'What AWS Region to run on'
+        required: true
+        type: 'string'
+        default: 'eu-west-2'
   workflow_call:
     inputs:
       build_branch:
@@ -33,8 +38,16 @@ on:
         description: 'Sandbox to run the smoke tests on.'
         required: true
         type: 'string'
+      aws_region:
+        description: 'What AWS Region to run on'
+        required: true
+        type: 'string'
     secrets:
       AWS_ASSUME_ROLE:
+        required: true
+      CYPRESS_USERNAME:
+        required: true
+      CYPRESS_PASSWORD:
         required: true
 
 permissions:
@@ -100,7 +113,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
-          aws-region: ${{ vars.AWS_REGION }}
+          aws-region: ${{ github.event.inputs.aws_region }}
 
       - name: Cypress install
         run: |
