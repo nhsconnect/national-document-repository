@@ -7,6 +7,7 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.error_response import ErrorResponse, LambdaError
 from utils.lambda_exceptions import LoginException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -24,15 +25,11 @@ def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
     logger.info("Token request handler triggered")
 
-    missing_value_response_body = (
-        "No auth code and/or state in the query string parameters"
-    )
-
     try:
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
         if not (auth_code and state):
-            raise LoginException(400, "LIN_1001", missing_value_response_body)
+            raise LoginException(400, LambdaError.LoginNoState)
 
         login_service = LoginService()
 
@@ -45,6 +42,10 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
 
     except (KeyError, TypeError):
+        msg = LambdaError.LoginNoKey["message"]
+        code = LambdaError.LoginNoKey["code"]
         return ApiGatewayResponse(
-            400, missing_value_response_body, "GET", "LIN_1001"
+            400,
+            ErrorResponse(msg, code).create(),
+            "GET",
         ).create_api_gateway_response()

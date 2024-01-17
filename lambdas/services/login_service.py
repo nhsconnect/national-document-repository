@@ -14,6 +14,7 @@ from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
+from utils.error_response import LambdaError
 from utils.exceptions import (
     AuthorisationException,
     OdsErrorException,
@@ -42,10 +43,10 @@ class LoginService:
                     f"Mismatching state values. Cannot find state {state} in record",
                     {"Result": "Unsuccessful login"},
                 )
-                raise LoginException(401, "LIN_2001", "Unrecognised state value")
+                raise LoginException(401, LambdaError.LoginBadState)
         except ClientError as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(500, "LIN_5001", "Unable to validate state")
+            raise LoginException(500, LambdaError.LoginValidate)
 
         logger.info("Setting up oidc service")
 
@@ -68,14 +69,10 @@ class LoginService:
             )
         except OidcApiException as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(500, "LIN_5002", "Issue when contacting CIS2")
+            raise LoginException(500, LambdaError.LoginNoContact)
         except AuthorisationException as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(
-                401,
-                "LIN_2002",
-                "Cannot log user in, expected information from CIS2 is missing",
-            )
+            raise LoginException(401, LambdaError.LoginBadAuth)
 
         try:
             permitted_orgs_details = (
@@ -85,19 +82,18 @@ class LoginService:
             )
         except (TooManyOrgsException, OdsErrorException) as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(500, "LIN_5003", "Bad response from ODS API")
+            raise LoginException(500, LambdaError.LoginOds)
         except OrganisationNotFoundException as e:
             logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(401, "LIN_2002", "No org found for given ODS code")
+            raise LoginException(401, LambdaError.LoginNoOrg)
 
         logger.info(f"Permitted_orgs_details: {permitted_orgs_details}")
 
         if len(permitted_orgs_details.keys()) == 0:
-            logger.info("User has no org to log in with")
+            logger.info(f"{permitted_orgs_details.keys()} valid organisations for user")
             raise LoginException(
                 401,
-                "LIN_2003",
-                f"{permitted_orgs_details.keys()} valid organisations for user",
+                LambdaError.LoginNullOrgs,
             )
 
         session_id = self.create_login_session(id_token_claim_set)
@@ -148,9 +144,7 @@ class LoginService:
                 self.remove_used_state(state)
             except ClientError as e:
                 logger.error(str(e), {"Result": "Unsuccessful login"})
-                raise LoginException(
-                    500, "LIN_5004", "Unable to remove used state value"
-                )
+                raise LoginException(500, LambdaError.LoginStateFault)
 
         return state_match
 
@@ -195,8 +189,7 @@ class LoginService:
         logger.info("Role: No smartcard role found")
         raise LoginException(
             401,
-            "LIN_2004",
-            "No repository role found for user's selected role and organisation",
+            LambdaError.LoginNoRole,
         )
 
     @staticmethod
