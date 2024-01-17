@@ -46,7 +46,7 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   
   smoketest:
-    uses: ./.github/workflows/ui-smoketest.yml
+    uses: ./.github/workflows/ui-smoketest-base.yml
     needs: ["deploy_all_lambdas"]
     if: |
       (github.ref == 'refs/heads/main') 

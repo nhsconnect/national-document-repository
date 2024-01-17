@@ -1,24 +1,7 @@
 # .github/workflows/terraform-dev
-name: 'SANDBOX - Smoke Test'
+name: 'SANDBOX - Smoke Test base'
 
 on:
-  workflow_dispatch:
-    inputs:
-      build_branch:
-        description: 'Branch with smoke tests.'
-        required: true
-        type: 'string'
-        default: 'main'
-      environment:
-        description: 'Which Environment type are we using'
-        required: true
-        type: 'string'
-        default: 'development'
-      sandbox:
-        description: 'Sandbox to run the smoke tests on.'
-        required: true
-        type: 'string'
-        default: 'ndr'
   workflow_call:
     inputs:
       build_branch:
@@ -33,9 +16,17 @@ on:
         description: 'Sandbox to run the smoke tests on.'
         required: true
         type: 'string'
+      aws_region:
+        description: 'What AWS Region to run on'
+        required: true
+        type: 'string'
     secrets:
       AWS_ASSUME_ROLE:
         required: true
+      CYPRESS_USERNAME:
+        required: true
+      CYPRESS_PASSWORD:
+      required: true
 
 permissions:
   pull-requests: write
@@ -100,7 +91,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
-          aws-region: ${{ vars.AWS_REGION }}
+          aws-region: ${{ inputs.AWS_REGION }}
 
       - name: Cypress install
         run: |
