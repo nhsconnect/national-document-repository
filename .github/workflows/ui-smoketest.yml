@@ -45,13 +45,13 @@ permissions:
 jobs:
   cypress-run-chrome:
     runs-on: ubuntu-22.04
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           repository: 'nhsconnect/national-document-repository'
-          ref: ${{ github.event.inputs.build_branch}}
+          ref: ${{ inputs.build_branch}}
 
       - name: Cypress install
         run: |
@@ -65,9 +65,9 @@ jobs:
           browser: chrome
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
+          CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
-          CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
+          CYPRESS_WORKSPACE: ${{ inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
           CYPRESS_OUTPUT_VIDEO: true
@@ -87,13 +87,13 @@ jobs:
 
   cypress-run-firefox:
     runs-on: ubuntu-22.04
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           repository: 'nhsconnect/national-document-repository'
-          ref: ${{ github.event.inputs.build_branch}}
+          ref: ${{ inputs.build_branch}}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -114,22 +114,22 @@ jobs:
           browser: firefox
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
+          CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
-          CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
+          CYPRESS_WORKSPACE: ${{ inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
           CYPRESS_OUTPUT_VIDEO: false
 
   cypress-run-edge:
     runs-on: ubuntu-22.04
-    environment: ${{ github.event.inputs.environment }}
+    environment: ${{ inputs.environment }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           repository: 'nhsconnect/national-document-repository'
-          ref: ${{ github.event.inputs.build_branch}}
+          ref: ${{ inputs.build_branch}}
 
       - name: Cypress install
         run: |
@@ -143,9 +143,9 @@ jobs:
           browser: edge
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
+          CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
-          CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
+          CYPRESS_WORKSPACE: ${{ inputs.sandbox }}
           CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
           CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
           CYPRESS_OUTPUT_VIDEO: false
