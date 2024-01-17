@@ -8,6 +8,7 @@ from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.error_response import ErrorResponse, LambdaError
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -40,15 +41,21 @@ def logout_handler(token):
 
     except ClientError as e:
         logger.error(f"Error logging out user: {e}", {"Result": "Unsuccessful logout"})
+        msg = LambdaError.LogoutClient["message"]
+        code = LambdaError.LogoutClient["code"]
         return ApiGatewayResponse(
-            500, "Error logging user out", "GET", "OUT_5001"
+            500,
+            ErrorResponse(code, msg).create(),
+            "GET",
         ).create_api_gateway_response()
     except (jwt.PyJWTError, KeyError) as e:
         logger.error(
             f"error while decoding JWT: {e}", {"Result": "Unsuccessful logout"}
         )
+        msg = LambdaError.LogoutAuth["message"]
+        code = LambdaError.LogoutAuth["code"]
         return ApiGatewayResponse(
-            400, "Invalid Authorization header", "GET", "OUT_4001"
+            400, ErrorResponse(code, msg).create(), "GET"
         ).create_api_gateway_response()
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 

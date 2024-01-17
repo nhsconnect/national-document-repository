@@ -62,7 +62,7 @@ class LambdaError(Enum):
     """
        Errors for InvalidDocTypeException
     """
-    DocTypeInvalid = {
+    DocTypeDB = {
         "code": "DT_5001",
         "message": "Failed to resolve dynamodb table name for this document",
     }
@@ -72,10 +72,6 @@ class LambdaError(Enum):
     """
     LoginNoState = {
         "code": "LIN_1001",
-        "message": "No auth code and/or state in the query string parameters",
-    }
-    LoginNoKey = {
-        "code": "LIN_1002",
         "message": "No auth code and/or state in the query string parameters",
     }
     LoginBadState = {
@@ -166,4 +162,33 @@ class LambdaError(Enum):
     DocDelClient = {
         "code": "DDS_5001",
         "message": "Failed to delete documents",
+    }
+
+    """
+       Errors with no exception
+    """
+    DocDelNull = {
+        "code": "DDS_4001",
+        "message": "Failed to delete documents",
+    }
+    LoginNoAuth = {
+        "code": "LIN_1002",
+        "message": "No auth code and/or state in the query string parameters",
+    }
+    LogoutClient = {
+        "code": "OUT_5001",
+        "message": "Error logging user out",
+    }
+    LogoutAuth = {"code": "OUT_4001", "message": "Invalid Authorization header"}
+    EnvMissing = {
+        "code": "ENV_5001",
+        "message": "An error occurred due to missing environment variable: '%name%'",
+    }
+    DocTypeNull = {"code": "VDT_4001", "message": "docType not supplied"}
+    DocTypeInvalid = {"code": "VDT_4002", "message": "Invalid document type requested"}
+    DocTypeKey = {"code": "VDT_4003", "message": "An error occurred due to missing key"}
+    PatientIdInvalid = {"code": "PN_4001", "message": "Invalid patient number %number%"}
+    PatientIdNoKey = {
+        "code": "PN_4002",
+        "message": "An error occurred due to missing key",
     }

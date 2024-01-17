@@ -13,6 +13,7 @@ from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event,
     validate_patient_id,
 )
+from utils.error_response import ErrorResponse, LambdaError
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -55,6 +56,11 @@ def lambda_handler(event, context):
             "No records was found for given patient. No document deleted.",
             {"Result": "No documents available"},
         )
+        msg = LambdaError.DocDelNull["message"]
+        err_code = LambdaError.DocDelNull["code"]
+
         return ApiGatewayResponse(
-            404, "No documents available", "DELETE", "DDR_4001"
+            404,
+            ErrorResponse(err_code, msg).create(),
+            "DELETE",
         ).create_api_gateway_response()

@@ -1,7 +1,11 @@
 from typing import Callable
 
 from enums.supported_document_types import SupportedDocumentTypes
+from utils.audit_logging_setup import LoggingService
+from utils.error_response import ErrorResponse, LambdaError
 from utils.lambda_response import ApiGatewayResponse
+
+logger = LoggingService(__name__)
 
 
 def validate_document_type(lambda_func: Callable):
@@ -19,21 +23,26 @@ def validate_document_type(lambda_func: Callable):
         try:
             doc_type = event["queryStringParameters"]["docType"]
             if doc_type is None:
+                msg = LambdaError.DocTypeNull["message"]
+                code = LambdaError.DocTypeNull["code"]
                 return ApiGatewayResponse(
-                    400, "docType not supplied", event["httpMethod"], "VDT_4001"
+                    400, ErrorResponse(code, msg).create(), event["httpMethod"]
                 ).create_api_gateway_response()
             if not doc_type_is_valid(doc_type):
+                msg = LambdaError.DocTypeInvalid["message"]
+                code = LambdaError.DocTypeInvalid["code"]
                 return ApiGatewayResponse(
                     400,
-                    "Invalid document type requested",
+                    ErrorResponse(code, msg).create(),
                     event["httpMethod"],
-                    "VDT_4002",
                 ).create_api_gateway_response()
         except KeyError as e:
+            logger.info({str(e)}, {"Result": "An error occurred due to missing key"})
+            msg = LambdaError.DocTypeKey["message"]
+            code = LambdaError.DocTypeKey["code"]
             return ApiGatewayResponse(
                 400,
-                f"An error occurred due to missing key: {str(e)}",
-                "VDT_4003",
+                ErrorResponse(code, msg).create(),
                 event["httpMethod"],
             ).create_api_gateway_response()
 
