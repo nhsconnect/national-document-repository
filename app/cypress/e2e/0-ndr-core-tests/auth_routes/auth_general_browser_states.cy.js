@@ -41,7 +41,7 @@ describe('Authentication & Authorisation', () => {
         };
     });
 
-    context('Unauthorised accesses checking when no user is logged in', () => {
+    context('Unauthorised access redirection', () => {
         const unauthorisedRoutes = [
             '/search/patient',
             '/search/patient/verify',
@@ -63,5 +63,22 @@ describe('Authentication & Authorisation', () => {
                 },
             );
         });
+
+        it(
+            'unauthorised account access is redirected to error page',
+            { tags: 'regression' },
+            () => {
+                const authCallback = '/auth-callback';
+
+                cy.intercept('GET', '/Auth/TokenRequest*', {
+                    statusCode: 401,
+                }).as('auth');
+                cy.visit(authCallback);
+                cy.wait('@auth');
+
+                cy.contains('Your account cannot access this service').should('be.visible');
+                cy.url().should('include', 'unauthorised-login');
+            },
+        );
     });
 });
