@@ -2,7 +2,7 @@ from typing import Callable
 
 from botocore.exceptions import ClientError
 from utils.audit_logging_setup import LoggingService
-from utils.error_response import ErrorResponse
+from utils.error_response import ErrorResponse, LambdaError
 from utils.lambda_exceptions import LambdaException
 from utils.lambda_response import ApiGatewayResponse
 
@@ -31,11 +31,11 @@ def handle_lambda_exceptions(lambda_func: Callable):
             ).create_api_gateway_response()
         except ClientError as e:
             logger.error(str(e), {"Result": "Failed to utilise AWS client/resource"})
+            msg = LambdaError.GatewayError["message"]
+            code = LambdaError.GatewayError["code"]
             return ApiGatewayResponse(
                 status_code=500,
-                body=ErrorResponse(
-                    "Failed to utilise AWS client/resource", "GWY_5001"
-                ).create(),
+                body=ErrorResponse(code, msg).create(),
                 methods=event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
 

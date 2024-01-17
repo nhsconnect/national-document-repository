@@ -192,3 +192,7 @@ class LambdaError(Enum):
         "code": "PN_4002",
         "message": "An error occurred due to missing key",
     }
+    GatewayError = {
+        "code": "GWY_5001",
+        "message": "Failed to utilise AWS client/resource",
+    }
