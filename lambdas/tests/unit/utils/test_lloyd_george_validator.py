@@ -26,7 +26,7 @@ from utils.lloyd_george_validator import (
     validate_file_name,
     validate_lg_file_names,
     validate_lg_file_type,
-    validate_with_pds_service,
+    validate_filename_with_patient_details,
 )
 
 
@@ -227,7 +227,7 @@ def test_validate_nhs_id_with_pds_service(mocker, mock_pds_patient_details):
         "utils.lloyd_george_validator.get_user_ods_code", return_value="Y12345"
     )
 
-    validate_with_pds_service(lg_file_list, mock_pds_patient_details)
+    validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
 
     mock_odc_code.assert_called_once()
 
@@ -260,7 +260,7 @@ def test_mismatch_name_with_pds_service(mocker, mock_pds_patient_details):
     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
 
     with pytest.raises(LGInvalidFilesException):
-        validate_with_pds_service(lg_file_list, mock_pds_patient_details)
+        validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
 
     mock_odc_code.assert_not_called()
 
@@ -275,7 +275,7 @@ def test_mismatch_ods_with_pds_service(mocker, mock_pds_patient_details):
     )
 
     with pytest.raises(LGInvalidFilesException):
-        validate_with_pds_service(lg_file_list, mock_pds_patient_details)
+        validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
 
     mock_odc_code.assert_called_once()
 
@@ -288,7 +288,7 @@ def test_mismatch_dob_with_pds_service(mocker, mock_pds_patient_details):
     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
 
     with pytest.raises(LGInvalidFilesException):
-        validate_with_pds_service(lg_file_list, mock_pds_patient_details)
+        validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
 
     mock_odc_code.assert_not_called()
 
@@ -332,7 +332,7 @@ def test_raise_client_error_from_ssm_with_pds_service(mocker, mock_pds_patient_d
     )
 
     with pytest.raises(LGInvalidFilesException):
-        validate_with_pds_service(lg_file_list, mock_pds_patient_details)
+        validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
 
     mock_odc_code.assert_called_once()
 

@@ -123,7 +123,7 @@ def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
         raise LGInvalidFilesException("File names does not match with each other")
 
 
-def validate_with_pds_service(
+def validate_filename_with_patient_details(
     file_name_list: list[str], patient_details: PatientDetails
 ):
     try:
@@ -153,7 +153,7 @@ def validate_with_pds_service(
         raise LGInvalidFilesException(e)
 
 
-def getting_patient_info_from_pds(nhs_number: str):
+def getting_patient_info_from_pds(nhs_number: str) -> PatientDetails:
     pds_service_class = get_pds_service()
     pds_service = pds_service_class(SSMService())
     pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)

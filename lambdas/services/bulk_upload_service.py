@@ -26,7 +26,7 @@ from utils.lloyd_george_validator import (
     LGInvalidFilesException,
     getting_patient_info_from_pds,
     validate_lg_file_names,
-    validate_with_pds_service,
+    validate_filename_with_patient_details,
 )
 from utils.request_context import request_context
 from utils.unicode_utils import (
@@ -109,7 +109,7 @@ class BulkUploadService:
                 staging_metadata.nhs_number
             )
             patient_ods_code = pds_patient_details.general_practice_ods
-            validate_with_pds_service(file_names, pds_patient_details)
+            validate_filename_with_patient_details(file_names, pds_patient_details)
         except (LGInvalidFilesException, PatientRecordAlreadyExistException) as error:
             logger.info(
                 f"Detected issue related to patient number: {staging_metadata.nhs_number}"

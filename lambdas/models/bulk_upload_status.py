@@ -31,11 +31,11 @@ FieldNamesForBulkUploadReport = [
     "NhsNumber",
     "UploadStatus",
     "FailureReason",
+    "OdsCode",
     "FilePath",
     "Date",
     "Timestamp",
     "ID",
-    "OdsCode",
 ]
 
 

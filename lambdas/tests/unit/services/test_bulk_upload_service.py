@@ -83,7 +83,7 @@ def mock_pds_service(mocker):
 
 @pytest.fixture
 def mock_pds_validation(mocker):
-    yield mocker.patch("services.bulk_upload_service.validate_with_pds_service")
+    yield mocker.patch("services.bulk_upload_service.validate_filename_with_patient_details")
 
 
 @pytest.fixture
