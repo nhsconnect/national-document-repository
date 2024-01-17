@@ -1,13 +1,9 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
-import {
-    FORM_FIELDS,
-    FormData,
-    SATISFACTION_CHOICES,
-    SUBMISSION_STAGE,
-} from '../../../types/pages/feedbackPage/types';
+import { SATISFACTION_CHOICES, SUBMISSION_STAGE } from '../../../types/pages/feedbackPage/types';
 import userEvent from '@testing-library/user-event';
 import sendEmail from '../../../helpers/requests/sendEmail';
 import FeedbackForm, { Props } from './FeedbackForm';
+import { fillInForm } from '../../../helpers/test/formUtils';
 
 jest.mock('../../../helpers/requests/sendEmail');
 const mockSendEmail = sendEmail as jest.Mock;
@@ -15,17 +11,6 @@ const mockSetStage = jest.fn();
 
 const clickSubmitButton = () => {
     userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
-};
-
-const fillInForm = (data: Partial<FormData>) => {
-    for (const [fieldName, value] of Object.entries(data)) {
-        if (fieldName === FORM_FIELDS.HowSatisfied) {
-            userEvent.click(screen.getByRole('radio', { name: value }));
-        } else {
-            userEvent.click(screen.getByTestId(fieldName));
-            userEvent.type(screen.getByTestId(fieldName), value);
-        }
-    }
 };
 
 const renderComponent = (override: Partial<Props> = {}) => {
