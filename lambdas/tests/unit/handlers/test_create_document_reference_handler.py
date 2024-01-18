@@ -100,7 +100,6 @@ def test_lambda_handler_missing_environment_variables_type_lg_returns_500(
     assert expected == actual
 
 
-# TODO: Test Fix find useage
 @pytest.mark.parametrize("environment_variable", arf_environment_variables)
 def test_lambda_handler_missing_environment_variables_type_arf_returns_500(
     set_env,
@@ -124,41 +123,39 @@ def test_lambda_handler_missing_environment_variables_type_arf_returns_500(
     assert expected == actual
 
 
-# TODO: Test Fix
-
-# def test_processing_event_details_missing_event_body_raise_error(invalid_id_event):
-#     with pytest.raises(CreateDocumentRefException):
-#         processing_event_details(invalid_id_event)
+def test_processing_event_details_missing_event_body_raise_error(invalid_id_event):
+    with pytest.raises(CreateDocumentRefException):
+        processing_event_details(invalid_id_event)
 
 
-# def test_processing_event_details_missing_subject_body_raise_error():
-#     invalid_event = {"httpMethod": "POST", "body": "some_text"}
-#     with pytest.raises(CreateDocumentRefException):
-#         processing_event_details(invalid_event)
+def test_processing_event_details_missing_subject_body_raise_error():
+    invalid_event = {"httpMethod": "POST", "body": "some_text"}
+    with pytest.raises(CreateDocumentRefException):
+        processing_event_details(invalid_event)
 
 
-# def test_processing_event_details_missing_identifier_body_raise_error():
-#     invalid_event = {"httpMethod": "POST", "body": """{"subject": "some_text"}"""}
-#     with pytest.raises(CreateDocumentRefException):
-#         processing_event_details(invalid_event)
+def test_processing_event_details_missing_identifier_body_raise_error():
+    invalid_event = {"httpMethod": "POST", "body": """{"subject": "some_text"}"""}
+    with pytest.raises(CreateDocumentRefException):
+        processing_event_details(invalid_event)
 
 
-# def test_processing_event_details_missing_value_body_raise_error():
-#     invalid_event = {
-#         "httpMethod": "POST",
-#         "body": """{"subject": {"some_text": "text"}}""",
-#     }
-#     with pytest.raises(CreateDocumentRefException):
-#         processing_event_details(invalid_event)
+def test_processing_event_details_missing_value_body_raise_error():
+    invalid_event = {
+        "httpMethod": "POST",
+        "body": """{"subject": {"some_text": "text"}}""",
+    }
+    with pytest.raises(CreateDocumentRefException):
+        processing_event_details(invalid_event)
 
 
-# def test_processing_event_details_missing_content_body_raise_error():
-#     invalid_event = {
-#         "httpMethod": "POST",
-#         "body": """{"subject": {"identifier": {"value": "text"}}}""",
-#     }
-#     with pytest.raises(CreateDocumentRefException):
-#         processing_event_details(invalid_event)
+def test_processing_event_details_missing_content_body_raise_error():
+    invalid_event = {
+        "httpMethod": "POST",
+        "body": """{"subject": {"identifier": {"value": "text"}}}""",
+    }
+    with pytest.raises(CreateDocumentRefException):
+        processing_event_details(invalid_event)
 
 
 def test_processing_event_details_missing_attachment_body_raise_error():

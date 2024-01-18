@@ -54,8 +54,6 @@ def test_lambda_handler_valid_id_returns_200(
 
     assert expected == actual
 
-
-# TODO: Fix test find useage
 def test_lambda_handler_invalid_id_returns_400(invalid_id_event, context):
     nhs_number = invalid_id_event["queryStringParameters"]["patientId"]
     body = json.dumps(
@@ -87,7 +85,6 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
     assert expected == actual
 
 
-# TODO: Fix test find useage
 def test_lambda_handler_missing_id_in_query_params_returns_400(
     missing_id_event, context
 ):
