@@ -33,21 +33,21 @@ def validate_patient_id(lambda_func: Callable):
             nhs_number = extract_nhs_number_from_event(event)
             error = LambdaError.PatientIdInvalid.value
             msg = error["message"].replace("%number%", nhs_number)
-            code = error["code"]
+            err_code = error["err_code"]
             logger.info({str(e)}, {"Result": f"Invalid patient number {nhs_number}"})
             return ApiGatewayResponse(
                 400,
-                ErrorResponse(code, msg).create(),
+                ErrorResponse(err_code, msg).create(),
                 event["httpMethod"],
             ).create_api_gateway_response()
         except KeyError as e:
             logger.info({str(e)}, {"Result": "An error occurred due to missing key"})
-            error = LambdaError.PatientIdInvalid.value
+            error = LambdaError.PatientIdNoKey.value
             msg = error["message"]
-            code = error["code"]
+            err_code = error["err_code"]
             return ApiGatewayResponse(
                 400,
-                ErrorResponse(code, msg).create(),
+                ErrorResponse(err_code, msg).create(),
                 event["httpMethod"],
             ).create_api_gateway_response()
 

@@ -1,16 +1,25 @@
-from botocore.exceptions import ClientError
+import json
+from enum import Enum
+
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.lambda_exceptions import LambdaException
 from utils.lambda_response import ApiGatewayResponse
+
+
+class MockError(Enum):
+    ErrorClient = {"message": "Client error", "err_code": "AB_XXXX"}
+    ErrorKey = {"message": "Key error", "err_code": "CD_XXXX"}
 
 
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     patient_id = event["queryStringParameters"]["patientId"]
     if patient_id == "1234567890":
-        raise ClientError({"Error": {"Code": 500, "Message": "test error"}}, "testing")
+        error = MockError.ErrorClient
+        raise LambdaException(400, error)
     if patient_id == "2234567890":
-        raise LambdaException(400, "ERR_CODE", "lambda exception")
+        error = MockError.ErrorKey
+        raise LambdaException(400, error)
     return ApiGatewayResponse(200, "OK", "GET").create_api_gateway_response()
 
 
@@ -28,9 +37,11 @@ def test_handle_lambda_exceptions_catch_and_handle_client_error(
 ):
     test_event = valid_id_event.copy()
     test_event["queryStringParameters"]["patientId"] = "1234567890"
-
+    body = json.dumps(MockError.ErrorClient.value)
     expected = ApiGatewayResponse(
-        500, "Failed to utilise AWS client/resource", "GET", "GWY_5001"
+        500,
+        body,
+        "GET",
     ).create_api_gateway_response()
     actual = lambda_handler(test_event, context)
 
@@ -42,9 +53,11 @@ def test_handle_lambda_exceptions_catch_and_handle_lambda_exception(
 ):
     test_event = valid_id_event.copy()
     test_event["queryStringParameters"]["patientId"] = "2234567890"
-
+    body = json.dumps(MockError.ErrorKey.value)
     expected = ApiGatewayResponse(
-        400, "lambda exception", "GET", "ERR_CODE"
+        400,
+        body,
+        "GET",
     ).create_api_gateway_response()
     actual = lambda_handler(test_event, context)
 

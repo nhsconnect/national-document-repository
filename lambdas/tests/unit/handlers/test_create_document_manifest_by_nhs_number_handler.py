@@ -40,7 +40,7 @@ def test_lambda_handler_when_service_raises_document_manifest_exception_returns_
     mock_service, valid_id_and_arf_doctype_event, context
 ):
     exception = DocumentManifestServiceException(
-        status_code=404, err_code="DRM_XXXX", message="No documents"
+        status_code=404, code="DRM_XXXX", message="No documents"
     )
     mock_service.create_document_manifest_presigned_url.side_effect = exception
 

@@ -5,7 +5,7 @@ class LambdaException(Exception):
     def __init__(self, status_code, error: LambdaError):
         self.status_code = status_code
         self.message = error.value["message"]
-        self.err_code = error.value["code"]
+        self.err_code = error.value["err_code"]
 
 
 class CreateDocumentRefException(LambdaException):

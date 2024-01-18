@@ -28,7 +28,7 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
     auth_code = "auth_code"
     state = "test_state"
     test_event = {
-        "queryStringParameters": {"code": auth_code, "state": state},
+        "queryStringParameters": {"err_code": auth_code, "state": state},
         "httpmethod": "GET",
     }
 
@@ -63,7 +63,7 @@ def test_handler_passes_error_details_in_response(
     auth_code = "auth_code"
     state = "test_state"
     test_event = {
-        "queryStringParameters": {"code": auth_code, "state": state},
+        "queryStringParameters": {"err_code": auth_code, "state": state},
         "httpmethod": "GET",
     }
 
@@ -107,7 +107,7 @@ def test_missing_query_string_params_raise_login_error(
     expected_body = "No auth code and/or state in the query string parameters"
 
     test_event = {
-        "queryStringParameters": {"code": "", "state": ""},
+        "queryStringParameters": {"err_code": "", "state": ""},
         "httpmethod": "GET",
     }
     expected = ApiGatewayResponse(

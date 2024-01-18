@@ -26,7 +26,7 @@ def lambda_handler(event, context):
     logger.info("Token request handler triggered")
 
     try:
-        auth_code = event["queryStringParameters"]["code"]
+        auth_code = event["queryStringParameters"]["err_code"]
         state = event["queryStringParameters"]["state"]
         if not (auth_code and state):
             raise LoginException(400, LambdaError.LoginNoState)
@@ -44,9 +44,9 @@ def lambda_handler(event, context):
     except (KeyError, TypeError):
         error = LambdaError.LoginNoAuth.value
         msg = error["message"]
-        code = error["code"]
+        err_code = error["err_code"]
         return ApiGatewayResponse(
             400,
-            ErrorResponse(code, msg).create(),
+            ErrorResponse(err_code, msg).create(),
             "GET",
         ).create_api_gateway_response()

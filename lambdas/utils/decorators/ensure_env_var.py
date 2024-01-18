@@ -26,9 +26,9 @@ def ensure_environment_variables(names: list[str]) -> Callable:
                     logger.info(f"missing env var: '{name}'")
                     error = LambdaError.EnvMissing.value
                     msg = error["message"].replace("%name%", name)
-                    code = error["code"]
+                    err_code = error["err_code"]
                     return ApiGatewayResponse(
-                        500, ErrorResponse(code, msg).create(), event["httpMethod"]
+                        500, ErrorResponse(err_code, msg).create(), event["httpMethod"]
                     ).create_api_gateway_response()
 
             # Validation done. Return control flow to original lambda handler

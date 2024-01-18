@@ -58,7 +58,7 @@ def lambda_handler(event, context):
         )
         error = LambdaError.DocDelNull.value
         msg = error["message"]
-        err_code = error["code"]
+        err_code = error["err_code"]
 
         return ApiGatewayResponse(
             404,
