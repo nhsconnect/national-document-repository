@@ -23,14 +23,16 @@ def validate_document_type(lambda_func: Callable):
         try:
             doc_type = event["queryStringParameters"]["docType"]
             if doc_type is None:
-                msg = LambdaError.DocTypeNull["message"]
-                code = LambdaError.DocTypeNull["code"]
+                error = LambdaError.DocTypeNull.value
+                msg = error["message"]
+                code = error["code"]
                 return ApiGatewayResponse(
                     400, ErrorResponse(code, msg).create(), event["httpMethod"]
                 ).create_api_gateway_response()
             if not doc_type_is_valid(doc_type):
-                msg = LambdaError.DocTypeInvalid["message"]
-                code = LambdaError.DocTypeInvalid["code"]
+                error = LambdaError.DocTypeInvalid.value
+                msg = error["message"]
+                code = error["code"]
                 return ApiGatewayResponse(
                     400,
                     ErrorResponse(code, msg).create(),
@@ -38,8 +40,9 @@ def validate_document_type(lambda_func: Callable):
                 ).create_api_gateway_response()
         except KeyError as e:
             logger.info({str(e)}, {"Result": "An error occurred due to missing key"})
-            msg = LambdaError.DocTypeKey["message"]
-            code = LambdaError.DocTypeKey["code"]
+            error = LambdaError.DocTypeKey.value
+            msg = error["message"]
+            code = error["code"]
             return ApiGatewayResponse(
                 400,
                 ErrorResponse(code, msg).create(),

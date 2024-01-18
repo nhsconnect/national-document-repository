@@ -8,7 +8,7 @@ class ErrorResponse:
         self.message = message
 
     def create(self) -> str:
-        return json.dump({"message": self.message, "err_code": self.error_code})
+        return json.dumps({"message": self.message, "err_code": self.error_code})
 
     def __eq__(self, other):
         return self.error_code == other.error_code and self.message == other.message

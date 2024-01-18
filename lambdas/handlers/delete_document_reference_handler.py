@@ -56,8 +56,9 @@ def lambda_handler(event, context):
             "No records was found for given patient. No document deleted.",
             {"Result": "No documents available"},
         )
-        msg = LambdaError.DocDelNull["message"]
-        err_code = LambdaError.DocDelNull["code"]
+        error = LambdaError.DocDelNull.value
+        msg = error["message"]
+        err_code = error["code"]
 
         return ApiGatewayResponse(
             404,

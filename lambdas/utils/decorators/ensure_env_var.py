@@ -24,8 +24,9 @@ def ensure_environment_variables(names: list[str]) -> Callable:
             for name in names:
                 if name not in os.environ:
                     logger.info(f"missing env var: '{name}'")
-                    msg = LambdaError.EnvMissing["message"].replace("%name%", name)
-                    code = LambdaError.EnvMissing["code"]
+                    error = LambdaError.EnvMissing.value
+                    msg = error["message"].replace("%name%", name)
+                    code = error["code"]
                     return ApiGatewayResponse(
                         500, ErrorResponse(code, msg).create(), event["httpMethod"]
                     ).create_api_gateway_response()

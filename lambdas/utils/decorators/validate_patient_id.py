@@ -31,10 +31,9 @@ def validate_patient_id(lambda_func: Callable):
             validate_id(nhs_number)
         except InvalidResourceIdException as e:
             nhs_number = extract_nhs_number_from_event(event)
-            msg = LambdaError.PatientIdInvalid["message"].replace(
-                "%number%", nhs_number
-            )
-            code = LambdaError.PatientIdInvalid["code"]
+            error = LambdaError.PatientIdInvalid.value
+            msg = error["message"].replace("%number%", nhs_number)
+            code = error["code"]
             logger.info({str(e)}, {"Result": f"Invalid patient number {nhs_number}"})
             return ApiGatewayResponse(
                 400,
@@ -43,8 +42,9 @@ def validate_patient_id(lambda_func: Callable):
             ).create_api_gateway_response()
         except KeyError as e:
             logger.info({str(e)}, {"Result": "An error occurred due to missing key"})
-            msg = LambdaError.PatientIdNoKey["message"]
-            code = LambdaError.PatientIdNoKey["code"]
+            error = LambdaError.PatientIdInvalid.value
+            msg = error["message"]
+            code = error["code"]
             return ApiGatewayResponse(
                 400,
                 ErrorResponse(code, msg).create(),

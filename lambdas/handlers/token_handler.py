@@ -42,8 +42,9 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
 
     except (KeyError, TypeError):
-        msg = LambdaError.LoginNoAuth["message"]
-        code = LambdaError.LoginNoAuth["code"]
+        error = LambdaError.LoginNoAuth.value
+        msg = error["message"]
+        code = error["code"]
         return ApiGatewayResponse(
             400,
             ErrorResponse(code, msg).create(),

@@ -41,8 +41,9 @@ def logout_handler(token):
 
     except ClientError as e:
         logger.error(f"Error logging out user: {e}", {"Result": "Unsuccessful logout"})
-        msg = LambdaError.LogoutClient["message"]
-        code = LambdaError.LogoutClient["code"]
+        error = LambdaError.LogoutClient.value
+        msg = error["message"]
+        code = error["code"]
         return ApiGatewayResponse(
             500,
             ErrorResponse(code, msg).create(),
@@ -52,8 +53,9 @@ def logout_handler(token):
         logger.error(
             f"error while decoding JWT: {e}", {"Result": "Unsuccessful logout"}
         )
-        msg = LambdaError.LogoutAuth["message"]
-        code = LambdaError.LogoutAuth["code"]
+        error = LambdaError.LogoutAuth.value
+        msg = error["message"]
+        code = error["code"]
         return ApiGatewayResponse(
             400, ErrorResponse(code, msg).create(), "GET"
         ).create_api_gateway_response()
