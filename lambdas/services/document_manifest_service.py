@@ -12,6 +12,7 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.error_response import LambdaError
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentManifestServiceException
 
@@ -42,23 +43,17 @@ class DocumentManifestService:
             )
             if not documents:
                 raise DocumentManifestServiceException(
-                    status_code=404,
-                    err_code="DMS_1001",
-                    message="No documents found for given NHS number and document type",
+                    status_code=404, error=LambdaError.ManifestNoDocs
                 )
         except ValidationError as e:
             logger.error(str(e), {"Result": "Failed to create document manifest"})
             raise DocumentManifestServiceException(
-                status_code=500,
-                err_code="DMS_5001",
-                message="Failed to parse document reference from from DynamoDb response",
+                status_code=500, error=LambdaError.ManifestValidation
             )
         except DynamoServiceException as e:
             logger.error(str(e), {"Result": "Failed to create document manifest"})
             raise DocumentManifestServiceException(
-                status_code=500,
-                err_code="DMS_5002",
-                message=str(e),
+                status_code=500, error=LambdaError.ManifestDB
             )
 
         self.download_documents_to_be_zipped(documents)
@@ -99,9 +94,7 @@ class DocumentManifestService:
                 msg = f"{document.get_file_key()} may reference missing file in s3 bucket: {document.get_file_bucket()}"
                 logger.error(msg, {"Result": "Failed to create document manifest"})
                 raise DocumentManifestServiceException(
-                    status_code=500,
-                    err_code="DMS_5003",
-                    message=msg,
+                    status_code=500, error=LambdaError.ManifestClient
                 )
 
     def upload_zip_file(self):

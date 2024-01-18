@@ -125,6 +125,26 @@ class LambdaError(Enum):
     }
 
     """
+       Errors for DocumentManifestServiceException
+    """
+    ManifestNoDocs = {
+        "code": "DMS_4001",
+        "message": "No documents found for given NHS number and document type",
+    }
+    ManifestValidation = {
+        "code": "DMS_5001",
+        "message": "Failed to parse document reference from from DynamoDb response",
+    }
+    ManifestDB = {
+        "code": "DMS_5002",
+        "message": "Failed to create document manifest",
+    }
+    ManifestClient = {
+        "code": "DMS_5003",
+        "message": "Failed to create document manifest",
+    }
+
+    """
        Errors for LGStitchServiceException
     """
     StitchNotFound = {
