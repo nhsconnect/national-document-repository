@@ -23,7 +23,7 @@ describe('Feedback Page', () => {
     };
 
     it(
-        'opens the feedback page when the link at phase banner is clicked',
+        'opens the feedback page when a logged in user clicks the link at phase banner',
         { tags: 'regression' },
         () => {
             cy.login(Roles.GP_CLINICAL);
@@ -77,7 +77,7 @@ describe('Feedback Page', () => {
                 //  intercept the call and check that payload data is the same as mockInputData
 
                 cy.get('.app-homepage-content h1', { timeout: 5000 }).should(
-                    'contain.text',
+                    'have.text',
                     'We’ve received your feedback',
                 );
             },
@@ -98,7 +98,7 @@ describe('Feedback Page', () => {
                 cy.get('#submit-feedback').click();
 
                 cy.get('.app-homepage-content h1', { timeout: 5000 }).should(
-                    'contain.text',
+                    'have.text',
                     'We’ve received your feedback',
                 );
             },
