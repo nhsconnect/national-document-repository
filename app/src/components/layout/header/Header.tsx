@@ -3,12 +3,14 @@ import { Header as NhsHeader } from 'nhsuk-react-components';
 import { routes } from '../../../types/generic/routes';
 import { useNavigate } from 'react-router';
 import NavLinks from '../navLinks/NavLinks';
+import useRole from '../../../helpers/hooks/useRole';
 
 type Props = {};
 
 const Header = (props: Props) => {
+    const role = useRole();
     const navigateHome = () => {
-        navigate(routes.HOME);
+        navigate(!!role ? routes.HOME : routes.START);
     };
     const navigate = useNavigate();
     return (

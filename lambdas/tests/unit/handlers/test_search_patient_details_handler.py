@@ -54,6 +54,7 @@ def test_lambda_handler_valid_id_returns_200(
 
     assert expected == actual
 
+
 def test_lambda_handler_invalid_id_returns_400(invalid_id_event, context):
     nhs_number = invalid_id_event["queryStringParameters"]["patientId"]
     body = json.dumps(
