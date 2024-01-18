@@ -276,7 +276,7 @@ jobs:
             --task-definition ${{ vars.BUILD_ENV }}-ndr-service-task:${{ steps.download-task.outputs.revision }}
 
   smoketest:
-    uses: ./.github/workflows/ui-smoketest.yml
+    uses: ./.github/workflows/ui-smoketest-base.yml
     with:
       build_branch: ${{github.event.pull_request.head.ref}}
       environment: development
