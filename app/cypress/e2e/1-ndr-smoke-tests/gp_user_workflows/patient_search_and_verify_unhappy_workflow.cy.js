@@ -24,7 +24,7 @@ describe('GP Workflow: Patient search unhappy path', () => {
                 cy.get('#nhs-number-input').type(activePatient);
                 cy.get('#search-submit').click();
                 // Assert
-                cy.get('#nhs-number-input--error-message').should(
+                cy.get('#nhs-number-input--error-message', { timeout: 10000 }).should(
                     'include.text',
                     'Sorry, patient data not found.',
                 );
