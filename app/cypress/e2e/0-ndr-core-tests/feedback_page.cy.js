@@ -10,21 +10,32 @@ describe('Feedback Page', () => {
         cy.visit(startUrl + feedbackUrl);
     };
 
+    const fillInForm = (formData) => {
+        for (const [fieldName, value] of Object.entries(formData)) {
+            if (fieldName === 'howSatisfied') {
+                cy.get(`.nhsuk-radios__item:has(label:contains(${value}))`)
+                    .find('input[type=radio]')
+                    .click();
+            } else {
+                cy.get(`[data-testid=${fieldName}]`).type(value);
+            }
+        }
+    };
+
     it(
         'opens the feedback page when the link at phase banner is clicked',
         { tags: 'regression' },
         () => {
-            cy.visit(startUrl);
-
             cy.login(Roles.GP_CLINICAL);
 
-            cy.get('.govuk-phase-banner__text').children('a').should('exist');
-            cy.get('.govuk-phase-banner__text')
-                .children('a')
+            cy.get('.govuk-phase-banner__text a')
+                .should('exist')
+                .and('have.attr', { target: '_blank' });
+            cy.get('.govuk-phase-banner__text a')
                 // for test purpose, remove "target=_blank" as cypress not supporting multiple tabs
                 .invoke('removeAttr', 'target')
                 .click();
-            cy.url().should('contain', baseUrl + feedbackUrl);
+            cy.url().should('eq', baseUrl + feedbackUrl);
         },
     );
 
@@ -35,6 +46,14 @@ describe('Feedback Page', () => {
             'have.text',
             'Give feedback on accessing Lloyd George digital patient records',
         );
+    });
+
+    it('blocks access to feedback page if user is not logged in', { tags: 'regression' }, () => {
+        cy.visit(startUrl);
+        cy.get('.govuk-phase-banner__text a').should('not.exist');
+
+        cy.visit(startUrl + feedbackUrl);
+        cy.url().should('eq', baseUrl + '/unauthorised');
     });
 
     context('Submitting feedback', () => {
@@ -50,23 +69,75 @@ describe('Feedback Page', () => {
                 };
 
                 visitFeedbackPage();
-
-                cy.get('[data-testid=feedbackContent]').type(mockInputData.feedbackContent);
-                cy.get(`.nhsuk-radios__item:has(label:contains(${mockInputData.howSatisfied}))`)
-                    .find('input')
-                    .click();
-                cy.get('[data-testid=respondentName]').type(mockInputData.respondentName);
-                cy.get('[data-testid=respondentEmail]').type(mockInputData.respondentEmail);
+                fillInForm(mockInputData);
 
                 cy.get('#submit-feedback').click();
 
-                // TODO: intercept backend call for sending email and check that payload data is the same as mockInputData
+                // TODO: when backend call for sending email is implemented,
+                //  intercept the call and check that payload data is the same as mockInputData
 
-                cy.get('#feedback-confirmation', { timeout: 5000 }).should('be.visible');
-                cy.get('#feedback-confirmation').should(
+                cy.get('.app-homepage-content h1', { timeout: 5000 }).should(
                     'contain.text',
                     'We’ve received your feedback',
                 );
+            },
+        );
+
+        it(
+            'should allow user submit the form without filling in the name and email',
+            { tags: 'regression' },
+            () => {
+                const mockInputData = {
+                    feedbackContent: 'Some awesome feedback',
+                    howSatisfied: 'Satisfied',
+                };
+
+                visitFeedbackPage();
+                fillInForm(mockInputData);
+
+                cy.get('#submit-feedback').click();
+
+                cy.get('.app-homepage-content h1', { timeout: 5000 }).should(
+                    'contain.text',
+                    'We’ve received your feedback',
+                );
+            },
+        );
+
+        it(
+            'should display error messages when user try to submit a blank form',
+            { tags: 'regression' },
+            () => {
+                visitFeedbackPage();
+                cy.get('#submit-feedback').click();
+
+                cy.get('.nhsuk-error-message')
+                    .should('be.visible')
+                    .and('have.length', 2)
+                    .as('errors');
+                cy.get('@errors').first().should('have.text', 'Error: Please enter your feedback');
+                cy.get('@errors').eq(1).should('have.text', 'Error: Please select an option');
+            },
+        );
+
+        it(
+            'should display an error message when user provided an invalid email address',
+            { tags: 'regression' },
+            () => {
+                const mockInputData = {
+                    feedbackContent: 'Some valuable feedback',
+                    howSatisfied: 'Dissatisfied',
+                    respondentName: 'Jane Smith',
+                    respondentEmail: 'some_random_string_which_is_not_valid_email',
+                };
+
+                visitFeedbackPage();
+                fillInForm(mockInputData);
+                cy.get('#submit-feedback').click();
+
+                cy.get('.nhsuk-error-message')
+                    .should('be.visible')
+                    .and('have.text', 'Error: Enter a valid email address');
             },
         );
     });
