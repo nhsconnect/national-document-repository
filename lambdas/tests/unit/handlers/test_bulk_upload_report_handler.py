@@ -1,3 +1,5 @@
+import json
+
 from botocore.exceptions import ClientError
 from handlers.bulk_upload_report_handler import lambda_handler
 
@@ -26,6 +28,7 @@ def test_bulk_upload_report_lambda_handler_client_error(
     response = lambda_handler(event, context)
 
     mock_report_handler.assert_called_once()
-
+    response_body = json.loads(response["body"])
     assert response["statusCode"] == 500
-    assert response["body"]["message"] == "Failed to utilise AWS client/resource"
+    assert response_body["message"] == "Failed to utilise AWS client/resource"
+    assert response_body["err_code"] == "GWY_5001"

@@ -1,10 +1,15 @@
 import json
+from enum import Enum
 
 import pytest
 from enums.repository_role import RepositoryRole
 from handlers.token_handler import lambda_handler
 from utils.lambda_exceptions import LoginException
 from utils.lambda_response import ApiGatewayResponse
+
+
+class MockError(Enum):
+    Error = {"message": "Client error", "err_code": "AB_XXXX"}
 
 
 @pytest.fixture
@@ -28,7 +33,7 @@ def test_lambda_handler_respond_with_200_including_org_info_and_auth_token(
     auth_code = "auth_code"
     state = "test_state"
     test_event = {
-        "queryStringParameters": {"err_code": auth_code, "state": state},
+        "queryStringParameters": {"code": auth_code, "state": state},
         "httpmethod": "GET",
     }
 
@@ -54,21 +59,21 @@ def test_handler_passes_error_details_in_response(
     context,
 ):
     expected_status = 400
-    expected_body = "Error desc"
-    exception = LoginException(
-        status_code=expected_status, err_code="LIN_XXXX", message=expected_body
-    )
+    expected_body = json.dumps(MockError.Error.value)
+    exception = LoginException(status_code=expected_status, error=MockError.Error)
     mock_login_service.generate_session.side_effect = exception
 
     auth_code = "auth_code"
     state = "test_state"
     test_event = {
-        "queryStringParameters": {"err_code": auth_code, "state": state},
+        "queryStringParameters": {"code": auth_code, "state": state},
         "httpmethod": "GET",
     }
 
     expected = ApiGatewayResponse(
-        expected_status, expected_body, "GET", "LIN_XXXX"
+        expected_status,
+        expected_body,
+        "GET",
     ).create_api_gateway_response()
 
     actual = lambda_handler(test_event, context)
@@ -80,7 +85,12 @@ def test_handler_passes_error_details_in_response(
 
 def test_missing_query_string_params_raise_key_error(mock_login_service, context):
     expected_status = 400
-    expected_body = "No auth code and/or state in the query string parameters"
+    expected_body = json.dumps(
+        {
+            "message": "No auth err_code and/or state in the query string parameters",
+            "err_code": "LIN_1002",
+        }
+    )
 
     auth_code = "auth_code"
     test_event = {
@@ -89,7 +99,9 @@ def test_missing_query_string_params_raise_key_error(mock_login_service, context
     }
 
     expected = ApiGatewayResponse(
-        expected_status, expected_body, "GET", "LIN_1001"
+        expected_status,
+        expected_body,
+        "GET",
     ).create_api_gateway_response()
 
     actual = lambda_handler(test_event, context)
@@ -104,14 +116,21 @@ def test_missing_query_string_params_raise_login_error(
     context,
 ):
     expected_status = 400
-    expected_body = "No auth code and/or state in the query string parameters"
+    expected_body = json.dumps(
+        {
+            "message": "No auth err_code and/or state in the query string parameters",
+            "err_code": "LIN_1001",
+        }
+    )
 
     test_event = {
-        "queryStringParameters": {"err_code": "", "state": ""},
+        "queryStringParameters": {"code": "", "state": ""},
         "httpmethod": "GET",
     }
     expected = ApiGatewayResponse(
-        expected_status, expected_body, "GET", "LIN_1001"
+        expected_status,
+        expected_body,
+        "GET",
     ).create_api_gateway_response()
 
     actual = lambda_handler(test_event, context)

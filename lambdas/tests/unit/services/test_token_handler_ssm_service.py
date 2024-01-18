@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import pytest
-from utils.error_response import LambdaError
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.constants.ssm import (
     GP_ADMIN_USER_ROLE_CODES,
@@ -10,6 +9,7 @@ from utils.constants.ssm import (
     PCSE_ODS_CODE,
     PCSE_USER_ROLE_CODE,
 )
+from utils.error_response import LambdaError
 from utils.lambda_exceptions import LoginException
 
 MOCK_ROLE_CODE_RESPONSE = {
@@ -86,6 +86,7 @@ MOCK_JWT_PK_RESPONSE = {
     }
 }
 
+
 @pytest.fixture
 def mock_service(mocker):
     mocker.patch("boto3.client")
@@ -143,9 +144,7 @@ def test_get_smartcard_role_gp_admin(mock_service, mock_ssm):
 
 def test_get_smartcard_role_gp_admin_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(
-        500, LambdaError.LoginNoSSM
-    )
+    expected = LoginException(500, LambdaError.LoginNoSSM)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_smartcard_role_gp_admin()
@@ -172,9 +171,7 @@ def test_get_smartcard_role_gp_clinical(mock_service, mock_ssm):
 
 def test_get_smartcard_role_gp_clinical_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(
-        500, LambdaError.LoginSmartSSM
-    )
+    expected = LoginException(500, LambdaError.LoginSmartSSM)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_smartcard_role_gp_clinical()
@@ -201,9 +198,7 @@ def test_get_smartcard_role_pcse(mock_service, mock_ssm):
 
 def test_get_smartcard_role_pcse_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(
-        500, LambdaError.LoginPcseSSM
-    )
+    expected = LoginException(500, LambdaError.LoginPcseSSM)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_smartcard_role_pcse()
@@ -230,9 +225,7 @@ def test_get_org_role_codes(mock_service, mock_ssm):
 
 def test_get_org_role_codes_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(
-        500, LambdaError.LoginGpSSM
-    )
+    expected = LoginException(500, LambdaError.LoginGpSSM)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_org_role_codes()
@@ -259,9 +252,7 @@ def test_get_org_ods_codes(mock_service, mock_ssm):
 
 def test_get_org_ods_codes_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(
-        500, LambdaError.LoginPcseODS
-    )
+    expected = LoginException(500, LambdaError.LoginPcseODS)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_org_ods_codes()
