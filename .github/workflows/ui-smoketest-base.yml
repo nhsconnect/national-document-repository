@@ -16,10 +16,6 @@ on:
         description: 'Sandbox to run the smoke tests on.'
         required: true
         type: 'string'
-      aws_region:
-        description: 'What AWS Region to run on'
-        required: true
-        type: 'string'
     secrets:
       AWS_ASSUME_ROLE:
         required: true

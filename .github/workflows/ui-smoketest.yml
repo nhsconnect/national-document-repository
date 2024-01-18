@@ -19,11 +19,6 @@ on:
         required: true
         type: 'string'
         default: 'ndr'
-      aws_region:
-        description: 'What AWS Region to run on'
-        required: true
-        type: 'string'
-        default: 'eu-west-2'
     secrets:
       AWS_ASSUME_ROLE:
         required: true
@@ -44,7 +39,6 @@ jobs:
       build_branch: ${{github.event.inputs.build_branch}}
       environment: ${{github.event.inputs.environment}}
       sandbox: ${{github.event.inputs.sandbox}}
-      aws_region: ${{github.event.inputs.aws_region}}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
       CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
