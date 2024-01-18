@@ -49,9 +49,154 @@ jobs:
       - run: make clean-install
       - run: make test-ui
 
+  install-cypress-build:
+    runs-on: ubuntu-22.04
+    needs: ['react_testing_job']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Cypress install
+        run: npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
+          AWS_REGION: test region
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: development
+          CI: false # Eslint treats warnings as errors when process.env.CI = true.
+          IMAGE_VERSION: 'ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}'
+        run: |
+          ./react-environment-config.sh
+        working-directory: ./app
+        shell: bash
+
+      - name: Cypress build
+        uses: cypress-io/github-action@v5
+        with:
+          # Disable running of tests within install job
+          install: false
+          runTests: false
+          build: npm run build
+          working-directory: ./app
+
+      - name: Save build folder
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          if-no-files-found: error
+          path: ./app/build
+
+  cypress-run-chrome:
+    runs-on: ubuntu-22.04
+    needs: install-cypress-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download the build folder
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: ./app/build
+
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally
+        run: npm install -g serve
+
+      - name: Cypress install
+        run: |
+          npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          start: serve -s build
+          browser: chrome
+          working-directory: ./app
+        env:
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
+          CYPRESS_grepTags: 'regression'
+
+  cypress-run-firefox:
+    runs-on: ubuntu-22.04
+    needs: install-cypress-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download the build folder
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: ./app/build
+
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally
+        run: npm install -g serve
+
+      - name: Cypress install
+        run: |
+          npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          install: false
+          start: serve -s build
+          browser: firefox
+          working-directory: ./app
+        env:
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
+          CYPRESS_grepTags: 'regression'
+
+  cypress-run-edge:
+    runs-on: ubuntu-22.04
+    needs: install-cypress-build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download the build folder
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: ./app/build
+
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally
+        run: npm install -g serve
+
+      - name: Cypress install
+        run: |
+          npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Cypress install
+        run: npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v5
+        with:
+          install: false
+          start: serve -s build
+          browser: edge
+          working-directory: ./app
+        env:
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
+          CYPRESS_grepTags: 'regression'
+
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest
     environment: development
+    needs: ['cypress-run-edge', 'cypress-run-firefox', 'cypress-run-chrome']
     defaults:
       run:
         working-directory: ./app
