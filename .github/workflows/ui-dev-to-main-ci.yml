@@ -276,8 +276,7 @@ jobs:
             --task-definition ${{ vars.BUILD_ENV }}-ndr-service-task:${{ steps.download-task.outputs.revision }}
 
   smoketest:
-    uses: ./.github/workflows/ui-smoketest-base.yml
-    needs: ["react_build_and_deploy_docker_image"]
+    uses: ./.github/workflows/ui-smoketest.yml
     with:
       build_branch: ${{github.event.pull_request.head.ref}}
       environment: development
