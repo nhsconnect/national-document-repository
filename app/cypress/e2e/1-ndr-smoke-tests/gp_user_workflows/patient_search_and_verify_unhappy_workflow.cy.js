@@ -1,6 +1,6 @@
 import { Roles, roleName } from '../../../support/roles';
 
-describe('GP Workflow: Patient search and verify', () => {
+describe('GP Workflow: Patient search unhappy path', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
     const gpRoles = [Roles.GP_ADMIN_H85686, Roles.GP_CLINICAL_H85686];
@@ -8,8 +8,6 @@ describe('GP Workflow: Patient search and verify', () => {
     const workspace = Cypress.env('WORKSPACE');
     const activePatient = workspace === 'ndr-dev' ? '9730153817' : '9000000002';
     const homeUrl = '/home';
-    const verifyPatientUrl = '/search/patient/verify';
-    const lloydGeorgeUrl = '/patient/view/lloyd-george-record';
 
     gpRoles.forEach((role) => {
         it(
