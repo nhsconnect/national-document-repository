@@ -48,8 +48,6 @@ jobs:
   smoketest:
     uses: ./.github/workflows/ui-smoketest-base.yml
     needs: ["deploy_all_lambdas"]
-    if: |
-      (github.ref == 'refs/heads/main') 
     with:
       build_branch: ${{github.event.pull_request.head.ref}}
       environment: development
