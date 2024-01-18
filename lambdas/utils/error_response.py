@@ -4,7 +4,7 @@ from enum import Enum
 
 class ErrorResponse:
     def __init__(self, err_code: str, message: str) -> None:
-        self.error_code = err_code
+        self.err_code = err_code
         self.message = message
 
     def create(self) -> str:
@@ -71,6 +71,14 @@ class LambdaError(Enum):
     }
 
     """
+       Errors for LoginRedirectException
+    """
+    RedirectInternal = {
+        "err_code": "LR_5001",
+        "message": "Server error",
+    }
+
+    """
        Errors for LoginException
     """
     LoginNoState = {
@@ -118,15 +126,15 @@ class LambdaError(Enum):
     }
     LoginSmartSSM = {
         "err_code": "LIN_5007",
-        "message": "Failed to find SSM parameter value for user role",
+        "message": "Failed to find SSM parameter value for smartcard",
     }
     LoginPcseSSM = {
         "err_code": "LIN_5008",
-        "message": "Failed to find SSM parameter value for user role",
+        "message": "Failed to find SSM parameter value for PCSE role",
     }
     LoginGpSSM = {
         "err_code": "LIN_5009",
-        "message": "Failed to find SSM parameter value for user role",
+        "message": "Failed to find SSM parameter value for GP role",
     }
     LoginPcseODS = {
         "err_code": "LIN_5010",

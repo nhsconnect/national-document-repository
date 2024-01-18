@@ -175,8 +175,7 @@ def test_stitch_lloyd_george_record_raise_404_error_if_no_record_for_patient(
 
     assert e.value.status_code == 404
     assert (
-        e.value.message
-        == f"Lloyd george record not found for patient {TEST_NHS_NUMBER}"
+        e.value.err_code == "LGS_4001"
     )
 
 
@@ -193,7 +192,7 @@ def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_get_dynamodb_re
 
     assert e.value.status_code == 500
     assert (
-        e.value.message == f"Unable to retrieve documents for patient {TEST_NHS_NUMBER}"
+        e.value.err_code == "LGS_5001"
     )
 
 
@@ -209,7 +208,7 @@ def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_download_lg_fil
 
     assert e.value.status_code == 500
     assert (
-        e.value.message == f"Unable to retrieve documents for patient {TEST_NHS_NUMBER}"
+        e.value.err_code == "LGS_5001"
     )
 
 

@@ -39,7 +39,7 @@ def test_handle_lambda_exceptions_catch_and_handle_client_error(
     test_event["queryStringParameters"]["patientId"] = "1234567890"
     body = json.dumps(MockError.ErrorClient.value)
     expected = ApiGatewayResponse(
-        500,
+        400,
         body,
         "GET",
     ).create_api_gateway_response()

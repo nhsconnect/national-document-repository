@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+from utils.error_response import LambdaError
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.constants.ssm import (
     GP_ADMIN_USER_ROLE_CODES,
@@ -85,7 +86,6 @@ MOCK_JWT_PK_RESPONSE = {
     }
 }
 
-
 @pytest.fixture
 def mock_service(mocker):
     mocker.patch("boto3.client")
@@ -144,7 +144,7 @@ def test_get_smartcard_role_gp_admin(mock_service, mock_ssm):
 def test_get_smartcard_role_gp_admin_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
     expected = LoginException(
-        500, "LIN_5006", "Failed to find SSM parameter value for user role"
+        500, LambdaError.LoginNoSSM
     )
 
     with pytest.raises(LoginException) as actual:
@@ -173,7 +173,7 @@ def test_get_smartcard_role_gp_clinical(mock_service, mock_ssm):
 def test_get_smartcard_role_gp_clinical_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
     expected = LoginException(
-        500, "LIN_5007", "Failed to find SSM parameter value for user role"
+        500, LambdaError.LoginSmartSSM
     )
 
     with pytest.raises(LoginException) as actual:
@@ -202,7 +202,7 @@ def test_get_smartcard_role_pcse(mock_service, mock_ssm):
 def test_get_smartcard_role_pcse_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
     expected = LoginException(
-        500, "LIN_5008", "Failed to find SSM parameter value for user role"
+        500, LambdaError.LoginPcseSSM
     )
 
     with pytest.raises(LoginException) as actual:
@@ -231,7 +231,7 @@ def test_get_org_role_codes(mock_service, mock_ssm):
 def test_get_org_role_codes_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
     expected = LoginException(
-        500, "LIN_5009", "Failed to find SSM parameter value for GP org role"
+        500, LambdaError.LoginGpSSM
     )
 
     with pytest.raises(LoginException) as actual:
@@ -260,7 +260,7 @@ def test_get_org_ods_codes(mock_service, mock_ssm):
 def test_get_org_ods_codes_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
     expected = LoginException(
-        500, "LIN_5010", "SSM parameter values for PSCE ODS code may not exist"
+        500, LambdaError.LoginPcseODS
     )
 
     with pytest.raises(LoginException) as actual:
