@@ -5,9 +5,9 @@ describe('Feedback Page', () => {
     const startUrl = '/';
     const feedbackUrl = '/feedback';
 
-    const visitFeedbackPage = (role = Roles.GP_CLINICAL) => {
+    const loginAndVisitFeedbackPage = (role = Roles.GP_CLINICAL) => {
         cy.login(role);
-        cy.visit(startUrl + feedbackUrl);
+        cy.visit(feedbackUrl);
     };
 
     const fillInForm = (formData) => {
@@ -40,7 +40,7 @@ describe('Feedback Page', () => {
     );
 
     it('displays the correct page title on feedback page', { tags: 'regression' }, () => {
-        visitFeedbackPage();
+        loginAndVisitFeedbackPage();
 
         cy.get('.app-homepage-content h1').should(
             'have.text',
@@ -52,7 +52,7 @@ describe('Feedback Page', () => {
         cy.visit(startUrl);
         cy.get('.govuk-phase-banner__text a').should('not.exist');
 
-        cy.visit(startUrl + feedbackUrl);
+        cy.visit(feedbackUrl);
         cy.url().should('eq', baseUrl + '/unauthorised');
     });
 
@@ -68,7 +68,7 @@ describe('Feedback Page', () => {
                     respondentEmail: 'jane_smith@fake-email-for-smoke-test.com',
                 };
 
-                visitFeedbackPage();
+                loginAndVisitFeedbackPage();
                 fillInForm(mockInputData);
 
                 cy.get('#submit-feedback').click();
@@ -92,7 +92,7 @@ describe('Feedback Page', () => {
                     howSatisfied: 'Satisfied',
                 };
 
-                visitFeedbackPage();
+                loginAndVisitFeedbackPage();
                 fillInForm(mockInputData);
 
                 cy.get('#submit-feedback').click();
@@ -108,7 +108,7 @@ describe('Feedback Page', () => {
             'should display error messages when user try to submit a blank form',
             { tags: 'regression' },
             () => {
-                visitFeedbackPage();
+                loginAndVisitFeedbackPage();
                 cy.get('#submit-feedback').click();
 
                 cy.get('.nhsuk-error-message')
@@ -131,7 +131,7 @@ describe('Feedback Page', () => {
                     respondentEmail: 'some_random_string_which_is_not_valid_email',
                 };
 
-                visitFeedbackPage();
+                loginAndVisitFeedbackPage();
                 fillInForm(mockInputData);
                 cy.get('#submit-feedback').click();
 
