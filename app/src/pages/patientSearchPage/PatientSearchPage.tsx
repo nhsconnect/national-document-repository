@@ -69,6 +69,11 @@ function PatientSearchPage() {
             } else if (error.response?.status === 403) {
                 navigate(routes.START);
             } else if (error.response?.status === 404) {
+                console.log(error.response);
+                console.log(error.response?.data);
+                // @ts-ignore
+                console.log(error.response?.data.err_code);
+                console.log(typeof error.response?.data);
                 setInputError('Sorry, patient data not found.');
             } else {
                 console.log(error.response);
