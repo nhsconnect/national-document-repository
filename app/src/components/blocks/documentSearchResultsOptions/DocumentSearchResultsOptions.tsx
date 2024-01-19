@@ -57,7 +57,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
-                navigate(routes.HOME);
+                navigate(routes.START);
             }
             props.updateDownloadState(SUBMISSION_STATE.FAILED);
         }

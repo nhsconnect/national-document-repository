@@ -58,6 +58,7 @@ def test_report_upload_complete_add_record_to_dynamodb(
             "NhsNumber": TEST_STAGING_METADATA.nhs_number,
             "Timestamp": 1696165200,
             "UploadStatus": "complete",
+            "OdsCode": "",
         }
         repo_under_test.dynamo_repository.create_item.assert_any_call(
             item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME
@@ -82,6 +83,7 @@ def test_report_upload_failure_add_record_to_dynamodb(
             "Timestamp": 1696251600,
             "UploadStatus": "failed",
             "FailureReason": mock_failure_reason,
+            "OdsCode": "",
         }
         repo_under_test.dynamo_repository.create_item.assert_any_call(
             item=expected_dynamo_db_record, table_name=MOCK_BULK_REPORT_TABLE_NAME

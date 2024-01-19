@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes as Switch, Route, Outlet } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
 import { ROUTE_TYPE, route, routes } from '../types/generic/routes';
-import HomePage from '../pages/homePage/HomePage';
+import StartPage from '../pages/startPage/StartPage';
 import AuthCallbackPage from '../pages/authCallbackPage/AuthCallbackPage';
 import NotFoundPage from '../pages/notFoundPage/NotFoundPage';
 import AuthErrorPage from '../pages/authErrorPage/AuthErrorPage';
@@ -17,19 +17,24 @@ import AuthGuard from './guards/authGuard/AuthGuard';
 import PatientGuard from './guards/patientGuard/PatientGuard';
 import { REPOSITORY_ROLE } from '../types/generic/authRole';
 import RoleGuard from './guards/roleGuard/RoleGuard';
+import HomePage from '../pages/homePage/HomePage';
+import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLoginPage';
+import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
+
 const {
+    START,
     HOME,
     AUTH_CALLBACK,
     NOT_FOUND,
     UNAUTHORISED,
+    UNAUTHORISED_LOGIN,
     AUTH_ERROR,
+    FEEDBACK,
     LOGOUT,
-    DOWNLOAD_SEARCH,
-    DOWNLOAD_VERIFY,
     DOWNLOAD_DOCUMENTS,
     LLOYD_GEORGE,
-    UPLOAD_SEARCH,
-    UPLOAD_VERIFY,
+    SEARCH_PATIENT,
+    VERIFY_PATIENT,
     UPLOAD_DOCUMENTS,
 } = routes;
 
@@ -39,8 +44,8 @@ type Routes = {
 
 export const routeMap: Routes = {
     // Public routes
-    [HOME]: {
-        page: <HomePage />,
+    [START]: {
+        page: <StartPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
     [AUTH_CALLBACK]: {
@@ -59,33 +64,31 @@ export const routeMap: Routes = {
         page: <UnauthorisedPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
-
+    [UNAUTHORISED_LOGIN]: {
+        page: <UnauthorisedLoginPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
     // Auth guard routes
     [LOGOUT]: {
         page: <LogoutPage />,
         type: ROUTE_TYPE.PRIVATE,
     },
-
+    [HOME]: {
+        page: <HomePage />,
+        type: ROUTE_TYPE.PRIVATE,
+    },
+    [SEARCH_PATIENT]: {
+        page: <PatientSearchPage />,
+        type: ROUTE_TYPE.PRIVATE,
+    },
+    [FEEDBACK]: {
+        page: <FeedbackPage />,
+        type: ROUTE_TYPE.PRIVATE,
+    },
     // App guard routes
-    [DOWNLOAD_SEARCH]: {
-        page: <PatientSearchPage />,
-        type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
-    },
-    [UPLOAD_SEARCH]: {
-        page: <PatientSearchPage />,
-        type: ROUTE_TYPE.PRIVATE,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
-    },
-    [DOWNLOAD_VERIFY]: {
+    [VERIFY_PATIENT]: {
         page: <PatientResultPage />,
         type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
-    },
-    [UPLOAD_VERIFY]: {
-        page: <PatientResultPage />,
-        type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
     },
     [UPLOAD_DOCUMENTS]: {
         page: <UploadDocumentsPage />,

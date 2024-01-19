@@ -33,6 +33,8 @@ const navigateToUploadPage = () => {
         body: patient,
     }).as('search');
 
+    cy.getByTestId('search-patient-btn').should('exist');
+    cy.getByTestId('search-patient-btn').click();
     cy.get('#nhs-number-input').click();
     cy.get('#nhs-number-input').type(testPatient);
 
@@ -97,7 +99,7 @@ describe('GP Workflow: Upload docs and verify', () => {
             { tags: 'regression' },
             () => {
                 cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + '/upload/submit');
+                cy.url().should('eq', baseUrl + '/patient/upload');
             },
         );
 

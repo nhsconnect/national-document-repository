@@ -2,13 +2,24 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { Button, Card } from 'nhsuk-react-components';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
+import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
+    deleteAfterDownload: boolean;
 };
 
-function LloydGeorgeDownloadComplete({ setStage }: Props) {
+function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDownload }: Props) {
     const patientDetails = usePatient();
+
+    const handleReturnButtonClick = () => {
+        setStage(LG_RECORD_STAGE.RECORD);
+        if (deleteAfterDownload) {
+            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
+        }
+    };
+
     return (
         <div className="lloydgeorge_download-complete">
             <Card className="lloydgeorge_download-complete_details">
@@ -25,7 +36,7 @@ function LloydGeorgeDownloadComplete({ setStage }: Props) {
                     <div>{`(NHS number: ${patientDetails?.nhsNumber})`}</div>
                 </Card.Content>
             </Card>
-            <Button onClick={() => setStage(LG_RECORD_STAGE.RECORD)} data-testid="return-btn">
+            <Button onClick={handleReturnButtonClick} data-testid="return-btn">
                 Return to patient's available medical records
             </Button>
         </div>

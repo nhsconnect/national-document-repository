@@ -16,6 +16,10 @@ describe('PCSE Workflow: patient search and verify', () => {
 
     beforeEach(() => {
         cy.visit(homeUrl);
+        cy.login(Roles.PCSE);
+
+        cy.getByTestId('search-patient-btn').should('exist');
+        cy.getByTestId('search-patient-btn').click();
     });
 
     it(
@@ -23,19 +27,19 @@ describe('PCSE Workflow: patient search and verify', () => {
         { tags: 'regression' },
         () => {
             const testPatient = '9000000009';
-            cy.login(Roles.PCSE);
             cy.intercept('GET', '/SearchPatient*', {
                 statusCode: 200,
                 body: patient,
             }).as('search');
+
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
             cy.get('#search-submit').click();
             cy.wait('@search');
             cy.get('#verify-submit').click();
 
-            cy.url().should('include', 'results');
-            cy.url().should('eq', baseUrl + '/search/results');
+            cy.url().should('include', 'download');
+            cy.url().should('eq', baseUrl + '/patient/download');
         },
     );
 
@@ -51,15 +55,14 @@ describe('PCSE Workflow: patient search and verify', () => {
                 },
             }).as('search');
 
-            cy.login(Roles.PCSE);
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
 
             cy.get('#search-submit').click();
             cy.wait('@search');
 
-            cy.url().should('include', 'result');
-            cy.url().should('eq', baseUrl + '/search/patient/result');
+            cy.url().should('include', 'verify');
+            cy.url().should('eq', baseUrl + '/search/patient/verify');
         },
     );
 
@@ -75,15 +78,14 @@ describe('PCSE Workflow: patient search and verify', () => {
                 },
             }).as('search');
 
-            cy.login(Roles.PCSE);
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
 
             cy.get('#search-submit').click();
             cy.wait('@search');
 
-            cy.url().should('include', 'result');
-            cy.url().should('eq', baseUrl + '/search/patient/result');
+            cy.url().should('include', 'verify');
+            cy.url().should('eq', baseUrl + '/search/patient/verify');
         },
     );
 });

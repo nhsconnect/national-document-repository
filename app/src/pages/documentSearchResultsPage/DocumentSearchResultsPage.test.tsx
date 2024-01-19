@@ -93,7 +93,7 @@ describe('<DocumentSearchResultsPage />', () => {
             ).not.toBeInTheDocument();
         });
 
-        it('displays a error message when a document search fails', async () => {
+        it('displays a error messages when a document search fails', async () => {
             const errorResponse = {
                 response: {
                     status: 400,
@@ -113,6 +113,37 @@ describe('<DocumentSearchResultsPage />', () => {
             ).not.toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
         });
+
+        it('displays a error messages when the call to document manifest fails', async () => {
+            mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
+
+            const errorResponse = {
+                response: {
+                    status: 400,
+                    message: 'An error occurred',
+                },
+            };
+
+            render(<DocumentSearchResultsPage />);
+
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            await waitFor(() => {
+                screen.getByRole('button', { name: 'Download All Documents' });
+            });
+            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+
+            expect(
+                await screen.findByText('An error has occurred while preparing your download'),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Download All Documents' }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Delete All Documents' }),
+            ).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
+        });
     });
 
     describe('Navigation', () => {
@@ -130,7 +161,7 @@ describe('<DocumentSearchResultsPage />', () => {
             userEvent.click(screen.getByRole('link', { name: 'Start Again' }));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
             });
         });
     });

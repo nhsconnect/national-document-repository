@@ -161,6 +161,25 @@ $govuk-compatibility-govukelements: true;
                 top: 30px;
             }
         }
+        &_gp-admin-non-bsol {
+            &_inset-text {
+                padding-bottom: 0;
+                padding-top: 0;
+                &_confirm-download-remove-button {
+                    background-color: #b61105;
+                    box-shadow: #9a0c02;
+                    &:hover {
+                        background-color: #9a0c02;
+                    }
+                    &:active {
+                        background-color: #9a0c02;
+                    }
+                }
+                &_checkbox {
+                    margin-bottom: 30px;
+                }
+            }
+        }
     }
     &_downloadall-stage {
         &_header {
@@ -306,4 +325,16 @@ $govuk-compatibility-govukelements: true;
     border: 3px solid $color_nhsuk-yellow;
     background: $color_nhsuk-yellow;
     color: $nhsuk-text-color;
+}
+
+.govuk-warning-text {
+    display: flex;
+    align-items: center;
+}
+
+#feedback-form {
+    max-width: 800px;
+    & form > div {
+        margin: 50px 0;
+    }
 }

@@ -29,7 +29,7 @@ const UnauthorisedPage = () => {
                 to="#"
                 onClick={(e) => {
                     e.preventDefault();
-                    navigate(routes.HOME);
+                    navigate(routes.START);
                 }}
             >
                 Return home

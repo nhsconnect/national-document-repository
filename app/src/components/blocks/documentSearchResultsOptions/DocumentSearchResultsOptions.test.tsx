@@ -151,7 +151,7 @@ describe('DocumentSearchResultsOptions', () => {
             userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
             });
         });
     });

@@ -16,7 +16,7 @@ permissions:
 env:
   PYTHON_VERSION: "3.11"
   ENVIRONMENT: prod
-  SANDBOX: ndr-prod
+  SANDBOX: prod
   BUILD_BRANCH: ${{ inputs.tag_version }}
 
 jobs:
@@ -34,6 +34,6 @@ jobs:
       environment: prod
       python_version: "3.11"
       build_branch: ${{ inputs.tag_version }}
-      sandbox: ndr-prod
+      sandbox: prod
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}

@@ -49,6 +49,8 @@ describe('GP Workflow: View Lloyd George record', () => {
             statusCode: 200,
             body: searchPatientPayload,
         }).as('search');
+        cy.getByTestId('search-patient-btn').should('exist');
+        cy.getByTestId('search-patient-btn').click();
         cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
         cy.getByTestId('search-submit-btn').click();
         cy.wait('@search');
@@ -322,5 +324,29 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('actions-menu').should('not.exist');
             },
         );
+    });
+
+    context('Delete Lloyd George document', () => {
+        it('displays an error when the document manifest backend API call fails as a PCSE user', () => {
+            beforeEachConfiguration(Roles.PCSE);
+            cy.intercept('GET', '/SearchDocumentReferences*', {
+                statusCode: 200,
+                body: [
+                    { fileName: 'testName', created: 'testCreated', virusScannerResult: 'Clean' },
+                ],
+            }).as('searchDocs');
+
+            cy.intercept('GET', '/DocumentManifest*', {
+                statusCode: 500,
+            }).as('documentManifest');
+
+            cy.get('#verify-submit').click();
+            cy.wait('@searchDocs');
+            cy.get('#download-documents').click();
+            cy.wait('@documentManifest');
+
+            // Assert
+            cy.contains('An error has occurred while preparing your download').should('be.visible');
+        });
     });
 });

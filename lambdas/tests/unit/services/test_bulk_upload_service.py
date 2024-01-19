@@ -4,6 +4,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
+from models.pds_models import Patient
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
 from services.bulk_upload_service import BulkUploadService
@@ -26,6 +27,7 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     make_s3_file_paths,
     make_valid_lg_file_names,
 )
+from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from tests.unit.utils.test_unicode_utils import (
     NAME_WITH_ACCENT_NFC_FORM,
     NAME_WITH_ACCENT_NFD_FORM,
@@ -65,7 +67,23 @@ def mock_check_virus_result(mocker):
 
 @pytest.fixture
 def mock_validate_files(mocker):
-    yield mocker.patch("utils.lloyd_george_validator.validate_bulk_uploaded_files")
+    yield mocker.patch("services.bulk_upload_service.validate_lg_file_names")
+
+
+@pytest.fixture
+def mock_pds_service(mocker):
+    patient = Patient.model_validate(PDS_PATIENT)
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    mocker.patch(
+        "services.bulk_upload_service.getting_patient_info_from_pds",
+        return_value=patient_details,
+    )
+    yield patient_details
+
+
+@pytest.fixture
+def mock_pds_validation(mocker):
+    yield mocker.patch("services.bulk_upload_service.validate_filename_with_patient_details")
 
 
 @pytest.fixture
@@ -136,7 +154,13 @@ def test_lambda_handler_handle_pds_too_many_requests_exception(
 
 
 def test_handle_sqs_message_happy_path(
-    set_env, mocker, mock_uuid, repo_under_test, mock_validate_files
+    set_env,
+    mocker,
+    mock_uuid,
+    repo_under_test,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -215,6 +239,8 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
     mock_validate_files,
     patient_name_on_s3,
     patient_name_in_metadata_file,
+    mock_pds_validation,
+    mock_pds_service,
 ):
     mock_validate_files.return_value = None
 
@@ -232,7 +258,13 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_already_in_repo(
-    repo_under_test, set_env, mocker, mock_uuid, mock_validate_files
+    repo_under_test,
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
 
@@ -257,12 +289,18 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
 
     mock_report_upload_failure.assert_called_with(
-        TEST_STAGING_METADATA, str(mocked_error)
+        TEST_STAGING_METADATA, str(mocked_error), ""
     )
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
-    repo_under_test, set_env, mocker, mock_uuid, mock_validate_files
+    repo_under_test,
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -285,7 +323,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
 
     mock_report_upload_failure.assert_called_with(
-        TEST_STAGING_METADATA_WITH_INVALID_FILENAME, str(mocked_error)
+        TEST_STAGING_METADATA_WITH_INVALID_FILENAME, str(mocked_error), ""
     )
 
 
@@ -296,6 +334,8 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     mock_uuid,
     mock_validate_files,
     mock_check_virus_result,
+    mock_pds_service,
+    mock_pds_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_report_upload_failure = mocker.patch.object(
@@ -314,7 +354,9 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
     mock_report_upload_failure.assert_called_with(
-        TEST_STAGING_METADATA, "One or more of the files failed virus scanner check"
+        TEST_STAGING_METADATA,
+        "One or more of the files failed virus scanner check",
+        "Y12345",
     )
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
@@ -327,6 +369,8 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
     mock_uuid,
     mock_validate_files,
     mock_check_virus_result,
+    mock_pds_service,
+    mock_pds_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     repo_under_test.s3_repository.check_virus_result.side_effect = (
@@ -341,6 +385,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA,
         "One or more of the files is not accessible from staging bucket",
+        "Y12345",
     )
 
 
@@ -351,6 +396,8 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
     mock_uuid,
     mock_validate_files,
     mock_check_virus_result,
+    mock_pds_service,
+    mock_pds_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     repo_under_test.s3_repository.check_virus_result.side_effect = (
@@ -385,6 +432,8 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     mock_uuid,
     mock_check_virus_result,
     mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_rollback_transaction_s3 = mocker.patch.object(
@@ -419,6 +468,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA,
         "Validation passed but error occurred during file transfer",
+        "Y12345",
     )
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
 

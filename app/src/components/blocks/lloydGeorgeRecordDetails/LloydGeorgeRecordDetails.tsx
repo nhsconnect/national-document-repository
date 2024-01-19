@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import useRole from '../../../helpers/hooks/useRole';
 import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import { FieldValues, UseFormSetError, UseFormSetFocus } from 'react-hook-form';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 
 export type Props = {
@@ -15,6 +16,10 @@ export type Props = {
     totalFileSizeInByte: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     userIsGpAdminNonBSOL?: boolean;
+    setDownloadRemoveButtonClicked: Dispatch<SetStateAction<boolean>>;
+    downloadRemoveButtonClicked: boolean;
+    setError: UseFormSetError<FieldValues>;
+    setFocus: UseFormSetFocus<FieldValues>;
 };
 
 function LloydGeorgeRecordDetails({
@@ -23,6 +28,10 @@ function LloydGeorgeRecordDetails({
     totalFileSizeInByte,
     setStage,
     userIsGpAdminNonBSOL,
+    setDownloadRemoveButtonClicked,
+    downloadRemoveButtonClicked,
+    setError,
+    setFocus,
 }: Props) {
     const [showActionsMenu, setShowActionsMenu] = useState(false);
     const actionsRef = useRef(null);
@@ -33,6 +42,15 @@ function LloydGeorgeRecordDetails({
     useOnClickOutside(actionsRef, (e) => {
         setShowActionsMenu(false);
     });
+
+    const handleDownloadAndRemoveRecordButton = () => {
+        if (downloadRemoveButtonClicked) {
+            setError('confirmDownloadRemove', { type: 'custom', message: 'true' });
+        }
+        setFocus('confirmDownloadRemove');
+        setDownloadRemoveButtonClicked(true);
+    };
+
     return (
         <div className="lloydgeorge_record-details">
             <div className="lloydgeorge_record-details_details">
@@ -50,7 +68,11 @@ function LloydGeorgeRecordDetails({
             </div>
             {userIsGpAdminNonBSOL ? (
                 <div className="lloydgeorge_record-details_download-remove-button">
-                    <Button className="lloydgeorge_record-details_download-remove-button-content">
+                    <Button
+                        data-testid="download-and-remove-record-btn"
+                        onClick={handleDownloadAndRemoveRecordButton}
+                        className="lloydgeorge_record-details_download-remove-button-content"
+                    >
                         Download and remove record
                     </Button>
                 </div>

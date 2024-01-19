@@ -19,6 +19,13 @@ on:
         required: true
         type: 'string'
         default: 'ndr'
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+      CYPRESS_USERNAME:
+        required: true
+      CYPRESS_PASSWORD:
+        required: true
 
 permissions:
   pull-requests: write
@@ -26,109 +33,13 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-  cypress-run-chrome:
-    runs-on: ubuntu-22.04
-    environment: ${{ github.event.inputs.environment }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          repository: 'nhsconnect/national-document-repository'
-          ref: ${{ github.event.inputs.build_branch}}
-
-      - name: Cypress install
-        run: |
-          npm install --legacy-peer-deps
-        working-directory: ./app
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v5
-        with:
-          install: false
-          browser: chrome
-          working-directory: ./app
-        env:
-          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
-          CYPRESS_grepTags: 'smoke'
-          CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
-          CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
-          CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
-          CYPRESS_OUTPUT_VIDEO: true
-
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots
-          if-no-files-found: ignore
-      - uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-videos
-          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos
-          if-no-files-found: ignore
-
-  cypress-run-firefox:
-    runs-on: ubuntu-22.04
-    environment: ${{ github.event.inputs.environment }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          repository: 'nhsconnect/national-document-repository'
-          ref: ${{ github.event.inputs.build_branch}}
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
-          role-skip-session-tagging: true
-          aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Cypress install
-        run: |
-          npm install --legacy-peer-deps
-        working-directory: ./app
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v5
-        with:
-          install: false
-          browser: firefox
-          working-directory: ./app
-        env:
-          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
-          CYPRESS_grepTags: 'smoke'
-          CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
-          CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
-          CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
-          CYPRESS_OUTPUT_VIDEO: false
-
-  cypress-run-edge:
-    runs-on: ubuntu-22.04
-    environment: ${{ github.event.inputs.environment }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          repository: 'nhsconnect/national-document-repository'
-          ref: ${{ github.event.inputs.build_branch}}
-
-      - name: Cypress install
-        run: |
-          npm install --legacy-peer-deps
-        working-directory: ./app
-
-      - name: Cypress run
-        uses: cypress-io/github-action@v5
-        with:
-          install: false
-          browser: edge
-          working-directory: ./app
-        env:
-          CYPRESS_BASE_URL: 'https://${{ github.event.inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
-          CYPRESS_grepTags: 'smoke'
-          CYPRESS_WORKSPACE: ${{ github.event.inputs.sandbox }}
-          CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
-          CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
-          CYPRESS_OUTPUT_VIDEO: false
+  smoketest:
+    uses: ./.github/workflows/ui-smoketest-base.yml
+    with:
+      build_branch: ${{github.event.inputs.build_branch}}
+      environment: ${{github.event.inputs.environment}}
+      sandbox: ${{github.event.inputs.sandbox}}
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+      CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
+      CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}

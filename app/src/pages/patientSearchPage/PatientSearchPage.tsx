@@ -5,8 +5,6 @@ import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { Button, Fieldset, Input } from 'nhsuk-react-components';
 import SpinnerButton from '../../components/generic/spinnerButton/SpinnerButton';
 import { InputRef } from '../../types/generic/inputRef';
-import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-
 import { useNavigate } from 'react-router';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
@@ -18,14 +16,12 @@ import { PatientDetails } from '../../types/generic/patientDetails';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { isMock } from '../../helpers/utils/isLocal';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import useRole from '../../helpers/hooks/useRole';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
 function PatientSearchPage() {
     const [, setPatientDetails] = usePatientDetailsContext();
-    const role = useRole();
     const [submissionState, setSubmissionState] = useState<SEARCH_STATES>(SEARCH_STATES.IDLE);
     const [statusCode, setStatusCode] = useState<null | number>(null);
     const [inputError, setInputError] = useState<null | string>(null);
@@ -40,27 +36,13 @@ function PatientSearchPage() {
         },
     });
     const navigate = useNavigate();
-    const userIsPCSE = role === REPOSITORY_ROLE.PCSE;
-    const userIsGPAdmin = role === REPOSITORY_ROLE.GP_ADMIN;
-    const userIsGPClinical = role === REPOSITORY_ROLE.GP_CLINICAL;
-
     const isError = (statusCode && statusCode >= 500) || !inputError;
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const handleSuccess = (patientDetails: PatientDetails) => {
         setPatientDetails(patientDetails);
         setSubmissionState(SEARCH_STATES.SUCCEEDED);
-        // GP Role
-        if (userIsGPAdmin || userIsGPClinical) {
-            // Make PDS patient search request to upload documents to patient
-            navigate(routes.UPLOAD_VERIFY);
-        }
-
-        // PCSE Role
-        else if (userIsPCSE) {
-            // Make PDS and Dynamo document store search request to download documents from patient
-            navigate(routes.DOWNLOAD_VERIFY);
-        }
+        navigate(routes.VERIFY_PATIENT);
     };
 
     const handleSearch = async (data: FieldValues) => {
@@ -85,7 +67,7 @@ function PatientSearchPage() {
             if (error.response?.status === 400) {
                 setInputError('Enter a valid patient NHS number.');
             } else if (error.response?.status === 403) {
-                navigate(routes.HOME);
+                navigate(routes.START);
             } else if (error.response?.status === 404) {
                 setInputError('Sorry, patient data not found.');
             }
@@ -139,6 +121,7 @@ function PatientSearchPage() {
                             submissionState === SEARCH_STATES.SUCCEEDED ||
                             submissionState === SEARCH_STATES.SEARCHING
                         }
+                        autoComplete="off"
                     />
                 </Fieldset>
                 {submissionState === SEARCH_STATES.SEARCHING ? (

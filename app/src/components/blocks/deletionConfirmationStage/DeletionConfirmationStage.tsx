@@ -59,7 +59,7 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
                         to=""
                         onClick={(e) => {
                             e.preventDefault();
-                            navigate(routes.HOME);
+                            navigate(routes.START);
                         }}
                     >
                         Start Again

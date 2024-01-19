@@ -83,7 +83,7 @@ describe('PatientResultPage', () => {
                 ).toBeInTheDocument();
                 expect(
                     screen.getByText(
-                        'Ensure these patient details match the records and attachments that you upload',
+                        'Check these patient details match the records or attachments you plan to use',
                     ),
                 ).toBeInTheDocument();
             },
@@ -110,7 +110,7 @@ describe('PatientResultPage', () => {
             ).not.toBeInTheDocument();
             expect(
                 screen.queryByText(
-                    'Ensure these patient details match the electronic health records and attachments you are about to upload.',
+                    'Check these patient details match the records or attachments you plan to use',
                 ),
             ).not.toBeInTheDocument();
         });

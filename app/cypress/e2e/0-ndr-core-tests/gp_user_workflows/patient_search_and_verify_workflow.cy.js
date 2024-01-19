@@ -22,6 +22,9 @@ describe('GP Workflow: Patient search and verify', () => {
     gpRoles.forEach((role) => {
         beforeEach(() => {
             cy.login(role);
+
+            cy.getByTestId('search-patient-btn').should('exist');
+            cy.getByTestId('search-patient-btn').click();
         });
 
         afterEach(() => {
@@ -43,17 +46,17 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#search-submit').click();
                 cy.wait('@search');
 
-                cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + '/search/upload/result');
+                cy.url().should('include', 'verify');
+                cy.url().should('eq', baseUrl + '/search/patient/verify');
                 cy.get('#gp-message').should('be.visible');
                 cy.get('#gp-message').should(
                     'have.text',
-                    'Ensure these patient details match the records and attachments that you upload',
+                    'Check these patient details match the records or attachments you plan to use',
                 );
                 cy.get('#verify-submit').click();
 
-                cy.url().should('include', 'submit');
-                cy.url().should('eq', baseUrl + '/upload/submit');
+                cy.url().should('include', 'upload');
+                cy.url().should('eq', baseUrl + '/patient/upload');
             },
         );
 
@@ -101,8 +104,8 @@ describe('GP Workflow: Patient search and verify', () => {
 
                 cy.get('#verify-submit').click();
 
-                cy.url().should('include', 'submit');
-                cy.url().should('eq', baseUrl + '/upload/submit');
+                cy.url().should('include', 'upload');
+                cy.url().should('eq', baseUrl + '/patient/upload');
             },
         );
 
@@ -127,7 +130,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#verify-submit').click();
 
                 cy.url().should('include', 'lloyd-george-record');
-                cy.url().should('eq', baseUrl + '/search/patient/lloyd-george-record');
+                cy.url().should('eq', baseUrl + '/patient/view/lloyd-george-record');
             },
         );
 

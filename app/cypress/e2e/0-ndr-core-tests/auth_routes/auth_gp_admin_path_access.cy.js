@@ -14,7 +14,7 @@ const patient = {
 
 const baseUrl = Cypress.config('baseUrl');
 
-const forbiddenRoutes = ['/search/patient', '/search/patient/result', '/search/results'];
+const forbiddenRoutes = ['/patient/download'];
 
 const bsolOptions = [true, false];
 
@@ -29,24 +29,23 @@ describe('GP Admin user role has access to the expected GP_ADMIN workflow paths'
                 }).as('search');
 
                 cy.login(Roles.GP_ADMIN, isBSOL);
-                if (!isBSOL) {
-                    cy.getByTestId('search-patient-btn').click();
-                }
 
-                cy.url().should('eq', baseUrl + '/search/upload');
+                cy.getByTestId('search-patient-btn').should('exist');
+                cy.getByTestId('search-patient-btn').click();
+                cy.url().should('eq', baseUrl + '/search/patient');
 
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(testPatient);
                 cy.get('#search-submit').click();
                 cy.wait('@search');
 
-                cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + '/search/upload/result');
+                cy.url().should('include', 'verify');
+                cy.url().should('eq', baseUrl + '/search/patient/verify');
 
                 cy.get('#verify-submit').click();
 
                 cy.url().should('include', 'lloyd-george-record');
-                cy.url().should('eq', baseUrl + '/search/patient/lloyd-george-record');
+                cy.url().should('eq', baseUrl + '/patient/view/lloyd-george-record');
             });
         });
     });
