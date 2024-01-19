@@ -71,6 +71,9 @@ function PatientSearchPage() {
             } else if (error.response?.status === 404) {
                 setInputError('Sorry, patient data not found.');
             } else {
+                console.log(error.response);
+                console.log(error.response?.data);
+                console.log(typeof error.response?.data);
                 const errorCode = 'SP_1001';
                 const params = '?errorCode=' + errorCode;
                 navigate(routes.SERVER_ERROR + params);
