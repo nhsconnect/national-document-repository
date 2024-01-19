@@ -1,5 +1,6 @@
 import json
 from enum import Enum
+from typing import Optional
 
 
 class ErrorResponse:
@@ -18,6 +19,15 @@ class LambdaError(Enum):
     """
     Errors for SearchPatientException
     """
+
+    def create_error_body(self, params: Optional[dict] = None) -> str:
+        err_code = self.value['err_code']
+        message = self.value['message']
+        if '%' in message and params:
+            message = message % params
+
+        error_response = ErrorResponse(err_code=err_code, message=message)
+        return error_response.create()
 
     SearchPatientMissing = {"err_code": "SP_1001", "message": "Missing user details"}
     SearchPatientNoPDS = {
@@ -219,7 +229,7 @@ class LambdaError(Enum):
     LogoutAuth = {"err_code": "OUT_4001", "message": "Invalid Authorization header"}
     EnvMissing = {
         "err_code": "ENV_5001",
-        "message": "An error occurred due to missing environment variable: '%name%'",
+        "message": "An error occurred due to missing environment variable: '%(name)s'",
     }
     DocTypeNull = {"err_code": "VDT_4001", "message": "docType not supplied"}
     DocTypeInvalid = {
@@ -232,7 +242,7 @@ class LambdaError(Enum):
     }
     PatientIdInvalid = {
         "err_code": "PN_4001",
-        "message": "Invalid patient number %number%",
+        "message": "Invalid patient number %(number)s",
     }
     PatientIdNoKey = {
         "err_code": "PN_4002",
