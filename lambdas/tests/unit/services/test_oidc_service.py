@@ -38,7 +38,7 @@ class FakeWebAppClient:
 
     @staticmethod
     def prepare_token_request(*args, **kwargs):
-        return "test", "", ""
+        return "test", {}, ""
 
 
 class FakeSSMService:
