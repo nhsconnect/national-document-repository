@@ -192,7 +192,8 @@ describe('PatientSearchPage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
             });
         });
-        it('navigates to start page when API return 5XX', async () => {
+
+        it('navigates to server error page when API returns 5XX', async () => {
             const errorResponse = {
                 response: {
                     status: 500,

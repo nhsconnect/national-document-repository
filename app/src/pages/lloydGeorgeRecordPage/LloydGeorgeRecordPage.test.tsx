@@ -10,7 +10,6 @@ import axios from 'axios';
 import formatFileSize from '../../helpers/utils/formatFileSize';
 import usePatient from '../../helpers/hooks/usePatient';
 import { act } from 'react-dom/test-utils';
-import DocumentSearchResultsPage from '../documentSearchResultsPage/DocumentSearchResultsPage';
 import { routes } from '../../types/generic/routes';
 
 jest.mock('axios');
