@@ -6,6 +6,7 @@ import { routes } from '../../types/generic/routes';
 import axios from 'axios';
 import usePatient from '../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
+import { act } from 'react-dom/test-utils';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
@@ -15,6 +16,7 @@ jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => jest.fn(),
+    useLocation: () => jest.fn(),
 }));
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('axios');
@@ -93,28 +95,37 @@ describe('<DocumentSearchResultsPage />', () => {
             ).not.toBeInTheDocument();
         });
 
-        it('displays a error messages when a document search fails', async () => {
+        it('displays a error messages when the call to document manifest fails', async () => {
+            mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
+
             const errorResponse = {
                 response: {
-                    status: 400,
+                    status: 403,
                     message: 'An error occurred',
                 },
             };
-            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             render(<DocumentSearchResultsPage />);
 
-            expect(await screen.findByRole('alert')).toBeInTheDocument();
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            await waitFor(() => {
+                screen.getByRole('button', { name: 'Download All Documents' });
+            });
+            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+
             expect(
-                screen.queryByRole('button', { name: 'Download All Documents' }),
-            ).not.toBeInTheDocument();
+                await screen.findByText('An error has occurred while preparing your download'),
+            ).toBeInTheDocument();
             expect(
-                screen.queryByRole('button', { name: 'Delete All Documents' }),
-            ).not.toBeInTheDocument();
+                screen.getByRole('button', { name: 'Download All Documents' }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Delete All Documents' }),
+            ).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
         });
-
-        it('displays a error messages when the call to document manifest fails', async () => {
+        it('displays a error messages when the call to document manifest return 400', async () => {
             mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
 
             const errorResponse = {
@@ -159,6 +170,46 @@ describe('<DocumentSearchResultsPage />', () => {
             });
 
             userEvent.click(screen.getByRole('link', { name: 'Start Again' }));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+            });
+        });
+        it('navigates to Error page when call to doc manifest return 500', async () => {
+            mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
+            const errorResponse = {
+                response: {
+                    status: 500,
+                    message: 'An error occurred',
+                    errorCode: 'SP_1001',
+                },
+            };
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            act(() => {
+                render(<DocumentSearchResultsPage />);
+            });
+
+            await waitFor(() => {
+                expect(screen.queryByRole('link', { name: 'Start Again' })).not.toBeInTheDocument();
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routes.SERVER_ERROR + '?errorCode=SP_1001',
+                );
+            });
+        });
+        it('navigates to Start page when a document search fails', async () => {
+            const errorResponse = {
+                response: {
+                    status: 403,
+                    message: 'An error occurred',
+                },
+            };
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            render(<DocumentSearchResultsPage />);
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);

@@ -52,8 +52,13 @@ function DocumentSearchResultsPage() {
                 const error = e as AxiosError;
                 if (error.response?.status === 403) {
                     navigate(routes.START);
+                } else if (error.response?.status && error.response?.status >= 500) {
+                    const errorCode = 'SP_1001';
+                    const params = '?errorCode=' + errorCode;
+                    navigate(routes.SERVER_ERROR + params);
+                } else {
+                    setSubmissionState(SUBMISSION_STATE.FAILED);
                 }
-                setSubmissionState(SUBMISSION_STATE.FAILED);
             }
         };
         if (!mounted.current) {

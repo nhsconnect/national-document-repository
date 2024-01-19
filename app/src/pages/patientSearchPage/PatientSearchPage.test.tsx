@@ -192,6 +192,26 @@ describe('PatientSearchPage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
             });
         });
+        it('navigates to start page when API return 5XX', async () => {
+            const errorResponse = {
+                response: {
+                    status: 500,
+                    message: '500 Server Error.',
+                },
+            };
+
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            renderPatientSearchPage();
+            userEvent.type(screen.getByRole('textbox', { name: 'Enter NHS number' }), '9000000000');
+            userEvent.click(screen.getByRole('button', { name: 'Search' }));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routes.SERVER_ERROR + '?errorCode=SP_1001',
+                );
+            });
+        });
     });
 
     describe('Validation', () => {

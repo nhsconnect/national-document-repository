@@ -5,7 +5,11 @@ import axios from 'axios';
 import DocumentSearchResultsOptions from './DocumentSearchResultsOptions';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
 import { routes } from '../../../types/generic/routes';
-import { buildPatientDetails } from '../../../helpers/test/testBuilders';
+import {
+    buildLgSearchResult,
+    buildPatientDetails,
+    buildSearchResult,
+} from '../../../helpers/test/testBuilders';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
@@ -152,6 +156,24 @@ describe('DocumentSearchResultsOptions', () => {
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+            });
+        });
+        it('navigates to error page when API returns 5XX', async () => {
+            const errorResponse = {
+                response: {
+                    status: 500,
+                    message: 'Server error',
+                },
+            };
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
+            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routes.SERVER_ERROR + '?errorCode=SP_1001',
+                );
             });
         });
     });

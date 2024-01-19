@@ -1,7 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes as Switch, Route, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Outlet, Route, Routes as Switch } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
-import { ROUTE_TYPE, route, routes } from '../types/generic/routes';
+import { route, ROUTE_TYPE, routes } from '../types/generic/routes';
 import StartPage from '../pages/startPage/StartPage';
 import AuthCallbackPage from '../pages/authCallbackPage/AuthCallbackPage';
 import NotFoundPage from '../pages/notFoundPage/NotFoundPage';
@@ -20,6 +20,7 @@ import RoleGuard from './guards/roleGuard/RoleGuard';
 import HomePage from '../pages/homePage/HomePage';
 import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLoginPage';
 import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
+import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
 
 const {
     START,
@@ -29,6 +30,7 @@ const {
     UNAUTHORISED,
     UNAUTHORISED_LOGIN,
     AUTH_ERROR,
+    SERVER_ERROR,
     FEEDBACK,
     LOGOUT,
     DOWNLOAD_DOCUMENTS,
@@ -66,6 +68,10 @@ export const routeMap: Routes = {
     },
     [UNAUTHORISED_LOGIN]: {
         page: <UnauthorisedLoginPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
+    [SERVER_ERROR]: {
+        page: <ServerErrorPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
     // Auth guard routes

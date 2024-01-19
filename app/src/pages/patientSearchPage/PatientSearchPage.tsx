@@ -70,6 +70,10 @@ function PatientSearchPage() {
                 navigate(routes.START);
             } else if (error.response?.status === 404) {
                 setInputError('Sorry, patient data not found.');
+            } else {
+                const errorCode = 'SP_1001';
+                const params = '?errorCode=' + errorCode;
+                navigate(routes.SERVER_ERROR + params);
             }
             setStatusCode(error.response?.status ?? null);
             setSubmissionState(SEARCH_STATES.FAILED);

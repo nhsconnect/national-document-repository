@@ -182,6 +182,12 @@ describe('DeleteDocumentsStage', () => {
                     screen.getByText('Sorry, the service is currently unavailable.'),
                 ).toBeInTheDocument();
             });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routes.SERVER_ERROR + '?errorCode=SP_1001',
+                );
+            });
         });
     });
 });

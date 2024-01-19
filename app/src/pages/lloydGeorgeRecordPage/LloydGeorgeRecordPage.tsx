@@ -14,6 +14,8 @@ import { AxiosError } from 'axios';
 import useRole from '../../helpers/hooks/useRole';
 import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { routes } from '../../types/generic/routes';
+import { useNavigate } from 'react-router';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -26,6 +28,7 @@ function LloydGeorgeRecordPage() {
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
+    const navigate = useNavigate();
 
     const role = useRole();
     const isBSOL = useIsBSOL();
@@ -55,6 +58,10 @@ function LloydGeorgeRecordPage() {
                     setDownloadStage(DOWNLOAD_STAGE.TIMEOUT);
                 } else if (error.response?.status === 404) {
                     setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
+                } else if (error.response?.status && error.response?.status >= 500) {
+                    const errorCode = 'SP_1001';
+                    const params = '?errorCode=' + errorCode;
+                    navigate(routes.SERVER_ERROR + params);
                 } else {
                     setDownloadStage(DOWNLOAD_STAGE.FAILED);
                 }
@@ -76,6 +83,7 @@ function LloydGeorgeRecordPage() {
         setLastUpdated,
         setNumberOfFiles,
         setTotalFileSizeInByte,
+        navigate,
     ]);
 
     switch (stage) {

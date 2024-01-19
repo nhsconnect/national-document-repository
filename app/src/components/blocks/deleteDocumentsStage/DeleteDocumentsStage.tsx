@@ -89,6 +89,10 @@ function DeleteDocumentsStage({
             const error = e as AxiosError;
             if (error.response?.status === 403) {
                 navigate(routes.START);
+            } else {
+                const errorCode = 'SP_1001';
+                const params = '?errorCode=' + errorCode;
+                navigate(routes.SERVER_ERROR + params);
             }
             setDeletionStage(SUBMISSION_STATE.FAILED);
         }
