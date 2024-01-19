@@ -52,7 +52,7 @@ describe('ServerErrorPage', () => {
         });
 
         it('renders page content with error message and id', () => {
-            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue('SP_1001');
+            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue('CDR_5001');
             render(<ServerErrorPage />);
 
             expect(
@@ -60,9 +60,9 @@ describe('ServerErrorPage', () => {
                     name: 'Sorry, there is a problem with the service',
                 }),
             ).toBeInTheDocument();
-            expect(screen.getByText('Washington DC')).toBeInTheDocument();
+            expect(screen.getByText('Internal error')).toBeInTheDocument();
             expect(screen.queryByText('Ulaanbaatar')).not.toBeInTheDocument();
-            expect(screen.getByText('SP_1001')).toBeInTheDocument();
+            expect(screen.getByText('CDR_5001')).toBeInTheDocument();
             expect(screen.queryByText('111111')).not.toBeInTheDocument();
         });
     });

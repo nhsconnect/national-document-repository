@@ -15,6 +15,7 @@ const ServerErrorPage = () => {
     const errorMessage =
         errorCode && !!errorCodes[errorCode] ? errorCodes[errorCode] : defaultMessage;
     const errorId = errorCode && !!errorCodes[errorCode] ? errorCode : defaultErrorId;
+
     return (
         <>
             <h1>Sorry, there is a problem with the service</h1>
