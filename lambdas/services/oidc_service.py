@@ -88,8 +88,12 @@ class OidcService:
 
     def validate_and_decode_token(self, signed_token: str) -> Dict:
         try:
+            custom_headers = self.patch_user_agent({})
             jwks_client = jwt.PyJWKClient(
-                self._oidc_jwks_url, cache_jwk_set=True, lifespan=360
+                self._oidc_jwks_url,
+                cache_jwk_set=True,
+                lifespan=360,
+                headers=custom_headers,
             )
             cis2_signing_key = jwks_client.get_signing_key_from_jwt(signed_token)
 
