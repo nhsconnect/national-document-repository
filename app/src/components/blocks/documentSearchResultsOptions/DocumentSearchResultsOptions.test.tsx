@@ -5,11 +5,7 @@ import axios from 'axios';
 import DocumentSearchResultsOptions from './DocumentSearchResultsOptions';
 import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
 import { routes } from '../../../types/generic/routes';
-import {
-    buildLgSearchResult,
-    buildPatientDetails,
-    buildSearchResult,
-} from '../../../helpers/test/testBuilders';
+import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
