@@ -11,7 +11,7 @@ describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient 
 
     gpRoles.forEach((role) => {
         it(
-            `[Smoke] Show that non matching ODS patient on PDS is not accessable for this  ${roleName(
+            `[Smoke] Shows that non matching ODS patient on PDS is not accessable for this  ${roleName(
                 role,
             )} `,
             { tags: 'smoke' },
