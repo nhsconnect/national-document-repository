@@ -1,6 +1,6 @@
 import { Roles, roleName } from '../../../support/roles';
 
-describe('GP Workflow: Rejected from accessing a non mating ODS patient on PDS', () => {
+describe('GP Workflow: GP Role rejected from accessing a non mating ODS patient on PDS', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
     const gpRoles = [Roles.GP_ADMIN_H85686, Roles.GP_CLINICAL_H85686];
@@ -11,7 +11,7 @@ describe('GP Workflow: Rejected from accessing a non mating ODS patient on PDS',
 
     gpRoles.forEach((role) => {
         it(
-            `[Smoke] Show that non mating ODS patient on PDS is not accessable for this  ${roleName(
+            `[Smoke] Show that non matching ODS patient on PDS is not accessable for this  ${roleName(
                 role,
             )} `,
             { tags: 'smoke' },
