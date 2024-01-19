@@ -2,11 +2,11 @@ import os
 import time
 
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from oauthlib.oauth2 import InsecureTransportError, WebApplicationClient
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.error_response import LambdaError
 from utils.lambda_exceptions import LoginRedirectException
 
 logger = LoggingService(__name__)
@@ -52,8 +52,11 @@ class LoginRedirectService:
             )
 
         except (ClientError, InsecureTransportError) as e:
-            logger.error(str(e), {"Result": "Unsuccessful redirect"})
-            raise LoginRedirectException(500, LambdaError.RedirectInternal)
+            logger.error(
+                f"{LambdaError.RedirectClient.to_str()}: {str(e)}",
+                {"Result": "Unsuccessful redirect"},
+            )
+            raise LoginRedirectException(500, LambdaError.RedirectClient)
 
         return location_header
 

@@ -1,3 +1,4 @@
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.document_deletion_service import DocumentDeletionService
 from utils.audit_logging_setup import LoggingService
@@ -13,7 +14,6 @@ from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event,
     validate_patient_id,
 )
-from utils.error_response import ErrorResponse, LambdaError
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -52,16 +52,13 @@ def lambda_handler(event, context):
             200, "Success", "DELETE"
         ).create_api_gateway_response()
     else:
-        logger.info(
-            "No records was found for given patient. No document deleted.",
+        logger.error(
+            LambdaError.DocDelNull.to_str(),
             {"Result": "No documents available"},
         )
-        error = LambdaError.DocDelNull.value
-        msg = error["message"]
-        err_code = error["err_code"]
 
         return ApiGatewayResponse(
             404,
-            ErrorResponse(err_code, msg).create(),
+            LambdaError.DocDelNull.create_error_body(),
             "DELETE",
         ).create_api_gateway_response()

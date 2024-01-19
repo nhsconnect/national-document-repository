@@ -1,9 +1,9 @@
+from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
-from utils.error_response import LambdaError
 from utils.exceptions import (
     InvalidResourceIdException,
     PatientNotFoundException,

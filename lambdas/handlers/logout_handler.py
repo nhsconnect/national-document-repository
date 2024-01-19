@@ -3,12 +3,12 @@ import os
 import boto3
 import jwt
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.error_response import ErrorResponse, LambdaError
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -40,24 +40,21 @@ def logout_handler(token):
         remove_session_from_dynamo_db(session_id)
 
     except ClientError as e:
-        logger.error(f"Error logging out user: {e}", {"Result": "Unsuccessful logout"})
-        error = LambdaError.LogoutClient.value
-        msg = error["message"]
-        err_code = error["err_code"]
+        logger.error(
+            f"{LambdaError.LogoutClient.to_str()}: {e}",
+            {"Result": "Unsuccessful logout"},
+        )
         return ApiGatewayResponse(
             500,
-            ErrorResponse(err_code, msg).create(),
+            LambdaError.LogoutClient.create_error_body(),
             "GET",
         ).create_api_gateway_response()
     except (jwt.PyJWTError, KeyError) as e:
         logger.error(
-            f"error while decoding JWT: {e}", {"Result": "Unsuccessful logout"}
+            f"{LambdaError.LogoutAuth.to_str()}: {e}", {"Result": "Unsuccessful logout"}
         )
-        error = LambdaError.LogoutAuth.value
-        msg = error["message"]
-        err_code = error["err_code"]
         return ApiGatewayResponse(
-            400, ErrorResponse(err_code, msg).create(), "GET"
+            400, LambdaError.LogoutAuth.create_error_body(), "GET"
         ).create_api_gateway_response()
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 

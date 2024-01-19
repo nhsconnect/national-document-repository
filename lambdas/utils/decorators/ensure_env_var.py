@@ -1,8 +1,8 @@
 import os
 from typing import Callable
 
+from enums.lambda_error import LambdaError
 from utils.audit_logging_setup import LoggingService
-from utils.error_response import ErrorResponse, LambdaError
 from utils.lambda_response import ApiGatewayResponse
 
 logger = LoggingService(__name__)
@@ -24,11 +24,11 @@ def ensure_environment_variables(names: list[str]) -> Callable:
             for name in names:
                 if name not in os.environ:
                     logger.info(f"missing env var: '{name}'")
-                    error = LambdaError.EnvMissing.value
-                    msg = error["message"].replace("%name%", name)
-                    err_code = error["err_code"]
+                    error_body = LambdaError.EnvMissing.create_error_body(
+                        {"name": name}
+                    )
                     return ApiGatewayResponse(
-                        500, ErrorResponse(err_code, msg).create(), event["httpMethod"]
+                        500, error_body, event["httpMethod"]
                     ).create_api_gateway_response()
 
             # Validation done. Return control flow to original lambda handler

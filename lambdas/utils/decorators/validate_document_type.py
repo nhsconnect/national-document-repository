@@ -1,8 +1,8 @@
 from typing import Callable
 
+from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from utils.audit_logging_setup import LoggingService
-from utils.error_response import ErrorResponse, LambdaError
 from utils.lambda_response import ApiGatewayResponse
 
 logger = LoggingService(__name__)
@@ -23,29 +23,22 @@ def validate_document_type(lambda_func: Callable):
         try:
             doc_type = event["queryStringParameters"]["docType"]
             if doc_type is None:
-                error = LambdaError.DocTypeNull.value
-                msg = error["message"]
-                err_code = error["err_code"]
-                return ApiGatewayResponse(
-                    400, ErrorResponse(err_code, msg).create(), event["httpMethod"]
-                ).create_api_gateway_response()
-            if not doc_type_is_valid(doc_type):
-                error = LambdaError.DocTypeInvalid.value
-                msg = error["message"]
-                err_code = error["err_code"]
                 return ApiGatewayResponse(
                     400,
-                    ErrorResponse(err_code, msg).create(),
+                    LambdaError.DocTypeNull.create_error_body(),
+                    event["httpMethod"],
+                ).create_api_gateway_response()
+            if not doc_type_is_valid(doc_type):
+                return ApiGatewayResponse(
+                    400,
+                    LambdaError.DocTypeInvalid.create_error_body(),
                     event["httpMethod"],
                 ).create_api_gateway_response()
         except KeyError as e:
             logger.info({str(e)}, {"Result": "An error occurred due to missing key"})
-            error = LambdaError.DocTypeKey.value
-            msg = error["message"]
-            err_code = error["err_code"]
             return ApiGatewayResponse(
                 400,
-                ErrorResponse(err_code, msg).create(),
+                LambdaError.DocTypeKey.create_error_body(),
                 event["httpMethod"],
             ).create_api_gateway_response()
 

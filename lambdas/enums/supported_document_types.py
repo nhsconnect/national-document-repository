@@ -2,8 +2,8 @@ import os
 from enum import Enum
 from typing import List
 
+from enums.lambda_error import LambdaError
 from utils.audit_logging_setup import LoggingService
-from utils.error_response import LambdaError
 from utils.lambda_exceptions import InvalidDocTypeException
 
 logger = LoggingService(__name__)

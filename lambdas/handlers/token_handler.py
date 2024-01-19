@@ -1,5 +1,6 @@
 import json
 
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.login_service import LoginService
 from utils.audit_logging_setup import LoggingService
@@ -7,7 +8,6 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.error_response import ErrorResponse, LambdaError
 from utils.lambda_exceptions import LoginException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -42,11 +42,11 @@ def lambda_handler(event, context):
         ).create_api_gateway_response()
 
     except (KeyError, TypeError):
-        error = LambdaError.LoginNoAuth.value
-        msg = error["message"]
-        err_code = error["err_code"]
+        logger.error(
+            f"{ LambdaError.LoginNoAuth.to_str()}", {"Result": "Unsuccessful login"}
+        )
         return ApiGatewayResponse(
             400,
-            ErrorResponse(err_code, msg).create(),
+            LambdaError.LoginNoAuth.create_error_body(),
             "GET",
         ).create_api_gateway_response()

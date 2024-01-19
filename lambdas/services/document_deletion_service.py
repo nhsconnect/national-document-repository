@@ -1,12 +1,12 @@
 from typing import Literal
 
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.error_response import LambdaError
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentDeletionServiceException
 
@@ -61,5 +61,8 @@ class DocumentDeletionService:
             )
             return results
         except (ClientError, DynamoServiceException) as e:
-            logger.error(str(e), {"Results": "Failed to delete documents"})
+            logger.error(
+                f"{LambdaError.DocDelClient.to_str()}: {str(e)}",
+                {"Results": "Failed to delete documents"},
+            )
             raise DocumentDeletionServiceException(500, LambdaError.DocDelClient)

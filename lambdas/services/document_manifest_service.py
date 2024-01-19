@@ -4,6 +4,7 @@ import tempfile
 import zipfile
 
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.zip_trace import ZipTrace
@@ -12,7 +13,6 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.error_response import LambdaError
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentManifestServiceException
 
@@ -42,16 +42,26 @@ class DocumentManifestService:
                 )
             )
             if not documents:
+                logger.error(
+                    f"{LambdaError.ManifestNoDocs.to_str()}",
+                    {"Result": "Failed to create document manifest"},
+                )
                 raise DocumentManifestServiceException(
                     status_code=404, error=LambdaError.ManifestNoDocs
                 )
         except ValidationError as e:
-            logger.error(str(e), {"Result": "Failed to create document manifest"})
+            logger.error(
+                f"{LambdaError.ManifestValidation.to_str()}: {str(e)}",
+                {"Result": "Failed to create document manifest"},
+            )
             raise DocumentManifestServiceException(
                 status_code=500, error=LambdaError.ManifestValidation
             )
         except DynamoServiceException as e:
-            logger.error(str(e), {"Result": "Failed to create document manifest"})
+            logger.error(
+                f"{LambdaError.ManifestDB.to_str()}: {str(e)}",
+                {"Result": "Failed to create document manifest"},
+            )
             raise DocumentManifestServiceException(
                 status_code=500, error=LambdaError.ManifestDB
             )

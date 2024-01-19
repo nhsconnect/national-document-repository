@@ -5,6 +5,7 @@ import uuid
 import jwt
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from models.oidc_models import IdTokenClaimSet
 from oauthlib.oauth2 import WebApplicationClient
@@ -14,7 +15,6 @@ from services.ods_api_service import OdsApiService
 from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.audit_logging_setup import LoggingService
-from utils.error_response import LambdaError
 from utils.exceptions import (
     AuthorisationException,
     OdsErrorException,
@@ -45,8 +45,11 @@ class LoginService:
                 )
                 raise LoginException(401, LambdaError.LoginBadState)
         except ClientError as e:
-            logger.error(str(e), {"Result": "Unsuccessful login"})
-            raise LoginException(500, LambdaError.LoginValidate)
+            logger.error(
+                f"{LambdaError.LoginClient.to_str()}: {str(e)}",
+                {"Result": "Unsuccessful login"},
+            )
+            raise LoginException(500, LambdaError.LoginClient)
 
         logger.info("Setting up oidc service")
 
@@ -68,10 +71,16 @@ class LoginService:
                 access_token, id_token_claim_set, "R"
             )
         except OidcApiException as e:
-            logger.error(str(e), {"Result": "Unsuccessful login"})
+            logger.error(
+                f"{LambdaError.LoginNoContact.to_str()}: {str(e)}",
+                {"Result": "Unsuccessful login"},
+            )
             raise LoginException(500, LambdaError.LoginNoContact)
         except AuthorisationException as e:
-            logger.error(str(e), {"Result": "Unsuccessful login"})
+            logger.error(
+                f"{LambdaError.LoginBadAuth.to_str()}: {str(e)}",
+                {"Result": "Unsuccessful login"},
+            )
             raise LoginException(401, LambdaError.LoginBadAuth)
 
         try:
@@ -81,10 +90,16 @@ class LoginService:
                 )
             )
         except (TooManyOrgsException, OdsErrorException) as e:
-            logger.error(str(e), {"Result": "Unsuccessful login"})
+            logger.error(
+                f"{LambdaError.LoginOds.to_str()}: {str(e)}",
+                {"Result": "Unsuccessful login"},
+            )
             raise LoginException(500, LambdaError.LoginOds)
         except OrganisationNotFoundException as e:
-            logger.error(str(e), {"Result": "Unsuccessful login"})
+            logger.error(
+                f"{LambdaError.LoginNoOrg.to_str()}: {str(e)}",
+                {"Result": "Unsuccessful login"},
+            )
             raise LoginException(401, LambdaError.LoginNoOrg)
 
         logger.info(f"Permitted_orgs_details: {permitted_orgs_details}")
@@ -143,7 +158,10 @@ class LoginService:
             try:
                 self.remove_used_state(state)
             except ClientError as e:
-                logger.error(str(e), {"Result": "Unsuccessful login"})
+                logger.error(
+                    f"{LambdaError.LoginStateFault.to_str()}: {str(e)}",
+                    {"Result": "Unsuccessful login"},
+                )
                 raise LoginException(500, LambdaError.LoginStateFault)
 
         return state_match
@@ -186,7 +204,9 @@ class LoginService:
                 return RepositoryRole.PCSE
             return RepositoryRole.NONE
 
-        logger.info("Role: No smartcard role found")
+        logger.error(
+            f"{LambdaError.LoginNoRole.to_str()}", {"Result": "Unsuccessful login"}
+        )
         raise LoginException(
             401,
             LambdaError.LoginNoRole,

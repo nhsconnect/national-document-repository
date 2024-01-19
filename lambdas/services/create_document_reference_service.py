@@ -1,13 +1,13 @@
 import os
 
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.error_response import LambdaError
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_files
@@ -50,7 +50,10 @@ class CreateDocumentReferenceService:
                 )
 
         except (InvalidResourceIdException, LGInvalidFilesException) as e:
-            logger.error(str(e), {"Result": "Create document reference failed"})
+            logger.error(
+                f"{LambdaError.CreateDocFiles.to_str()} :{str(e)}",
+                {"Result": "Create document reference failed"},
+            )
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
 
     def prepare_doc_object(self, document: dict) -> NHSDocumentReference:
@@ -59,13 +62,20 @@ class CreateDocumentReferenceService:
                 document
             )
         except ValidationError as e:
-            logger.error(str(e), {"Result": "Create document reference failed"})
+            logger.error(
+                f"{LambdaError.CreateDocNoParse.to_str()} :{str(e)}",
+                {"Result": "Create document reference failed"},
+            )
             raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
 
         document_type = SupportedDocumentTypes.get_from_field_name(
             validated_doc.docType
         )
         if document_type is None:
+            logger.error(
+                f"{LambdaError.CreateDocNoType.to_str()}",
+                {"Result": "Create document reference failed"},
+            )
             raise CreateDocumentRefException(400, LambdaError.CreateDocNoType)
 
         logger.info("Provided document is supported")
@@ -99,7 +109,7 @@ class CreateDocumentReferenceService:
 
         except ClientError as e:
             logger.error(
-                str(e),
+                f"{LambdaError.CreateDocPresign.to_str()}: {str(e)}",
                 {
                     "Result": "An error occurred when creating pre-signed url for document reference"
                 },
@@ -116,7 +126,8 @@ class CreateDocumentReferenceService:
 
         except ClientError as e:
             logger.error(
-                str(e), {"Result": "Upload reference creation was unsuccessful"}
+                f"{LambdaError.CreateDocUpload.to_str()}: {str(e)}",
+                {"Result": "Upload reference creation was unsuccessful"},
             )
             raise CreateDocumentRefException(500, LambdaError.CreateDocUpload)
 
@@ -134,4 +145,8 @@ class CreateDocumentReferenceService:
                 self.arf_documents_dict_format,
             )
         else:
+            logger.error(
+                f"{LambdaError.CreateDocInvalidType.to_str()}",
+                {"Result": "Upload reference creation was unsuccessful"},
+            )
             raise CreateDocumentRefException(400, LambdaError.CreateDocInvalidType)

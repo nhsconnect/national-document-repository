@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+from enums.lambda_error import LambdaError
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.constants.ssm import (
     GP_ADMIN_USER_ROLE_CODES,
@@ -9,7 +10,6 @@ from utils.constants.ssm import (
     PCSE_ODS_CODE,
     PCSE_USER_ROLE_CODE,
 )
-from utils.error_response import LambdaError
 from utils.lambda_exceptions import LoginException
 
 MOCK_ROLE_CODE_RESPONSE = {

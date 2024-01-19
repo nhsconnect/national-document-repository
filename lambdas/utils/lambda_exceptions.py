@@ -1,4 +1,4 @@
-from utils.error_response import LambdaError
+from enums.lambda_error import LambdaError
 
 
 class LambdaException(Exception):

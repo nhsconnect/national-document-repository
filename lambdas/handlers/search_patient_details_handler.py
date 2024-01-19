@@ -1,3 +1,4 @@
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.search_patient_details_service import SearchPatientDetailsService
 from utils.audit_logging_setup import LoggingService
@@ -5,7 +6,6 @@ from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.decorators.validate_patient_id import validate_patient_id
-from utils.error_response import LambdaError
 from utils.lambda_exceptions import SearchPatientException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -30,6 +30,10 @@ def lambda_handler(event, context):
         ).get("org_ods_code", "")
         user_role = request_context.authorization.get("repository_role", "")
     if not user_role or not user_ods_code:
+        logger.error(
+            f"{LambdaError.SearchPatientMissing.to_str()}",
+            {"Result": "Patient not found"},
+        )
         raise SearchPatientException(400, LambdaError.SearchPatientMissing)
 
     search_service = SearchPatientDetailsService(

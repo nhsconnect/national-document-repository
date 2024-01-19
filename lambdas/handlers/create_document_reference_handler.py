@@ -3,6 +3,7 @@ import os
 import sys
 from json import JSONDecodeError
 
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.create_document_reference_service import CreateDocumentReferenceService
 from utils.audit_logging_setup import LoggingService
@@ -10,7 +11,6 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.error_response import LambdaError
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
@@ -54,6 +54,10 @@ def processing_event_details(event):
         nhs_number = body["subject"]["identifier"]["value"]
 
         if not body or not isinstance(body, dict):
+            logger.error(
+                f"{LambdaError.CreateDocNoBody.to_str()}",
+                {"Result": "Create document reference failed"},
+            )
             raise CreateDocumentRefException(400, LambdaError.CreateDocNoBody)
 
         doc_list = body["content"][0]["attachment"]
@@ -61,13 +65,13 @@ def processing_event_details(event):
 
     except (JSONDecodeError, AttributeError) as e:
         logger.error(
-            f"Invalid json in body: {str(e)}",
+            f"{LambdaError.CreateDocPayload.to_str()}: {str(e)}",
             {"Result": "Create document reference failed"},
         )
         raise CreateDocumentRefException(400, LambdaError.CreateDocPayload)
     except (KeyError, TypeError) as e:
         logger.error(
-            f"Request body missing some properties: {str(e)}",
+            f"{LambdaError.CreateDocProps.to_str()}: {str(e)}",
             {"Result": "Create document reference failed"},
         )
         raise CreateDocumentRefException(400, LambdaError.CreateDocProps)
