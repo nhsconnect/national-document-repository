@@ -41,8 +41,9 @@ class OidcService:
             redirect_url=self._oidc_callback_uri,
             client_secret=self._client_secret,
         )
+        patched_headers = self.patch_user_agent(headers)
 
-        access_token_response = requests.post(url=url, data=body, headers=headers)
+        access_token_response = requests.post(url=url, data=body, headers=patched_headers)
         if access_token_response.status_code == 200:
             return self.parse_fetch_tokens_response(access_token_response)
         else:
@@ -165,11 +166,12 @@ class OidcService:
     def fetch_userinfo(self, access_token: AccessToken) -> Dict:
         logger.info(f"Access token for user info request: {access_token}")
 
+        patched_headers = self.patch_user_agent({
+                "Authorization": f"Bearer {access_token}",
+            })
         userinfo_response = requests.get(
             self._oidc_userinfo_url,
-            headers={
-                "Authorization": f"Bearer {access_token}",
-            },
+            headers=patched_headers
         )
 
         if userinfo_response.status_code == 200:
@@ -215,6 +217,10 @@ class OidcService:
         self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
         self.oidc_client = web_application_client_class(client_id=self._client_id)
         self.environment = oidc_parameters["ENVIRONMENT"]
+
+    @staticmethod
+    def patch_user_agent(headers: dict) -> dict:
+        return {**headers, 'user-agent': 'national-document-repository/1.0.0.1'}
 
 
 def get_selected_roleid(id_token_claim_set: IdTokenClaimSet):
