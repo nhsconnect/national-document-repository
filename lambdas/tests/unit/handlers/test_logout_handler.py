@@ -43,7 +43,7 @@ def test_logout_handler_invalid_jwt_returns_400(mocker, monkeypatch, context):
     )
 
     expected_body = json.dumps(
-        {"message": "Invalid Authorization header", "err_code": "OUT_4001"}
+        {"message": "Error while decoding JWT", "err_code": "OUT_4001"}
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
@@ -71,7 +71,7 @@ def test_logout_handler_jwt_without_ndr_session_id_returns_400(
     )
 
     expected_body = json.dumps(
-        {"message": "Invalid Authorization header", "err_code": "OUT_4001"}
+        {"message": "Error while decoding JWT", "err_code": "OUT_4001"}
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"

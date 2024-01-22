@@ -105,7 +105,10 @@ def test_lambda_handler_valid_both_doc_type_no_documents_found_returns_404(
     mock_handle_delete.return_value = []
 
     expected_body = json.dumps(
-        {"message": "Failed to delete documents", "err_code": "DDS_4001"}
+        {
+            "message": "No records was found for given patient. No document deleted",
+            "err_code": "DDS_4001",
+        }
     )
     expected = ApiGatewayResponse(
         404, expected_body, "DELETE"
@@ -122,7 +125,10 @@ def test_lambda_handler_no_documents_found_returns_404(
     mock_handle_delete.return_value = []
 
     expected_body = json.dumps(
-        {"message": "Failed to delete documents", "err_code": "DDS_4001"}
+        {
+            "message": "No records was found for given patient. No document deleted",
+            "err_code": "DDS_4001",
+        }
     )
     expected = ApiGatewayResponse(
         404, expected_body, "DELETE"

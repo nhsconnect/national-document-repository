@@ -144,7 +144,7 @@ def test_get_smartcard_role_gp_admin(mock_service, mock_ssm):
 
 def test_get_smartcard_role_gp_admin_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(500, LambdaError.LoginNoSSM)
+    expected = LoginException(500, LambdaError.LoginAdminSSM)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_smartcard_role_gp_admin()
@@ -171,7 +171,7 @@ def test_get_smartcard_role_gp_clinical(mock_service, mock_ssm):
 
 def test_get_smartcard_role_gp_clinical_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(500, LambdaError.LoginSmartSSM)
+    expected = LoginException(500, LambdaError.LoginClinicalSSM)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_smartcard_role_gp_clinical()
@@ -225,7 +225,7 @@ def test_get_org_role_codes(mock_service, mock_ssm):
 
 def test_get_org_role_codes_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(500, LambdaError.LoginGpSSM)
+    expected = LoginException(500, LambdaError.LoginGpODS)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_org_role_codes()
