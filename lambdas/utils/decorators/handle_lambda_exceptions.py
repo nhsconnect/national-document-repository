@@ -31,7 +31,10 @@ def handle_lambda_exceptions(lambda_func: Callable):
                 methods=event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
         except ClientError as e:
-            logger.error(str(e), {"Result": "Failed to utilise AWS client/resource"})
+            logger.error(
+                f"{LambdaError.GatewayError.to_str()}: {str(e)}",
+                {"Result": "Failed to utilise AWS client/resource"},
+            )
             return ApiGatewayResponse(
                 status_code=500,
                 body=LambdaError.GatewayError.create_error_body(),
