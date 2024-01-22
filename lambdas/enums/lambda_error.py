@@ -61,8 +61,14 @@ class LambdaError(Enum):
         "err_code": "CDR_1007",
         "message": "Failed to parse document upload request data",
     }
-    CreateDocPresign = {"err_code": "CDR_5001", "message": "An error occurred when creating pre-signed url for document reference"}
-    CreateDocUpload = {"err_code": "CDR_5002", "message": "An error occurred when creating pre-signed url for document reference"}
+    CreateDocPresign = {
+        "err_code": "CDR_5001",
+        "message": "An error occurred when creating pre-signed url for document reference",
+    }
+    CreateDocUpload = {
+        "err_code": "CDR_5002",
+        "message": "An error occurred when creating pre-signed url for document reference",
+    }
 
     """
        Errors for InvalidDocTypeException

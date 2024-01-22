@@ -102,7 +102,10 @@ class DocumentManifestService:
                 )
             except ClientError as e:
                 msg = f"{document.get_file_key()} may reference missing file in s3 bucket: {document.get_file_bucket()}"
-                logger.error(f"{LambdaError.ManifestClient.to_str()} {msg + str(e)}", {"Result": "Failed to create document manifest"})
+                logger.error(
+                    f"{LambdaError.ManifestClient.to_str()} {msg + str(e)}",
+                    {"Result": "Failed to create document manifest"},
+                )
                 raise DocumentManifestServiceException(
                     status_code=500, error=LambdaError.ManifestClient
                 )
