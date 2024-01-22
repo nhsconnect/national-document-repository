@@ -2,11 +2,10 @@
 
 import AWS from './aws.config';
 
-Cypress.Commands.add(
-    'addFileToS3',
-    (bucketName: string, fileName: string, fileContent: AWS.S3.Body) => {
-        const s3 = new AWS.S3();
+Cypress.Commands.add('addFileToS3', (bucketName: string, fileName: string, filePath: string) => {
+    const s3 = new AWS.S3();
 
+    return cy.fixture(filePath, 'binary').then((fileContent) => {
         const params: AWS.S3.Types.PutObjectRequest = {
             Bucket: bucketName,
             Key: fileName,
@@ -27,8 +26,8 @@ Cypress.Commands.add(
                 });
             }),
         );
-    },
-);
+    });
+});
 
 Cypress.Commands.add(
     'addItemToDynamoDb',

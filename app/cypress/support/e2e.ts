@@ -106,7 +106,7 @@ declare global {
             addFileToS3(
                 bucketName: string,
                 fileName: string,
-                fileContent: S3.Body,
+                filePath: string,
             ): Chainable<Bluebird<S3.ManagedUpload.SendData>>;
             /**
              * Add dynamoDB entry

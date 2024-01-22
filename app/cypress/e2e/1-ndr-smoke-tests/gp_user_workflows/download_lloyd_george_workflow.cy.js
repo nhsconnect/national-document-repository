@@ -1,127 +1,65 @@
 import { pdsPatients } from '../../../support/patients';
 import { Roles } from '../../../support/roles';
+import { dbItem } from '../../../fixtures/dynamo-db-items/active-patient.json';
 
-const baseUrl = Cypress.config('baseUrl');
+const workspace = Cypress.env('WORKSPACE');
+dbItem.FileLocation = dbItem.FileLocation.replace('{env}', workspace).replace(
+    '{nhsNumber',
+    activePatient,
+);
+const activePatient = pdsPatients.activeUpload;
+const bucketName = `${workspace}-lloyd-george-store`;
+const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
+const fileName = `${activePatient}/e4a6d7f7-01f3-44be-8964-515b2c0ec180`;
 
 describe('GP Workflow: View Lloyd George record', () => {
     context('Download Lloyd George document', () => {
+        before(() => {
+            cy.deleteFileFromS3(bucketName, fileName);
+            cy.deleteItemFromDynamoDb(tableName, dbItem.ID);
+            cy.addFileToS3(bucketName, fileName, '../../../fixtures/test_patient_record.pdf');
+            cy.addItemToDynamoDb(tableName, dbItem);
+        });
+
+        after(() => {
+            cy.deleteFileFromS3(bucketName, fileName);
+            cy.deleteItemFromDynamoDb(tableName, dbItem.ID);
+        });
+
         it(
             '[Smoke] GP ADMIN user can download the Lloyd George document of an active patient',
             { tags: 'smoke' },
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN);
+
+                cy.getByTestId('search-patient-btn').click();
+
                 cy.get('#nhs-number-input').click();
-                cy.get('#nhs-number-input').type(pdsPatients.activeUpload);
+                cy.get('#nhs-number-input').type(activePatient);
                 cy.get('#search-submit').click();
 
-                cy.url({ timeout: 10000 }).should('eq', baseUrl + '/search/upload/result');
+                cy.url({ timeout: 10000 }).should('contain', '/search/patient/verify');
                 cy.get('#verify-submit').click();
 
-                cy.url({ timeout: 10000 }).should(
-                    'eq',
-                    baseUrl + '/search/patient/lloyd-george-record',
-                );
-                // cy.get('#verify-submit').click();
-                // cy.wait('@lloydGeorgeStitch');
+                cy.url({ timeout: 10000 }).should('contain', '/patient/view/lloyd-george-record');
 
-                // cy.intercept('GET', '/DocumentManifest*', {
-                //     statusCode: 200,
-                //     body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
-                // }).as('documentManifest');
+                cy.getByTestId('actions-menu').click();
+                cy.getByTestId('download-all-files-link').click();
 
-                // cy.getByTestId('actions-menu').click();
-                // cy.getByTestId('download-all-files-link').click();
+                // Assert contents of page when downloading
+                cy.contains('Downloading documents').should('be.visible');
+                cy.contains('Preparing download for').should('be.visible');
+                cy.contains('Compressing record into a zip file').should('be.visible');
+                cy.contains('Cancel').should('be.visible');
 
-                // cy.wait('@documentManifest');
+                // Assert contents of page after download
+                cy.contains('Download complete').should('be.visible');
+                cy.contains('Documents from the Lloyd George record of:').should('be.visible');
+                cy.contains(`(NHS number: ${activePatient})`).should('be.visible');
 
-                // // Assert contents of page when downloading
-                // cy.contains('Downloading documents').should('be.visible');
-                // cy.contains(
-                //     `Preparing download for ${viewLloydGeorgePayload.number_of_files} files`,
-                // ).should('be.visible');
-                // cy.contains('Compressing record into a zip file').should('be.visible');
-                // cy.contains('Cancel').should('be.visible');
-
-                // // Assert contents of page after download
-                // cy.contains('Download complete').should('be.visible');
-                // cy.contains('Documents from the Lloyd George record of:').should('be.visible');
-                // cy.contains(
-                //     `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
-                // ).should('be.visible');
-                // cy.contains(`(NHS number: ${searchPatientPayload.nhsNumber})`).should('be.visible');
-
-                // // Assert file has been downloaded
-                // cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
-
-                // cy.getByTestId('return-btn').click();
-
-                // // Assert return button returns to pdf view
-                // cy.getByTestId('pdf-card').should('be.visible');
+                // Assert file has been downloaded
+                cy.readFile(`${Cypress.config('downloadsFolder')}/patient-record-${activePatient}`);
             },
         );
-
-        // it(
-        //     'No download option or menu exists when no Lloyd George record exists for a patient as a GP ADMIN role',
-        //     { tags: 'regression' },
-        //     () => {
-        //         beforeEachConfiguration(Roles.GP_ADMIN);
-
-        //         cy.intercept('GET', '/LloydGeorgeStitch*', {
-        //             statusCode: 404,
-        //         }).as('lloydGeorgeStitch');
-
-        //         cy.get('#verify-submit').click();
-        //         cy.wait('@lloydGeorgeStitch');
-
-        //         cy.getByTestId('actions-menu').should('not.exist');
-        //     },
-        // );
-
-        // it(
-        //     'No download option exists when a Lloyd George record exists for the patient as a GP CLINICAL role',
-        //     { tags: 'regression' },
-        //     () => {
-        //         beforeEachConfiguration(Roles.GP_CLINICAL);
-
-        //         cy.intercept('GET', '/LloydGeorgeStitch*', {
-        //             statusCode: 200,
-        //             body: viewLloydGeorgePayload,
-        //         }).as('lloydGeorgeStitch');
-
-        //         cy.get('#verify-submit').click();
-        //         cy.wait('@lloydGeorgeStitch');
-
-        //         cy.getByTestId('actions-menu').click();
-        //         cy.getByTestId('download-all-files-link').should('not.exist');
-        //     },
-        // );
-
-        // it.skip(
-        //     'It displays an error when the document manifest API call fails as a GP CLINICAL role',
-        //     { tags: 'regression' },
-        //     () => {
-        //         cy.intercept('GET', '/LloydGeorgeStitch*', {
-        //             statusCode: 200,
-        //             body: viewLloydGeorgePayload,
-        //         }).as('lloydGeorgeStitch');
-
-        //         cy.intercept('GET', '/DocumentManifest*', {
-        //             statusCode: 500,
-        //         }).as('documentManifest');
-
-        //         cy.get('#verify-submit').click();
-        //         cy.wait('@lloydGeorgeStitch');
-
-        //         cy.getByTestId('actions-menu').click();
-        //         cy.getByTestId('download-all-files-link').click();
-
-        //         cy.wait('@documentManifest');
-
-        //         // Assert
-        //         cy.contains(
-        //             'appropriate error for when the document manifest API call fails',
-        //         ).should('be.visible');
-        //     },
-        // );
     });
 });

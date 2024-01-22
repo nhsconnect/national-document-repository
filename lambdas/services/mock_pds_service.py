@@ -23,6 +23,8 @@ class MockPdsApiService(PatientSearch):
                 mock_pds_results.append(json.load(f))
             with open("services/mock_data/pds_patient_9000000002_H81109_gp.json") as f:
                 mock_pds_results.append(json.load(f))
+            with open("services/mock_data/pds_patient_9730153817_H81109_gp.json") as f:
+                mock_pds_results.append(json.load(f))
             with open("services/mock_data/pds_patient_9000000003_H85686_gp.json") as f:
                 mock_pds_results.append(json.load(f))
             with open("services/mock_data/pds_patient_9000000025_restricted.json") as f:
