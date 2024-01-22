@@ -127,8 +127,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     cy.get('#verify-submit').click();
 
                     //Assert
-                    assertPatientInfo();
-                    assertFailedLloydGeorgeLoad();
+                    cy.contains('Sorry, there is a problem with the service').should('be.visible');
                 },
             );
         });
@@ -136,7 +135,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
     context('View Lloyd George document with specific role tests', () => {
         it(
-            'It displays an error with a download link when a Lloyd George stitching timeout occures via the API Gatway for a GP_ADMIN',
+            'It displays an error with a download link when a Lloyd George stitching timeout occurs via the API Gateway for a GP_ADMIN',
             { tags: 'regression' },
             () => {
                 beforeEachConfiguration(Roles.GP_ADMIN);
@@ -151,7 +150,7 @@ describe('GP Workflow: View Lloyd George record', () => {
         );
 
         it(
-            'It displays an error with download link when a Lloyd George stitching timeout occures via the API Gatway for a GP_CLINICAL but link access is denied',
+            'It displays an error with download link when a Lloyd George stitching timeout occurs via the API Gateway for a GP_CLINICAL but link access is denied',
             { tags: 'regression' },
             () => {
                 beforeEachConfiguration(Roles.GP_CLINICAL);
@@ -287,7 +286,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.wait('@documentDelete');
 
                 // assert
-                cy.getByTestId('service-error').should('be.visible');
+                cy.contains('Sorry, there is a problem with the service').should('be.visible');
             },
         );
 
@@ -346,7 +345,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             cy.wait('@documentManifest');
 
             // Assert
-            cy.contains('An error has occurred while preparing your download').should('be.visible');
+            cy.contains('Sorry, there is a problem with the service').should('be.visible');
         });
     });
 });
