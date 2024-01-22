@@ -6,6 +6,7 @@ from urllib import parse
 from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from pypdf.errors import PyPdfError
@@ -36,16 +37,25 @@ class LloydGeorgeStitchService:
         try:
             lg_records = self.get_lloyd_george_record_for_patient(nhs_number)
             if len(lg_records) == 0:
+                logger.error(
+                    f"{LambdaError.StitchNotFound.to_str()}",
+                    {"Result": "Lloyd George stitching failed"},
+                )
                 raise LGStitchServiceException(
-                    404, f"Lloyd george record not found for patient {nhs_number}"
+                    404,
+                    LambdaError.StitchNotFound,
                 )
 
             ordered_lg_records = self.sort_documents_by_filenames(lg_records)
             all_lg_parts = self.download_lloyd_george_files(ordered_lg_records)
         except ClientError as e:
-            logger.error(str(e), {"Result": "Lloyd George stitching failed"})
+            logger.error(
+                f"{LambdaError.StitchNoService.to_str()}: {str(e)}",
+                {"Result": "Lloyd George stitching failed"},
+            )
             raise LGStitchServiceException(
-                500, f"Unable to retrieve documents for patient {nhs_number}"
+                500,
+                LambdaError.StitchNoService,
             )
 
         try:
@@ -74,10 +84,11 @@ class LloydGeorgeStitchService:
 
             return json.dumps(response)
         except (ClientError, PyPdfError, FileNotFoundError) as e:
-            logger.error(str(e), {"Result": "Lloyd George stitching failed"})
-            raise LGStitchServiceException(
-                500, "Unable to return stitched pdf file due to internal error"
+            logger.error(
+                f"{LambdaError.StitchClient.to_str()}: {str(e)}",
+                {"Result": "Lloyd George stitching failed"},
             )
+            raise LGStitchServiceException(500, LambdaError.StitchClient)
         finally:
             shutil.rmtree(self.temp_folder)
 
@@ -89,10 +100,11 @@ class LloydGeorgeStitchService:
                 nhs_number, SupportedDocumentTypes.LG
             )
         except ClientError as e:
-            logger.error(str(e), {"Result": "Lloyd George stitching failed"})
-            raise LGStitchServiceException(
-                500, f"Unable to retrieve documents for patient {nhs_number}"
+            logger.error(
+                f"{LambdaError.StitchDB.to_str()}: {str(e)}",
+                {"Result": "Lloyd George stitching failed"},
             )
+            raise LGStitchServiceException(500, LambdaError.StitchDB)
 
     @staticmethod
     def sort_documents_by_filenames(
@@ -101,14 +113,12 @@ class LloydGeorgeStitchService:
         try:
             return sorted(documents, key=lambda doc: extract_page_number(doc.file_name))
         except (KeyError, ValueError) as e:
-            nhs_number = documents[0].nhs_number
+            documents[0].nhs_number
             logger.error(
-                f"Lloyd George filenames not following naming convention: {str(e)}",
+                f"{LambdaError.StitchValidation.to_str()}: {str(e)}",
                 {"Result": "Lloyd George stitching failed"},
             )
-            raise LGStitchServiceException(
-                500, f"Unable to stitch documents for patient {nhs_number}"
-            )
+            raise LGStitchServiceException(500, LambdaError.StitchValidation)
 
     def download_lloyd_george_files(
         self,

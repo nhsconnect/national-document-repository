@@ -1,5 +1,6 @@
 import json
 
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.login_service import LoginService
 from utils.audit_logging_setup import LoggingService
@@ -24,15 +25,11 @@ def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
     logger.info("Token request handler triggered")
 
-    missing_value_response_body = (
-        "No auth code and/or state in the query string parameters"
-    )
-
     try:
         auth_code = event["queryStringParameters"]["code"]
         state = event["queryStringParameters"]["state"]
         if not (auth_code and state):
-            raise LoginException(400, missing_value_response_body)
+            raise LoginException(400, LambdaError.LoginNoState)
 
         login_service = LoginService()
 
@@ -44,7 +41,13 @@ def lambda_handler(event, context):
             200, json.dumps(response), "GET"
         ).create_api_gateway_response()
 
-    except (KeyError, TypeError):
+    except (KeyError, TypeError) as e:
+        logger.error(
+            f"{ LambdaError.LoginNoAuth.to_str()}: {str(e)}",
+            {"Result": "Unsuccessful login"},
+        )
         return ApiGatewayResponse(
-            400, missing_value_response_body, "GET"
+            400,
+            LambdaError.LoginNoAuth.create_error_body(),
+            "GET",
         ).create_api_gateway_response()

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pytest
+from enums.lambda_error import LambdaError
 from services.token_handler_ssm_service import TokenHandlerSSMService
 from utils.constants.ssm import (
     GP_ADMIN_USER_ROLE_CODES,
@@ -143,7 +144,7 @@ def test_get_smartcard_role_gp_admin(mock_service, mock_ssm):
 
 def test_get_smartcard_role_gp_admin_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(500, "Failed to find SSM parameter value for user role")
+    expected = LoginException(500, LambdaError.LoginAdminSSM)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_smartcard_role_gp_admin()
@@ -170,7 +171,7 @@ def test_get_smartcard_role_gp_clinical(mock_service, mock_ssm):
 
 def test_get_smartcard_role_gp_clinical_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(500, "Failed to find SSM parameter value for user role")
+    expected = LoginException(500, LambdaError.LoginClinicalSSM)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_smartcard_role_gp_clinical()
@@ -197,7 +198,7 @@ def test_get_smartcard_role_pcse(mock_service, mock_ssm):
 
 def test_get_smartcard_role_pcse_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(500, "Failed to find SSM parameter value for user role")
+    expected = LoginException(500, LambdaError.LoginPcseSSM)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_smartcard_role_pcse()
@@ -224,7 +225,7 @@ def test_get_org_role_codes(mock_service, mock_ssm):
 
 def test_get_org_role_codes_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(500, "Failed to find SSM parameter value for GP org role")
+    expected = LoginException(500, LambdaError.LoginGpODS)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_org_role_codes()
@@ -251,9 +252,7 @@ def test_get_org_ods_codes(mock_service, mock_ssm):
 
 def test_get_org_ods_codes_raises_login_exception(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = {"Parameters": []}
-    expected = LoginException(
-        500, "SSM parameter values for PSCE ODS code may not exist"
-    )
+    expected = LoginException(500, LambdaError.LoginPcseODS)
 
     with pytest.raises(LoginException) as actual:
         mock_service.get_org_ods_codes()
