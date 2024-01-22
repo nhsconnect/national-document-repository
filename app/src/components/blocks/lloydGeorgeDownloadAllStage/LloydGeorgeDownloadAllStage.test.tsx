@@ -102,8 +102,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         const errorResponse = {
             response: {
                 status: 500,
-                message: 'An error occurred',
-                errorCode: 'SP_1001',
+                data: { message: 'An error occurred', err_code: 'SP_1001' },
             },
         };
         mockedAxios.delete.mockImplementation(() => Promise.reject(errorResponse));
@@ -135,8 +134,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         const errorResponse = {
             response: {
                 status: 500,
-                message: 'An error occurred',
-                errorCode: 'SP_1001',
+                data: { message: 'An error occurred', err_code: 'SP_1001' },
             },
         };
         mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));

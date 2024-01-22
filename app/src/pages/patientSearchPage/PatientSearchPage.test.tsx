@@ -121,7 +121,7 @@ describe('PatientSearchPage', () => {
             const errorResponse = {
                 response: {
                     status: 500,
-                    message: '500 Unknown Service Error.',
+                    data: { message: '500 Unknown Service Error.', err_code: 'test' },
                 },
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
@@ -197,7 +197,7 @@ describe('PatientSearchPage', () => {
             const errorResponse = {
                 response: {
                     status: 500,
-                    message: '500 Server Error.',
+                    data: { message: '500 Unknown Service Error.', err_code: 'test' },
                 },
             };
 
@@ -209,7 +209,7 @@ describe('PatientSearchPage', () => {
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
-                    routes.SERVER_ERROR + '?errorCode=SP_1001',
+                    routes.SERVER_ERROR + '?errorCode=test',
                 );
             });
         });

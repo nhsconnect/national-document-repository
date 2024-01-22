@@ -113,8 +113,7 @@ describe('LloydGeorgeRecordPage', () => {
         const errorResponse = {
             response: {
                 status: 500,
-                message: 'An error occurred',
-                errorCode: 'SP_1001',
+                data: { message: 'An error occurred', err_code: 'SP_1001' },
             },
         };
         mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));

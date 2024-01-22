@@ -16,6 +16,7 @@ import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { routes } from '../../types/generic/routes';
 import { useNavigate } from 'react-router';
+import { errorToParams } from '../../helpers/utils/errorToParams';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -59,9 +60,7 @@ function LloydGeorgeRecordPage() {
                 } else if (error.response?.status === 404) {
                     setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
                 } else if (error.response?.status && error.response?.status >= 500) {
-                    const errorCode = 'SP_1001';
-                    const params = '?errorCode=' + errorCode;
-                    navigate(routes.SERVER_ERROR + params);
+                    navigate(routes.SERVER_ERROR + errorToParams(error));
                 } else {
                     setDownloadStage(DOWNLOAD_STAGE.FAILED);
                 }

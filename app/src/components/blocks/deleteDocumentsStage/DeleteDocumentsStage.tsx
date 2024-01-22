@@ -19,6 +19,7 @@ import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../helpers/hooks/usePatient';
+import { errorToParams } from '../../../helpers/utils/errorToParams';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -80,7 +81,6 @@ function DeleteDocumentsStage({
 
             if (response.status === 200) {
                 setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
-
                 if (setDownloadStage) {
                     setDownloadStage(DOWNLOAD_STAGE.FAILED);
                 }
@@ -90,9 +90,7 @@ function DeleteDocumentsStage({
             if (error.response?.status === 403) {
                 navigate(routes.START);
             } else {
-                const errorCode = 'SP_1001';
-                const params = '?errorCode=' + errorCode;
-                navigate(routes.SERVER_ERROR + params);
+                navigate(routes.SERVER_ERROR + errorToParams(error));
             }
             setDeletionStage(SUBMISSION_STATE.FAILED);
         }

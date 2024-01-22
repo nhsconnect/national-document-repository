@@ -131,7 +131,7 @@ describe('<DocumentSearchResultsPage />', () => {
             const errorResponse = {
                 response: {
                     status: 400,
-                    message: 'An error occurred',
+                    data: { message: 'An error occurred', err_code: 'SP_1001' },
                 },
             };
 
@@ -180,8 +180,7 @@ describe('<DocumentSearchResultsPage />', () => {
             const errorResponse = {
                 response: {
                     status: 500,
-                    message: 'An error occurred',
-                    errorCode: 'SP_1001',
+                    data: { message: 'An error occurred', err_code: 'SP_1001' },
                 },
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));

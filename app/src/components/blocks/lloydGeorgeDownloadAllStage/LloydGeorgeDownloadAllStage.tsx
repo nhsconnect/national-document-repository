@@ -19,6 +19,8 @@ import deleteAllDocuments from '../../../helpers/requests/deleteAllDocuments';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import { routes } from '../../../types/generic/routes';
 import { useNavigate, Link } from 'react-router-dom';
+import { errorToParams } from '../../../helpers/utils/errorToParams';
+import { AxiosError } from 'axios/index';
 
 const FakeProgress = require('fake-progress');
 
@@ -106,15 +108,11 @@ function LloydGeorgeDownloadAllStage({
                             baseHeaders,
                         });
                     } catch (e) {
-                        const errorCode = 'SP_1001';
-                        const params = '?errorCode=' + errorCode;
-                        navigate(routes.SERVER_ERROR + params);
+                        navigate(routes.SERVER_ERROR + errorToParams(e as AxiosError));
                     } // This is fail and forget at this point in time.
                 }
             } catch (e) {
-                const errorCode = 'SP_1001';
-                const params = '?errorCode=' + errorCode;
-                navigate(routes.SERVER_ERROR + params);
+                navigate(routes.SERVER_ERROR + errorToParams(e as AxiosError));
             }
         };
 

@@ -17,6 +17,7 @@ import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
+import { errorToParams } from '../../helpers/utils/errorToParams';
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
@@ -53,9 +54,7 @@ function DocumentSearchResultsPage() {
                 if (error.response?.status === 403) {
                     navigate(routes.START);
                 } else if (error.response?.status && error.response?.status >= 500) {
-                    const errorCode = 'SP_1001';
-                    const params = '?errorCode=' + errorCode;
-                    navigate(routes.SERVER_ERROR + params);
+                    navigate(routes.SERVER_ERROR + errorToParams(error));
                 } else {
                     setSubmissionState(SUBMISSION_STATE.FAILED);
                 }

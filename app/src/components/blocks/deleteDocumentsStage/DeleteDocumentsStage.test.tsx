@@ -162,7 +162,7 @@ describe('DeleteDocumentsStage', () => {
             const errorResponse = {
                 response: {
                     status: 500,
-                    message: 'Client Error.',
+                    data: { message: 'Client Error', err_code: 'SP_1001' },
                 },
             };
             mockedAxios.delete.mockImplementation(() => Promise.reject(errorResponse));

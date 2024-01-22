@@ -104,7 +104,7 @@ describe('DocumentSearchResultsOptions', () => {
             const errorResponse = {
                 response: {
                     status: 400,
-                    message: 'Error',
+                    data: { message: 'Error', err_code: 'SP_1001' },
                 },
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
@@ -158,7 +158,7 @@ describe('DocumentSearchResultsOptions', () => {
             const errorResponse = {
                 response: {
                     status: 500,
-                    message: 'Server error',
+                    data: { message: 'Server error', err_code: 'SP_1001' },
                 },
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));

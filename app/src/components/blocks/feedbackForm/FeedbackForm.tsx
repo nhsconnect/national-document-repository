@@ -13,6 +13,8 @@ import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-component
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 import { routes } from '../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
+import { errorToParams } from '../../../helpers/utils/errorToParams';
+import { AxiosError } from 'axios/index';
 
 export type Props = {
     stage: SUBMISSION_STAGE;
@@ -36,9 +38,8 @@ function FeedbackForm({ stage, setStage }: Props) {
             await sendEmail(formData);
             setStage(SUBMISSION_STAGE.Successful);
         } catch (e) {
-            const errorCode = 'SP_1001';
-            const params = '?errorCode=' + errorCode;
-            navigate(routes.SERVER_ERROR + params);
+            const error = e as AxiosError;
+            navigate(routes.SERVER_ERROR + errorToParams(error));
             setStage(SUBMISSION_STAGE.Failure);
         }
     };
