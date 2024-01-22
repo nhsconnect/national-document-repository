@@ -1,8 +1,12 @@
 from typing import Callable
 
+from enums.lambda_error import LambdaError
+from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import validate_id
+
+logger = LoggingService(__name__)
 
 
 def extract_nhs_number_from_event(event) -> str:
@@ -25,14 +29,25 @@ def validate_patient_id(lambda_func: Callable):
         try:
             nhs_number = extract_nhs_number_from_event(event)
             validate_id(nhs_number)
-        except InvalidResourceIdException:
-            return ApiGatewayResponse(
-                400, "Invalid NHS number", event["httpMethod"]
-            ).create_api_gateway_response()
-        except KeyError as e:
+        except InvalidResourceIdException as e:
+            nhs_number = extract_nhs_number_from_event(event)
+            logger.error(
+                f"{LambdaError.PatientIdInvalid.to_str()}: {str(e)}",
+                {"Result": f"Invalid patient number {nhs_number}"},
+            )
             return ApiGatewayResponse(
                 400,
-                f"An error occurred due to missing key: {str(e)}",
+                LambdaError.PatientIdInvalid.create_error_body({"number": nhs_number}),
+                event["httpMethod"],
+            ).create_api_gateway_response()
+        except KeyError as e:
+            logger.error(
+                f"{LambdaError.PatientIdNoKey.to_str()}: {str(e)}",
+                {"Result": "An error occurred due to missing key"},
+            )
+            return ApiGatewayResponse(
+                400,
+                LambdaError.PatientIdNoKey.create_error_body(),
                 event["httpMethod"],
             ).create_api_gateway_response()
 

@@ -1,7 +1,11 @@
 from typing import Callable
 
+from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
+from utils.audit_logging_setup import LoggingService
 from utils.lambda_response import ApiGatewayResponse
+
+logger = LoggingService(__name__)
 
 
 def validate_document_type(lambda_func: Callable):
@@ -20,16 +24,21 @@ def validate_document_type(lambda_func: Callable):
             doc_type = event["queryStringParameters"]["docType"]
             if doc_type is None:
                 return ApiGatewayResponse(
-                    400, "docType not supplied", event["httpMethod"]
+                    400,
+                    LambdaError.DocTypeNull.create_error_body(),
+                    event["httpMethod"],
                 ).create_api_gateway_response()
             if not doc_type_is_valid(doc_type):
                 return ApiGatewayResponse(
-                    400, "Invalid document type requested", event["httpMethod"]
+                    400,
+                    LambdaError.DocTypeInvalid.create_error_body(),
+                    event["httpMethod"],
                 ).create_api_gateway_response()
         except KeyError as e:
+            logger.info({str(e)}, {"Result": "An error occurred due to missing key"})
             return ApiGatewayResponse(
                 400,
-                f"An error occurred due to missing key: {str(e)}",
+                LambdaError.DocTypeKey.create_error_body(),
                 event["httpMethod"],
             ).create_api_gateway_response()
 

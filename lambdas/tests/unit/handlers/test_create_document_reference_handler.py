@@ -1,4 +1,5 @@
 import json
+from enum import Enum
 
 import pytest
 from handlers.create_document_reference_handler import (
@@ -24,6 +25,10 @@ from utils.lambda_response import ApiGatewayResponse
 
 TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_ARF_BUCKET}/{TEST_OBJECT_KEY}"
 TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_LG_BUCKET}/{TEST_OBJECT_KEY}"
+
+
+class MockError(Enum):
+    Error = {"message": "Client error", "err_code": "AB_XXXX"}
 
 
 @pytest.fixture
@@ -73,7 +78,7 @@ lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME", "LLOYD_GEORGE_DYNAMODB_N
 
 
 @pytest.mark.parametrize("environment_variable", lg_environment_variables)
-def test_lambda_handler_missing_environment_variables_type_lg_returns_400(
+def test_lambda_handler_missing_environment_variables_type_lg_returns_500(
     set_env,
     monkeypatch,
     lg_type_event,
@@ -81,9 +86,14 @@ def test_lambda_handler_missing_environment_variables_type_lg_returns_400(
     context,
 ):
     monkeypatch.delenv(environment_variable)
+
+    expected_body = {
+        "message": f"An error occurred due to missing environment variable: '{environment_variable}'",
+        "err_code": "ENV_5001",
+    }
     expected = ApiGatewayResponse(
         500,
-        f"An error occurred due to missing environment variable: '{environment_variable}'",
+        json.dumps(expected_body),
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(lg_type_event, context)
@@ -99,9 +109,14 @@ def test_lambda_handler_missing_environment_variables_type_arf_returns_500(
     context,
 ):
     monkeypatch.delenv(environment_variable)
+
+    expected_body = {
+        "message": f"An error occurred due to missing environment variable: '{environment_variable}'",
+        "err_code": "ENV_5001",
+    }
     expected = ApiGatewayResponse(
         500,
-        f"An error occurred due to missing environment variable: '{environment_variable}'",
+        json.dumps(expected_body),
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)
@@ -167,10 +182,12 @@ def test_processing_event_details_get_nhs_number_and_doc_list(arf_type_event):
 def test_lambda_handler_processing_event_details_raise_error(
     mocker, arf_type_event, context, set_env, mock_processing_event_details
 ):
-    mock_processing_event_details.side_effect = CreateDocumentRefException(400, "test")
+    mock_processing_event_details.side_effect = CreateDocumentRefException(
+        400, MockError.Error
+    )
     expected = ApiGatewayResponse(
         400,
-        "test",
+        json.dumps(MockError.Error.value),
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)
@@ -185,11 +202,11 @@ def test_lambda_handler_service_raise_error(
 
     mock_service = mocker.patch(
         "services.create_document_reference_service.CreateDocumentReferenceService.create_document_reference_request",
-        side_effect=CreateDocumentRefException(400, "test"),
+        side_effect=CreateDocumentRefException(400, MockError.Error),
     )
     expected = ApiGatewayResponse(
         400,
-        "test",
+        json.dumps(MockError.Error.value),
         "POST",
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)

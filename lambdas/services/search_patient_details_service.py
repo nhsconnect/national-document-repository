@@ -1,3 +1,4 @@
+from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
 from pydantic import ValidationError
 from pydantic_core import PydanticSerializationError
@@ -35,33 +36,31 @@ class SearchPatientDetailsService:
             return response
         except PatientNotFoundException as e:
             logger.error(
-                f"PDS not found: {str(e)}",
+                f"{LambdaError.SearchPatientNoPDS.to_str()}: {str(e)}",
                 {"Result": "Patient not found"},
             )
-            raise SearchPatientException(
-                404, "Patient does not exist for given NHS number"
-            )
+            raise SearchPatientException(404, LambdaError.SearchPatientNoPDS)
 
-        except UserNotAuthorisedException:
+        except UserNotAuthorisedException as e:
             logger.error(
-                "PDS Error: User not authorised",
+                f"{LambdaError.SearchPatientNoAuth.to_str()}: {str(e)}",
                 {"Result": "Patient found, User not authorised to view patient"},
             )
-            raise SearchPatientException(
-                404, "Patient does not exist for given NHS number"
-            )
+            raise SearchPatientException(404, LambdaError.SearchPatientNoAuth)
 
         except (InvalidResourceIdException, PdsErrorException) as e:
-            logger.error(f"PDS Error: {str(e)}", {"Result": "Patient not found"})
-            raise SearchPatientException(
-                400, "An error occurred while searching for patient"
+            logger.error(
+                f"{LambdaError.SearchPatientNoId.to_str()}: {str(e)}",
+                {"Result": "Patient not found"},
             )
+            raise SearchPatientException(400, LambdaError.SearchPatientNoId)
 
         except (ValidationError, PydanticSerializationError) as e:
             logger.error(
-                f"Failed to parse PDS data:{str(e)}", {"Result": "Patient not found"}
+                f"{LambdaError.SearchPatientNoParse.to_str()}: {str(e)}",
+                {"Result": "Patient not found"},
             )
-            raise SearchPatientException(400, "Failed to parse PDS data")
+            raise SearchPatientException(400, LambdaError.SearchPatientNoParse)
 
     def check_if_user_authorise(self, gp_ods):
         match self.user_role:

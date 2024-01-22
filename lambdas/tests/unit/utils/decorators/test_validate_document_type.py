@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from enums.supported_document_types import SupportedDocumentTypes
 from utils.lambda_response import ApiGatewayResponse
@@ -43,9 +45,10 @@ def test_runs_lambda_when_receiving_both_doc_types(
 
 
 def test_returns_400_response_when_doctype_not_supplied(valid_id_event, context):
-    expected = ApiGatewayResponse(
-        400, "An error occurred due to missing key: 'docType'", "GET"
-    ).create_api_gateway_response()
+    body = json.dumps(
+        {"message": "An error occurred due to missing key", "err_code": "VDT_4003"}
+    )
+    expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
     actual = lambda_handler(valid_id_event, context)
 
@@ -55,9 +58,10 @@ def test_returns_400_response_when_doctype_not_supplied(valid_id_event, context)
 def test_returns_400_response_when_invalid_doctype_supplied(
     valid_id_and_invalid_doctype_event, context
 ):
-    expected = ApiGatewayResponse(
-        400, "Invalid document type requested", "GET"
-    ).create_api_gateway_response()
+    body = json.dumps(
+        {"message": "Invalid document type requested", "err_code": "VDT_4002"}
+    )
+    expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_invalid_doctype_event, context)
 
@@ -67,9 +71,10 @@ def test_returns_400_response_when_invalid_doctype_supplied(
 def test_returns_400_response_when_nonsense_doctype_supplied(
     valid_id_and_nonsense_doctype_event, context
 ):
-    expected = ApiGatewayResponse(
-        400, "Invalid document type requested", "GET"
-    ).create_api_gateway_response()
+    body = json.dumps(
+        {"message": "Invalid document type requested", "err_code": "VDT_4002"}
+    )
+    expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_nonsense_doctype_event, context)
 
@@ -79,9 +84,10 @@ def test_returns_400_response_when_nonsense_doctype_supplied(
 def test_returns_400_response_when_empty_doctype_supplied(
     valid_id_and_empty_doctype_event, context
 ):
-    expected = ApiGatewayResponse(
-        400, "Invalid document type requested", "GET"
-    ).create_api_gateway_response()
+    body = json.dumps(
+        {"message": "Invalid document type requested", "err_code": "VDT_4002"}
+    )
+    expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_empty_doctype_event, context)
 
@@ -91,9 +97,8 @@ def test_returns_400_response_when_empty_doctype_supplied(
 def test_returns_400_response_when_doctype_field_not_in_event(
     valid_id_and_none_doctype_event, context
 ):
-    expected = ApiGatewayResponse(
-        400, "docType not supplied", "GET"
-    ).create_api_gateway_response()
+    body = json.dumps({"message": "docType not supplied", "err_code": "VDT_4001"})
+    expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
     actual = lambda_handler(valid_id_and_none_doctype_event, context)
 

@@ -4,6 +4,7 @@ import tempfile
 import zipfile
 
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.zip_trace import ZipTrace
@@ -41,21 +42,28 @@ class DocumentManifestService:
                 )
             )
             if not documents:
+                logger.error(
+                    f"{LambdaError.ManifestNoDocs.to_str()}",
+                    {"Result": "Failed to create document manifest"},
+                )
                 raise DocumentManifestServiceException(
-                    status_code=404,
-                    message="No documents found for given NHS number and document type",
+                    status_code=404, error=LambdaError.ManifestNoDocs
                 )
         except ValidationError as e:
-            logger.error(str(e), {"Result": "Failed to create document manifest"})
+            logger.error(
+                f"{LambdaError.ManifestValidation.to_str()}: {str(e)}",
+                {"Result": "Failed to create document manifest"},
+            )
             raise DocumentManifestServiceException(
-                status_code=500,
-                message="Failed to parse document reference from from DynamoDb response",
+                status_code=500, error=LambdaError.ManifestValidation
             )
         except DynamoServiceException as e:
-            logger.error(str(e), {"Result": "Failed to create document manifest"})
+            logger.error(
+                f"{LambdaError.ManifestDB.to_str()}: {str(e)}",
+                {"Result": "Failed to create document manifest"},
+            )
             raise DocumentManifestServiceException(
-                status_code=500,
-                message=str(e),
+                status_code=500, error=LambdaError.ManifestDB
             )
 
         self.download_documents_to_be_zipped(documents)
@@ -92,12 +100,14 @@ class DocumentManifestService:
                 self.s3_service.download_file(
                     document.get_file_bucket(), document.get_file_key(), download_path
                 )
-            except ClientError:
+            except ClientError as e:
                 msg = f"{document.get_file_key()} may reference missing file in s3 bucket: {document.get_file_bucket()}"
-                logger.error(msg, {"Result": "Failed to create document manifest"})
+                logger.error(
+                    f"{LambdaError.ManifestClient.to_str()} {msg + str(e)}",
+                    {"Result": "Failed to create document manifest"},
+                )
                 raise DocumentManifestServiceException(
-                    status_code=500,
-                    message=msg,
+                    status_code=500, error=LambdaError.ManifestClient
                 )
 
     def upload_zip_file(self):

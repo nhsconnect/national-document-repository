@@ -1,10 +1,15 @@
 import json
+from enum import Enum
 
 import pytest
 from handlers.document_reference_search_handler import lambda_handler
 from tests.unit.helpers.data.dynamo_responses import EXPECTED_RESPONSE
 from utils.lambda_exceptions import DocumentRefSearchException
 from utils.lambda_response import ApiGatewayResponse
+
+
+class MockError(Enum):
+    Error = {"message": "Client error", "err_code": "AB_XXXX"}
 
 
 @pytest.fixture
@@ -48,11 +53,11 @@ def test_lambda_handler_raises_exception_returns_500(
     mocked_service, valid_id_event_without_auth_header, context
 ):
     mocked_service.get_document_references.side_effect = DocumentRefSearchException(
-        500, "test_string"
+        500, MockError.Error
     )
     expected = ApiGatewayResponse(
         500,
-        "test_string",
+        json.dumps(MockError.Error.value),
         "GET",
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_event_without_auth_header, context)
@@ -62,8 +67,11 @@ def test_lambda_handler_raises_exception_returns_500(
 def test_lambda_handler_when_id_not_valid_returns_400(
     set_env, invalid_id_event, context
 ):
+    expected_body = json.dumps(
+        {"message": "Invalid patient number 900000000900", "err_code": "PN_4001"}
+    )
     expected = ApiGatewayResponse(
-        400, "Invalid NHS number", "GET"
+        400, expected_body, "GET"
     ).create_api_gateway_response()
     actual = lambda_handler(invalid_id_event, context)
     assert expected == actual
@@ -72,8 +80,11 @@ def test_lambda_handler_when_id_not_valid_returns_400(
 def test_lambda_handler_when_id_not_supplied_returns_400(
     set_env, missing_id_event, context
 ):
+    expected_body = json.dumps(
+        {"message": "An error occurred due to missing key", "err_code": "PN_4002"}
+    )
     expected = ApiGatewayResponse(
-        400, "An error occurred due to missing key: 'patientId'", "GET"
+        400, expected_body, "GET"
     ).create_api_gateway_response()
     actual = lambda_handler(missing_id_event, context)
     assert expected == actual
@@ -82,9 +93,15 @@ def test_lambda_handler_when_id_not_supplied_returns_400(
 def test_lambda_handler_when_dynamo_tables_env_variable_not_supplied_then_return_400_response(
     valid_id_event_without_auth_header, context
 ):
+    expected_body = json.dumps(
+        {
+            "message": "An error occurred due to missing environment variable: 'DYNAMODB_TABLE_LIST'",
+            "err_code": "ENV_5001",
+        }
+    )
     expected = ApiGatewayResponse(
         500,
-        "An error occurred due to missing environment variable: 'DYNAMODB_TABLE_LIST'",
+        expected_body,
         "GET",
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_event_without_auth_header, context)
