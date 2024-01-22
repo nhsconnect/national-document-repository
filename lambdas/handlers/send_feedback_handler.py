@@ -1,5 +1,3 @@
-import json
-
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.send_feedback_service import SendFeedbackService
 from utils.audit_logging_setup import LoggingService
@@ -28,7 +26,7 @@ def lambda_handler(event, context):
     feedback_service = SendFeedbackService()
     feedback_service.process_feedback(event["body"])
 
-    logger.info("Processed Feedback email")
+    logger.info("Sent feedback by email")
 
     return ApiGatewayResponse(
         200, "Feedback email processed", "POST"
