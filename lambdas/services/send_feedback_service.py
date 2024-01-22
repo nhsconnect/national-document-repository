@@ -1,10 +1,12 @@
 import boto3
 from botocore.exceptions import ClientError
 from enums.feedback_ssm_parameters import FeedbackSSMParameter
+from enums.lambda_error import LambdaError
 from models.feedback import Feedback
 from pydantic import ValidationError
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
+from utils.lambda_exceptions import SendFeedbackException
 
 logger = LoggingService(__name__)
 
@@ -28,10 +30,10 @@ class SendFeedbackService:
         logger.info("Parsing feedback content...")
         try:
             feedback = Feedback.model_validate_json(body)
-        except ValidationError:
-            logger.error("Failed to validate feedback content")
-            # to replace with lambda error
-            raise RuntimeError("Failed to validate feedback content")
+        except ValidationError as e:
+            logger.error(e)
+            logger.error(f"{LambdaError.FeedbackInvalidBody.to_str}", {"Result": "Sending feedback failed"})
+            raise SendFeedbackException(400, LambdaError.FeedbackInvalidBody)
 
         email_body_html = self.build_email_body(feedback)
 
@@ -45,18 +47,20 @@ class SendFeedbackService:
                     "Body": {"Html": {"Data": email_body_html}},
                 },
             )
-            logger.info("Sending feedback by email")
-        except ClientError:
-            # to replace with lambda error
-            raise RuntimeError("Failed to send feedback by email")
+        except ClientError as e:
+            logger.error(e)
+            logger.error(f"{LambdaError.FeedbackSESFailure.to_str}", {"Result": "Sending feedback failed"})
+            raise SendFeedbackException(500, LambdaError.FeedbackSESFailure)
 
     @staticmethod
     def get_parameters() -> dict:
         try:
             ssm_service = SSMService()
             return ssm_service.get_ssm_parameters(list(FeedbackSSMParameter))
-        except ClientError:
-            raise RuntimeError("Failed to get the parameters needed for sending email")
+        except ClientError as e:
+            logger.error(e)
+            logger.error(f"{LambdaError.FeedbackMissingParam.to_str}", {"Result": "Sending feedback failed"})
+            raise SendFeedbackException(500, LambdaError.FeedbackMissingParam)
 
     @staticmethod
     def build_email_body(feedback: Feedback) -> str:

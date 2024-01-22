@@ -1,9 +1,11 @@
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.send_feedback_service import SendFeedbackService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.lambda_exceptions import SendFeedbackException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -19,14 +21,12 @@ def lambda_handler(event, context):
     logger.info("Send feedback handler triggered")
 
     if not event["body"]:
-        return ApiGatewayResponse(
-            400, "Missing POST request body", "POST"
-        ).create_api_gateway_response()
+        raise SendFeedbackException(400, LambdaError.FeedbackMissingBody)
 
     feedback_service = SendFeedbackService()
     feedback_service.process_feedback(event["body"])
 
-    logger.info("Sent feedback by email")
+    logger.info("Successfully sent feedback by email")
 
     return ApiGatewayResponse(
         200, "Feedback email processed", "POST"

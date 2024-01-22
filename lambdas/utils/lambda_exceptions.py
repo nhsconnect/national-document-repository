@@ -42,3 +42,7 @@ class DocumentRefSearchException(LambdaException):
 
 class DocumentDeletionServiceException(LambdaException):
     pass
+
+
+class SendFeedbackException(LambdaException):
+    pass
