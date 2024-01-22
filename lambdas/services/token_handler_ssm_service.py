@@ -38,7 +38,7 @@ class TokenHandlerSSMService(SSMService):
                 LambdaError.LoginBadSSM.to_str(),
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(500, LambdaError.LoginBadSSM)
+            raise LoginException(500, LambdaError.LoginNoSSM)
 
         return response
 
@@ -51,10 +51,10 @@ class TokenHandlerSSMService(SSMService):
 
         if values is None:
             logger.error(
-                LambdaError.LoginNoSSM.to_str(),
+                LambdaError.LoginAdminSSM.to_str(),
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(500, LambdaError.LoginNoSSM)
+            raise LoginException(500, LambdaError.LoginAdminSSM)
 
         response = values.split(",")
         return response
@@ -68,10 +68,10 @@ class TokenHandlerSSMService(SSMService):
         response = params.get(GP_CLINICAL_USER_ROLE_CODE)
         if response is None:
             logger.error(
-                LambdaError.LoginSmartSSM.to_str(),
+                LambdaError.LoginClinicalSSM.to_str(),
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(500, LambdaError.LoginSmartSSM)
+            raise LoginException(500, LambdaError.LoginClinicalSSM)
 
         return response
 
@@ -99,10 +99,10 @@ class TokenHandlerSSMService(SSMService):
         response = [params.get(GP_ORG_ROLE_CODE)]
         if None in response:
             logger.error(
-                LambdaError.LoginGpSSM.to_str(),
+                LambdaError.LoginGpODS.to_str(),
                 {"Result": "Unsuccessful login"},
             )
-            raise LoginException(500, LambdaError.LoginGpSSM)
+            raise LoginException(500, LambdaError.LoginGpODS)
         return response
 
     def get_org_ods_codes(self) -> list[str]:

@@ -41,9 +41,9 @@ def lambda_handler(event, context):
             200, json.dumps(response), "GET"
         ).create_api_gateway_response()
 
-    except (KeyError, TypeError):
+    except (KeyError, TypeError) as e:
         logger.error(
-            f"{ LambdaError.LoginNoAuth.to_str()}", {"Result": "Unsuccessful login"}
+            f"{ LambdaError.LoginNoAuth.to_str()}: {str(e)}", {"Result": "Unsuccessful login"}
         )
         return ApiGatewayResponse(
             400,

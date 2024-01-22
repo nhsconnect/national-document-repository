@@ -51,10 +51,10 @@ def logout_handler(token):
         ).create_api_gateway_response()
     except (jwt.PyJWTError, KeyError) as e:
         logger.error(
-            f"{LambdaError.LogoutAuth.to_str()}: {e}", {"Result": "Unsuccessful logout"}
+            f"{LambdaError.LogoutDecode.to_str()}: {e}", {"Result": "Unsuccessful logout"}
         )
         return ApiGatewayResponse(
-            400, LambdaError.LogoutAuth.create_error_body(), "GET"
+            400, LambdaError.LogoutDecode.create_error_body(), "GET"
         ).create_api_gateway_response()
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 

@@ -61,8 +61,8 @@ class LambdaError(Enum):
         "err_code": "CDR_1007",
         "message": "Failed to parse document upload request data",
     }
-    CreateDocPresign = {"err_code": "CDR_5001", "message": "Internal error"}
-    CreateDocUpload = {"err_code": "CDR_5002", "message": "Internal error"}
+    CreateDocPresign = {"err_code": "CDR_5001", "message": "An error occurred when creating pre-signed url for document reference"}
+    CreateDocUpload = {"err_code": "CDR_5002", "message": "An error occurred when creating pre-signed url for document reference"}
 
     """
        Errors for InvalidDocTypeException
@@ -77,7 +77,7 @@ class LambdaError(Enum):
     """
     RedirectClient = {
         "err_code": "LR_5001",
-        "message": "Server error",
+        "message": "Unsuccessful redirect",
     }
 
     """
@@ -118,29 +118,29 @@ class LambdaError(Enum):
         "err_code": "LIN_5004",
         "message": "Unable to remove used state value",
     }
-    LoginBadSSM = {
-        "err_code": "LIN_5005",
-        "message": "Failed to find SSM parameter value for user role",
-    }
     LoginNoSSM = {
-        "err_code": "LIN_5006",
-        "message": "Failed to find SSM parameter value for user role",
+        "err_code": "LIN_5005",
+        "message": "SSM parameter values for GP admin/clinical or PCSE roles may not exist",
     }
-    LoginSmartSSM = {
+    LoginAdminSSM = {
+        "err_code": "LIN_5006",
+        "message": "SSM parameter values for GP admin role may not exist",
+    }
+    LoginClinicalSSM = {
         "err_code": "LIN_5007",
-        "message": "Failed to find SSM parameter value for smartcard",
+        "message": "SSM parameter values for GP clinical user role may not exist",
     }
     LoginPcseSSM = {
         "err_code": "LIN_5008",
-        "message": "Failed to find SSM parameter value for PCSE role",
+        "message": "SSM parameter values for PCSE user role may not exist",
     }
-    LoginGpSSM = {
+    LoginGpODS = {
         "err_code": "LIN_5009",
-        "message": "Failed to find SSM parameter value for GP role",
+        "message": "SSM parameter values for GP organisation role code ma not exist",
     }
     LoginPcseODS = {
         "err_code": "LIN_5010",
-        "message": "SSM parameter values for PSCE ODS err_code may not exist",
+        "message": "SSM parameter values for PSCE ODS code may not exist",
     }
 
     """
@@ -208,7 +208,7 @@ class LambdaError(Enum):
     """
     DocDelNull = {
         "err_code": "DDS_4001",
-        "message": "Failed to delete documents",
+        "message": "No records was found for given patient. No document deleted",
     }
     LoginNoAuth = {
         "err_code": "LIN_1002",
@@ -218,7 +218,7 @@ class LambdaError(Enum):
         "err_code": "OUT_5001",
         "message": "Error logging user out",
     }
-    LogoutAuth = {"err_code": "OUT_4001", "message": "Invalid Authorization header"}
+    LogoutDecode = {"err_code": "OUT_4001", "message": "Error while decoding JWT"}
     EnvMissing = {
         "err_code": "ENV_5001",
         "message": "An error occurred due to missing environment variable: '%(name)s'",
