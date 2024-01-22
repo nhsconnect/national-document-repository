@@ -12,20 +12,16 @@ logger = LoggingService(__name__)
 class SendFeedbackService:
     def __init__(self):
         self.ses_client = boto3.client("ses")
-
-        ssm_service = SSMService()
-        send_feedback_parameters = ssm_service.get_ssm_parameters(
-            [enum.value for enum in FeedbackSSMParameter]
-        )
+        send_feedback_parameters = self.get_parameters()
 
         self.sender_email: str = send_feedback_parameters[
-            FeedbackSSMParameter.SENDER_EMAIL.value
+            FeedbackSSMParameter.SENDER_EMAIL
         ]
         self.recipient_email_list: list[str] = send_feedback_parameters[
-            FeedbackSSMParameter.RECIPIENT_EMAIL_LIST.value
+            FeedbackSSMParameter.RECIPIENT_EMAIL_LIST
         ].split(",")
         self.email_subject: str = send_feedback_parameters[
-            FeedbackSSMParameter.EMAIL_SUBJECT.value
+            FeedbackSSMParameter.EMAIL_SUBJECT
         ]
 
     def process_feedback(self, body: str):
@@ -53,6 +49,14 @@ class SendFeedbackService:
         except ClientError:
             # to replace with lambda error
             raise RuntimeError("Failed to send feedback by email")
+
+    @staticmethod
+    def get_parameters() -> dict:
+        try:
+            ssm_service = SSMService()
+            return ssm_service.get_ssm_parameters(list(FeedbackSSMParameter))
+        except ClientError:
+            raise RuntimeError("Failed to get the parameters needed for sending email")
 
     @staticmethod
     def build_email_body(feedback: Feedback) -> str:
