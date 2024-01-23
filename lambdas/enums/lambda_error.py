@@ -233,7 +233,12 @@ class LambdaError(Enum):
 
     FeedbackMissingParam = {
         "err_code": "SFB_5002",
-        "message": "Fail to get necessary parameters for sending email",
+        "message": "Missing parameter(s) on SSM param store",
+    }
+
+    FeedbackFetchParamFailure = {
+        "err_code": "SFB_5003",
+        "message": "Fail to fetch parameters for sending email from SSM param store",
     }
 
     """

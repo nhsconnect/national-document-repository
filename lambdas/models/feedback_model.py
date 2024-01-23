@@ -1,4 +1,4 @@
-from html import escape
+import html
 
 from models.config import to_camel
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -18,4 +18,4 @@ class Feedback(BaseModel):
     @classmethod
     def sanitise_string(cls, value: str) -> str:
         # run a html entity encode on incoming values to avoid malicious html injection
-        return escape(value)
+        return html.escape(value)
