@@ -222,3 +222,18 @@ jobs:
       lambda_aws_name: BackChannelLogoutHandler
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+
+
+  deploy_send_feedback_lambda:
+    name: Deploy send_feedback_lambda
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: send_feedback_handler
+      lambda_aws_name: SendFeedbackLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}

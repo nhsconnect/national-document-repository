@@ -236,7 +236,6 @@ class LambdaError(Enum):
         "message": "Fail to get necessary parameters for sending email",
     }
 
-
     """
        Errors with no exception
     """
