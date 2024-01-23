@@ -71,10 +71,10 @@ class SendFeedbackService:
     @staticmethod
     def build_email_body(feedback: Feedback) -> str:
         email_body_html = "<html><body>"
-        if feedback.name:
-            email_body_html += f"<h2>Name</h2><p>{feedback.name}</p>"
-        if feedback.email:
-            email_body_html += f"<h2>Email Address</h2><p>{feedback.email}</p>"
+        if feedback.respondent_name:
+            email_body_html += f"<h2>Name</h2><p>{feedback.respondent_name}</p>"
+        if feedback.respondent_email:
+            email_body_html += f"<h2>Email Address</h2><p>{feedback.respondent_email}</p>"
 
         email_body_html += f"<h2>Feedback</h2><p>{feedback.feedback_content}</p>"
         email_body_html += f"<h2>Overall Experience</h2><p>{feedback.experience}</p>"
