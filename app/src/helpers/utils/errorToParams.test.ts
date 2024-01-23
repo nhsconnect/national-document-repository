@@ -2,7 +2,7 @@ import { errorToParams } from './errorToParams';
 import { AxiosError } from 'axios';
 
 describe('errorToParams util function', () => {
-    test('returns empty string param if error has no err_code', () => {
+    it('returns empty string param if error has no err_code', () => {
         const errorResponse = {
             response: {
                 status: 500,
@@ -14,7 +14,7 @@ describe('errorToParams util function', () => {
         expect(errorToParams(error)).toBe('');
     });
 
-    test('returns param with error code', () => {
+    it('returns param with error code', () => {
         const errorResponse = {
             response: {
                 status: 500,
