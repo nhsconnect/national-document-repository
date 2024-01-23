@@ -1,5 +1,3 @@
-
-
 # def test_send_feedback():
 # service = SendFeedbackService()
 # feedback_body = json.dumps(

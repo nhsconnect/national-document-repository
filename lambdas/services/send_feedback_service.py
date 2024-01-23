@@ -2,7 +2,7 @@ import boto3
 from botocore.exceptions import ClientError
 from enums.feedback_ssm_parameters import FeedbackSSMParameter
 from enums.lambda_error import LambdaError
-from models.feedback import Feedback
+from models.feedback_model import Feedback
 from pydantic import ValidationError
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService

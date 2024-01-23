@@ -1,9 +1,8 @@
 import json
 
 import pytest
-from pydantic import ValidationError
-
 from models.feedback_model import Feedback
+from pydantic import ValidationError
 
 
 def test_feedback_model_parse_json_from_frontend():
