@@ -3,10 +3,7 @@ import { Roles } from '../../../support/roles';
 import { dbItem } from '../../../fixtures/dynamo-db-items/active-patient.json';
 
 const workspace = Cypress.env('WORKSPACE');
-dbItem.FileLocation = dbItem.FileLocation.replace('{env}', workspace).replace(
-    '{nhsNumber',
-    activePatient,
-);
+dbItem.FileLocation = dbItem.FileLocation.replace('{env}', workspace);
 const activePatient = pdsPatients.activeUpload;
 const bucketName = `${workspace}-lloyd-george-store`;
 const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
