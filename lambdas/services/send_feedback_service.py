@@ -74,7 +74,9 @@ class SendFeedbackService:
         if feedback.respondent_name:
             email_body_html += f"<h2>Name</h2><p>{feedback.respondent_name}</p>"
         if feedback.respondent_email:
-            email_body_html += f"<h2>Email Address</h2><p>{feedback.respondent_email}</p>"
+            email_body_html += (
+                f"<h2>Email Address</h2><p>{feedback.respondent_email}</p>"
+            )
 
         email_body_html += f"<h2>Feedback</h2><p>{feedback.feedback_content}</p>"
         email_body_html += f"<h2>Overall Experience</h2><p>{feedback.experience}</p>"

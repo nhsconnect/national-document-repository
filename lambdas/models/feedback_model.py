@@ -1,8 +1,7 @@
 from html import escape
 
-from pydantic import BaseModel, field_validator, Field, ConfigDict
-
 from models.config import to_camel
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Feedback(BaseModel):
