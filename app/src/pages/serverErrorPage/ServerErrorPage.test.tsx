@@ -27,7 +27,7 @@ describe('ServerErrorPage', () => {
                     name: 'Sorry, there is a problem with the service',
                 }),
             ).toBeInTheDocument();
-            expect(screen.getByText('Ulaanbaatar')).toBeInTheDocument();
+            expect(screen.getByText('An unknown error has occurred.')).toBeInTheDocument();
             expect(
                 screen.getByText(
                     "Try again by returning to the previous page. You'll need to enter any information you submitted again.",
@@ -48,7 +48,7 @@ describe('ServerErrorPage', () => {
                     name: 'Contact the NHS National Service Desk',
                 }),
             ).toBeInTheDocument();
-            expect(screen.getByText('111111')).toBeInTheDocument();
+            expect(screen.getByText('UNKNOWN_ERROR')).toBeInTheDocument();
         });
 
         it('renders page content with error message and id', () => {
@@ -61,9 +61,9 @@ describe('ServerErrorPage', () => {
                 }),
             ).toBeInTheDocument();
             expect(screen.getByText('Internal error')).toBeInTheDocument();
-            expect(screen.queryByText('Ulaanbaatar')).not.toBeInTheDocument();
+            expect(screen.queryByText('An unknown error has occurred.')).not.toBeInTheDocument();
             expect(screen.getByText('CDR_5001')).toBeInTheDocument();
-            expect(screen.queryByText('111111')).not.toBeInTheDocument();
+            expect(screen.queryByText('UNKNOWN_ERROR')).not.toBeInTheDocument();
         });
     });
 

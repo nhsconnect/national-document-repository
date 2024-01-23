@@ -9,8 +9,8 @@ const ServerErrorPage = () => {
     const [searchParams] = useSearchParams();
     const errorCode = searchParams.get('errorCode');
 
-    const defaultMessage = 'Ulaanbaatar';
-    const defaultErrorId = '111111';
+    const defaultMessage = 'An unknown error has occurred.';
+    const defaultErrorId = 'UNKNOWN_ERROR';
 
     const errorMessage =
         errorCode && !!errorCodes[errorCode] ? errorCodes[errorCode] : defaultMessage;
