@@ -8,7 +8,6 @@ import React, {
     useState,
 } from 'react';
 import { Card } from 'nhsuk-react-components';
-import { Link } from 'react-router-dom';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
@@ -18,6 +17,10 @@ import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../helpers/hooks/usePatient';
 import deleteAllDocuments from '../../../helpers/requests/deleteAllDocuments';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
+import { routes } from '../../../types/generic/routes';
+import { useNavigate, Link } from 'react-router-dom';
+import { errorToParams } from '../../../helpers/utils/errorToParams';
+import { AxiosError } from 'axios/index';
 
 const FakeProgress = require('fake-progress');
 
@@ -50,6 +53,7 @@ function LloydGeorgeDownloadAllStage({
     const [inProgress, setInProgress] = useState(true);
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
+    const navigate = useNavigate();
 
     const patientDetails = usePatient();
     const nhsNumber = patientDetails?.nhsNumber ?? '';
@@ -103,9 +107,13 @@ function LloydGeorgeDownloadAllStage({
                             baseUrl,
                             baseHeaders,
                         });
-                    } catch (e) {} // This is fail and forget at this point in time.
+                    } catch (e) {
+                        navigate(routes.SERVER_ERROR + errorToParams(e as AxiosError));
+                    } // This is fail and forget at this point in time.
                 }
-            } catch (e) {}
+            } catch (e) {
+                navigate(routes.SERVER_ERROR + errorToParams(e as AxiosError));
+            }
         };
 
         if (!mounted.current) {
@@ -116,7 +124,15 @@ function LloydGeorgeDownloadAllStage({
             const delayTimer = setTimeout(onPageLoad, timeToComplete + delay);
             setDelayTimer(delayTimer);
         }
-    }, [baseHeaders, baseUrl, intervalTimer, nhsNumber, progressTimer, deleteAfterDownload]);
+    }, [
+        baseHeaders,
+        baseUrl,
+        intervalTimer,
+        nhsNumber,
+        progressTimer,
+        deleteAfterDownload,
+        navigate,
+    ]);
 
     return inProgress ? (
         <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">

@@ -25,8 +25,8 @@ from utils.exceptions import (
 from utils.lloyd_george_validator import (
     LGInvalidFilesException,
     getting_patient_info_from_pds,
-    validate_lg_file_names,
     validate_filename_with_patient_details,
+    validate_lg_file_names,
 )
 from utils.request_context import request_context
 from utils.unicode_utils import (

@@ -24,9 +24,9 @@ from utils.lloyd_george_validator import (
     extract_info_from_filename,
     getting_patient_info_from_pds,
     validate_file_name,
+    validate_filename_with_patient_details,
     validate_lg_file_names,
     validate_lg_file_type,
-    validate_filename_with_patient_details,
 )
 
 

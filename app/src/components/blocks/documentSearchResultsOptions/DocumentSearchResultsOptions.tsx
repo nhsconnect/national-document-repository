@@ -9,6 +9,7 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+import { errorToParams } from '../../../helpers/utils/errorToParams';
 
 type Props = {
     nhsNumber: string;
@@ -58,6 +59,8 @@ const DocumentSearchResultsOptions = (props: Props) => {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
                 navigate(routes.START);
+            } else {
+                navigate(routes.SERVER_ERROR + errorToParams(error));
             }
             props.updateDownloadState(SUBMISSION_STATE.FAILED);
         }

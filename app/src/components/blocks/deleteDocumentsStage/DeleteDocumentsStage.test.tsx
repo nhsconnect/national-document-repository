@@ -162,7 +162,7 @@ describe('DeleteDocumentsStage', () => {
             const errorResponse = {
                 response: {
                     status: 500,
-                    message: 'Client Error.',
+                    data: { message: 'Client Error', err_code: 'SP_1001' },
                 },
             };
             mockedAxios.delete.mockImplementation(() => Promise.reject(errorResponse));
@@ -181,6 +181,12 @@ describe('DeleteDocumentsStage', () => {
                 expect(
                     screen.getByText('Sorry, the service is currently unavailable.'),
                 ).toBeInTheDocument();
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routes.SERVER_ERROR + '?errorCode=SP_1001',
+                );
             });
         });
     });

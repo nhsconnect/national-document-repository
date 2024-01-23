@@ -17,6 +17,7 @@ import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import { isMock } from '../../helpers/utils/isLocal';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import { errorToParams } from '../../helpers/utils/errorToParams';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
@@ -70,6 +71,8 @@ function PatientSearchPage() {
                 navigate(routes.START);
             } else if (error.response?.status === 404) {
                 setInputError('Sorry, patient data not found.');
+            } else {
+                navigate(routes.SERVER_ERROR + errorToParams(error));
             }
             setStatusCode(error.response?.status ?? null);
             setSubmissionState(SEARCH_STATES.FAILED);

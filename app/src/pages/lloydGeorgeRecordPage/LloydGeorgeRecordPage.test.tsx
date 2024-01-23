@@ -1,10 +1,16 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
-import { buildPatientDetails, buildLgSearchResult } from '../../helpers/test/testBuilders';
+import {
+    buildPatientDetails,
+    buildLgSearchResult,
+    buildSearchResult,
+} from '../../helpers/test/testBuilders';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import axios from 'axios';
 import formatFileSize from '../../helpers/utils/formatFileSize';
 import usePatient from '../../helpers/hooks/usePatient';
+import { act } from 'react-dom/test-utils';
+import { routes } from '../../types/generic/routes';
 
 jest.mock('axios');
 jest.mock('../../helpers/hooks/usePatient');
@@ -101,5 +107,27 @@ describe('LloydGeorgeRecordPage', () => {
             screen.getByText(`File size: ${formatFileSize(lgResult.total_file_size_in_byte)}`),
         ).toBeInTheDocument();
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
+    });
+    it('navigates to Error page when call to lg record view return 500', async () => {
+        mockAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
+        const errorResponse = {
+            response: {
+                status: 500,
+                data: { message: 'An error occurred', err_code: 'SP_1001' },
+            },
+        };
+        mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+        act(() => {
+            render(<LloydGeorgeRecordPage />);
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByRole('link', { name: 'Start Again' })).not.toBeInTheDocument();
+        });
+
+        await waitFor(() => {
+            expect(mockNavigate).toHaveBeenCalledWith(routes.SERVER_ERROR + '?errorCode=SP_1001');
+        });
     });
 });

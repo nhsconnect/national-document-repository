@@ -136,8 +136,9 @@ describe('GP Workflow: View Lloyd George record', () => {
                         cy.get('#verify-submit').click();
 
                         //Assert
-                        assertPatientInfo();
-                        assertFailedLloydGeorgeLoad();
+                        cy.contains('Sorry, there is a problem with the service').should(
+                            'be.visible',
+                        );
                     },
                 );
 
