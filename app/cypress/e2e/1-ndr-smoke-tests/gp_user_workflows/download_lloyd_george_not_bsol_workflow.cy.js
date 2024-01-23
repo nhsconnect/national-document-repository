@@ -1,6 +1,6 @@
 import { pdsPatients } from '../../../support/patients';
 import { Roles } from '../../../support/roles';
-import { dbItem } from '../../../fixtures/dynamo-db-items/active-patient.json';
+import dbItem from '../../../fixtures/dynamo-db-items/active-patient.json';
 
 const workspace = Cypress.env('WORKSPACE');
 dbItem.FileLocation = dbItem.FileLocation.replace('{env}', workspace);
@@ -14,18 +14,18 @@ describe('GP Workflow: View Lloyd George record', () => {
         before(() => {
             cy.deleteFileFromS3(bucketName, fileName);
             cy.deleteItemFromDynamoDb(tableName, dbItem.ID);
-            cy.addFileToS3(bucketName, fileName, '../../../fixtures/test_patient_record.pdf');
+            cy.addFileToS3(bucketName, fileName, 'test_patient_record.pdf');
             cy.addItemToDynamoDb(tableName, dbItem);
         });
 
-        after(() => {
-            cy.deleteFileFromS3(bucketName, fileName);
-            cy.deleteItemFromDynamoDb(tableName, dbItem.ID);
-        });
+        // after(() => {
+        //     cy.deleteFileFromS3(bucketName, fileName);
+        //     cy.deleteItemFromDynamoDb(tableName, dbItem.ID);
+        // });
 
         it(
-            '[Smoke] GP ADMIN user can download the Lloyd George document of an active patient',
-            { tags: 'smoke' },
+            '[Smoke] non-BSOL GP ADMIN user can download and delete the Lloyd George document of an active patient',
+            { tags: 'smoke', defaultCommandTimeout: 15000 },
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN);
 
@@ -35,13 +35,16 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#nhs-number-input').type(activePatient);
                 cy.get('#search-submit').click();
 
-                cy.url({ timeout: 10000 }).should('contain', '/search/patient/verify');
+                cy.url().should('contain', '/search/patient/verify');
                 cy.get('#verify-submit').click();
 
-                cy.url({ timeout: 10000 }).should('contain', '/patient/view/lloyd-george-record');
+                cy.url().should('contain', '/patient/view/lloyd-george-record');
 
-                cy.getByTestId('actions-menu').click();
-                cy.getByTestId('download-all-files-link').click();
+                cy.getByTestId('download-and-remove-record-btn').click();
+                cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
+                cy.getByTestId('confirm-download-and-remove-checkbox').click();
+                cy.getByTestId('confirm-download-and-remove-btn').click();
+                cy.getByTestId('lloydgeorge_downloadall-stage').should('exist');
 
                 // Assert contents of page when downloading
                 cy.contains('Downloading documents').should('be.visible');

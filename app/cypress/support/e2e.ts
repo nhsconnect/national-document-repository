@@ -1,6 +1,8 @@
 import { DynamoDB, S3 } from 'aws-sdk';
 import { Roles, roleIds, roleList } from './roles';
 import Bluebird from 'cypress/types/bluebird';
+import './aws.commands';
+
 /// <reference types="cypress" />
 const registerCypressGrep = require('@cypress/grep');
 registerCypressGrep();
