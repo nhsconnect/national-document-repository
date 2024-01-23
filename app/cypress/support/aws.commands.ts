@@ -2,14 +2,15 @@
 
 import AWS from './aws.config';
 
-Cypress.Commands.add('addFileToS3', (bucketName: string, fileName: string, filePath: string) => {
+Cypress.Commands.add('addPdfFileToS3', (bucketName: string, fileName: string, filePath: string) => {
     const s3 = new AWS.S3();
 
-    return cy.fixture(filePath, 'binary').then((fileContent) => {
+    return cy.fixture(filePath, 'base64').then((fileContent) => {
         const params: AWS.S3.Types.PutObjectRequest = {
             Bucket: bucketName,
             Key: fileName,
             Body: fileContent,
+            ContentType: 'application/pdf',
         };
 
         return cy.wrap(

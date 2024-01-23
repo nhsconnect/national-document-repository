@@ -105,7 +105,7 @@ declare global {
              * @param {string} fileContent - Content of the file to upload
              * @return {Promise<SendData>} - S3 response for s3.upload
              */
-            addFileToS3(
+            addPdfFileToS3(
                 bucketName: string,
                 fileName: string,
                 filePath: string,

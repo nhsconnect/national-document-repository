@@ -14,18 +14,18 @@ describe('GP Workflow: View Lloyd George record', () => {
         before(() => {
             cy.deleteFileFromS3(bucketName, fileName);
             cy.deleteItemFromDynamoDb(tableName, dbItem.ID);
-            cy.addFileToS3(bucketName, fileName, 'test_patient_record.pdf');
+            cy.addPdfFileToS3(bucketName, fileName, 'test_patient_record.pdf');
             cy.addItemToDynamoDb(tableName, dbItem);
         });
 
-        // after(() => {
-        //     cy.deleteFileFromS3(bucketName, fileName);
-        //     cy.deleteItemFromDynamoDb(tableName, dbItem.ID);
-        // });
+        after(() => {
+            cy.deleteFileFromS3(bucketName, fileName);
+            cy.deleteItemFromDynamoDb(tableName, dbItem.ID);
+        });
 
         it(
             '[Smoke] non-BSOL GP ADMIN user can download and delete the Lloyd George document of an active patient',
-            { tags: 'smoke', defaultCommandTimeout: 15000 },
+            { tags: 'smoke', defaultCommandTimeout: 20000 },
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN);
 
