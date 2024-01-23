@@ -40,7 +40,6 @@ function FeedbackForm({ stage, setStage }: Props) {
         } catch (e) {
             const error = e as AxiosError;
             navigate(routes.SERVER_ERROR + errorToParams(error));
-            setStage(SUBMISSION_STAGE.Failure);
         }
     };
 

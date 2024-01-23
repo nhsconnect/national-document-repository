@@ -19,7 +19,7 @@ describe('ServerErrorPage', () => {
     });
 
     describe('Rendering', () => {
-        it('renders page content with default error message and id', () => {
+        it('renders page content with default error message and id when there is no error code', () => {
             render(<ServerErrorPage />);
 
             expect(
@@ -51,7 +51,7 @@ describe('ServerErrorPage', () => {
             expect(screen.getByText('UNKNOWN_ERROR')).toBeInTheDocument();
         });
 
-        it('renders page content with error message and id', () => {
+        it('renders page content with error message and id when there is a valid error code', () => {
             jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue('CDR_5001');
             render(<ServerErrorPage />);
 
@@ -64,6 +64,20 @@ describe('ServerErrorPage', () => {
             expect(screen.queryByText('An unknown error has occurred.')).not.toBeInTheDocument();
             expect(screen.getByText('CDR_5001')).toBeInTheDocument();
             expect(screen.queryByText('UNKNOWN_ERROR')).not.toBeInTheDocument();
+        });
+
+        it('renders page content with default error message and id when there is an invalid error code', () => {
+            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue('RH_77');
+            render(<ServerErrorPage />);
+
+            expect(
+                screen.getByRole('heading', {
+                    name: 'Sorry, there is a problem with the service',
+                }),
+            ).toBeInTheDocument();
+            expect(screen.getByText('An unknown error has occurred.')).toBeInTheDocument();
+            expect(screen.getByText('UNKNOWN_ERROR')).toBeInTheDocument();
+            expect(screen.queryByText('RH_77')).not.toBeInTheDocument();
         });
     });
 
