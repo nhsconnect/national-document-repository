@@ -83,6 +83,7 @@ def mock_ods_api_service(mocker):
         "name": "PORTWAY LIFESTYLE CENTRE",
         "org_ods_code": "A9A5A",
         "role_code": "RO76",
+        "is_BSOL": False,
     }
 
     mock = mocker.patch.object(
