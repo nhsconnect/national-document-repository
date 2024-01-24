@@ -233,7 +233,7 @@ class LambdaError(Enum):
 
     FeedbackFetchParamFailure = {
         "err_code": "SFB_5002",
-        "message": "Fail to fetch parameters for sending email from SSM param store",
+        "message": "Failed to fetch parameters for sending email from SSM param store",
     }
 
     """

@@ -11,25 +11,58 @@ from tests.unit.conftest import (
     MOCK_FEEDBACK_SENDER_EMAIL,
 )
 from tests.unit.helpers.data.feedback.mock_data import (
+    MOCK_BAD_FEEDBACK_BODY_WITH_XSS_INJECTION,
     MOCK_EMAIL_BODY,
+    MOCK_EMAIL_BODY_ANONYMOUS,
     MOCK_PARSED_FEEDBACK,
     MOCK_PARSED_FEEDBACK_ANONYMOUS,
+    MOCK_VALID_FEEDBACK_BODY_ANONYMOUS_JSON_STR,
     MOCK_VALID_FEEDBACK_BODY_JSON_STR,
 )
 from utils.lambda_exceptions import SendFeedbackException
 
 
 def test_process_feedback_validate_feedback_content_and_send_email(
-    send_feedback_service, mock_send_feedback_by_email, mock_ses_client, mock_validator
+    send_feedback_service, mock_send_feedback_by_email, mock_validator
 ):
     mock_event_body = MOCK_VALID_FEEDBACK_BODY_JSON_STR
-    send_feedback_service.ses_client = mock_ses_client
     expected_email_body = MOCK_EMAIL_BODY
 
     send_feedback_service.process_feedback(mock_event_body)
 
     mock_validator.assert_called_with(mock_event_body)
     mock_send_feedback_by_email.assert_called_with(expected_email_body)
+
+
+def test_process_feedback_allows_respondent_email_and_name_to_be_empty(
+    send_feedback_service, mock_send_feedback_by_email
+):
+    mock_event_body = MOCK_VALID_FEEDBACK_BODY_ANONYMOUS_JSON_STR
+    expected_email_body = MOCK_EMAIL_BODY_ANONYMOUS
+
+    send_feedback_service.process_feedback(mock_event_body)
+
+    mock_send_feedback_by_email.assert_called_with(expected_email_body)
+
+
+def test_process_feedback_sanitise_html_tags_before_send_out_email(
+    send_feedback_service, mock_send_feedback_by_email
+):
+    mock_event_body = MOCK_BAD_FEEDBACK_BODY_WITH_XSS_INJECTION
+    bad_code = (
+        r"<img src=some_malicious_xss_payload onerror=some_malicious_xss_payload>"
+    )
+    sanitised = (
+        r"&lt;img src=some_malicious_xss_payload onerror=some_malicious_xss_payload&gt;"
+    )
+
+    assert bad_code in mock_event_body
+
+    send_feedback_service.process_feedback(mock_event_body)
+
+    outbound_email_body = mock_send_feedback_by_email.call_args[0][0]
+    assert bad_code not in outbound_email_body
+    assert sanitised in outbound_email_body
 
 
 def test_process_feedback_raise_error_when_given_invalid_data(
@@ -148,7 +181,7 @@ def test_get_email_recipients_list_fetch_parameter_from_ssm_param_store(
     assert actual == expected
 
 
-def test_get_email_parameters_raise_error_when_fail_to_fetch_from_ssm(
+def test_get_email_recipients_list_raise_error_when_fail_to_fetch_from_ssm(
     mock_get_ssm_parameter,
 ):
     mock_error = ClientError(
@@ -170,14 +203,6 @@ def test_get_email_parameters_raise_error_when_fail_to_fetch_from_ssm(
         SendFeedbackService.get_email_recipients_list()
 
     assert error.value == expected_lambda_error
-
-
-#
-#
-# MOCK_SENDER_EMAIL = "feedback@localhost"
-# MOCK_RECIPIENT_EMAIL_LIST = "gp2gp@localhost,test_email@localhost"
-# MOCK_EMAIL_SUBJECT = "Digitised Lloyd George feedback"
-#
 
 
 @pytest.fixture

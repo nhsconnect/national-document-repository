@@ -26,7 +26,10 @@ def lambda_handler(event, context):
     if not event_body:
         raise SendFeedbackException(400, LambdaError.FeedbackMissingBody)
 
+    logger.info("Setting up SendFeedbackService...")
     feedback_service = SendFeedbackService()
+
+    logger.info("SendFeedbackService ready, start processing feedback")
     feedback_service.process_feedback(event_body)
 
     logger.info("Successfully sent feedback by email")
