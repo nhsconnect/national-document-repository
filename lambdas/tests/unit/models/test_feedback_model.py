@@ -6,9 +6,13 @@ from pydantic import ValidationError
 
 
 def test_feedback_model_parse_json_from_frontend():
-    mock_feedback_json_string = (
-        '{"feedbackContent": "Mock feedback content", "howSatisfied": "Very Satisfied", '
-        '"respondentName": "Jane Smith", "respondentEmail": "jane_smith@testing.com"}'
+    mock_feedback = json.dumps(
+        {
+            "feedbackContent": "Mock feedback content",
+            "howSatisfied": "Very Satisfied",
+            "respondentName": "Jane Smith",
+            "respondentEmail": "jane_smith@testing.com",
+        }
     )
 
     expected = Feedback(
@@ -18,7 +22,7 @@ def test_feedback_model_parse_json_from_frontend():
         respondent_email="jane_smith@testing.com",
     )
 
-    actual = Feedback.model_validate_json(mock_feedback_json_string)
+    actual = Feedback.model_validate_json(mock_feedback)
 
     assert actual == expected
 
@@ -28,8 +32,8 @@ def test_feedback_model_sanitise_strings():
         {
             "feedbackContent": '<script type="text/javascript">some malicious script</script>',
             "howSatisfied": "Very Satisfied",
-            "respondentName": "",
-            "respondentEmail": "",
+            "respondentName": "Jane Smith",
+            "respondentEmail": "jane_smith@testing.com",
         }
     )
     expected_sanitised_string = (
@@ -41,9 +45,13 @@ def test_feedback_model_sanitise_strings():
 
 
 def test_feedback_model_allows_email_and_name_to_be_blank():
-    mock_feedback_json_string = (
-        '{"feedbackContent": "Mock feedback content", "howSatisfied": "Satisfied", '
-        '"respondentName": "", "respondentEmail": ""}'
+    mock_feedback = json.dumps(
+        {
+            "feedbackContent": "Mock feedback content",
+            "howSatisfied": "Satisfied",
+            "respondentName": "",
+            "respondentEmail": "",
+        }
     )
 
     expected = Feedback(
@@ -53,19 +61,43 @@ def test_feedback_model_allows_email_and_name_to_be_blank():
         respondent_email="",
     )
 
-    actual = Feedback.model_validate_json(mock_feedback_json_string)
+    actual = Feedback.model_validate_json(mock_feedback)
+
+    assert actual == expected
+
+
+def test_feedback_model_allows_email_and_name_to_be_omitted():
+    mock_feedback = json.dumps(
+        {
+            "feedbackContent": "Mock feedback content",
+            "howSatisfied": "Satisfied",
+        }
+    )
+
+    expected = Feedback(
+        feedback_content="Mock feedback content",
+        experience="Satisfied",
+        respondent_name="",
+        respondent_email="",
+    )
+
+    actual = Feedback.model_validate_json(mock_feedback)
 
     assert actual == expected
 
 
 def test_feedback_model_raise_validation_error_for_invalid_email_address():
-    mock_input = (
-        '{"feedbackContent": "Mock feedback content", "howSatisfied": "Very Satisfied", '
-        '"respondentName": "Jane Smith", "respondentEmail": "some_random_string"}'
+    mock_feedback = json.dumps(
+        {
+            "feedbackContent": "Mock feedback content",
+            "howSatisfied": "Satisfied",
+            "respondentName": "somebody",
+            "respondentEmail": "not a valid email",
+        }
     )
 
     with pytest.raises(ValidationError):
-        Feedback.model_validate_json(mock_input)
+        Feedback.model_validate_json(mock_feedback)
 
 
 def test_feedback_model_raise_validation_error_for_invalid_input():

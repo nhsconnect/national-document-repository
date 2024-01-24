@@ -9,8 +9,8 @@ class Feedback(BaseModel):
 
     feedback_content: str
     experience: str = Field(alias="howSatisfied")
-    respondent_email: str
-    respondent_name: str
+    respondent_email: str = Field(default="")
+    respondent_name: str = Field(default="")
 
     @field_validator(
         "feedback_content", "experience", "respondent_email", "respondent_name"
