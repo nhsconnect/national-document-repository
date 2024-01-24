@@ -94,7 +94,6 @@ function LloydGeorgeDownloadAllStage({
                 });
 
                 const filename = `patient-record-${nhsNumber}`;
-                setLinkAttributes({ url: preSignedUrl, filename: filename });
                 if (deleteAfterDownload) {
                     try {
                         await deleteAllDocuments({
@@ -105,6 +104,7 @@ function LloydGeorgeDownloadAllStage({
                         });
                     } catch (e) {} // This is fail and forget at this point in time.
                 }
+                setLinkAttributes({ url: preSignedUrl, filename: filename });
             } catch (e) {}
         };
 
