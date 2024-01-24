@@ -28,7 +28,7 @@ class SendFeedbackService:
         except ValidationError as e:
             logger.error(e)
             logger.error(
-                LambdaError.FeedbackInvalidBody.to_str,
+                LambdaError.FeedbackInvalidBody.to_str(),
                 {"Result": failure_msg},
             )
             raise SendFeedbackException(400, LambdaError.FeedbackInvalidBody)
@@ -49,7 +49,7 @@ class SendFeedbackService:
         except ClientError as e:
             logger.error(e)
             logger.error(
-                LambdaError.FeedbackFetchParamFailure.to_str,
+                LambdaError.FeedbackFetchParamFailure.to_str(),
                 {"Result": failure_msg},
             )
             raise SendFeedbackException(500, LambdaError.FeedbackFetchParamFailure)
@@ -84,7 +84,7 @@ class SendFeedbackService:
         except ClientError as e:
             logger.error(e)
             logger.error(
-                LambdaError.FeedbackSESFailure.to_str,
+                LambdaError.FeedbackSESFailure.to_str(),
                 {"Result": failure_msg},
             )
             raise SendFeedbackException(500, LambdaError.FeedbackSESFailure)
