@@ -5,6 +5,11 @@ from enums.lambda_error import LambdaError
 from models.feedback_model import Feedback
 from services.base.ssm_service import SSMService
 from services.send_feedback_service import SendFeedbackService
+from tests.unit.conftest import (
+    MOCK_FEEDBACK_EMAIL_SUBJECT,
+    MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
+    MOCK_FEEDBACK_SENDER_EMAIL,
+)
 from tests.unit.helpers.data.feedback.mock_data import (
     MOCK_EMAIL_BODY,
     MOCK_PARSED_FEEDBACK,
@@ -72,7 +77,7 @@ def test_build_email_body_convert_feedback_to_html(send_feedback_service):
         + "<h2>Email Address</h2><p>jane_smith@test-email.com</p>"
         + "<h2>Feedback</h2><p>Mock feedback content</p>"
         + "<h2>Overall Experience</h2><p>Very Satisfied</p>"
-        + "</html></body>)"
+        + "</html></body>"
     )
 
     actual = send_feedback_service.build_email_body(MOCK_PARSED_FEEDBACK)
@@ -99,10 +104,10 @@ def test_send_feedback_by_email_happy_path(send_feedback_service, mock_ses_clien
     send_feedback_service.send_feedback_by_email(MOCK_EMAIL_BODY)
 
     mock_ses_client.send_email.assert_called_with(
-        Source=MOCK_SENDER_EMAIL,
-        Destination={"ToAddresses": MOCK_RECIPIENT_EMAIL_LIST},
+        Source=MOCK_FEEDBACK_SENDER_EMAIL,
+        Destination={"ToAddresses": MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST},
         Message={
-            "Subject": {"Data": MOCK_EMAIL_SUBJECT},
+            "Subject": {"Data": MOCK_FEEDBACK_EMAIL_SUBJECT},
             "Body": {"Html": {"Data": MOCK_EMAIL_BODY}},
         },
     )
@@ -132,35 +137,19 @@ def test_send_feedback_by_email_raise_error_on_failure(
     assert error.value == expected_error
 
 
-def test_get_email_parameters_fetch_parameters_from_ssm_param_store(
-    mock_get_ssm_parameters,
+def test_get_email_recipients_list_fetch_parameter_from_ssm_param_store(
+    mock_get_ssm_parameter,
 ):
-    mock_get_ssm_parameters.return_value = MOCK_EMAIL_PARAMS
+    mock_get_ssm_parameter.return_value = "gp2gp@localhost,test_email@localhost"
 
-    actual = SendFeedbackService.get_email_parameters()
-    expected = MOCK_EMAIL_PARAMS
+    actual = SendFeedbackService.get_email_recipients_list()
+    expected = ["gp2gp@localhost", "test_email@localhost"]
 
     assert actual == expected
 
 
-def test_get_email_parameters_raise_error_when_missing_param_in_param_store(
-    mock_get_ssm_parameters,
-):
-    mock_ssm_params_response = {
-        "/foo/bar": "some_unrelated_params",
-    }
-    mock_get_ssm_parameters.return_value = mock_ssm_params_response
-
-    expected_lambda_error = SendFeedbackException(500, LambdaError.FeedbackMissingParam)
-
-    with pytest.raises(SendFeedbackException) as error:
-        SendFeedbackService.get_email_parameters()
-
-    assert error.value == expected_lambda_error
-
-
 def test_get_email_parameters_raise_error_when_fail_to_fetch_from_ssm(
-    mock_get_ssm_parameters,
+    mock_get_ssm_parameter,
 ):
     mock_error = ClientError(
         {
@@ -169,50 +158,46 @@ def test_get_email_parameters_raise_error_when_fail_to_fetch_from_ssm(
                 "Message": "Not authorized to access parameter store",
             }
         },
-        "GetParameters",
+        "GetParameter",
     )
     expected_lambda_error = SendFeedbackException(
         500, LambdaError.FeedbackFetchParamFailure
     )
 
-    mock_get_ssm_parameters.side_effect = mock_error
+    mock_get_ssm_parameter.side_effect = mock_error
 
     with pytest.raises(SendFeedbackException) as error:
-        SendFeedbackService.get_email_parameters()
+        SendFeedbackService.get_email_recipients_list()
 
     assert error.value == expected_lambda_error
 
 
-MOCK_SENDER_EMAIL = "feedback@localhost"
-MOCK_RECIPIENT_EMAIL_LIST = ["gp2gp@localhost", "test_email@localhost"]
-MOCK_EMAIL_SUBJECT = "Digitised Lloyd George feedback"
-MOCK_EMAIL_PARAMS = {
-    "/prs/dev/user-input/feedback-sender-email": MOCK_SENDER_EMAIL,
-    "/prs/dev/user-input/feedback-recipient-email-list": ",".join(
-        MOCK_RECIPIENT_EMAIL_LIST
-    ),
-    "/prs/dev/user-input/feedback-email-subject": MOCK_EMAIL_SUBJECT,
-}
+#
+#
+# MOCK_SENDER_EMAIL = "feedback@localhost"
+# MOCK_RECIPIENT_EMAIL_LIST = "gp2gp@localhost,test_email@localhost"
+# MOCK_EMAIL_SUBJECT = "Digitised Lloyd George feedback"
+#
 
 
 @pytest.fixture
-def mock_get_ssm_parameters(mocker):
-    yield mocker.patch.object(SSMService, "get_ssm_parameters")
+def mock_get_ssm_parameter(mocker):
+    yield mocker.patch.object(SSMService, "get_ssm_parameter")
 
 
 @pytest.fixture
-def send_feedback_service(mocker):
+def send_feedback_service(mocker, set_env):
     mocker.patch.object(
-        SendFeedbackService, "get_email_parameters", return_value=MOCK_EMAIL_PARAMS
+        SendFeedbackService,
+        "get_email_recipients_list",
+        return_value=MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
     )
     return SendFeedbackService()
 
 
 @pytest.fixture
 def mock_send_feedback_by_email(mocker):
-    yield mocker.patch.object(
-        SendFeedbackService, "send_feedback_by_email", return_value=MOCK_EMAIL_PARAMS
-    )
+    yield mocker.patch.object(SendFeedbackService, "send_feedback_by_email")
 
 
 @pytest.fixture

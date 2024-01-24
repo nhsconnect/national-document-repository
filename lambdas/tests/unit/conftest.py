@@ -37,6 +37,8 @@ MOCK_OIDC_CLIENT_ID_ENV_NAME = "OIDC_CLIENT_ID"
 MOCK_OIDC_CLIENT_SECRET_ENV_NAME = "OIDC_CLIENT_SECRET"
 MOCK_WORKSPACE_ENV_NAME = "WORKSPACE"
 MOCK_JWT_PUBLIC_KEY_NAME = "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"
+MOCK_FEEDBACK_SENDER_EMAIL_ENV_NAME = "FROM_EMAIL_ADDRESS"
+MOCK_FEEDBACK_EMAIL_SUBJECT_ENV_NAME = "EMAIL_SUBJECT"
 
 MOCK_ARF_TABLE_NAME = "test_arf_dynamoDB_table"
 MOCK_LG_TABLE_NAME = "test_lg_dynamoDB_table"
@@ -72,6 +74,11 @@ SSM_PARAM_JWT_TOKEN_PUBLIC_KEY_ENV_NAME = "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"
 SSM_PARAM_JWT_TOKEN_PUBLIC_KEY = "test_jwt_token_public_key"
 
 
+MOCK_FEEDBACK_SENDER_EMAIL = "feedback@localhost"
+MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST = ["gp2gp@localhost", "test_email@localhost"]
+MOCK_FEEDBACK_EMAIL_SUBJECT = "Digitised Lloyd George feedback"
+
+
 @pytest.fixture
 def set_env(monkeypatch):
     monkeypatch.setenv("AWS_DEFAULT_REGION", REGION_NAME)
@@ -105,6 +112,10 @@ def set_env(monkeypatch):
         SSM_PARAM_JWT_TOKEN_PUBLIC_KEY_ENV_NAME, SSM_PARAM_JWT_TOKEN_PUBLIC_KEY
     )
     monkeypatch.setenv(MOCK_AUTH_DYNAMODB_NAME, "test_dynamo")
+    monkeypatch.setenv(MOCK_FEEDBACK_SENDER_EMAIL_ENV_NAME, MOCK_FEEDBACK_SENDER_EMAIL)
+    monkeypatch.setenv(
+        MOCK_FEEDBACK_EMAIL_SUBJECT_ENV_NAME, MOCK_FEEDBACK_EMAIL_SUBJECT
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)

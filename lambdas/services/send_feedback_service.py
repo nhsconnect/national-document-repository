@@ -1,6 +1,8 @@
+import os
+from typing import List
+
 import boto3
 from botocore.exceptions import ClientError
-from enums.feedback_ssm_parameters import FeedbackSSMParameter
 from enums.lambda_error import LambdaError
 from models.feedback_model import Feedback
 from pydantic import ValidationError
@@ -15,13 +17,9 @@ failure_msg = "Failed to send feedback by email"
 class SendFeedbackService:
     def __init__(self):
         self.ses_client = boto3.client("ses")
-        email_parameters = self.get_email_parameters()
-
-        self.sender_email: str = email_parameters[FeedbackSSMParameter.SENDER_EMAIL]
-        self.recipient_email_list: list[str] = email_parameters[
-            FeedbackSSMParameter.RECIPIENT_EMAIL_LIST
-        ].split(",")
-        self.email_subject: str = email_parameters[FeedbackSSMParameter.EMAIL_SUBJECT]
+        self.sender_email: str = os.environ["FROM_EMAIL_ADDRESS"]
+        self.email_subject: str = os.environ["EMAIL_SUBJECT"]
+        self.recipient_email_list: list[str] = self.get_email_recipients_list()
 
     def process_feedback(self, body: str):
         logger.info("Parsing feedback content...")
@@ -39,15 +37,15 @@ class SendFeedbackService:
         self.send_feedback_by_email(email_body_html)
 
     @staticmethod
-    def get_email_parameters() -> dict:
+    def get_email_recipients_list() -> List[str]:
         try:
             ssm_service = SSMService()
-            fetched_params = ssm_service.get_ssm_parameters(
-                list(FeedbackSSMParameter), with_decryption=True
+            email_recipient_ssm_param_key = (
+                "/prs/dev/user-input/feedback-recipient-email-list"
             )
-            if len(fetched_params) < len(FeedbackSSMParameter):
-                raise SendFeedbackException(500, LambdaError.FeedbackMissingParam)
-            return fetched_params
+
+            recipients = ssm_service.get_ssm_parameter(email_recipient_ssm_param_key)
+            return recipients.split(",")
         except ClientError as e:
             logger.error(e)
             logger.error(

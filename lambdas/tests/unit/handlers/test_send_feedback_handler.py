@@ -2,11 +2,13 @@ import json
 
 import pytest
 from handlers.send_feedback_handler import lambda_handler
-from unit.helpers.data.feedback.mock_data import MOCK_VALID_SEND_FEEDBACK_EVENT
+from tests.unit.helpers.data.feedback.mock_data import MOCK_VALID_SEND_FEEDBACK_EVENT
 from utils.lambda_response import ApiGatewayResponse
 
 
-def test_lambda_handler_respond_200_with_valid_input(context, mock_feedback_service):
+def test_lambda_handler_respond_200_with_valid_input(
+    set_env, context, mock_feedback_service
+):
     test_event = MOCK_VALID_SEND_FEEDBACK_EVENT
 
     expected = ApiGatewayResponse(
@@ -18,7 +20,7 @@ def test_lambda_handler_respond_200_with_valid_input(context, mock_feedback_serv
     assert actual == expected
 
 
-def test_lambda_handler_respond_with_400_when_no_event_body_given(context):
+def test_lambda_handler_respond_with_400_when_no_event_body_given(set_env, context):
     test_event = {"key1": "value1", "httpMethod": "POST"}
     expected = ApiGatewayResponse(
         status_code=400,

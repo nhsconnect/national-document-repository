@@ -231,13 +231,8 @@ class LambdaError(Enum):
         "message": "Error occur when sending email by SES",
     }
 
-    FeedbackMissingParam = {
-        "err_code": "SFB_5002",
-        "message": "Missing parameter(s) on SSM param store",
-    }
-
     FeedbackFetchParamFailure = {
-        "err_code": "SFB_5003",
+        "err_code": "SFB_5002",
         "message": "Fail to fetch parameters for sending email from SSM param store",
     }
 
