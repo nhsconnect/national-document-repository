@@ -43,7 +43,7 @@ class SendFeedbackService:
             email_recipient_ssm_param_key = os.environ["EMAIL_RECIPIENT_SSM_PARAM_KEY"]
 
             recipients = ssm_service.get_ssm_parameter(email_recipient_ssm_param_key)
-            return recipients.split(",")
+            return [email.strip() for email in recipients.split(",")]
         except ClientError as e:
             logger.error(e)
             logger.error(

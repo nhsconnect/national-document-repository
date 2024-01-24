@@ -174,7 +174,7 @@ def test_get_email_recipients_list_fetch_parameter_from_ssm_param_store(
     set_env,
     mock_get_ssm_parameter,
 ):
-    mock_get_ssm_parameter.return_value = "gp2gp@localhost,test_email@localhost"
+    mock_get_ssm_parameter.return_value = "gp2gp@localhost, test_email@localhost"
 
     actual = SendFeedbackService.get_email_recipients_list()
     expected = ["gp2gp@localhost", "test_email@localhost"]
