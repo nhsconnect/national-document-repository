@@ -40,6 +40,8 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.url().should('contain', '/patient/view/lloyd-george-record');
 
+                cy.getByTestId('pdf-viewer').should('be.visible');
+
                 cy.getByTestId('download-and-remove-record-btn').click();
                 cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
                 cy.getByTestId('confirm-download-and-remove-checkbox').click();
