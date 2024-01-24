@@ -11,6 +11,10 @@ import isEmail from 'validator/lib/isEmail';
 import sendEmail from '../../../helpers/requests/sendEmail';
 import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-components';
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
+import { routes } from '../../../types/generic/routes';
+import { useNavigate } from 'react-router-dom';
+import { errorToParams } from '../../../helpers/utils/errorToParams';
+import { AxiosError } from 'axios/index';
 
 export type Props = {
     stage: SUBMISSION_STAGE;
@@ -25,17 +29,18 @@ function FeedbackForm({ stage, setStage }: Props) {
     } = useForm<FormData>({
         reValidateMode: 'onSubmit',
     });
+    const navigate = useNavigate();
 
     const submit: SubmitHandler<FormData> = async (formData) => {
         setStage(SUBMISSION_STAGE.Submitting);
-
-        sendEmail(formData)
-            .then(() => {
-                setStage(SUBMISSION_STAGE.Successful);
-            })
-            .catch((e) => {
-                setStage(SUBMISSION_STAGE.Failure);
-            });
+        // add tests for failing and passing cases when real email service is implemented
+        try {
+            await sendEmail(formData);
+            setStage(SUBMISSION_STAGE.Successful);
+        } catch (e) {
+            const error = e as AxiosError;
+            navigate(routes.SERVER_ERROR + errorToParams(error));
+        }
     };
 
     const renameRefKey = (props: UseFormRegisterReturn, newRefKey: string) => {

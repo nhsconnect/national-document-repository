@@ -6,9 +6,12 @@ import FeedbackForm, { Props } from './FeedbackForm';
 import { fillInForm } from '../../../helpers/test/formUtils';
 
 jest.mock('../../../helpers/requests/sendEmail');
+const mockedUseNavigate = jest.fn();
 const mockSendEmail = sendEmail as jest.Mock;
 const mockSetStage = jest.fn();
-
+jest.mock('react-router', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
 const clickSubmitButton = () => {
     userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
 };

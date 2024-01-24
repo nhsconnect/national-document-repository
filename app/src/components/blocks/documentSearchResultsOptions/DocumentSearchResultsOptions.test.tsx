@@ -104,7 +104,7 @@ describe('DocumentSearchResultsOptions', () => {
             const errorResponse = {
                 response: {
                     status: 400,
-                    message: 'Error',
+                    data: { message: 'Error', err_code: 'SP_1001' },
                 },
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
@@ -152,6 +152,24 @@ describe('DocumentSearchResultsOptions', () => {
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+            });
+        });
+        it('navigates to error page when API returns 5XX', async () => {
+            const errorResponse = {
+                response: {
+                    status: 500,
+                    data: { message: 'Server error', err_code: 'SP_1001' },
+                },
+            };
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
+            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routes.SERVER_ERROR + '?errorCode=SP_1001',
+                );
             });
         });
     });
