@@ -40,9 +40,7 @@ class SendFeedbackService:
     def get_email_recipients_list() -> List[str]:
         try:
             ssm_service = SSMService()
-            email_recipient_ssm_param_key = (
-                "/prs/dev/user-input/feedback-recipient-email-list"
-            )
+            email_recipient_ssm_param_key = os.environ["EMAIL_RECIPIENT_SSM_PARAM_KEY"]
 
             recipients = ssm_service.get_ssm_parameter(email_recipient_ssm_param_key)
             return recipients.split(",")

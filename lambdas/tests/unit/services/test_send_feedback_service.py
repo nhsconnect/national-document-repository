@@ -171,6 +171,7 @@ def test_send_feedback_by_email_raise_error_on_failure(
 
 
 def test_get_email_recipients_list_fetch_parameter_from_ssm_param_store(
+    set_env,
     mock_get_ssm_parameter,
 ):
     mock_get_ssm_parameter.return_value = "gp2gp@localhost,test_email@localhost"
@@ -182,6 +183,7 @@ def test_get_email_recipients_list_fetch_parameter_from_ssm_param_store(
 
 
 def test_get_email_recipients_list_raise_error_when_fail_to_fetch_from_ssm(
+    set_env,
     mock_get_ssm_parameter,
 ):
     mock_error = ClientError(

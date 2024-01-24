@@ -15,7 +15,9 @@ logger = LoggingService(__name__)
 
 @set_request_context_for_logging
 @override_error_check
-@ensure_environment_variables(["FROM_EMAIL_ADDRESS", "EMAIL_SUBJECT"])
+@ensure_environment_variables(
+    ["FROM_EMAIL_ADDRESS", "EMAIL_SUBJECT", "EMAIL_RECIPIENT_SSM_PARAM_KEY"]
+)
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.SEND_FEEDBACK.value
