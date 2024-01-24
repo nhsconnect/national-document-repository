@@ -66,7 +66,7 @@ class OdsApiService:
 
         if gpp_org is not None:
             logger.info(f"ODS code {ods_code} is a GPP, returning org data")
-            is_bsol = True
+            is_bsol = find_org_relationship(org_data["Organisation"])
             response = parse_ods_response(org_data, gpp_org, is_bsol)
             return response
 

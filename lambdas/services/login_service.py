@@ -133,7 +133,8 @@ class LoginService:
             "GP clinical"
         )
         is_bsol = (
-            repository_role.value in {RepositoryRole.GP_ADMIN.value, RepositoryRole.GP_CLINICAL.value}
+            repository_role.value
+            in {RepositoryRole.GP_ADMIN.value, RepositoryRole.GP_CLINICAL.value}
             and permitted_orgs_details["is_BSOL"]
         )
 
