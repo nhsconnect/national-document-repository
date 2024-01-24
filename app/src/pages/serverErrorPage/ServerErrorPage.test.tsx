@@ -2,18 +2,14 @@ import { render, screen, waitFor } from '@testing-library/react';
 import ServerErrorPage from './ServerErrorPage';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
+import { unixTimestamp } from '../../helpers/utils/createTimestamp';
+import exp from 'node:constants';
 
 const mockedUseNavigate = jest.fn();
-const mockedUseSearchParams = jest.fn();
 
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
     useLocation: () => jest.fn(),
-}));
-
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
-    useSearchParams: () => mockedUseSearchParams,
 }));
 
 describe('ServerErrorPage', () => {
@@ -25,7 +21,12 @@ describe('ServerErrorPage', () => {
     });
 
     describe('Rendering', () => {
-        it('renders page content with default error message and id when there are no url params', () => {
+        it('renders page content with default error message when there are no url params', () => {
+            const mockErrorCode = '';
+            const mockInteractionId = unixTimestamp();
+            const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
+            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
+
             render(<ServerErrorPage />);
 
             expect(
@@ -54,14 +55,14 @@ describe('ServerErrorPage', () => {
                     name: 'Contact the NHS National Service Desk',
                 }),
             ).toBeInTheDocument();
-            expect(screen.getByText('UNKNOWN_ERROR')).toBeInTheDocument();
+            expect(screen.getByText(mockInteractionId)).toBeInTheDocument();
         });
 
         it('renders page content with error message and id when there is a valid error code with interaction id', () => {
-            mockedUseSearchParams.mockReturnValue({
-                errorCode: 'CDR_5001',
-                interactionId: '12345',
-            });
+            const mockErrorCode = 'CDR_5001';
+            const mockInteractionId = '000-000';
+            const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
+            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
             render(<ServerErrorPage />);
 
             expect(
@@ -71,14 +72,14 @@ describe('ServerErrorPage', () => {
             ).toBeInTheDocument();
             expect(screen.getByText('Internal error')).toBeInTheDocument();
             expect(screen.queryByText('An unknown error has occurred.')).not.toBeInTheDocument();
-            expect(screen.getByText('CDR_5001')).toBeInTheDocument();
-            expect(screen.getByText('12345')).toBeInTheDocument();
-            expect(screen.queryByText('UNKNOWN_ERROR')).not.toBeInTheDocument();
+            expect(screen.getByText(mockInteractionId)).toBeInTheDocument();
         });
 
         it('renders page content with default error message and id when there is an invalid error code', () => {
-            // const mockEncoded = btoa(JSON.stringify(["XXX", "000-000"]))
-            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue('RH_77');
+            const mockErrorCode = 'XXX';
+            const mockInteractionId = '000-000';
+            const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
+            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
             render(<ServerErrorPage />);
 
             expect(
@@ -87,13 +88,18 @@ describe('ServerErrorPage', () => {
                 }),
             ).toBeInTheDocument();
             expect(screen.getByText('An unknown error has occurred.')).toBeInTheDocument();
-            expect(screen.getByText('UNKNOWN_ERROR')).toBeInTheDocument();
-            expect(screen.queryByText('RH_77')).not.toBeInTheDocument();
+            expect(screen.getByText(mockInteractionId)).toBeInTheDocument();
+            expect(screen.queryByText(mockErrorCode)).not.toBeInTheDocument();
         });
     });
 
     describe('Navigation', () => {
         it('navigates user to previous page when return home is clicked', async () => {
+            const mockErrorCode = 'XXX';
+            const mockInteractionId = '000-000';
+            const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
+            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
+
             render(<ServerErrorPage />);
             const returnButtonLink = screen.getByRole('button', {
                 name: 'Return to previous page',

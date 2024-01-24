@@ -1,8 +1,9 @@
 import { errorToParams } from './errorToParams';
 import { AxiosError } from 'axios';
+import { unixTimestamp } from './createTimestamp';
 
 describe('errorToParams util function', () => {
-    it('returns empty string param if error has no err_code', () => {
+    it('returns only interaction_id if error has no err_code', () => {
         const errorResponse = {
             response: {
                 status: 500,
@@ -10,19 +11,21 @@ describe('errorToParams util function', () => {
             },
         };
         const error = errorResponse as AxiosError;
-
-        expect(errorToParams(error)).toBe('');
+        expect(errorToParams(error)).toContain('?encodedError=');
     });
 
     it('returns param with error code', () => {
+        const mockErrorCode = 'test';
         const errorResponse = {
             response: {
                 status: 500,
-                data: { message: '500 Unknown Service Error.', err_code: 'test' },
+                data: { message: '500 Unknown Service Error.', err_code: mockErrorCode },
             },
         };
         const error = errorResponse as AxiosError;
-
-        expect(errorToParams(error)).toBe('?errorCode=test');
+        const resultErrorToParams = errorToParams(error);
+        const errorArray = resultErrorToParams.split('encodedError=');
+        const [errorCode, interactionId] = JSON.parse(atob(errorArray[1]));
+        expect(errorCode).toEqual(mockErrorCode);
     });
 });
