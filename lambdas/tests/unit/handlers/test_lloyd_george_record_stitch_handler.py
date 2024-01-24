@@ -118,7 +118,11 @@ def test_lambda_handler_respond_400_when_no_nhs_number_supplied(
     actual = lambda_handler(missing_id_event, context)
 
     expected_body = json.dumps(
-        {"message": "An error occurred due to missing key", "err_code": "PN_4002"}
+        {
+            "message": "An error occurred due to missing key",
+            "err_code": "PN_4002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
@@ -135,6 +139,7 @@ def test_lambda_handler_respond_500_when_environment_variables_not_set(
         {
             "message": "An error occurred due to missing environment variable: 'LLOYD_GEORGE_DYNAMODB_NAME'",
             "err_code": "ENV_5001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
         }
     )
     expected = ApiGatewayResponse(
@@ -152,7 +157,11 @@ def test_lambda_handler_respond_400_when_nhs_number_not_valid(
 
     nhs_number = invalid_id_event["queryStringParameters"]["patientId"]
     expected_body = json.dumps(
-        {"message": f"Invalid patient number {nhs_number}", "err_code": "PN_4001"}
+        {
+            "message": f"Invalid patient number {nhs_number}",
+            "err_code": "PN_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
@@ -167,7 +176,11 @@ def test_lambda_handler_respond_500_when_failed_to_retrieve_lg_record(
     actual = lambda_handler(joe_bloggs_event, context)
 
     expected_body = json.dumps(
-        {"message": "Unable to retrieve documents for patient", "err_code": "LGS_5003"}
+        {
+            "message": "Unable to retrieve documents for patient",
+            "err_code": "LGS_5003",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         500,
@@ -188,7 +201,11 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_download_lloyd_geo
     actual = lambda_handler(joe_bloggs_event, context)
 
     expected_body = json.dumps(
-        {"message": "Unable to retrieve documents for patient", "err_code": "LGS_5001"}
+        {
+            "message": "Unable to retrieve documents for patient",
+            "err_code": "LGS_5001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         500,
@@ -208,7 +225,11 @@ def test_lambda_handler_respond_404_throws_error_when_no_lloyd_george_for_patien
     actual = lambda_handler(valid_id_event_without_auth_header, context)
 
     expected_body = json.dumps(
-        {"message": "Lloyd george record not found for patient", "err_code": "LGS_4001"}
+        {
+            "message": "Lloyd george record not found for patient",
+            "err_code": "LGS_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         404,
@@ -232,6 +253,7 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_stitch_lloyd_georg
         {
             "message": "Unable to return stitched pdf file due to internal error",
             "err_code": "LGS_5002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
         }
     )
     actual = lambda_handler(valid_id_event_without_auth_header, context)
@@ -257,6 +279,7 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_upload_lloyd_georg
         {
             "message": "Unable to return stitched pdf file due to internal error",
             "err_code": "LGS_5002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
         }
     )
     expected = ApiGatewayResponse(

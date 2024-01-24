@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Optional
 
 from utils.error_response import ErrorResponse
+from utils.request_context import request_context
 
 
 class LambdaError(Enum):
@@ -11,7 +12,10 @@ class LambdaError(Enum):
         if "%" in message and params:
             message = message % params
 
-        error_response = ErrorResponse(err_code=err_code, message=message)
+        interaction_id = getattr(request_context, "request_id", None)
+        error_response = ErrorResponse(
+            err_code=err_code, message=message, interaction_id=interaction_id
+        )
         return error_response.create()
 
     def to_str(self) -> str:
@@ -21,44 +25,44 @@ class LambdaError(Enum):
     Errors for SearchPatientException
     """
 
-    SearchPatientMissing = {"err_code": "SP_1001", "message": "Missing user details"}
+    SearchPatientMissing = {"err_code": "SP_4001", "message": "Missing user details"}
     SearchPatientNoPDS = {
-        "err_code": "SP_1002",
+        "err_code": "SP_4002",
         "message": "Patient does not exist for given NHS number",
     }
     SearchPatientNoAuth = {
-        "err_code": "SP_1003",
+        "err_code": "SP_4003",
         "message": "Patient does not exist for given NHS number",
     }
     SearchPatientNoId = {
-        "err_code": "SP_1004",
+        "err_code": "SP_4004",
         "message": "An error occurred while searching for patient",
     }
     SearchPatientNoParse = {
-        "err_code": "SP_1005",
+        "err_code": "SP_4005",
         "message": "Failed to parse PDS data",
     }
 
     """
        Errors for CreateDocumentRefException
     """
-    CreateDocNoBody = {"err_code": "CDR_1001", "message": "Missing event body"}
-    CreateDocPayload = {"err_code": "CDR_1002", "message": "Invalid json in body"}
+    CreateDocNoBody = {"err_code": "CDR_4001", "message": "Missing event body"}
+    CreateDocPayload = {"err_code": "CDR_4002", "message": "Invalid json in body"}
     CreateDocProps = {
-        "err_code": "CDR_1003",
+        "err_code": "CDR_4003",
         "message": "Request body missing some properties",
     }
-    CreateDocFiles = {"err_code": "CDR_1004", "message": "Invalid files or id"}
+    CreateDocFiles = {"err_code": "CDR_4004", "message": "Invalid files or id"}
     CreateDocNoParse = {
-        "err_code": "CDR_1005",
+        "err_code": "CDR_4005",
         "message": "Failed to parse document upload request data",
     }
     CreateDocNoType = {
-        "err_code": "CDR_1006",
+        "err_code": "CDR_4006",
         "message": "Failed to parse document upload request data",
     }
     CreateDocInvalidType = {
-        "err_code": "CDR_1007",
+        "err_code": "CDR_4007",
         "message": "Failed to parse document upload request data",
     }
     CreateDocPresign = {
@@ -90,25 +94,25 @@ class LambdaError(Enum):
        Errors for LoginException
     """
     LoginNoState = {
-        "err_code": "LIN_1001",
+        "err_code": "LIN_4001",
         "message": "No auth err_code and/or state in the query string parameters",
     }
     LoginBadState = {
-        "err_code": "LIN_2001",
+        "err_code": "LIN_4002",
         "message": "Unrecognised state value",
     }
 
     LoginBadAuth = {
-        "err_code": "LIN_2002",
+        "err_code": "LIN_4003",
         "message": "Cannot log user in, expected information from CIS2 is missing",
     }
     LoginNoOrg = {
-        "err_code": "LIN_2003",
+        "err_code": "LIN_4004",
         "message": "No org found for given ODS err_code",
     }
-    LoginNullOrgs = {"err_code": "LIN_2004", "message": "No orgs found for user"}
+    LoginNullOrgs = {"err_code": "LIN_4005", "message": "No orgs found for user"}
     LoginNoRole = {
-        "err_code": "LIN_2005",
+        "err_code": "LIN_4006",
         "message": "Unable to remove used state value",
     }
     LoginClient = {
@@ -217,7 +221,7 @@ class LambdaError(Enum):
         "message": "No records was found for given patient. No document deleted",
     }
     LoginNoAuth = {
-        "err_code": "LIN_1002",
+        "err_code": "LIN_4007",
         "message": "No auth err_code and/or state in the query string parameters",
     }
     LogoutClient = {

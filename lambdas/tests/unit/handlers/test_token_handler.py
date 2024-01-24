@@ -9,7 +9,11 @@ from utils.lambda_response import ApiGatewayResponse
 
 
 class MockError(Enum):
-    Error = {"message": "Client error", "err_code": "AB_XXXX"}
+    Error = {
+        "message": "Client error",
+        "err_code": "AB_XXXX",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
 
 
 @pytest.fixture
@@ -88,7 +92,8 @@ def test_missing_query_string_params_raise_key_error(mock_login_service, context
     expected_body = json.dumps(
         {
             "message": "No auth err_code and/or state in the query string parameters",
-            "err_code": "LIN_1002",
+            "err_code": "LIN_4007",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
         }
     )
 
@@ -119,7 +124,8 @@ def test_missing_query_string_params_raise_login_error(
     expected_body = json.dumps(
         {
             "message": "No auth err_code and/or state in the query string parameters",
-            "err_code": "LIN_1001",
+            "err_code": "LIN_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
         }
     )
 

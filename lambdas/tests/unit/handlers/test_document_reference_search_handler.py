@@ -9,7 +9,11 @@ from utils.lambda_response import ApiGatewayResponse
 
 
 class MockError(Enum):
-    Error = {"message": "Client error", "err_code": "AB_XXXX"}
+    Error = {
+        "message": "Client error",
+        "err_code": "AB_XXXX",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
 
 
 @pytest.fixture
@@ -68,7 +72,11 @@ def test_lambda_handler_when_id_not_valid_returns_400(
     set_env, invalid_id_event, context
 ):
     expected_body = json.dumps(
-        {"message": "Invalid patient number 900000000900", "err_code": "PN_4001"}
+        {
+            "message": "Invalid patient number 900000000900",
+            "err_code": "PN_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
@@ -81,7 +89,11 @@ def test_lambda_handler_when_id_not_supplied_returns_400(
     set_env, missing_id_event, context
 ):
     expected_body = json.dumps(
-        {"message": "An error occurred due to missing key", "err_code": "PN_4002"}
+        {
+            "message": "An error occurred due to missing key",
+            "err_code": "PN_4002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
@@ -97,6 +109,7 @@ def test_lambda_handler_when_dynamo_tables_env_variable_not_supplied_then_return
         {
             "message": "An error occurred due to missing environment variable: 'DYNAMODB_TABLE_LIST'",
             "err_code": "ENV_5001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
         }
     )
     expected = ApiGatewayResponse(

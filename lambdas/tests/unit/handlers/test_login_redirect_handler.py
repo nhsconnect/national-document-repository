@@ -6,7 +6,11 @@ from utils.lambda_exceptions import LoginRedirectException
 
 
 class MockError(Enum):
-    Error = {"message": "Client error", "err_code": "AB_XXXX"}
+    Error = {
+        "message": "Client error",
+        "err_code": "AB_XXXX",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
 
 
 def test_login_redirect_lambda_handler_valid(mocker, set_env, event, context):

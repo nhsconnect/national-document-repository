@@ -6,6 +6,7 @@ from utils.audit_logging_setup import LoggingService
 from utils.error_response import ErrorResponse
 from utils.lambda_exceptions import LambdaException
 from utils.lambda_response import ApiGatewayResponse
+from utils.request_context import request_context
 
 logger = LoggingService(__name__)
 
@@ -25,9 +26,11 @@ def handle_lambda_exceptions(lambda_func: Callable):
             return lambda_func(event, context)
         except LambdaException as e:
             logger.error(str(e))
+
+            interaction_id = getattr(request_context, "request_id", None)
             return ApiGatewayResponse(
                 status_code=e.status_code,
-                body=ErrorResponse(e.err_code, e.message).create(),
+                body=ErrorResponse(e.err_code, e.message, interaction_id).create(),
                 methods=event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
         except ClientError as e:

@@ -28,7 +28,11 @@ TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_LG_BUCKET}/{TEST_OBJECT_KEY}"
 
 
 class MockError(Enum):
-    Error = {"message": "Client error", "err_code": "AB_XXXX"}
+    Error = {
+        "message": "Client error",
+        "err_code": "AB_XXXX",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
 
 
 @pytest.fixture
@@ -90,6 +94,7 @@ def test_lambda_handler_missing_environment_variables_type_lg_returns_500(
     expected_body = {
         "message": f"An error occurred due to missing environment variable: '{environment_variable}'",
         "err_code": "ENV_5001",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
     expected = ApiGatewayResponse(
         500,
@@ -113,6 +118,7 @@ def test_lambda_handler_missing_environment_variables_type_arf_returns_500(
     expected_body = {
         "message": f"An error occurred due to missing environment variable: '{environment_variable}'",
         "err_code": "ENV_5001",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
     expected = ApiGatewayResponse(
         500,

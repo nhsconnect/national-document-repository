@@ -7,8 +7,16 @@ from utils.lambda_response import ApiGatewayResponse
 
 
 class MockError(Enum):
-    ErrorClient = {"message": "Client error", "err_code": "AB_XXXX"}
-    ErrorKey = {"message": "Key error", "err_code": "CD_XXXX"}
+    ErrorClient = {
+        "message": "Client error",
+        "err_code": "AB_XXXX",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
+    ErrorKey = {
+        "message": "Key error",
+        "err_code": "CD_XXXX",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
 
 
 @handle_lambda_exceptions
