@@ -284,7 +284,6 @@ jobs:
   #     build_branch: ${{github.event.pull_request.head.ref}}
   #     environment: development
   #     sandbox: ndr-dev
-  #     aws_region: ${{ vars.AWS_REGION }}
   #   secrets:
   #     AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   #     CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}

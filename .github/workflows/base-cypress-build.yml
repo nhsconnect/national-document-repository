@@ -1,0 +1,63 @@
+# .github/workflows/terraform-dev
+name: 'Z-BASE Cypress Build: Run a cypress build job'
+
+on:
+  workflow_call:
+    inputs:
+      build_branch:
+        description: 'Branch with smoke tests.'
+        required: true
+        type: 'string'
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+      CYPRESS_USERNAME:
+        required: true
+      CYPRESS_PASSWORD:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  install-cypress-build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.buildBranch }}
+
+      - name: Cypress install
+        run: npm install --legacy-peer-deps
+        working-directory: ./app
+
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
+          AWS_REGION: test region
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: development
+          IMAGE_VERSION: 'not-required'
+        run: |
+          ./react-environment-config.sh
+        working-directory: ./app
+
+      - name: Cypress build
+        uses: cypress-io/github-action@v5
+        with:
+          # Disable running of tests within install job
+          install: false
+          runTests: false
+          build: npm run build
+          working-directory: ./app
+
+      - name: Save build folder
+        uses: actions/upload-artifact@v3
+        with:
+          name: build
+          if-no-files-found: error
+          path: ./app/build

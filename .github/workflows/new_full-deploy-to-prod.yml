@@ -1,0 +1,39 @@
+name: "PROD Lambdas - Deploy tagged version to Prod"
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_version:
+        description: "What tagged verison do you want to push to prod?"
+        required: true
+        type: "string"
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+env:
+  PYTHON_VERSION: "3.11"
+  ENVIRONMENT: prod
+  SANDBOX: prod
+  BUILD_BRANCH: ${{ inputs.tag_version }}
+
+jobs:
+  run_tests:
+    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+    with:
+      environment: prod
+      python_version: "3.11"
+      build_branch: ${{ inputs.tag_version }}
+
+  deploy_all:
+    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
+    needs: ["run_tests"]
+    with:
+      environment: prod
+      python_version: "3.11"
+      build_branch: ${{ inputs.tag_version }}
+      sandbox: prod
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}

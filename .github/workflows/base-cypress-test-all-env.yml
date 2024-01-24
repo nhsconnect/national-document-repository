@@ -1,0 +1,46 @@
+# .github/workflows/terraform-dev
+name: 'Z-BASE Cypress Test: Run a cypress test job against all browsers'
+
+on:
+  workflow_call:
+    inputs:
+      build_branch:
+        description: 'Branch with smoke tests.'
+        required: true
+        type: 'string'
+      base_url:
+        description: 'Application url to run cypress againsr'
+        required: true
+        type: 'string'
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+      CYPRESS_USERNAME:
+        required: true
+      CYPRESS_PASSWORD:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+    cypress_test_chrome:
+      uses: ./.github/workflows/base-cypress-test.yml
+      with:
+        build_branch: main
+        base_url: ${{ github.event.inputs.base_url }}
+        cypress_broswer: 'chrome'
+    cypress_test_edge:
+      uses: ./.github/workflows/base-cypress-test.yml
+      with:
+        build_branch: main
+        base_url: ${{ github.event.inputs.base_url }}
+        cypress_broswer: 'edge'
+    cypress_test_firefox:
+      uses: ./.github/workflows/base-cypress-test.yml
+      with:
+        build_branch: main
+        base_url: ${{ github.event.inputs.base_url }}
+        cypress_broswer: 'firefox'

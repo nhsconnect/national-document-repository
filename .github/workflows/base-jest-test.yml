@@ -1,0 +1,56 @@
+# .github/workflows/terraform-dev
+name: 'Z-BASE Jest Test: Run a jest test job'
+
+on:
+  workflow_call:
+    inputs:
+      build_branch:
+        description: 'Branch with smoke tests.'
+        required: true
+        type: 'string'
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+      CYPRESS_USERNAME:
+        required: true
+      CYPRESS_PASSWORD:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  jest_testing_job:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.buildBranch }}
+          fetch-depth: '0'
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Configure React environment vars
+        env:
+          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
+          AWS_REGION: test region
+          OIDC_PROVIDER_ID: not provided yet
+          BUILD_ENV: development
+          IMAGE_VERSION: 'ndr-not-required'
+        run: |
+          ./react-environment-config.sh
+        working-directory: ./app
+        shell: bash
+
+      - run: make clean-install
+      - run: make test-ui
