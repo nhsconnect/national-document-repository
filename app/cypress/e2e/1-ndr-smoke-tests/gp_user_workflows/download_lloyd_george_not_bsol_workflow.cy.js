@@ -9,7 +9,7 @@ const bucketName = `${workspace}-lloyd-george-store`;
 const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
 const fileName = `${activePatient}/e4a6d7f7-01f3-44be-8964-515b2c0ec180`;
 
-describe('GP Workflow: View Lloyd George record', () => {
+describe('GP Workflow: View Lloyd George record', { tags: 'smoke' }, () => {
     context('Download Lloyd George document', () => {
         before(() => {
             cy.deleteFileFromS3(bucketName, fileName);
@@ -25,7 +25,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
         it(
             '[Smoke] non-BSOL GP ADMIN user can download and delete the Lloyd George document of an active patient',
-            { tags: 'smoke', defaultCommandTimeout: 20000 },
+            { defaultCommandTimeout: 20000 },
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN);
 
