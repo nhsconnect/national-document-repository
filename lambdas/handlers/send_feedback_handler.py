@@ -26,6 +26,10 @@ def lambda_handler(event, context):
 
     event_body = event.get("body")
     if not event_body:
+        logger.error(
+            LambdaError.FeedbackMissingBody.to_str(),
+            {"Result": "Failed to send feedback by email"},
+        )
         raise SendFeedbackException(400, LambdaError.FeedbackMissingBody)
 
     logger.info("Setting up SendFeedbackService...")
@@ -34,7 +38,7 @@ def lambda_handler(event, context):
     logger.info("SendFeedbackService ready, start processing feedback")
     feedback_service.process_feedback(event_body)
 
-    logger.info("Successfully sent feedback by email")
+    logger.info("Process complete", {"Result": "Successfully sent feedback by email"})
 
     return ApiGatewayResponse(
         200, "Feedback email processed", "POST"
