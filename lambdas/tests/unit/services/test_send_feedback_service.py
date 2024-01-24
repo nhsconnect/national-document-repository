@@ -34,7 +34,7 @@ def test_process_feedback_validate_feedback_content_and_send_email(
     mock_send_feedback_by_email.assert_called_with(expected_email_body)
 
 
-def test_process_feedback_allows_respondent_email_and_name_to_be_empty(
+def test_process_feedback_allow_respondent_email_and_name_to_be_blank(
     send_feedback_service, mock_send_feedback_by_email
 ):
     mock_event_body = MOCK_VALID_FEEDBACK_BODY_ANONYMOUS_JSON_STR

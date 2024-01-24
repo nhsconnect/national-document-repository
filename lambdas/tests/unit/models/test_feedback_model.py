@@ -40,6 +40,34 @@ def test_feedback_model_sanitise_strings():
     assert actual.feedback_content == expected_sanitised_string
 
 
+def test_feedback_model_allows_email_and_name_to_be_blank():
+    mock_feedback_json_string = (
+        '{"feedbackContent": "Mock feedback content", "howSatisfied": "Satisfied", '
+        '"respondentName": "", "respondentEmail": ""}'
+    )
+
+    expected = Feedback(
+        feedback_content="Mock feedback content",
+        experience="Satisfied",
+        respondent_name="",
+        respondent_email="",
+    )
+
+    actual = Feedback.model_validate_json(mock_feedback_json_string)
+
+    assert actual == expected
+
+
+def test_feedback_model_raise_validation_error_for_invalid_email_address():
+    mock_input = (
+        '{"feedbackContent": "Mock feedback content", "howSatisfied": "Very Satisfied", '
+        '"respondentName": "Jane Smith", "respondentEmail": "some_random_string"}'
+    )
+
+    with pytest.raises(ValidationError):
+        Feedback.model_validate_json(mock_input)
+
+
 def test_feedback_model_raise_validation_error_for_invalid_input():
     mock_input = '{"key": {"some value"}}'
 
