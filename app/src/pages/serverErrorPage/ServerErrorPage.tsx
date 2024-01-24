@@ -7,14 +7,13 @@ import { useSearchParams } from 'react-router-dom';
 const ServerErrorPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const errorCode = searchParams.get('errorCode');
+    const encodedError = searchParams.get('encodedError') ?? '';
+    const [errorCode, interactionId] = JSON.parse(atob(encodedError));
 
     const defaultMessage = 'An unknown error has occurred.';
-    const defaultErrorId = 'UNKNOWN_ERROR';
 
     const errorMessage =
         errorCode && !!errorCodes[errorCode] ? errorCodes[errorCode] : defaultMessage;
-    const errorId = errorCode && !!errorCodes[errorCode] ? errorCode : defaultErrorId;
 
     return (
         <>
@@ -47,7 +46,7 @@ const ServerErrorPage = () => {
 
             <p>
                 When contacting the service desk, quote this error code as reference:{' '}
-                <strong>{errorId}</strong>
+                <strong>{interactionId}</strong>
             </p>
         </>
     );

@@ -4,10 +4,16 @@ import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 
 const mockedUseNavigate = jest.fn();
+const mockedUseSearchParams = jest.fn();
 
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
     useLocation: () => jest.fn(),
+}));
+
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    useSearchParams: () => mockedUseSearchParams,
 }));
 
 describe('ServerErrorPage', () => {
@@ -19,7 +25,7 @@ describe('ServerErrorPage', () => {
     });
 
     describe('Rendering', () => {
-        it('renders page content with default error message and id when there is no error code', () => {
+        it('renders page content with default error message and id when there are no url params', () => {
             render(<ServerErrorPage />);
 
             expect(
@@ -51,8 +57,11 @@ describe('ServerErrorPage', () => {
             expect(screen.getByText('UNKNOWN_ERROR')).toBeInTheDocument();
         });
 
-        it('renders page content with error message and id when there is a valid error code', () => {
-            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue('CDR_5001');
+        it('renders page content with error message and id when there is a valid error code with interaction id', () => {
+            mockedUseSearchParams.mockReturnValue({
+                errorCode: 'CDR_5001',
+                interactionId: '12345',
+            });
             render(<ServerErrorPage />);
 
             expect(
@@ -63,10 +72,12 @@ describe('ServerErrorPage', () => {
             expect(screen.getByText('Internal error')).toBeInTheDocument();
             expect(screen.queryByText('An unknown error has occurred.')).not.toBeInTheDocument();
             expect(screen.getByText('CDR_5001')).toBeInTheDocument();
+            expect(screen.getByText('12345')).toBeInTheDocument();
             expect(screen.queryByText('UNKNOWN_ERROR')).not.toBeInTheDocument();
         });
 
         it('renders page content with default error message and id when there is an invalid error code', () => {
+            // const mockEncoded = btoa(JSON.stringify(["XXX", "000-000"]))
             jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue('RH_77');
             render(<ServerErrorPage />);
 
