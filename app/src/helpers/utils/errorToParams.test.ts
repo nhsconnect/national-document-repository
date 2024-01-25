@@ -35,7 +35,7 @@ describe('errorToParams util function', () => {
         const error = errorResponse as AxiosError;
         const resultErrorToParams = errorToParams(error);
         const errorArray = resultErrorToParams.split('encodedError=');
-        const [errorCode, interactionId] = JSON.parse(atob(errorArray[1]));
+        const [errorCode] = JSON.parse(atob(errorArray[1]));
         expect(errorCode).toEqual(mockErrorCode);
     });
 });
