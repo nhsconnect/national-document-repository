@@ -128,13 +128,7 @@ class LoginService:
             user_id,
         )
 
-        logger.info(
-            "Updating is_BSOL so it will now only return true if the org is part of BSOL AND user role is GP admin"
-        )
-        is_bsol = (
-            repository_role.value == RepositoryRole.GP_ADMIN.value
-            and permitted_orgs_details["is_BSOL"]
-        )
+        is_bsol = permitted_orgs_details["is_BSOL"]
 
         logger.info("Returning authentication details")
         response = {
