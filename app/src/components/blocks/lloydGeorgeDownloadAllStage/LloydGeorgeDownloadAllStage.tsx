@@ -98,7 +98,6 @@ function LloydGeorgeDownloadAllStage({
                 });
 
                 const filename = `patient-record-${nhsNumber}`;
-                setLinkAttributes({ url: preSignedUrl, filename: filename });
                 if (deleteAfterDownload) {
                     try {
                         await deleteAllDocuments({
@@ -111,6 +110,7 @@ function LloydGeorgeDownloadAllStage({
                         navigate(routes.SERVER_ERROR + errorToParams(e as AxiosError));
                     } // This is fail and forget at this point in time.
                 }
+                setLinkAttributes({ url: preSignedUrl, filename: filename });
             } catch (e) {
                 navigate(routes.SERVER_ERROR + errorToParams(e as AxiosError));
             }

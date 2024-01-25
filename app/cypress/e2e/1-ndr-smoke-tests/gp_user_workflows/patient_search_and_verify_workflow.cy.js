@@ -1,3 +1,4 @@
+import { pdsPatients, stubPatients } from '../../../support/patients';
 import { Roles, roleName } from '../../../support/roles';
 
 describe('GP Workflow: Patient search and verify', () => {
@@ -6,7 +7,8 @@ describe('GP Workflow: Patient search and verify', () => {
     const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
     const workspace = Cypress.env('WORKSPACE');
-    const activePatient = workspace === 'ndr-dev' ? '9730153817' : '9000000002';
+    const activePatient =
+        workspace === 'ndr-dev' ? pdsPatients.activeUpload : stubPatients.activeNoUpload;
     const homeUrl = '/home';
     const verifyPatientUrl = '/search/patient/verify';
     const lloydGeorgeUrl = '/patient/view/lloyd-george-record';

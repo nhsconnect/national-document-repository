@@ -133,7 +133,7 @@ describe('Home Page', () => {
                 cy.getByTestId('logout-btn').click();
 
                 cy.wait('@logout');
-                cy.url({ timeout: 10000 }).should('contain', baseUrl + startUrl);
+                cy.url({ timeout: 10000 }).should('eq', baseUrl + startUrl);
 
                 cy.get('.nhsuk-header__navigation').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');

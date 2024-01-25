@@ -1,6 +1,8 @@
 import { DynamoDB, S3 } from 'aws-sdk';
 import { Roles, roleIds, roleList } from './roles';
 import Bluebird from 'cypress/types/bluebird';
+import './aws.commands';
+
 /// <reference types="cypress" />
 const registerCypressGrep = require('@cypress/grep');
 registerCypressGrep();
@@ -74,6 +76,29 @@ Cypress.Commands.add('smokeLogin', (role) => {
     }
 });
 
+Cypress.Commands.add('downloadIframeReplace', () => {
+    cy.window().then((win) => {
+        const triggerAutIframeLoad = () => {
+            const AUT_IFRAME_SELECTOR = '.aut-iframe';
+
+            // get the application iframe
+            const autIframe = win.parent.document.querySelector(AUT_IFRAME_SELECTOR);
+
+            if (!autIframe) {
+                throw new ReferenceError(
+                    `Failed to get the application frame using the selector '${AUT_IFRAME_SELECTOR}'`,
+                );
+            }
+
+            autIframe.dispatchEvent(new Event('load'));
+            // remove the event listener to prevent it from firing the load event before each next unload
+            win.removeEventListener('beforeunload', triggerAutIframeLoad);
+        };
+
+        win.addEventListener('beforeunload', triggerAutIframeLoad);
+    });
+});
+
 declare global {
     namespace Cypress {
         interface Chainable {
@@ -103,10 +128,10 @@ declare global {
              * @param {string} fileContent - Content of the file to upload
              * @return {Promise<SendData>} - S3 response for s3.upload
              */
-            addFileToS3(
+            addPdfFileToS3(
                 bucketName: string,
                 fileName: string,
-                fileContent: S3.Body,
+                filePath: string,
             ): Chainable<Bluebird<S3.ManagedUpload.SendData>>;
             /**
              * Add dynamoDB entry
@@ -138,6 +163,10 @@ declare global {
                 tableName: string,
                 itemId: string,
             ): Chainable<Bluebird<DynamoDB.DeleteItemOutput>>;
+            /**
+             * Workaround to prevent click on download link from firing a load event and preventing test continuing to run
+             */
+            downloadIframeReplace(): Chainable<void>;
         }
     }
 }
