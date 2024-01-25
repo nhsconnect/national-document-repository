@@ -12,12 +12,18 @@ const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => jest.fn(),
     useLocation: () => jest.fn(),
 }));
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('axios');
 jest.mock('../../helpers/hooks/usePatient');
@@ -112,7 +118,9 @@ describe('<DocumentSearchResultsPage />', () => {
             await waitFor(() => {
                 screen.getByRole('button', { name: 'Download All Documents' });
             });
-            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+            });
 
             expect(
                 await screen.findByText('An error has occurred while preparing your download'),
@@ -142,8 +150,9 @@ describe('<DocumentSearchResultsPage />', () => {
             await waitFor(() => {
                 screen.getByRole('button', { name: 'Download All Documents' });
             });
-            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
-
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+            });
             expect(
                 await screen.findByText('An error has occurred while preparing your download'),
             ).toBeInTheDocument();
@@ -195,7 +204,7 @@ describe('<DocumentSearchResultsPage />', () => {
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
-                    routes.SERVER_ERROR + '?errorCode=SP_1001',
+                    routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
                 );
             });
         });

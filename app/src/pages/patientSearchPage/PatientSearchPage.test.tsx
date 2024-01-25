@@ -17,6 +17,9 @@ jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
     useLocation: () => jest.fn(),
 }));
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUseRole = useRole as jest.Mock;
 
@@ -209,7 +212,7 @@ describe('PatientSearchPage', () => {
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
-                    routes.SERVER_ERROR + '?errorCode=test',
+                    routes.SERVER_ERROR + '?encodedError=WyJ0ZXN0IiwiMTU3NzgzNjgwMCJd',
                 );
             });
         });
