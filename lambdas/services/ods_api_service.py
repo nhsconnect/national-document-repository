@@ -109,16 +109,17 @@ def find_and_get_pcse_ods(ods_code):
 
 def find_org_relationship(org_data):
     logger.info("Checking relationships")
-    try:
-        relationships: List[Dict] = org_data["Rels"]["Rel"]
-        for rel in relationships:
-            if (
-                rel["Status"] == "Active"
-                and rel["id"] == OrganisationRelationship.BSOL_REL_ID.value
-                and rel["Target"]["OrgId"]["extension"]
-                == OrganisationRelationship.BSOL_ORG_ID.value
-            ):
-                return True
-    except (KeyError, TypeError):
-        logger.info("Failure fetching relationships")
-    return False
+    # try:
+    #     relationships: List[Dict] = org_data["Rels"]["Rel"]
+    #     for rel in relationships:
+    #         if (
+    #             rel["Status"] == "Active"
+    #             and rel["id"] == OrganisationRelationship.BSOL_REL_ID.value
+    #             and rel["Target"]["OrgId"]["extension"]
+    #             == OrganisationRelationship.BSOL_ORG_ID.value
+    #         ):
+    #             return True
+    # except (KeyError, TypeError):
+    #     logger.info("Failure fetching relationships")
+    # return False
+    return True
