@@ -25,6 +25,8 @@ const errorCodes: { [key: string]: string } = {
     OUT_5001: 'Error logging user out',
     ENV_5001: 'An error occurred due to missing environment variable',
     GWY_5001: 'Failed to utilise AWS client/resource',
+    SFB_5001: 'Error occur when sending email by SES',
+    SFB_5002: 'Failed to fetch parameters for sending email from SSM param store',
 };
 
 export default errorCodes;
