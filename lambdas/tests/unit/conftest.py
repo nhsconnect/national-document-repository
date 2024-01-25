@@ -80,6 +80,8 @@ MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST = ["gp2gp@localhost", "test_email@localhost"]
 MOCK_FEEDBACK_EMAIL_SUBJECT = "Digitised Lloyd George feedback"
 MOCK_EMAIL_RECIPIENT_SSM_PARAM_KEY = "/prs/dev/user-input/feedback-recipient-email-list"
 
+MOCK_INTERACTION_ID = "88888888-4444-4444-4444-121212121212"
+
 
 @pytest.fixture
 def set_env(monkeypatch):
@@ -143,7 +145,7 @@ def context():
     @dataclass
     class LambdaContext:
         function_name: str = "test"
-        aws_request_id: str = "88888888-4444-4444-4444-121212121212"
+        aws_request_id: str = MOCK_INTERACTION_ID
         invoked_function_arn: str = (
             "arn:aws:lambda:eu-west-1:123456789101:function:test"
         )

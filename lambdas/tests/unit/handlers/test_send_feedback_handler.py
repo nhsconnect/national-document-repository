@@ -4,7 +4,7 @@ import pytest
 from enums.lambda_error import LambdaError
 from handlers.send_feedback_handler import lambda_handler
 from services.send_feedback_service import SendFeedbackService
-from tests.unit.conftest import MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST
+from tests.unit.conftest import MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST, MOCK_INTERACTION_ID
 from tests.unit.helpers.data.feedback.mock_data import MOCK_VALID_SEND_FEEDBACK_EVENT
 from utils.lambda_exceptions import SendFeedbackException
 from utils.lambda_response import ApiGatewayResponse
@@ -29,7 +29,11 @@ def test_lambda_handler_respond_with_400_when_no_event_body_given(set_env, conte
     expected = ApiGatewayResponse(
         status_code=400,
         body=json.dumps(
-            {"message": "Missing POST request body", "err_code": "SFB_4001"}
+            {
+                "message": "Missing POST request body",
+                "err_code": "SFB_4001",
+                "interaction_id": MOCK_INTERACTION_ID,
+            }
         ),
         methods="POST",
     ).create_api_gateway_response()
@@ -45,7 +49,11 @@ def test_lambda_handler_respond_with_400_when_invalid_event_body_given(
     expected = ApiGatewayResponse(
         status_code=400,
         body=json.dumps(
-            {"message": "Invalid POST request body", "err_code": "SFB_4002"}
+            {
+                "message": "Invalid POST request body",
+                "err_code": "SFB_4002",
+                "interaction_id": MOCK_INTERACTION_ID,
+            }
         ),
         methods="POST",
     ).create_api_gateway_response()
@@ -62,6 +70,7 @@ def test_lambda_handler_respond_with_500_when_missing_env_var(context):
             {
                 "message": "An error occurred due to missing environment variable: 'FROM_EMAIL_ADDRESS'",
                 "err_code": "ENV_5001",
+                "interaction_id": MOCK_INTERACTION_ID,
             }
         ),
         methods="POST",
@@ -85,6 +94,7 @@ def test_lambda_handler_respond_with_500_when_failed_to_get_recipient_emails_fro
             {
                 "message": "Failed to fetch parameters for sending email from SSM param store",
                 "err_code": "SFB_5002",
+                "interaction_id": MOCK_INTERACTION_ID,
             }
         ),
         methods="POST",
@@ -108,6 +118,7 @@ def test_lambda_handler_respond_with_500_when_failed_to_send_email(
             {
                 "message": "Error occur when sending email by SES",
                 "err_code": "SFB_5001",
+                "interaction_id": MOCK_INTERACTION_ID,
             }
         ),
         methods="POST",
