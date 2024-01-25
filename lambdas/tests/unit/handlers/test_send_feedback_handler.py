@@ -10,6 +10,22 @@ from utils.lambda_exceptions import SendFeedbackException
 from utils.lambda_response import ApiGatewayResponse
 
 
+@pytest.fixture
+def mock_feedback_service(mocker):
+    mocked_class = mocker.patch("handlers.send_feedback_handler.SendFeedbackService")
+    mocked_instance = mocked_class.return_value
+    return mocked_instance
+
+
+@pytest.fixture
+def mock_get_email_recipients_list(mocker):
+    yield mocker.patch.object(
+        SendFeedbackService,
+        "get_email_recipients_list",
+        return_value=MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
+    )
+
+
 def test_lambda_handler_respond_with_200_when_successful(
     set_env, context, mock_feedback_service
 ):
@@ -126,19 +142,3 @@ def test_lambda_handler_respond_with_500_when_failed_to_send_email(
 
     actual = lambda_handler(test_event, context)
     assert actual == expected
-
-
-@pytest.fixture
-def mock_feedback_service(mocker):
-    mocked_class = mocker.patch("handlers.send_feedback_handler.SendFeedbackService")
-    mocked_instance = mocked_class.return_value
-    return mocked_instance
-
-
-@pytest.fixture
-def mock_get_email_recipients_list(mocker):
-    yield mocker.patch.object(
-        SendFeedbackService,
-        "get_email_recipients_list",
-        return_value=MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
-    )

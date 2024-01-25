@@ -22,6 +22,38 @@ from tests.unit.helpers.data.feedback.mock_data import (
 from utils.lambda_exceptions import SendFeedbackException
 
 
+@pytest.fixture
+def mock_get_ssm_parameter(mocker):
+    yield mocker.patch.object(SSMService, "get_ssm_parameter")
+
+
+@pytest.fixture
+def send_feedback_service(mocker, set_env):
+    mocker.patch.object(
+        SendFeedbackService,
+        "get_email_recipients_list",
+        return_value=MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
+    )
+    return SendFeedbackService()
+
+
+@pytest.fixture
+def mock_send_feedback_by_email(mocker):
+    yield mocker.patch.object(SendFeedbackService, "send_feedback_by_email")
+
+
+@pytest.fixture
+def mock_validator(mocker):
+    yield mocker.patch.object(
+        Feedback, "model_validate_json", return_value=MOCK_PARSED_FEEDBACK
+    )
+
+
+@pytest.fixture
+def mock_ses_client(mocker):
+    yield mocker.create_autospec(boto3.client("ses"))
+
+
 def test_process_feedback_validate_feedback_content_and_send_email(
     send_feedback_service, mock_send_feedback_by_email, mock_validator
 ):
@@ -205,35 +237,3 @@ def test_get_email_recipients_list_raise_error_when_fail_to_fetch_from_ssm(
         SendFeedbackService.get_email_recipients_list()
 
     assert error.value == expected_lambda_error
-
-
-@pytest.fixture
-def mock_get_ssm_parameter(mocker):
-    yield mocker.patch.object(SSMService, "get_ssm_parameter")
-
-
-@pytest.fixture
-def send_feedback_service(mocker, set_env):
-    mocker.patch.object(
-        SendFeedbackService,
-        "get_email_recipients_list",
-        return_value=MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST,
-    )
-    return SendFeedbackService()
-
-
-@pytest.fixture
-def mock_send_feedback_by_email(mocker):
-    yield mocker.patch.object(SendFeedbackService, "send_feedback_by_email")
-
-
-@pytest.fixture
-def mock_validator(mocker):
-    yield mocker.patch.object(
-        Feedback, "model_validate_json", return_value=MOCK_PARSED_FEEDBACK
-    )
-
-
-@pytest.fixture
-def mock_ses_client(mocker):
-    yield mocker.create_autospec(boto3.client("ses"))
