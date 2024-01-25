@@ -106,7 +106,7 @@ describe('Home Page', () => {
         });
 
         it(
-            `should display patient search page when user is PCSE Role`,
+            'should display patient search page when user is PCSE Role',
             { tags: 'regression' },
             () => {
                 cy.login(Roles.PCSE);
