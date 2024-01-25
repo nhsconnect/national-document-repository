@@ -14,7 +14,9 @@ const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedBaseURL = useBaseAPIUrl as jest.Mock;
 const baseURL = 'http://test';
-
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
 const mockSetStage = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
@@ -254,7 +256,7 @@ describe('<FeedbackForm />', () => {
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
-                    routes.SERVER_ERROR + '?errorCode=SP_1001',
+                    routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
                 );
             });
         });
