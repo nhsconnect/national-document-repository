@@ -89,7 +89,6 @@ describe('LloydGeorgeDownloadComplete', () => {
         const returnToRecordButton = screen.getByRole('button', {
             name: "Return to patient's available medical records",
         });
-        expect(returnToRecordButton).toBeInTheDocument();
 
         act(() => {
             userEvent.click(returnToRecordButton);
