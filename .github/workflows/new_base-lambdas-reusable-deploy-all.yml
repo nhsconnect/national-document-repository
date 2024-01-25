@@ -209,7 +209,6 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
-
   deploy_back_channel_logout_lambda:
     name: Deploy back_channel_logout_lambda
     uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
@@ -222,8 +221,6 @@ jobs:
       lambda_aws_name: BackChannelLogoutHandler
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-
-
 
   deploy_send_feedback_lambda:
     name: Deploy send_feedback_lambda
