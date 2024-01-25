@@ -127,13 +127,13 @@ function LloydGeorgeRecordStage({
                             Before downloading
                         </WarningCallout.Label>
                         <p>
-                            If you download this record it removes from our storage. You will not be
-                            able to access it here.
+                            If you download this record it will be removed from our storage. You
+                            will not be able to access it here.
                         </p>
                         <p>
-                            Once downloaded, you are responsible for this patient's information and
-                            should follow data protection principles as outlined in UK General Data
-                            Protection Regulation (GDPR).
+                            Once downloaded, it is your responsibility to keep this patient’s
+                            information safe. You must store the record securely, and ensure it’s
+                            transferred safely to other practices if the patient moves.
                         </p>
                         {downloadRemoveButtonClicked && (
                             <InsetText className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text">
