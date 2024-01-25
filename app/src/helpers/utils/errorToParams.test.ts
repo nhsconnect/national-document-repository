@@ -6,6 +6,9 @@ jest.mock('moment', () => {
 });
 
 describe('errorToParams util function', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+    });
     afterEach(() => {
         jest.clearAllMocks();
     });

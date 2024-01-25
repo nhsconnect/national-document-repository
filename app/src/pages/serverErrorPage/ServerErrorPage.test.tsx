@@ -3,7 +3,6 @@ import ServerErrorPage from './ServerErrorPage';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { unixTimestamp } from '../../helpers/utils/createTimestamp';
-import exp from 'node:constants';
 
 const mockedUseNavigate = jest.fn();
 
