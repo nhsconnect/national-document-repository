@@ -45,22 +45,28 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('download-and-remove-record-btn').click();
                 cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
                 cy.getByTestId('confirm-download-and-remove-checkbox').click();
+
+                cy.downloadIframeReplace();
+
                 cy.getByTestId('confirm-download-and-remove-btn').click();
-                cy.getByTestId('lloydgeorge_downloadall-stage').should('exist');
 
                 // Assert contents of page when downloading
+                cy.getByTestId('lloydgeorge_downloadall-stage', { timeout: 10000 }).should('exist');
                 cy.contains('Downloading documents').should('be.visible');
                 cy.contains('Preparing download for').should('be.visible');
                 cy.contains('Compressing record into a zip file').should('be.visible');
                 cy.contains('Cancel').should('be.visible');
 
                 // Assert contents of page after download
+                cy.get('.lloydgeorge_download-complete', { timeout: 10000 }).should('exist');
                 cy.contains('Download complete').should('be.visible');
                 cy.contains('Documents from the Lloyd George record of:').should('be.visible');
                 cy.contains(`(NHS number: ${activePatient})`).should('be.visible');
 
                 // Assert file has been downloaded
-                cy.readFile(`${Cypress.config('downloadsFolder')}/patient-record-${activePatient}`);
+                cy.readFile(
+                    `${Cypress.config('downloadsFolder')}/patient-record-${activePatient}.zip`,
+                );
             },
         );
     });
