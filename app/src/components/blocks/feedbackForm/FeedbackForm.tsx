@@ -111,6 +111,16 @@ function FeedbackForm({ stage, setStage }: Props) {
                         If you’re happy to speak to us about your feedback so we can improve this
                         service, please leave your details below.
                     </p>
+                    <p>
+                        When submitting your details using our feedback form, any personal
+                        information you give to us will be processed in accordance with the UK
+                        General Data Protection Regulation (GDPR) 2018.
+                    </p>
+                    <p>
+                        We use the information you submitted to process your request and provide
+                        relevant information or services you have requested. This will help support
+                        us in developing this service.
+                    </p>
 
                     <Input
                         label="Your name"
