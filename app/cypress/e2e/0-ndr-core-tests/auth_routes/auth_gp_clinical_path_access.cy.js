@@ -16,32 +16,40 @@ const baseUrl = Cypress.config('baseUrl');
 
 const forbiddenRoutes = ['/patient/download'];
 
+const bsolOptions = [true, false];
+
 describe('GP Clinical user role has access to the expected GP_CLINICAL workflow paths', () => {
-    context('GP Clinical role has access to expected routes', () => {
-        it('GP Clinical role has access to Lloyd George View', { tags: 'regression' }, () => {
-            cy.intercept('GET', '/SearchPatient*', {
-                statusCode: 200,
-                body: patient,
-            }).as('search');
+    bsolOptions.forEach((isBSOL) => {
+        const prefix = isBSOL ? '[BSOL]' : '[Non-BSOL]';
+        context(`${prefix} GP Clinical role has access to expected routes`, () => {
+            it('GP Clinical role has access to Lloyd George View', { tags: 'regression' }, () => {
+                cy.intercept('GET', '/SearchPatient*', {
+                    statusCode: 200,
+                    body: patient,
+                }).as('search');
 
-            cy.login(Roles.GP_CLINICAL);
+                cy.login(Roles.GP_CLINICAL, isBSOL);
 
-            cy.getByTestId('search-patient-btn').should('exist');
-            cy.getByTestId('search-patient-btn').click();
-            cy.url().should('eq', baseUrl + '/search/patient');
+                if (!isBSOL) {
+                    cy.getByTestId('search-patient-btn').should('exist');
+                    cy.getByTestId('search-patient-btn').click();
+                }
 
-            cy.get('#nhs-number-input').click();
-            cy.get('#nhs-number-input').type(testPatient);
-            cy.get('#search-submit').click();
-            cy.wait('@search');
+                cy.url().should('eq', baseUrl + '/search/patient');
 
-            cy.url().should('include', 'verify');
-            cy.url().should('eq', baseUrl + '/search/patient/verify');
+                cy.get('#nhs-number-input').click();
+                cy.get('#nhs-number-input').type(testPatient);
+                cy.get('#search-submit').click();
+                cy.wait('@search');
 
-            cy.get('#verify-submit').click();
+                cy.url().should('include', 'verify');
+                cy.url().should('eq', baseUrl + '/search/patient/verify');
 
-            cy.url().should('include', 'lloyd-george-record');
-            cy.url().should('eq', baseUrl + '/patient/view/lloyd-george-record');
+                cy.get('#verify-submit').click();
+
+                cy.url().should('include', 'lloyd-george-record');
+                cy.url().should('eq', baseUrl + '/patient/view/lloyd-george-record');
+            });
         });
     });
 });

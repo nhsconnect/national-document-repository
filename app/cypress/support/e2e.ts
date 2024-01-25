@@ -15,8 +15,8 @@ Cypress.Commands.add('login', (role, isBSOL = true) => {
         // Login for regression tests
         const authCallback = '/auth-callback';
         const fixturePath =
-            role === Roles.GP_ADMIN && !isBSOL
-                ? 'requests/auth/GET_TokenRequest_GP_ADMIN_non_bsol.json'
+            [Roles.GP_ADMIN, Roles.GP_CLINICAL].includes(role) && !isBSOL
+                ? 'requests/auth/GET_TokenRequest_' + roleName + '_non_bsol.json'
                 : 'requests/auth/GET_TokenRequest_' + roleName + '.json';
 
         cy.intercept('GET', '/Auth/TokenRequest*', {

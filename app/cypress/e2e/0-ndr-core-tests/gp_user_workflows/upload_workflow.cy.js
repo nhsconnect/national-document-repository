@@ -2,6 +2,7 @@ import { Roles, roleName } from '../../../support/roles';
 
 // env vars
 const baseUrl = Cypress.config('baseUrl');
+const searchPatientUrl = '/search/patient';
 
 const formTypes = Object.freeze({
     LG: 'LG',
@@ -33,8 +34,7 @@ const navigateToUploadPage = () => {
         body: patient,
     }).as('search');
 
-    cy.getByTestId('search-patient-btn').should('exist');
-    cy.getByTestId('search-patient-btn').click();
+    cy.visit(searchPatientUrl);
     cy.get('#nhs-number-input').click();
     cy.get('#nhs-number-input').type(testPatient);
 

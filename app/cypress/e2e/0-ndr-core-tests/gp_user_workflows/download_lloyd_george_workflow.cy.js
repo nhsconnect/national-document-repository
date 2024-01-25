@@ -3,13 +3,13 @@ import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.j
 import { Roles } from '../../../support/roles';
 
 const baseUrl = Cypress.config('baseUrl');
+const searchPatientUrl = '/search/patient';
 
 describe('GP Workflow: View Lloyd George record', () => {
     const beforeEachConfiguration = (role) => {
         cy.login(role);
+        cy.visit(searchPatientUrl);
 
-        cy.getByTestId('search-patient-btn').should('exist');
-        cy.getByTestId('search-patient-btn').click();
         // search patient
         cy.intercept('GET', '/SearchPatient*', {
             statusCode: 200,

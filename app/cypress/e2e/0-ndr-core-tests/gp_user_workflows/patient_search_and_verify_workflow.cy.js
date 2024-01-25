@@ -3,6 +3,7 @@ import { Roles, roleName } from '../../../support/roles';
 describe('GP Workflow: Patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
+    const searchPatientUrl = '/search/patient';
     const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
     const noPatientError = 400;
@@ -22,9 +23,7 @@ describe('GP Workflow: Patient search and verify', () => {
     gpRoles.forEach((role) => {
         beforeEach(() => {
             cy.login(role);
-
-            cy.getByTestId('search-patient-btn').should('exist');
-            cy.getByTestId('search-patient-btn').click();
+            cy.visit(searchPatientUrl);
         });
 
         afterEach(() => {
