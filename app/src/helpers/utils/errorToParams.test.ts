@@ -1,8 +1,15 @@
 import { errorToParams } from './errorToParams';
 import { AxiosError } from 'axios';
-import { unixTimestamp } from './createTimestamp';
+
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
 
 describe('errorToParams util function', () => {
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('returns only interaction_id if error has no err_code', () => {
         const errorResponse = {
             response: {
@@ -11,7 +18,7 @@ describe('errorToParams util function', () => {
             },
         };
         const error = errorResponse as AxiosError;
-        expect(errorToParams(error)).toContain('?encodedError=');
+        expect(errorToParams(error)).toEqual('?encodedError=WyIiLCIxNTc3ODM2ODAwIl0=');
     });
 
     it('returns param with error code', () => {

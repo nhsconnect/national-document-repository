@@ -26,6 +26,9 @@ const mockNavigate = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
 }));
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
 
 describe('LloydGeorgeRecordPage', () => {
     beforeEach(() => {
@@ -127,7 +130,9 @@ describe('LloydGeorgeRecordPage', () => {
         });
 
         await waitFor(() => {
-            expect(mockNavigate).toHaveBeenCalledWith(routes.SERVER_ERROR + '?errorCode=SP_1001');
+            expect(mockNavigate).toHaveBeenCalledWith(
+                routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+            );
         });
     });
 });

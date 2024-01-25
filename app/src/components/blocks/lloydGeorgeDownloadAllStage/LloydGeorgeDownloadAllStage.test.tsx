@@ -7,7 +7,6 @@ import userEvent from '@testing-library/user-event';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { routes } from '../../../types/generic/routes';
-import mock = jest.mock;
 
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -21,6 +20,9 @@ jest.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockedUseNavigate,
 }));
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
 jest.mock('axios');
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../helpers/hooks/usePatient');
@@ -125,7 +127,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
 
         await waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(
-                routes.SERVER_ERROR + '?errorCode=SP_1001',
+                routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
             );
         });
     });
@@ -145,7 +147,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         });
         await waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(
-                routes.SERVER_ERROR + '?errorCode=SP_1001',
+                routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
             );
         });
     });
