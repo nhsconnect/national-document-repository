@@ -362,4 +362,4 @@ def test_generate_repository_role_no_role_raises_auth_error(
         login_service.generate_repository_role(org, user_role_code)
 
     assert actual.value.status_code == 401
-    assert actual.value.err_code == "LIN_2005"
+    assert actual.value.err_code == "LIN_4006"

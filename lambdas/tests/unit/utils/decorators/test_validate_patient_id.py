@@ -15,7 +15,11 @@ def lambda_handler(event, _context):
 
 def test_respond_with_400_when_patient_id_missing(missing_id_event, context):
     body = json.dumps(
-        {"message": "An error occurred due to missing key", "err_code": "PN_4002"}
+        {
+            "message": "An error occurred due to missing key",
+            "err_code": "PN_4002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
@@ -28,7 +32,11 @@ def test_respond_with_400_when_patient_id_missing(missing_id_event, context):
 def test_respond_with_400_when_patient_id_invalid(invalid_id_event, context):
     nhs_number = invalid_id_event["queryStringParameters"]["patientId"]
     body = json.dumps(
-        {"message": f"Invalid patient number {nhs_number}", "err_code": "PN_4001"}
+        {
+            "message": f"Invalid patient number {nhs_number}",
+            "err_code": "PN_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 

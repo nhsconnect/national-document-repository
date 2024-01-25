@@ -43,7 +43,11 @@ def test_logout_handler_invalid_jwt_returns_400(mocker, monkeypatch, context):
     )
 
     expected_body = json.dumps(
-        {"message": "Error while decoding JWT", "err_code": "OUT_4001"}
+        {
+            "message": "Error while decoding JWT",
+            "err_code": "OUT_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
@@ -71,7 +75,11 @@ def test_logout_handler_jwt_without_ndr_session_id_returns_400(
     )
 
     expected_body = json.dumps(
-        {"message": "Error while decoding JWT", "err_code": "OUT_4001"}
+        {
+            "message": "Error while decoding JWT",
+            "err_code": "OUT_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
@@ -102,7 +110,11 @@ def test_logout_handler_boto_error_returns_500(mocker, monkeypatch, context):
     )
 
     expected_body = json.dumps(
-        {"message": "Error logging user out", "err_code": "OUT_5001"}
+        {
+            "message": "Error logging user out",
+            "err_code": "OUT_5001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         500, expected_body, "GET"

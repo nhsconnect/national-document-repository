@@ -21,7 +21,11 @@ TEST_METADATA_FIELDS = [
 
 
 class MockError(Enum):
-    Error = {"message": "Client error", "err_code": "AB_XXXX"}
+    Error = {
+        "message": "Client error",
+        "err_code": "AB_XXXX",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
 
 
 @pytest.fixture
@@ -64,7 +68,11 @@ def test_lambda_handler_when_service_raises_client_error_returns_correct_respons
     mock_service, valid_id_and_arf_doctype_event, context
 ):
     expected_body = json.dumps(
-        {"message": "Failed to utilise AWS client/resource", "err_code": "GWY_5001"}
+        {
+            "message": "Failed to utilise AWS client/resource",
+            "err_code": "GWY_5001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     exception = ClientError({}, "test")
     mock_service.create_document_manifest_presigned_url.side_effect = exception
@@ -86,7 +94,11 @@ def test_lambda_handler_when_doc_type_invalid_returns_400(
     mock_service.fetch_available_document_references_by_type.return_value = []
 
     expected_body = json.dumps(
-        {"message": "Invalid document type requested", "err_code": "VDT_4002"}
+        {
+            "message": "Invalid document type requested",
+            "err_code": "VDT_4002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
@@ -151,6 +163,7 @@ def test_lambda_handler_missing_environment_variables_returns_500(
         {
             "message": "An error occurred due to missing environment variable: 'DOCUMENT_STORE_DYNAMODB_NAME'",
             "err_code": "ENV_5001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
         }
     )
     expected = ApiGatewayResponse(
@@ -164,7 +177,11 @@ def test_lambda_handler_missing_environment_variables_returns_500(
 
 def test_lambda_handler_id_not_valid_returns_400(set_env, invalid_id_event, context):
     expected_body = json.dumps(
-        {"message": "Invalid patient number 900000000900", "err_code": "PN_4001"}
+        {
+            "message": "Invalid patient number 900000000900",
+            "err_code": "PN_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
@@ -177,7 +194,11 @@ def test_lambda_handler_when_id_not_supplied_returns_400(
     set_env, missing_id_event, context
 ):
     expected_body = json.dumps(
-        {"message": "An error occurred due to missing key", "err_code": "PN_4002"}
+        {
+            "message": "An error occurred due to missing key",
+            "err_code": "PN_4002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
@@ -190,7 +211,11 @@ def test_lambda_handler_returns_400_when_doc_type_not_supplied(
     set_env, valid_id_event_without_auth_header, context
 ):
     expected_body = json.dumps(
-        {"message": "An error occurred due to missing key", "err_code": "VDT_4003"}
+        {
+            "message": "An error occurred due to missing key",
+            "err_code": "VDT_4003",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
     )
     expected = ApiGatewayResponse(
         400, expected_body, "GET"
