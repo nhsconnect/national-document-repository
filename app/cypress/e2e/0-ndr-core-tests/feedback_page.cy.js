@@ -84,9 +84,6 @@ describe('Feedback Page', () => {
                             statusCode: 200,
                         }).as('feedback');
 
-                        // TODO: when backend call for sending email is implemented,
-                        //  intercept the call and check that payload data is the same as mockInputData
-
                         cy.get('.app-homepage-content h1', { timeout: 5000 }).should(
                             'have.text',
                             'We’ve received your feedback',
