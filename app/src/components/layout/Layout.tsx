@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import Header from './header/Header';
 import PhaseBanner from './phaseBanner/PhaseBanner';
 import Footer from './footer/Footer';
+
 type Props = {
     children: ReactNode;
 };

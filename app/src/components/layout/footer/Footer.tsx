@@ -1,12 +1,9 @@
 import React from 'react';
-
 import { Footer as NHSFooter } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
 
-type Props = {};
-
-function Footer({}: Props) {
+function Footer() {
     const navigate = useNavigate();
     return (
         <NHSFooter>
