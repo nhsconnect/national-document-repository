@@ -49,8 +49,6 @@ describe('GP Workflow: View Lloyd George record', () => {
             statusCode: 200,
             body: searchPatientPayload,
         }).as('search');
-        cy.getByTestId('search-patient-btn').should('exist');
-        cy.getByTestId('search-patient-btn').click();
         cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
         cy.getByTestId('search-submit-btn').click();
         cy.wait('@search');

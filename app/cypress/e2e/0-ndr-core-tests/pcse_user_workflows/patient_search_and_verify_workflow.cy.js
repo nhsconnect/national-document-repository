@@ -17,9 +17,6 @@ describe('PCSE Workflow: patient search and verify', () => {
     beforeEach(() => {
         cy.visit(homeUrl);
         cy.login(Roles.PCSE);
-
-        cy.getByTestId('search-patient-btn').should('exist');
-        cy.getByTestId('search-patient-btn').click();
     });
 
     it(
