@@ -14,7 +14,9 @@ import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
 import { routes } from '../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
 import { errorToParams } from '../../../helpers/utils/errorToParams';
-import { AxiosError } from 'axios/index';
+import { AxiosError } from 'axios';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 
 export type Props = {
     stage: SUBMISSION_STAGE;
@@ -22,6 +24,8 @@ export type Props = {
 };
 
 function FeedbackForm({ stage, setStage }: Props) {
+    const baseUrl = useBaseAPIUrl();
+    const baseHeaders = useBaseAPIHeaders();
     const {
         handleSubmit,
         register,
@@ -35,7 +39,7 @@ function FeedbackForm({ stage, setStage }: Props) {
         setStage(SUBMISSION_STAGE.Submitting);
         // add tests for failing and passing cases when real email service is implemented
         try {
-            await sendEmail(formData);
+            await sendEmail({ formData, baseUrl, baseHeaders });
             setStage(SUBMISSION_STAGE.Successful);
         } catch (e) {
             const error = e as AxiosError;

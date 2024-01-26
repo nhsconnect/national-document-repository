@@ -1,17 +1,27 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
 import { SATISFACTION_CHOICES, SUBMISSION_STAGE } from '../../../types/pages/feedbackPage/types';
 import userEvent from '@testing-library/user-event';
-import sendEmail from '../../../helpers/requests/sendEmail';
 import FeedbackForm, { Props } from './FeedbackForm';
 import { fillInForm } from '../../../helpers/test/formUtils';
+import axios from 'axios';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+import { routes } from '../../../types/generic/routes';
 
-jest.mock('../../../helpers/requests/sendEmail');
+jest.mock('axios');
+jest.mock('../../../helpers/hooks/useBaseAPIUrl');
+jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 const mockedUseNavigate = jest.fn();
-const mockSendEmail = sendEmail as jest.Mock;
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedBaseURL = useBaseAPIUrl as jest.Mock;
+const baseURL = 'http://test';
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
 const mockSetStage = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
+
 const clickSubmitButton = () => {
     userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
 };
@@ -29,7 +39,7 @@ const renderComponent = (override: Partial<Props> = {}) => {
 describe('<FeedbackForm />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
-        mockSendEmail.mockReturnValueOnce(Promise.resolve());
+        mockedBaseURL.mockReturnValue(baseURL);
     });
     afterEach(() => {
         jest.clearAllMocks();
@@ -84,6 +94,10 @@ describe('<FeedbackForm />', () => {
 
     describe('User interactions', () => {
         it('on submit, call sendEmail() with the data that user had filled in', async () => {
+            mockedAxios.post.mockImplementation(() =>
+                Promise.resolve({ status: 200, data: 'Success' }),
+            );
+
             const mockInputData = {
                 feedbackContent: 'Mock feedback content',
                 howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
@@ -98,7 +112,11 @@ describe('<FeedbackForm />', () => {
                 clickSubmitButton();
             });
 
-            await waitFor(() => expect(mockSendEmail).toBeCalledWith(mockInputData));
+            await waitFor(() =>
+                expect(mockedAxios.post).toBeCalledWith(baseURL + '/Feedback', mockInputData, {
+                    headers: {},
+                }),
+            );
             expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
         });
 
@@ -119,7 +137,7 @@ describe('<FeedbackForm />', () => {
             await waitFor(() => {
                 expect(screen.getByText('Please enter your feedback')).toBeInTheDocument();
             });
-            expect(mockSendEmail).not.toBeCalled();
+            expect(mockedAxios).not.toBeCalled();
             expect(mockSetStage).not.toBeCalled();
         });
 
@@ -140,11 +158,11 @@ describe('<FeedbackForm />', () => {
             await waitFor(() => {
                 expect(screen.getByText('Please select an option')).toBeInTheDocument();
             });
-            expect(mockSendEmail).not.toBeCalled();
+            expect(mockedAxios).not.toBeCalled();
             expect(mockSetStage).not.toBeCalled();
         });
 
-        it("on submit, if user filled in an invalid email address,  display an error message and don't send email", async () => {
+        it("on submit, if user filled in an invalid email address, display an error message and don't send email", async () => {
             const mockInputData = {
                 feedbackContent: 'Mock feedback content',
                 howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
@@ -162,11 +180,14 @@ describe('<FeedbackForm />', () => {
             await waitFor(() => {
                 expect(screen.getByText('Enter a valid email address')).toBeInTheDocument();
             });
-            expect(mockSendEmail).not.toBeCalled();
+            expect(mockedAxios).not.toBeCalled();
             expect(mockSetStage).not.toBeCalled();
         });
 
         it('on submit, allows the respondent name and email to be blank', async () => {
+            mockedAxios.post.mockImplementation(() =>
+                Promise.resolve({ status: 200, data: 'Success' }),
+            );
             const mockInputData = {
                 feedbackContent: 'Mock feedback content',
                 howSatisfied: SATISFACTION_CHOICES.VeryDissatisfied,
@@ -184,7 +205,15 @@ describe('<FeedbackForm />', () => {
                 clickSubmitButton();
             });
 
-            await waitFor(() => expect(mockSendEmail).toBeCalledWith(expectedEmailContent));
+            await waitFor(() =>
+                expect(mockedAxios.post).toBeCalledWith(
+                    baseURL + '/Feedback',
+                    expectedEmailContent,
+                    {
+                        headers: {},
+                    },
+                ),
+            );
             expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
         });
 
@@ -193,6 +222,43 @@ describe('<FeedbackForm />', () => {
 
             expect(screen.getByRole('SpinnerButton')).toBeInTheDocument();
             expect(screen.getByRole('SpinnerButton')).toHaveAttribute('disabled');
+        });
+    });
+    describe('Navigation', () => {
+        it('navigates to Error page when call to feedback endpoint return 500', async () => {
+            const errorResponse = {
+                response: {
+                    status: 500,
+                    data: { message: 'An error occurred', err_code: 'SP_1001' },
+                },
+            };
+            mockedAxios.post.mockImplementation(() => Promise.reject(errorResponse));
+            const mockInputData = {
+                feedbackContent: 'Mock feedback content',
+                howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
+                respondentName: 'Jane Smith',
+                respondentEmail: 'jane_smith@testing.com',
+            };
+
+            renderComponent();
+
+            act(() => {
+                fillInForm(mockInputData);
+                clickSubmitButton();
+            });
+
+            await waitFor(() =>
+                expect(mockedAxios.post).toBeCalledWith(baseURL + '/Feedback', mockInputData, {
+                    headers: {},
+                }),
+            );
+            expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+                );
+            });
         });
     });
 });
