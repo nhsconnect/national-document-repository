@@ -283,8 +283,8 @@ $govuk-compatibility-govukelements: true;
         }
     }
     &_download-complete {
+        max-width: 620px;
         &_details {
-            max-width: 620px;
             &-content {
                 text-align: center;
                 background-color: #555;
