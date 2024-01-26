@@ -7,6 +7,14 @@ class LambdaException(Exception):
         self.message = error.value["message"]
         self.err_code = error.value["err_code"]
 
+    def __eq__(self, other):
+        return (
+            self.__class__ == other.__class__
+            and self.status_code == other.status_code
+            and self.message == other.message
+            and self.err_code == other.err_code
+        )
+
 
 class CreateDocumentRefException(LambdaException):
     pass
@@ -41,4 +49,8 @@ class DocumentRefSearchException(LambdaException):
 
 
 class DocumentDeletionServiceException(LambdaException):
+    pass
+
+
+class SendFeedbackException(LambdaException):
     pass

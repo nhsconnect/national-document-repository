@@ -214,6 +214,29 @@ class LambdaError(Enum):
     }
 
     """
+       Errors for Send Feedback lambda 
+    """
+    FeedbackMissingBody = {
+        "err_code": "SFB_4001",
+        "message": "Missing POST request body",
+    }
+
+    FeedbackInvalidBody = {
+        "err_code": "SFB_4002",
+        "message": "Invalid POST request body",
+    }
+
+    FeedbackSESFailure = {
+        "err_code": "SFB_5001",
+        "message": "Error occur when sending email by SES",
+    }
+
+    FeedbackFetchParamFailure = {
+        "err_code": "SFB_5002",
+        "message": "Failed to fetch parameters for sending email from SSM param store",
+    }
+
+    """
        Errors with no exception
     """
     DocDelNull = {

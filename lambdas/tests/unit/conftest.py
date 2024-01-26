@@ -37,6 +37,9 @@ MOCK_OIDC_CLIENT_ID_ENV_NAME = "OIDC_CLIENT_ID"
 MOCK_OIDC_CLIENT_SECRET_ENV_NAME = "OIDC_CLIENT_SECRET"
 MOCK_WORKSPACE_ENV_NAME = "WORKSPACE"
 MOCK_JWT_PUBLIC_KEY_NAME = "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"
+MOCK_FEEDBACK_SENDER_EMAIL_ENV_NAME = "FROM_EMAIL_ADDRESS"
+MOCK_FEEDBACK_EMAIL_SUBJECT_ENV_NAME = "EMAIL_SUBJECT"
+MOCK_EMAIL_RECIPIENT_SSM_PARAM_KEY_ENV_NAME = "EMAIL_RECIPIENT_SSM_PARAM_KEY"
 
 MOCK_ARF_TABLE_NAME = "test_arf_dynamoDB_table"
 MOCK_LG_TABLE_NAME = "test_lg_dynamoDB_table"
@@ -72,6 +75,14 @@ SSM_PARAM_JWT_TOKEN_PUBLIC_KEY_ENV_NAME = "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"
 SSM_PARAM_JWT_TOKEN_PUBLIC_KEY = "test_jwt_token_public_key"
 
 
+MOCK_FEEDBACK_SENDER_EMAIL = "feedback@localhost"
+MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST = ["gp2gp@localhost", "test_email@localhost"]
+MOCK_FEEDBACK_EMAIL_SUBJECT = "Digitised Lloyd George feedback"
+MOCK_EMAIL_RECIPIENT_SSM_PARAM_KEY = "/prs/dev/user-input/feedback-recipient-email-list"
+
+MOCK_INTERACTION_ID = "88888888-4444-4444-4444-121212121212"
+
+
 @pytest.fixture
 def set_env(monkeypatch):
     monkeypatch.setenv("AWS_DEFAULT_REGION", REGION_NAME)
@@ -105,6 +116,13 @@ def set_env(monkeypatch):
         SSM_PARAM_JWT_TOKEN_PUBLIC_KEY_ENV_NAME, SSM_PARAM_JWT_TOKEN_PUBLIC_KEY
     )
     monkeypatch.setenv(MOCK_AUTH_DYNAMODB_NAME, "test_dynamo")
+    monkeypatch.setenv(MOCK_FEEDBACK_SENDER_EMAIL_ENV_NAME, MOCK_FEEDBACK_SENDER_EMAIL)
+    monkeypatch.setenv(
+        MOCK_FEEDBACK_EMAIL_SUBJECT_ENV_NAME, MOCK_FEEDBACK_EMAIL_SUBJECT
+    )
+    monkeypatch.setenv(
+        MOCK_EMAIL_RECIPIENT_SSM_PARAM_KEY_ENV_NAME, MOCK_EMAIL_RECIPIENT_SSM_PARAM_KEY
+    )
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -127,7 +145,7 @@ def context():
     @dataclass
     class LambdaContext:
         function_name: str = "test"
-        aws_request_id: str = "88888888-4444-4444-4444-121212121212"
+        aws_request_id: str = MOCK_INTERACTION_ID
         invoked_function_arn: str = (
             "arn:aws:lambda:eu-west-1:123456789101:function:test"
         )
