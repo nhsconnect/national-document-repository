@@ -5,7 +5,6 @@ import LgDownloadComplete from './LloydGeorgeDownloadComplete';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
-import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 
 jest.mock('../../../helpers/hooks/usePatient');
 
@@ -61,6 +60,9 @@ describe('LloydGeorgeDownloadComplete', () => {
             name: "Return to patient's available medical records",
         });
         expect(returnToRecordButton).toBeInTheDocument();
+        expect(
+            screen.queryByText('This record has been removed from our storage.'),
+        ).not.toBeInTheDocument();
 
         act(() => {
             userEvent.click(returnToRecordButton);
@@ -71,7 +73,7 @@ describe('LloydGeorgeDownloadComplete', () => {
         });
     });
 
-    it('refreshes the download stage view when return to medical records is clicked and deleteAfterDownload is true', async () => {
+    it('display record removed text if deleteAfterDownload is true', async () => {
         render(
             <LgDownloadComplete
                 setStage={mockSetStage}
@@ -86,20 +88,8 @@ describe('LloydGeorgeDownloadComplete', () => {
             screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
         ).toBeInTheDocument();
 
-        const returnToRecordButton = screen.getByRole('button', {
-            name: "Return to patient's available medical records",
-        });
-
-        act(() => {
-            userEvent.click(returnToRecordButton);
-        });
-
-        await waitFor(async () => {
-            expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
-        });
-
-        await waitFor(async () => {
-            expect(mockSetDownloadStage).toHaveBeenCalledWith(DOWNLOAD_STAGE.REFRESH);
-        });
+        expect(
+            screen.getByText('This record has been removed from our storage.'),
+        ).toBeInTheDocument();
     });
 });

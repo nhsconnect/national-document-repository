@@ -259,7 +259,13 @@ describe('GP Workflow: View Lloyd George record', () => {
                     // Assert file has been downloaded
                     cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
 
-                    cy.getByTestId('return-btn').should('exist');
+                    cy.getByTestId('return-btn').should('not.exist');
+                    cy.contains('This record has been removed from our storage.').should(
+                        'be.visible',
+                    );
+                    cy.contains('Follow the Record Management Code of Practice').should(
+                        'be.visible',
+                    );
                 });
             },
         );
