@@ -19,4 +19,4 @@ def test_returns_all_as_list():
     assert DocumentReferenceMetadataFields.TYPE.value in subject
     assert DocumentReferenceMetadataFields.TTL.value in subject
     assert DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value in subject
-    assert DocumentReferenceMetadataFields.CURRENT_ODS_CODE.value in subject
+    assert DocumentReferenceMetadataFields.CURRENT_GP_ODS.value in subject

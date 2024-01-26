@@ -297,7 +297,7 @@ class BulkUploadService:
             nhs_number=nhs_number,
             file_name=file_name,
             s3_bucket_name=s3_bucket_name,
-            current_ods_code=current_ods_code,
+            current_gp_ods=current_ods_code,
         )
         document_reference.set_virus_scanner_result(VirusScanResult.CLEAN)
         return document_reference
