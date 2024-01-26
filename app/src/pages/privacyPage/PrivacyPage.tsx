@@ -1,18 +1,20 @@
 import React from 'react';
 import useRole from '../../helpers/hooks/useRole';
 import { routes } from '../../types/generic/routes';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 type Props = {};
 
 function PrivacyPage() {
     const isLoggedIn = !!useRole();
+    const navigate = useNavigate();
     return (
         <>
             <h1>Privacy notice</h1>
             <p>
                 If you access the Lloyd George patient records digital service using your{' '}
                 <a
+                    data-testid="cis2-link"
                     target="_blank"
                     href="https://am.nhsidentity.spineservices.nhs.uk/openam/XUI/?realm=/#/"
                     rel="noreferrer"
@@ -28,13 +30,14 @@ function PrivacyPage() {
             <h4>What happens with my personal information?</h4>
             <p>NHS England uses this information only to verify your identity.</p>
             <p>
-                When verifying your identity, our role is a “processor”. We must act under
-                instructions provided by NHS England (the “controller”).
+                When verifying your identity, our role is a "processor". We must act under
+                instructions provided by NHS England (the "controller").
             </p>
             <p>
                 To find out more about NHS England's Privacy Notice and its Terms and Conditions,
                 view the{' '}
                 <a
+                    data-testid="cis2-service-link"
                     target="_blank"
                     href="https://digital.nhs.uk/services/care-identity-service"
                     rel="noreferrer"
@@ -47,11 +50,25 @@ function PrivacyPage() {
             <h2>Feedback form privacy notice</h2>
             <p>
                 When submitting your details using our{' '}
-                {isLoggedIn ? <Link to={routes.FEEDBACK}></Link> : <span>feedback form</span>}, any
-                personal information you give to us will be processed in accordance with the{' '}
+                {isLoggedIn ? (
+                    <Link
+                        data-testid="feedback-link"
+                        to={'#'}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            navigate(routes.FEEDBACK);
+                        }}
+                    >
+                        feedback form
+                    </Link>
+                ) : (
+                    <span data-testid="feedback-link">feedback form</span>
+                )}
+                , any personal information you give to us will be processed in accordance with the{' '}
                 <a
+                    data-testid="gdpr-link"
                     target="_blank"
-                    href="https://digital.nhs.uk/data-and-information/keeping-data-safe-and-benefitting-the-public/gdpr#:~:text=The%20GDPR%20came%20into%20effect,in%20line%20with%20the%20regulations."
+                    href="https://digital.nhs.uk/data-and-information/keeping-data-safe-and-benefitting-the-public/gdpr#:~:text=The%20GDPR%20came%20into%20effect,in%20line%20with%20the%20regulations"
                     rel="noreferrer"
                 >
                     UK General Data Protection Regulation (GDPR) 2018

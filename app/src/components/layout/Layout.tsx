@@ -1,11 +1,8 @@
 import React from 'react';
 import type { ReactNode } from 'react';
 import Header from './header/Header';
-import { Footer } from 'nhsuk-react-components';
 import PhaseBanner from './phaseBanner/PhaseBanner';
-import { routes } from '../../types/generic/routes';
-import { Link } from 'react-router-dom';
-
+import Footer from './footer/Footer';
 type Props = {
     children: ReactNode;
 };
@@ -30,14 +27,7 @@ function Layout({ children }: Props) {
                     </section>
                 </main>
             </div>
-            <Footer>
-                <Footer.List>
-                    <Footer.ListItem>
-                        <Link to={routes.PRIVACY_POLICY}>Privacy notice</Link>
-                    </Footer.ListItem>
-                </Footer.List>
-                <Footer.Copyright>&copy; {'Crown copyright'}</Footer.Copyright>
-            </Footer>
+            <Footer />
         </div>
     );
 }
