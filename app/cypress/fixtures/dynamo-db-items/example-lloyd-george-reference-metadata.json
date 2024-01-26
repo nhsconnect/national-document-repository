@@ -6,5 +6,6 @@
     "FileLocation": "s3://{env}-lloyd-george-store/9730153752/4ef811e3-35c1-4dbe-8747-4c93c8c0e4e4",
     "FileName": "2of3_Lloyd_George_Record_[Dawn FLING]_[9730153752]_[19-09-2011].pdf",
     "NhsNumber": "9730153752",
-    "VirusScannerResult": "Clean"
+    "VirusScannerResult": "Clean",
+    "CurrentOdsCode": "H81109"
 }

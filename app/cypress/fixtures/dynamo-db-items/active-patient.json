@@ -6,5 +6,6 @@
     "FileLocation": "s3://{env}-lloyd-george-store/9730153817/e4a6d7f7-01f3-44be-8964-515b2c0ec180",
     "FileName": "1of1_Lloyd_George_Record_[Haley Glenda RUDKIN]_[9730153817]_[19-09-2011].pdf",
     "NhsNumber": "9730153817",
-    "VirusScannerResult": "Clean"
+    "VirusScannerResult": "Clean",
+    "CurrentOdsCode": "H81109"
 }

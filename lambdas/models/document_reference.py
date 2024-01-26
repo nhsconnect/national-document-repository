@@ -36,6 +36,8 @@ class DocumentReference(BaseModel):
         alias=str(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value),
         serialization_alias="virusScannerResult",
     )
+    # Allow current_ods_code to be nullable so that we can cope with existing records.
+    # After we updated all existing records with this field, consider to set this as non-Optional
     current_ods_code: Optional[str] = Field(
         alias=str(DocumentReferenceMetadataFields.CURRENT_ODS_CODE.value), default=None
     )
