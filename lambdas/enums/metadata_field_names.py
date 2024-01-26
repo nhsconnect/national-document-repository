@@ -12,6 +12,7 @@ class DocumentReferenceMetadataFields(Enum):
     TTL = "TTL"
     TYPE = "Type"
     VIRUS_SCANNER_RESULT = "VirusScannerResult"
+    CURRENT_ODS_CODE = "CurrentOdsCode"
 
     @staticmethod
     def list() -> list[str]:

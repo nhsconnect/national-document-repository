@@ -11,6 +11,7 @@ from services.bulk_upload_service import BulkUploadService
 from tests.unit.conftest import (
     MOCK_LG_BUCKET,
     MOCK_LG_STAGING_STORE_BUCKET,
+    TEST_CURRENT_ODS_CODE,
     TEST_OBJECT_KEY,
 )
 from tests.unit.helpers.data.bulk_upload.test_data import (
@@ -177,7 +178,9 @@ def test_handle_sqs_message_happy_path(
     mocker.patch.object(repo_under_test.s3_repository, "check_virus_result")
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
-    mock_create_lg_records_and_copy_files.assert_called_with(TEST_STAGING_METADATA)
+    mock_create_lg_records_and_copy_files.assert_called_with(
+        TEST_STAGING_METADATA, TEST_CURRENT_ODS_CODE
+    )
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
 
@@ -587,7 +590,9 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under
 
     repo_under_test.resolve_source_file_path(TEST_STAGING_METADATA)
 
-    repo_under_test.create_lg_records_and_copy_files(TEST_STAGING_METADATA)
+    repo_under_test.create_lg_records_and_copy_files(
+        TEST_STAGING_METADATA, TEST_CURRENT_ODS_CODE
+    )
 
     nhs_number = TEST_STAGING_METADATA.nhs_number
 
@@ -616,6 +621,7 @@ def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
     actual = repo_under_test.convert_to_document_reference(
         file_metadata=TEST_FILE_METADATA,
         nhs_number=TEST_STAGING_METADATA.nhs_number,
+        current_ods_code=TEST_CURRENT_ODS_CODE,
     )
 
     # exclude the `created` timestamp from comparison

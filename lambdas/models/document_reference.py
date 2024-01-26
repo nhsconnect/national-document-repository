@@ -36,6 +36,9 @@ class DocumentReference(BaseModel):
         alias=str(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value),
         serialization_alias="virusScannerResult",
     )
+    current_ods_code: Optional[str] = Field(
+        alias=str(DocumentReferenceMetadataFields.CURRENT_ODS_CODE.value), default=None
+    )
 
     def get_file_name_path(self):
         return pathlib.Path(self.file_name)
@@ -87,5 +90,6 @@ class DocumentReference(BaseModel):
                 and self.nhs_number == other.nhs_number
                 and self.ttl == other.ttl
                 and self.virus_scanner_result == other.virus_scanner_result
+                and self.current_ods_code == other.current_ods_code
             )
         return False
