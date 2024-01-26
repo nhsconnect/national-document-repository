@@ -621,7 +621,7 @@ def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
     actual = repo_under_test.convert_to_document_reference(
         file_metadata=TEST_FILE_METADATA,
         nhs_number=TEST_STAGING_METADATA.nhs_number,
-        current_ods_code=TEST_CURRENT_GP_ODS,
+        current_gp_ods=TEST_CURRENT_GP_ODS,
     )
 
     # exclude the `created` timestamp from comparison

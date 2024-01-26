@@ -27,7 +27,7 @@ MOCK_DOCUMENT = {
     "FileName": "document.csv",
     "NhsNumber": "9000000009",
     "VirusScannerResult": "Clean",
-    "CurrentOdsCode": "Y12345",
+    "CurrentGpOds": "Y12345",
 }
 
 

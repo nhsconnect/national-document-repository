@@ -150,7 +150,7 @@ Success:
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET"
   },
-  "body": "[{\"FileName\": \"nhs1-3669038588 (1).png\", \"Created\": \"2023-09-05T08:34:15.662364Z\"}, {\"FileName\": \"nhs1-test-lloyd-george (1).png\", \"Created\": \"2023-09-05T08:34:15.662364Z\", \"VirusScannerResult\": \"Clean\", \"CurrentOdsCode\": \"Y12345\"}]"
+  "body": "[{\"FileName\": \"nhs1-3669038588 (1).png\", \"Created\": \"2023-09-05T08:34:15.662364Z\"}, {\"FileName\": \"nhs1-test-lloyd-george (1).png\", \"Created\": \"2023-09-05T08:34:15.662364Z\", \"VirusScannerResult\": \"Clean\", \"CurrentGpOds\": \"Y12345\"}]"
 }
 ```
 

@@ -259,13 +259,13 @@ class BulkUploadService:
         self.file_path_cache = resolved_file_paths
 
     def create_lg_records_and_copy_files(
-        self, staging_metadata: StagingMetadata, current_ods_code: str
+        self, staging_metadata: StagingMetadata, current_gp_ods: str
     ):
         nhs_number = staging_metadata.nhs_number
 
         for file_metadata in staging_metadata.files:
             document_reference = self.convert_to_document_reference(
-                file_metadata, nhs_number, current_ods_code
+                file_metadata, nhs_number, current_gp_ods
             )
 
             source_file_key = self.file_path_cache[file_metadata.file_path]
@@ -287,7 +287,7 @@ class BulkUploadService:
             )
 
     def convert_to_document_reference(
-        self, file_metadata: MetadataFile, nhs_number: str, current_ods_code: str
+        self, file_metadata: MetadataFile, nhs_number: str, current_gp_ods: str
     ) -> NHSDocumentReference:
         s3_bucket_name = self.s3_repository.lg_bucket_name
         file_name = os.path.basename(file_metadata.file_path)
@@ -297,7 +297,7 @@ class BulkUploadService:
             nhs_number=nhs_number,
             file_name=file_name,
             s3_bucket_name=s3_bucket_name,
-            current_gp_ods=current_ods_code,
+            current_gp_ods=current_gp_ods,
         )
         document_reference.set_virus_scanner_result(VirusScanResult.CLEAN)
         return document_reference

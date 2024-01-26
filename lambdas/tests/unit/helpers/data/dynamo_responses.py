@@ -9,7 +9,7 @@ MOCK_SEARCH_RESPONSE = {
             "FileName": "document.csv",
             "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
-            "CurrentOdsCode": "Y12345",
+            "CurrentGpOds": "Y12345",
         },
         {
             "ID": "4d8683b9-1665-40d2-8499-6e8302d507ff",
@@ -20,7 +20,7 @@ MOCK_SEARCH_RESPONSE = {
             "FileName": "results.pdf",
             "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
-            "CurrentOdsCode": "Y12345",
+            "CurrentGpOds": "Y12345",
         },
         {
             "ID": "5d8683b9-1665-40d2-8499-6e8302d507ff",
@@ -31,7 +31,7 @@ MOCK_SEARCH_RESPONSE = {
             "FileName": "output.csv",
             "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
-            "CurrentOdsCode": "Y12345",
+            "CurrentGpOds": "Y12345",
         },
     ],
     "Count": 3,
