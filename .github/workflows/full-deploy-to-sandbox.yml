@@ -51,7 +51,7 @@ jobs:
     uses: ./.github/workflows/base-cypress-test-all-env.yml
     with:
       build_branch: ${{ inputs.build_branch }}
-      base_url: '${{ vars.CYPRESS_BASE_URL }}'
+      base_url: '${{ var.CYPRESS_BASE_URL }}'
 
   # tag_and_release:
   #   needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]

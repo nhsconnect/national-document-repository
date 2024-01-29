@@ -54,5 +54,5 @@ jobs:
           browser: ${{ github.event.inputs.cypress_browser}}
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: ${{ var.CYPRESS_BASE_URL }}
+          CYPRESS_BASE_URL: ${{ github.event.inputs.base_url }}
           CYPRESS_grepTags: 'regression'
