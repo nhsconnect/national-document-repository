@@ -11,6 +11,7 @@ MOCK_DATA = {
     "FileName": "document.csv",
     "NhsNumber": "9000000009",
     "VirusScannerResult": "Clean",
+    "CurrentGpOds": "Y12345",
 }
 
 MOCK_DOCUMENT_REFERENCE = DocumentReference.model_validate(MOCK_DATA)

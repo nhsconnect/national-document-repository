@@ -18,10 +18,12 @@ class NHSDocumentReference:
         file_name: str,
         s3_bucket_name: str,
         content_type: str = "application/pdf",
+        current_gp_ods: str = "",
     ) -> None:
         self.id = reference_id
         self.nhs_number = nhs_number
         self.content_type = content_type
+        self.current_gp_ods = current_gp_ods
         self.file_name = file_name
         self.created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         self.s3_bucket_name = s3_bucket_name
@@ -48,6 +50,7 @@ class NHSDocumentReference:
             DocumentReferenceMetadataFields.DELETED.value: self.deleted,
             DocumentReferenceMetadataFields.CONTENT_TYPE.value: self.content_type,
             DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value: self.virus_scanner_result,
+            DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: self.current_gp_ods,
         }
         return document_metadata
 

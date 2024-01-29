@@ -8,7 +8,7 @@ def test_can_get_one_field_name():
 
 def test_returns_all_as_list():
     subject = DocumentReferenceMetadataFields.list()
-    assert len(subject) == 10
+    assert len(subject) == 11
     assert DocumentReferenceMetadataFields.ID.value in subject
     assert DocumentReferenceMetadataFields.CONTENT_TYPE.value in subject
     assert DocumentReferenceMetadataFields.CREATED.value in subject
@@ -19,3 +19,4 @@ def test_returns_all_as_list():
     assert DocumentReferenceMetadataFields.TYPE.value in subject
     assert DocumentReferenceMetadataFields.TTL.value in subject
     assert DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value in subject
+    assert DocumentReferenceMetadataFields.CURRENT_GP_ODS.value in subject
