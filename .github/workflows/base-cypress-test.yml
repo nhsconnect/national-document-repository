@@ -8,7 +8,7 @@ on:
         description: 'Branch with smoke tests.'
         required: true
         type: 'string'
-      base_url:
+      cypress_base_url:
         description: 'Base URL to run tests against'
         required: true
         type: 'string'
@@ -31,7 +31,7 @@ jobs:
       - name: Display client passed variables
         run: |
           echo Build Branch: ${{ github.event.inputs.build_branch }}
-          echo Cypress Base Url: ${{ github.event.inputs.base_url }}
+          echo Cypress Base Url: ${{ github.event.inputs.cypress_base_url }}
 
   cypress-run-job:
     runs-on: ubuntu-22.04
@@ -64,5 +64,5 @@ jobs:
           browser: ${{ github.event.inputs.cypress_browser}}
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: ${{ github.event.inputs.base_url }}
+          CYPRESS_BASE_URL: ${{ github.event.inputs.cypress_base_url }}
           CYPRESS_grepTags: 'regression'
