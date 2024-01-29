@@ -12,6 +12,11 @@ on:
         description: 'Application url to run cypress againsr'
         required: true
         type: 'string'
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
+        default: "development"
 
 permissions:
   pull-requests: write
@@ -23,17 +28,17 @@ jobs:
       uses: ./.github/workflows/base-cypress-test.yml
       with:
         build_branch: main
-        base_url: ${{ github.event.inputs.base_url }}
+        environment: ${{ github.event.inputs.environment}}
         cypress_broswer: 'chrome'
     cypress_test_edge:
       uses: ./.github/workflows/base-cypress-test.yml
       with:
         build_branch: main
-        base_url: ${{ github.event.inputs.base_url }}
+        environment: ${{ github.event.inputs.environment}}
         cypress_broswer: 'edge'
     cypress_test_firefox:
       uses: ./.github/workflows/base-cypress-test.yml
       with:
         build_branch: main
-        base_url: ${{ github.event.inputs.base_url }}
+        environment: ${{ github.event.inputs.environment}}
         cypress_broswer: 'firefox'

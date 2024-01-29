@@ -8,14 +8,15 @@ on:
         description: 'Branch with smoke tests.'
         required: true
         type: 'string'
-      base_url:
-        description: 'application url to run cypress againsr'
-        required: true
-        type: 'string'
       cypress_broswer:
         description: 'what browser to run against'
         required: true
         type: 'string'
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: "string"
+        default: "development"
 
 permissions:
   pull-requests: write
@@ -24,35 +25,36 @@ permissions:
 
 jobs:
   cypress-run-job:
-        runs-on: ubuntu-22.04
-        steps:
-          - name: Checkout
-            uses: actions/checkout@v3
-            with:
-              ref: ${{ github.event.inputs.buildBranch }}
+    environment: ${{ inputs.environment }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.buildBranch }}
 
-          - name: Download the build folder
-            uses: actions/download-artifact@v3
-            with:
-              name: build
-              path: ./app/build
+      - name: Download the build folder
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: ./app/build
 
-          # Npm run will run the app locally, we want to test the built application with env vars using serve
-          - name: Install serve globally
-            run: npm install -g serve
+      # Npm run will run the app locally, we want to test the built application with env vars using serve
+      - name: Install serve globally
+        run: npm install -g serve
 
-          - name: Cypress install
-            run: |
-              npm install --legacy-peer-deps
-            working-directory: ./app
+      - name: Cypress install
+        run: |
+          npm install --legacy-peer-deps
+        working-directory: ./app
 
-          - name: Cypress run
-            uses: cypress-io/github-action@v6
-            with:
-              install: false
-              start: serve -s build
-              browser: ${{ github.event.inputs.cypress_browser}}
-              working-directory: ./app
-            env:
-              CYPRESS_BASE_URL: ${{ github.event.inputs.base_url }}
-              CYPRESS_grepTags: 'regression'
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          install: false
+          start: serve -s build
+          browser: ${{ github.event.inputs.cypress_browser}}
+          working-directory: ./app
+        env:
+          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
+          CYPRESS_grepTags: 'regression'
