@@ -45,11 +45,13 @@ class BulkUploadMetadataService:
                 f"Failed to parse metadata.csv: {str(e)}",
                 {"Result": "Unsuccessful bulk upload"},
             )
+            raise e
         except KeyError as e:
             logger.error(
                 f"Failed due to missing key: {str(e)}",
                 {"Result": "Unsuccessful bulk upload"},
             )
+            raise e
         except ClientError as e:
             logger.error(str(e))
             if "HeadObject" in str(e):
@@ -57,6 +59,7 @@ class BulkUploadMetadataService:
                     f'No metadata file could be found with the name "{metadata_filename}"',
                     {"Result": "Unsuccessful bulk upload"},
                 )
+            raise e
 
     def download_metadata_from_s3(self, metadata_filename: str) -> str:
         local_file_path = os.path.join(self.temp_download_dir, metadata_filename)
