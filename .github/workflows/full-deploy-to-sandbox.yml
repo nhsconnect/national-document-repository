@@ -25,6 +25,7 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
+
   lambda_test_job:
     name: Run Lambda Unit Tests
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
@@ -51,7 +52,8 @@ jobs:
     uses: ./.github/workflows/base-cypress-test-all-env.yml
     with:
       build_branch: ${{ inputs.build_branch }}
-      base_url: ${{ vars.CYPRESS_BASE_URL }}
+      environment: ${{ inputs.environment }}
+    
   
 
   # tag_and_release:
