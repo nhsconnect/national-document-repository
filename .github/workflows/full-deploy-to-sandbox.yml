@@ -26,6 +26,18 @@ permissions:
 
 jobs:
 
+  view_action_parameters:
+    name: View input params
+    runs-on: ubuntu-latest
+    steps: 
+    
+      - name: Display client passed variables
+        run: |
+          echo Build Branch: ${{ inputs.build_branch }}
+          echo Sandbox: ${{ inputs.sandbox }}
+          echo Environment: ${{ inputs.environment }}
+          echo Cypress Base Url: ${{ vars.CYPRESS_BASE_URL }}
+
   lambda_test_job:
     name: Run Lambda Unit Tests
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
