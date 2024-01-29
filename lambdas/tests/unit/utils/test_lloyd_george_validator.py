@@ -3,6 +3,7 @@ from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
 from models.pds_models import Patient
 from requests import Response
+from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
 from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.bulk_upload.test_data import (
@@ -17,11 +18,13 @@ from utils.exceptions import (
 )
 from utils.lloyd_george_validator import (
     LGInvalidFilesException,
+    allowed_to_ingest_ods_code,
     check_for_duplicate_files,
     check_for_file_names_agrees_with_each_other,
     check_for_number_of_files_match_expected,
     check_for_patient_already_exist_in_repo,
     extract_info_from_filename,
+    get_allowed_ods_codes,
     getting_patient_info_from_pds,
     validate_file_name,
     validate_filename_with_patient_details,
@@ -223,13 +226,28 @@ def test_validate_nhs_id_with_pds_service(mocker, mock_pds_patient_details):
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
     ]
-    mock_odc_code = mocker.patch(
+    mock_ods_code = mocker.patch(
         "utils.lloyd_george_validator.get_allowed_ods_codes", return_value=["Y12345"]
     )
 
     validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
 
-    mock_odc_code.assert_called_once()
+    mock_ods_code.assert_called_once()
+
+
+def test_validate_nhs_id_with_pds_service_all_ods_codes_allowed(
+    mocker, mock_pds_patient_details
+):
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+    ]
+    mock_ods_code = mocker.patch(
+        "utils.lloyd_george_validator.get_allowed_ods_codes", return_value=["ALL"]
+    )
+    validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
+
+    mock_ods_code.assert_called_once()
 
 
 def test_mismatch_nhs_id(mocker):
@@ -237,7 +255,7 @@ def test_mismatch_nhs_id(mocker):
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000005]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000005]_[22-10-2010].pdf",
     ]
-    mock_odc_code = mocker.patch(
+    mock_ods_code = mocker.patch(
         "utils.lloyd_george_validator.get_allowed_ods_codes", return_value=["Y12345"]
     )
     mocker.patch("utils.lloyd_george_validator.check_for_patient_already_exist_in_repo")
@@ -249,7 +267,7 @@ def test_mismatch_nhs_id(mocker):
     with pytest.raises(LGInvalidFilesException):
         validate_lg_file_names(lg_file_list, "9000000009")
 
-    mock_odc_code.assert_not_called()
+    mock_ods_code.assert_not_called()
 
 
 def test_mismatch_name_with_pds_service(mocker, mock_pds_patient_details):
@@ -328,7 +346,8 @@ def test_raise_client_error_from_ssm_with_pds_service(mocker, mock_pds_patient_d
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
     ]
     mock_ods_code = mocker.patch(
-        "utils.lloyd_george_validator.get_allowed_ods_codes", side_effect=mock_client_error
+        "utils.lloyd_george_validator.get_allowed_ods_codes",
+        side_effect=mock_client_error,
     )
 
     with pytest.raises(LGInvalidFilesException):
@@ -392,6 +411,78 @@ def test_validate_bulk_files_raises_PatientRecordAlreadyExistException_when_pati
         validate_lg_file_names(
             TEST_STAGING_METADATA_WITH_INVALID_FILENAME, TEST_NHS_NUMBER_FOR_BULK_UPLOAD
         )
+
+
+def test_get_allowed_ods_codes_return_a_list_of_ods_codes(mock_get_ssm_parameter):
+    mock_get_ssm_parameter.return_value = "Y12345, H81109"
+    expected = ["Y12345", "H81109"]
+
+    actual = get_allowed_ods_codes()
+
+    assert actual == expected
+
+
+def test_get_allowed_ods_codes_can_handle_the_ALL_option(mock_get_ssm_parameter):
+    mock_get_ssm_parameter.return_value = "ALL"
+
+    expected = ["ALL"]
+
+    actual = get_allowed_ods_codes()
+
+    assert actual == expected
+
+
+def test_get_allowed_ods_codes_remove_whitespaces_and_return_ods_codes_in_upper_case(
+    mock_get_ssm_parameter,
+):
+    mock_get_ssm_parameter.return_value = "h12345 , abc12  ,  345xy "
+
+    expected = ["H12345", "ABC12", "345XY"]
+
+    actual = get_allowed_ods_codes()
+
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    ["gp_ods_param_value", "patient_ods_code", "expected"],
+    [
+        # can handle single ods code
+        ["H81109", "H81109", True],
+        ["H85686", "H81109", False],
+        # can handle a list of ods codes
+        ["H81109, H85686", "H81109", True],
+        ["H81109, H85686", "H85686", True],
+        ["H81109, H85686", "Y12345", False],
+        # present of "ALL" option will allow any ods code to be accepted
+        ["ALL", "H81109", True],
+        ["ALL", "H85686", True],
+        ["ALL", "", True],
+        ["H81109, H85686, ALL", "Y12345", True],
+    ],
+)
+def test_allowed_to_ingest_ods_code(
+    mock_get_ssm_parameter, gp_ods_param_value, patient_ods_code, expected
+):
+    mock_get_ssm_parameter.return_value = gp_ods_param_value
+
+    actual = allowed_to_ingest_ods_code(patient_ods_code)
+
+    assert actual == expected
+
+
+def test_allowed_to_ingest_ods_code_propagate_error(mock_get_ssm_parameter):
+    mock_get_ssm_parameter.side_effect = ClientError(
+        {"Error": {"Code": "500", "Message": "test error"}}, "GetParameter"
+    )
+
+    with pytest.raises(ClientError):
+        allowed_to_ingest_ods_code("H81109")
+
+
+@pytest.fixture
+def mock_get_ssm_parameter(mocker):
+    return mocker.patch.object(SSMService, "get_ssm_parameter")
 
 
 @pytest.fixture
