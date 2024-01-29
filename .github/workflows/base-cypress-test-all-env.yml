@@ -25,7 +25,7 @@ jobs:
     steps: 
       - name: Display client passed variables
         run: |
-          echo Build Branch: ${{ github.event.inputs.build_branch }}
+          echo Build Branch: ${{ inputs.build_branch }}
           echo Cypress Base Url: ${{ inputs.cypress_base_url }}
 
   cypress_test_chrome:
