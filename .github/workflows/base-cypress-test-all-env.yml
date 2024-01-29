@@ -3,14 +3,14 @@ name: "Z-BASE Cypress Test: Run a cypress test job against all browsers"
 on:
   workflow_call:
     inputs:
-      build_branch:
-        description: "Branch to run against"
-        required: true
-        type: "string"
       cypress_base_url:
         description: 'Base URL to run tests against'
         required: true
         type: 'string'
+      build_branch:
+        description: "Branch to run against"
+        required: true
+        type: "string"
 
 permissions:
   pull-requests: write
