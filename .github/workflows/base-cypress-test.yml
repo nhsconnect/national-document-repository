@@ -9,8 +9,7 @@ on:
         required: true
         type: 'string'
       base_url:
-        description: 'Branch with smoke tests.'
-        default: 'http://localhost:3000'
+        description: 'Base URL to run tests against'
         required: true
         type: 'string'
       cypress_broswer:
