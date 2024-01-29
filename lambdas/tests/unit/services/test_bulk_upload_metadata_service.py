@@ -13,11 +13,12 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567891,
 )
 
-MOCK_METADATA_CSV = "tests/unit/helpers/data/bulk_upload/metadata.csv"
+METADATA_FILE_DIR = "tests/unit/helpers/data/bulk_upload"
+MOCK_METADATA_CSV = f"{METADATA_FILE_DIR}/metadata.csv"
 MOCK_INVALID_METADATA_CSV_FILES = [
-    "tests/unit/helpers/data/bulk_upload/metadata_invalid.csv",
-    "tests/unit/helpers/data/bulk_upload/metadata_invalid_empty_nhs_number.csv",
-    "tests/unit/helpers/data/bulk_upload/metadata_invalid_unexpected_comma.csv",
+    f"{METADATA_FILE_DIR}/metadata_invalid.csv",
+    f"{METADATA_FILE_DIR}/metadata_invalid_empty_nhs_number.csv",
+    f"{METADATA_FILE_DIR}/metadata_invalid_unexpected_comma.csv",
 ]
 MOCK_TEMP_FOLDER = "tests/unit/helpers/data/bulk_upload"
 
@@ -94,6 +95,30 @@ def test_process_metadata_raise_validation_error_when_metadata_csv_is_invalid(
         assert caplog.records[-1].levelname == "ERROR"
 
         mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
+
+
+def test_process_metadata_raise_validation_error_when_gp_practice_code_is_missing(
+    set_env,
+    caplog,
+    metadata_filename,
+    mock_sqs_service,
+    mock_download_metadata_from_s3,
+    metadata_service,
+):
+    mock_download_metadata_from_s3.return_value = (
+        f"{METADATA_FILE_DIR}/metadata_invalid_empty_gp_practice_code.csv"
+    )
+    expected_error_log = (
+        "Failed to parse metadata.csv: 1 validation error for MetadataFile\n"
+        + "  missing GP-PRACTICE-CODE for patient 1234567890"
+    )
+
+    metadata_service.process_metadata(metadata_filename)
+
+    assert expected_error_log in caplog.records[-1].msg
+    assert caplog.records[-1].levelname == "ERROR"
+
+    mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_not_called()
 
 
 def test_process_metadata_raise_client_error_when_failed_to_send_message_to_sqs(
