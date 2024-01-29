@@ -3,8 +3,6 @@ import useRole from '../../helpers/hooks/useRole';
 import { routes } from '../../types/generic/routes';
 import { Link, useNavigate } from 'react-router-dom';
 
-type Props = {};
-
 function PrivacyPage() {
     const isLoggedIn = !!useRole();
     const navigate = useNavigate();
