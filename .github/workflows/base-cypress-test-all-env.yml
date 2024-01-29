@@ -1,13 +1,12 @@
-# .github/workflows/terraform-dev
-name: 'Z-BASE Cypress Test: Run a cypress test job against all browsers'
+name: "Z-BASE Cypress Test: Run a cypress test job against all browsers"
 
 on:
   workflow_call:
     inputs:
       build_branch:
-        description: 'Branch with smoke tests.'
+        description: "Branch to run against"
         required: true
-        type: 'string'
+        type: "string"
 
 permissions:
   pull-requests: write
@@ -15,18 +14,18 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-    cypress_test_chrome:
-      uses: ./.github/workflows/base-cypress-test.yml
-      with:
-        build_branch: main
-        cypress_broswer: 'chrome'
-    cypress_test_edge:
-      uses: ./.github/workflows/base-cypress-test.yml
-      with:
-        build_branch: main
-        cypress_broswer: 'edge'
-    cypress_test_firefox:
-      uses: ./.github/workflows/base-cypress-test.yml
-      with:
-        build_branch: main
-        cypress_broswer: 'firefox'
+  cypress_test_chrome:
+    uses: ./.github/workflows/base-cypress-test.yml
+    with:
+      build_branch: ${{ github.event.inputs.build_branch }}
+      cypress_broswer: "chrome"
+  cypress_test_edge:
+    uses: ./.github/workflows/base-cypress-test.yml
+    with:
+      build_branch: ${{ github.event.inputs.build_branch }}
+      cypress_broswer: "edge"
+  cypress_test_firefox:
+    uses: ./.github/workflows/base-cypress-test.yml
+    with:
+      build_branch: ${{ github.event.inputs.build_branch }}
+      cypress_broswer: "firefox"

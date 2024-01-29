@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       build_branch:
-        description: "Feature branch to push to test?"
+        description: "Feature branch to push?"
         required: true
         type: "string"
         default: "main"
