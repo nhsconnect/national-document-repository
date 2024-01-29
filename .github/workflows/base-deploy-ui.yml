@@ -8,14 +8,9 @@ on:
         description: "Branch with smoke tests."
         required: true
         type: "string"
-      aws_region:
-        description: "aws region to deploy to"
+      environment:
         required: true
-        type: 'string'
-      build_env:
-        description: "build env name for naming conventions"
-        required: true
-        type: 'string'
+        type: string
 
     secrets:
       AWS_ASSUME_ROLE:
@@ -31,7 +26,7 @@ permissions:
 jobs:
   react_build_and_deploy_docker_image:
     runs-on: ubuntu-latest
-    environment: development
+    environment: ${{ inputs.environment }}
     defaults:
       run:
         working-directory: ./app
@@ -46,7 +41,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
-          aws-region: ${{ inputs.aws_region }}
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -55,17 +50,17 @@ jobs:
       - uses: dkershner6/aws-ssm-getparameters-action@v1
         with:
           parameterPairs:
-            "/ndr/${{ inputs.build_env }}/api_endpoint = DOC_STORE_API_ENDPOINT,
-            /ndr/${{ inputs.build_env }}/container_port = CONTAINER_PORT"
+            "/ndr/${{ vars.BUILD_ENV }}/api_endpoint = DOC_STORE_API_ENDPOINT,
+            /ndr/${{ vars.BUILD_ENV }}/container_port = CONTAINER_PORT"
           withDecryption: "true" # defaults to true
 
       - name: Configure React environment vars
         env:
           ENDPOINT_DOC_STORE_API: ${{ env.DOC_STORE_API_ENDPOINT }}
-          AWS_REGION: ${{ inputs.aws_region}}
+          AWS_REGION: ${{ vars.AWS_REGION }}
           OIDC_PROVIDER_ID: not provided yet
           BUILD_ENV: development
-          IMAGE_VERSION: "ndr-${{ inputs.build_env }}-app:${{ github.sha }}"
+          IMAGE_VERSION: "ndr-${{ vars.BUILD_ENV }}-app:${{ github.sha }}"
         run: |
           ./react-environment-config.sh
 
@@ -88,7 +83,7 @@ jobs:
       - name: Download task definition
         id: download-task
         run: |
-          aws ecs describe-task-definition --task-definition ${{ inputs.build_env }}-ndr-service-task --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition --task-definition ${{ vars.BUILD_ENV }}-ndr-service-task --query taskDefinition > task-definition.json
           echo "::set-output name=revision::$(cat task-definition.json | jq .revision)"
 
       - name: Fill in the new image ID in the Amazon ECS task definition
@@ -96,18 +91,18 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ./app/task-definition.json
-          container-name: ${{ inputs.build_env }}-app-container
+          container-name: ${{ vars.BUILD_ENV }}-app-container
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ./app/task-definition.json
-          service: ${{ inputs.build_env }}-ecs-cluster-service
-          cluster: ${{ inputs.build_env }}-app-cluster
+          service: ${{ vars.BUILD_ENV }}-ecs-cluster-service
+          cluster: ${{ vars.BUILD_ENV }}-app-cluster
           wait-for-service-stability: true
 
       - name: De-register previous revision
         run: |
           aws ecs deregister-task-definition \
-            --task-definition ${{ inputs.build_env }}-ndr-service-task:${{ steps.download-task.outputs.revision }}
+            --task-definition ${{ vars.BUILD_ENV }}-ndr-service-task:${{ steps.download-task.outputs.revision }}
