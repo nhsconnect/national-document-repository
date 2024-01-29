@@ -25,7 +25,7 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-  run_lambda_tests:
+  lambda_test_job:
     name: Run Lambda Unit Tests
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
@@ -55,7 +55,7 @@ jobs:
   
 
   # tag_and_release:
-  #   needs: ["run_lambda_test", "react_testing_job", "cypress_test_job"]
+  #   needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
   #   runs-on: ubuntu-latest
   #   environment: pre-prod
   #   outputs:
@@ -87,7 +87,7 @@ jobs:
 
   deploy_all_lambdas:
     name: Deploy all Lambdas
-    needs: ["run_lambda_test", "react_testing_job", "cypress_test_job"]
+    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
     uses: ./.github/workflows/new_lambdas-deploy-feature-to-sandbox.yml
     with:
       build_branch: ${{ inputs.build_branch }}
@@ -98,7 +98,7 @@ jobs:
   
   deploy_ui:
     name: Deploy UI
-    needs: ["run_lambda_test", "react_testing_job", "cypress_test_job"]
+    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
     uses: ./.github/workflows/base-deploy-ui.yml
     with:
       build_branch: ${{ inputs.build_branch }}
