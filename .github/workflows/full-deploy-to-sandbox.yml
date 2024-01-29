@@ -16,7 +16,7 @@ on:
       environment:
         description: "Which Environment settings to use."
         required: true
-        type: "string"
+        type: "string" 
         default: "development"
 
 permissions:
@@ -30,7 +30,6 @@ jobs:
     name: Run Lambda Unit Tests
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
-      environment: ${{ inputs.environment }}
       python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
 
@@ -52,9 +51,6 @@ jobs:
     uses: ./.github/workflows/base-cypress-test-all-env.yml
     with:
       build_branch: ${{ inputs.build_branch }}
-      environment: ${{ inputs.environment }}
-    
-  
 
   # tag_and_release:
   #   needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]

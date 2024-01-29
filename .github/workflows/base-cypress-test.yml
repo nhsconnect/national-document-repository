@@ -8,6 +8,11 @@ on:
         description: 'Branch with smoke tests.'
         required: true
         type: 'string'
+      base_url:
+        description: 'Branch with smoke tests.'
+        default: 'http://localhost:3000'
+        required: false
+        type: 'string'
       cypress_broswer:
         description: 'what browser to run against'
         required: true
@@ -25,7 +30,6 @@ permissions:
 
 jobs:
   cypress-run-job:
-    environment: ${{ inputs.environment }}
     runs-on: ubuntu-22.04
     steps:
       - name: Checkout
@@ -56,5 +60,5 @@ jobs:
           browser: ${{ github.event.inputs.cypress_browser}}
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: ${{ vars.CYPRESS_BASE_URL }}
+          CYPRESS_BASE_URL: ${{ github.event.inputs.base_url }}
           CYPRESS_grepTags: 'regression'
