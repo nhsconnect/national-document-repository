@@ -62,7 +62,7 @@ jobs:
     needs: [cypress_build_job]
     uses: ./.github/workflows/base-cypress-test-all-env.yml
     with:
-      cypress_base_url: ${{ vars.CYPRESS_BASE_URL }}
+      cypress_base_url: ${{ inputs.build_branch }}
       build_branch: ${{ inputs.build_branch }}
       
 
