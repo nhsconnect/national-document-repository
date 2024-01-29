@@ -1,20 +1,16 @@
 import React from 'react';
 import { Footer as NHSFooter } from 'nhsuk-react-components';
-import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
 
 function Footer() {
-    const navigate = useNavigate();
     return (
         <NHSFooter>
             <NHSFooter.List>
                 <NHSFooter.ListItem
-                    href={'#'}
+                    href={routes.PRIVACY_POLICY}
                     data-testid="privacy-link"
-                    onClick={(e) => {
-                        e.preventDefault();
-                        navigate(routes.PRIVACY_POLICY);
-                    }}
+                    rel="opener"
+                    target="_blank"
                 >
                     Privacy notice
                 </NHSFooter.ListItem>
