@@ -12,13 +12,6 @@ on:
         description: 'Application url to run cypress againsr'
         required: true
         type: 'string'
-    secrets:
-      AWS_ASSUME_ROLE:
-        required: true
-      CYPRESS_USERNAME:
-        required: true
-      CYPRESS_PASSWORD:
-        required: true
 
 permissions:
   pull-requests: write

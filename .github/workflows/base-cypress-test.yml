@@ -17,14 +17,6 @@ on:
         required: true
         type: 'string'
 
-    secrets:
-      AWS_ASSUME_ROLE:
-        required: true
-      CYPRESS_USERNAME:
-        required: true
-      CYPRESS_PASSWORD:
-        required: true
-
 permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
