@@ -30,8 +30,8 @@ jobs:
     steps: 
       - name: Display client passed variables
         run: |
-          echo Build Branch: ${{ github.event.inputs.build_branch }}
-          echo Cypress Base Url: ${{ github.event.inputs.cypress_base_url }}
+          echo Build Branch: ${{ inputs.build_branch }}
+          echo Cypress Base Url: ${{ inputs.cypress_base_url }}
 
   cypress-run-job:
     runs-on: ubuntu-22.04
@@ -39,7 +39,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.build_branch }}
+          ref: ${{ inputs.build_branch }}
 
       - name: Download the build folder
         uses: actions/download-artifact@v3
@@ -61,8 +61,8 @@ jobs:
         with:
           install: false
           start: serve -s build
-          browser: ${{ github.event.inputs.cypress_browser}}
+          browser: ${{ inputs.cypress_browser}}
           working-directory: ./app
         env:
-          CYPRESS_BASE_URL: ${{ github.event.inputs.cypress_base_url }}
+          CYPRESS_BASE_URL: ${{ inputs.cypress_base_url }}
           CYPRESS_grepTags: 'regression'
