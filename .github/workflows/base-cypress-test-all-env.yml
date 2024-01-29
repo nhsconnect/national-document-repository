@@ -34,16 +34,16 @@ jobs:
     with:
       build_branch: ${{ github.event.inputs.build_branch }}
       cypress_broswer: "chrome"
-      base_url: ${{ github.event.inputs.cypress_base_url }}
+      cypress_base_url: ${{ github.event.inputs.cypress_base_url }}
   cypress_test_edge:
     uses: ./.github/workflows/base-cypress-test.yml
     with:
       build_branch: ${{ github.event.inputs.build_branch }}
       cypress_broswer: "edge"
-      base_url: ${{ github.event.inputs.cypress_base_url }}
+      cypress_base_url: ${{ github.event.inputs.cypress_base_url }}
   cypress_test_firefox:
     uses: ./.github/workflows/base-cypress-test.yml
     with:
       build_branch: ${{ github.event.inputs.build_branch }}
       cypress_broswer: "firefox"
-      base_url: ${{ github.event.inputs.cypress_base_url }}
+      cypress_base_url: ${{ github.event.inputs.cypress_base_url }}
