@@ -235,6 +235,23 @@ def test_validate_nhs_id_with_pds_service(mocker, mock_pds_patient_details):
     mock_ods_code.assert_called_once()
 
 
+def test_validate_nhs_id_with_pds_service_multiple_ods_code_allowed(
+    mocker, mock_pds_patient_details
+):
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+    ]
+    mock_ods_code = mocker.patch(
+        "utils.lloyd_george_validator.get_allowed_ods_codes",
+        return_value=["H98765", "Y12345"],
+    )
+
+    validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
+
+    mock_ods_code.assert_called_once()
+
+
 def test_validate_nhs_id_with_pds_service_all_ods_codes_allowed(
     mocker, mock_pds_patient_details
 ):
