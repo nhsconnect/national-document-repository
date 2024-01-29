@@ -8,10 +8,6 @@ on:
         description: 'Branch with smoke tests.'
         required: true
         type: 'string'
-      base_url:
-        description: 'Application url to run cypress againsr'
-        required: true
-        type: 'string'
       environment:
         description: "Which Environment settings to use."
         required: true
