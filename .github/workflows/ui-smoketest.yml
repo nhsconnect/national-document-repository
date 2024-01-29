@@ -34,7 +34,7 @@ permissions:
 
 jobs:
   smoketest:
-    uses: ./.github/workflows/ui-smoketest-base.yml
+    uses: ./.github/workflows/base-cypress-smoketest.yml
     with:
       build_branch: ${{github.event.inputs.build_branch}}
       environment: ${{github.event.inputs.environment}}

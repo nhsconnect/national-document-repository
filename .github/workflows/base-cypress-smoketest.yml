@@ -1,5 +1,5 @@
 # .github/workflows/terraform-dev
-name: 'SANDBOX - Smoke Test base'
+name: 'Z-BASE Cypress Smoketest: Smoketest shared actions for running'
 
 on:
   workflow_call:
@@ -73,7 +73,7 @@ jobs:
           if-no-files-found: ignore
 
   cypress-run-firefox:
-    # needs: ["cypress-run-chrome"]
+    needs: ["cypress-run-chrome"]
     runs-on: ubuntu-22.04
     environment: ${{ inputs.environment }}
     steps:
@@ -103,7 +103,7 @@ jobs:
           CYPRESS_OUTPUT_VIDEO: false
 
   cypress-run-edge:
-    # needs: ["cypress-run-firefox"]
+    needs: ["cypress-run-firefox"]
     runs-on: ubuntu-22.04
     environment: ${{ inputs.environment }}
     steps:
