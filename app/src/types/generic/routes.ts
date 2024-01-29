@@ -9,6 +9,7 @@ export enum routes {
     AUTH_ERROR = '/auth-error',
     UNAUTHORISED_LOGIN = '/unauthorised-login',
     SERVER_ERROR = '/server-error',
+    PRIVACY_POLICY = '/privacy-policy',
     LOGOUT = '/logout',
     FEEDBACK = '/feedback',
     SEARCH_PATIENT = '/search/patient',
