@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       cypress_base_url:
-        description: 'Base URL to run tests against'
+        description: "Base URL to run tests against"
         required: true
-        type: 'string'
+        type: "string"
       build_branch:
         description: "Branch to run against"
         required: true
@@ -23,7 +23,6 @@ jobs:
     name: View input params
     runs-on: ubuntu-latest
     steps: 
-    
       - name: Display client passed variables
         run: |
           echo Build Branch: ${{ github.event.inputs.build_branch }}
