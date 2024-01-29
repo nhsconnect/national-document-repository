@@ -144,8 +144,12 @@ def validate_filename_with_patient_details(
         if not names_are_matching(patient_name, patient_full_name):
             raise LGInvalidFilesException("Patient name does not match our records")
 
-        current_user_ods = get_user_ods_code()
-        if patient_details.general_practice_ods != current_user_ods:
+        # current_user_ods = get_user_ods_code()
+        # if patient_details.general_practice_ods != current_user_ods:
+        #     raise LGInvalidFilesException("Patient not registered at your practice")
+
+        patient_ods_code = patient_details.general_practice_ods
+        if not ods_code_allowed_to_ingest(patient_ods_code):
             raise LGInvalidFilesException("Patient not registered at your practice")
 
     except (ValidationError, ClientError, ValueError) as e:
@@ -181,3 +185,21 @@ def get_user_ods_code():
     else:
         ssm_service = SSMService()
         return ssm_service.get_ssm_parameter(SSMParameter.GP_ODS_CODE.value)
+
+
+def get_allowed_ods_codes() -> list[str]:
+    if os.getenv("PDS_FHIR_IS_STUBBED") in ["True", "true"]:
+        return ["H81109"]
+    else:
+        ssm_service = SSMService()
+        gp_ods = ssm_service.get_ssm_parameter(SSMParameter.GP_ODS_CODE.value)
+        return [ods_code.strip().upper() for ods_code in gp_ods.split(",")]
+
+
+def ods_code_allowed_to_ingest(patient_ods_code: str) -> bool:
+    allowed_ods_codes = get_allowed_ods_codes()
+
+    if "ALL" in allowed_ods_codes:
+        return True
+
+    return patient_ods_code.upper() in allowed_ods_codes
