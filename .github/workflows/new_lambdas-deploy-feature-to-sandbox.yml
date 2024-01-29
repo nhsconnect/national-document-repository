@@ -50,7 +50,6 @@ jobs:
     name: Run all python tests
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
-      environment: ${{ inputs.environment }}
       python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
 

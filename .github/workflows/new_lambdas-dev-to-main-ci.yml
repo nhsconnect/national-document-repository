@@ -28,7 +28,6 @@ jobs:
   run_tests:
     uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
     with:
-      environment: development
       python_version: 3.11
       build_branch: ${{github.event.pull_request.head.ref}}
 
