@@ -9,7 +9,8 @@ MOCK_DATA_COMPLETE_UPLOAD = {
     "Date": "2023-10-30",
     "UploadStatus": "complete",
     "FilePath": "/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
-    "OdsCode": "Y12345",
+    "PdsOdsCode": "Y12345",
+    "UploaderOdsCode": "Y12345",
 }
 
 MOCK_FAILURE_REASON = "File name not matching Lloyd George naming convention"
@@ -21,7 +22,8 @@ MOCK_DATA_FAILED_UPLOAD = {
     "UploadStatus": "failed",
     "FailureReason": MOCK_FAILURE_REASON,
     "FilePath": "/9000000025/invalid_filename.pdf",
-    "OdsCode": "",
+    "PdsOdsCode": "",
+    "UploaderOdsCode": "Y12345",
 }
 
 
@@ -34,7 +36,8 @@ def test_create_successful_upload():
         date="2023-10-30",
         upload_status="complete",
         file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
-        ods_code="Y12345",
+        pds_ods_code="Y12345",
+        uploader_ods_code="Y12345",
     ).model_dump(by_alias=True)
 
     assert actual == expected
@@ -50,7 +53,8 @@ def test_create_failed_upload():
         upload_status="failed",
         failure_reason=MOCK_FAILURE_REASON,
         file_path="/9000000025/invalid_filename.pdf",
-        ods_code="",
+        pds_ods_code="",
+        uploader_ods_code="Y12345",
     ).model_dump(by_alias=True)
 
     assert actual == expected
@@ -64,7 +68,8 @@ def test_successful_upload_ids_and_timestamp_are_auto_populated_if_not_given(moc
     actual = SuccessfulUpload(
         nhs_number="9000000009",
         file_path="/9000000009/1of1_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
-        ods_code="Y12345",
+        pds_ods_code="Y12345",
+        uploader_ods_code="Y12345",
     ).model_dump(by_alias=True)
 
     assert actual == expected
@@ -79,6 +84,8 @@ def test_failed_upload_ids_and_timestamp_are_auto_populated_if_not_given(mocker)
         nhs_number="9000000025",
         file_path="/9000000025/invalid_filename.pdf",
         failure_reason=MOCK_FAILURE_REASON,
+        pds_ods_code="",
+        uploader_ods_code="Y12345",
     ).model_dump(by_alias=True)
 
     assert actual == expected
