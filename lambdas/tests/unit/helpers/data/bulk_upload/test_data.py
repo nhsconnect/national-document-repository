@@ -4,7 +4,7 @@ from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_OBJECT_KEY
 
-patient_1_file_1 = MetadataFile(
+sample_metadata_model = MetadataFile(
     file_path="/1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
     page_count="",
     gp_practice_code="Y12345",
@@ -15,39 +15,51 @@ patient_1_file_1 = MetadataFile(
     user_id="NEC",
     upload="04/10/2023",
 )
-patient_1_file_2 = MetadataFile(
-    file_path="/1234567890/2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
-    page_count="",
-    gp_practice_code="Y12345",
-    section="LG",
-    sub_section="",
-    scan_date="03/09/2022",
-    scan_id="NEC",
-    user_id="NEC",
-    upload="04/10/2023",
+patient_1_file_1 = sample_metadata_model.model_copy()
+patient_1_file_2 = sample_metadata_model.model_copy(
+    update={
+        "file_path": "/1234567890/2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf"
+    }
 )
-
 patient_1 = StagingMetadata(
     nhs_number="1234567890", files=[patient_1_file_1, patient_1_file_2], retries=0
 )
 
-patient_2_file_1 = MetadataFile(
-    file_path="1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[1234567891]_[25-12-2019].txt",
-    page_count="",
-    gp_practice_code="Y12345",
-    section="LG",
-    sub_section="",
-    scan_date="04/09/2022",
-    scan_id="NEC",
-    user_id="NEC",
-    upload="04/10/2023",
+patient_2_file_1 = sample_metadata_model.model_copy(
+    update={
+        "file_path": "1of1_Lloyd_George_Record_[Joe Bloggs_invalid]_[1234567891]_[25-12-2019].txt",
+        "scan_date": "04/09/2022",
+    }
 )
-
 patient_2 = StagingMetadata(
     nhs_number="1234567891", files=[patient_2_file_1], retries=0
 )
+MOCK_METADATA = [patient_1, patient_2]
 
-EXPECTED_PARSED_METADATA = [patient_1, patient_2]
+
+patient_1_file_1_with_temp_nhs_number = patient_1_file_1.model_copy(
+    update={"nhs_number": "1234567890"}
+)
+patient_1_file_2_with_temp_nhs_number = patient_1_file_2.model_copy(
+    update={"nhs_number": "1234567890"}
+)
+patient_2_file_1_with_temp_nhs_number = patient_2_file_1.model_copy(
+    update={"nhs_number": "1234567891"}
+)
+patient_1_with_temp_nhs_number = StagingMetadata(
+    nhs_number="1234567890",
+    files=[
+        patient_1_file_1_with_temp_nhs_number,
+        patient_1_file_2_with_temp_nhs_number,
+    ],
+)
+patient_2_with_temp_nhs_number = StagingMetadata(
+    nhs_number="1234567891", files=[patient_2_file_1_with_temp_nhs_number]
+)
+EXPECTED_PARSED_METADATA = [
+    patient_1_with_temp_nhs_number,
+    patient_2_with_temp_nhs_number,
+]
 
 
 def readfile(filename: str) -> str:
@@ -92,7 +104,7 @@ def build_test_staging_metadata(file_names: list[str], nhs_number: str = "900000
     for file_name in file_names:
         source_file_path = f"/{nhs_number}/{file_name}"
         files.append(
-            patient_1_file_1.model_copy(update={"file_path": source_file_path})
+            sample_metadata_model.model_copy(update={"file_path": source_file_path})
         )
     return StagingMetadata(files=files, nhs_number=nhs_number)
 

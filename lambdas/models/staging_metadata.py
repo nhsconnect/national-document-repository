@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, FieldValidationInfo, field_validator
 from pydantic_core import PydanticCustomError
 
 METADATA_FILENAME = "metadata.csv"
@@ -19,9 +19,9 @@ class MetadataFile(BaseModel):
     file_path: str = Field(alias="FILEPATH")
     page_count: str = Field(alias="PAGE COUNT")
 
-    # A temporary field just to allow nhs_number to be known during validation.
-    # For the purpose of single source of truth, nhs number should be stored in StagingMetadata, not here
-    temp_nhs_number: Optional[str] = Field(
+    # A temporary field just to let us retrieve nhs_number during validation.
+    # For the purpose of single source of truth, better to refer to the nhs number at StagingMetadata
+    nhs_number: Optional[str] = Field(
         alias=NHS_NUMBER_FIELD_NAME, exclude=True, default=None
     )
 
@@ -33,17 +33,19 @@ class MetadataFile(BaseModel):
     user_id: str
     upload: str
 
-    @model_validator(mode="after")
-    def ensure_gp_practice_code_non_empty(self):
-        if not self.gp_practice_code:
-            patient_nhs_number = self.temp_nhs_number or "[NHS NUMBER UNKNOWN]"
+    @field_validator("gp_practice_code")
+    @classmethod
+    def ensure_gp_practice_code_non_empty(
+        cls, gp_practice_code: str, info: FieldValidationInfo
+    ) -> str:
+        if not gp_practice_code:
+            patient_nhs_number = info.data.get("nhs_number", "")
             raise PydanticCustomError(
                 "MissingGPPracticeCode",
                 "missing GP-PRACTICE-CODE for patient {patient_nhs_number}",
                 {"patient_nhs_number": patient_nhs_number},
             )
-        self.temp_nhs_number = None
-        return self
+        return gp_practice_code
 
 
 class StagingMetadata(BaseModel):

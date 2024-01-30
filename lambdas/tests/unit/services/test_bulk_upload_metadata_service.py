@@ -11,6 +11,7 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     EXPECTED_PARSED_METADATA,
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567891,
+    MOCK_METADATA,
 )
 from utils.exceptions import BulkUploadMetadataException
 
@@ -115,7 +116,7 @@ def test_process_metadata_raise_validation_error_when_gp_practice_code_is_missin
     )
     expected_error_log = (
         "Failed to parse metadata.csv: 1 validation error for MetadataFile\n"
-        + "  missing GP-PRACTICE-CODE for patient 1234567890"
+        + "GP-PRACTICE-CODE\n  missing GP-PRACTICE-CODE for patient 1234567890"
     )
 
     with pytest.raises(BulkUploadMetadataException) as e:
@@ -203,7 +204,6 @@ def test_csv_to_staging_metadata_raise_error_when_metadata_invalid(
 
 
 def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service, metadata_service):
-    mock_parsed_metadata = EXPECTED_PARSED_METADATA
     mocker.patch("uuid.uuid4", return_value="123412342")
     expected_calls = [
         call(
@@ -220,7 +220,7 @@ def test_send_metadata_to_sqs(set_env, mocker, mock_sqs_service, metadata_servic
         ),
     ]
 
-    metadata_service.send_metadata_to_fifo_sqs(mock_parsed_metadata)
+    metadata_service.send_metadata_to_fifo_sqs(MOCK_METADATA)
 
     mock_sqs_service.send_message_with_nhs_number_attr_fifo.assert_has_calls(
         expected_calls
