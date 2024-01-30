@@ -36,6 +36,11 @@ class DocumentReference(BaseModel):
         alias=str(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value),
         serialization_alias="virusScannerResult",
     )
+    # Allow current_gp_ods to be nullable so that we can cope with existing records.
+    # After we updated all existing records with this field, consider to set this as non-Optional
+    current_gp_ods: Optional[str] = Field(
+        alias=str(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value), default=None
+    )
 
     def get_file_name_path(self):
         return pathlib.Path(self.file_name)
@@ -87,5 +92,6 @@ class DocumentReference(BaseModel):
                 and self.nhs_number == other.nhs_number
                 and self.ttl == other.ttl
                 and self.virus_scanner_result == other.virus_scanner_result
+                and self.current_gp_ods == other.current_gp_ods
             )
         return False

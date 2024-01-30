@@ -16,7 +16,6 @@ on:
         description: "Sandbox to push code to"
         required: true
         type: string
-
     secrets:
       AWS_ASSUME_ROLE:
         required: true
@@ -47,6 +46,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
+
 
       - name: Login to Amazon ECR
         id: login-ecr

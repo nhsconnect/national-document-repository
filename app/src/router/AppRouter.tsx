@@ -21,6 +21,7 @@ import HomePage from '../pages/homePage/HomePage';
 import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLoginPage';
 import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
 import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
+import PrivacyPage from '../pages/privacyPage/PrivacyPage';
 
 const {
     START,
@@ -38,6 +39,7 @@ const {
     SEARCH_PATIENT,
     VERIFY_PATIENT,
     UPLOAD_DOCUMENTS,
+    PRIVACY_POLICY,
 } = routes;
 
 type Routes = {
@@ -74,6 +76,11 @@ export const routeMap: Routes = {
         page: <ServerErrorPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
+    [PRIVACY_POLICY]: {
+        page: <PrivacyPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
+
     // Auth guard routes
     [LOGOUT]: {
         page: <LogoutPage />,

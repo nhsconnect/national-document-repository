@@ -1,8 +1,8 @@
 import React from 'react';
 import type { ReactNode } from 'react';
 import Header from './header/Header';
-import { Footer } from 'nhsuk-react-components';
 import PhaseBanner from './phaseBanner/PhaseBanner';
+import Footer from './footer/Footer';
 
 type Props = {
     children: ReactNode;
@@ -28,9 +28,7 @@ function Layout({ children }: Props) {
                     </section>
                 </main>
             </div>
-            <Footer>
-                <Footer.Copyright>&copy; {'Crown copyright'}</Footer.Copyright>
-            </Footer>
+            <Footer />
         </div>
     );
 }
