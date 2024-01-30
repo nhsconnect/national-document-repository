@@ -65,50 +65,22 @@ jobs:
       cypress_base_url: ${{ vars.CYPRESS_BASE_URL }}
       build_branch: ${{ inputs.build_branch }}
       
-  tag_and_release:
-    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
-    runs-on: ubuntu-latest
-    outputs:
-      tag: ${{steps.versioning.outputs.tag}}
-      new_tag: ${{steps.versioning.outputs.new_tag}}
-    permissions: write-all
-
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        ref: ${{ inputs.build_branch }}
-        fetch-depth: '0'
-
-    - name: Bump version and push tag
-      id: versioning
-      uses: anothrNick/github-tag-action@1.64.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        WITH_V: false
-        DEFAULT_BUMP: patch
-    
-    - name: View outputs
-      run: |
-        echo Current tag: ${{steps.versioning.outputs.tag}} 
-        echo New tag: ${{steps.versioning.outputs.new_tag}}
-
   deploy_all_lambdas:
     name: Deploy all Lambdas
-    needs: ["tag_and_release"]
-    uses: ./.github/workflows/lambdas-deploy-feature-to-sandbox.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
     with:
-      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
       environment: ${{ inputs.environment }}
+      python_version: "3.11"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   
   deploy_ui:
     name: Deploy UI
-    needs: ["tag_and_release"]
     uses: ./.github/workflows/base-deploy-ui.yml
     with:
-      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      build_branch: ${{ inputs.build_branch }}
       environment: ${{ inputs.environment }}
       sandbox: ${{ inputs.sandbox }}
     secrets:

@@ -1,23 +1,12 @@
-name: "PROD Full - Deploy tagged version to Prod"
+name: "PRE PROD Full - Deploy and Version Main to Pre-Prod"
 
 on:
   workflow_dispatch:
-    inputs:
-      tag_version:
-        description: "What tagged verison do you want to push to prod?"
-        required: true
-        type: "string"
 
 permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
-
-env:
-  PYTHON_VERSION: "3.11"
-  ENVIRONMENT: prod
-  SANDBOX: prod
-  BUILD_BRANCH: ${{ inputs.tag_version }}
 
 jobs:
 
@@ -25,11 +14,12 @@ jobs:
     name: View input params
     runs-on: ubuntu-latest
     steps: 
+    
       - name: Display client passed variables
         run: |
-          echo Build Branch: ${{ inputs.tag_version }}
-          echo Sandbox: prod
-          echo Environment: prod
+          echo Build Branch: main
+          echo Sandbox: pre-prod
+          echo Environment: pre-prod
           echo Cypress Base Url: ${{ vars.CYPRESS_BASE_URL }}
 
   lambda_test_job:
@@ -37,19 +27,19 @@ jobs:
     uses: ./.github/workflows/base-lambdas-reusable-test.yml
     with:
       python_version: "3.11"
-      build_branch: ${{ inputs.tag_version }}
+      build_branch: main
 
   react_testing_job:
     name: Run UI Unit Tests
     uses: ./.github/workflows/base-jest-test.yml
     with:
-      build_branch: ${{ inputs.tag_version }}
+      build_branch: main
 
   cypress_build_job:
     name: Build UI version for E2E Tests
     uses: ./.github/workflows/base-cypress-build.yml
     with:
-      build_branch: ${{ inputs.tag_version }}
+      build_branch: main
   
   cypress_test_job:
     name: Run Cypress E2E Tests
@@ -57,28 +47,59 @@ jobs:
     uses: ./.github/workflows/base-cypress-test-all-env.yml
     with:
       cypress_base_url: ${{ vars.CYPRESS_BASE_URL }}
-      build_branch: ${{ inputs.tag_version }}
+      build_branch: main
+
+  tag_and_release:
+    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{steps.versioning.outputs.tag}}
+      new_tag: ${{steps.versioning.outputs.new_tag}}
+    permissions: write-all
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: main
+        fetch-depth: '0'
+
+    - name: Bump version and push tag
+      id: versioning
+      uses: anothrNick/github-tag-action@1.64.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        WITH_V: false
+        DEFAULT_BUMP: patch
+    
+    - name: View outputs
+      run: |
+        echo Current tag: ${{steps.versioning.outputs.tag}} 
+        echo New tag: ${{steps.versioning.outputs.new_tag}}
 
   deploy_all_lambdas:
     name: Deploy all Lambdas
-    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
+    needs: ["tag_and_release"]
     uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
     with:
-      build_branch: ${{ inputs.tag_version }}
-      sandbox: prod
-      environment: prod
+      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      sandbox: pre-prod
+      environment: pre-prod
       python_version: "3.11"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
   
   deploy_ui:
     name: Deploy UI
-    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
+    needs: ["tag_and_release"]
     uses: ./.github/workflows/base-deploy-ui.yml
     with:
-      build_branch: ${{ inputs.tag_version }}
-      environment: prod
-      sandbox: prod
+      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      environment: pre-prod
+      sandbox: pre-prod
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
       AWS_ECR_REPO_NAME: ${{ secrets.AWS_ECR_REPO_NAME }}
+
+  
+
+        
