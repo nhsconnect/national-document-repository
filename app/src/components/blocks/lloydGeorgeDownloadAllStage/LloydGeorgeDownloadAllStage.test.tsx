@@ -6,26 +6,26 @@ import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
+import { routes } from '../../../types/generic/routes';
 
 const mockedUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
-    useNavigate: () => mockedUseNavigate,
-}));
-jest.mock('react-router-dom', () => ({
-    __esModule: true,
-    Link: (props: LinkProps) => <a {...props} role="link" />,
-}));
-jest.mock('axios');
-jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../helpers/hooks/usePatient');
-
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUsePatient = usePatient as jest.Mock;
-
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
 const mockSetStage = jest.fn();
 const mockDownloadStage = jest.fn();
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} role="link" />,
+    useNavigate: () => mockedUseNavigate,
+}));
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
+jest.mock('axios');
+jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../helpers/hooks/usePatient');
 
 describe('LloydGeorgeDownloadAllStage', () => {
     beforeEach(() => {
@@ -96,6 +96,60 @@ describe('LloydGeorgeDownloadAllStage', () => {
             expect(screen.queryByText('Downloading documents')).not.toBeInTheDocument();
         });
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
+    });
+
+    it('navigates to Error page when zip lg record view complete but fail on delete', async () => {
+        window.HTMLAnchorElement.prototype.click = jest.fn();
+        mockedAxios.get.mockImplementation(() => Promise.resolve({ data: mockPdf.presign_url }));
+        const errorResponse = {
+            response: {
+                status: 500,
+                data: { message: 'An error occurred', err_code: 'SP_1001' },
+            },
+        };
+        mockedAxios.delete.mockImplementation(() => Promise.reject(errorResponse));
+
+        jest.useFakeTimers();
+
+        renderComponent({ deleteAfterDownload: true });
+
+        expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
+        expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
+
+        act(() => {
+            jest.advanceTimersByTime(500);
+        });
+
+        await waitFor(() => {
+            expect(screen.getByText('100% downloaded...')).toBeInTheDocument();
+        });
+        expect(screen.queryByText('0% downloaded...')).not.toBeInTheDocument();
+
+        await waitFor(() => {
+            expect(mockedUseNavigate).toHaveBeenCalledWith(
+                routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+            );
+        });
+    });
+
+    it('navigates to Error page when zip lg record view return 500', async () => {
+        const errorResponse = {
+            response: {
+                status: 500,
+                data: { message: 'An error occurred', err_code: 'SP_1001' },
+            },
+        };
+        mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+        jest.useFakeTimers();
+        renderComponent();
+        act(() => {
+            jest.advanceTimersByTime(500);
+        });
+        await waitFor(() => {
+            expect(mockedUseNavigate).toHaveBeenCalledWith(
+                routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+            );
+        });
     });
 });
 

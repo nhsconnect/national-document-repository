@@ -1,11 +1,26 @@
 import { FormData } from '../../types/pages/feedbackPage/types';
+import axios, { AxiosError } from 'axios';
+import { AuthHeaders } from '../../types/blocks/authHeaders';
+import { endpoints } from '../../types/generic/endpoints';
+type Args = {
+    formData: FormData;
+    baseUrl: string;
+    baseHeaders: AuthHeaders;
+};
+const sendEmail = async ({ formData, baseUrl, baseHeaders }: Args) => {
+    const gatewayUrl = baseUrl + endpoints.FEEDBACK;
 
-const sendEmail = async (formData: FormData) => {
-    // using console.log as a placeholder until we got the send email solution in place
-    /* eslint-disable-next-line no-console */
-    console.log(`sending feedback from user by email: ${JSON.stringify(formData)}}`);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    return { status: 200 };
+    try {
+        const { data } = await axios.post(gatewayUrl, formData, {
+            headers: {
+                ...baseHeaders,
+            },
+        });
+        return data;
+    } catch (e) {
+        const error = e as AxiosError;
+        throw error;
+    }
 };
 
 export default sendEmail;

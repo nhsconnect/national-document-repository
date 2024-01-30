@@ -10,3 +10,4 @@ class LoggingAppInteraction(Enum):
     DELETE_RECORD = "Delete a record"
     UPLOAD_RECORD = "Upload a record"
     LOGOUT = "Logout"
+    SEND_FEEDBACK = "Send feedback"

@@ -80,9 +80,9 @@ describe('Feedback Page', () => {
                         fillInForm(mockInputData);
 
                         cy.get('#submit-feedback').click();
-
-                        // TODO: when backend call for sending email is implemented,
-                        //  intercept the call and check that payload data is the same as mockInputData
+                        cy.intercept('POST', '/Feedback*', {
+                            statusCode: 200,
+                        }).as('feedback');
 
                         cy.get('.app-homepage-content h1', { timeout: 5000 }).should(
                             'have.text',
@@ -104,7 +104,9 @@ describe('Feedback Page', () => {
                         fillInForm(mockInputData);
 
                         cy.get('#submit-feedback').click();
-
+                        cy.intercept('POST', '/Feedback*', {
+                            statusCode: 200,
+                        }).as('feedback');
                         cy.get('.app-homepage-content h1', { timeout: 5000 }).should(
                             'have.text',
                             'We’ve received your feedback',

@@ -4,6 +4,7 @@ describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
     const startUrl = '/';
     const homeUrl = '/home';
+    const searchPatientUrl = '/search/patient';
 
     beforeEach(() => {
         cy.visit(startUrl);
@@ -51,43 +52,66 @@ describe('Home Page', () => {
                 cy.get('.nhsuk-header__navigation').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');
 
-                cy.login(Roles.GP_CLINICAL);
+                cy.login(Roles.GP_CLINICAL, true);
 
-                cy.url().should('eq', baseUrl + homeUrl);
+                cy.url().should('eq', baseUrl + searchPatientUrl);
                 cy.get('.nhsuk-header__navigation').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
             },
         );
 
+        const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
+        gpRoles.forEach((role) => {
+            it(
+                `should display non-BSOL landing page when user is ${Roles[role]} role in non-BSOL area`,
+                { tags: 'regression' },
+                () => {
+                    cy.login(Roles.GP_ADMIN, false);
+
+                    cy.url().should('eq', baseUrl + homeUrl);
+                    cy.get('h1').should(
+                        'include.text',
+                        'You’re outside of Birmingham and Solihull (BSOL)',
+                    );
+
+                    cy.get('.govuk-warning-text__text').should('exist');
+                    cy.get('.govuk-warning-text__text').should(
+                        'include.text',
+                        'Downloading a record will remove it from our storage.',
+                    );
+
+                    cy.get('.nhsuk-header__navigation').should('exist');
+                    cy.get('.nhsuk-header__navigation-list').should('exist');
+                },
+            );
+        });
+
+        gpRoles.forEach((role) => {
+            it(
+                `should display patient search page when user is ${Roles[role]} role in BSOL area`,
+                { tags: 'regression' },
+                () => {
+                    cy.login(role, true);
+
+                    cy.url().should('eq', baseUrl + searchPatientUrl);
+                    cy.get('h1').should(
+                        'not.include.text',
+                        'You’re outside of Birmingham and Solihull (BSOL)',
+                    );
+
+                    cy.get('.nhsuk-header__navigation').should('exist');
+                    cy.get('.nhsuk-header__navigation-list').should('exist');
+                },
+            );
+        });
+
         it(
-            'should display non-BSOL landing page when user is GP_ADMIN role in non-BSOL area',
+            'should display patient search page when user is PCSE Role',
             { tags: 'regression' },
             () => {
-                cy.login(Roles.GP_ADMIN, false);
+                cy.login(Roles.PCSE);
 
-                cy.url().should('eq', baseUrl + homeUrl);
-                cy.get('h1').should(
-                    'include.text',
-                    'You’re outside of Birmingham and Solihull (BSOL)',
-                );
-
-                cy.get('.govuk-warning-text__text').should('exist');
-                cy.get('.govuk-warning-text__text').should(
-                    'include.text',
-                    'Downloading a record will remove it from our storage.',
-                );
-
-                cy.get('.nhsuk-header__navigation').should('exist');
-                cy.get('.nhsuk-header__navigation-list').should('exist');
-            },
-        );
-        it(
-            'should display patient search page when user is GP_ADMIN role in BSOL area',
-            { tags: 'regression' },
-            () => {
-                cy.login(Roles.GP_ADMIN, true);
-
-                cy.url().should('eq', baseUrl + homeUrl);
+                cy.url().should('eq', baseUrl + searchPatientUrl);
                 cy.get('h1').should(
                     'not.include.text',
                     'You’re outside of Birmingham and Solihull (BSOL)',
@@ -121,7 +145,6 @@ describe('Home Page', () => {
 
                 cy.login(Roles.GP_CLINICAL);
 
-                cy.url().should('eq', baseUrl + homeUrl);
                 cy.get('.nhsuk-header__navigation').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
 
@@ -133,7 +156,7 @@ describe('Home Page', () => {
                 cy.getByTestId('logout-btn').click();
 
                 cy.wait('@logout');
-                cy.url({ timeout: 10000 }).should('contain', baseUrl + startUrl);
+                cy.url({ timeout: 10000 }).should('eq', baseUrl + startUrl);
 
                 cy.get('.nhsuk-header__navigation').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');

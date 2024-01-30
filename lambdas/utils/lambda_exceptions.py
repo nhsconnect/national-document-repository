@@ -1,7 +1,19 @@
+from enums.lambda_error import LambdaError
+
+
 class LambdaException(Exception):
-    def __init__(self, status_code, message):
+    def __init__(self, status_code, error: LambdaError):
         self.status_code = status_code
-        self.message = message
+        self.message = error.value["message"]
+        self.err_code = error.value["err_code"]
+
+    def __eq__(self, other):
+        return (
+            self.__class__ == other.__class__
+            and self.status_code == other.status_code
+            and self.message == other.message
+            and self.err_code == other.err_code
+        )
 
 
 class CreateDocumentRefException(LambdaException):
@@ -37,4 +49,8 @@ class DocumentRefSearchException(LambdaException):
 
 
 class DocumentDeletionServiceException(LambdaException):
+    pass
+
+
+class SendFeedbackException(LambdaException):
     pass

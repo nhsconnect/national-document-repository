@@ -3,6 +3,7 @@ import os
 import boto3
 import jwt
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
@@ -39,16 +40,22 @@ def logout_handler(token):
         remove_session_from_dynamo_db(session_id)
 
     except ClientError as e:
-        logger.error(f"Error logging out user: {e}", {"Result": "Unsuccessful logout"})
+        logger.error(
+            f"{LambdaError.LogoutClient.to_str()}: {e}",
+            {"Result": "Unsuccessful logout"},
+        )
         return ApiGatewayResponse(
-            500, "Error logging user out", "GET"
+            500,
+            LambdaError.LogoutClient.create_error_body(),
+            "GET",
         ).create_api_gateway_response()
     except (jwt.PyJWTError, KeyError) as e:
         logger.error(
-            f"error while decoding JWT: {e}", {"Result": "Unsuccessful logout"}
+            f"{LambdaError.LogoutDecode.to_str()}: {e}",
+            {"Result": "Unsuccessful logout"},
         )
         return ApiGatewayResponse(
-            400, "Invalid Authorization header", "GET"
+            400, LambdaError.LogoutDecode.create_error_body(), "GET"
         ).create_api_gateway_response()
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 

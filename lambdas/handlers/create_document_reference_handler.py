@@ -3,6 +3,7 @@ import os
 import sys
 from json import JSONDecodeError
 
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.create_document_reference_service import CreateDocumentReferenceService
 from utils.audit_logging_setup import LoggingService
@@ -53,20 +54,24 @@ def processing_event_details(event):
         nhs_number = body["subject"]["identifier"]["value"]
 
         if not body or not isinstance(body, dict):
-            raise CreateDocumentRefException(400, "Missing event body")
+            logger.error(
+                f"{LambdaError.CreateDocNoBody.to_str()}",
+                {"Result": "Create document reference failed"},
+            )
+            raise CreateDocumentRefException(400, LambdaError.CreateDocNoBody)
 
         doc_list = body["content"][0]["attachment"]
         return nhs_number, doc_list
 
     except (JSONDecodeError, AttributeError) as e:
         logger.error(
-            f"Invalid json in body: {str(e)}",
+            f"{LambdaError.CreateDocPayload.to_str()}: {str(e)}",
             {"Result": "Create document reference failed"},
         )
-        raise CreateDocumentRefException(400, "Invalid json in body")
+        raise CreateDocumentRefException(400, LambdaError.CreateDocPayload)
     except (KeyError, TypeError) as e:
         logger.error(
-            f"Request body missing some properties: {str(e)}",
+            f"{LambdaError.CreateDocProps.to_str()}: {str(e)}",
             {"Result": "Create document reference failed"},
         )
-        raise CreateDocumentRefException(400, "Request body missing some properties")
+        raise CreateDocumentRefException(400, LambdaError.CreateDocProps)

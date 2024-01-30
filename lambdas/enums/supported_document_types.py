@@ -2,6 +2,7 @@ import os
 from enum import Enum
 from typing import List
 
+from enums.lambda_error import LambdaError
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import InvalidDocTypeException
 
@@ -60,7 +61,4 @@ class SupportedDocumentTypes(Enum):
                     "Result": f"An error occurred due to missing environment variable for doc_type {self.value}"
                 },
             )
-            raise InvalidDocTypeException(
-                status_code=500,
-                message=f"Failed to resolve dynamodb table name for doc_type {self.value}",
-            )
+            raise InvalidDocTypeException(status_code=500, error=LambdaError.DocTypeDB)

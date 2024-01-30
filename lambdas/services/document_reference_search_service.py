@@ -3,6 +3,7 @@ import os
 from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.document_reference import DocumentReference
 from pydantic import ValidationError
@@ -44,7 +45,8 @@ class DocumentReferenceSearchService(DocumentService):
             ClientError,
             DynamoServiceException,
         ) as e:
-            logger.error(str(e), {"Result": "Document reference search failed"})
-            raise DocumentRefSearchException(
-                500, "An error occurred when searching for available documents"
+            logger.error(
+                f"{LambdaError.DocRefClient.to_str()}: {str(e)}",
+                {"Result": "Document reference search failed"},
             )
+            raise DocumentRefSearchException(500, LambdaError.DocRefClient)

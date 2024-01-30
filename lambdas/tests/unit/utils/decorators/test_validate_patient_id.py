@@ -1,3 +1,4 @@
+import json
 from unittest.mock import MagicMock
 
 from utils.decorators.validate_patient_id import validate_patient_id
@@ -13,9 +14,14 @@ def lambda_handler(event, _context):
 
 
 def test_respond_with_400_when_patient_id_missing(missing_id_event, context):
-    expected = ApiGatewayResponse(
-        400, "An error occurred due to missing key: 'patientId'", "GET"
-    ).create_api_gateway_response()
+    body = json.dumps(
+        {
+            "message": "An error occurred due to missing key",
+            "err_code": "PN_4002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
+    expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
     actual = lambda_handler(missing_id_event, context)
 
@@ -24,9 +30,15 @@ def test_respond_with_400_when_patient_id_missing(missing_id_event, context):
 
 
 def test_respond_with_400_when_patient_id_invalid(invalid_id_event, context):
-    expected = ApiGatewayResponse(
-        400, "Invalid NHS number", "GET"
-    ).create_api_gateway_response()
+    nhs_number = invalid_id_event["queryStringParameters"]["patientId"]
+    body = json.dumps(
+        {
+            "message": f"Invalid patient number {nhs_number}",
+            "err_code": "PN_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
+    expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
     actual = lambda_handler(invalid_id_event, context)
 

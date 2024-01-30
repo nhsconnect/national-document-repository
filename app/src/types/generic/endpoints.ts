@@ -10,4 +10,5 @@ export enum endpoints {
     DOCUMENT_PRESIGN = '/DocumentManifest',
 
     LLOYDGEORGE_STITCH = '/LloydGeorgeStitch',
+    FEEDBACK = '/Feedback',
 }

@@ -5,10 +5,13 @@ import { SATISFACTION_CHOICES } from '../../types/pages/feedbackPage/types';
 import FeedbackPage from './FeedbackPage';
 import sendEmail from '../../helpers/requests/sendEmail';
 import { fillInForm } from '../../helpers/test/formUtils';
+jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 
 jest.mock('../../helpers/requests/sendEmail');
 const mockSendEmail = sendEmail as jest.Mock;
-
+jest.mock('react-router-dom', () => ({
+    useNavigate: () => jest.fn(),
+}));
 describe('<FeedbackPage />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';

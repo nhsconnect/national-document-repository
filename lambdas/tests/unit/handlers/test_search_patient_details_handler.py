@@ -1,10 +1,20 @@
+import json
 import os
+from enum import Enum
 from unittest.mock import patch
 
 import pytest
 from handlers.search_patient_details_handler import lambda_handler
 from utils.lambda_exceptions import SearchPatientException
 from utils.lambda_response import ApiGatewayResponse
+
+
+class MockError(Enum):
+    Error = {
+        "message": "Client error",
+        "err_code": "AB_XXXX",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
 
 
 @pytest.fixture
@@ -50,9 +60,15 @@ def test_lambda_handler_valid_id_returns_200(
 
 
 def test_lambda_handler_invalid_id_returns_400(invalid_id_event, context):
-    expected = ApiGatewayResponse(
-        400, "Invalid NHS number", "GET"
-    ).create_api_gateway_response()
+    nhs_number = invalid_id_event["queryStringParameters"]["patientId"]
+    body = json.dumps(
+        {
+            "message": f"Invalid patient number {nhs_number}",
+            "err_code": "PN_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
+    expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
     actual = lambda_handler(invalid_id_event, context)
 
@@ -64,14 +80,12 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
 ):
     mocker.patch(
         "handlers.search_patient_details_handler.SearchPatientDetailsService.handle_search_patient_request",
-        side_effect=SearchPatientException(
-            404, "Patient does not exist for given NHS number"
-        ),
+        side_effect=SearchPatientException(404, MockError.Error),
     )
 
     expected = ApiGatewayResponse(
         404,
-        "Patient does not exist for given NHS number",
+        json.dumps(MockError.Error.value),
         "GET",
     ).create_api_gateway_response()
 
@@ -83,9 +97,14 @@ def test_lambda_handler_valid_id_not_in_pds_returns_404(
 def test_lambda_handler_missing_id_in_query_params_returns_400(
     missing_id_event, context
 ):
-    expected = ApiGatewayResponse(
-        400, "An error occurred due to missing key: 'patientId'", "GET"
-    ).create_api_gateway_response()
+    body = json.dumps(
+        {
+            "message": "An error occurred due to missing key",
+            "err_code": "PN_4002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
+    expected = ApiGatewayResponse(400, body, "GET").create_api_gateway_response()
 
     actual = lambda_handler(missing_id_event, context)
 
@@ -100,8 +119,17 @@ def test_lambda_handler_missing_auth_returns_400(
     mocker.patch(
         "handlers.search_patient_details_handler.request_context", mocked_context
     )
+    body = json.dumps(
+        {
+            "message": "Missing user details",
+            "err_code": "SP_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
-        400, "Missing user details", "GET"
+        400,
+        body,
+        "GET",
     ).create_api_gateway_response()
 
     actual = lambda_handler(valid_id_event_with_auth_header, context)

@@ -1,3 +1,5 @@
+import json
+
 from botocore.exceptions import ClientError
 from handlers.logout_handler import lambda_handler
 from jwt.exceptions import PyJWTError
@@ -40,8 +42,15 @@ def test_logout_handler_invalid_jwt_returns_400(mocker, monkeypatch, context):
         return_value=MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE,
     )
 
+    expected_body = json.dumps(
+        {
+            "message": "Error while decoding JWT",
+            "err_code": "OUT_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
-        400, "Invalid Authorization header", "GET"
+        400, expected_body, "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), context)
@@ -64,8 +73,16 @@ def test_logout_handler_jwt_without_ndr_session_id_returns_400(
         "handlers.logout_handler.get_ssm_parameter",
         return_value=MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE,
     )
+
+    expected_body = json.dumps(
+        {
+            "message": "Error while decoding JWT",
+            "err_code": "OUT_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
-        400, "Invalid Authorization header", "GET"
+        400, expected_body, "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), context)
@@ -92,8 +109,15 @@ def test_logout_handler_boto_error_returns_500(mocker, monkeypatch, context):
         return_value=MOCK_SINGLE_SECURE_STRING_PARAMETER_RESPONSE,
     )
 
+    expected_body = json.dumps(
+        {
+            "message": "Error logging user out",
+            "err_code": "OUT_5001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
-        500, "Error logging user out", "GET"
+        500, expected_body, "GET"
     ).create_api_gateway_response()
 
     actual = lambda_handler(build_event_from_token(mock_token), context)

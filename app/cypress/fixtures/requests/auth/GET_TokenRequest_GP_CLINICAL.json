@@ -1,4 +1,5 @@
 {
     "role": "GP_CLINICAL",
-    "authorisation_token": "111xxx222"
+    "authorisation_token": "111xxx222",
+    "isBSOL": true
 }

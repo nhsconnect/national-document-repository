@@ -11,6 +11,12 @@ import isEmail from 'validator/lib/isEmail';
 import sendEmail from '../../../helpers/requests/sendEmail';
 import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-components';
 import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
+import { routes } from '../../../types/generic/routes';
+import { useNavigate } from 'react-router-dom';
+import { errorToParams } from '../../../helpers/utils/errorToParams';
+import { AxiosError } from 'axios';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 
 export type Props = {
     stage: SUBMISSION_STAGE;
@@ -18,6 +24,8 @@ export type Props = {
 };
 
 function FeedbackForm({ stage, setStage }: Props) {
+    const baseUrl = useBaseAPIUrl();
+    const baseHeaders = useBaseAPIHeaders();
     const {
         handleSubmit,
         register,
@@ -25,17 +33,18 @@ function FeedbackForm({ stage, setStage }: Props) {
     } = useForm<FormData>({
         reValidateMode: 'onSubmit',
     });
+    const navigate = useNavigate();
 
     const submit: SubmitHandler<FormData> = async (formData) => {
         setStage(SUBMISSION_STAGE.Submitting);
-
-        sendEmail(formData)
-            .then(() => {
-                setStage(SUBMISSION_STAGE.Successful);
-            })
-            .catch((e) => {
-                setStage(SUBMISSION_STAGE.Failure);
-            });
+        // add tests for failing and passing cases when real email service is implemented
+        try {
+            await sendEmail({ formData, baseUrl, baseHeaders });
+            setStage(SUBMISSION_STAGE.Successful);
+        } catch (e) {
+            const error = e as AxiosError;
+            navigate(routes.SERVER_ERROR + errorToParams(error));
+        }
     };
 
     const renameRefKey = (props: UseFormRegisterReturn, newRefKey: string) => {
@@ -105,6 +114,16 @@ function FeedbackForm({ stage, setStage }: Props) {
                     <p>
                         If you’re happy to speak to us about your feedback so we can improve this
                         service, please leave your details below.
+                    </p>
+                    <p>
+                        When submitting your details using our feedback form, any personal
+                        information you give to us will be processed in accordance with the UK
+                        General Data Protection Regulation (GDPR) 2018.
+                    </p>
+                    <p>
+                        We use the information you submitted to process your request and provide
+                        relevant information or services you have requested. This will help support
+                        us in developing this service.
                     </p>
 
                     <Input

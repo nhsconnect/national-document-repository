@@ -116,8 +116,16 @@ def test_lambda_handler_respond_400_when_no_nhs_number_supplied(
     missing_id_event, context
 ):
     actual = lambda_handler(missing_id_event, context)
+
+    expected_body = json.dumps(
+        {
+            "message": "An error occurred due to missing key",
+            "err_code": "PN_4002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
-        400, "An error occurred due to missing key: 'patientId'", "GET"
+        400, expected_body, "GET"
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -126,9 +134,17 @@ def test_lambda_handler_respond_500_when_environment_variables_not_set(
     joe_bloggs_event, context
 ):
     actual = lambda_handler(joe_bloggs_event, context)
+
+    expected_body = json.dumps(
+        {
+            "message": "An error occurred due to missing environment variable: 'LLOYD_GEORGE_DYNAMODB_NAME'",
+            "err_code": "ENV_5001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
         500,
-        "An error occurred due to missing environment variable: 'LLOYD_GEORGE_DYNAMODB_NAME'",
+        expected_body,
         "GET",
     ).create_api_gateway_response()
     assert actual == expected
@@ -138,8 +154,17 @@ def test_lambda_handler_respond_400_when_nhs_number_not_valid(
     invalid_id_event, context
 ):
     actual = lambda_handler(invalid_id_event, context)
+
+    nhs_number = invalid_id_event["queryStringParameters"]["patientId"]
+    expected_body = json.dumps(
+        {
+            "message": f"Invalid patient number {nhs_number}",
+            "err_code": "PN_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
-        400, "Invalid NHS number", "GET"
+        400, expected_body, "GET"
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -149,8 +174,18 @@ def test_lambda_handler_respond_500_when_failed_to_retrieve_lg_record(
 ):
     fetch_available_document_references_by_type.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
+
+    expected_body = json.dumps(
+        {
+            "message": "Unable to retrieve documents for patient",
+            "err_code": "LGS_5003",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
-        500, "Unable to retrieve documents for patient 9000000009", "GET"
+        500,
+        expected_body,
+        "GET",
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -164,8 +199,18 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_download_lloyd_geo
 ):
     mock_s3.download_file.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
+
+    expected_body = json.dumps(
+        {
+            "message": "Unable to retrieve documents for patient",
+            "err_code": "LGS_5001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
-        500, "Unable to retrieve documents for patient 9000000009", "GET"
+        500,
+        expected_body,
+        "GET",
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -178,8 +223,18 @@ def test_lambda_handler_respond_404_throws_error_when_no_lloyd_george_for_patien
 ):
     fetch_available_document_references_by_type.return_value = []
     actual = lambda_handler(valid_id_event_without_auth_header, context)
+
+    expected_body = json.dumps(
+        {
+            "message": "Lloyd george record not found for patient",
+            "err_code": "LGS_4001",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
-        404, "Lloyd george record not found for patient 9000000009", "GET"
+        404,
+        expected_body,
+        "GET",
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -194,9 +249,18 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_stitch_lloyd_georg
 ):
     mock_stitch_pdf.side_effect = pypdf.errors.ParseError
 
+    expected_body = json.dumps(
+        {
+            "message": "Unable to return stitched pdf file due to internal error",
+            "err_code": "LGS_5002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     actual = lambda_handler(valid_id_event_without_auth_header, context)
     expected = ApiGatewayResponse(
-        500, "Unable to return stitched pdf file due to internal error", "GET"
+        500,
+        expected_body,
+        "GET",
     ).create_api_gateway_response()
     assert actual == expected
 
@@ -211,7 +275,16 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_upload_lloyd_georg
 ):
     mock_s3.upload_file_with_extra_args.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
+    expected_body = json.dumps(
+        {
+            "message": "Unable to return stitched pdf file due to internal error",
+            "err_code": "LGS_5002",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
     expected = ApiGatewayResponse(
-        500, "Unable to return stitched pdf file due to internal error", "GET"
+        500,
+        expected_body,
+        "GET",
     ).create_api_gateway_response()
     assert actual == expected

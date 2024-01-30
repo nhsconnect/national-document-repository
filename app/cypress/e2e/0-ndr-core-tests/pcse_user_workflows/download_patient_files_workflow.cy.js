@@ -38,8 +38,6 @@ describe('PCSE Workflow: Access and download found files', () => {
 
     beforeEach(() => {
         cy.login(Roles.PCSE);
-        cy.getByTestId('search-patient-btn').should('exist');
-        cy.getByTestId('search-patient-btn').click();
     });
 
     const navigateToVerify = () => {
@@ -180,7 +178,7 @@ describe('PCSE Workflow: Access and download found files', () => {
 
             navigateToDownload(roles.PCSE);
 
-            cy.get('#service-error').should('exist');
+            cy.contains('Sorry, there is a problem with the service').should('be.visible');
         },
     );
 
@@ -307,7 +305,7 @@ describe('PCSE Workflow: Access and download found files', () => {
                 cy.getByTestId('delete-submit-btn').click();
 
                 // assert
-                cy.getByTestId('service-error').should('be.visible');
+                cy.contains('Sorry, there is a problem with the service').should('be.visible');
             },
         );
 
@@ -330,7 +328,7 @@ describe('PCSE Workflow: Access and download found files', () => {
                 cy.getByTestId('delete-submit-btn').click();
 
                 // assert
-                cy.getByTestId('service-error').should('be.visible');
+                cy.contains('Sorry, there is a problem with the service').should('be.visible');
             },
         );
     });

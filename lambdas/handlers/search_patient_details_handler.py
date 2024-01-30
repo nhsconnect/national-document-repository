@@ -1,3 +1,4 @@
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.search_patient_details_service import SearchPatientDetailsService
 from utils.audit_logging_setup import LoggingService
@@ -29,7 +30,11 @@ def lambda_handler(event, context):
         ).get("org_ods_code", "")
         user_role = request_context.authorization.get("repository_role", "")
     if not user_role or not user_ods_code:
-        raise SearchPatientException(400, "Missing user details")
+        logger.error(
+            f"{LambdaError.SearchPatientMissing.to_str()}",
+            {"Result": "Patient not found"},
+        )
+        raise SearchPatientException(400, LambdaError.SearchPatientMissing)
 
     search_service = SearchPatientDetailsService(
         user_role=user_role, user_ods_code=user_ods_code
