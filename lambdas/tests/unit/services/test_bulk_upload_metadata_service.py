@@ -12,6 +12,7 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567891,
 )
+from utils.exceptions import BulkUploadMetadataException
 
 METADATA_FILE_DIR = "tests/unit/helpers/data/bulk_upload"
 MOCK_METADATA_CSV = f"{METADATA_FILE_DIR}/metadata.csv"
@@ -70,8 +71,10 @@ def test_process_metadata_catch_and_log_error_when_fail_to_get_metadata_csv_from
     )
     expected_err_msg = 'No metadata file could be found with the name "metadata.csv"'
 
-    metadata_service.process_metadata(metadata_filename)
+    with pytest.raises(BulkUploadMetadataException) as e:
+        metadata_service.process_metadata(metadata_filename)
 
+    assert expected_err_msg in str(e.value)
     assert caplog.records[-1].msg == expected_err_msg
     assert caplog.records[-1].levelname == "ERROR"
 
@@ -89,8 +92,10 @@ def test_process_metadata_raise_validation_error_when_metadata_csv_is_invalid(
     for invalid_csv_file in MOCK_INVALID_METADATA_CSV_FILES:
         mock_download_metadata_from_s3.return_value = invalid_csv_file
 
-        metadata_service.process_metadata(metadata_filename)
+        with pytest.raises(BulkUploadMetadataException) as e:
+            metadata_service.process_metadata(metadata_filename)
 
+        assert "validation error" in str(e.value)
         assert "validation error" in caplog.records[-1].msg
         assert caplog.records[-1].levelname == "ERROR"
 
@@ -113,8 +118,10 @@ def test_process_metadata_raise_validation_error_when_gp_practice_code_is_missin
         + "  missing GP-PRACTICE-CODE for patient 1234567890"
     )
 
-    metadata_service.process_metadata(metadata_filename)
+    with pytest.raises(BulkUploadMetadataException) as e:
+        metadata_service.process_metadata(metadata_filename)
 
+    assert expected_error_log in str(e.value)
     assert expected_error_log in caplog.records[-1].msg
     assert caplog.records[-1].levelname == "ERROR"
 
@@ -147,8 +154,10 @@ def test_process_metadata_raise_client_error_when_failed_to_send_message_to_sqs(
         " The specified queue does not exist"
     )
 
-    metadata_service.process_metadata(metadata_filename)
+    with pytest.raises(BulkUploadMetadataException) as e:
+        metadata_service.process_metadata(metadata_filename)
 
+    assert expected_err_msg in str(e.value)
     assert caplog.records[-1].msg == expected_err_msg
     assert caplog.records[-1].levelname == "ERROR"
 
