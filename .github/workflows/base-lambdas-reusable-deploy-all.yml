@@ -42,7 +42,7 @@ jobs:
 
   deploy_create_document_reference_lambda:
     name: Deploy create_document_reference_lambda
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -55,7 +55,7 @@ jobs:
   
   deploy_search_patient_details_lambda:
     name: Deploy search_patient_details_lambda
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -68,7 +68,7 @@ jobs:
 
   deploy_document_reference_search_lambda:
     name: Deploy document_reference_search_lambda
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -81,7 +81,7 @@ jobs:
 
   deploy_delete_document_reference_handler:
     name: Deploy delete_document_reference_handler
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -94,7 +94,7 @@ jobs:
   
   deploy_document_manifest_by_nhs_number_lambda:
     name: Deploy document_manifest_by_nhs_number_lambda
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -107,7 +107,7 @@ jobs:
 
   deploy_bulk_upload_metadata_lambda:
     name: Deploy bulk_upload_metadata_lambda
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -120,7 +120,7 @@ jobs:
 
   deploy_token_request_lambda:
     name: Deploy TokenRequestHandler
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -133,7 +133,7 @@ jobs:
 
   deploy_login_redirect_lambda:
     name: Deploy LoginRedirectHandler
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -146,7 +146,7 @@ jobs:
 
   deploy_authoriser_lambda:
     name: Deploy AuthoriserLambda
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -159,7 +159,7 @@ jobs:
 
   deploy_lloyd_george_record_stitch_lambda:
     name: Deploy LloydGeorgeStitchLambda
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -172,7 +172,7 @@ jobs:
 
   deploy_logout_handler_lambda:
     name: Deploy LogoutHandler
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -185,7 +185,7 @@ jobs:
 
   deploy_bulk_upload_lambda:
     name: Deploy bulk_upload_lambda
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -198,7 +198,7 @@ jobs:
 
   deploy_report_bulk_upload_lambda:
     name: Deploy report_bulk_upload_lambda
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
@@ -212,7 +212,7 @@ jobs:
 
   deploy_back_channel_logout_lambda:
     name: Deploy back_channel_logout_lambda
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}

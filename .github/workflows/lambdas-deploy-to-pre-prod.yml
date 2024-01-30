@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   run_tests:
-    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+    uses: ./.github/workflows/base-lambdas-reusable-test.yml
     with:
       python_version: "3.11"
       build_branch: main
@@ -49,7 +49,7 @@ jobs:
   deploy_all:
     name: Deploy all Lambdas
     needs: ["run_tests", "tag_and_release"]
-    uses: ./.github/workflows/new_lambdas-deploy-feature-to-sandbox.yml
+    uses: ./.github/workflows/lambdas-deploy-feature-to-sandbox.yml
     with:
       build_branch: ${{ needs.tag_and_release.outputs.tag }}
       sandbox: pre-prod

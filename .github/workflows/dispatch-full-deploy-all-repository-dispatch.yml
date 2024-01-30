@@ -1,4 +1,4 @@
-name: 'FULL - Deploy all (from Terraform Repo)'
+name: 'XDeploy FULL - Deploy all (from Terraform Repo)'
 
 on:
   repository_dispatch:

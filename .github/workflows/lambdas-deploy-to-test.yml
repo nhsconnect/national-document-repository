@@ -15,13 +15,13 @@ permissions:
 
 jobs:
   run_tests:
-    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+    uses: ./.github/workflows/base-lambdas-reusable-test.yml
     with:
       python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
 
   deploy_all:
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
     with:
       environment: test
