@@ -12,10 +12,12 @@ class UploadStatusBaseClass(BaseModel):
     )
     id: str = Field(alias="ID", default_factory=create_reference_id)
     nhs_number: str
+
     timestamp: int = Field(default_factory=lambda: int(datetime.now().timestamp()))
     date: str = Field(default_factory=lambda: date_string_yyyymmdd(datetime.now()))
     file_path: str
-    ods_code: str = ""
+    pds_ods_code: str = ""
+    uploader_ods_code: str = ""
 
 
 class SuccessfulUpload(UploadStatusBaseClass):
@@ -31,7 +33,8 @@ FieldNamesForBulkUploadReport = [
     "NhsNumber",
     "UploadStatus",
     "FailureReason",
-    "OdsCode",
+    "PdsOdsCode",
+    "UploaderOdsCode",
     "FilePath",
     "Date",
     "Timestamp",

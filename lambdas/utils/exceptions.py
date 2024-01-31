@@ -102,3 +102,7 @@ class OidcApiException(Exception):
 
 class LoginException(Exception):
     pass
+
+
+class BulkUploadMetadataException(Exception):
+    pass

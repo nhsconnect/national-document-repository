@@ -11,8 +11,10 @@ from models.staging_metadata import NHS_NUMBER_FIELD_NAME, MetadataFile, Staging
 from services.base.s3_service import S3Service
 from services.base.sqs_service import SQSService
 from utils.audit_logging_setup import LoggingService
+from utils.exceptions import BulkUploadMetadataException
 
 logger = LoggingService(__name__)
+unsuccessful = "Unsuccessful bulk upload"
 
 
 class BulkUploadMetadataService:
@@ -27,7 +29,7 @@ class BulkUploadMetadataService:
 
     def process_metadata(self, metadata_filename: str):
         try:
-            logger.info("Fetching metadata.csv from bucket")
+            logger.info(f"Fetching {metadata_filename} from bucket")
             metadata_file = self.download_metadata_from_s3(metadata_filename)
 
             logger.info("Parsing bulk upload metadata")
@@ -41,22 +43,20 @@ class BulkUploadMetadataService:
             self.clear_temp_storage()
 
         except pydantic.ValidationError as e:
-            logger.error(
-                f"Failed to parse metadata.csv: {str(e)}",
-                {"Result": "Unsuccessful bulk upload"},
-            )
+            failure_msg = f"Failed to parse {metadata_filename}: {str(e)}"
+            logger.error(failure_msg, {"Result": unsuccessful})
+            raise BulkUploadMetadataException(failure_msg)
         except KeyError as e:
-            logger.error(
-                f"Failed due to missing key: {str(e)}",
-                {"Result": "Unsuccessful bulk upload"},
-            )
+            failure_msg = f"Failed due to missing key: {str(e)}"
+            logger.error(failure_msg, {"Result": unsuccessful})
+            raise BulkUploadMetadataException(failure_msg)
         except ClientError as e:
-            logger.error(str(e))
             if "HeadObject" in str(e):
-                logger.error(
-                    f'No metadata file could be found with the name "{metadata_filename}"',
-                    {"Result": "Unsuccessful bulk upload"},
-                )
+                failure_msg = f'No metadata file could be found with the name "{metadata_filename}"'
+            else:
+                failure_msg = str(e)
+            logger.error(failure_msg, {"Result": unsuccessful})
+            raise BulkUploadMetadataException(failure_msg)
 
     def download_metadata_from_s3(self, metadata_filename: str) -> str:
         local_file_path = os.path.join(self.temp_download_dir, metadata_filename)
