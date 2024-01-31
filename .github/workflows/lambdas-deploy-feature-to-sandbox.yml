@@ -1,10 +1,10 @@
-name: 'FULL - Deploy All'
+name: "SANDBOX Lambdas - Deploy Feature Branch to Sandbox"
 
 on:
   workflow_dispatch:
     inputs:
       build_branch:
-        description: "Feature branch to use."
+        description: "Feature branch to push to test?"
         required: true
         type: "string"
         default: "main"
@@ -21,7 +21,7 @@ on:
   workflow_call:
     inputs:
       build_branch:
-        description: "Feature branch to use."
+        description: "Feature branch to push to test?"
         required: true
         type: "string"
         default: "main"
@@ -45,22 +45,25 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-  deploy_all_lambdas:
-    name: Deploy all Lambdas
-    uses: ./.github/workflows/new_lambdas-deploy-feature-to-sandbox.yml
+
+  run_tests:
+    name: Run all python tests
+    uses: ./.github/workflows/base-lambdas-reusable-test.yml
     with:
+      python_version: "3.11"
+      build_branch: ${{ inputs.build_branch }}
+
+  deploy_all:
+    name: Deploy all Lambdas to AWS
+    uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
+    with:
+      environment: ${{ inputs.environment }}
+      python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
-      environment: ${{ inputs.environment }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   
-  deploy_all_ui:
-    name: Deploy UI
-    uses: ./.github/workflows/new-ui-deploy-feature-to-sandbox-manual.yml
-    with:
-      build_branch: ${{ inputs.build_branch }}
-      sandbox: ${{ inputs.sandbox }}
-      environment: ${{ inputs.environment }}
-    secrets:
-      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+        

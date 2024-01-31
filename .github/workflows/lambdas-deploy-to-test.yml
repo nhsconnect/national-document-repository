@@ -1,14 +1,10 @@
-name: "PERF Lambdas - Deploy Feature Branch to Perf"
+name: "TEST Lambdas - Deploy Feature Branch to Test"
 
 on:
   workflow_dispatch:
     inputs:
       build_branch:
         description: "Feature branch to push to test?"
-        required: true
-        type: "string"
-      sandbox:
-        description: "Which Sandbox to push to."
         required: true
         type: "string"
 
@@ -19,20 +15,19 @@ permissions:
 
 jobs:
   run_tests:
-    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+    uses: ./.github/workflows/base-lambdas-reusable-test.yml
     with:
-      environment: perf
       python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
 
   deploy_all:
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
     with:
-      environment: perf
+      environment: test
       python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
-      sandbox: ${{ inputs.sandbox }}
+      sandbox: ndr-test
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 

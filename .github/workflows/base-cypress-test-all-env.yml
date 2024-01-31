@@ -1,24 +1,17 @@
-# .github/workflows/terraform-dev
-name: 'Z-BASE Cypress Test: Run a cypress test job against all browsers'
+name: "Z-BASE Cypress Test: Run a cypress test job against all browsers"
 
 on:
   workflow_call:
     inputs:
+      cypress_base_url:
+        description: "Base URL to run tests against"
+        required: true
+        type: "string"
       build_branch:
-        description: 'Branch with smoke tests.'
+        description: "Branch to run against"
         required: true
-        type: 'string'
-      base_url:
-        description: 'Application url to run cypress againsr'
-        required: true
-        type: 'string'
-    secrets:
-      AWS_ASSUME_ROLE:
-        required: true
-      CYPRESS_USERNAME:
-        required: true
-      CYPRESS_PASSWORD:
-        required: true
+        type: "string"
+
 
 permissions:
   pull-requests: write
@@ -26,21 +19,30 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-    cypress_test_chrome:
-      uses: ./.github/workflows/base-cypress-test.yml
-      with:
-        build_branch: main
-        base_url: ${{ github.event.inputs.base_url }}
-        cypress_broswer: 'chrome'
-    cypress_test_edge:
-      uses: ./.github/workflows/base-cypress-test.yml
-      with:
-        build_branch: main
-        base_url: ${{ github.event.inputs.base_url }}
-        cypress_broswer: 'edge'
-    cypress_test_firefox:
-      uses: ./.github/workflows/base-cypress-test.yml
-      with:
-        build_branch: main
-        base_url: ${{ github.event.inputs.base_url }}
-        cypress_broswer: 'firefox'
+  view_action_parameters:
+    name: View input params
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Display client passed variables
+        run: |
+          echo Build Branch: ${{ inputs.build_branch }}
+          echo Cypress Base Url: ${{ inputs.cypress_base_url }}
+
+  cypress_test_chrome:
+    uses: ./.github/workflows/base-cypress-test.yml
+    with:
+      build_branch: ${{ inputs.build_branch }}
+      cypress_broswer: "chrome"
+      cypress_base_url: ${{ inputs.cypress_base_url }}
+  cypress_test_edge:
+    uses: ./.github/workflows/base-cypress-test.yml
+    with:
+      build_branch: ${{ inputs.build_branch }}
+      cypress_broswer: "edge"
+      cypress_base_url: ${{ inputs.cypress_base_url }}
+  cypress_test_firefox:
+    uses: ./.github/workflows/base-cypress-test.yml
+    with:
+      build_branch: ${{ inputs.build_branch }}
+      cypress_broswer: "firefox"
+      cypress_base_url: ${{ inputs.cypress_base_url }}

@@ -1,4 +1,4 @@
-name: "PROD Lambdas - Deploy tagged version to Prod"
+name: "PROD Full - Deploy tagged version to Prod"
 
 on:
   workflow_dispatch:
@@ -20,20 +20,65 @@ env:
   BUILD_BRANCH: ${{ inputs.tag_version }}
 
 jobs:
-  run_tests:
-    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+
+  view_action_parameters:
+    name: View input params
+    runs-on: ubuntu-latest
+    steps: 
+      - name: Display client passed variables
+        run: |
+          echo Build Branch: ${{ inputs.tag_version }}
+          echo Sandbox: prod
+          echo Environment: prod
+          echo Cypress Base Url: ${{ vars.CYPRESS_BASE_URL }}
+
+  lambda_test_job:
+    name: Run Lambda Unit Tests
+    uses: ./.github/workflows/base-lambdas-reusable-test.yml
     with:
-      environment: prod
       python_version: "3.11"
       build_branch: ${{ inputs.tag_version }}
 
-  deploy_all:
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
-    needs: ["run_tests"]
+  react_testing_job:
+    name: Run UI Unit Tests
+    uses: ./.github/workflows/base-jest-test.yml
     with:
+      build_branch: ${{ inputs.tag_version }}
+
+  cypress_build_job:
+    name: Build UI version for E2E Tests
+    uses: ./.github/workflows/base-cypress-build.yml
+    with:
+      build_branch: ${{ inputs.tag_version }}
+  
+  cypress_test_job:
+    name: Run Cypress E2E Tests
+    needs: [cypress_build_job]
+    uses: ./.github/workflows/base-cypress-test-all-env.yml
+    with:
+      cypress_base_url: ${{ vars.CYPRESS_BASE_URL }}
+      build_branch: ${{ inputs.tag_version }}
+
+  deploy_all_lambdas:
+    name: Deploy all Lambdas
+    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
+    uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
+    with:
+      build_branch: ${{ inputs.tag_version }}
+      sandbox: prod
       environment: prod
       python_version: "3.11"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+  
+  deploy_ui:
+    name: Deploy UI
+    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
+    uses: ./.github/workflows/base-deploy-ui.yml
+    with:
       build_branch: ${{ inputs.tag_version }}
+      environment: prod
       sandbox: prod
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+      AWS_ECR_REPO_NAME: ${{ secrets.AWS_ECR_REPO_NAME }}

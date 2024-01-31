@@ -1,10 +1,10 @@
-name: "SANDBOX Lambdas - Deploy Feature Branch to Sandbox"
+name: 'SANDBOX UI - Deploy Feature Branch to Sandbox'
 
 on:
   workflow_dispatch:
     inputs:
       build_branch:
-        description: "Feature branch to push to test?"
+        description: "Feature branch to push."
         required: true
         type: "string"
         default: "main"
@@ -21,7 +21,7 @@ on:
   workflow_call:
     inputs:
       build_branch:
-        description: "Feature branch to push to test?"
+        description: "Feature branch to push."
         required: true
         type: "string"
         default: "main"
@@ -38,6 +38,8 @@ on:
     secrets:
       AWS_ASSUME_ROLE:
         required: true
+      AWS_ECR_REPO_NAME:
+        required: true
 
 permissions:
   pull-requests: write
@@ -46,25 +48,19 @@ permissions:
 
 jobs:
 
-  run_tests:
-    name: Run all python tests
-    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+  react_testing_job:
+    name: Run UI Unit Tests
+    uses: ./.github/workflows/base-jest-test.yml
     with:
-      environment: ${{ inputs.environment }}
-      python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
 
-  deploy_all:
-    name: Deploy all Lambdas to AWS
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
+  deploy_ui:
+    name: Deploy UI
+    uses: ./.github/workflows/base-deploy-ui.yml
     with:
-      environment: ${{ inputs.environment }}
-      python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
+      environment: ${{ inputs.environment }}
       sandbox: ${{ inputs.sandbox }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-
-  
-
-        
+      AWS_ECR_REPO_NAME: ${{ secrets.AWS_ECR_REPO_NAME }}

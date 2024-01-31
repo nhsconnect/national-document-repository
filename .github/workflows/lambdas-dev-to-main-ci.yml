@@ -26,14 +26,13 @@ jobs:
       build_branch: ${{github.event.pull_request.head.ref}}
 
   run_tests:
-    uses: ./.github/workflows/new_base-lambdas-reusable-test.yml
+    uses: ./.github/workflows/base-lambdas-reusable-test.yml
     with:
-      environment: development
       python_version: 3.11
       build_branch: ${{github.event.pull_request.head.ref}}
 
   deploy_all_lambdas:
-    uses: ./.github/workflows/new_base-lambdas-reusable-deploy-all.yml
+    uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
     needs: ["run_tests"]
     if: |
       (github.ref == 'refs/heads/main') 
