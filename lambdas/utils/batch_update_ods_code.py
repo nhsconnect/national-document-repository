@@ -3,10 +3,9 @@ import os.path
 import time
 from typing import Dict
 
-from pydantic import BaseModel, TypeAdapter
-
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.pds_models import Patient
+from pydantic import BaseModel, TypeAdapter
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
 from services.pds_api_service import PdsApiService
