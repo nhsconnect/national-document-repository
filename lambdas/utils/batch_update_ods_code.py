@@ -119,6 +119,12 @@ class BatchUpdate:
 
     def initialise_new_job(self):
         all_entries = self.list_all_entries()
+        if len(all_entries) == 0:
+            self.logger.info(
+                f"No records was found in table {self.table_name}. Please check the table name."
+            )
+            exit()
+
         self.progress = self.build_progress_dict(all_entries)
 
     def resume_previous_progress(self):
