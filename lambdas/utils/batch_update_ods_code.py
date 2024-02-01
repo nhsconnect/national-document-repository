@@ -167,23 +167,28 @@ class BatchUpdate:
 
         return results
 
-    def build_progress_dict(self, entries: list[dict]) -> dict:
+    def build_progress_dict(self, dynamodb_records: list[dict]) -> dict:
         self.logger.info("Grouping the records according to NHS number...")
 
         progress_dict = {}
-        for entry in entries:
+        for entry in dynamodb_records:
             nhs_number = entry[Fields.NHS_NUMBER.value]
             doc_ref_id = entry[Fields.ID.value]
-            prev_ods_code = entry.get(Fields.CURRENT_GP_ODS.value, "")
+            ods_code = entry.get(Fields.CURRENT_GP_ODS.value, "")
 
             if nhs_number not in progress_dict:
                 progress_dict[nhs_number] = ProgressForPatient(
                     nhs_number=nhs_number,
                     doc_ref_ids=[doc_ref_id],
-                    prev_ods_code=prev_ods_code,
+                    prev_ods_code=ods_code,
                 )
             else:
                 progress_dict[nhs_number].doc_ref_ids.append(doc_ref_id)
+                pds_code_at_current_row = ods_code
+                if progress_dict[nhs_number].prev_ods_code != pds_code_at_current_row:
+                    progress_dict[
+                        nhs_number
+                    ].prev_ods_code = "[multiple ods codes in records]"
 
         self.logger.info(f"Totally {len(progress_dict)} patients found in record.")
         return progress_dict
