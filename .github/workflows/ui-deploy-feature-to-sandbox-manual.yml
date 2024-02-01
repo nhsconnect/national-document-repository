@@ -38,8 +38,6 @@ on:
     secrets:
       AWS_ASSUME_ROLE:
         required: true
-      AWS_ECR_REPO_NAME:
-        required: true
 
 permissions:
   pull-requests: write
@@ -63,4 +61,3 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-      AWS_ECR_REPO_NAME: ${{ secrets.AWS_ECR_REPO_NAME }}

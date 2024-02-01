@@ -81,4 +81,3 @@ jobs:
       sandbox: prod
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-      AWS_ECR_REPO_NAME: ${{ secrets.AWS_ECR_REPO_NAME }}
