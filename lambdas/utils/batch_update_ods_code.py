@@ -1,5 +1,7 @@
+import importlib
 import logging
 import os.path
+import sys
 import time
 from typing import Dict
 
@@ -12,10 +14,6 @@ from services.pds_api_service import PdsApiService
 
 Fields = DocumentReferenceMetadataFields
 
-logger = logging.getLogger()
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.INFO)
-
 
 class ProgressForPatient(BaseModel):
     nhs_number: str
@@ -26,33 +24,39 @@ class ProgressForPatient(BaseModel):
 
 
 class BatchUpdate:
-    def __init__(self):
-        self.progress_store = "batch_update_progress.json"
-        self.table_name = "ndrb_LloydGeorgeReferenceMetadata"
+    def __init__(
+        self,
+        table_name: str,
+        progress_store_file_path: str = "batch_update_progress.json",
+    ):
+        self.progress_store = progress_store_file_path
+        self.table_name = table_name
         self.pds_service = PdsApiService(SSMService())
         self.dynamo_service = DynamoDBService()
         self.progress: Dict[str, ProgressForPatient] = {}
 
+        self.logger = logging.getLogger("BatchUpdateOds")
+
     def main(self):
-        logger.info("Starting batch update script")
-        logger.info(f"Table to be updated: {self.table_name}")
+        self.logger.info("Starting batch update script")
+        self.logger.info(f"Table to be updated: {self.table_name}")
 
         if self.found_previous_progress():
-            logger.info("Resuming from previous progress")
+            self.logger.info("Resuming from previous job")
             self.resume_previous_progress()
         else:
-            logger.info("Starting a new job")
+            self.logger.info("Starting a new job")
             self.initialise_new_job()
 
         try:
             self.run_update()
         except Exception as e:
-            logger.error(e)
+            self.logger.error(e)
             raise e
 
     def run_update(self):
         if len(self.progress) == 0:
-            logger.info(
+            self.logger.info(
                 f'No patient found in local progress file. Please try removing the local progress file: "{self.progress}"'
             )
             exit()
@@ -63,7 +67,7 @@ class BatchUpdate:
             if not status.update_completed
         ]
         if not patients_to_be_updated:
-            logger.info(
+            self.logger.info(
                 "Already updated the ODS codes for all patients in previous run."
             )
             exit()
@@ -73,17 +77,17 @@ class BatchUpdate:
         for [current_count, nhs_number] in enumerate(
             patients_to_be_updated, start=count_of_completed + 1
         ):
-            logger.info(
+            self.logger.info(
                 f"Updating record for NHS number {nhs_number} ({current_count} of {total_count})"
             )
             self.update_patient_ods(nhs_number)
 
-        logger.info("Finished updating all patient's ODS codes")
+        self.logger.info("Finished updating all patient's ODS codes")
 
     def update_patient_ods(self, nhs_number: str):
         updated_gp_ods = self.get_updated_gp_ods(nhs_number)
         if updated_gp_ods == self.progress[nhs_number].prev_ods_code:
-            logger.info(f"No change in GP for patient: {nhs_number}")
+            self.logger.info(f"No change in GP for patient: {nhs_number}")
         else:
             documents_to_update = self.progress[nhs_number].doc_ref_ids
             updated_fields = {Fields.CURRENT_GP_ODS.value: updated_gp_ods}
@@ -95,7 +99,7 @@ class BatchUpdate:
                     updated_fields=updated_fields,
                 )
 
-            logger.info(f"Updated ODS code for patient: {nhs_number}")
+            self.logger.info(f"Updated ODS code for patient: {nhs_number}")
 
         self.progress[nhs_number].new_ods_code = updated_gp_ods
         self.progress[nhs_number].update_completed = True
@@ -103,7 +107,7 @@ class BatchUpdate:
 
     def get_updated_gp_ods(self, nhs_number: str) -> str:
         time.sleep(0.2)  # buffer to avoid over stretching PDS API
-        logger.debug("Getting the latest ODS code from PDS...")
+        self.logger.debug("Getting the latest ODS code from PDS...")
 
         pds_response = self.pds_service.pds_request(
             nhs_number=nhs_number, retry_on_expired=True
@@ -115,7 +119,7 @@ class BatchUpdate:
 
     def initialise_new_job(self):
         all_entries = self.list_all_entries()
-        self.progress = self.group_by_nhs_number(all_entries)
+        self.progress = self.build_progress_dict(all_entries)
 
     def resume_previous_progress(self):
         try:
@@ -125,7 +129,7 @@ class BatchUpdate:
                     Dict[str, ProgressForPatient]
                 ).validate_json(json_str)
         except FileNotFoundError:
-            logger.info("Cannot find a progress file. Will start a new job.")
+            self.logger.info("Cannot find a progress file. Will start a new job.")
             self.initialise_new_job()
 
     def found_previous_progress(self) -> bool:
@@ -139,7 +143,7 @@ class BatchUpdate:
             return f.write(json_str)
 
     def list_all_entries(self) -> list[dict]:
-        logger.info("Fetching all records from dynamodb table...")
+        self.logger.info("Fetching all records from dynamodb table...")
 
         table = DynamoDBService().get_table(self.table_name)
         results = []
@@ -159,12 +163,12 @@ class BatchUpdate:
 
         results += response["Items"]
 
-        logger.info(f"Downloaded {len(results)} records from table")
+        self.logger.info(f"Downloaded {len(results)} records from table")
 
         return results
 
-    def group_by_nhs_number(self, entries: list[dict]) -> dict:
-        logger.info("Grouping the records according to NHS number...")
+    def build_progress_dict(self, entries: list[dict]) -> dict:
+        self.logger.info("Grouping the records according to NHS number...")
 
         progress_dict = {}
         for entry in entries:
@@ -181,9 +185,31 @@ class BatchUpdate:
             else:
                 progress_dict[nhs_number].doc_ref_ids.append(doc_ref_id)
 
-        logger.info(f"Totally {len(progress_dict)} patients found in record.")
+        self.logger.info(f"Totally {len(progress_dict)} patients found in record.")
         return progress_dict
 
 
+def setup_logging_for_local_script():
+    importlib.reload(logging)
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
+        datefmt="%d/%b/%Y %H:%M:%S",
+        stream=sys.stdout,
+    )
+
+
 if __name__ == "__main__":
-    BatchUpdate().main()
+    import argparse
+
+    setup_logging_for_local_script()
+
+    parser = argparse.ArgumentParser(
+        prog="batch_update_ods_code.py",
+        description="A utility script to update the ODS Codes for all patients in a dynamoDB doc reference table",
+    )
+    parser.add_argument("table_name", type=str, help="The name of dynamodb table")
+    args = parser.parse_args()
+
+    BatchUpdate(table_name=args.table_name).main()
