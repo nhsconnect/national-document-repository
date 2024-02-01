@@ -19,8 +19,6 @@ on:
     secrets:
       AWS_ASSUME_ROLE:
         required: true
-      AWS_ECR_REPO_NAME:
-        required: true
 
 permissions:
   pull-requests: write
