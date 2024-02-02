@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
+import { endpoints } from '../../types/generic/endpoints';
 
 type Args = {
     nhsNumber: string;
@@ -19,7 +20,7 @@ async function getLloydGeorgeRecord({
     baseUrl,
     baseHeaders,
 }: Args): Promise<LloydGeorgeStitchResult> {
-    const gatewayUrl = baseUrl + '/LloydGeorgeStitch';
+    const gatewayUrl = baseUrl + endpoints.LLOYDGEORGE_STITCH;
 
     const { data } = await axios.get(gatewayUrl, {
         headers: {
