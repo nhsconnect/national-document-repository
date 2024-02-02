@@ -24,7 +24,7 @@ const ServerErrorPage = () => {
                 you submitted again.
             </p>
             <ButtonLink
-                onClick={async (e) => {
+                onClick={(e) => {
                     e.preventDefault();
                     const errorUrl = window.location.href;
                     // Navigate back two paces incase the previous page has an error in the prefetch
