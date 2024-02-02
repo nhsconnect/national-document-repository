@@ -36,7 +36,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch }}
+          fetch-depth: '0'
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2

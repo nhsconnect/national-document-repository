@@ -25,6 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
+          repository: 'nhsconnect/national-document-repository'
           ref: ${{ github.event.inputs.buildBranch }}
           fetch-depth: '0'
 
