@@ -76,9 +76,6 @@ install:
 clean-install:
 	npm --prefix ./app ci --legacy-peer-deps
 
-pre-commit: sort-requirements format
-	npm exec --prefix ./app lint-staged
-
 start:
 	npm --prefix ./app start
 

@@ -1,0 +1,8 @@
+{
+  "*.{js,ts,tsx}": ["prettier --write", "eslint"],
+  "*.{css,scss,md}": ["prettier --write"],
+  "*.py": [
+    "./lambdas/venv/bin/python3 -m isort --profile black",
+    "./lambdas/venv/bin/python3 -m black"
+  ]
+}
