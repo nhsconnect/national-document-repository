@@ -42,7 +42,6 @@ jobs:
           IMAGE_VERSION: 'ndr-not-required'
         run: |
           ./react-environment-config.sh
-        working-directory: ./app
         shell: bash
 
       - run: make clean-install
