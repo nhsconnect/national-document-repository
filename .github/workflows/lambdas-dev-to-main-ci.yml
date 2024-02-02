@@ -19,7 +19,7 @@ permissions:
 
 jobs:
   check_packages:
-    uses: ./.github/workflows/lambdas-check-packages.yml
+    uses: ./.github/workflows/base-lambdas-check-packages.yml
     with:
       environment: development
       python_version: 3.11
