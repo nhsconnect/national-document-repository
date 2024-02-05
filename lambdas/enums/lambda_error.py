@@ -30,6 +30,12 @@ class LambdaError(Enum):
         "err_code": "SP_4002",
         "message": "Patient does not exist for given NHS number",
     }
+
+    TestSp = {
+        "err_code": "SP_4002",
+        "message": "Patient does not exist for given NHS number",
+    }
+
     SearchPatientNoAuth = {
         "err_code": "SP_4003",
         "message": "Patient does not exist for given NHS number",
