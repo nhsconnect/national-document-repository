@@ -26,7 +26,17 @@ const ServerErrorPage = () => {
             <ButtonLink
                 onClick={(e) => {
                     e.preventDefault();
+                    const errorUrl = window.location.href;
+                    // Navigate back two paces incase the previous page has an error in the prefetch
                     navigate(-2);
+
+                    // If this code is reached, we can assume that the component
+                    // has not destroyed and navigate(-2) has no where to go
+                    const urlAfterMinusTwoNavigate = window.location.href;
+                    const urlHasNotChanged = errorUrl === urlAfterMinusTwoNavigate;
+                    if (urlHasNotChanged) {
+                        navigate(-1);
+                    }
                 }}
             >
                 Return to previous page
