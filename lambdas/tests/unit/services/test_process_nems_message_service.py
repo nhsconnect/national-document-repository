@@ -92,6 +92,7 @@ def test_process_messages_from_event_handle_happy_path_return_empty_list(
     records = [{"messageId": "test1"}, {"messageId": "test2"}]
     mock_service.handle_message = mocker.MagicMock()
     mock_service.handle_message.return_value = None
+
     response = mock_service.process_messages_from_event(records)
 
     assert response == []
@@ -104,6 +105,7 @@ def test_process_messages_from_event_handle_happy_path_return_failures_list(
     records = [{"messageId": "test1"}, {"messageId": "test2"}]
     mock_service.handle_message = mocker.MagicMock()
     mock_service.handle_message.return_value = "test_value"
+
     response = mock_service.process_messages_from_event(records)
 
     assert response == [{"itemIdentifier": "test1"}, {"itemIdentifier": "test2"}]
@@ -113,48 +115,39 @@ def test_process_messages_from_event_handle_happy_path_return_failures_list(
 def test_handle_message_when_message_has_no_message_attributes_returns_validation_error_type_response(
     mock_service,
 ):
-    # arrange
     input_message = {}
     expected_response = NEMS_ERROR_TYPES.Validation
 
-    # act
     response = mock_service.handle_message(input_message)
 
-    # assert
     assert response == expected_response
 
 
 def test_handle_message_when_message_has_no_body_returns_validation_error_type_response(
     mock_service,
 ):
-    # arrange
     input_message = {"messageAttributes": {}}
     expected_response = NEMS_ERROR_TYPES.Validation
 
-    # act
     response = mock_service.handle_message(input_message)
-    # assert
+
     assert response == expected_response
 
 
 def test_handle_message_when_message_is_not_xml_returns_validation_error_type_response(
     mock_service,
 ):
-    # arrange
     input_message = {"body": "<>", "messageAttributes": {}, "messageId": "test-id"}
     expected_response = NEMS_ERROR_TYPES.Validation
 
-    # act
     response = mock_service.handle_message(input_message)
 
-    # assert
     assert response == expected_response
 
 
 def test_handle_message_when_message_is_not_fhir_compliant_returns_validation_error_type_response(
     mock_service, mock_fhir_bundle, validation_error
 ):
-    # arrange
     input_message = {
         "body": "<test></test>",
         "messageAttributes": {},
@@ -163,17 +156,14 @@ def test_handle_message_when_message_is_not_fhir_compliant_returns_validation_er
     expected_response = NEMS_ERROR_TYPES.Validation
     mock_fhir_bundle.side_effect = validation_error
 
-    # act
     response = mock_service.handle_message(input_message)
 
-    # assert
     assert response == expected_response
 
 
 def test_handle_message_when_message_does_not_contain_message_header_entry_returns_validation_error_type_response(
     mock_service, mock_map_bundle_entries_to_dict, mock_fhir_bundle
 ):
-    # arrange
     input_message = {
         "body": _message_with_no_header,
         "messageAttributes": {},
@@ -182,22 +172,75 @@ def test_handle_message_when_message_does_not_contain_message_header_entry_retur
     expected_response = NEMS_ERROR_TYPES.Data
     mock_map_bundle_entries_to_dict.return_value = {}
 
-    # act
     response = mock_service.handle_message(input_message)
 
-    # assert
+    assert response == expected_response
+    mock_map_bundle_entries_to_dict.assert_called_once()
+    mock_fhir_bundle.assert_called_once()
+
+
+def test_handle_message_returns_transient_error_when_handle_change_of_gp_message_raises_client_error(
+    mocker, mock_service, mock_map_bundle_entries_to_dict, mock_fhir_bundle
+):
+    input_message = {
+        "body": _valid_change_of_gp_message,
+        "messageAttributes": {},
+        "messageId": "test-id",
+    }
+    expected_response = NEMS_ERROR_TYPES.Transient
+    mock_service.handle_change_of_gp_message = mocker.MagicMock()
+    mock_service.handle_change_of_gp_message.side_effect = ClientError(
+        {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
+    )
+    mock_map_bundle_entries_to_dict.return_value = {
+        "MessageHeader": [change_of_gp_message_header]
+    }
+
+    response = mock_service.handle_message(input_message)
+
+    assert response == expected_response
+    mock_map_bundle_entries_to_dict.assert_called_once()
+    mock_fhir_bundle.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "exception_type",
+    [
+        FhirResourceNotFound({"resourceType": NEMS_ERROR_TYPES.Data, "details": ""}),
+        InvalidResourceIdException,
+        OdsErrorException,
+        OrganisationNotFoundException,
+    ],
+)
+def test_handle_message_returns_data_error_when_handle_change_of_gp_message_raises_FhirResourceNotFound(
+    mocker,
+    mock_service,
+    mock_map_bundle_entries_to_dict,
+    mock_fhir_bundle,
+    exception_type,
+):
+    input_message = {
+        "body": _valid_change_of_gp_message,
+        "messageAttributes": {},
+        "messageId": "test-id",
+    }
+    expected_response = NEMS_ERROR_TYPES.Data
+    mock_service.handle_change_of_gp_message = mocker.MagicMock()
+    mock_service.handle_change_of_gp_message.side_effect = exception_type
+    mock_map_bundle_entries_to_dict.return_value = {
+        "MessageHeader": [change_of_gp_message_header]
+    }
+
+    response = mock_service.handle_message(input_message)
+
     assert response == expected_response
     mock_map_bundle_entries_to_dict.assert_called_once()
     mock_fhir_bundle.assert_called_once()
 
 
 def test_handle_message_when_message_is_valid_but_not_change_of_gp_returns_none(
-    mocker,
-    mock_service,
-    mock_fhir_bundle,
-    mock_map_bundle_entries_to_dict,
+    mocker, mock_service, mock_fhir_bundle, mock_map_bundle_entries_to_dict
 ):
-    # arrange
     input_message = {
         "body": _valid_non_change_of_gp_message,
         "messageAttributes": {},
@@ -209,20 +252,17 @@ def test_handle_message_when_message_is_valid_but_not_change_of_gp_returns_none(
     }
     mock_service.handle_change_of_gp_message = mocker.MagicMock()
 
-    # act
     response = mock_service.handle_message(input_message)
 
-    # assert
     assert response == expected_response
     mock_map_bundle_entries_to_dict.assert_called_once()
     mock_fhir_bundle.assert_called_once()
     mock_service.handle_change_of_gp_message.assert_not_called()
 
 
-def test_handle_message_when_message_is_valid_returns(
+def test_handle_message_when_message_is_valid_returns_none(
     mocker, mock_service, mock_fhir_bundle, mock_map_bundle_entries_to_dict
 ):
-    # arrange
     input_message = {
         "body": _valid_change_of_gp_message,
         "messageAttributes": {},
@@ -231,15 +271,12 @@ def test_handle_message_when_message_is_valid_returns(
     expected_response = None
     mock_service.handle_change_of_gp_message = mocker.MagicMock()
     mock_service.handle_change_of_gp_message.return_value = expected_response
-
     mock_map_bundle_entries_to_dict.return_value = {
         "MessageHeader": [change_of_gp_message_header]
     }
 
-    # act
     response = mock_service.handle_message(input_message)
 
-    # assert
     assert response == expected_response
     mock_map_bundle_entries_to_dict.assert_called_once()
     mock_fhir_bundle.assert_called_once()
@@ -254,7 +291,6 @@ def test_handle_change_of_gp_message_when_patient_is_missing_returns_FhirResourc
 ):
     function_input = {}
 
-    # act / assert
     with pytest.raises(FhirResourceNotFound):
         mock_service.handle_change_of_gp_message(function_input)
 
@@ -262,15 +298,12 @@ def test_handle_change_of_gp_message_when_patient_is_missing_returns_FhirResourc
 def test_handle_change_of_gp_message_when_nhs_number_validation_fails_raises_InvalidResourceIdException(
     mock_service, mock_validate_id
 ):
-    # The first step of the function is gather the required data which will be mocked
     function_input = {
         "Patient": [patient_bundle_resource],
         "Organisations": [],
     }
-
     mock_validate_id.side_effect = InvalidResourceIdException()
 
-    # act / assert
     with pytest.raises(InvalidResourceIdException):
         mock_service.handle_change_of_gp_message(function_input)
 
@@ -280,7 +313,6 @@ def test_handle_change_of_gp_message_when_organisations_are_missing_returns_Fhir
 ):
     function_input = {"Patient": [patient_bundle_resource]}
 
-    # act / assert
     with pytest.raises(FhirResourceNotFound):
         mock_service.handle_change_of_gp_message(function_input)
 
@@ -288,13 +320,11 @@ def test_handle_change_of_gp_message_when_organisations_are_missing_returns_Fhir
 def test_handle_change_of_gp_message_when_no_active_gp_resource_throws_FhirResourceNotFound(
     mock_service,
 ):
-    # The first step of the function is gather the required data which will be mocked
     function_input = {
         "Patient": [patient_bundle_resource],
         "Organization": [previous_gp_organisation],
     }
 
-    # act / assert
     with pytest.raises(FhirResourceNotFound):
         mock_service.handle_change_of_gp_message(function_input)
 
@@ -305,18 +335,15 @@ def test_handle_change_of_gp_message_nems_validation_throws_OdsErrorException(
     mock_update_LG_table_with_current_GP,
     mock_validate_nems_details,
 ):
-    # The first step of the function is gather the required data which will be mocked
     function_input = {
         "Patient": [patient_bundle_resource],
         "Organization": [previous_gp_organisation, active_gp_organisation],
     }
     mock_validate_nems_details.side_effect = OdsErrorException()
 
-    # act
     with pytest.raises(OdsErrorException):
         mock_service.handle_change_of_gp_message(function_input)
 
-    # assert
     mock_update_LG_table_with_current_GP.assert_not_called()
     mock_validate_nems_details.assert_called_once()
     mock_validate_id.assert_called_once()
@@ -328,18 +355,15 @@ def test_handle_change_of_gp_message_when_nems_validation_throws_OrganisationNot
     mock_update_LG_table_with_current_GP,
     mock_validate_nems_details,
 ):
-    # The first step of the function is gather the required data which will be mocked
     function_input = {
         "Patient": [patient_bundle_resource],
         "Organization": [previous_gp_organisation, active_gp_organisation],
     }
     mock_validate_nems_details.side_effect = OrganisationNotFoundException()
 
-    # act
     with pytest.raises(OrganisationNotFoundException):
         mock_service.handle_change_of_gp_message(function_input)
 
-    # assert
     mock_update_LG_table_with_current_GP.assert_not_called()
     mock_validate_nems_details.assert_called_once()
     mock_validate_id.assert_called_once()
@@ -351,16 +375,13 @@ def test_handle_change_of_gp_message_happy_path(
     mock_update_LG_table_with_current_GP,
     mock_validate_nems_details,
 ):
-    # The first step of the function is gather the required data which will be mocked
     function_input = {
         "Patient": [patient_bundle_resource],
         "Organization": [previous_gp_organisation, active_gp_organisation],
     }
 
-    # act
     response = mock_service.handle_change_of_gp_message(function_input)
 
-    # assert
     assert response is None
     mock_update_LG_table_with_current_GP.assert_called_once()
     mock_validate_nems_details.assert_called_once()
@@ -389,6 +410,7 @@ def test_update_lg_table_when_fetch_raise_client_error(mock_service):
     mock_service.document_service.fetch_documents_from_table.side_effect = ClientError(
         {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
     )
+
     with pytest.raises(ClientError):
         mock_service.update_LG_table_with_current_GP("test_number", "test_ods")
 
@@ -400,10 +422,10 @@ def test_update_lg_table_when_update_raise_client_error(mock_service):
     mock_service.document_service.fetch_documents_from_table.return_value = {
         "Doc": "test_doc"
     }
-
     mock_service.document_service.update_documents.side_effect = ClientError(
         {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
     )
+
     with pytest.raises(ClientError):
         mock_service.update_LG_table_with_current_GP("test_number", "test_ods")
 
@@ -415,7 +437,17 @@ def test_update_lg_table_happy_path(mock_service):
     mock_service.document_service.fetch_documents_from_table.return_value = {
         "Doc": "test_doc"
     }
+
     mock_service.update_LG_table_with_current_GP("test_number", "test_ods")
 
     mock_service.document_service.fetch_documents_from_table.assert_called_once()
     mock_service.document_service.update_documents.assert_called_once()
+
+
+def test_update_lg_table_no_documents(mock_service):
+    mock_service.document_service.fetch_documents_from_table.return_value = []
+
+    mock_service.update_LG_table_with_current_GP("test_number", "test_ods")
+
+    mock_service.document_service.fetch_documents_from_table.assert_called_once()
+    mock_service.document_service.update_documents.assert_not_called()
