@@ -1,3 +1,5 @@
+from xml.etree.ElementTree import ParseError
+
 import pytest
 from botocore.exceptions import ClientError
 from enums.nems_error_types import NEMS_ERROR_TYPES
@@ -236,6 +238,26 @@ def test_handle_message_returns_data_error_when_handle_change_of_gp_message_rais
     assert response == expected_response
     mock_map_bundle_entries_to_dict.assert_called_once()
     mock_fhir_bundle.assert_called_once()
+
+
+def test_handle_message_returns_validation_error_when_ParseError_raised(
+    mocker, mock_service, mock_map_bundle_entries_to_dict
+):
+    input_message = {
+        "body": _valid_change_of_gp_message,
+        "messageAttributes": {},
+        "messageId": "test-id",
+    }
+    mock_element_tree = mocker.patch(
+        "services.process_nems_message_service.ElementTree.fromstring"
+    )
+    mock_element_tree.side_effect = ParseError
+    expected_response = NEMS_ERROR_TYPES.Validation
+
+    response = mock_service.handle_message(input_message)
+
+    assert response == expected_response
+    mock_map_bundle_entries_to_dict.assert_not_called()
 
 
 def test_handle_message_when_message_is_valid_but_not_change_of_gp_returns_none(
