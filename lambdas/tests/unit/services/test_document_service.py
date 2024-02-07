@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from unittest.mock import call
 
 import pytest
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -312,4 +313,24 @@ def test_delete_documents_death_delete(
 
     mock_dynamo_service.update_item.assert_called_once_with(
         MOCK_TABLE_NAME, test_doc_ref.id, updated_fields=test_update_fields
+    )
+
+
+def test_update_documents(mock_service, mock_dynamo_service):
+    test_doc_ref = DocumentReference.model_validate(MOCK_DOCUMENT)
+
+    test_update_fields = {
+        "TestField": "test",
+    }
+
+    update_item_call = call(
+        MOCK_TABLE_NAME, test_doc_ref.id, updated_fields=test_update_fields
+    )
+
+    mock_service.update_documents(
+        MOCK_TABLE_NAME, [test_doc_ref, test_doc_ref], test_update_fields
+    )
+
+    mock_dynamo_service.update_item.assert_has_calls(
+        [update_item_call, update_item_call]
     )

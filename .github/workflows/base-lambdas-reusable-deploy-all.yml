@@ -234,3 +234,16 @@ jobs:
       lambda_aws_name: SendFeedbackLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_nems_message_lambda:
+    name: Deploy nems_message_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: nems_message_handler
+      lambda_aws_name: NemsMessageLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}

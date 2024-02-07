@@ -8,8 +8,9 @@ botocore==1.33.11
 certifi==2023.7.22
 cffi==1.15.1
 charset-normalizer==3.2.0
-cryptography==41.0.7
+cryptography==42.0.2
 email-validator==2.1.0.post1
+fhir.resources[xml]==7.1.0
 idna==3.4
 inflection==0.5.1
 jmespath==1.0.1

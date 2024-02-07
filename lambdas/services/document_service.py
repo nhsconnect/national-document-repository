@@ -108,3 +108,14 @@ class DocumentService:
             self.dynamo_service.update_item(
                 table_name, reference.id, updated_fields=update_fields
             )
+
+    def update_documents(
+        self,
+        table_name: str,
+        document_references: list[DocumentReference],
+        update_fields: dict,
+    ):
+        for reference in document_references:
+            self.dynamo_service.update_item(
+                table_name, reference.id, updated_fields=update_fields
+            )
