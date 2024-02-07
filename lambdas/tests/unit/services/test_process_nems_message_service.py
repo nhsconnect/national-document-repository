@@ -20,12 +20,6 @@ def mock_service(mocker, set_env):
 
 
 @pytest.fixture
-def mock_document_service(mock_service):
-    mock_document_service = mock_service.document_service
-    yield mock_document_service
-
-
-@pytest.fixture
 def mock_fhir_bundle(mocker):
     mock_fhir_bundle = mocker.patch("fhir.resources.STU3.bundle.Bundle.parse_raw")
     yield mock_fhir_bundle
