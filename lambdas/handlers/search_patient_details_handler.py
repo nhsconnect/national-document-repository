@@ -29,12 +29,6 @@ def lambda_handler(event, context):
             "selected_organisation", {}
         ).get("org_ods_code", "")
         user_role = request_context.authorization.get("repository_role", "")
-    if not user_role or not user_ods_code:
-        logger.error(
-            f"{LambdaError.SearchPatientMissing.to_str()}",
-            {"Result": "Patient not found"},
-        )
-        raise SearchPatientException(400, LambdaError.SearchPatientMissing)
 
     search_service = SearchPatientDetailsService(
         user_role=user_role, user_ods_code=user_ods_code
