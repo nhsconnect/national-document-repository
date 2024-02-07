@@ -106,3 +106,7 @@ class LoginException(Exception):
 
 class BulkUploadMetadataException(Exception):
     pass
+
+
+class FhirResourceNotFound(Exception):
+    pass
