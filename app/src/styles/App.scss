@@ -98,9 +98,7 @@ $govuk-compatibility-govukelements: true;
     }
     &:focus {
         background-color: #ffeb3b;
-        box-shadow:
-            0 -2px #ffeb3b,
-            0 4px #212b32;
+        box-shadow: 0 -2px #ffeb3b, 0 4px #212b32;
         color: #212b32;
         outline: 4px solid transparent;
         text-decoration: none;
@@ -125,20 +123,24 @@ $govuk-compatibility-govukelements: true;
 }
 
 // Lloyd George
+.upload_button_no_record_stage {
+    margin-bottom: 0;
+    float: right;
 
+    //margin-right: 0;
+}
 .lloydgeorge {
     &_record-stage {
         &_patient-info {
+            p {
+                font-size: 19px;
+            }
             p:first-child {
                 margin-bottom: 5px;
                 font-weight: 700;
             }
-            p:nth-child(1) {
-                font-size: 16px;
-                margin-bottom: 5px;
-            }
             p:nth-child(2) {
-                font-size: 16px;
+                margin-bottom: 0;
             }
         }
         &_header {
@@ -148,6 +150,15 @@ $govuk-compatibility-govukelements: true;
                 &-label {
                     font-weight: 700;
                     font-size: 24px;
+                }
+                p {
+                    margin-bottom: 0;
+                }
+                &-no_record {
+                    text-align: right;
+                    &-upload {
+                        margin-bottom: 0;
+                    }
                 }
             }
         }

@@ -25,6 +25,7 @@ import WarningText from '../../generic/warningText/WarningText';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../types/generic/inputRef';
+import BackButton from '../../generic/backButton/BackButton';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -119,6 +120,7 @@ function LloydGeorgeRecordStage({
             )}
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
+                    <BackButton />
                     <WarningCallout
                         id="before-downloading-warning"
                         data-testid="before-downloading-warning"
