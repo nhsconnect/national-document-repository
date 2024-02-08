@@ -21,6 +21,7 @@ import { routes } from '../../../types/generic/routes';
 import { useNavigate, Link } from 'react-router-dom';
 import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios/index';
+import { isMock } from '../../../helpers/utils/isLocal';
 
 const FakeProgress = require('fake-progress');
 
@@ -86,6 +87,19 @@ function LloydGeorgeDownloadAllStage({
     }, [linkAttributes]);
 
     useEffect(() => {
+        const onFail = (error: AxiosError) => {
+            if (isMock(error)) {
+                if (typeof window !== 'undefined') {
+                    const { protocol, host } = window.location;
+                    setLinkAttributes({
+                        url: protocol + '//' + host + '/dev/testFile.pdf',
+                        filename: 'testFile.pdf',
+                    });
+                }
+            } else {
+                navigate(routes.SERVER_ERROR + errorToParams(error));
+            }
+        };
         const onPageLoad = async () => {
             progressTimer.stop();
             window.clearInterval(intervalTimer);
@@ -107,12 +121,14 @@ function LloydGeorgeDownloadAllStage({
                             baseHeaders,
                         });
                     } catch (e) {
-                        navigate(routes.SERVER_ERROR + errorToParams(e as AxiosError));
+                        const error = e as AxiosError;
+                        onFail(error);
                     } // This is fail and forget at this point in time.
                 }
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
             } catch (e) {
-                navigate(routes.SERVER_ERROR + errorToParams(e as AxiosError));
+                const error = e as AxiosError;
+                onFail(error);
             }
         };
 

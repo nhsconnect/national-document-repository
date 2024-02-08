@@ -17,6 +17,8 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { routes } from '../../types/generic/routes';
 import { useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
+import { isMock } from '../../helpers/utils/isLocal';
+import moment from 'moment';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -36,6 +38,20 @@ function LloydGeorgeRecordPage() {
     const deleteAfterDownload = role === REPOSITORY_ROLE.GP_ADMIN && isBSOL === false;
 
     useEffect(() => {
+        const onSuccess = (
+            files_count: number,
+            updated_date: string,
+            presign_url: string,
+            file_size: number,
+        ) => {
+            setNumberOfFiles(files_count);
+            setLastUpdated(getFormattedDatetime(new Date(updated_date)));
+            setLloydGeorgeUrl(presign_url);
+            setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
+            setTotalFileSizeInByte(file_size);
+            setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
+        };
+
         const onPageLoad = async () => {
             const nhsNumber: string = patientDetails?.nhsNumber || '';
             try {
@@ -46,23 +62,26 @@ function LloydGeorgeRecordPage() {
                         baseHeaders,
                     });
                 if (presign_url?.startsWith('https://')) {
-                    setNumberOfFiles(number_of_files);
-                    setLastUpdated(getFormattedDatetime(new Date(last_updated)));
-                    setLloydGeorgeUrl(presign_url);
-                    setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
-                    setTotalFileSizeInByte(total_file_size_in_byte);
+                    onSuccess(number_of_files, last_updated, presign_url, total_file_size_in_byte);
                 }
-                setDownloadStage(DOWNLOAD_STAGE.SUCCEEDED);
             } catch (e) {
                 const error = e as AxiosError;
-                if (error.response?.status === 504) {
-                    setDownloadStage(DOWNLOAD_STAGE.TIMEOUT);
-                } else if (error.response?.status === 404) {
-                    setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
-                } else if (error.response?.status && error.response?.status >= 500) {
-                    navigate(routes.SERVER_ERROR + errorToParams(error));
+                if (isMock(error)) {
+                    if (nhsNumber === '4857773456') {
+                        setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
+                    } else {
+                        onSuccess(1, moment().format(), '/dev/testFile.pdf', 59000);
+                    }
                 } else {
-                    setDownloadStage(DOWNLOAD_STAGE.FAILED);
+                    if (error.response?.status === 504) {
+                        setDownloadStage(DOWNLOAD_STAGE.TIMEOUT);
+                    } else if (error.response?.status === 404) {
+                        setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
+                    } else if (error.response?.status && error.response?.status >= 500) {
+                        navigate(routes.SERVER_ERROR + errorToParams(error));
+                    } else {
+                        setDownloadStage(DOWNLOAD_STAGE.FAILED);
+                    }
                 }
             }
         };

@@ -30,6 +30,9 @@ async function getLloydGeorgeRecord({
             patientId: nhsNumber,
         },
     });
+    if (!data.presign_url.startsWith('https://')) {
+        return Promise.reject({ response: { status: 500 } });
+    }
     return data;
 }
 

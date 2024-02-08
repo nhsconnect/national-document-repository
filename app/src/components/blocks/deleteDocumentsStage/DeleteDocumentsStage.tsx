@@ -20,6 +20,7 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { errorToParams } from '../../../helpers/utils/errorToParams';
+import { isMock } from '../../../helpers/utils/isLocal';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -70,7 +71,12 @@ function DeleteDocumentsStage({
 
     const handleYesOption = async () => {
         setDeletionStage(SUBMISSION_STATE.PENDING);
-
+        const onSuccess = () => {
+            setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
+            if (setDownloadStage) {
+                setDownloadStage(DOWNLOAD_STAGE.FAILED);
+            }
+        };
         try {
             const response: DeleteResponse = await deleteAllDocuments({
                 docType: docType,
@@ -80,19 +86,20 @@ function DeleteDocumentsStage({
             });
 
             if (response.status === 200) {
-                setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
-                if (setDownloadStage) {
-                    setDownloadStage(DOWNLOAD_STAGE.FAILED);
-                }
+                onSuccess();
             }
         } catch (e) {
             const error = e as AxiosError;
-            if (error.response?.status === 403) {
-                navigate(routes.START);
+            if (isMock(error)) {
+                onSuccess();
             } else {
-                navigate(routes.SERVER_ERROR + errorToParams(error));
+                if (error.response?.status === 403) {
+                    navigate(routes.START);
+                } else {
+                    navigate(routes.SERVER_ERROR + errorToParams(error));
+                }
+                setDeletionStage(SUBMISSION_STATE.FAILED);
             }
-            setDeletionStage(SUBMISSION_STATE.FAILED);
         }
     };
 
