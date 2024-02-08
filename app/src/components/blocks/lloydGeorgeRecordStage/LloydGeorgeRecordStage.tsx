@@ -99,6 +99,7 @@ function LloydGeorgeRecordStage({
 
     return (
         <div className="lloydgeorge_record-stage">
+            <BackButton />
             {formState.errors.confirmDownloadRemove && (
                 <ErrorBox
                     dataTestId="confirm-download-and-remove-error"

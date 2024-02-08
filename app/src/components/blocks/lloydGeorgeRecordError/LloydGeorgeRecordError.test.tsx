@@ -9,6 +9,7 @@ import { routes } from '../../../types/generic/routes';
 
 const mockSetStage = jest.fn();
 const mockNavigate = jest.fn();
+jest.mock('../../../helpers/hooks/useIsBSOL');
 
 jest.mock('react-router-dom', () => ({
     __esModule: true,
@@ -37,31 +38,31 @@ describe('LloydGeorgeRecordError', () => {
         it("renders an error when the document download status is 'Timeout'", () => {
             const timeoutStatus = DOWNLOAD_STAGE.TIMEOUT;
             render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
+                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />
             );
 
             expect(
-                screen.getByText(/The Lloyd George document is too large to view in a browser/i),
+                screen.getByText(/The Lloyd George document is too large to view in a browser/i)
             ).toBeInTheDocument();
             expect(screen.getByText(/please download instead/i)).toBeInTheDocument();
         });
         it("renders an error when the document download status is 'Failed'", () => {
             const timeoutStatus = DOWNLOAD_STAGE.FAILED;
             render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
+                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />
             );
 
             expect(
-                screen.getByText(/Sorry, the service is currently unavailable/i),
+                screen.getByText(/Sorry, the service is currently unavailable/i)
             ).toBeInTheDocument();
             expect(
-                screen.getByText(/An error has occurred when creating the Lloyd George preview/i),
+                screen.getByText(/An error has occurred when creating the Lloyd George preview/i)
             ).toBeInTheDocument();
         });
         it("renders a message  when the document download status is 'No records'", () => {
             const timeoutStatus = DOWNLOAD_STAGE.NO_RECORDS;
             render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
+                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />
             );
 
             expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
@@ -72,24 +73,24 @@ describe('LloydGeorgeRecordError', () => {
         it("renders a link that can navigate to the download all stage, when download status is 'Timeout'", () => {
             const timeoutStatus = DOWNLOAD_STAGE.TIMEOUT;
             render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
+                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />
             );
 
             expect(
-                screen.getByText(/The Lloyd George document is too large to view in a browser/i),
+                screen.getByText(/The Lloyd George document is too large to view in a browser/i)
             ).toBeInTheDocument();
             expect(screen.getByText(/please download instead/i)).toBeInTheDocument();
             expect(
                 screen.getByRole('link', {
                     name: 'please download instead',
-                }),
+                })
             ).toBeInTheDocument();
         });
 
         it("navigates to the download all stage, when download status is 'Timeout' and the link is clicked: GP_ADMIN", () => {
             const timeoutStatus = DOWNLOAD_STAGE.TIMEOUT;
             render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
+                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />
             );
 
             const downloadLink = screen.getByRole('link', {
@@ -97,7 +98,7 @@ describe('LloydGeorgeRecordError', () => {
             });
 
             expect(
-                screen.getByText(/The Lloyd George document is too large to view in a browser/i),
+                screen.getByText(/The Lloyd George document is too large to view in a browser/i)
             ).toBeInTheDocument();
             expect(screen.getByText(/please download instead/i)).toBeInTheDocument();
             expect(downloadLink).toBeInTheDocument();
@@ -113,7 +114,7 @@ describe('LloydGeorgeRecordError', () => {
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
             const timeoutStatus = DOWNLOAD_STAGE.TIMEOUT;
             render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
+                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />
             );
 
             const downloadLink = screen.getByRole('link', {
@@ -121,7 +122,7 @@ describe('LloydGeorgeRecordError', () => {
             });
 
             expect(
-                screen.getByText(/The Lloyd George document is too large to view in a browser/i),
+                screen.getByText(/The Lloyd George document is too large to view in a browser/i)
             ).toBeInTheDocument();
             expect(screen.getByText(/please download instead/i)).toBeInTheDocument();
             expect(downloadLink).toBeInTheDocument();
