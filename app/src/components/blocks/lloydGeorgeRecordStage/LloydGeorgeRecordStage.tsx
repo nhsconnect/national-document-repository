@@ -121,7 +121,6 @@ function LloydGeorgeRecordStage({
             )}
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
-                    <BackButton />
                     <WarningCallout
                         id="before-downloading-warning"
                         data-testid="before-downloading-warning"
