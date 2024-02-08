@@ -87,7 +87,7 @@ $govuk-compatibility-govukelements: true;
     border-spacing: 0;
     box-sizing: inherit;
     text-align: left;
-    color: #005eb8;
+    color: $color_nhsuk-blue;
     text-decoration: underline;
     &:hover {
         color: #7c2855;
@@ -287,7 +287,7 @@ $govuk-compatibility-govukelements: true;
         &_details {
             &-content {
                 text-align: center;
-                background-color: #555;
+                background-color: $color_nhsuk-blue;
                 color: #fff;
                 padding: 38px;
                 font-size: 20px;
@@ -312,7 +312,7 @@ $govuk-compatibility-govukelements: true;
     text-align: center !important;
     width: auto !important;
     float: none !important;
-    background-color: #555;
+    background-color: $color_nhsuk-blue;
     color: #fff;
 }
 
