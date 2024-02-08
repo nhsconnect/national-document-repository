@@ -18,22 +18,22 @@ const LogoutPage = () => {
     useEffect(() => {
         const args: Args = { baseUrl, baseHeaders };
 
+        const onSuccess = () => {
+            setSession({
+                auth: null,
+                isLoggedIn: false,
+            });
+            navigate(routes.START);
+        };
+
         const handleCallback = async (args: Args) => {
             try {
                 await logout(args);
-                setSession({
-                    auth: null,
-                    isLoggedIn: false,
-                });
-                navigate(routes.START);
+                onSuccess();
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
-                    setSession({
-                        auth: null,
-                        isLoggedIn: false,
-                    });
-                    navigate(routes.START);
+                    onSuccess();
                 } else {
                     navigate(-1);
                 }

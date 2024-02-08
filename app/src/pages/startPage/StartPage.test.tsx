@@ -1,9 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import StartPage from './StartPage';
-
 jest.mock('react-router');
-
 describe('StartPage', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+    });
     afterEach(() => {
         jest.clearAllMocks();
     });
