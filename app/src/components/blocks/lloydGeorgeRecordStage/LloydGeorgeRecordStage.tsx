@@ -25,6 +25,7 @@ import WarningText from '../../generic/warningText/WarningText';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../types/generic/inputRef';
+import BackButton from '../../generic/backButton/BackButton';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -98,6 +99,7 @@ function LloydGeorgeRecordStage({
 
     return (
         <div className="lloydgeorge_record-stage">
+            <BackButton />
             {formState.errors.confirmDownloadRemove && (
                 <ErrorBox
                     dataTestId="confirm-download-and-remove-error"
