@@ -6,6 +6,7 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { routes } from '../../../types/generic/routes';
+import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 
 const mockSetStage = jest.fn();
 const mockNavigate = jest.fn();
@@ -23,6 +24,7 @@ jest.mock('react-router', () => ({
 
 jest.mock('../../../helpers/hooks/useRole');
 const mockUseRole = useRole as jest.Mock;
+const mockedIsBSOL = useIsBSOL as jest.Mock;
 
 describe('LloydGeorgeRecordError', () => {
     beforeEach(() => {
@@ -59,13 +61,32 @@ describe('LloydGeorgeRecordError', () => {
                 screen.getByText(/An error has occurred when creating the Lloyd George preview/i)
             ).toBeInTheDocument();
         });
-        it("renders a message  when the document download status is 'No records'", () => {
+        it("renders a message  when the document download status is 'No records' and user is non BSOL", () => {
             const timeoutStatus = DOWNLOAD_STAGE.NO_RECORDS;
+            mockedIsBSOL.mockReturnValue(false);
+
             render(
                 <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />
             );
 
             expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
+            expect(
+                screen.queryByRole('button', { name: 'Upload patient record' })
+            ).not.toBeInTheDocument();
+        });
+        it("renders a message and upload button when the document download status is 'No records' and user is admin BSOL", () => {
+            const timeoutStatus = DOWNLOAD_STAGE.NO_RECORDS;
+            mockedIsBSOL.mockReturnValue(true);
+            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+
+            render(
+                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />
+            );
+
+            expect(screen.getByText('No records available for this patient')).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Upload patient record' })
+            ).toBeInTheDocument();
         });
     });
 
