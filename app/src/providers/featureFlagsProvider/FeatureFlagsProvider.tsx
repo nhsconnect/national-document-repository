@@ -1,5 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { isLocal } from '../../helpers/utils/isLocal';
 
 type SetFeatureFlagsOverride = (featureFlags: FeatureFlags) => void;
 
@@ -8,15 +10,19 @@ type Props = {
     featureFlagsOverride?: Partial<FeatureFlags>;
     setFeatureFlagsOverride?: SetFeatureFlagsOverride;
 };
+
+export type LocalFlags = {
+    isBsol?: boolean;
+    recordUploaded?: boolean;
+    userRole?: REPOSITORY_ROLE;
+};
+
 export type FeatureFlags = {
     appConfig: {
         testFeature?: true;
         testRoute?: true;
     };
-    mockLocal: {
-        isBsol?: boolean;
-        recordUploaded?: boolean;
-    };
+    mockLocal: LocalFlags;
 };
 
 export type TFeatureFlagsContext = [
@@ -39,19 +45,25 @@ const FeatureFlagsProvider = ({
         }),
         [featureFlagsOverride],
     );
-    debugger;
+    const localDefaults = isLocal
+        ? {
+              isBsol: true,
+              recordUploaded: true,
+              userRole: REPOSITORY_ROLE.GP_ADMIN,
+              ...featureFlagsOverride?.mockLocal,
+          }
+        : null;
     const storedFlags = sessionStorage.getItem('FeatureFlags');
     const flags: FeatureFlags = storedFlags ? JSON.parse(storedFlags) : emptyFlags;
     const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
         mockLocal: {
-            isBsol: true,
-            recordUploaded: true,
+            ...localDefaults,
+            ...flags.mockLocal,
             ...featureFlagsOverride?.mockLocal,
         },
         appConfig: {
-            testFeature: true,
-            // ...flags.appConfig,
-            // ...featureFlagsOverride?.appConfig,
+            ...flags.appConfig,
+            ...featureFlagsOverride?.appConfig,
         },
     });
 

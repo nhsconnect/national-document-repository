@@ -1,12 +1,67 @@
 import React from 'react';
-import Toggle from 'react-toggle';
 import 'react-toggle/style.css';
 import { isLocal } from '../../../helpers/utils/isLocal';
-import { useFeatureFlagsContext } from '../../../providers/featureFlagsProvider/FeatureFlagsProvider';
+import {
+    LocalFlags,
+    useFeatureFlagsContext,
+} from '../../../providers/featureFlagsProvider/FeatureFlagsProvider';
+import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import TestToggle, { ToggleProps } from './TestToggle';
 
 function TestPanel() {
     const [featureFlags, setFeatureFlags] = useFeatureFlagsContext();
-    const { isBsol, recordUploaded } = featureFlags.mockLocal;
+    const { isBsol, recordUploaded, userRole } = featureFlags.mockLocal;
+
+    const updateLocalFlag = (key: keyof LocalFlags, value: boolean | REPOSITORY_ROLE) => {
+        setFeatureFlags({
+            ...featureFlags,
+            mockLocal: {
+                ...featureFlags.mockLocal,
+                [key]: value,
+            },
+        });
+    };
+
+    const roleToggles = {
+        'gp-admin-toggle': {
+            label: 'GP Admin',
+            checked: userRole === REPOSITORY_ROLE.GP_ADMIN,
+            onChange: () => {
+                updateLocalFlag('userRole', REPOSITORY_ROLE.GP_ADMIN);
+            },
+        },
+        'gp-clinical-toggle': {
+            label: 'GP Clinical',
+            checked: userRole === REPOSITORY_ROLE.GP_CLINICAL,
+            onChange: () => {
+                updateLocalFlag('userRole', REPOSITORY_ROLE.GP_CLINICAL);
+            },
+        },
+        'pcse-toggle': {
+            label: 'PCSE',
+            checked: userRole === REPOSITORY_ROLE.PCSE,
+            onChange: () => {
+                updateLocalFlag('userRole', REPOSITORY_ROLE.PCSE);
+            },
+        },
+    };
+
+    const dataToggles = {
+        'bsol-toggle': {
+            label: 'User is BSOL',
+            checked: !!isBsol,
+            onChange: () => {
+                updateLocalFlag('isBsol', !isBsol);
+            },
+        },
+        'record-toggle': {
+            label: 'Patient has a record',
+            checked: !!recordUploaded,
+            onChange: () => {
+                updateLocalFlag('recordUploaded', !recordUploaded);
+            },
+        },
+    };
 
     return (
         <div>
@@ -23,58 +78,29 @@ function TestPanel() {
 
             {isLocal && (
                 <div>
-                    <h3>Local mocks</h3>
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexFlow: 'row nowrap',
-                            alignItems: 'center',
-                            marginBottom: '12px',
-                        }}
-                    >
-                        <Toggle
-                            id="mock-bsol-toggle"
-                            defaultChecked={!!isBsol}
-                            onChange={() => {
-                                setFeatureFlags({
-                                    ...featureFlags,
-                                    mockLocal: {
-                                        ...featureFlags.mockLocal,
-                                        isBsol: !isBsol,
-                                    },
-                                });
-                            }}
-                        />
-                        <label htmlFor="mock-bsol-toggle" style={{ marginLeft: '6px' }}>
-                            <p style={{ marginBottom: '0px' }}>User is BSOL</p>
-                        </label>
+                    <h3>Local mock</h3>
+                    <p>
+                        This section is only available when the environment is set to local, and
+                        allows for navigating to areas of the app required for developing
+                    </p>
+                    <h4>Role</h4>
+                    <div style={{ marginBottom: '32px' }}>
+                        {Object.entries(roleToggles).map(([id, value]) => {
+                            const toggleProps: ToggleProps = {
+                                id,
+                                ...value,
+                            };
+                            return <TestToggle key={id} {...toggleProps} />;
+                        })}
                     </div>
-
-                    <div
-                        style={{
-                            display: 'flex',
-                            flexFlow: 'row nowrap',
-                            alignItems: 'center',
-                            marginBottom: '12px',
-                        }}
-                    >
-                        <Toggle
-                            id="mock-record-toggle"
-                            defaultChecked={!!recordUploaded}
-                            onChange={() => {
-                                setFeatureFlags({
-                                    ...featureFlags,
-                                    mockLocal: {
-                                        ...featureFlags.mockLocal,
-                                        recordUploaded: !recordUploaded,
-                                    },
-                                });
-                            }}
-                        />
-                        <label htmlFor="mock-record-toggle" style={{ marginLeft: '6px' }}>
-                            <p style={{ marginBottom: '0px' }}>Patient has a record</p>
-                        </label>
-                    </div>
+                    <h4>Data</h4>
+                    {Object.entries(dataToggles).map(([id, value]) => {
+                        const toggleProps: ToggleProps = {
+                            id,
+                            ...value,
+                        };
+                        return <TestToggle key={id} {...toggleProps} />;
+                    })}
                 </div>
             )}
         </div>

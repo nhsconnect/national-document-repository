@@ -22,7 +22,7 @@ import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLo
 import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
 import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
 import PrivacyPage from '../pages/privacyPage/PrivacyPage';
-import { useFeatureFlagsContext } from '../providers/featureFlagsProvider/FeatureFlagsProvider';
+import useFeatureFlags from '../helpers/hooks/useFeatureFlags';
 
 const {
     START,
@@ -134,11 +134,8 @@ const AppRoutes = () => {
     const publicRoutes = createRoutesFromType(ROUTE_TYPE.PUBLIC);
     const privateRoutes = createRoutesFromType(ROUTE_TYPE.PRIVATE);
     const patientRoutes = createRoutesFromType(ROUTE_TYPE.PATIENT);
-    const [featureFlags, setFeatureFlags] = useFeatureFlagsContext();
-
-    const routeIsDisabled = !!featureFlags.appConfig.testRoute;
-    const featureIsEnabled = !!featureFlags.appConfig.testFeature;
-
+    const featureFlags = useFeatureFlags();
+    const isRouteAllowed = featureFlags.appConfig.testRoute;
     return (
         <Switch>
             {publicRoutes}

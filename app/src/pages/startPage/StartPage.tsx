@@ -62,9 +62,9 @@ function StartPage(props: Props) {
                 NHS National Service Desk
             </a>
             {' if there is an issue with this service or call 0300 303 5678.'}
-            {process.env.REACT_APP_ENVIRONMENT === 'local' ||
+            {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
                 process.env.REACT_APP_ENVIRONMENT === 'development' ||
-                (process.env.REACT_APP_ENVIRONMENT === 'test' && <TestPanel />)}
+                process.env.REACT_APP_ENVIRONMENT === 'test') && <TestPanel />}
         </>
     ) : (
         <Spinner status="Logging in..." />
