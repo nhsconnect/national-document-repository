@@ -22,7 +22,6 @@ import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLo
 import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
 import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
 import PrivacyPage from '../pages/privacyPage/PrivacyPage';
-import useFeatureFlags from '../helpers/hooks/useFeatureFlags';
 
 const {
     START,
