@@ -134,8 +134,7 @@ const AppRoutes = () => {
     const publicRoutes = createRoutesFromType(ROUTE_TYPE.PUBLIC);
     const privateRoutes = createRoutesFromType(ROUTE_TYPE.PRIVATE);
     const patientRoutes = createRoutesFromType(ROUTE_TYPE.PATIENT);
-    const featureFlags = useFeatureFlags();
-    const isRouteAllowed = featureFlags.appConfig.testRoute;
+
     return (
         <Switch>
             {publicRoutes}
