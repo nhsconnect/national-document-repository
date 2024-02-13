@@ -53,7 +53,12 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
                     once the record is uploaded.
                 </p>
                 <div className="lloydgeorge_record-stage_header-content-no_record">
-                    <ButtonLink className="lloydgeorge_record-stage_header-content-no_record-upload">
+                    <ButtonLink
+                        className="lloydgeorge_record-stage_header-content-no_record-upload"
+                        onClick={() => {
+                            navigate(routes.LLOYD_GEORGE_UPLOAD);
+                        }}
+                    >
                         Upload patient record
                     </ButtonLink>
                 </div>
