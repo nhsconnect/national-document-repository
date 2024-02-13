@@ -10,6 +10,7 @@ import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import useFeatureFlags from '../../helpers/hooks/useFeatureFlags';
 
 type Props = {};
 
@@ -17,6 +18,8 @@ const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
     const [, setSession] = useSessionContext();
     const navigate = useNavigate();
+    const featureFlags = useFeatureFlags();
+
     useEffect(() => {
         const handleError = (error: AxiosError) => {
             setSession({
@@ -50,7 +53,8 @@ const AuthCallbackPage = (props: Props) => {
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
-                    handleSuccess(buildUserAuth());
+                    const { isBsol, userRole } = featureFlags.mockLocal;
+                    handleSuccess(buildUserAuth({ isBSOL: !!isBsol, role: userRole }));
                 } else {
                     handleError(error);
                 }
@@ -61,7 +65,7 @@ const AuthCallbackPage = (props: Props) => {
         const code = urlSearchParams.get('code') ?? '';
         const state = urlSearchParams.get('state') ?? '';
         void handleCallback({ baseUrl, code, state });
-    }, [baseUrl, setSession, navigate]);
+    }, [baseUrl, setSession, navigate, featureFlags]);
 
     return <Spinner status="Logging in..." />;
 };

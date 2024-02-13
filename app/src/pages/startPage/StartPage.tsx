@@ -7,6 +7,7 @@ import { routes } from '../../types/generic/routes';
 import { endpoints } from '../../types/generic/endpoints';
 import { isLocal } from '../../helpers/utils/isLocal';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import TestPanel from '../../components/blocks/testPanel/TestPanel';
 
 type Props = {};
 
@@ -14,7 +15,6 @@ function StartPage(props: Props) {
     const navigate = useNavigate();
     const baseAPIUrl = useBaseAPIUrl();
     const [isLoading, setIsLoading] = useState(false);
-
     const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
         setIsLoading(true);
         e.preventDefault();
@@ -24,6 +24,7 @@ function StartPage(props: Props) {
             window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
         }
     };
+
     return !isLoading ? (
         <>
             <h1>Access and store digital GP records</h1>
@@ -63,20 +64,7 @@ function StartPage(props: Props) {
             {' if there is an issue with this service or call 0300 303 5678.'}
             {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
                 process.env.REACT_APP_ENVIRONMENT === 'development' ||
-                process.env.REACT_APP_ENVIRONMENT === 'test') && (
-                <div>
-                    <br />
-                    <br />
-                    <br />
-                    <h2>Test Panel</h2>
-                    <p>
-                        This section should only be displayed on a test/dev environment and should
-                        be used for displaying test configurations
-                    </p>
-                    <p> API endpoint: {process.env.REACT_APP_DOC_STORE_API_ENDPOINT}</p>
-                    <p> Image Version: {process.env.REACT_APP_IMAGE_VERSION}</p>
-                </div>
-            )}
+                process.env.REACT_APP_ENVIRONMENT === 'test') && <TestPanel />}
         </>
     ) : (
         <Spinner status="Logging in..." />

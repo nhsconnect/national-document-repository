@@ -19,6 +19,7 @@ import { useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import { isMock } from '../../helpers/utils/isLocal';
 import moment from 'moment';
+import useFeatureFlags from '../../helpers/hooks/useFeatureFlags';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -32,7 +33,7 @@ function LloydGeorgeRecordPage() {
     const mounted = useRef(false);
     const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
     const navigate = useNavigate();
-
+    const featureFlags = useFeatureFlags();
     const role = useRole();
     const isBSOL = useIsBSOL();
     const deleteAfterDownload = role === REPOSITORY_ROLE.GP_ADMIN && isBSOL === false;
@@ -67,10 +68,10 @@ function LloydGeorgeRecordPage() {
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
-                    if (nhsNumber === '4857773456') {
-                        setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
-                    } else {
+                    if (!!featureFlags.mockLocal.recordUploaded) {
                         onSuccess(1, moment().format(), '/dev/testFile.pdf', 59000);
+                    } else {
+                        setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
                     }
                 } else {
                     if (error.response?.status === 504) {
@@ -102,6 +103,7 @@ function LloydGeorgeRecordPage() {
         setNumberOfFiles,
         setTotalFileSizeInByte,
         navigate,
+        featureFlags,
     ]);
 
     switch (stage) {

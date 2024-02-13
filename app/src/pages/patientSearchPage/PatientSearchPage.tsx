@@ -62,10 +62,7 @@ function PatientSearchPage() {
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error)) {
-                handleSuccess({
-                    ...buildPatientDetails(),
-                    nhsNumber,
-                });
+                handleSuccess(buildPatientDetails({ nhsNumber }));
                 return;
             }
             if (error.response?.status === 400) {

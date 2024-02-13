@@ -5,6 +5,7 @@ import axios from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { routes } from '../../types/generic/routes';
 
+jest.mock('../../helpers/hooks/useFeatureFlags');
 const mockedUseNavigate = jest.fn();
 jest.mock('axios');
 jest.mock('react-router', () => ({

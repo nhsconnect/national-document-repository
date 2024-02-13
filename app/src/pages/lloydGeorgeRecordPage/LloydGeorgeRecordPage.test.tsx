@@ -12,6 +12,7 @@ import usePatient from '../../helpers/hooks/usePatient';
 import { act } from 'react-dom/test-utils';
 import { routes } from '../../types/generic/routes';
 
+jest.mock('../../helpers/hooks/useFeatureFlags');
 jest.mock('axios');
 jest.mock('../../helpers/hooks/usePatient');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
