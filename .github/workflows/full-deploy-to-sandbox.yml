@@ -1,4 +1,4 @@
-name: "SANDBOX Full- Deploy and Version Main to Pre-Prod"
+name: "SANDBOX Full- Deploy feature branch to sandbox"
 
 on:
   workflow_dispatch:
