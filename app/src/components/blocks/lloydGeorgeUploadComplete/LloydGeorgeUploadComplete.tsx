@@ -19,63 +19,72 @@ function LloydGeorgeUploadComplete({ documents }: Props) {
     const [isExpanded, setIsExpanded] = useState(true);
 
     const nhsNumber: string = patientDetails?.nhsNumber || '';
-    // const formattedNhsNumber = formatNhsNumber(nhsNumber);
-    const formattedNhsNumber = '123 456 0000';
+    const formattedNhsNumber = formatNhsNumber(nhsNumber);
+    // const formattedNhsNumber = '123 456 0000';
 
     const successfulUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED;
     });
 
     return (
-        <div className="lg-upload-complete" style={{ maxWidth: '620px' }}>
-            <Card className="lg-upload-complete-card">
+        <div className="lloydgeorge_upload-complete">
+            <Card className="lloydgeorge_upload-complete_card">
                 <Card.Content>
-                    <Card.Heading style={{ margin: 'auto' }}>Record uploaded for</Card.Heading>
-                    <Card.Description style={{ fontWeight: '600', fontSize: '16px' }}>
-                        Test Patient Name
-                        {/*{patientDetails?.givenName?.map((name) => `${name} `)}*/}
-                        {/*{patientDetails?.familyName}*/}
-                    </Card.Description>
-                    <Card.Description style={{ fontSize: '16px' }}>
-                        NHS number: {formattedNhsNumber}
-                    </Card.Description>
-                    <Card.Description style={{ fontWeight: '600', fontSize: '16px' }}>
+                    <Card.Heading className="lloydgeorge_upload-complete_card_header">
+                        Record uploaded for
+                    </Card.Heading>
+                    <div className="lloydgeorge_upload-complete_subheader">
+                        {/*Test Patient Name*/}
+                        {patientDetails?.givenName?.map((name) => `${name} `)}
+                        {patientDetails?.familyName}
+                    </div>
+                    <div>NHS number: {formattedNhsNumber}</div>
+                    <div
+                        style={{ marginTop: 30 }}
+                        className="lloydgeorge_upload-complete_subheader"
+                    >
                         Date uploaded: {getFormattedDate(new Date())}
-                    </Card.Description>
+                    </div>
                 </Card.Content>
             </Card>
-            <h5>
-                You have successfully uploaded {successfulUploads.length} file
-                {successfulUploads.length !== 1 && 's'}
-            </h5>
-            {successfulUploads.length > 0 && (
-                <>
+            <div>
+                <p className="lloydgeorge_upload-complete_subheader">
+                    You have successfully uploaded {successfulUploads.length} file
+                    {successfulUploads.length !== 1 && 's'}
+                </p>
+                {successfulUploads.length > 0 && (
                     <Details open>
                         <Details.Summary
-                            id="successful-lg-uploads-dropdown"
                             aria-label="View successfully uploaded documents"
                             onClick={() => setIsExpanded(!isExpanded)}
                         >
                             {isExpanded ? 'Hide files' : 'View files'}
                         </Details.Summary>
-                        <Details.Text className="successful-lg-uploads-list">
-                            {successfulUploads.map((document) => {
-                                return <p key={document.id}>{document.file.name}</p>;
-                            })}
+                        <Details.Text>
+                            <ul className="lloydgeorge_upload-complete_successful-uploads-list">
+                                {successfulUploads.map((document) => {
+                                    return <li key={document.id}>{document.file.name}</li>;
+                                })}
+                            </ul>
                         </Details.Text>
                     </Details>
-                </>
-            )}
-            <h5>What happens next</h5>
-            <p>
-                You have successfully created a Lloyd George record for this patient. The uploaded
-                files will be combined to make up the Lloyd George record.
-            </p>
-            <p>
-                You can upload more files to their record if needed, but you cannot upload duplicate
-                files with the same name as previous uploads.
-            </p>
-            <p>If you need to replace a file, you will need to remove it and re-upload it again.</p>
+                )}
+            </div>
+            <div>
+                <p className="lloydgeorge_upload-complete_subheader">What happens next</p>
+                <p>
+                    You have successfully created a Lloyd George record for this patient. The
+                    uploaded files will be combined to make up the Lloyd George record.
+                </p>
+                <p>
+                    You can upload more files to their record if needed, but you cannot upload
+                    duplicate files with the same name as previous uploads.
+                </p>
+                <p>
+                    If you need to replace a file, you will need to remove it and re-upload it
+                    again.
+                </p>
+            </div>
 
             <ButtonLink
                 role="button"
