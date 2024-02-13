@@ -4,14 +4,14 @@ import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
     UploadDocument,
-} from '../../../types/pages/UploadDocumentsPage/types';
-import { buildPatientDetails, buildTextFile } from '../../../helpers/test/testBuilders';
+} from '../../../../types/pages/UploadDocumentsPage/types';
+import { buildPatientDetails, buildTextFile } from '../../../../helpers/test/testBuilders';
 import CompleteStage from './CompleteStage';
 import { useNavigate } from 'react-router';
-import usePatient from '../../../helpers/hooks/usePatient';
+import usePatient from '../../../../helpers/hooks/usePatient';
 
 jest.mock('react-router');
-jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/usePatient');
 
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatientDetails = buildPatientDetails();

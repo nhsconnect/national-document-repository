@@ -6,9 +6,9 @@ import {
     UploadDocument,
 } from '../../types/pages/UploadDocumentsPage/types';
 import uploadDocument from '../../helpers/requests/uploadDocument';
-import SelectStage from '../../components/blocks/selectStage/SelectStage';
-import UploadingStage from '../../components/blocks/uploadingStage/UploadingStage';
-import CompleteStage from '../../components/blocks/completeStage/CompleteStage';
+import SelectStage from '../../components/blocks/_arf/selectStage/SelectStage';
+import UploadingStage from '../../components/blocks/_arf/uploadingStage/UploadingStage';
+import CompleteStage from '../../components/blocks/_arf/completeStage/CompleteStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';

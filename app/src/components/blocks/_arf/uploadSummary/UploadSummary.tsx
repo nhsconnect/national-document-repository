@@ -3,11 +3,11 @@ import React from 'react';
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
-} from '../../../types/pages/UploadDocumentsPage/types';
-import formatFileSize from '../../../helpers/utils/formatFileSize';
-import { getFormattedDate } from '../../../helpers/utils/formatDate';
-import ErrorBox from '../../layout/errorBox/ErrorBox';
-import PatientSummary from '../../generic/patientSummary/PatientSummary';
+} from '../../../../types/pages/UploadDocumentsPage/types';
+import formatFileSize from '../../../../helpers/utils/formatFileSize';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import ErrorBox from '../../../layout/errorBox/ErrorBox';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 export interface Props {
     documents: Array<UploadDocument>;

@@ -5,11 +5,11 @@ import {
     FileInputEvent,
     SetUploadDocuments,
     UploadDocument,
-} from '../../../types/pages/UploadDocumentsPage/types';
+} from '../../../../types/pages/UploadDocumentsPage/types';
 import { Button, Fieldset } from 'nhsuk-react-components';
 import { useController, useForm } from 'react-hook-form';
-import toFileList from '../../../helpers/utils/toFileList';
-import PatientSummary from '../../generic/patientSummary/PatientSummary';
+import toFileList from '../../../../helpers/utils/toFileList';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 
 interface Props {

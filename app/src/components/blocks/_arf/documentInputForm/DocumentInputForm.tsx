@@ -4,8 +4,8 @@ import {
     DOCUMENT_TYPE,
     FileInputEvent,
     UploadDocument,
-} from '../../../types/pages/UploadDocumentsPage/types';
-import formatFileSize from '../../../helpers/utils/formatFileSize';
+} from '../../../../types/pages/UploadDocumentsPage/types';
+import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import { FieldValues, UseControllerReturn } from 'react-hook-form';
 
 type Props = {

@@ -1,7 +1,7 @@
 import { Table } from 'nhsuk-react-components';
-import { SearchResult } from '../../../types/generic/searchResult';
+import { SearchResult } from '../../../../types/generic/searchResult';
 import { useState } from 'react';
-import { getFormattedDatetime } from '../../../helpers/utils/formatDatetime';
+import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
 
 type Props = {
     searchResults: Array<SearchResult>;

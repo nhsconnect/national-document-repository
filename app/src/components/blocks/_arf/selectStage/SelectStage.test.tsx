@@ -4,19 +4,19 @@ import {
     buildPatientDetails,
     buildTextFile,
     buildLgFile,
-} from '../../../helpers/test/testBuilders';
+} from '../../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
-import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../../types/pages/UploadDocumentsPage/types';
+import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../../../types/pages/UploadDocumentsPage/types';
 import { act } from 'react-dom/test-utils';
-import { PatientDetails } from '../../../types/generic/patientDetails';
-import usePatient from '../../../helpers/hooks/usePatient';
+import { PatientDetails } from '../../../../types/generic/patientDetails';
+import usePatient from '../../../../helpers/hooks/usePatient';
 
-jest.mock('../../../helpers/utils/toFileList', () => ({
+jest.mock('../../../../helpers/utils/toFileList', () => ({
     __esModule: true,
     default: () => [],
 }));
-jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('react-router');
+jest.mock('../../../../helpers/hooks/usePatient');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 

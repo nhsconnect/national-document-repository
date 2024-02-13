@@ -4,17 +4,17 @@ import UploadSummary, { Props } from './UploadSummary';
 import {
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
     UploadDocument,
-} from '../../../types/pages/UploadDocumentsPage/types';
-import { formatFileSize as formatSize } from '../../../helpers/utils/formatFileSize';
-import { getFormattedDate } from '../../../helpers/utils/formatDate';
+} from '../../../../types/pages/UploadDocumentsPage/types';
+import { formatFileSize as formatSize } from '../../../../helpers/utils/formatFileSize';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import {
     buildDocument,
     buildPatientDetails,
     buildTextFile,
-} from '../../../helpers/test/testBuilders';
-import usePatient from '../../../helpers/hooks/usePatient';
+} from '../../../../helpers/test/testBuilders';
+import usePatient from '../../../../helpers/hooks/usePatient';
 
-jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/usePatient');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 

@@ -3,13 +3,13 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import DocumentSearchResultsOptions from './DocumentSearchResultsOptions';
-import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
-import { routes } from '../../../types/generic/routes';
-import { buildPatientDetails } from '../../../helpers/test/testBuilders';
+import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
+import { routes } from '../../../../types/generic/routes';
+import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
 
 const mockedUseNavigate = jest.fn();
-jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../helpers/hooks/useBaseAPIUrl');
+jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('axios');
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,

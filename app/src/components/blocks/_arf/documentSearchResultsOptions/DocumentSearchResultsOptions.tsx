@@ -1,15 +1,15 @@
 import { Button, ButtonLink } from 'nhsuk-react-components';
-import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
-import { routes } from '../../../types/generic/routes';
-import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
+import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
+import { routes } from '../../../../types/generic/routes';
+import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import { useNavigate } from 'react-router-dom';
-import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
+import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
 import { AxiosError } from 'axios';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
-import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
-import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
-import { errorToParams } from '../../../helpers/utils/errorToParams';
+import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
+import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
+import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
+import { errorToParams } from '../../../../helpers/utils/errorToParams';
 
 type Props = {
     nhsNumber: string;
