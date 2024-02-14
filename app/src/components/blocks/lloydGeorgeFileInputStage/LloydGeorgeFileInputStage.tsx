@@ -19,7 +19,7 @@ import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import usePatient from '../../../helpers/hooks/usePatient';
 
-type Props = {
+export type Props = {
     documents: Array<UploadDocument>;
     setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
     setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
