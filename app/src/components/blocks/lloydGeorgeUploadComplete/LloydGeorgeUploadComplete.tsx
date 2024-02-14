@@ -1,26 +1,21 @@
-import React, { useState } from 'react';
-import { ButtonLink, Card, Details } from 'nhsuk-react-components';
+import React from 'react';
+import { ButtonLink, Card } from 'nhsuk-react-components';
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
-import usePatient from '../../../helpers/hooks/usePatient';
-import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
+import DocumentsListView from '../../generic/documentsListView/DocumentsListView';
+import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
+
 interface Props {
     documents: Array<UploadDocument>;
 }
 
 function LloydGeorgeUploadComplete({ documents }: Props) {
     const navigate = useNavigate();
-    const patientDetails = usePatient();
-    const [isExpanded, setIsExpanded] = useState(true);
-
-    const nhsNumber: string = patientDetails?.nhsNumber || '';
-    const formattedNhsNumber = formatNhsNumber(nhsNumber);
-    // const formattedNhsNumber = '123 456 0000';
 
     const successfulUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED;
@@ -33,12 +28,7 @@ function LloydGeorgeUploadComplete({ documents }: Props) {
                     <Card.Heading className="lloydgeorge_upload-complete_card_header">
                         Record uploaded for
                     </Card.Heading>
-                    <div className="lloydgeorge_upload-complete_subheader">
-                        {/*Test Patient Name*/}
-                        {patientDetails?.givenName?.map((name) => `${name} `)}
-                        {patientDetails?.familyName}
-                    </div>
-                    <div>NHS number: {formattedNhsNumber}</div>
+                    <ReducedPatientInfo className={'lloydgeorge_upload-complete_subheader'} />
                     <div
                         style={{ marginTop: 30 }}
                         className="lloydgeorge_upload-complete_subheader"
@@ -47,29 +37,20 @@ function LloydGeorgeUploadComplete({ documents }: Props) {
                     </div>
                 </Card.Content>
             </Card>
+
             <div>
                 <p className="lloydgeorge_upload-complete_subheader">
                     You have successfully uploaded {successfulUploads.length} file
                     {successfulUploads.length !== 1 && 's'}
                 </p>
                 {successfulUploads.length > 0 && (
-                    <Details open>
-                        <Details.Summary
-                            aria-label="View successfully uploaded documents"
-                            onClick={() => setIsExpanded(!isExpanded)}
-                        >
-                            {isExpanded ? 'Hide files' : 'View files'}
-                        </Details.Summary>
-                        <Details.Text>
-                            <ul className="lloydgeorge_upload-complete_successful-uploads-list">
-                                {successfulUploads.map((document) => {
-                                    return <li key={document.id}>{document.file.name}</li>;
-                                })}
-                            </ul>
-                        </Details.Text>
-                    </Details>
+                    <DocumentsListView
+                        documentsList={successfulUploads}
+                        ariaLabel={'View successfully uploaded documents'}
+                    />
                 )}
             </div>
+
             <div>
                 <p className="lloydgeorge_upload-complete_subheader">What happens next</p>
                 <p>

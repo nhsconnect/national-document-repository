@@ -324,11 +324,16 @@ $govuk-compatibility-govukelements: true;
             font-size: 20px;
             font-weight: 700;
         }
-        &_successful-uploads-list li {
-            font-size: 16px;
-            list-style-type: none;
-        }
+        //&_successful-uploads-list li {
+        //    font-size: 16px;
+        //    list-style-type: none;
+        //}
     }
+}
+
+.document-list-view-list li {
+    font-size: 16px;
+    list-style-type: none;
 }
 
 @-moz-document url-prefix() {
