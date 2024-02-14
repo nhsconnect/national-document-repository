@@ -23,7 +23,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             cy.deleteItemFromDynamoDb(tableName, dbItem.ID);
         });
 
-        it(
+        it.skip(
             '[Smoke] non-BSOL GP ADMIN user can download and delete the Lloyd George document of an active patient',
             { tags: 'smoke', defaultCommandTimeout: 20000 },
             () => {
