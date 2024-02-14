@@ -47,7 +47,7 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
     ) {
         return (
             <span>
-                <h3>No records available for this patient</h3>
+                <h3 data-testid="no-records-title">No records available for this patient </h3>
                 <p>
                     You can upload full or part of a patient record. You can upload supporting files
                     once the record is uploaded.

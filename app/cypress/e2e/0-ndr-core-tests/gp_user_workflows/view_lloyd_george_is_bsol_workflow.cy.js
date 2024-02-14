@@ -219,7 +219,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 // assert user is returned to view Lloyd George page
                 cy.contains('Lloyd George record').should('be.visible');
-                cy.contains('No documents are available').should('be.visible');
+                cy.getByTestId('no-records-title').should('exist');
                 cy.getByTestId('pdf-card').should('be.visible');
             },
         );

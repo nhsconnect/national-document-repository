@@ -22,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.inputs.buildBranch }}
+          ref: ${{ github.event.inputs.build_branch }}
 
       - name: Cypress install
         run: npm install --legacy-peer-deps
