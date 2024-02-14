@@ -8,7 +8,7 @@ import {
 import { buildTextFile } from '../../../helpers/test/testBuilders';
 import LloydGeorgeUploadStage from './LloydGeorgeUploadingStage';
 const mockSetStage = jest.fn();
-describe('<UploadDocumentsPage />', () => {
+describe('<LloydGeorgeUploadingStage />', () => {
     describe('with NHS number', () => {
         const triggerUploadStateChange = (
             document: UploadDocument,

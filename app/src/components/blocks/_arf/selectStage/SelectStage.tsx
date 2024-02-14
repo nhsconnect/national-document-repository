@@ -11,7 +11,7 @@ import { useController, useForm } from 'react-hook-form';
 import toFileList from '../../../../helpers/utils/toFileList';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
-import { ARFFormConfig, lloydGeorgeFormConfig } from '../../../helpers/utils/formConfig';
+import { ARFFormConfig, lloydGeorgeFormConfig } from '../../../../helpers/utils/formConfig';
 
 interface Props {
     uploadDocuments: () => void;
