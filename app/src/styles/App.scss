@@ -98,7 +98,9 @@ $govuk-compatibility-govukelements: true;
     }
     &:focus {
         background-color: #ffeb3b;
-        box-shadow: 0 -2px #ffeb3b, 0 4px #212b32;
+        box-shadow:
+            0 -2px #ffeb3b,
+            0 4px #212b32;
         color: #212b32;
         outline: 4px solid transparent;
         text-decoration: none;
@@ -306,6 +308,28 @@ $govuk-compatibility-govukelements: true;
             }
         }
     }
+    &_upload-complete {
+        max-width: 620px;
+        &_card {
+            text-align: center;
+            background-color: $color_nhsuk-blue;
+            color: #fff;
+            padding: 38px;
+            font-size: 16px;
+            &_header {
+                font-size: 42px;
+            }
+        }
+        &_subheader {
+            font-size: 20px;
+            font-weight: 700;
+        }
+    }
+}
+
+.document-list-view-list li {
+    font-size: 16px;
+    list-style-type: none;
 }
 
 @-moz-document url-prefix() {
