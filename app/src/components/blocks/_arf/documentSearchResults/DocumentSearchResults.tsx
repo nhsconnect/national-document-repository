@@ -13,13 +13,10 @@ const DocumentSearchResults = (props: Props) => {
 
     const orderedResults = props.searchResults.sort(sortMethod);
     const [searchResults, ,] = useState(orderedResults);
-
+    const tableCaption = <h2 style={{ fontSize: 32 }}>List of documents available</h2>;
     return (
         <>
-            <Table
-                id="available-files-table-title"
-                caption=<h2 style={{ fontSize: 32 }}>List of documents available</h2>
-            >
+            <Table id="available-files-table-title" caption={tableCaption}>
                 <Table.Head>
                     <Table.Row>
                         <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
