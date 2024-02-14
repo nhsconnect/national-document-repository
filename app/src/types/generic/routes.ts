@@ -15,6 +15,7 @@ export enum routes {
     SEARCH_PATIENT = '/search/patient',
     VERIFY_PATIENT = '/search/patient/verify',
     LLOYD_GEORGE = '/patient/view/lloyd-george-record',
+    LLOYD_GEORGE_UPLOAD = '/patient/upload/lloyd-george-record',
     DOWNLOAD_DOCUMENTS = '/patient/download',
     UPLOAD_DOCUMENTS = '/patient/upload',
 }
