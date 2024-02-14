@@ -1,20 +1,17 @@
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
-import {
-    DOCUMENT_TYPE,
-    DOCUMENT_UPLOAD_STATE,
-    UploadDocument,
-} from '../../types/pages/UploadDocumentsPage/types';
+import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadResult } from '../../types/generic/uploadResult';
+import { Dispatch, SetStateAction } from 'react';
+import { isMock } from '../utils/isLocal';
 
 type UploadDocumentsArgs = {
-    setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
+    setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
     documents: UploadDocument[];
     nhsNumber: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
-    docType: DOCUMENT_TYPE;
 };
 
 type UploadDocumentsToS3Args = {
@@ -29,11 +26,22 @@ type gatewayResponse = {
 
 const uploadDocument = async ({
     nhsNumber,
-    setDocumentState,
+    setDocuments,
     documents,
     baseUrl,
     baseHeaders,
 }: UploadDocumentsArgs) => {
+    const setDocumentState = (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => {
+        setDocuments((prevDocuments: UploadDocument[]) => {
+            return prevDocuments.map((document) => {
+                if (document.id === id) {
+                    progress = progress ?? document.progress;
+                    return { ...document, state, progress };
+                }
+                return document;
+            });
+        });
+    };
     const docDetails = (document: UploadDocument) => {
         setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
         return {
@@ -81,7 +89,12 @@ const uploadDocument = async ({
         await uploadDocumentsToS3({ setDocumentState, documents, data });
     } catch (e) {
         const error = e as AxiosError;
-        if (error.response?.status === 403) {
+        if (isMock(error)) {
+            documents.forEach((document) => {
+                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+            });
+            return;
+        } else if (error.response?.status === 403) {
             documents.forEach((document) => {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
             });

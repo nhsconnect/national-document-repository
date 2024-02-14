@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-    DOCUMENT_TYPE,
-    DOCUMENT_UPLOAD_STATE,
-    UPLOAD_STAGE,
-    UploadDocument,
-} from '../../types/pages/UploadDocumentsPage/types';
+import { UPLOAD_STAGE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import uploadDocument from '../../helpers/requests/uploadDocument';
 import SelectStage from '../../components/blocks/selectStage/SelectStage';
 import UploadingStage from '../../components/blocks/uploadingStage/UploadingStage';
@@ -22,26 +17,12 @@ function UploadDocumentsPage(props: Props) {
     const baseHeaders = useBaseAPIHeaders();
     const patientDetails = usePatient();
 
-    const setDocumentState = (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => {
-        setDocuments((prevDocuments) => {
-            const updatedDocuments = prevDocuments.map((document) => {
-                if (document.id === id) {
-                    progress = progress ?? document.progress;
-                    return { ...document, state, progress };
-                }
-                return document;
-            });
-            return updatedDocuments;
-        });
-    };
-
     const uploadDocuments = async () => {
         if (patientDetails) {
             setStage(UPLOAD_STAGE.Uploading);
             await uploadDocument({
                 nhsNumber: patientDetails.nhsNumber,
-                docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-                setDocumentState,
+                setDocuments,
                 documents,
                 baseUrl,
                 baseHeaders,

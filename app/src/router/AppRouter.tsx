@@ -22,6 +22,7 @@ import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLo
 import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
 import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
 import PrivacyPage from '../pages/privacyPage/PrivacyPage';
+import UploadLloydGeorgeRecordPage from '../pages/uploadLloydGeorgeRecordPage/UploadLloydGeorgeRecordPage';
 
 const {
     START,
@@ -36,6 +37,7 @@ const {
     LOGOUT,
     DOWNLOAD_DOCUMENTS,
     LLOYD_GEORGE,
+    LLOYD_GEORGE_UPLOAD,
     SEARCH_PATIENT,
     VERIFY_PATIENT,
     UPLOAD_DOCUMENTS,
@@ -117,6 +119,11 @@ export const routeMap: Routes = {
         page: <LloydGeorgeRecordPage />,
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.PCSE],
+    },
+    [LLOYD_GEORGE_UPLOAD]: {
+        page: <UploadLloydGeorgeRecordPage />,
+        type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.PCSE, REPOSITORY_ROLE.GP_CLINICAL],
     },
 };
 
