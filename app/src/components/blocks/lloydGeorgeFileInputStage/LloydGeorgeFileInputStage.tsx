@@ -2,7 +2,6 @@ import React, { Dispatch, SetStateAction, useRef } from 'react';
 import BackButton from '../../../components/generic/backButton/BackButton';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
-import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import { Input, Button, Fieldset, InsetText, Table } from 'nhsuk-react-components';
 import { ReactComponent as FileSVG } from '../../../styles/file-input.svg';
 import {
@@ -18,6 +17,7 @@ import uploadDocument from '../../../helpers/requests/uploadDocument';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
+import usePatient from '../../../helpers/hooks/usePatient';
 
 type Props = {
     documents: Array<UploadDocument>;
@@ -26,7 +26,7 @@ type Props = {
 };
 
 function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props) {
-    const patientDetails = buildPatientDetails();
+    const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const dob: String = patientDetails?.birthDate
@@ -52,6 +52,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                     baseUrl,
                     baseHeaders,
                 });
+                setStage(LG_UPLOAD_STAGE.COMPLETE);
             }
         } catch (e) {}
     };
