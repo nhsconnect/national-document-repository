@@ -30,7 +30,7 @@ function LloydGeorgeUploadPage({}: Props) {
         case LG_UPLOAD_STAGE.COMPLETE:
             return <LloydGeorgeUploadComplete documents={documents} />;
         default:
-            return null;
+            return <div />;
     }
 }
 

@@ -32,7 +32,7 @@ function UploadingStage({ documents }: Props) {
                     className: 'nhsuk-u-visually-hidden',
                 }}
             >
-                <Table.Head role="rowgroup">
+                <Table.Head>
                     <Table.Row>
                         <Table.Cell>File Name</Table.Cell>
                         <Table.Cell>File Size</Table.Cell>
@@ -50,13 +50,13 @@ function UploadingStage({ documents }: Props) {
                                     max="100"
                                     value={document.progress}
                                 ></progress>
-                                <p role="status" aria-label={`${document.file.name} upload status`}>
+                                <output aria-label={`${document.file.name} upload status`}>
                                     {document.state === DOCUMENT_UPLOAD_STATE.UPLOADING ? (
                                         <> {Math.round(document.progress)}% uploaded... </>
                                     ) : (
                                         <>{getUploadMessage(document.state)}</>
                                     )}
-                                </p>
+                                </output>
                             </Table.Cell>
                         </Table.Row>
                     ))}

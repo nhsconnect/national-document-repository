@@ -195,7 +195,7 @@ describe('PatientResultPage', () => {
                 });
 
                 await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_UPLOAD_DOCUMENTS);
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE_UPLOAD);
                 });
             },
         );

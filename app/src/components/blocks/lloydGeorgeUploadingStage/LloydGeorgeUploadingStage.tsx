@@ -44,7 +44,7 @@ function LloydGeorgeUploadStage({ documents, setStage }: Props) {
                     className: 'nhsuk-u-visually-hidden',
                 }}
             >
-                <Table.Head role="rowgroup">
+                <Table.Head>
                     <Table.Row>
                         <Table.Cell>Filename</Table.Cell>
                         <Table.Cell style={{ width: '140px' }}>Size</Table.Cell>
@@ -64,9 +64,9 @@ function LloydGeorgeUploadStage({ documents, setStage }: Props) {
                                     max="100"
                                     value={document.progress}
                                 ></progress>
-                                <p role="status" aria-label={`${document.file.name} upload status`}>
+                                <output aria-label={`${document.file.name} upload status`}>
                                     {getUploadMessage(document)}
-                                </p>
+                                </output>
                             </Table.Cell>
                         </Table.Row>
                     ))}

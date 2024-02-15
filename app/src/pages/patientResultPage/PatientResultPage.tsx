@@ -30,8 +30,7 @@ function PatientResultPage() {
             if (patientDetails?.active) {
                 navigate(routes.LLOYD_GEORGE);
             } else {
-                // TODO: What do we use to decide ARF route or LG route ?
-                navigate(routes.ARF_UPLOAD_DOCUMENTS);
+                navigate(routes.LLOYD_GEORGE_UPLOAD);
             }
         }
 

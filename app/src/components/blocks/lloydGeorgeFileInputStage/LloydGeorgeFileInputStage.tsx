@@ -29,7 +29,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber || '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
-    const dob: String = patientDetails?.birthDate
+    const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
     let fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -141,6 +141,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                 <Fieldset.Legend size="m">Select the files you wish to upload</Fieldset.Legend>
                 <Fieldset>
                     <div
+                        role="button"
                         data-testid="dropzone"
                         onDragOver={(e) => {
                             e.preventDefault();

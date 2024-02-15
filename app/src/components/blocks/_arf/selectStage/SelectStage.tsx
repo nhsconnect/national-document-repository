@@ -81,49 +81,47 @@ function SelectStage({ uploadDocuments, setDocuments }: Props) {
     };
 
     return (
-        <>
-            <form
-                onSubmit={handleSubmit(uploadDocuments)}
-                noValidate
-                data-testid="upload-document-form"
-            >
-                <Fieldset.Legend headingLevel="h1" isPageHeading>
-                    Upload documents
-                </Fieldset.Legend>
-                <PatientSummary />
+        <form
+            onSubmit={handleSubmit(uploadDocuments)}
+            noValidate
+            data-testid="upload-document-form"
+        >
+            <Fieldset.Legend headingLevel="h1" isPageHeading>
+                Upload documents
+            </Fieldset.Legend>
+            <PatientSummary />
 
-                <Fieldset>
-                    <h2>Electronic health records</h2>
-                    <DocumentInputForm
-                        showHelp
-                        documents={arfDocuments}
-                        onDocumentRemove={onRemove}
-                        onDocumentInput={onInput}
-                        formController={arfController}
-                        inputRef={arfInputRef}
-                        formType={DOCUMENT_TYPE.ARF}
-                    />
-                </Fieldset>
-                <Fieldset>
-                    <h2>Lloyd George records</h2>
-                    <DocumentInputForm
-                        documents={lgDocuments}
-                        onDocumentRemove={onRemove}
-                        onDocumentInput={onInput}
-                        formController={lgController}
-                        inputRef={lgInputRef}
-                        formType={DOCUMENT_TYPE.LLOYD_GEORGE}
-                    />
-                </Fieldset>
-                <Button
-                    type="submit"
-                    id="upload-button"
-                    disabled={formState.isSubmitting || !hasFileInput}
-                >
-                    Upload
-                </Button>
-            </form>
-        </>
+            <Fieldset>
+                <h2>Electronic health records</h2>
+                <DocumentInputForm
+                    showHelp
+                    documents={arfDocuments}
+                    onDocumentRemove={onRemove}
+                    onDocumentInput={onInput}
+                    formController={arfController}
+                    inputRef={arfInputRef}
+                    formType={DOCUMENT_TYPE.ARF}
+                />
+            </Fieldset>
+            <Fieldset>
+                <h2>Lloyd George records</h2>
+                <DocumentInputForm
+                    documents={lgDocuments}
+                    onDocumentRemove={onRemove}
+                    onDocumentInput={onInput}
+                    formController={lgController}
+                    inputRef={lgInputRef}
+                    formType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                />
+            </Fieldset>
+            <Button
+                type="submit"
+                id="upload-button"
+                disabled={formState.isSubmitting || !hasFileInput}
+            >
+                Upload
+            </Button>
+        </form>
     );
 }
 

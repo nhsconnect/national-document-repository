@@ -49,7 +49,7 @@ function LloydGeorgeRecordStage({
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
     const patientDetails = usePatient();
-    const dob: String = patientDetails?.birthDate
+    const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 

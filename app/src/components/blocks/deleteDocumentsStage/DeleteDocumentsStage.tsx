@@ -52,10 +52,10 @@ function DeleteDocumentsStage({
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
     const featureFlags = useFeatureFlags();
-    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
-    const dob: String = patientDetails?.birthDate
+    const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 
