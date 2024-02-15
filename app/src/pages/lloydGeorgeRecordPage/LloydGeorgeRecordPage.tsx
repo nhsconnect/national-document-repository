@@ -54,7 +54,7 @@ function LloydGeorgeRecordPage() {
         };
 
         const onPageLoad = async () => {
-            const nhsNumber: string = patientDetails?.nhsNumber || '';
+            const nhsNumber: string = patientDetails?.nhsNumber ?? '';
             try {
                 const { number_of_files, total_file_size_in_byte, last_updated, presign_url } =
                     await getLloydGeorgeRecord({

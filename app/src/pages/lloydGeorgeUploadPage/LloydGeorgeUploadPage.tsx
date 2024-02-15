@@ -4,15 +4,13 @@ import { UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import LloydGeorgeFileInputStage from '../../components/blocks/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage';
 import LloydGeorgeUploadComplete from '../../components/blocks/lloydGeorgeUploadComplete/LloydGeorgeUploadComplete';
 
-type Props = {};
-
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
     UPLOAD = 1,
     COMPLETE = 2,
 }
 
-function LloydGeorgeUploadPage({}: Props) {
+function LloydGeorgeUploadPage() {
     const [stage, setStage] = useState<LG_UPLOAD_STAGE>(LG_UPLOAD_STAGE.SELECT);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
 

@@ -22,7 +22,7 @@ import { errorToParams } from '../../helpers/utils/errorToParams';
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
 
-    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.INITIAL);
     const [downloadState, setDownloadState] = useState(SUBMISSION_STATE.INITIAL);
@@ -98,7 +98,6 @@ function DocumentSearchResultsPage() {
                                 nhsNumber={nhsNumber}
                                 downloadState={downloadState}
                                 updateDownloadState={handleUpdateDownloadState}
-                                numberOfFiles={searchResults.length}
                                 setIsDeletingDocuments={setIsDeletingDocuments}
                             />
                         </>

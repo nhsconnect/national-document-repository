@@ -27,7 +27,7 @@ export type Props = {
 
 function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props) {
     const patientDetails = usePatient();
-    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
@@ -142,6 +142,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                 <Fieldset>
                     <div
                         role="button"
+                        tabIndex={0}
                         data-testid="dropzone"
                         onDragOver={(e) => {
                             e.preventDefault();

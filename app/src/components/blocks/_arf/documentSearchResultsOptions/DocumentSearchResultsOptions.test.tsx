@@ -186,7 +186,6 @@ const renderDocumentSearchResultsOptions = (downloadState: SUBMISSION_STATE) => 
             nhsNumber={patient.nhsNumber}
             downloadState={downloadState}
             updateDownloadState={updateDownloadState}
-            numberOfFiles={7}
             setIsDeletingDocuments={mockSetIsDeletingDocuments}
         />,
     );

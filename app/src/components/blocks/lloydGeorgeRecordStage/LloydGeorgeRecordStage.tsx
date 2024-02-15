@@ -60,7 +60,7 @@ function LloydGeorgeRecordStage({
         required: true,
     });
 
-    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
     const role = useRole();
