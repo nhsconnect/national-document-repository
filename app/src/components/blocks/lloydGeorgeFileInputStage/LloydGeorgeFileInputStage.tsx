@@ -229,16 +229,17 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                     >
                         Upload
                     </Button>
-                    <button
-                        className={'lloydgeorge_link'}
-                        type="button"
-                        onClick={() => {
-                            onRemove(-1);
-                        }}
-                        style={{}}
-                    >
-                        Remove all
-                    </button>
+                    {!!documents.length && (
+                        <button
+                            className={'lloydgeorge_link'}
+                            type="button"
+                            onClick={() => {
+                                onRemove(-1);
+                            }}
+                        >
+                            Remove all
+                        </button>
+                    )}
                 </div>
             </form>
         </div>

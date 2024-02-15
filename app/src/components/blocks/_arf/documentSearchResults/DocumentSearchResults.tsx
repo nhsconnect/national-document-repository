@@ -25,7 +25,7 @@ const DocumentSearchResults = (props: Props) => {
                     <Table.Row
                         className={'available-files-row'}
                         id={'available-files-row-' + index}
-                        key={`document-${result.fileName}`}
+                        key={`document-${result.fileName + result.created}`}
                         data-testid="search-result"
                     >
                         <Table.Cell

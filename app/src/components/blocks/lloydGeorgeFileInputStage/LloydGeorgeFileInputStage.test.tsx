@@ -183,6 +183,12 @@ describe('<LloydGeorgeFileInputStage />', () => {
         it('does upload and then remove all a files', async () => {
             renderApp();
 
+            expect(
+                screen.queryByRole('button', {
+                    name: `Remove all`,
+                }),
+            ).not.toBeInTheDocument();
+
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), lgFiles);
             });
@@ -190,10 +196,10 @@ describe('<LloydGeorgeFileInputStage />', () => {
             expect(screen.getByText(lgDocumentOne.name)).toBeInTheDocument();
             expect(screen.getByText(lgDocumentTwo.name)).toBeInTheDocument();
 
-            const removeAll = await screen.findByRole('button', {
+            const removeAll = screen.getByRole('button', {
                 name: `Remove all`,
             });
-
+            expect(removeAll).toBeInTheDocument();
             act(() => {
                 userEvent.click(removeAll);
             });

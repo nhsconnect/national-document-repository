@@ -22,13 +22,6 @@ function LloydGeorgeUploadStage({ documents, setStage }: Props) {
     };
     return (
         <>
-            <button
-                onClick={() => {
-                    setStage(LG_UPLOAD_STAGE.COMPLETE);
-                }}
-            >
-                next stage
-            </button>
             <h1>Uploading record</h1>
             <WarningCallout>
                 <WarningCallout.Label headingLevel="h2">Stay on this page</WarningCallout.Label>
@@ -48,7 +41,7 @@ function LloydGeorgeUploadStage({ documents, setStage }: Props) {
                     <Table.Row>
                         <Table.Cell>Filename</Table.Cell>
                         <Table.Cell style={{ width: '140px' }}>Size</Table.Cell>
-                        <Table.Cell style={{ width: '200px' }}>Upload Progress</Table.Cell>
+                        <Table.Cell style={{ width: '200px' }}>Upload progress</Table.Cell>
                     </Table.Row>
                 </Table.Head>
                 <Table.Body>
