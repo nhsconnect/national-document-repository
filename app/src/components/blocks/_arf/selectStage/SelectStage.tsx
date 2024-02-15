@@ -12,6 +12,7 @@ import toFileList from '../../../../helpers/utils/toFileList';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig, lloydGeorgeFormConfig } from '../../../../helpers/utils/formConfig';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
     uploadDocuments: () => void;
@@ -36,7 +37,7 @@ function SelectStage({ uploadDocuments, setDocuments }: Props) {
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {
         const fileArray = Array.from(e.target.files ?? new FileList());
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
-            id: Math.floor(Math.random() * 1000000).toString(),
+            id: uuidv4(),
             file,
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,

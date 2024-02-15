@@ -18,6 +18,7 @@ import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import usePatient from '../../../helpers/hooks/usePatient';
+import { v4 as uuidv4 } from 'uuid';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -58,7 +59,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
     };
     const updateFileList = (fileArray: File[]) => {
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
-            id: Math.floor(Math.random() * 1000000).toString(),
+            id: uuidv4(),
             file,
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,
