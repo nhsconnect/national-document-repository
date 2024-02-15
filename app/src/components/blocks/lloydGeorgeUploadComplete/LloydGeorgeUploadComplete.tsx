@@ -61,7 +61,7 @@ function LloydGeorgeUploadComplete({ documents }: Props) {
                     You can upload more files to their record if needed, but you cannot upload
                     duplicate files with the same name as previous uploads.
                 </p>
-                <p>
+                <p style={{ marginBottom: 50 }}>
                     If you need to replace a file, you will need to remove it and re-upload it
                     again.
                 </p>
