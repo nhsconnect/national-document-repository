@@ -5,8 +5,8 @@ import {
     DOCUMENT_UPLOAD_STATE,
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
     UploadDocument,
-} from '../../../types/pages/UploadDocumentsPage/types';
-import { buildTextFile } from '../../../helpers/test/testBuilders';
+} from '../../../../types/pages/UploadDocumentsPage/types';
+import { buildTextFile } from '../../../../helpers/test/testBuilders';
 import UploadingStage from './UploadingStage';
 
 describe('<UploadDocumentsPage />', () => {

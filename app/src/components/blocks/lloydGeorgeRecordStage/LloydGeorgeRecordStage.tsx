@@ -49,7 +49,7 @@ function LloydGeorgeRecordStage({
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
     const patientDetails = usePatient();
-    const dob: String = patientDetails?.birthDate
+    const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
 
@@ -60,7 +60,7 @@ function LloydGeorgeRecordStage({
         required: true,
     });
 
-    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
     const role = useRole();

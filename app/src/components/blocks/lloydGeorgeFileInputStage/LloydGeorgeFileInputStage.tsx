@@ -1,61 +1,72 @@
-import React, { useRef, useState } from 'react';
-import BackButton from '../../components/generic/backButton/BackButton';
-import { formatNhsNumber } from '../../helpers/utils/formatNhsNumber';
-import { getFormattedDate } from '../../helpers/utils/formatDate';
-import { buildPatientDetails } from '../../helpers/test/testBuilders';
+import React, { Dispatch, SetStateAction, useRef } from 'react';
+import BackButton from '../../../components/generic/backButton/BackButton';
+import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
+import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { Input, Button, Fieldset, InsetText, Table } from 'nhsuk-react-components';
-import { ReactComponent as FileSVG } from '../../styles/file-input.svg';
+import { ReactComponent as FileSVG } from '../../../styles/file-input.svg';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     FileInputEvent,
     UploadDocument,
-} from '../../types/pages/UploadDocumentsPage/types';
+} from '../../../types/pages/UploadDocumentsPage/types';
 import { useController, useForm } from 'react-hook-form';
-import formatFileSize from '../../helpers/utils/formatFileSize';
-import { lloydGeorgeFormConfig } from '../../helpers/utils/formConfig';
-import uploadDocument from '../../helpers/requests/uploadDocument';
-import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
-import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import formatFileSize from '../../../helpers/utils/formatFileSize';
+import { lloydGeorgeFormConfig } from '../../../helpers/utils/formConfig';
+import uploadDocument from '../../../helpers/requests/uploadDocument';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
+import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
+import usePatient from '../../../helpers/hooks/usePatient';
+import { v4 as uuidv4 } from 'uuid';
 
-function UploadLloydGeorgeRecordPage() {
-    const patientDetails = buildPatientDetails();
-    const nhsNumber: string = patientDetails?.nhsNumber || '';
+export type Props = {
+    documents: Array<UploadDocument>;
+    setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
+    setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
+};
+
+function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props) {
+    const patientDetails = usePatient();
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
-    const dob: String = patientDetails?.birthDate
+    const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
     let fileInputRef = useRef<HTMLInputElement | null>(null);
-    const [lgDocuments, setLgDocuments] = useState<Array<UploadDocument>>([]);
 
     const { handleSubmit, control, formState } = useForm();
     const lgController = useController(lloydGeorgeFormConfig(control));
 
-    const hasFileInput = lgDocuments.length;
+    const hasFileInput = documents.length;
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
 
     const uploadDocuments = async () => {
-        if (patientDetails) {
-            await uploadDocument({
-                nhsNumber: patientDetails.nhsNumber,
-                setDocuments: setLgDocuments,
-                documents: lgDocuments,
-                baseUrl,
-                baseHeaders,
-            });
-        }
+        try {
+            if (patientDetails) {
+                setStage(LG_UPLOAD_STAGE.UPLOAD);
+                await uploadDocument({
+                    nhsNumber: patientDetails.nhsNumber,
+                    setDocuments,
+                    documents: documents,
+                    baseUrl,
+                    baseHeaders,
+                });
+                setStage(LG_UPLOAD_STAGE.COMPLETE);
+            }
+        } catch (e) {}
     };
     const updateFileList = (fileArray: File[]) => {
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
-            id: Math.floor(Math.random() * 1000000).toString(),
+            id: uuidv4(),
             file,
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,
             docType: DOCUMENT_TYPE.LLOYD_GEORGE,
         }));
-        const updatedDocList = [...documentMap, ...lgDocuments];
-        setLgDocuments(updatedDocList);
+        const updatedDocList = [...documentMap, ...documents];
+        setDocuments(updatedDocList);
         lgController.field.onChange(updatedDocList);
     };
     const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -84,9 +95,9 @@ function UploadLloydGeorgeRecordPage() {
     const onRemove = (index: number) => {
         let updatedDocList: UploadDocument[] = [];
         if (index >= 0) {
-            updatedDocList = [...lgDocuments.slice(0, index), ...lgDocuments.slice(index + 1)];
+            updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
         }
-        setLgDocuments(updatedDocList);
+        setDocuments(updatedDocList);
         lgController.field.onChange(updatedDocList);
     };
 
@@ -131,6 +142,8 @@ function UploadLloydGeorgeRecordPage() {
                 <Fieldset.Legend size="m">Select the files you wish to upload</Fieldset.Legend>
                 <Fieldset>
                     <div
+                        role="button"
+                        tabIndex={0}
                         data-testid="dropzone"
                         onDragOver={(e) => {
                             e.preventDefault();
@@ -175,7 +188,7 @@ function UploadLloydGeorgeRecordPage() {
                         </div>
                     </div>
                 </Fieldset>
-                {lgDocuments && lgDocuments.length > 0 && (
+                {documents && documents.length > 0 && (
                     <Table caption="Chosen files" id="selected-documents-table">
                         <Table.Head>
                             <Table.Row>
@@ -186,7 +199,7 @@ function UploadLloydGeorgeRecordPage() {
                         </Table.Head>
 
                         <Table.Body>
-                            {lgDocuments.map((document: UploadDocument, index: number) => (
+                            {documents.map((document: UploadDocument, index: number) => (
                                 <Table.Row key={document.id}>
                                     <Table.Cell>{document.file.name}</Table.Cell>
                                     <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
@@ -216,20 +229,21 @@ function UploadLloydGeorgeRecordPage() {
                     >
                         Upload
                     </Button>
-                    <button
-                        className={'lloydgeorge_link'}
-                        type="button"
-                        onClick={() => {
-                            onRemove(-1);
-                        }}
-                        style={{}}
-                    >
-                        Remove all
-                    </button>
+                    {!!documents.length && (
+                        <button
+                            className={'lloydgeorge_link'}
+                            type="button"
+                            onClick={() => {
+                                onRemove(-1);
+                            }}
+                        >
+                            Remove all
+                        </button>
+                    )}
                 </div>
             </form>
         </div>
     );
 }
 
-export default UploadLloydGeorgeRecordPage;
+export default LloydGeorgeFileInputStage;

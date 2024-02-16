@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
-import { UploadDocument } from '../../../types/pages/UploadDocumentsPage/types';
+import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import UploadSummary from '../uploadSummary/UploadSummary';
 interface Props {
     documents: Array<UploadDocument>;

@@ -19,7 +19,7 @@ export type Props = {
 function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }: Props) {
     const navigate = useNavigate();
     const patientDetails = usePatient();
-    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const role = useRole();
     const handleClick = () => {

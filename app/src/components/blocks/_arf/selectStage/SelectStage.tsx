@@ -5,13 +5,14 @@ import {
     FileInputEvent,
     SetUploadDocuments,
     UploadDocument,
-} from '../../../types/pages/UploadDocumentsPage/types';
+} from '../../../../types/pages/UploadDocumentsPage/types';
 import { Button, Fieldset } from 'nhsuk-react-components';
 import { useController, useForm } from 'react-hook-form';
-import toFileList from '../../../helpers/utils/toFileList';
-import PatientSummary from '../../generic/patientSummary/PatientSummary';
+import toFileList from '../../../../helpers/utils/toFileList';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
-import { ARFFormConfig, lloydGeorgeFormConfig } from '../../../helpers/utils/formConfig';
+import { ARFFormConfig, lloydGeorgeFormConfig } from '../../../../helpers/utils/formConfig';
+import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
     uploadDocuments: () => void;
@@ -36,7 +37,7 @@ function SelectStage({ uploadDocuments, setDocuments }: Props) {
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {
         const fileArray = Array.from(e.target.files ?? new FileList());
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
-            id: Math.floor(Math.random() * 1000000).toString(),
+            id: uuidv4(),
             file,
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,
@@ -81,49 +82,47 @@ function SelectStage({ uploadDocuments, setDocuments }: Props) {
     };
 
     return (
-        <>
-            <form
-                onSubmit={handleSubmit(uploadDocuments)}
-                noValidate
-                data-testid="upload-document-form"
-            >
-                <Fieldset.Legend headingLevel="h1" isPageHeading>
-                    Upload documents
-                </Fieldset.Legend>
-                <PatientSummary />
+        <form
+            onSubmit={handleSubmit(uploadDocuments)}
+            noValidate
+            data-testid="upload-document-form"
+        >
+            <Fieldset.Legend headingLevel="h1" isPageHeading>
+                Upload documents
+            </Fieldset.Legend>
+            <PatientSummary />
 
-                <Fieldset>
-                    <h2>Electronic health records</h2>
-                    <DocumentInputForm
-                        showHelp
-                        documents={arfDocuments}
-                        onDocumentRemove={onRemove}
-                        onDocumentInput={onInput}
-                        formController={arfController}
-                        inputRef={arfInputRef}
-                        formType={DOCUMENT_TYPE.ARF}
-                    />
-                </Fieldset>
-                <Fieldset>
-                    <h2>Lloyd George records</h2>
-                    <DocumentInputForm
-                        documents={lgDocuments}
-                        onDocumentRemove={onRemove}
-                        onDocumentInput={onInput}
-                        formController={lgController}
-                        inputRef={lgInputRef}
-                        formType={DOCUMENT_TYPE.LLOYD_GEORGE}
-                    />
-                </Fieldset>
-                <Button
-                    type="submit"
-                    id="upload-button"
-                    disabled={formState.isSubmitting || !hasFileInput}
-                >
-                    Upload
-                </Button>
-            </form>
-        </>
+            <Fieldset>
+                <h2>Electronic health records</h2>
+                <DocumentInputForm
+                    showHelp
+                    documents={arfDocuments}
+                    onDocumentRemove={onRemove}
+                    onDocumentInput={onInput}
+                    formController={arfController}
+                    inputRef={arfInputRef}
+                    formType={DOCUMENT_TYPE.ARF}
+                />
+            </Fieldset>
+            <Fieldset>
+                <h2>Lloyd George records</h2>
+                <DocumentInputForm
+                    documents={lgDocuments}
+                    onDocumentRemove={onRemove}
+                    onDocumentInput={onInput}
+                    formController={lgController}
+                    inputRef={lgInputRef}
+                    formType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                />
+            </Fieldset>
+            <Button
+                type="submit"
+                id="upload-button"
+                disabled={formState.isSubmitting || !hasFileInput}
+            >
+                Upload
+            </Button>
+        </form>
     );
 }
 

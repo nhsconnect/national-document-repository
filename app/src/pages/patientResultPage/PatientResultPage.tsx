@@ -30,14 +30,14 @@ function PatientResultPage() {
             if (patientDetails?.active) {
                 navigate(routes.LLOYD_GEORGE);
             } else {
-                navigate(routes.UPLOAD_DOCUMENTS);
+                navigate(routes.ARF_UPLOAD_DOCUMENTS);
             }
         }
 
         // PCSE Role
         else if (userIsPCSE) {
             // Make PDS and Dynamo document store search request to download documents from patient
-            navigate(routes.DOWNLOAD_DOCUMENTS);
+            navigate(routes.ARF_DOWNLOAD_DOCUMENTS);
         }
     };
     const showWarning = patientDetails?.superseded || patientDetails?.restricted;

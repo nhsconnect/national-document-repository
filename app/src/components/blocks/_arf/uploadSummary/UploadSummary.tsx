@@ -3,11 +3,11 @@ import React from 'react';
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
-} from '../../../types/pages/UploadDocumentsPage/types';
-import formatFileSize from '../../../helpers/utils/formatFileSize';
-import { getFormattedDate } from '../../../helpers/utils/formatDate';
-import ErrorBox from '../../layout/errorBox/ErrorBox';
-import PatientSummary from '../../generic/patientSummary/PatientSummary';
+} from '../../../../types/pages/UploadDocumentsPage/types';
+import formatFileSize from '../../../../helpers/utils/formatFileSize';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
+import ErrorBox from '../../../layout/errorBox/ErrorBox';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 export interface Props {
     documents: Array<UploadDocument>;
@@ -75,45 +75,43 @@ const UploadSummary = ({ documents }: Props) => {
                 </h2>
             )}
             {successfulUploads.length > 0 && (
-                <>
-                    <Details style={tableMargin}>
-                        <Details.Summary
-                            id="successful-uploads-dropdown"
-                            aria-label="View successfully uploaded documents"
+                <Details style={tableMargin}>
+                    <Details.Summary
+                        id="successful-uploads-dropdown"
+                        aria-label="View successfully uploaded documents"
+                    >
+                        View successfully uploaded documents
+                    </Details.Summary>
+                    <Details.Text>
+                        <Table
+                            responsive
+                            caption="Successfully uploaded documents"
+                            captionProps={{
+                                className: 'nhsuk-u-visually-hidden',
+                            }}
+                            id="successful-uploads"
                         >
-                            View successfully uploaded documents
-                        </Details.Summary>
-                        <Details.Text>
-                            <Table
-                                responsive
-                                caption="Successfully uploaded documents"
-                                captionProps={{
-                                    className: 'nhsuk-u-visually-hidden',
-                                }}
-                                id="successful-uploads"
-                            >
-                                <Table.Head role="rowgroup">
-                                    <Table.Row>
-                                        <Table.Cell>File Name</Table.Cell>
-                                        <Table.Cell>File Size</Table.Cell>
-                                    </Table.Row>
-                                </Table.Head>
-                                <Table.Body>
-                                    {successfulUploads.map((document) => {
-                                        return (
-                                            <Table.Row key={document.id}>
-                                                <Table.Cell>{document.file.name}</Table.Cell>
-                                                <Table.Cell>
-                                                    {formatFileSize(document.file.size)}
-                                                </Table.Cell>
-                                            </Table.Row>
-                                        );
-                                    })}
-                                </Table.Body>
-                            </Table>
-                        </Details.Text>
-                    </Details>
-                </>
+                            <Table.Head>
+                                <Table.Row>
+                                    <Table.Cell>File Name</Table.Cell>
+                                    <Table.Cell>File Size</Table.Cell>
+                                </Table.Row>
+                            </Table.Head>
+                            <Table.Body>
+                                {successfulUploads.map((document) => {
+                                    return (
+                                        <Table.Row key={document.id}>
+                                            <Table.Cell>{document.file.name}</Table.Cell>
+                                            <Table.Cell>
+                                                {formatFileSize(document.file.size)}
+                                            </Table.Cell>
+                                        </Table.Row>
+                                    );
+                                })}
+                            </Table.Body>
+                        </Table>
+                    </Details.Text>
+                </Details>
             )}
             <PatientSummary />
 

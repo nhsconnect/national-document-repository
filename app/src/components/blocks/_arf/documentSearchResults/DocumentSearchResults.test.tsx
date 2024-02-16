@@ -1,6 +1,6 @@
-import { buildSearchResult } from '../../../helpers/test/testBuilders';
-import { getFormattedDatetime } from '../../../helpers/utils/formatDatetime';
-import { SearchResult } from '../../../types/generic/searchResult';
+import { buildSearchResult } from '../../../../helpers/test/testBuilders';
+import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
+import { SearchResult } from '../../../../types/generic/searchResult';
 import DocumentSearchResults from './DocumentSearchResults';
 import { render, screen, within } from '@testing-library/react';
 

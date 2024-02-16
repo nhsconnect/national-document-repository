@@ -1,21 +1,20 @@
-import { Button, ButtonLink } from 'nhsuk-react-components';
-import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
-import { routes } from '../../../types/generic/routes';
-import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
+import { Button } from 'nhsuk-react-components';
+import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
+import { routes } from '../../../../types/generic/routes';
+import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import { useNavigate } from 'react-router-dom';
-import getPresignedUrlForZip from '../../../helpers/requests/getPresignedUrlForZip';
+import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
 import { AxiosError } from 'axios';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
-import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
-import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
-import { errorToParams } from '../../../helpers/utils/errorToParams';
+import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
+import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
+import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
+import { errorToParams } from '../../../../helpers/utils/errorToParams';
 
 type Props = {
     nhsNumber: string;
     downloadState: string;
     updateDownloadState: (newState: SUBMISSION_STATE) => void;
-    numberOfFiles: number;
     setIsDeletingDocuments: Dispatch<SetStateAction<boolean>>;
 };
 
@@ -97,15 +96,14 @@ const DocumentSearchResultsOptions = (props: Props) => {
                 >
                     Download Manifest URL
                 </a>
-                <ButtonLink
+                <Button
                     className="nhsuk-button nhsuk-button--secondary"
                     data-testid="delete-all-documents-btn"
                     style={{ marginLeft: 72 }}
-                    role="button"
                     onClick={deleteAllDocuments}
                 >
                     Delete All Documents
-                </ButtonLink>
+                </Button>
             </div>
             {props.downloadState === SUBMISSION_STATE.SUCCEEDED && (
                 <p>

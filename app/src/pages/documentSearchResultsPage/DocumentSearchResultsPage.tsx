@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { SearchResult } from '../../types/generic/searchResult';
-import DocumentSearchResults from '../../components/blocks/documentSearchResults/DocumentSearchResults';
+import DocumentSearchResults from '../../components/blocks/_arf/documentSearchResults/DocumentSearchResults';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';
 import ProgressBar from '../../components/generic/progressBar/ProgressBar';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
-import DocumentSearchResultsOptions from '../../components/blocks/documentSearchResultsOptions/DocumentSearchResultsOptions';
+import DocumentSearchResultsOptions from '../../components/blocks/_arf/documentSearchResultsOptions/DocumentSearchResultsOptions';
 import { AxiosError } from 'axios';
 import getDocumentSearchResults from '../../helpers/requests/getDocumentSearchResults';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
@@ -22,7 +22,7 @@ import { errorToParams } from '../../helpers/utils/errorToParams';
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
 
-    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.INITIAL);
     const [downloadState, setDownloadState] = useState(SUBMISSION_STATE.INITIAL);
@@ -98,7 +98,6 @@ function DocumentSearchResultsPage() {
                                 nhsNumber={nhsNumber}
                                 downloadState={downloadState}
                                 updateDownloadState={handleUpdateDownloadState}
-                                numberOfFiles={searchResults.length}
                                 setIsDeletingDocuments={setIsDeletingDocuments}
                             />
                         </>

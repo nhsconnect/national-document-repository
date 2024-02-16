@@ -1,25 +1,38 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { buildPatientDetails, buildLgFile } from '../../helpers/test/testBuilders';
-import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../types/pages/UploadDocumentsPage/types';
-import { PatientDetails } from '../../types/generic/patientDetails';
-import usePatient from '../../helpers/hooks/usePatient';
-import UploadLloydGeorgeRecordPage from './UploadLloydGeorgeRecordPage';
-import { formatNhsNumber } from '../../helpers/utils/formatNhsNumber';
+import {
+    buildPatientDetails,
+    buildLgFile,
+    buildDocument,
+} from '../../../helpers/test/testBuilders';
+import usePatient from '../../../helpers/hooks/usePatient';
+import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
+import LloydGeorgeFileInputStage, { Props } from './LloydGeorgeFileInputStage';
+import {
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../../types/pages/UploadDocumentsPage/types';
+import { useState } from 'react';
 
-jest.mock('../../helpers/utils/toFileList', () => ({
+jest.mock('../../../helpers/utils/toFileList', () => ({
     __esModule: true,
     default: () => [],
 }));
-jest.mock('../../helpers/hooks/usePatient');
+jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('react-router');
-jest.mock('../../helpers/hooks/useBaseAPIHeaders');
-
+jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+const setStageMock = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
-
-describe('<UploadLloydGeorgeRecordPage />', () => {
+const lgDocumentOne = buildLgFile(1, 2);
+const lgDocumentTwo = buildLgFile(2, 2);
+const lgFiles = [lgDocumentOne, lgDocumentTwo];
+const uploadFiles = [
+    buildDocument(lgDocumentOne, DOCUMENT_UPLOAD_STATE.UPLOADING),
+    buildDocument(lgDocumentTwo, DOCUMENT_UPLOAD_STATE.UPLOADING),
+];
+describe('<LloydGeorgeFileInputStage />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
@@ -29,25 +42,14 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
     });
 
     describe('upload documents with an NHS number', () => {
-        const lgDocumentOne = buildLgFile(1, 2);
-        const lgDocumentTwo = buildLgFile(2, 2);
-        const lgFiles = [lgDocumentOne, lgDocumentTwo];
-        const setDocumentMock = jest.fn();
-        setDocumentMock.mockImplementation((document) => {
-            document.state = documentUploadStates.SELECTED;
-            document.id = '1';
-        });
-
-        const mockPatientDetails: PatientDetails = buildPatientDetails();
-
         it('renders the page', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByText('NHS number: ' + formatNhsNumber(mockPatientDetails.nhsNumber)),
+                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Select files' })).toBeInTheDocument();
@@ -57,13 +59,13 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
         });
 
         it('can upload documents to LG forms using button', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByText('NHS number: ' + formatNhsNumber(mockPatientDetails.nhsNumber)),
+                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
@@ -78,15 +80,17 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
         });
+
         it('can upload documents to LG forms using drag and drop when dataTransfer type is files', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
+
             const dropzone = screen.getByTestId('dropzone');
 
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByText('NHS number: ' + formatNhsNumber(mockPatientDetails.nhsNumber)),
+                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
@@ -103,14 +107,14 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
             expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
         });
         it('can upload documents to LG forms using drag and drop when dataTransfer type is items', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
             const dropzone = screen.getByTestId('dropzone');
 
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByText('NHS number: ' + formatNhsNumber(mockPatientDetails.nhsNumber)),
+                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
@@ -134,7 +138,7 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
             expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
         });
         it('can upload documents to LG forms using drag and drop and button', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
             const dropzone = screen.getByTestId('dropzone');
 
             expect(
@@ -157,7 +161,7 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
             expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
         });
         it('does upload and then remove a file', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), lgFiles);
@@ -177,7 +181,13 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
             expect(screen.getByText(lgDocumentTwo.name)).toBeInTheDocument();
         });
         it('does upload and then remove all a files', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
+
+            expect(
+                screen.queryByRole('button', {
+                    name: `Remove all`,
+                }),
+            ).not.toBeInTheDocument();
 
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), lgFiles);
@@ -186,10 +196,10 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
             expect(screen.getByText(lgDocumentOne.name)).toBeInTheDocument();
             expect(screen.getByText(lgDocumentTwo.name)).toBeInTheDocument();
 
-            const removeAll = await screen.findByRole('button', {
+            const removeAll = screen.getByRole('button', {
                 name: `Remove all`,
             });
-
+            expect(removeAll).toBeInTheDocument();
             act(() => {
                 userEvent.click(removeAll);
             });
@@ -198,7 +208,7 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
             expect(screen.queryByText(lgDocumentTwo.name)).not.toBeInTheDocument();
         });
         it('does not upload either forms if selected file is more than 5GB', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             const documentBig = buildLgFile(3, 2, 6 * Math.pow(1024, 3));
 
@@ -218,7 +228,7 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
         });
 
         it('does not upload LG form if selected file is not PDF', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             const lgFileWithBadType = new File(
                 ['test'],
@@ -246,7 +256,7 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
         });
 
         it('does not upload LG form if total number of file does not match file name', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             const lgExtraFile = buildLgFile(3, 3);
 
@@ -268,7 +278,7 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
         });
 
         it('does not upload LG form if selected file does not match naming conventions', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             const pdfFileWithBadName = new File(['test'], `test_not_up_to_naming_conventions.pdf`, {
                 type: 'application/pdf',
@@ -291,7 +301,7 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
         });
 
         it('does not upload LG form if selected file number is bigger than number of total files', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             const pdfFileWithBadNumber = buildLgFile(2, 1);
             act(() => {
@@ -312,7 +322,7 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
         });
 
         it('does not upload LG form if files do not match each other', async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             const joeBloggsFile = new File(
                 ['test'],
@@ -351,7 +361,7 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
 
         it('does not upload LG form if two or more files match name/size', async () => {
             const duplicateFileWarning = 'There are two or more documents with the same name.';
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             act(() => {
                 userEvent.upload(screen.getByTestId(`button-input`), [
@@ -375,7 +385,7 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
         });
 
         it("does allow the user to add the same file again if they remove for '%s' input", async () => {
-            render(<UploadLloydGeorgeRecordPage />);
+            renderApp();
 
             act(() => {
                 userEvent.upload(screen.getByTestId(`button-input`), [
@@ -398,4 +408,21 @@ describe('<UploadLloydGeorgeRecordPage />', () => {
             expect(await screen.findByText(lgDocumentOne.name)).toBeInTheDocument();
         });
     });
+
+    const TestApp = (props: Partial<Props>) => {
+        const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
+
+        return (
+            <LloydGeorgeFileInputStage
+                documents={documents}
+                setDocuments={setDocuments}
+                setStage={setStageMock}
+                {...props}
+            />
+        );
+    };
+
+    const renderApp = (props?: Partial<Props>) => {
+        render(<TestApp {...props} />);
+    };
 });

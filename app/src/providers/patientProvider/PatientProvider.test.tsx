@@ -35,7 +35,7 @@ const TestComponent = (props: TestProps) => {
 
     return (
         <>
-            <p>NHS Number: {patientDetails?.nhsNumber || 'Null'}</p>
+            <p>NHS Number: {patientDetails?.nhsNumber ?? 'Null'}</p>
             <p>Family Name: {patientDetails?.familyName || 'Null'}</p>
             <button onClick={() => setPatientDetails(props.patientDetails)}>
                 Update NHS Number

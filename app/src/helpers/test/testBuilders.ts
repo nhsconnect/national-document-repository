@@ -9,6 +9,8 @@ import { SearchResult } from '../../types/generic/searchResult';
 import { UserAuth } from '../../types/blocks/userAuth';
 import { LloydGeorgeStitchResult } from '../requests/getLloydGeorgeRecord';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { v4 as uuidv4 } from 'uuid';
+import moment from 'moment';
 
 const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
     const auth: UserAuth = {
@@ -77,7 +79,7 @@ const buildDocument = (
         file,
         state: uploadStatus ?? documentUploadStates.SUCCEEDED,
         progress: 0,
-        id: Math.floor(Math.random() * 1000000).toString(),
+        id: uuidv4(),
         docType: docType ?? DOCUMENT_TYPE.ARF,
     };
     return mockDocument;
@@ -85,8 +87,8 @@ const buildDocument = (
 
 const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
     const result: SearchResult = {
-        fileName: 'Some description',
-        created: '2023-09-06T10:41:51.899908Z',
+        fileName: 'fileName.pdf',
+        created: moment().format(),
         virusScannerResult: 'Clean',
         ...searchResultOverride,
     };

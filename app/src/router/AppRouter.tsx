@@ -10,8 +10,8 @@ import UnauthorisedPage from '../pages/unauthorisedPage/UnauthorisedPage';
 import LogoutPage from '../pages/logoutPage/LogoutPage';
 import PatientSearchPage from '../pages/patientSearchPage/PatientSearchPage';
 import PatientResultPage from '../pages/patientResultPage/PatientResultPage';
-import UploadDocumentsPage from '../pages/uploadDocumentsPage/UploadDocumentsPage';
-import DocumentSearchResultsPage from '../pages/documentSearchResultsPage/DocumentSearchResultsPage';
+import ArfUploadDocumentsPage from '../pages/uploadDocumentsPage/UploadDocumentsPage';
+import ArfSearchResultsPage from '../pages/documentSearchResultsPage/DocumentSearchResultsPage';
 import LloydGeorgeRecordPage from '../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import AuthGuard from './guards/authGuard/AuthGuard';
 import PatientGuard from './guards/patientGuard/PatientGuard';
@@ -22,7 +22,7 @@ import UnauthorisedLoginPage from '../pages/unauthorisedLoginPage/UnauthorisedLo
 import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
 import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
 import PrivacyPage from '../pages/privacyPage/PrivacyPage';
-import UploadLloydGeorgeRecordPage from '../pages/uploadLloydGeorgeRecordPage/UploadLloydGeorgeRecordPage';
+import LloydGeorgeUploadPage from '../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 
 const {
     START,
@@ -35,13 +35,13 @@ const {
     SERVER_ERROR,
     FEEDBACK,
     LOGOUT,
-    DOWNLOAD_DOCUMENTS,
-    LLOYD_GEORGE,
-    LLOYD_GEORGE_UPLOAD,
     SEARCH_PATIENT,
     VERIFY_PATIENT,
-    UPLOAD_DOCUMENTS,
     PRIVACY_POLICY,
+    LLOYD_GEORGE,
+    LLOYD_GEORGE_UPLOAD,
+    ARF_DOWNLOAD_DOCUMENTS,
+    ARF_UPLOAD_DOCUMENTS,
 } = routes;
 
 type Routes = {
@@ -105,25 +105,25 @@ export const routeMap: Routes = {
         page: <PatientResultPage />,
         type: ROUTE_TYPE.PATIENT,
     },
-    [UPLOAD_DOCUMENTS]: {
-        page: <UploadDocumentsPage />,
-        type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE],
-    },
-    [DOWNLOAD_DOCUMENTS]: {
-        page: <DocumentSearchResultsPage />,
-        type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
-    },
     [LLOYD_GEORGE]: {
         page: <LloydGeorgeRecordPage />,
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.PCSE],
     },
     [LLOYD_GEORGE_UPLOAD]: {
-        page: <UploadLloydGeorgeRecordPage />,
+        page: <LloydGeorgeUploadPage />,
         type: ROUTE_TYPE.PATIENT,
-        unauthorized: [REPOSITORY_ROLE.PCSE, REPOSITORY_ROLE.GP_CLINICAL],
+        unauthorized: [REPOSITORY_ROLE.PCSE],
+    },
+    [ARF_DOWNLOAD_DOCUMENTS]: {
+        page: <ArfSearchResultsPage />,
+        type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
+    },
+    [ARF_UPLOAD_DOCUMENTS]: {
+        page: <ArfUploadDocumentsPage />,
+        type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.PCSE],
     },
 };
 

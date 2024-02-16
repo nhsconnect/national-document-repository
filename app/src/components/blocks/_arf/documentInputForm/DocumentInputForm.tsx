@@ -4,8 +4,8 @@ import {
     DOCUMENT_TYPE,
     FileInputEvent,
     UploadDocument,
-} from '../../../types/pages/UploadDocumentsPage/types';
-import formatFileSize from '../../../helpers/utils/formatFileSize';
+} from '../../../../types/pages/UploadDocumentsPage/types';
+import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import { FieldValues, UseControllerReturn } from 'react-hook-form';
 
 type Props = {
@@ -72,7 +72,7 @@ const DocumentInputForm = ({
                                 >
                                     Primary Care Support England
                                 </a>
-                                .
+                                {'.'}
                             </li>
                         )}
                         {formType === DOCUMENT_TYPE.LLOYD_GEORGE && (
@@ -89,7 +89,7 @@ const DocumentInputForm = ({
                     </ul>
                 }
             />
-            <div role="region" aria-live="polite">
+            <div aria-live="polite">
                 {documents && documents.length > 0 && (
                     <Table caption="Chosen files" id="selected-documents-table">
                         <Table.Head>

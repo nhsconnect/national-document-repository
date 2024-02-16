@@ -8,7 +8,7 @@ interface Props {
 
 const ReducedPatientInfo = ({ className }: Props) => {
     const patientDetails = usePatient();
-    const nhsNumber: string = patientDetails?.nhsNumber || '';
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
     return (
