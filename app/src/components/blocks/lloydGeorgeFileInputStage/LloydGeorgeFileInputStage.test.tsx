@@ -74,7 +74,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), lgFiles);
             });
-
+            expect(screen.getByText(`${lgFiles.length} files chosen`)).toBeInTheDocument();
             expect(await screen.findAllByText(lgDocumentOne.name)).toHaveLength(1);
             expect(await screen.findAllByText(lgDocumentTwo.name)).toHaveLength(1);
 
