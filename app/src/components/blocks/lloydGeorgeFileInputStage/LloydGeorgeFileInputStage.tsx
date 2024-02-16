@@ -200,12 +200,14 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                     <Table caption="Chosen file(s)" id="selected-documents-table">
                         <Table.Head>
                             <Table.Row>
-                                <div style={{ padding: '6px 0 12px 0', color: '#425563' }}>
-                                    <strong>
-                                        {`${documents.length}`} file
-                                        {`${documents.length === 1 ? '' : 's'}`} chosen
-                                    </strong>
-                                </div>
+                                <Table.Cell style={{ border: 'unset' }}>
+                                    <div style={{ padding: '6px 0 12px 0', color: '#425563' }}>
+                                        <strong>
+                                            {`${documents.length}`} file
+                                            {`${documents.length === 1 ? '' : 's'}`} chosen
+                                        </strong>
+                                    </div>
+                                </Table.Cell>
                             </Table.Row>
                             <Table.Row>
                                 <Table.Cell>Filename</Table.Cell>
