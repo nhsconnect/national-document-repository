@@ -30,7 +30,7 @@ function PatientResultPage() {
             if (patientDetails?.active) {
                 navigate(routes.LLOYD_GEORGE);
             } else {
-                navigate(routes.LLOYD_GEORGE_UPLOAD);
+                navigate(routes.ARF_UPLOAD_DOCUMENTS);
             }
         }
 
