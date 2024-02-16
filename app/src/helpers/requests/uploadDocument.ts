@@ -93,17 +93,18 @@ const uploadDocument = async ({
             documents.forEach((document) => {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
             });
-            return;
-        } else if (error.response?.status === 403) {
+            return true;
+        }
+        if (error.response?.status === 403) {
             documents.forEach((document) => {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
             });
-            return;
+            throw e;
         } else {
             documents.forEach((document) => {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
             });
-            return;
+            throw e;
         }
     }
 };

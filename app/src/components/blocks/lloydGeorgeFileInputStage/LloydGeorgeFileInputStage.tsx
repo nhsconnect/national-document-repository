@@ -19,6 +19,10 @@ import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
+import { routes } from '../../../types/generic/routes';
+import { useNavigate } from 'react-router';
+import { errorToParams } from '../../../helpers/utils/errorToParams';
+import { AxiosError } from 'axios';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -28,6 +32,7 @@ export type Props = {
 
 function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props) {
     const patientDetails = usePatient();
+    const navigate = useNavigate();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const dob: string = patientDetails?.birthDate
@@ -55,7 +60,10 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                 });
                 setStage(LG_UPLOAD_STAGE.COMPLETE);
             }
-        } catch (e) {}
+        } catch (e) {
+            const error = e as AxiosError;
+            navigate(routes.SERVER_ERROR + errorToParams(error));
+        }
     };
     const updateFileList = (fileArray: File[]) => {
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
