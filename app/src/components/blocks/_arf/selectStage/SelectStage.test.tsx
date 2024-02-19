@@ -127,7 +127,7 @@ describe('<UploadDocumentsPage />', () => {
                 const documentBig =
                     inputType.name === 'ARF'
                         ? buildTextFile('four', 6 * Math.pow(1024, 3))
-                        : buildLgFile(3, 2, 6 * Math.pow(1024, 3));
+                        : buildLgFile(3, 2, 'Joe Blogs', 6 * Math.pow(1024, 3));
                 inputType.documents.push(documentBig);
 
                 act(() => {

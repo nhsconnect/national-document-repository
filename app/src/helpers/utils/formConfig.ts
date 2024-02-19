@@ -2,8 +2,18 @@ import { UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import { Control, FieldValues } from 'react-hook-form';
 
 export const lloydGeorgeFormConfig = (control: Control<FieldValues>) => {
-    const lgRegex =
-        /[0-9]+of[0-9]+_Lloyd_George_Record_\[[A-Za-z]+\s[A-Za-z]+]_\[[0-9]{10}]_\[\d\d-\d\d-\d\d\d\d].pdf/; // eslint-disable-line
+    let REGEX_ACCENT_MARKS_IN_NFD = '';
+    for (let i = 300; i < 371; i++) {
+        REGEX_ACCENT_MARKS_IN_NFD += String.fromCharCode(i);
+    }
+
+    const REGEX_ACCENT_CHARS_IN_NFC = 'À-ž';
+    const REGEX_PATIENT_NAME_PATTERN = `[A-Za-z ${REGEX_ACCENT_CHARS_IN_NFC}${REGEX_ACCENT_MARKS_IN_NFD}]+`;
+    const REGEX_NHS_NUMBER_REGEX = '[0-9]{10}';
+    const REGEX_LLOYD_GEORGE_FILENAME = new RegExp(
+        `[0-9]+of[0-9]+_Lloyd_George_Record_\\[${REGEX_PATIENT_NAME_PATTERN}]_\\[${REGEX_NHS_NUMBER_REGEX}]_\\[\\d\\d-\\d\\d-\\d\\d\\d\\d].pdf`,
+    );
+
     const lgFilesNumber = /of[0-9]+/;
     const FIVEGB = 5 * Math.pow(1024, 3);
     return {
@@ -22,7 +32,9 @@ export const lloydGeorgeFormConfig = (control: Control<FieldValues>) => {
                                 return 'One or more of the files do not match the required file type. Please check the file(s) and try again';
                             }
                             const expectedNumberOfFiles = currentFile.name.match(lgFilesNumber);
-                            const doesPassRegex = lgRegex.exec(currentFile.name);
+                            const doesPassRegex = REGEX_LLOYD_GEORGE_FILENAME.exec(
+                                currentFile.name,
+                            );
                             const doFilesTotalMatch =
                                 expectedNumberOfFiles &&
                                 value.length === parseInt(expectedNumberOfFiles[0].slice(2));
