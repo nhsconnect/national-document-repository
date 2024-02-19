@@ -27,6 +27,15 @@ function UploadDocumentsPage(props: Props) {
                 baseUrl,
                 baseHeaders,
             });
+            try {
+                await uploadDocument({
+                    nhsNumber: patientDetails.nhsNumber,
+                    setDocuments,
+                    documents,
+                    baseUrl,
+                    baseHeaders,
+                });
+            } catch (e) {}
             setStage(UPLOAD_STAGE.Complete);
         }
     };
