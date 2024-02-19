@@ -33,6 +33,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
     let arfInputRef = useRef<HTMLInputElement | null>(null);
     let lgInputRef = useRef<HTMLInputElement | null>(null);
     const patientDetails = usePatient();
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const mergedDocuments = [...arfDocuments, ...lgDocuments];
     const hasFileInput = mergedDocuments.length;
 
@@ -41,19 +42,17 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
     const lgController = useController(lloydGeorgeFormConfig(control));
     const arfController = useController(ARFFormConfig(control));
     const uploadDocuments = async () => {
-        if (patientDetails) {
-            setStage(UPLOAD_STAGE.Uploading);
-            try {
-                await uploadDocument({
-                    nhsNumber: patientDetails.nhsNumber,
-                    setDocuments,
-                    documents,
-                    baseUrl,
-                    baseHeaders,
-                });
-            } catch (e) {}
-            setStage(UPLOAD_STAGE.Complete);
-        }
+        setStage(UPLOAD_STAGE.Uploading);
+        try {
+            await uploadDocument({
+                nhsNumber,
+                setDocuments,
+                documents,
+                baseUrl,
+                baseHeaders,
+            });
+        } catch (e) {}
+        setStage(UPLOAD_STAGE.Complete);
     };
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {
         const fileArray = Array.from(e.target.files ?? new FileList());
