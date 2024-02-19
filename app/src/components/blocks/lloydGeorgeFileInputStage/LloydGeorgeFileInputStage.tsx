@@ -50,17 +50,15 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
 
     const uploadDocuments = async () => {
         try {
-            if (patientDetails) {
-                setStage(LG_UPLOAD_STAGE.UPLOAD);
-                await uploadDocument({
-                    nhsNumber: patientDetails.nhsNumber,
-                    setDocuments,
-                    documents: documents,
-                    baseUrl,
-                    baseHeaders,
-                });
-                setStage(LG_UPLOAD_STAGE.COMPLETE);
-            }
+            setStage(LG_UPLOAD_STAGE.UPLOAD);
+            await uploadDocument({
+                nhsNumber,
+                setDocuments,
+                documents: documents,
+                baseUrl,
+                baseHeaders,
+            });
+            setStage(LG_UPLOAD_STAGE.COMPLETE);
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error)) {

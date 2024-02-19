@@ -6,11 +6,17 @@ import {
     buildLgFile,
 } from '../../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
-import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../../../types/pages/UploadDocumentsPage/types';
+import {
+    UPLOAD_STAGE,
+    DOCUMENT_UPLOAD_STATE as documentUploadStates,
+} from '../../../../types/pages/UploadDocumentsPage/types';
 import { act } from 'react-dom/test-utils';
 import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
+import axios from 'axios';
 
+jest.mock('axios');
+const mockSetStage = jest.fn();
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/utils/toFileList', () => ({
@@ -20,8 +26,22 @@ jest.mock('../../../../helpers/utils/toFileList', () => ({
 jest.mock('../../../../helpers/hooks/usePatient');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+const documentOne = buildTextFile('one', 100);
+const documentTwo = buildTextFile('two', 200);
+const documentThree = buildTextFile('three', 100);
+const lgDocumentOne = buildLgFile(1, 2, 'Joe Blogs');
+const lgDocumentTwo = buildLgFile(2, 2, 'Joe Blogs');
+const arfDocuments = [documentOne, documentTwo, documentThree];
 
-describe('<UploadDocumentsPage />', () => {
+const setDocumentMock = jest.fn();
+setDocumentMock.mockImplementation((document) => {
+    document.state = documentUploadStates.SELECTED;
+    document.id = '1';
+});
+
+const mockPatientDetails: PatientDetails = buildPatientDetails();
+describe('<SelectStage />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
@@ -30,22 +50,7 @@ describe('<UploadDocumentsPage />', () => {
         jest.clearAllMocks();
     });
 
-    describe('upload documents with an NHS number', () => {
-        const documentOne = buildTextFile('one', 100);
-        const documentTwo = buildTextFile('two', 200);
-        const documentThree = buildTextFile('three', 100);
-        const lgDocumentOne = buildLgFile(1, 2, 'Joe Blogs');
-        const lgDocumentTwo = buildLgFile(2, 2, 'Joe Blogs');
-        const arfDocuments = [documentOne, documentTwo, documentThree];
-
-        const setDocumentMock = jest.fn();
-        setDocumentMock.mockImplementation((document) => {
-            document.state = documentUploadStates.SELECTED;
-            document.id = '1';
-        });
-
-        const mockPatientDetails: PatientDetails = buildPatientDetails();
-
+    describe('Rendering', () => {
         it('renders the page', async () => {
             renderApp();
 
@@ -356,7 +361,55 @@ describe('<UploadDocumentsPage />', () => {
         });
     });
 
+    describe('Navigation', () => {
+        it('sets stage to uploading and complete when upload files is triggered', async () => {
+            const response = {
+                response: {
+                    status: 200,
+                },
+            };
+            mockedAxios.post.mockImplementation(() => Promise.resolve(response));
+
+            renderApp();
+            expect(screen.getByRole('heading', { name: 'Upload documents' })).toBeInTheDocument();
+            expect(screen.getByText(mockPatientDetails.nhsNumber)).toBeInTheDocument();
+            expect(await screen.findAllByText('Select file(s)')).toHaveLength(2);
+
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+
+            act(() => {
+                userEvent.upload(screen.getByTestId('ARF-input'), [
+                    documentOne,
+                    documentTwo,
+                    documentThree,
+                ]);
+            });
+
+            act(() => {
+                userEvent.upload(screen.getByTestId('LG-input'), [lgDocumentOne, lgDocumentTwo]);
+            });
+
+            expect(await screen.findAllByText(documentOne.name)).toHaveLength(1);
+            expect(await screen.findAllByText(documentTwo.name)).toHaveLength(1);
+            expect(await screen.findAllByText(documentThree.name)).toHaveLength(1);
+            expect(await screen.findAllByText(lgDocumentOne.name)).toHaveLength(1);
+            expect(await screen.findAllByText(lgDocumentTwo.name)).toHaveLength(1);
+
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+            await waitFor(() => {
+                expect(mockSetStage).toHaveBeenCalledWith(UPLOAD_STAGE.Uploading);
+            });
+            await waitFor(() => {
+                expect(mockSetStage).toHaveBeenCalledWith(UPLOAD_STAGE.Complete);
+            });
+        });
+    });
+
     const renderApp = () => {
-        render(<SelectStage setDocuments={jest.fn()} setStage={jest.fn()} documents={[]} />);
+        render(<SelectStage setDocuments={jest.fn()} setStage={mockSetStage} documents={[]} />);
     };
 });
