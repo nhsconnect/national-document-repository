@@ -244,9 +244,9 @@ class LambdaError(Enum):
         "message": "Feature flag/s may not exist in AppConfig profile",
     }
 
-    FeatureFlagJsonFailure = {
+    FeatureFlagParseError = {
         "err_code": "FFL_5001",
-        "message": "Failed to parse JSON from AppConfig response",
+        "message": "Failed to parse feature flag/s from AppConfig response",
     }
 
     FeatureFlagFailure = {

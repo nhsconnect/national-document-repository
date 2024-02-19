@@ -7,6 +7,8 @@ test_url = (
     "http://localhost:2772/applications/A1234/environments/B1234/configurations/C1234"
 )
 
+empty_response = {}
+
 err_response = {
     "Details": {"InvalidParameters": {"testFeature": {"Problem": "NoSuchFlag"}}},
     "Message": "Configuration data missing one or more flag values",
@@ -52,7 +54,7 @@ def test_request_app_config_data_invalid_json_raises_exception(
 
     expected = {
         "status_code": 500,
-        "message": "Failed to parse JSON from AppConfig response",
+        "message": "Failed to parse feature flag/s from AppConfig response",
         "err_code": "FFL_5001",
     }
 
@@ -109,6 +111,39 @@ def test_get_feature_flags_returns_all_flags(mock_requests, mock_feature_flag_se
     assert expected == actual
 
 
+def test_get_feature_flags_no_flags_returns_empty(
+    mock_requests, mock_feature_flag_service
+):
+    mock_requests.get(test_url, json=empty_response, status_code=200)
+    mock_feature_flag_service.request_app_config_data.return_value = empty_response
+
+    expected = {}
+
+    actual = mock_feature_flag_service.get_feature_flags()
+
+    assert expected == actual
+
+
+def test_get_feature_flags_invalid_raises_exception(
+    mock_requests, mock_feature_flag_service
+):
+    mock_requests.get(test_url, json=err_response, status_code=200)
+    mock_feature_flag_service.request_app_config_data.return_value = (
+        success_200_all_response
+    )
+
+    expected = {
+        "status_code": 500,
+        "message": "Failed to parse feature flag/s from AppConfig response",
+        "err_code": "FFL_5001",
+    }
+
+    with pytest.raises(FeatureFlagsException) as e:
+        mock_feature_flag_service.get_feature_flags()
+
+    assert e.value.__dict__ == expected
+
+
 def test_get_feature_flags_by_flag_returns_single_flag(
     mock_requests, mock_feature_flag_service
 ):
@@ -122,3 +157,39 @@ def test_get_feature_flags_by_flag_returns_single_flag(
     actual = mock_feature_flag_service.get_feature_flags_by_flag("testFeature1")
 
     assert expected == actual
+
+
+def test_get_feature_flags_by_flag_no_flag_raises_exception(
+    mock_requests, mock_feature_flag_service
+):
+    mock_requests.get(test_url, json=empty_response, status_code=200)
+    mock_feature_flag_service.request_app_config_data.return_value = empty_response
+
+    expected = {
+        "status_code": 500,
+        "message": "Failed to parse feature flag/s from AppConfig response",
+        "err_code": "FFL_5001",
+    }
+
+    with pytest.raises(FeatureFlagsException) as e:
+        mock_feature_flag_service.get_feature_flags_by_flag("testFeature1")
+
+    assert e.value.__dict__ == expected
+
+
+def test_get_feature_flags_by_flag_invalid_raises_exception(
+    mock_requests, mock_feature_flag_service
+):
+    mock_requests.get(test_url, json=err_response, status_code=200)
+    mock_feature_flag_service.request_app_config_data.return_value = err_response
+
+    expected = {
+        "status_code": 500,
+        "message": "Failed to parse feature flag/s from AppConfig response",
+        "err_code": "FFL_5001",
+    }
+
+    with pytest.raises(FeatureFlagsException) as e:
+        mock_feature_flag_service.get_feature_flags_by_flag("testFeature1")
+
+    assert e.value.__dict__ == expected

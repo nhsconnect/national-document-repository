@@ -2,6 +2,8 @@ import os
 
 import requests
 from enums.lambda_error import LambdaError
+from models.feature_flags import FeatureFlag
+from pydantic import ValidationError
 from requests.exceptions import JSONDecodeError
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import FeatureFlagsException
@@ -30,7 +32,7 @@ class FeatureFlagService:
                 {"Result": "Error when retrieving feature flag from AppConfig profile"},
             )
             raise FeatureFlagsException(
-                error=LambdaError.FeatureFlagJsonFailure,
+                error=LambdaError.FeatureFlagParseError,
                 status_code=config_data.status_code,
             )
 
@@ -60,9 +62,19 @@ class FeatureFlagService:
 
         url = self.app_config_url
         response = self.request_app_config_data(url)
-        feature_flags = {key: value["enabled"] for key, value in response.items()}
 
-        return feature_flags
+        try:
+            feature_flags = FeatureFlag(feature_flags=response)
+            return feature_flags.format_flags()
+        except ValidationError as e:
+            logger.error(
+                str(e),
+                {"Result": "Error when retrieving feature flag from AppConfig profile"},
+            )
+            raise FeatureFlagsException(
+                error=LambdaError.FeatureFlagParseError,
+                status_code=500,
+            )
 
     def get_feature_flags_by_flag(self, flag: str):
         logger.info(f"Retrieving feature flag: {flag}")
@@ -72,4 +84,15 @@ class FeatureFlagService:
 
         response = self.request_app_config_data(url)
 
-        return {flag: response["enabled"]}
+        try:
+            feature_flag = FeatureFlag(feature_flags={flag: response})
+            return feature_flag.format_flags()
+        except ValidationError as e:
+            logger.error(
+                str(e),
+                {"Result": "Error when retrieving feature flag from AppConfig profile"},
+            )
+            raise FeatureFlagsException(
+                error=LambdaError.FeatureFlagParseError,
+                status_code=500,
+            )
