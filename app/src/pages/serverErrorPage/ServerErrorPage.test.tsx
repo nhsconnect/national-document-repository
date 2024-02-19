@@ -6,6 +6,10 @@ import { unixTimestamp } from '../../helpers/utils/createTimestamp';
 
 const mockedUseNavigate = jest.fn();
 
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
+
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
     useLocation: () => jest.fn(),
@@ -21,11 +25,7 @@ describe('ServerErrorPage', () => {
 
     describe('Rendering', () => {
         it('renders page content with default error message when there are no url params', () => {
-            const mockErrorCode = '';
             const mockInteractionId = unixTimestamp();
-            const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
-            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
-
             render(<ServerErrorPage />);
 
             expect(
@@ -93,7 +93,7 @@ describe('ServerErrorPage', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates user to previous page when return home is clicked', async () => {
+        it('navigates user to previous two pages when return home is clicked', async () => {
             const mockErrorCode = 'XXX';
             const mockInteractionId = '000-000';
             const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
