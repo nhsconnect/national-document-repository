@@ -1,9 +1,10 @@
-import React, { useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useRef, useState } from 'react';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     FileInputEvent,
     SetUploadDocuments,
+    UPLOAD_STAGE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { Button, Fieldset } from 'nhsuk-react-components';
@@ -13,19 +14,25 @@ import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig, lloydGeorgeFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
+import uploadDocument from '../../../../helpers/requests/uploadDocument';
+import usePatient from '../../../../helpers/hooks/usePatient';
+import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
+import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 
 interface Props {
-    uploadDocuments: () => void;
     setDocuments: SetUploadDocuments;
+    setStage: Dispatch<SetStateAction<UPLOAD_STAGE>>;
+    documents: Array<UploadDocument>;
 }
 
-function SelectStage({ uploadDocuments, setDocuments }: Props) {
+function SelectStage({ setDocuments, setStage, documents }: Props) {
     const [arfDocuments, setArfDocuments] = useState<Array<UploadDocument>>([]);
     const [lgDocuments, setLgDocuments] = useState<Array<UploadDocument>>([]);
-
+    const baseUrl = useBaseAPIUrl();
+    const baseHeaders = useBaseAPIHeaders();
     let arfInputRef = useRef<HTMLInputElement | null>(null);
     let lgInputRef = useRef<HTMLInputElement | null>(null);
-
+    const patientDetails = usePatient();
     const mergedDocuments = [...arfDocuments, ...lgDocuments];
     const hasFileInput = mergedDocuments.length;
 
@@ -33,7 +40,21 @@ function SelectStage({ uploadDocuments, setDocuments }: Props) {
 
     const lgController = useController(lloydGeorgeFormConfig(control));
     const arfController = useController(ARFFormConfig(control));
-
+    const uploadDocuments = async () => {
+        if (patientDetails) {
+            setStage(UPLOAD_STAGE.Uploading);
+            try {
+                await uploadDocument({
+                    nhsNumber: patientDetails.nhsNumber,
+                    setDocuments,
+                    documents,
+                    baseUrl,
+                    baseHeaders,
+                });
+            } catch (e) {}
+            setStage(UPLOAD_STAGE.Complete);
+        }
+    };
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {
         const fileArray = Array.from(e.target.files ?? new FileList());
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
