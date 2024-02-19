@@ -237,6 +237,24 @@ class LambdaError(Enum):
     }
 
     """
+       Errors for Feature Flags lambda 
+    """
+    FeatureFlagNotFound = {
+        "err_code": "FFL_4001",
+        "message": "Feature flag/s may not exist in AppConfig profile",
+    }
+
+    FeatureFlagJsonFailure = {
+        "err_code": "FFL_5001",
+        "message": "Failed to parse JSON from AppConfig response",
+    }
+
+    FeatureFlagFailure = {
+        "err_code": "FFL_5002",
+        "message": "Failed to retrieve feature flag/s from AppConfig profile",
+    }
+
+    """
        Errors with no exception
     """
     DocDelNull = {

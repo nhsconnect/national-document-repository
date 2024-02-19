@@ -11,3 +11,4 @@ class LoggingAppInteraction(Enum):
     UPLOAD_RECORD = "Upload a record"
     LOGOUT = "Logout"
     SEND_FEEDBACK = "Send feedback"
+    FEATURE_FLAGS = "Feature flags"

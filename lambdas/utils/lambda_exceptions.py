@@ -54,3 +54,7 @@ class DocumentDeletionServiceException(LambdaException):
 
 class SendFeedbackException(LambdaException):
     pass
+
+
+class FeatureFlagsException(LambdaException):
+    pass

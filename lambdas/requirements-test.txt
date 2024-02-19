@@ -6,4 +6,5 @@ pip-audit==2.6.1
 pytest-cov==4.1.0
 pytest-mock==3.11.1
 pytest==7.4.3
+requests_mock-1.11.0
 ruff==0.0.284

@@ -1,5 +1,6 @@
 import json
 from dataclasses import dataclass
+from enum import Enum
 from unittest import mock
 
 import pytest
@@ -40,6 +41,9 @@ MOCK_JWT_PUBLIC_KEY_NAME = "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"
 MOCK_FEEDBACK_SENDER_EMAIL_ENV_NAME = "FROM_EMAIL_ADDRESS"
 MOCK_FEEDBACK_EMAIL_SUBJECT_ENV_NAME = "EMAIL_SUBJECT"
 MOCK_EMAIL_RECIPIENT_SSM_PARAM_KEY_ENV_NAME = "EMAIL_RECIPIENT_SSM_PARAM_KEY"
+MOCK_APPCONFIG_APPLICATION_ENV_NAME = "APPCONFIG_APPLICATION"
+MOCK_APPCONFIG_ENVIRONMENT_ENV_NAME = "APPCONFIG_ENVIRONMENT"
+MOCK_APPCONFIG_CONFIGURATION_ENV_NAME = "APPCONFIG_CONFIGURATION"
 
 MOCK_ARF_TABLE_NAME = "test_arf_dynamoDB_table"
 MOCK_LG_TABLE_NAME = "test_lg_dynamoDB_table"
@@ -75,13 +79,16 @@ JWT_PUBLIC_KEY = "mock_public_key"
 SSM_PARAM_JWT_TOKEN_PUBLIC_KEY_ENV_NAME = "SSM_PARAM_JWT_TOKEN_PUBLIC_KEY"
 SSM_PARAM_JWT_TOKEN_PUBLIC_KEY = "test_jwt_token_public_key"
 
-
 MOCK_FEEDBACK_SENDER_EMAIL = "feedback@localhost"
 MOCK_FEEDBACK_RECIPIENT_EMAIL_LIST = ["gp2gp@localhost", "test_email@localhost"]
 MOCK_FEEDBACK_EMAIL_SUBJECT = "Digitised Lloyd George feedback"
 MOCK_EMAIL_RECIPIENT_SSM_PARAM_KEY = "/prs/dev/user-input/feedback-recipient-email-list"
 
 MOCK_INTERACTION_ID = "88888888-4444-4444-4444-121212121212"
+
+MOCK_APPCONFIG_APPLICATION_ID = "A1234"
+MOCK_APPCONFIG_ENVIRONMENT_ID = "B1234"
+MOCK_APPCONFIG_CONFIGURATION_ID = "C1234"
 
 
 @pytest.fixture
@@ -123,6 +130,15 @@ def set_env(monkeypatch):
     )
     monkeypatch.setenv(
         MOCK_EMAIL_RECIPIENT_SSM_PARAM_KEY_ENV_NAME, MOCK_EMAIL_RECIPIENT_SSM_PARAM_KEY
+    )
+    monkeypatch.setenv(
+        MOCK_APPCONFIG_APPLICATION_ENV_NAME, MOCK_APPCONFIG_APPLICATION_ID
+    ),
+    monkeypatch.setenv(
+        MOCK_APPCONFIG_ENVIRONMENT_ENV_NAME, MOCK_APPCONFIG_ENVIRONMENT_ID
+    ),
+    monkeypatch.setenv(
+        MOCK_APPCONFIG_CONFIGURATION_ENV_NAME, MOCK_APPCONFIG_CONFIGURATION_ID
     )
 
 
@@ -204,3 +220,11 @@ def validation_error() -> ValidationError:
         DocumentReference.model_validate(data)
     except ValidationError as e:
         return e
+
+
+class MockError(Enum):
+    Error = {
+        "message": "Client error",
+        "err_code": "AB_XXXX",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
