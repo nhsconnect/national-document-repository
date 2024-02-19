@@ -62,7 +62,7 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   smoketest:
-    uses: ./.github/workflows/ui-smoketest-base.yml
+    uses: ./.github/workflows/ui-smoketest.yml
     needs: ['deploy_ui']
     with:
       build_branch: ${{github.event.pull_request.head.ref}}
