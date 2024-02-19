@@ -20,13 +20,6 @@ function UploadDocumentsPage(props: Props) {
     const uploadDocuments = async () => {
         if (patientDetails) {
             setStage(UPLOAD_STAGE.Uploading);
-            await uploadDocument({
-                nhsNumber: patientDetails.nhsNumber,
-                setDocuments,
-                documents,
-                baseUrl,
-                baseHeaders,
-            });
             try {
                 await uploadDocument({
                     nhsNumber: patientDetails.nhsNumber,
