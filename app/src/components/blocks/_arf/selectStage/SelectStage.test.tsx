@@ -118,7 +118,7 @@ describe('<UploadDocumentsPage />', () => {
 
         it.each([
             { name: 'ARF', documents: arfDocuments },
-            { name: 'LG', documents: [buildLgFile(1, 2)] },
+            { name: 'LG', documents: [buildLgFile(1, 2, 'Joe Blogs')] },
         ])(
             "does not upload either forms if selected file is more than 5GB for '%s' input",
             async (inputType) => {
@@ -182,7 +182,7 @@ describe('<UploadDocumentsPage />', () => {
         it('does not upload LG form if total number of file does not match file name', async () => {
             render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
-            const lgExtraFile = buildLgFile(3, 3);
+            const lgExtraFile = buildLgFile(3, 3, 'Joe Blogs');
 
             act(() => {
                 userEvent.upload(screen.getByTestId(`LG-input`), lgExtraFile);
@@ -227,7 +227,7 @@ describe('<UploadDocumentsPage />', () => {
         it('does not upload LG form if selected file number is bigger than number of total files', async () => {
             render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
-            const pdfFileWithBadNumber = buildLgFile(2, 1);
+            const pdfFileWithBadNumber = buildLgFile(2, 1, 'Joe Blogs');
             act(() => {
                 userEvent.upload(screen.getByTestId(`LG-input`), pdfFileWithBadNumber);
             });
