@@ -1,18 +1,11 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import {
-    buildPatientDetails,
-    buildLgFile,
-    buildDocument,
-} from '../../../helpers/test/testBuilders';
+import { buildPatientDetails, buildLgFile } from '../../../helpers/test/testBuilders';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import LloydGeorgeFileInputStage, { Props } from './LloydGeorgeFileInputStage';
-import {
-    DOCUMENT_UPLOAD_STATE,
-    UploadDocument,
-} from '../../../types/pages/UploadDocumentsPage/types';
+import { UploadDocument } from '../../../types/pages/UploadDocumentsPage/types';
 import { useState } from 'react';
 
 jest.mock('../../../helpers/utils/toFileList', () => ({
@@ -25,13 +18,30 @@ jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 const setStageMock = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
-const lgDocumentOne = buildLgFile(1, 2);
-const lgDocumentTwo = buildLgFile(2, 2);
+
+const lgDocumentOne = buildLgFile(1, 2, 'Joe Blogs');
+const lgDocumentTwo = buildLgFile(2, 2, 'Joe Blogs');
 const lgFiles = [lgDocumentOne, lgDocumentTwo];
-const uploadFiles = [
-    buildDocument(lgDocumentOne, DOCUMENT_UPLOAD_STATE.UPLOADING),
-    buildDocument(lgDocumentTwo, DOCUMENT_UPLOAD_STATE.UPLOADING),
+
+const lgDocumentThreeNamesOne = buildLgFile(1, 2, 'Dom Jacob Alexander');
+const lgDocumentThreeNamesTwo = buildLgFile(2, 2, 'Dom Jacob Alexander');
+const lgFilesThreeNames = [lgDocumentThreeNamesOne, lgDocumentThreeNamesTwo];
+
+const lgDocumentNonStandardCharacterNamesOne = buildLgFile(
+    1,
+    2,
+    'DomžĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖ JacobŗŘřŚśŜŝŞşŠšŢţŤťŦŧ AŨũŪūŬŭŮůŰűŲer',
+);
+const lgDocumentNonStandardCharacterNamesTwo = buildLgFile(
+    2,
+    2,
+    'DomžĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖ JacobŗŘřŚśŜŝŞşŠšŢţŤťŦŧ AŨũŪūŬŭŮůŰűŲer',
+);
+const lgFilesNonStandardCharacterNames = [
+    lgDocumentNonStandardCharacterNamesOne,
+    lgDocumentNonStandardCharacterNamesTwo,
 ];
+
 describe('<LloydGeorgeFileInputStage />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -56,6 +66,59 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+        });
+
+        it('can upload documents to LG forms with multiple names using button', async () => {
+            renderApp();
+
+            expect(
+                screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
+            ).toBeInTheDocument();
+
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+
+            act(() => {
+                userEvent.upload(screen.getByTestId('button-input'), lgFilesThreeNames);
+            });
+
+            expect(await screen.findAllByText(lgDocumentThreeNamesOne.name)).toHaveLength(1);
+            expect(await screen.findAllByText(lgDocumentThreeNamesTwo.name)).toHaveLength(1);
+
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
+        });
+
+        it('can upload documents to LG forms with non standard characters using button', async () => {
+            renderApp();
+
+            expect(
+                screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
+            ).toBeInTheDocument();
+
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+
+            act(() => {
+                userEvent.upload(
+                    screen.getByTestId('button-input'),
+                    lgFilesNonStandardCharacterNames,
+                );
+            });
+
+            expect(
+                await screen.findAllByText(lgDocumentNonStandardCharacterNamesOne.name),
+            ).toHaveLength(1);
+            expect(
+                await screen.findAllByText(lgDocumentNonStandardCharacterNamesTwo.name),
+            ).toHaveLength(1);
+
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
         });
 
         it('can upload documents to LG forms using button', async () => {
@@ -210,7 +273,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
         it('does not upload either forms if selected file is more than 5GB', async () => {
             renderApp();
 
-            const documentBig = buildLgFile(3, 2, 6 * Math.pow(1024, 3));
+            const documentBig = buildLgFile(3, 2, 'Joe Blogs', 6 * Math.pow(1024, 3));
 
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), documentBig);
@@ -258,7 +321,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
         it('does not upload LG form if total number of file does not match file name', async () => {
             renderApp();
 
-            const lgExtraFile = buildLgFile(3, 3);
+            const lgExtraFile = buildLgFile(3, 3, 'Joe Blogs');
 
             act(() => {
                 userEvent.upload(screen.getByTestId(`button-input`), lgExtraFile);
@@ -303,7 +366,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
         it('does not upload LG form if selected file number is bigger than number of total files', async () => {
             renderApp();
 
-            const pdfFileWithBadNumber = buildLgFile(2, 1);
+            const pdfFileWithBadNumber = buildLgFile(2, 1, 'Joe Blogs');
             act(() => {
                 userEvent.upload(screen.getByTestId(`button-input`), pdfFileWithBadNumber);
             });

@@ -52,10 +52,15 @@ const buildTextFile = (name: string, size?: number) => {
     return file;
 };
 
-const buildLgFile = (name: number, numberOfFiles: number, size?: number) => {
+const buildLgFile = (
+    fileNumber: number,
+    numberOfFiles: number,
+    patientname: string,
+    size?: number,
+) => {
     const file = new File(
         ['test'],
-        `${name}of${numberOfFiles}_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf`,
+        `${fileNumber}of${numberOfFiles}_Lloyd_George_Record_[${patientname}]_[1234567890]_[25-12-2019].pdf`,
         {
             type: 'application/pdf',
         },

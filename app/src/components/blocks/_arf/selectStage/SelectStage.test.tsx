@@ -33,8 +33,8 @@ describe('<UploadDocumentsPage />', () => {
         const documentOne = buildTextFile('one', 100);
         const documentTwo = buildTextFile('two', 200);
         const documentThree = buildTextFile('three', 100);
-        const lgDocumentOne = buildLgFile(1, 2);
-        const lgDocumentTwo = buildLgFile(2, 2);
+        const lgDocumentOne = buildLgFile(1, 2, 'Joe Blogs');
+        const lgDocumentTwo = buildLgFile(2, 2, 'Joe Blogs');
         const arfDocuments = [documentOne, documentTwo, documentThree];
 
         const setDocumentMock = jest.fn();
@@ -118,7 +118,7 @@ describe('<UploadDocumentsPage />', () => {
 
         it.each([
             { name: 'ARF', documents: arfDocuments },
-            { name: 'LG', documents: [buildLgFile(1, 2)] },
+            { name: 'LG', documents: [buildLgFile(1, 2, 'Joe Blogs')] },
         ])(
             "does not upload either forms if selected file is more than 5GB for '%s' input",
             async (inputType) => {
@@ -127,7 +127,7 @@ describe('<UploadDocumentsPage />', () => {
                 const documentBig =
                     inputType.name === 'ARF'
                         ? buildTextFile('four', 6 * Math.pow(1024, 3))
-                        : buildLgFile(3, 2, 6 * Math.pow(1024, 3));
+                        : buildLgFile(3, 2, 'Joe Blogs', 6 * Math.pow(1024, 3));
                 inputType.documents.push(documentBig);
 
                 act(() => {
@@ -182,7 +182,7 @@ describe('<UploadDocumentsPage />', () => {
         it('does not upload LG form if total number of file does not match file name', async () => {
             render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
-            const lgExtraFile = buildLgFile(3, 3);
+            const lgExtraFile = buildLgFile(3, 3, 'Joe Blogs');
 
             act(() => {
                 userEvent.upload(screen.getByTestId(`LG-input`), lgExtraFile);
@@ -227,7 +227,7 @@ describe('<UploadDocumentsPage />', () => {
         it('does not upload LG form if selected file number is bigger than number of total files', async () => {
             render(<SelectStage setDocuments={setDocumentMock} uploadDocuments={() => {}} />);
 
-            const pdfFileWithBadNumber = buildLgFile(2, 1);
+            const pdfFileWithBadNumber = buildLgFile(2, 1, 'Joe Blogs');
             act(() => {
                 userEvent.upload(screen.getByTestId(`LG-input`), pdfFileWithBadNumber);
             });
