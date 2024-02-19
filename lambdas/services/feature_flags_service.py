@@ -23,8 +23,6 @@ class FeatureFlagService:
     def request_app_config_data(url: str):
         config_data = requests.get(url)
         try:
-            logger.info(config_data)
-            logger.info(config_data.json())
             data = config_data.json()
         except JSONDecodeError as e:
             logger.error(
@@ -35,10 +33,10 @@ class FeatureFlagService:
                 error=LambdaError.FeatureFlagJsonFailure,
                 status_code=config_data.status_code,
             )
+
         if config_data.status_code == 200:
             return data
         if config_data.status_code == 400:
-            logger.info(config_data)
             logger.error(
                 str(data),
                 {"Result": "Error when retrieving feature flag from AppConfig profile"},
