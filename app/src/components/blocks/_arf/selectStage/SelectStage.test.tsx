@@ -33,8 +33,8 @@ describe('<UploadDocumentsPage />', () => {
         const documentOne = buildTextFile('one', 100);
         const documentTwo = buildTextFile('two', 200);
         const documentThree = buildTextFile('three', 100);
-        const lgDocumentOne = buildLgFile(1, 2);
-        const lgDocumentTwo = buildLgFile(2, 2);
+        const lgDocumentOne = buildLgFile(1, 2, 'Joe Blogs');
+        const lgDocumentTwo = buildLgFile(2, 2, 'Joe Blogs');
         const arfDocuments = [documentOne, documentTwo, documentThree];
 
         const setDocumentMock = jest.fn();
