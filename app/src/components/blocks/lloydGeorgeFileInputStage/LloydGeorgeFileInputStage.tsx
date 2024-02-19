@@ -23,6 +23,7 @@ import { routes } from '../../../types/generic/routes';
 import { useNavigate } from 'react-router';
 import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios';
+import { isMock } from '../../../helpers/utils/isLocal';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -62,7 +63,16 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             }
         } catch (e) {
             const error = e as AxiosError;
-            navigate(routes.SERVER_ERROR + errorToParams(error));
+            if (isMock(error)) {
+                documents.map((document) => ({
+                    ...document,
+                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                    progress: 100,
+                }));
+                setStage(LG_UPLOAD_STAGE.COMPLETE);
+            } else {
+                navigate(routes.SERVER_ERROR + errorToParams(error));
+            }
         }
     };
     const updateFileList = (fileArray: File[]) => {
