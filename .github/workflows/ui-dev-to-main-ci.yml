@@ -12,6 +12,14 @@ on:
       - main
     paths:
       - 'app/**'
+  workflow_call:
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+      CYPRESS_USERNAME:
+        required: true
+      CYPRESS_PASSWORD:
+        required: true
 
 permissions:
   pull-requests: write
@@ -30,7 +38,7 @@ jobs:
     uses: ./.github/workflows/base-cypress-build.yml
     with:
       build_branch: ${{github.event.pull_request.head.ref}}
-  
+
   cypress_test_job:
     name: Run Cypress E2E Tests
     needs: [cypress_build_job]
@@ -42,7 +50,7 @@ jobs:
   deploy_ui:
     name: Deploy UI
     if: github.ref == 'refs/heads/main'
-    needs: ["react_testing_job", "cypress_test_job"]
+    needs: ['react_testing_job', 'cypress_test_job']
     uses: ./.github/workflows/base-deploy-ui.yml
     with:
       build_branch: ${{github.event.pull_request.head.ref}}
@@ -50,3 +58,15 @@ jobs:
       sandbox: ndr-dev
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  smoketest:
+    needs: ['deploy_ui']
+    uses: ./.github/workflows/base-cypress-smoketest.yml
+    with:
+      build_branch: ${{github.event.pull_request.head.ref}}
+      environment: development
+      sandbox: ndr-dev
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+      CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
+      CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
