@@ -3,9 +3,21 @@ import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.j
 
 const baseUrl = Cypress.config('baseUrl');
 const searchPatientUrl = '/search/patient';
+const viewLloydGeorgeRecordUrl = '/patient/view/lloyd-george-record';
 const clickUploadButton = () => {
     cy.get('#upload-button').click();
     cy.wait(20);
+};
+
+const testSearchPatientButton = () => {
+    cy.getByTestId('search-patient-btn').should('be.visible');
+    cy.getByTestId('search-patient-btn').click();
+    cy.url().should('eq', baseUrl + searchPatientUrl);
+};
+const testViewRecordButton = () => {
+    cy.getByTestId('view-record-btn').should('be.visible');
+    cy.getByTestId('view-record-btn').click();
+    cy.url().should('eq', baseUrl + viewLloydGeorgeRecordUrl);
 };
 
 const uploadedFilePathNames = {
@@ -32,7 +44,7 @@ const selectForm = () => cy.getByTestId(`upload-document-form`);
 const singleFileUsecaseIndex = 0;
 const multiFileUSecaseIndex = 1;
 
-describe('GP Workflow: Upload Lloyd George record when user is GP amin and patient has no record', () => {
+describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and patient has no record', () => {
     const beforeEachConfiguration = () => {
         cy.login(Roles.GP_ADMIN);
         cy.visit(searchPatientUrl);
@@ -57,9 +69,9 @@ describe('GP Workflow: Upload Lloyd George record when user is GP amin and patie
         beforeEachConfiguration();
     });
 
-    context('Upload Lloyd George document', () => {
+    context('Upload Lloyd George document for an active patient', () => {
         it(
-            `GP ADMIN user can upload Lloyd George files for an active patient with no existing record`,
+            `User can upload a single Lloyd George file using the "Select files" button and can then view LG record`,
             { tags: 'regression' },
             () => {
                 const fileName = uploadedFileNames.LG[0];
@@ -84,6 +96,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP amin and patie
 
                 cy.url().should('include', 'upload');
                 cy.url().should('eq', baseUrl + '/patient/upload/lloyd-george-record');
+
                 cy.intercept('POST', '**/DocumentReference**', stubbedResponse);
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', {
                     statusCode: 204,
@@ -94,20 +107,17 @@ describe('GP Workflow: Upload Lloyd George record when user is GP amin and patie
                     { force: true },
                 );
                 clickUploadButton();
+
+                cy.getByTestId('upload-complete-page')
+                    .should('include.text', 'Record uploaded for')
+                    .should('include.text', 'You have successfully uploaded 1 file')
+                    .should('include.text', 'Hide files')
+                    .should('contain', uploadedFileNames.LG[singleFileUsecaseIndex]);
+                cy.getByTestId('upload-complete-card').should('be.visible');
                 cy.getByTestId('view-record-btn').should('be.visible');
                 cy.getByTestId('search-patient-btn').should('be.visible');
 
-                // cy.get('#upload-summary-confirmation').should('be.visible');
-                // cy.get('#upload-summary-header').should('be.visible');
-                // cy.get('#successful-uploads-dropdown').should('be.visible');
-                // cy.get('#successful-uploads-dropdown').click();
-                //
-                // cy.get('#successful-uploads tbody tr').should('have.length', 1);
-                //
-                // cy.get('#successful-uploads tbody tr')
-                //     .eq(1)
-                //     .should('contain', uploadedFileNames.LG[singleFileUsecaseIndex]);
-                // cy.get('#close-page-warning').should('be.visible');
+                testViewRecordButton();
             },
         );
     });
