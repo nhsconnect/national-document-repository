@@ -19,6 +19,7 @@ on:
         required: true
         type: 'string'
         default: 'ndr'
+  workflow_call:
     secrets:
       AWS_ASSUME_ROLE:
         required: true
