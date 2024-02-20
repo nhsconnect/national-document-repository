@@ -3,17 +3,23 @@ import { ButtonLink } from 'nhsuk-react-components';
 import React from 'react';
 import errorCodes from '../../helpers/utils/errorCodes';
 import { useSearchParams } from 'react-router-dom';
+import { unixTimestamp } from '../../helpers/utils/createTimestamp';
+
+type ServerError = [errorCode: string | null, interactionId: string | null];
 
 const ServerErrorPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const encodedError = searchParams.get('encodedError') ?? '';
-    const [errorCode, interactionId] = JSON.parse(atob(encodedError));
+    const encodedError: string | null = searchParams.get('encodedError') ?? null;
+    const error: ServerError = encodedError ? JSON.parse(atob(encodedError)) : [null, null];
+    const [errorCode, interactionId] = error;
 
     const defaultMessage = 'An unknown error has occurred.';
 
     const errorMessage =
         errorCode && !!errorCodes[errorCode] ? errorCodes[errorCode] : defaultMessage;
+
+    const interactionCode = interactionId ?? unixTimestamp();
 
     return (
         <>
@@ -56,7 +62,7 @@ const ServerErrorPage = () => {
 
             <p>
                 When contacting the service desk, quote this error code as reference:{' '}
-                <strong>{interactionId}</strong>
+                <strong>{interactionCode}</strong>
             </p>
         </>
     );

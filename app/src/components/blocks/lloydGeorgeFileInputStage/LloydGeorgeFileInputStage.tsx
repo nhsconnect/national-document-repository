@@ -19,6 +19,11 @@ import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
+import { routes } from '../../../types/generic/routes';
+import { useNavigate } from 'react-router';
+import { errorToParams } from '../../../helpers/utils/errorToParams';
+import { AxiosError } from 'axios';
+import { isMock } from '../../../helpers/utils/isLocal';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -28,6 +33,7 @@ export type Props = {
 
 function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props) {
     const patientDetails = usePatient();
+    const navigate = useNavigate();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const dob: string = patientDetails?.birthDate
@@ -44,18 +50,28 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
 
     const uploadDocuments = async () => {
         try {
-            if (patientDetails) {
-                setStage(LG_UPLOAD_STAGE.UPLOAD);
-                await uploadDocument({
-                    nhsNumber: patientDetails.nhsNumber,
-                    setDocuments,
-                    documents: documents,
-                    baseUrl,
-                    baseHeaders,
-                });
+            setStage(LG_UPLOAD_STAGE.UPLOAD);
+            await uploadDocument({
+                nhsNumber,
+                setDocuments,
+                documents: documents,
+                baseUrl,
+                baseHeaders,
+            });
+            setStage(LG_UPLOAD_STAGE.COMPLETE);
+        } catch (e) {
+            const error = e as AxiosError;
+            if (isMock(error)) {
+                documents.map((document) => ({
+                    ...document,
+                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                    progress: 100,
+                }));
                 setStage(LG_UPLOAD_STAGE.COMPLETE);
+            } else {
+                navigate(routes.SERVER_ERROR + errorToParams(error));
             }
-        } catch (e) {}
+        }
     };
     const updateFileList = (fileArray: File[]) => {
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
@@ -192,12 +208,14 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                     <Table caption="Chosen file(s)" id="selected-documents-table">
                         <Table.Head>
                             <Table.Row>
-                                <div style={{ padding: '6px 0 12px 0', color: '#425563' }}>
-                                    <strong>
-                                        {`${documents.length}`} file
-                                        {`${documents.length === 1 ? '' : 's'}`} chosen
-                                    </strong>
-                                </div>
+                                <Table.Cell style={{ border: 'unset' }}>
+                                    <div style={{ padding: '6px 0 12px 0', color: '#425563' }}>
+                                        <strong>
+                                            {`${documents.length}`} file
+                                            {`${documents.length === 1 ? '' : 's'}`} chosen
+                                        </strong>
+                                    </div>
+                                </Table.Cell>
                             </Table.Row>
                             <Table.Row>
                                 <Table.Cell>Filename</Table.Cell>

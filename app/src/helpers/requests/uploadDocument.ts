@@ -4,7 +4,6 @@ import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadD
 import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadResult } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
-import { isMock } from '../utils/isLocal';
 
 type UploadDocumentsArgs = {
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
@@ -89,21 +88,16 @@ const uploadDocument = async ({
         await uploadDocumentsToS3({ setDocumentState, documents, data });
     } catch (e) {
         const error = e as AxiosError;
-        if (isMock(error)) {
-            documents.forEach((document) => {
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
-            });
-            return;
-        } else if (error.response?.status === 403) {
+        if (error.response?.status === 403) {
             documents.forEach((document) => {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
             });
-            return;
+            throw e;
         } else {
             documents.forEach((document) => {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
             });
-            return;
+            throw e;
         }
     }
 };
