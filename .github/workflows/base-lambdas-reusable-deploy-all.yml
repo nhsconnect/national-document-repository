@@ -247,3 +247,16 @@ jobs:
       lambda_aws_name: NemsMessageLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_feature_flags_lambda:
+    name: Deploy feature flags lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: feature_flags_handler
+      lambda_aws_name: FeatureFlagsLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
