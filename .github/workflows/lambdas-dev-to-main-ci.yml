@@ -1,16 +1,24 @@
-name: " CI Lambdas - CI Feature to Main"
+name: ' CI Lambdas - CI Feature to Main'
 
 on:
   push:
     branches:
       - main
     paths:
-      - "lambdas/**"
+      - 'lambdas/**'
   pull_request:
     branches:
       - main
     paths:
-      - "lambdas/**"
+      - 'lambdas/**'
+  workflow_call:
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+      CYPRESS_USERNAME:
+        required: true
+      CYPRESS_PASSWORD:
+        required: true
 
 permissions:
   pull-requests: write
@@ -33,32 +41,25 @@ jobs:
 
   deploy_all_lambdas:
     uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
-    needs: ["run_tests"]
+    needs: ['run_tests']
     if: |
-      (github.ref == 'refs/heads/main') 
+      (github.ref == 'refs/heads/main')
     with:
       environment: development
-      python_version: "3.11"
+      python_version: '3.11'
       build_branch: ${{github.event.pull_request.head.ref}}
       sandbox: ndr-dev
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-  
-  # smoketest:
-  #   uses: ./.github/workflows/ui-smoketest-base.yml
-  #   needs: ["deploy_all_lambdas"]
-  #   if: |
-  #     (github.ref == 'refs/heads/main') 
-  #   with:
-  #     build_branch: ${{github.event.pull_request.head.ref}}
-  #     environment: development
-  #     sandbox: ndr-dev
-  #     aws_region: ${{ vars.AWS_REGION }}
-  #   secrets:
-  #     AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-  #     CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
-  #     CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
 
-  
-
-        
+  smoketest:
+    needs: ['deploy_all_lambdas']
+    uses: ./.github/workflows/base-cypress-smoketest.yml
+    with:
+      build_branch: ${{github.event.pull_request.head.ref}}
+      environment: development
+      sandbox: ndr-dev
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+      CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
+      CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
