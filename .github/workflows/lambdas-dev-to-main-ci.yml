@@ -54,6 +54,7 @@ jobs:
 
   smoketest:
     needs: ['deploy_all_lambdas']
+    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/base-cypress-smoketest.yml
     with:
       build_branch: ${{github.event.pull_request.head.ref}}

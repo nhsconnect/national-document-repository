@@ -61,6 +61,7 @@ jobs:
 
   smoketest:
     needs: ['deploy_ui']
+    if: github.ref == 'refs/heads/main'
     uses: ./.github/workflows/base-cypress-smoketest.yml
     with:
       build_branch: ${{github.event.pull_request.head.ref}}
