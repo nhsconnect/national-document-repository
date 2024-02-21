@@ -27,7 +27,7 @@ export type AppConfig = {
 };
 
 export type FeatureFlags = {
-    appConfig: AppConfig
+    appConfig: AppConfig;
     mockLocal: LocalFlags;
 };
 
@@ -73,18 +73,20 @@ const FeatureFlagsProvider = ({
         },
     });
 
-    const baseUrl = useBaseAPIUrl()
-    const baseHeaders = useBaseAPIHeaders()
+    const baseUrl = useBaseAPIUrl();
+    const baseHeaders = useBaseAPIHeaders();
 
     useEffect(() => {
         const onPageLoad = async () => {
-            const featureFlagsData = await getFeatureFlags({ baseUrl, baseHeaders })
-            setFeatureFlags({ mockLocal: { ...localDefaults }, appConfig: { ...featureFlagsData } });
-        }
+            const featureFlagsData = await getFeatureFlags({ baseUrl, baseHeaders });
+            setFeatureFlags({
+                mockLocal: { ...localDefaults },
+                appConfig: { ...featureFlagsData },
+            });
+        };
 
-        void onPageLoad;
-
-    }, [getFeatureFlags, setFeatureFlags, baseUrl, baseHeaders])
+        void onPageLoad();
+    }, [getFeatureFlags, setFeatureFlags, baseUrl, baseHeaders]);
 
     useEffect(() => {
         sessionStorage.setItem('FeatureFlags', JSON.stringify(featureFlags) ?? emptyFlags);
