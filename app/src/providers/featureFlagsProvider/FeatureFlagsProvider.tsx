@@ -86,7 +86,7 @@ const FeatureFlagsProvider = ({
         };
 
         void onPageLoad();
-    }, [getFeatureFlags, setFeatureFlags, baseUrl, baseHeaders]);
+    }, [getFeatureFlags, setFeatureFlags, baseUrl, baseHeaders, localDefaults]);
 
     useEffect(() => {
         sessionStorage.setItem('FeatureFlags', JSON.stringify(featureFlags) ?? emptyFlags);

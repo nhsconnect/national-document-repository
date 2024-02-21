@@ -1,4 +1,4 @@
-import { AppConfig} from '../../providers/featureFlagsProvider/FeatureFlagsProvider';
+import { AppConfig } from '../../providers/featureFlagsProvider/FeatureFlagsProvider';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
 
@@ -9,18 +9,16 @@ type Args = {
     baseHeaders: AuthHeaders;
 };
 
-
 type GetFeatureFlagsResponse = {
     data: AppConfig;
 };
 
 export const defaultFeatureFlags = {
-    testFeature: true,
     testRoute: true,
     testFeature1: false,
     testFeature2: false,
-    testFeature3: false
-}
+    testFeature3: false,
+};
 
 const getFeatureFlags = async ({ baseUrl, baseHeaders }: Args) => {
     const gatewayUrl = baseUrl + endpoints.FEATURE_FLAGS;
@@ -28,7 +26,7 @@ const getFeatureFlags = async ({ baseUrl, baseHeaders }: Args) => {
         const { data }: GetFeatureFlagsResponse = await axios.get(gatewayUrl, {
             headers: {
                 ...baseHeaders,
-            }
+            },
         });
         return data;
     } catch (e) {
