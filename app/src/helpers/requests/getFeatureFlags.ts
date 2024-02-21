@@ -14,7 +14,7 @@ type GetFeatureFlagsResponse = {
     data: AppConfig;
 };
 
-const defaultFeatureFlags = {
+export const defaultFeatureFlags = {
     testFeature: true,
     testRoute: true,
     testFeature1: false,
