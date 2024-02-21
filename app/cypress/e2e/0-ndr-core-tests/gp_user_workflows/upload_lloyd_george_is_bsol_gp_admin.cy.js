@@ -164,8 +164,11 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
             { tags: 'regression' },
             () => {
                 cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti);
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', {
-                    statusCode: 204,
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                        delay: 1500,
+                    });
                 });
 
                 cy.getByTestId('button-input').selectFile(
@@ -176,7 +179,6 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 cy.getByTestId('upload-documents-table')
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
-                cy.wait(20);
 
                 cy.getByTestId('upload-complete-page')
                     .should('include.text', 'Record uploaded for')
@@ -194,8 +196,11 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
             { tags: 'regression' },
             () => {
                 cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti);
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', {
-                    statusCode: 204,
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                        delay: 1500,
+                    });
                 });
 
                 cy.getByTestId('dropzone').selectFile(
@@ -206,7 +211,6 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 cy.getByTestId('upload-documents-table')
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
-                cy.wait(20);
 
                 cy.getByTestId('upload-complete-page')
                     .should('include.text', 'Record uploaded for')
