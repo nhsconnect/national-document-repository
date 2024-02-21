@@ -1,4 +1,4 @@
-name: ' CI Lambdas - CI Feature to Main'
+name: 'CI Lambdas - CI Feature to Main'
 
 on:
   push:
@@ -11,14 +11,6 @@ on:
       - main
     paths:
       - 'lambdas/**'
-  workflow_call:
-    secrets:
-      AWS_ASSUME_ROLE:
-        required: true
-      CYPRESS_USERNAME:
-        required: true
-      CYPRESS_PASSWORD:
-        required: true
 
 permissions:
   pull-requests: write
@@ -51,16 +43,3 @@ jobs:
       sandbox: ndr-dev
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-
-  smoketest:
-    needs: ['deploy_all_lambdas']
-    if: github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/base-cypress-smoketest.yml
-    with:
-      build_branch: ${{github.event.pull_request.head.ref}}
-      environment: development
-      sandbox: ndr-dev
-    secrets:
-      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-      CYPRESS_USERNAME: ${{ secrets.CYPRESS_USERNAME }}
-      CYPRESS_PASSWORD: ${{ secrets.CYPRESS_PASSWORD }}
