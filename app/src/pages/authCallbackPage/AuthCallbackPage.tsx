@@ -11,8 +11,8 @@ import { UserAuth } from '../../types/blocks/userAuth';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import getFeatureFlags from '../../helpers/requests/getFeatureFlags';
-import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { useFeatureFlagsContext } from '../../providers/featureFlagsProvider/FeatureFlagsProvider';
+import { AuthHeaders } from '../../types/blocks/authHeaders';
 
 type Props = {};
 
@@ -21,7 +21,6 @@ const AuthCallbackPage = (props: Props) => {
     const [, setSession] = useSessionContext();
     const [featureFlags, setFeatureFlags] = useFeatureFlagsContext();
     const navigate = useNavigate();
-    const baseHeaders = useBaseAPIHeaders();
 
     useEffect(() => {
         const handleError = (error: AxiosError) => {
@@ -41,6 +40,12 @@ const AuthCallbackPage = (props: Props) => {
                 auth: auth,
                 isLoggedIn: true,
             });
+
+            const jwtToken = auth?.authorisation_token ?? '';
+            const baseHeaders: AuthHeaders = {
+                'Content-Type': 'application/json',
+                Authorization: jwtToken,
+            };
 
             const featureFlagsData = await getFeatureFlags({ baseUrl, baseHeaders });
             setFeatureFlags({
