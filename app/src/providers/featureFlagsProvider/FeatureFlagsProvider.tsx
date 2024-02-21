@@ -51,14 +51,15 @@ const FeatureFlagsProvider = ({
         }),
         [featureFlagsOverride],
     );
-    const localDefaults = isLocal
-        ? {
-              isBsol: true,
-              recordUploaded: true,
-              userRole: REPOSITORY_ROLE.GP_ADMIN,
-              ...featureFlagsOverride?.mockLocal,
-          }
-        : null;
+    const localDefaults = useMemo(() => {
+        return {
+            isBsol: true,
+            recordUploaded: true,
+            userRole: REPOSITORY_ROLE.GP_ADMIN,
+            ...featureFlagsOverride?.mockLocal,
+        };
+    }, [featureFlagsOverride?.mockLocal]);
+
     const storedFlags = sessionStorage.getItem('FeatureFlags');
     const flags: FeatureFlags = storedFlags ? JSON.parse(storedFlags) : emptyFlags;
     const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
