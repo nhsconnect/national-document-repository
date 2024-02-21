@@ -40,6 +40,13 @@ jobs:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch}}
 
+      - name: AWS Role
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
+
       - name: Cypress install
         run: |
           npm install --legacy-peer-deps
@@ -73,7 +80,7 @@ jobs:
           if-no-files-found: ignore
 
   cypress-run-firefox:
-    needs: ["cypress-run-chrome"]
+    needs: ['cypress-run-chrome']
     runs-on: ubuntu-22.04
     environment: ${{ inputs.environment }}
     steps:
@@ -82,6 +89,13 @@ jobs:
         with:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch}}
+
+      - name: AWS Role
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Cypress install
         run: |
@@ -103,7 +117,7 @@ jobs:
           CYPRESS_OUTPUT_VIDEO: false
 
   cypress-run-edge:
-    needs: ["cypress-run-firefox"]
+    needs: ['cypress-run-firefox']
     runs-on: ubuntu-22.04
     environment: ${{ inputs.environment }}
     steps:
@@ -112,6 +126,13 @@ jobs:
         with:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch}}
+
+      - name: AWS Role
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
+          role-skip-session-tagging: true
+          aws-region: ${{ vars.AWS_REGION }}
 
       - name: Cypress install
         run: |
