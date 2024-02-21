@@ -2,6 +2,9 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { isLocal } from '../../helpers/utils/isLocal';
+import getFeatureFlags from '../../helpers/requests/getFeatureFlags';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 
 type SetFeatureFlagsOverride = (featureFlags: FeatureFlags) => void;
 
@@ -17,11 +20,14 @@ export type LocalFlags = {
     userRole?: REPOSITORY_ROLE;
 };
 
+export type AppConfig = {
+    testFeature1: boolean;
+    testFeature2: boolean;
+    testFeature3: boolean;
+};
+
 export type FeatureFlags = {
-    appConfig: {
-        testFeature?: true;
-        testRoute?: true;
-    };
+    appConfig: AppConfig
     mockLocal: LocalFlags;
 };
 
@@ -66,6 +72,19 @@ const FeatureFlagsProvider = ({
             ...featureFlagsOverride?.appConfig,
         },
     });
+
+    const baseUrl = useBaseAPIUrl()
+    const baseHeaders = useBaseAPIHeaders()
+
+    useEffect(() => {
+        const onPageLoad = async () => {
+            const featureFlagsData = await getFeatureFlags({ baseUrl, baseHeaders })
+            setFeatureFlags({ mockLocal: { ...localDefaults }, appConfig: { ...featureFlagsData } });
+        }
+
+        void onPageLoad;
+
+    }, [getFeatureFlags, setFeatureFlags, baseUrl, baseHeaders])
 
     useEffect(() => {
         sessionStorage.setItem('FeatureFlags', JSON.stringify(featureFlags) ?? emptyFlags);
