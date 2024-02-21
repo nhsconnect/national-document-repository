@@ -22,8 +22,8 @@ function LloydGeorgeUploadComplete({ documents }: Props) {
     });
 
     return (
-        <div className="lloydgeorge_upload-complete">
-            <Card className="lloydgeorge_upload-complete_card">
+        <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">
+            <Card className="lloydgeorge_upload-complete_card" data-testid="upload-complete-card">
                 <Card.Content>
                     <Card.Heading className="lloydgeorge_upload-complete_card_header">
                         Record uploaded for

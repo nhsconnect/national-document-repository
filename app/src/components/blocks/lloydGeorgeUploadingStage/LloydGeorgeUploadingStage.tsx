@@ -36,6 +36,7 @@ function LloydGeorgeUploadStage({ documents, setStage }: Props) {
                 captionProps={{
                     className: 'nhsuk-u-visually-hidden',
                 }}
+                data-testid="upload-documents-table"
             >
                 <Table.Head>
                     <Table.Row>

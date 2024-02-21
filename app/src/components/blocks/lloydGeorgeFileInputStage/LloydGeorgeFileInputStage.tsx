@@ -193,6 +193,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                                 }}
                             />
                             <Button
+                                data-testid={`upload-button-input`}
                                 type={'button'}
                                 style={{ background: '#4C6272', marginBottom: 0, color: 'white' }}
                                 onClick={() => {
