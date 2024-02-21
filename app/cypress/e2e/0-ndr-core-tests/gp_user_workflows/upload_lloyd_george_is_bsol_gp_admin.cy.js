@@ -129,8 +129,11 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 };
 
                 cy.intercept('POST', '**/DocumentReference**', stubbedResponse);
-                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', {
-                    statusCode: 204,
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                        delay: 1500,
+                    });
                 });
 
                 cy.getByTestId('button-input').selectFile(
