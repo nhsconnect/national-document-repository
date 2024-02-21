@@ -2,12 +2,13 @@ import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { isLocal } from '../../helpers/utils/isLocal';
+import { FeatureFlags } from '../../types/generic/featureFlags';
 
-type SetFeatureFlagsOverride = (featureFlags: FeatureFlags) => void;
+type SetFeatureFlagsOverride = (featureFlags: GlobalConfig) => void;
 
 type Props = {
     children: ReactNode;
-    featureFlagsOverride?: Partial<FeatureFlags>;
+    featureFlagsOverride?: Partial<GlobalConfig>;
     setFeatureFlagsOverride?: SetFeatureFlagsOverride;
 };
 
@@ -17,17 +18,14 @@ export type LocalFlags = {
     userRole?: REPOSITORY_ROLE;
 };
 
-export type FeatureFlags = {
-    appConfig: {
-        testFeature?: true;
-        testRoute?: true;
-    };
+export type GlobalConfig = {
+    appConfig: FeatureFlags;
     mockLocal: LocalFlags;
 };
 
 export type TFeatureFlagsContext = [
-    FeatureFlags,
-    Dispatch<SetStateAction<FeatureFlags>> | SetFeatureFlagsOverride,
+    GlobalConfig,
+    Dispatch<SetStateAction<GlobalConfig>> | SetFeatureFlagsOverride,
 ];
 
 const FeatureFlagsContext = createContext<TFeatureFlagsContext | null>(null);
@@ -54,8 +52,8 @@ const FeatureFlagsProvider = ({
           }
         : null;
     const storedFlags = sessionStorage.getItem('FeatureFlags');
-    const flags: FeatureFlags = storedFlags ? JSON.parse(storedFlags) : emptyFlags;
-    const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
+    const flags: GlobalConfig = storedFlags ? JSON.parse(storedFlags) : emptyFlags;
+    const [featureFlags, setFeatureFlags] = useState<GlobalConfig>({
         mockLocal: {
             ...localDefaults,
             ...flags.mockLocal,

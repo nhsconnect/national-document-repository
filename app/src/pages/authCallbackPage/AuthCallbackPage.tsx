@@ -11,14 +11,18 @@ import { UserAuth } from '../../types/blocks/userAuth';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useFeatureFlags from '../../helpers/hooks/useFeatureFlags';
+import getFeatureFlags from '../../helpers/requests/getFeatureFlags';
+import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
+import { useFeatureFlagsContext } from '../../providers/featureFlagsProvider/FeatureFlagsProvider';
 
 type Props = {};
 
 const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
     const [, setSession] = useSessionContext();
+    const [featureFlags, setFeatureFlags] = useFeatureFlagsContext();
     const navigate = useNavigate();
-    const featureFlags = useFeatureFlags();
+    const baseHeaders = useBaseAPIHeaders();
 
     useEffect(() => {
         const handleError = (error: AxiosError) => {
@@ -32,13 +36,18 @@ const AuthCallbackPage = (props: Props) => {
                 navigate(routes.AUTH_ERROR);
             }
         };
-        const handleSuccess = (auth: UserAuth) => {
+        const handleSuccess = async (auth: UserAuth) => {
             const { GP_ADMIN, GP_CLINICAL, PCSE } = REPOSITORY_ROLE;
             setSession({
                 auth: auth,
                 isLoggedIn: true,
             });
 
+            const featureFlagsData = await getFeatureFlags({ baseUrl, baseHeaders });
+            setFeatureFlags({
+                mockLocal: { ...featureFlags.mockLocal },
+                appConfig: { ...featureFlagsData },
+            });
             if ([GP_ADMIN, GP_CLINICAL, PCSE].includes(auth.role)) {
                 navigate(routes.HOME);
             } else {
@@ -54,7 +63,7 @@ const AuthCallbackPage = (props: Props) => {
                 const error = e as AxiosError;
                 if (isMock(error)) {
                     const { isBsol, userRole } = featureFlags.mockLocal;
-                    handleSuccess(buildUserAuth({ isBSOL: !!isBsol, role: userRole }));
+                    await handleSuccess(buildUserAuth({ isBSOL: !!isBsol, role: userRole }));
                 } else {
                     handleError(error);
                 }

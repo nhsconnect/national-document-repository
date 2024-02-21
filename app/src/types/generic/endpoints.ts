@@ -11,4 +11,6 @@ export enum endpoints {
 
     LLOYDGEORGE_STITCH = '/LloydGeorgeStitch',
     FEEDBACK = '/Feedback',
+
+    FEATURE_FLAGS = '/FeatureFlags',
 }
