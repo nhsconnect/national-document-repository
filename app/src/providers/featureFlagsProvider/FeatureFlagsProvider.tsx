@@ -85,10 +85,16 @@ const FeatureFlagsProvider = ({
             });
         };
 
+        // eslint-disable-next-line no-console
+        console.log('On Page Load Effect Hit');
+
         void onPageLoad();
     }, [setFeatureFlags, baseUrl, baseHeaders, localDefaults]);
 
     useEffect(() => {
+        // eslint-disable-next-line no-console
+        console.log('Session Storage effect hit');
+
         sessionStorage.setItem('FeatureFlags', JSON.stringify(featureFlags) ?? emptyFlags);
     }, [featureFlags, emptyFlags]);
 
