@@ -7,13 +7,13 @@ import FeatureFlagsProvider from './providers/featureFlagsProvider/FeatureFlagsP
 
 function App() {
     return (
-        <FeatureFlagsProvider>
-            <SessionProvider>
+        <SessionProvider>
+            <FeatureFlagsProvider>
                 <PatientDetailsProvider>
                     <AppRouter />
                 </PatientDetailsProvider>
-            </SessionProvider>
-        </FeatureFlagsProvider>
+            </FeatureFlagsProvider>
+        </SessionProvider>
     );
 }
 
