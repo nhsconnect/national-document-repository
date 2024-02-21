@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import FeatureFlagsProvider, { FeatureFlags, useFeatureFlagsContext } from './FeatureFlagsProvider';
+import FeatureFlagsProvider, { GlobalConfig, useFeatureFlagsContext } from './FeatureFlagsProvider';
+import { defaultFeatureFlags } from '../../helpers/requests/getFeatureFlags';
 describe('SessionProvider', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -32,15 +33,19 @@ describe('SessionProvider', () => {
 
 const TestApp = () => {
     const [featureFlags, setFeatureFlags] = useFeatureFlagsContext();
-    const flagOn: FeatureFlags = {
+    const flagOn: GlobalConfig = {
         ...featureFlags,
         appConfig: {
-            testFeature: true,
+            ...defaultFeatureFlags,
+            testFeature1: true,
         },
     };
-    const flagOff: FeatureFlags = {
+    const flagOff: GlobalConfig = {
         ...featureFlags,
-        appConfig: {},
+        appConfig: {
+            ...defaultFeatureFlags,
+            testFeature1: false,
+        },
     };
     return (
         <>
@@ -51,7 +56,7 @@ const TestApp = () => {
             </div>
             <div>
                 <h1>Flags</h1>
-                <span>testFeature - {`${!!featureFlags.appConfig.testFeature}`}</span>
+                <span>testFeature - {`${!!featureFlags.appConfig.testFeature1}`}</span>
             </div>
         </>
     );

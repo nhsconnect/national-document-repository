@@ -10,7 +10,6 @@ import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-import useFeatureFlags from '../../helpers/hooks/useFeatureFlags';
 import getFeatureFlags from '../../helpers/requests/getFeatureFlags';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { useFeatureFlagsContext } from '../../providers/featureFlagsProvider/FeatureFlagsProvider';

@@ -14,10 +14,9 @@ type GetFeatureFlagsResponse = {
 };
 
 export const defaultFeatureFlags = {
-    testRoute: true,
-    testFeature1: Boolean,
-    testFeature2: Boolean,
-    testFeature3: Boolean,
+    testFeature1: false,
+    testFeature2: false,
+    testFeature3: false,
 };
 
 const getFeatureFlags = async ({ baseUrl, baseHeaders }: Args) => {
