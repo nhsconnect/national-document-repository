@@ -62,7 +62,7 @@ const AuthCallbackPage = (props: Props) => {
         const handleCallback = async (args: AuthTokenArgs) => {
             try {
                 const authData = await getAuthToken(args);
-                handleSuccess(authData);
+                await handleSuccess(authData);
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
