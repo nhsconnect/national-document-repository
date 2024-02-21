@@ -6,7 +6,6 @@ const searchPatientUrl = '/search/patient';
 const viewLloydGeorgeRecordUrl = '/patient/view/lloyd-george-record';
 const clickUploadButton = () => {
     cy.get('#upload-button').click();
-    cy.wait(20);
 };
 
 const testSearchPatientButton = () => {
@@ -18,6 +17,12 @@ const testViewRecordButton = () => {
     cy.getByTestId('view-record-btn').should('be.visible');
     cy.getByTestId('view-record-btn').click();
     cy.url().should('eq', baseUrl + viewLloydGeorgeRecordUrl);
+};
+
+const testUploadCompletePageContent = () => {
+    cy.getByTestId('upload-complete-card').should('be.visible');
+    cy.getByTestId('view-record-btn').should('be.visible');
+    cy.getByTestId('search-patient-btn').should('be.visible');
 };
 
 const uploadedFilePathNames = {
@@ -40,10 +45,37 @@ const uploadedFileNames = {
     ],
 };
 const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
-const selectForm = () => cy.getByTestId(`upload-document-form`);
 const singleFileUsecaseIndex = 0;
-const multiFileUSecaseIndex = 1;
+const multiFileUsecaseIndex = 1;
+const fileNames = uploadedFileNames.LG[multiFileUsecaseIndex];
 
+const stubbedResponseMulti = {
+    statusCode: 200,
+    body: {
+        [fileNames[0]]: {
+            url: 'http://' + bucketUrlIdentifer,
+            fields: {
+                key: 'test key',
+                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                'x-amz-credential': 'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                'x-amz-date': '20230904T125954Z',
+                'x-amz-security-token': 'xxxxxxxxx',
+                'x-amz-signature': '9xxxxxxxx',
+            },
+        },
+        [fileNames[1]]: {
+            url: 'http://' + bucketUrlIdentifer,
+            fields: {
+                key: 'test key',
+                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                'x-amz-credential': 'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                'x-amz-date': '20230904T125954Z',
+                'x-amz-security-token': 'xxxxxxxxx',
+                'x-amz-signature': '9xxxxxxxx',
+            },
+        },
+    },
+};
 describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and patient has no record', () => {
     const beforeEachConfiguration = () => {
         cy.login(Roles.GP_ADMIN);
@@ -63,6 +95,8 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
         cy.get('#verify-submit').click();
         cy.wait('@stitch');
         cy.getByTestId('upload-patient-record-button').click();
+        cy.url().should('include', 'upload');
+        cy.url().should('eq', baseUrl + '/patient/upload/lloyd-george-record');
     };
 
     beforeEach(() => {
@@ -71,10 +105,10 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
 
     context('Upload Lloyd George document for an active patient', () => {
         it(
-            `User can upload a single Lloyd George file using the "Select files" button and can then view LG record`,
+            `User can upload a single LG file using the "Select files" button and can then view LG record`,
             { tags: 'regression' },
             () => {
-                const fileName = uploadedFileNames.LG[0];
+                const fileName = uploadedFileNames.LG[singleFileUsecaseIndex];
 
                 const stubbedResponse = {
                     statusCode: 200,
@@ -94,9 +128,6 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                     },
                 };
 
-                cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + '/patient/upload/lloyd-george-record');
-
                 cy.intercept('POST', '**/DocumentReference**', stubbedResponse);
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', {
                     statusCode: 204,
@@ -108,16 +139,81 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 );
                 clickUploadButton();
 
+                cy.getByTestId('upload-documents-table').should(
+                    'contain',
+                    uploadedFileNames.LG[singleFileUsecaseIndex],
+                );
+                cy.wait(20);
+
                 cy.getByTestId('upload-complete-page')
                     .should('include.text', 'Record uploaded for')
                     .should('include.text', 'You have successfully uploaded 1 file')
                     .should('include.text', 'Hide files')
                     .should('contain', uploadedFileNames.LG[singleFileUsecaseIndex]);
-                cy.getByTestId('upload-complete-card').should('be.visible');
-                cy.getByTestId('view-record-btn').should('be.visible');
-                cy.getByTestId('search-patient-btn').should('be.visible');
+
+                testUploadCompletePageContent();
 
                 testViewRecordButton();
+            },
+        );
+        it(
+            `User can upload a multiple LG file using the "Select files" button and can then view LG record`,
+            { tags: 'regression' },
+            () => {
+                cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti);
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', {
+                    statusCode: 204,
+                });
+
+                cy.getByTestId('button-input').selectFile(
+                    uploadedFilePathNames.LG[multiFileUsecaseIndex],
+                    { force: true },
+                );
+                clickUploadButton();
+                cy.getByTestId('upload-documents-table')
+                    .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
+                    .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
+                cy.wait(20);
+
+                cy.getByTestId('upload-complete-page')
+                    .should('include.text', 'Record uploaded for')
+                    .should('include.text', 'You have successfully uploaded 2 files')
+                    .should('include.text', 'Hide files');
+
+                testUploadCompletePageContent();
+
+                testSearchPatientButton();
+            },
+        );
+
+        it(
+            `User can upload a multiple LG file using drag and drop and can then view LG record`,
+            { tags: 'regression' },
+            () => {
+                cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti);
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', {
+                    statusCode: 204,
+                });
+
+                cy.getByTestId('dropzone').selectFile(
+                    uploadedFilePathNames.LG[multiFileUsecaseIndex],
+                    { force: true, action: 'drag-drop' },
+                );
+                clickUploadButton();
+                cy.getByTestId('upload-documents-table')
+                    .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
+                    .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
+                cy.wait(20);
+
+                cy.getByTestId('upload-complete-page')
+                    .should('include.text', 'Record uploaded for')
+                    .should('include.text', 'You have successfully uploaded 2 files')
+                    .should('include.text', 'Hide files')
+                    .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
+                    .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
+                testUploadCompletePageContent();
+
+                testSearchPatientButton();
             },
         );
     });
