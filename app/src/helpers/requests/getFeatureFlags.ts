@@ -1,8 +1,8 @@
-import { AppConfig } from '../../providers/featureFlagsProvider/FeatureFlagsProvider';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
 
 import axios from 'axios';
+import { FeatureFlags } from '../../types/generic/featureFlags';
 
 type Args = {
     baseUrl: string;
@@ -10,14 +10,14 @@ type Args = {
 };
 
 type GetFeatureFlagsResponse = {
-    data: AppConfig;
+    data: FeatureFlags;
 };
 
 export const defaultFeatureFlags = {
     testRoute: true,
-    testFeature1: false,
-    testFeature2: false,
-    testFeature3: false,
+    testFeature1: Boolean,
+    testFeature2: Boolean,
+    testFeature3: Boolean,
 };
 
 const getFeatureFlags = async ({ baseUrl, baseHeaders }: Args) => {
