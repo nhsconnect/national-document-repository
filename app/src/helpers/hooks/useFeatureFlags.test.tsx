@@ -15,18 +15,22 @@ describe('useFeatureFlags', () => {
     });
 
     it('returns true when feature flag in context', () => {
-        let defaultFlags = defaultFeatureFlags;
-        defaultFlags.testFeature1 = true;
-        const appConfig: GlobalConfig = { appConfig: defaultFlags, mockLocal: {} };
+        const appConfig: GlobalConfig = {
+            appConfig: { ...defaultFeatureFlags, testFeature1: true },
+            mockLocal: {},
+        };
         renderHook(appConfig);
         expect(screen.getByText(`FLAG: true`)).toBeInTheDocument();
     });
 
-    // it('returns false when there is no feature flag in context', () => {
-    //     const appConfig: Partial<FeatureFlags> = { appConfig: {} };
-    //     renderHook(appConfig);
-    //     expect(screen.getByText(`FLAG: false`)).toBeInTheDocument();
-    // });
+    it('returns false when there is no feature flag in context', () => {
+        const appConfig: GlobalConfig = {
+            appConfig: { ...defaultFeatureFlags, testFeature1: false },
+            mockLocal: {},
+        };
+        renderHook(appConfig);
+        expect(screen.getByText(`FLAG: false`)).toBeInTheDocument();
+    });
 });
 
 const TestApp = () => {
