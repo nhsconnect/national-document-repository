@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-import { isLocal } from '../../helpers/utils/isLocal';
 import getFeatureFlags from '../../helpers/requests/getFeatureFlags';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
