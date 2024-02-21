@@ -22,7 +22,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios/index';
 import { isMock } from '../../../helpers/utils/isLocal';
-import useFeatureFlags from '../../../helpers/hooks/useFeatureFlags';
+import useConfig from '../../../helpers/hooks/useConfig';
 
 const FakeProgress = require('fake-progress');
 
@@ -56,7 +56,7 @@ function LloydGeorgeDownloadAllStage({
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
     const navigate = useNavigate();
-    const featureFlags = useFeatureFlags();
+    const featureFlags = useConfig();
     const patientDetails = usePatient();
     const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();

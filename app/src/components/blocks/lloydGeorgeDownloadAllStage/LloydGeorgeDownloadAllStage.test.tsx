@@ -8,7 +8,7 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { routes } from '../../../types/generic/routes';
 
-jest.mock('../../../helpers/hooks/useFeatureFlags');
+jest.mock('../../../helpers/hooks/useConfig');
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUsePatient = usePatient as jest.Mock;

@@ -10,16 +10,15 @@ import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { useConfigContext } from '../../providers/configProvider/ConfigProvider';
 import getFeatureFlags from '../../helpers/requests/getFeatureFlags';
-import { useFeatureFlagsContext } from '../../providers/featureFlagsProvider/FeatureFlagsProvider';
-import { AuthHeaders } from '../../types/blocks/authHeaders';
 
 type Props = {};
 
 const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
     const [, setSession] = useSessionContext();
-    const [featureFlags, setFeatureFlags] = useFeatureFlagsContext();
+    const [featureFlags, setConfig] = useConfigContext();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -40,18 +39,19 @@ const AuthCallbackPage = (props: Props) => {
                 auth: auth,
                 isLoggedIn: true,
             });
-
-            const jwtToken = auth?.authorisation_token ?? '';
-            const baseHeaders: AuthHeaders = {
-                'Content-Type': 'application/json',
-                Authorization: jwtToken,
-            };
-
-            const featureFlagsData = await getFeatureFlags({ baseUrl, baseHeaders });
-            setFeatureFlags({
-                mockLocal: { ...featureFlags.mockLocal },
-                appConfig: { ...featureFlagsData },
+            const jwtToken = auth.authorisation_token ?? '';
+            const featureFlagsData = await getFeatureFlags({
+                baseUrl,
+                baseHeaders: {
+                    'Content-Type': 'application/json',
+                    Authorization: jwtToken,
+                },
             });
+            setConfig({
+                mockLocal: featureFlags.mockLocal,
+                featureFlags: featureFlagsData,
+            });
+
             if ([GP_ADMIN, GP_CLINICAL, PCSE].includes(auth.role)) {
                 navigate(routes.HOME);
             } else {
@@ -78,7 +78,7 @@ const AuthCallbackPage = (props: Props) => {
         const code = urlSearchParams.get('code') ?? '';
         const state = urlSearchParams.get('state') ?? '';
         void handleCallback({ baseUrl, code, state });
-    }, [baseUrl, setSession, navigate, featureFlags]);
+    }, [baseUrl, setSession, navigate, featureFlags.mockLocal, setConfig]);
 
     return <Spinner status="Logging in..." />;
 };

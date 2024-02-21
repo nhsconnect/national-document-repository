@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import FeatureFlagsProvider, { GlobalConfig, useFeatureFlagsContext } from './FeatureFlagsProvider';
+import ConfigProvider, { GlobalConfig, useConfigContext } from './ConfigProvider';
 import { defaultFeatureFlags } from '../../helpers/requests/getFeatureFlags';
 describe('SessionProvider', () => {
     beforeEach(() => {
@@ -32,17 +32,17 @@ describe('SessionProvider', () => {
 });
 
 const TestApp = () => {
-    const [featureFlags, setFeatureFlags] = useFeatureFlagsContext();
+    const [featureFlags, setConfig] = useConfigContext();
     const flagOn: GlobalConfig = {
         ...featureFlags,
-        appConfig: {
+        featureFlags: {
             ...defaultFeatureFlags,
             testFeature1: true,
         },
     };
     const flagOff: GlobalConfig = {
         ...featureFlags,
-        appConfig: {
+        featureFlags: {
             ...defaultFeatureFlags,
             testFeature1: false,
         },
@@ -51,12 +51,12 @@ const TestApp = () => {
         <>
             <div>
                 <h1>Actions</h1>
-                <div onClick={() => setFeatureFlags(flagOn)}>Flag On</div>
-                <div onClick={() => setFeatureFlags(flagOff)}>Flag Off</div>
+                <div onClick={() => setConfig(flagOn)}>Flag On</div>
+                <div onClick={() => setConfig(flagOff)}>Flag Off</div>
             </div>
             <div>
                 <h1>Flags</h1>
-                <span>testFeature - {`${!!featureFlags.appConfig.testFeature1}`}</span>
+                <span>testFeature - {`${!!featureFlags.featureFlags.testFeature1}`}</span>
             </div>
         </>
     );
@@ -64,8 +64,8 @@ const TestApp = () => {
 
 const renderFeatureFlagsProvider = () => {
     render(
-        <FeatureFlagsProvider>
+        <ConfigProvider>
             <TestApp />
-        </FeatureFlagsProvider>,
+        </ConfigProvider>,
     );
 };
