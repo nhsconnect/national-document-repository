@@ -69,6 +69,9 @@ describe('Feedback Page', () => {
                     'should display a confirmation screen after user has filled in and submitted the feedback form',
                     { tags: 'regression' },
                     () => {
+                        cy.intercept('POST', '/Feedback*', {
+                            statusCode: 200,
+                        }).as('feedback');
                         const mockInputData = {
                             feedbackContent: 'Some awesome feedback',
                             howSatisfied: 'Very satisfied',
@@ -80,10 +83,7 @@ describe('Feedback Page', () => {
                         fillInForm(mockInputData);
 
                         cy.get('#submit-feedback').click();
-                        cy.intercept('POST', '/Feedback*', {
-                            statusCode: 200,
-                        }).as('feedback');
-
+                        cy.wait('@feedback');
                         cy.get('.app-homepage-content h1', { timeout: 5000 }).should(
                             'have.text',
                             'We’ve received your feedback',
@@ -95,6 +95,9 @@ describe('Feedback Page', () => {
                     'should allow user submit the form without filling in the name and email',
                     { tags: 'regression' },
                     () => {
+                        cy.intercept('POST', '/Feedback*', {
+                            statusCode: 200,
+                        }).as('feedback');
                         const mockInputData = {
                             feedbackContent: 'Some awesome feedback',
                             howSatisfied: 'Satisfied',
@@ -104,9 +107,7 @@ describe('Feedback Page', () => {
                         fillInForm(mockInputData);
 
                         cy.get('#submit-feedback').click();
-                        cy.intercept('POST', '/Feedback*', {
-                            statusCode: 200,
-                        }).as('feedback');
+                        cy.wait('@feedback');
                         cy.get('.app-homepage-content h1', { timeout: 5000 }).should(
                             'have.text',
                             'We’ve received your feedback',
