@@ -20,12 +20,12 @@ def lambda_handler(event, context):
     logger.info(f"Received event: {event}")
 
     feature_flag_service = FeatureFlagService()
-    nems_feature_flag = FeatureFlags.NEMS_ENABLED.value
-    nems_enabled_object = feature_flag_service.get_feature_flags_by_flag(
-        nems_feature_flag
+    nems_flag_name = FeatureFlags.NEMS_ENABLED.value
+    nems_enabled_flag_object = feature_flag_service.get_feature_flags_by_flag(
+        nems_flag_name
     )
 
-    if not nems_enabled_object[nems_feature_flag]:
+    if not nems_enabled_flag_object[nems_flag_name]:
         logger.info("Feature flag not enabled, event will not be processed")
         return
 
