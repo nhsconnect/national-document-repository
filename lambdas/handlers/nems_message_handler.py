@@ -11,6 +11,9 @@ logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
+@ensure_environment_variables(
+    names=["APPCONFIG_APPLICATION", "APPCONFIG_CONFIGURATION", "APPCONFIG_ENVIRONMENT"]
+)
 @override_error_check
 @ensure_environment_variables(["LLOYD_GEORGE_DYNAMODB_NAME"])
 def lambda_handler(event, context):
