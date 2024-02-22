@@ -1,24 +1,21 @@
 import React from 'react';
 import 'react-toggle/style.css';
 import { isLocal } from '../../../helpers/utils/isLocal';
-import {
-    LocalFlags,
-    useFeatureFlagsContext,
-} from '../../../providers/featureFlagsProvider/FeatureFlagsProvider';
+import { LocalFlags, useConfigContext } from '../../../providers/configProvider/ConfigProvider';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import TestToggle, { ToggleProps } from './TestToggle';
 
 function TestPanel() {
-    const [featureFlags, setFeatureFlags] = useFeatureFlagsContext();
-    const { isBsol, recordUploaded, userRole } = featureFlags.mockLocal;
+    const [config, setConfig] = useConfigContext();
+    const { isBsol, recordUploaded, userRole } = config.mockLocal;
 
     const updateLocalFlag = (key: keyof LocalFlags, value: boolean | REPOSITORY_ROLE) => {
-        setFeatureFlags({
-            ...featureFlags,
+        setConfig({
             mockLocal: {
-                ...featureFlags.mockLocal,
+                ...config.mockLocal,
                 [key]: value,
             },
+            featureFlags: config.featureFlags,
         });
     };
 

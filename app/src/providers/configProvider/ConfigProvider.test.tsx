@@ -1,6 +1,7 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import FeatureFlagsProvider, { FeatureFlags, useFeatureFlagsContext } from './FeatureFlagsProvider';
+import ConfigProvider, { GlobalConfig, useConfigContext } from './ConfigProvider';
+import { defaultFeatureFlags } from '../../helpers/requests/getFeatureFlags';
 describe('SessionProvider', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -31,27 +32,31 @@ describe('SessionProvider', () => {
 });
 
 const TestApp = () => {
-    const [featureFlags, setFeatureFlags] = useFeatureFlagsContext();
-    const flagOn: FeatureFlags = {
-        ...featureFlags,
-        appConfig: {
-            testFeature: true,
+    const [config, setConfig] = useConfigContext();
+    const flagOn: GlobalConfig = {
+        ...config,
+        featureFlags: {
+            ...defaultFeatureFlags,
+            testFeature1: true,
         },
     };
-    const flagOff: FeatureFlags = {
-        ...featureFlags,
-        appConfig: {},
+    const flagOff: GlobalConfig = {
+        ...config,
+        featureFlags: {
+            ...defaultFeatureFlags,
+            testFeature1: false,
+        },
     };
     return (
         <>
             <div>
                 <h1>Actions</h1>
-                <div onClick={() => setFeatureFlags(flagOn)}>Flag On</div>
-                <div onClick={() => setFeatureFlags(flagOff)}>Flag Off</div>
+                <div onClick={() => setConfig(flagOn)}>Flag On</div>
+                <div onClick={() => setConfig(flagOff)}>Flag Off</div>
             </div>
             <div>
                 <h1>Flags</h1>
-                <span>testFeature - {`${!!featureFlags.appConfig.testFeature}`}</span>
+                <span>testFeature - {`${!!config.featureFlags.testFeature1}`}</span>
             </div>
         </>
     );
@@ -59,8 +64,8 @@ const TestApp = () => {
 
 const renderFeatureFlagsProvider = () => {
     render(
-        <FeatureFlagsProvider>
+        <ConfigProvider>
             <TestApp />
-        </FeatureFlagsProvider>,
+        </ConfigProvider>,
     );
 };

@@ -10,15 +10,16 @@ import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-import useFeatureFlags from '../../helpers/hooks/useFeatureFlags';
+import { useConfigContext } from '../../providers/configProvider/ConfigProvider';
+import getFeatureFlags from '../../helpers/requests/getFeatureFlags';
 
 type Props = {};
 
 const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
     const [, setSession] = useSessionContext();
+    const [{ mockLocal }, setConfig] = useConfigContext();
     const navigate = useNavigate();
-    const featureFlags = useFeatureFlags();
 
     useEffect(() => {
         const handleError = (error: AxiosError) => {
@@ -32,11 +33,23 @@ const AuthCallbackPage = (props: Props) => {
                 navigate(routes.AUTH_ERROR);
             }
         };
-        const handleSuccess = (auth: UserAuth) => {
+        const handleSuccess = async (auth: UserAuth) => {
             const { GP_ADMIN, GP_CLINICAL, PCSE } = REPOSITORY_ROLE;
             setSession({
                 auth: auth,
                 isLoggedIn: true,
+            });
+            const jwtToken = auth.authorisation_token ?? '';
+            const featureFlagsData = await getFeatureFlags({
+                baseUrl,
+                baseHeaders: {
+                    'Content-Type': 'application/json',
+                    Authorization: jwtToken,
+                },
+            });
+            setConfig({
+                mockLocal: mockLocal,
+                featureFlags: featureFlagsData,
             });
 
             if ([GP_ADMIN, GP_CLINICAL, PCSE].includes(auth.role)) {
@@ -49,12 +62,12 @@ const AuthCallbackPage = (props: Props) => {
         const handleCallback = async (args: AuthTokenArgs) => {
             try {
                 const authData = await getAuthToken(args);
-                handleSuccess(authData);
+                await handleSuccess(authData);
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
-                    const { isBsol, userRole } = featureFlags.mockLocal;
-                    handleSuccess(buildUserAuth({ isBSOL: !!isBsol, role: userRole }));
+                    const { isBsol, userRole } = mockLocal;
+                    await handleSuccess(buildUserAuth({ isBSOL: !!isBsol, role: userRole }));
                 } else {
                     handleError(error);
                 }
@@ -65,7 +78,7 @@ const AuthCallbackPage = (props: Props) => {
         const code = urlSearchParams.get('code') ?? '';
         const state = urlSearchParams.get('state') ?? '';
         void handleCallback({ baseUrl, code, state });
-    }, [baseUrl, setSession, navigate, featureFlags]);
+    }, [baseUrl, setSession, navigate, mockLocal, setConfig]);
 
     return <Spinner status="Logging in..." />;
 };

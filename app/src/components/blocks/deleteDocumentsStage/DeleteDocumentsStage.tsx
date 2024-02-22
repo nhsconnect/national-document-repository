@@ -21,7 +21,7 @@ import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { isMock } from '../../../helpers/utils/isLocal';
-import useFeatureFlags from '../../../helpers/hooks/useFeatureFlags';
+import useConfig from '../../../helpers/hooks/useConfig';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -51,7 +51,7 @@ function DeleteDocumentsStage({
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
-    const featureFlags = useFeatureFlags();
+    const config = useConfig();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
@@ -91,7 +91,7 @@ function DeleteDocumentsStage({
             }
         } catch (e) {
             const error = e as AxiosError;
-            if (isMock(error) && !!featureFlags.mockLocal.recordUploaded) {
+            if (isMock(error) && !!config.mockLocal.recordUploaded) {
                 onSuccess();
             } else {
                 if (error.response?.status === 403) {

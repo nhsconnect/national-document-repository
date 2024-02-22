@@ -12,7 +12,7 @@ import { routes } from '../../../types/generic/routes';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
 
-jest.mock('../../../helpers/hooks/useFeatureFlags');
+jest.mock('../../../helpers/hooks/useConfig');
 jest.mock('../deletionConfirmationStage/DeletionConfirmationStage', () => () => (
     <div>Deletion complete</div>
 ));
