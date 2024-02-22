@@ -1,3 +1,4 @@
+from enums.feature_flags import FeatureFlags
 from services.feature_flags_service import FeatureFlagService
 from services.process_nems_message_service import ProcessNemsMessageService
 from utils.audit_logging_setup import LoggingService
@@ -10,15 +11,14 @@ logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
-@ensure_environment_variables(
-    names=["APPCONFIG_APPLICATION", "APPCONFIG_CONFIGURATION", "APPCONFIG_ENVIRONMENT"]
-)
 @override_error_check
 @ensure_environment_variables(["LLOYD_GEORGE_DYNAMODB_NAME"])
 def lambda_handler(event, context):
     logger.info(f"Received event: {event}")
     feature_flag_service = FeatureFlagService()
-    nems_enabled = feature_flag_service.get_feature_flags_by_flag("nemsEnabled")
+    nems_enabled = feature_flag_service.get_feature_flags_by_flag(
+        FeatureFlags.NEMS_ENABLED
+    )
     if not nems_enabled:
         logger.info("Feature flag not enabled, event will not be processed")
         return
