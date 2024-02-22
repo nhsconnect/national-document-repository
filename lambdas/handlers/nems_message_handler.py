@@ -18,14 +18,17 @@ logger = LoggingService(__name__)
 @ensure_environment_variables(["LLOYD_GEORGE_DYNAMODB_NAME"])
 def lambda_handler(event, context):
     logger.info(f"Received event: {event}")
+
     feature_flag_service = FeatureFlagService()
-    nems_enabled = feature_flag_service.get_feature_flags_by_flag(
-        FeatureFlags.NEMS_ENABLED.value
+    nems_feature_flag = FeatureFlags.NEMS_ENABLED.value
+    nems_enabled_object = feature_flag_service.get_feature_flags_by_flag(
+        nems_feature_flag
     )
-    print(nems_enabled[FeatureFlags.NEMS_ENABLED.value])
-    if not nems_enabled[FeatureFlags.NEMS_ENABLED.value]:
+
+    if not nems_enabled_object[nems_feature_flag]:
         logger.info("Feature flag not enabled, event will not be processed")
         return
+
     if "Records" not in event or len(event["Records"]) < 1:
         http_status_code = 400
         response_body = (
