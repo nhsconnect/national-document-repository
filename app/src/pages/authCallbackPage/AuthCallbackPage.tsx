@@ -18,7 +18,7 @@ type Props = {};
 const AuthCallbackPage = (props: Props) => {
     const baseUrl = useBaseAPIUrl();
     const [, setSession] = useSessionContext();
-    const [featureFlags, setConfig] = useConfigContext();
+    const [{ mockLocal }, setConfig] = useConfigContext();
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -48,7 +48,7 @@ const AuthCallbackPage = (props: Props) => {
                 },
             });
             setConfig({
-                mockLocal: featureFlags.mockLocal,
+                mockLocal: mockLocal,
                 featureFlags: featureFlagsData,
             });
 
@@ -66,7 +66,7 @@ const AuthCallbackPage = (props: Props) => {
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
-                    const { isBsol, userRole } = featureFlags.mockLocal;
+                    const { isBsol, userRole } = mockLocal;
                     await handleSuccess(buildUserAuth({ isBSOL: !!isBsol, role: userRole }));
                 } else {
                     handleError(error);
@@ -78,7 +78,7 @@ const AuthCallbackPage = (props: Props) => {
         const code = urlSearchParams.get('code') ?? '';
         const state = urlSearchParams.get('state') ?? '';
         void handleCallback({ baseUrl, code, state });
-    }, [baseUrl, setSession, navigate, featureFlags.mockLocal, setConfig]);
+    }, [baseUrl, setSession, navigate, mockLocal, setConfig]);
 
     return <Spinner status="Logging in..." />;
 };

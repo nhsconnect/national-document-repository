@@ -56,7 +56,7 @@ function LloydGeorgeDownloadAllStage({
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
     const navigate = useNavigate();
-    const featureFlags = useConfig();
+    const { mockLocal } = useConfig();
     const patientDetails = usePatient();
     const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
@@ -89,7 +89,7 @@ function LloydGeorgeDownloadAllStage({
 
     useEffect(() => {
         const onFail = (error: AxiosError) => {
-            if (isMock(error) && !!featureFlags.mockLocal.recordUploaded) {
+            if (isMock(error) && !!mockLocal.recordUploaded) {
                 if (typeof window !== 'undefined') {
                     const { protocol, host } = window.location;
                     setLinkAttributes({
@@ -149,7 +149,7 @@ function LloydGeorgeDownloadAllStage({
         progressTimer,
         deleteAfterDownload,
         navigate,
-        featureFlags,
+        mockLocal,
     ]);
 
     return inProgress ? (

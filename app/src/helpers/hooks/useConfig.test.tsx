@@ -32,13 +32,13 @@ describe('useConfig', () => {
 });
 
 const TestApp = () => {
-    const featureFlags = useConfig();
-    return <div>{`FLAG: ${!!featureFlags.featureFlags.testFeature1}`.normalize()}</div>;
+    const config = useConfig();
+    return <div>{`FLAG: ${!!config.featureFlags.testFeature1}`.normalize()}</div>;
 };
 
-const renderHook = (featureFlags?: GlobalConfig) => {
+const renderHook = (config?: GlobalConfig) => {
     return render(
-        <ConfigProvider configOverride={featureFlags}>
+        <ConfigProvider configOverride={config}>
             <TestApp />
         </ConfigProvider>,
     );

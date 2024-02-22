@@ -7,11 +7,14 @@ import userEvent from '@testing-library/user-event';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { routes } from '../../../types/generic/routes';
+import useConfig from '../../../helpers/hooks/useConfig';
+import { defaultFeatureFlags } from '../../../helpers/requests/getFeatureFlags';
 
 jest.mock('../../../helpers/hooks/useConfig');
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUsePatient = usePatient as jest.Mock;
+const mockUseConfig = useConfig as jest.Mock;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
 const mockSetStage = jest.fn();
@@ -32,6 +35,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
+        mockUseConfig.mockReturnValue({ featureFlags: defaultFeatureFlags, mockLocal: {} });
     });
     afterEach(() => {
         jest.clearAllMocks();

@@ -32,16 +32,16 @@ describe('SessionProvider', () => {
 });
 
 const TestApp = () => {
-    const [featureFlags, setConfig] = useConfigContext();
+    const [config, setConfig] = useConfigContext();
     const flagOn: GlobalConfig = {
-        ...featureFlags,
+        ...config,
         featureFlags: {
             ...defaultFeatureFlags,
             testFeature1: true,
         },
     };
     const flagOff: GlobalConfig = {
-        ...featureFlags,
+        ...config,
         featureFlags: {
             ...defaultFeatureFlags,
             testFeature1: false,
@@ -56,7 +56,7 @@ const TestApp = () => {
             </div>
             <div>
                 <h1>Flags</h1>
-                <span>testFeature - {`${!!featureFlags.featureFlags.testFeature1}`}</span>
+                <span>testFeature - {`${!!config.featureFlags.testFeature1}`}</span>
             </div>
         </>
     );

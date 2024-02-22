@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import AuthCallbackPage from './AuthCallbackPage';
-import SessionProvider from '../../providers/sessionProvider/SessionProvider';
+import SessionProvider, {
+    useSessionContext,
+} from '../../providers/sessionProvider/SessionProvider';
 import axios from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { routes } from '../../types/generic/routes';
-import ConfigProvider from '../../providers/configProvider/ConfigProvider';
-import useConfig from '../../helpers/hooks/useConfig';
-import useRole from '../../helpers/hooks/useRole';
+import ConfigProvider, { useConfigContext } from '../../providers/configProvider/ConfigProvider';
 import { act } from 'react-dom/test-utils';
 import { endpoints } from '../../types/generic/endpoints';
 import { defaultFeatureFlags } from '../../helpers/requests/getFeatureFlags';
@@ -119,8 +119,9 @@ describe('AuthCallbackPage', () => {
             mockedAxios.get.mockImplementation(() => Promise.resolve({ data: buildUserAuth() }));
             renderCallbackPage();
             await waitFor(() => {
-                expect(screen.getByText('LOGGEDIN: true')).toBeInTheDocument();
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
             });
+            expect(screen.getByText('LOGGEDIN: true')).toBeInTheDocument();
         });
         it('sets config context to user is has feature flags', async () => {
             mockedAxios.get.mockImplementation((url) => {
@@ -134,20 +135,21 @@ describe('AuthCallbackPage', () => {
             });
             renderCallbackPage();
             await waitFor(() => {
-                expect(screen.getByText('FLAG: true')).toBeInTheDocument();
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
             });
+            expect(screen.getByText('FLAG: true')).toBeInTheDocument();
         });
     });
 });
 
 const TestApp = () => {
-    const config = useConfig();
-    const role = useRole();
+    const [config] = useConfigContext();
+    const [session] = useSessionContext();
     return (
         <div>
-            <div>{`FLAG: ${config.featureFlags.testFeature1}`.normalize()}</div>;
-            <div>{`LOGGEDIN: ${!!role}`.normalize()}</div>;
-            <AuthCallbackPage />;
+            <AuthCallbackPage />
+            <div>{`FLAG: ${JSON.stringify(config.featureFlags.testFeature1)}`.normalize()}</div>;
+            <div>{`LOGGEDIN: ${!!session.auth?.role}`.normalize()}</div>;
         </div>
     );
 };
