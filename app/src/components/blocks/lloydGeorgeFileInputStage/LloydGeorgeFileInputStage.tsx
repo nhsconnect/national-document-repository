@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useRef } from 'react';
+import React, { Dispatch, SetStateAction, useRef, useState } from 'react';
 import BackButton from '../../../components/generic/backButton/BackButton';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
@@ -9,10 +9,9 @@ import {
     DOCUMENT_UPLOAD_STATE,
     FileInputEvent,
     UploadDocument,
+    UploadFilesErrors,
 } from '../../../types/pages/UploadDocumentsPage/types';
-import { useController, useForm } from 'react-hook-form';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-import { lloydGeorgeFormConfig } from '../../../helpers/utils/formConfig';
 import uploadDocument from '../../../helpers/requests/uploadDocument';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
@@ -24,6 +23,8 @@ import { useNavigate } from 'react-router';
 import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios';
 import { isMock } from '../../../helpers/utils/isLocal';
+import ErrorBox from '../../layout/errorBox/ErrorBox';
+import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -40,15 +41,16 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
     let fileInputRef = useRef<HTMLInputElement | null>(null);
-
-    const { handleSubmit, control, formState } = useForm();
-    const lgController = useController(lloydGeorgeFormConfig(control));
+    const [uploadFilesErrors, setUploadFilesErrors] = useState<Array<UploadFilesErrors>>([]);
 
     const hasFileInput = documents.length;
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-
     const uploadDocuments = async () => {
+        setUploadFilesErrors(uploadDocumentValidation(documents));
+        if (uploadFilesErrors) {
+            return;
+        }
         try {
             setStage(LG_UPLOAD_STAGE.UPLOAD);
             await uploadDocument({
@@ -83,7 +85,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         }));
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
-        lgController.field.onChange(updatedDocList);
+        setUploadFilesErrors(uploadDocumentValidation(updatedDocList));
     };
     const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -114,161 +116,172 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
         }
         setDocuments(updatedDocList);
-        lgController.field.onChange(updatedDocList);
+        setUploadFilesErrors(uploadDocumentValidation(updatedDocList));
+    };
+    const fileErrorMessage = (document: UploadDocument) => {
+        const errorFile = uploadFilesErrors.find((errorFile) => document.file === errorFile.file);
+        if (errorFile) {
+            return <div style={{ color: 'red' }}>{errorFile.error}</div>;
+        }
     };
 
     return (
         <div>
-            <form
-                onSubmit={handleSubmit(uploadDocuments)}
-                noValidate
-                data-testid="upload-document-form"
-            >
-                <BackButton />
-                <h1>Upload a Lloyd George record</h1>
-                <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
-                    <p data-testid="patient-name">
-                        {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
+            <BackButton />
+            {uploadFilesErrors && (
+                <ErrorBox
+                    messageTitle={'There is a problem with some of your files'}
+                    errorInputLink={'#nhs-number-input'}
+                    errorBoxSummaryId={'error-box-summary'}
+                />
+            )}
+            <h1>Upload a Lloyd George record</h1>
+            <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
+                <p data-testid="patient-name">
+                    {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
+                </p>
+                <p data-testid="patient-nhs-number">NHS number: {formattedNhsNumber}</p>
+                <p data-testid="patient-dob">Date of birth: {dob}</p>
+            </div>
+            <div>
+                <h3>Before you upload a Lloyd George patient record:</h3>
+                <ul>
+                    <li>The patient details must match the record you are uploading</li>
+                    <li>The patient record must be in a PDF file or multiple PDFs</li>
+                    <li>Your PDF file(s) should be named in this format:</li>
+                    <p style={{ fontWeight: 600, margin: 20, marginRight: 0 }}>
+                        [PDFnumber]_Lloyd_George_Record_[Patient Name]_[NHS Number]_[D.O.B].PDF
                     </p>
-                    <p data-testid="patient-nhs-number">NHS number: {formattedNhsNumber}</p>
-                    <p data-testid="patient-dob">Date of birth: {dob}</p>
-                </div>
-                <div>
-                    <h3>Before you upload a Lloyd George patient record:</h3>
-                    <ul>
-                        <li>The patient details must match the record you are uploading</li>
-                        <li>The patient record must be in a PDF file or multiple PDFs</li>
-                        <li>Your PDF file(s) should be named in this format:</li>
-                        <p style={{ fontWeight: 600, margin: 20, marginRight: 0 }}>
-                            [PDFnumber]_Lloyd_George_Record_[Patient Name]_[NHS Number]_[D.O.B].PDF
-                        </p>
-                    </ul>
-                    <InsetText style={{ maxWidth: 'unset' }}>
-                        <p>For example:</p>
-                        <p>1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].PDF</p>
-                        <p>2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].PDF</p>
-                    </InsetText>
-                    <p></p>
-                    <p>
-                        It's recommended to upload the entire record in one go, as each file will be
-                        combined together based on the file names.
-                    </p>
-                    <p>You will not be able to view a partially uploaded record.</p>
-                </div>
-                <Fieldset.Legend size="m">Select the files you wish to upload</Fieldset.Legend>
-                <Fieldset>
-                    <div
-                        role="button"
-                        tabIndex={0}
-                        data-testid="dropzone"
-                        onDragOver={(e) => {
-                            e.preventDefault();
-                        }}
-                        onDrop={onFileDrop}
-                        className={'lloydgeorge_drag-and-drop'}
-                    >
-                        <strong style={{ fontSize: '19px' }}>
-                            Drag and drop a file or multiple files here
-                        </strong>
-                        <div style={{ margin: '0 2rem' }}>
-                            <FileSVG />
-                        </div>
-                        <div>
-                            <Input
-                                data-testid={`button-input`}
-                                type="file"
-                                multiple={true}
-                                hidden
-                                name={lgController.field.name}
-                                error={lgController.fieldState.error?.message}
-                                onChange={(e: FileInputEvent) => {
-                                    onInput(e);
-                                    e.target.value = '';
-                                }}
-                                onBlur={lgController.field.onBlur}
-                                // @ts-ignore  The NHS Component library is outdated and does not allow for any reference other than a blank MutableRefObject
-                                inputRef={(e: HTMLInputElement) => {
-                                    lgController.field.ref(e);
-                                    fileInputRef.current = e;
-                                }}
-                            />
-                            <Button
-                                data-testid={`upload-button-input`}
-                                type={'button'}
-                                style={{ background: '#4C6272', marginBottom: 0, color: 'white' }}
-                                onClick={() => {
-                                    fileInputRef.current?.click();
-                                }}
-                            >
-                                Select files
-                            </Button>
-                        </div>
+                </ul>
+                <InsetText style={{ maxWidth: 'unset' }}>
+                    <p>For example:</p>
+                    <p>1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].PDF</p>
+                    <p>2of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].PDF</p>
+                </InsetText>
+                <p></p>
+                <p>
+                    It's recommended to upload the entire record in one go, as each file will be
+                    combined together based on the file names.
+                </p>
+                <p>You will not be able to view a partially uploaded record.</p>
+            </div>
+            <Fieldset.Legend size="m">Select the files you wish to upload</Fieldset.Legend>
+            <Fieldset>
+                <div
+                    role="button"
+                    tabIndex={0}
+                    data-testid="dropzone"
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                    }}
+                    onDrop={onFileDrop}
+                    className={'lloydgeorge_drag-and-drop'}
+                >
+                    <strong style={{ fontSize: '19px' }}>
+                        Drag and drop a file or multiple files here
+                    </strong>
+                    <div style={{ margin: '0 2rem' }}>
+                        <FileSVG />
                     </div>
-                </Fieldset>
-                {documents && documents.length > 0 && (
-                    <Table caption="Chosen file(s)" id="selected-documents-table">
-                        <Table.Head>
-                            <Table.Row>
-                                <Table.Cell style={{ border: 'unset' }}>
-                                    <div style={{ padding: '6px 0 12px 0', color: '#425563' }}>
-                                        <strong>
-                                            {`${documents.length}`} file
-                                            {`${documents.length === 1 ? '' : 's'}`} chosen
-                                        </strong>
-                                    </div>
-                                </Table.Cell>
-                            </Table.Row>
-                            <Table.Row>
-                                <Table.Cell>Filename</Table.Cell>
-                                <Table.Cell>Size</Table.Cell>
-                                <Table.Cell>Remove</Table.Cell>
-                            </Table.Row>
-                        </Table.Head>
-
-                        <Table.Body>
-                            {documents.map((document: UploadDocument, index: number) => (
-                                <Table.Row key={document.id}>
-                                    <Table.Cell>{document.file.name}</Table.Cell>
-                                    <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
-                                    <Table.Cell>
-                                        <button
-                                            type="button"
-                                            aria-label={`Remove ${document.file.name} from selection`}
-                                            className="link-button"
-                                            onClick={() => {
-                                                onRemove(index);
-                                            }}
-                                        >
-                                            Remove
-                                        </button>
-                                    </Table.Cell>
-                                </Table.Row>
-                            ))}
-                        </Table.Body>
-                    </Table>
-                )}
-                <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                    <Button
-                        type="submit"
-                        id="upload-button"
-                        disabled={formState.isSubmitting || !hasFileInput}
-                        onSubmit={handleSubmit(uploadDocuments)}
-                    >
-                        Upload
-                    </Button>
-                    {!!documents.length && (
-                        <button
-                            className={'lloydgeorge_link'}
-                            type="button"
+                    <div>
+                        <Input
+                            data-testid={`button-input`}
+                            type="file"
+                            multiple={true}
+                            hidden
+                            onChange={(e: FileInputEvent) => {
+                                onInput(e);
+                                e.target.value = '';
+                            }}
+                            // @ts-ignore  The NHS Component library is outdated and does not allow for any reference other than a blank MutableRefObject
+                            inputRef={(e: HTMLInputElement) => {
+                                fileInputRef.current = e;
+                            }}
+                        />
+                        <Button
+                            data-testid={`upload-button-input`}
+                            type={'button'}
+                            style={{ background: '#4C6272', marginBottom: 0, color: 'white' }}
                             onClick={() => {
-                                onRemove(-1);
+                                fileInputRef.current?.click();
                             }}
                         >
-                            Remove all
-                        </button>
-                    )}
+                            Select files
+                        </Button>
+                    </div>
                 </div>
-            </form>
+            </Fieldset>
+            {documents && documents.length > 0 && (
+                <Table caption="Chosen file(s)" id="selected-documents-table">
+                    <Table.Head>
+                        <Table.Row>
+                            <Table.Cell style={{ border: 'unset' }}>
+                                <div style={{ padding: '6px 0 12px 0', color: '#425563' }}>
+                                    <strong>
+                                        {`${documents.length}`} file
+                                        {`${documents.length === 1 ? '' : 's'}`} chosen
+                                    </strong>
+                                </div>
+                            </Table.Cell>
+                        </Table.Row>
+                        <Table.Row>
+                            <Table.Cell>Filename</Table.Cell>
+                            <Table.Cell>Size</Table.Cell>
+                            <Table.Cell>Remove</Table.Cell>
+                        </Table.Row>
+                    </Table.Head>
+
+                    <Table.Body>
+                        {documents.map((document: UploadDocument, index: number) => {
+                            return (
+                                <>
+                                    <Table.Row key={document.id}>
+                                        <Table.Cell>
+                                            {document.file.name} {fileErrorMessage(document)}
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            {formatFileSize(document.file.size)}
+                                        </Table.Cell>
+                                        <Table.Cell>
+                                            <button
+                                                type="button"
+                                                aria-label={`Remove ${document.file.name} from selection`}
+                                                className="link-button"
+                                                onClick={() => {
+                                                    onRemove(index);
+                                                }}
+                                            >
+                                                Remove
+                                            </button>
+                                        </Table.Cell>
+                                    </Table.Row>
+                                </>
+                            );
+                        })}
+                    </Table.Body>
+                </Table>
+            )}
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                <Button
+                    type="button"
+                    id="upload-button"
+                    disabled={!hasFileInput}
+                    onClick={uploadDocuments}
+                >
+                    Upload
+                </Button>
+                {!!documents.length && (
+                    <button
+                        className={'lloydgeorge_link'}
+                        type="button"
+                        onClick={() => {
+                            onRemove(-1);
+                        }}
+                    >
+                        Remove all
+                    </button>
+                )}
+            </div>
         </div>
     );
 }
