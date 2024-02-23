@@ -45,8 +45,6 @@ def lambda_handler(event, context):
         upload_flag_name
     )
 
-    print(upload_lambda_enabled_flag_object)
-    print(upload_lambda_enabled_flag_object[upload_flag_name])
     if not upload_lambda_enabled_flag_object[upload_flag_name]:
         logger.info("Feature flag not enabled, event will not be processed")
         raise FeatureFlagsException(500, LambdaError.FeatureFlagDisabled)
