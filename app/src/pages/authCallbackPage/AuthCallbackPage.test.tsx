@@ -129,7 +129,7 @@ describe('AuthCallbackPage', () => {
                     return Promise.resolve({ data: buildUserAuth() });
                 } else {
                     return Promise.resolve({
-                        data: { ...defaultFeatureFlags, testFeature1: true },
+                        data: { ...defaultFeatureFlags, uploadLloydGeorgeWorkflowEnabled: true },
                     });
                 }
             });
