@@ -2,7 +2,7 @@ import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
 
 import axios from 'axios';
-import { FeatureFlags } from '../../types/generic/featureFlags';
+import { defaultFeatureFlags, FeatureFlags } from '../../types/generic/featureFlags';
 
 type Args = {
     baseUrl: string;
@@ -11,12 +11,6 @@ type Args = {
 
 type GetFeatureFlagsResponse = {
     data: FeatureFlags;
-};
-
-export const defaultFeatureFlags = {
-    testFeature1: false,
-    testFeature2: false,
-    testFeature3: false,
 };
 
 const getFeatureFlags = async ({ baseUrl, baseHeaders }: Args) => {

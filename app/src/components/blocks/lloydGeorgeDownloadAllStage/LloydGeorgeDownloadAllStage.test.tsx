@@ -8,7 +8,7 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { routes } from '../../../types/generic/routes';
 import useConfig from '../../../helpers/hooks/useConfig';
-import { defaultFeatureFlags } from '../../../helpers/requests/getFeatureFlags';
+import { defaultFeatureFlags } from '../../../types/generic/featureFlags';
 
 jest.mock('../../../helpers/hooks/useConfig');
 const mockedUseNavigate = jest.fn();
