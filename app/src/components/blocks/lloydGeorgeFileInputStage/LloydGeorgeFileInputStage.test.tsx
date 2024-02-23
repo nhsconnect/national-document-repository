@@ -77,7 +77,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             expect(screen.getByRole('button', { name: 'Select files' })).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
         });
 
         it('can upload documents to LG forms with multiple names using button', async () => {
@@ -91,7 +91,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
 
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), lgFilesThreeNames);
@@ -114,7 +114,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
 
             act(() => {
                 userEvent.upload(
@@ -144,7 +144,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
 
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), lgFiles);
@@ -169,7 +169,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
             expect(
                 screen.getByText('Drag and drop a file or multiple files here'),
             ).toBeInTheDocument();
@@ -193,7 +193,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
             expect(
                 screen.getByText('Drag and drop a file or multiple files here'),
             ).toBeInTheDocument();
@@ -221,7 +221,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
             expect(
                 screen.getByText('Drag and drop a file or multiple files here'),
             ).toBeInTheDocument();
@@ -237,23 +237,24 @@ describe('<LloydGeorgeFileInputStage />', () => {
         });
         it('does upload and then remove a file', async () => {
             renderApp();
-
+            lgFiles.push(lgDocumentThreeNamesOne);
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), lgFiles);
             });
 
-            expect(screen.getByText(lgDocumentOne.name)).toBeInTheDocument();
+            expect(screen.queryAllByText(lgDocumentThreeNamesOne.name)).toHaveLength(2);
 
             const removeFile = await screen.findByRole('button', {
-                name: `Remove ${lgDocumentOne.name} from selection`,
+                name: `Remove ${lgDocumentThreeNamesOne.name} from selection`,
             });
 
             act(() => {
                 userEvent.click(removeFile);
             });
 
-            expect(screen.queryByText(lgDocumentOne.name)).not.toBeInTheDocument();
+            expect(screen.getByText(lgDocumentOne.name)).toBeInTheDocument();
             expect(screen.getByText(lgDocumentTwo.name)).toBeInTheDocument();
+            expect(screen.queryByText(lgDocumentThreeNamesOne.name)).not.toBeInTheDocument();
         });
         it('does upload and then remove all a files', async () => {
             renderApp();
@@ -291,15 +292,17 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 userEvent.upload(screen.getByTestId('button-input'), documentBig);
             });
 
-            expect(screen.getByText(documentBig.name)).toBeInTheDocument();
+            expect(screen.getAllByText(documentBig.name)).toHaveLength(2);
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
 
             expect(
-                await screen.findByText('Please ensure that all files are less than 5GB in size'),
-            ).toBeInTheDocument();
+                await screen.findAllByText(
+                    'Please ensure that all files are less than 5GB in size',
+                ),
+            ).toHaveLength(2);
         });
 
         it('does not upload LG form if selected file is not PDF', async () => {

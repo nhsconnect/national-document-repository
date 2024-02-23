@@ -349,6 +349,15 @@ $govuk-compatibility-govukelements: true;
         text-decoration: underline;
         cursor: pointer;
     }
+    &_file_upload_error {
+        font-family: Arial, sans-serif;
+        font-size: 19px;
+        font-weight: 700;
+        line-height: 28px;
+        letter-spacing: 0;
+        text-align: left;
+        color: #d5281b;
+    }
 }
 
 .document-list-view-list li {

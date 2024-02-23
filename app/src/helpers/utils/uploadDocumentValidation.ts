@@ -19,14 +19,14 @@ export const uploadDocumentValidation = (uploadDocuments: UploadDocument[]) => {
         const currentFile = uploadDocuments[i].file;
         if (currentFile.size > FIVEGB) {
             errors.push({
-                file: currentFile,
+                file: uploadDocuments[i],
                 error: 'Please ensure that all files are less than 5GB in size',
             });
             continue;
         }
         if (currentFile.type !== 'application/pdf') {
             errors.push({
-                file: currentFile,
+                file: uploadDocuments[i],
                 error: 'One or more of the files do not match the required file type. Please check the file(s) and try again',
             });
             continue;
@@ -40,7 +40,7 @@ export const uploadDocumentValidation = (uploadDocuments: UploadDocument[]) => {
         });
         if (isDuplicate) {
             errors.push({
-                file: currentFile,
+                file: uploadDocuments[i],
                 error: 'There are documents chosen that have the same name, a record with duplicate file names can not be uploaded because it does not match the required file format. Please check the files(s) and try again.',
             });
             continue;
@@ -67,7 +67,7 @@ export const uploadDocumentValidation = (uploadDocuments: UploadDocument[]) => {
             !doesFileNameMatchEachOther
         ) {
             errors.push({
-                file: currentFile,
+                file: uploadDocuments[i],
                 error: 'One or more of the files do not match the required filename format. Please check the file(s) and try again',
             });
         }

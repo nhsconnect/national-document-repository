@@ -1,5 +1,6 @@
 import { ErrorSummary } from 'nhsuk-react-components';
 import { MouseEvent } from 'react';
+import { UploadFilesErrors } from '../../../types/pages/UploadDocumentsPage/types';
 
 type Props = {
     errorBoxSummaryId: string;
@@ -9,6 +10,7 @@ type Props = {
     errorInputLink?: string;
     errorBody?: string;
     dataTestId?: string;
+    errorMessageList?: UploadFilesErrors[];
 };
 
 // @ts-ignore
@@ -19,6 +21,7 @@ const ErrorBox = ({
     messageBody,
     messageLinkBody,
     errorBody,
+    errorMessageList,
     dataTestId,
 }: Props) => {
     const hasInputLink = errorInputLink && messageLinkBody;
@@ -44,6 +47,17 @@ const ErrorBox = ({
                             </ErrorSummary.Item>
                         )}
                         {messageBody && <p>{messageBody}</p>}
+                        {errorMessageList &&
+                            errorMessageList.map((errorItem) => {
+                                return (
+                                    <div key={errorItem.file?.id}>
+                                        <p>{errorItem.error}</p>
+                                        <ErrorSummary.Item href={'#' + errorItem.file?.file.name}>
+                                            <p>{errorItem.file?.file.name}</p>
+                                        </ErrorSummary.Item>
+                                    </div>
+                                );
+                            })}
                     </ErrorSummary.List>
                 </ErrorSummary.Body>
             </ErrorSummary>

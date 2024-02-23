@@ -42,13 +42,19 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         : '';
     let fileInputRef = useRef<HTMLInputElement | null>(null);
     const [uploadFilesErrors, setUploadFilesErrors] = useState<Array<UploadFilesErrors>>([]);
-
-    const hasFileInput = documents.length;
+    const hasFileInput = !!documents.length;
+    const [showNoFilesMessage, setShowNoFilesMessage] = useState<boolean>(false);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const uploadDocuments = async () => {
+        setShowNoFilesMessage(!hasFileInput);
+        if (!hasFileInput) {
+            window.scrollTo(0, 0);
+            return;
+        }
         setUploadFilesErrors(uploadDocumentValidation(documents));
-        if (uploadFilesErrors) {
+        if (!!uploadFilesErrors.length) {
+            window.scrollTo(0, 0);
             return;
         }
         try {
@@ -85,6 +91,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         }));
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
+        setShowNoFilesMessage(false);
         setUploadFilesErrors(uploadDocumentValidation(updatedDocList));
     };
     const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -119,20 +126,30 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         setUploadFilesErrors(uploadDocumentValidation(updatedDocList));
     };
     const fileErrorMessage = (document: UploadDocument) => {
-        const errorFile = uploadFilesErrors.find((errorFile) => document.file === errorFile.file);
+        const errorFile = uploadFilesErrors.find(
+            (errorFile) => document.file === errorFile.file?.file,
+        );
         if (errorFile) {
-            return <div style={{ color: 'red' }}>{errorFile.error}</div>;
+            return <div className="lloydgeorge_file_upload_error">{errorFile.error}</div>;
         }
     };
-
     return (
         <div>
             <BackButton />
-            {uploadFilesErrors && (
+            {!!uploadFilesErrors.length && (
                 <ErrorBox
                     messageTitle={'There is a problem with some of your files'}
                     errorInputLink={'#nhs-number-input'}
                     errorBoxSummaryId={'error-box-summary'}
+                    errorMessageList={uploadFilesErrors}
+                />
+            )}
+            {showNoFilesMessage && (
+                <ErrorBox
+                    messageTitle={'There is a problem with some of your files'}
+                    messageLinkBody={'You did not select any file to upload'}
+                    errorBoxSummaryId={'error-box-summary'}
+                    errorInputLink={'#upload-lloyd-george'}
                 />
             )}
             <h1>Upload a Lloyd George record</h1>
@@ -169,6 +186,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             <Fieldset>
                 <div
                     role="button"
+                    id="upload-lloyd-george"
                     tabIndex={0}
                     data-testid="dropzone"
                     onDragOver={(e) => {
@@ -234,40 +252,32 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                     <Table.Body>
                         {documents.map((document: UploadDocument, index: number) => {
                             return (
-                                <>
-                                    <Table.Row key={document.id}>
-                                        <Table.Cell>
-                                            {document.file.name} {fileErrorMessage(document)}
-                                        </Table.Cell>
-                                        <Table.Cell>
-                                            {formatFileSize(document.file.size)}
-                                        </Table.Cell>
-                                        <Table.Cell>
-                                            <button
-                                                type="button"
-                                                aria-label={`Remove ${document.file.name} from selection`}
-                                                className="link-button"
-                                                onClick={() => {
-                                                    onRemove(index);
-                                                }}
-                                            >
-                                                Remove
-                                            </button>
-                                        </Table.Cell>
-                                    </Table.Row>
-                                </>
+                                <Table.Row key={document.id} id={document.file.name}>
+                                    <Table.Cell>
+                                        <div>{document.file.name}</div>
+                                        {fileErrorMessage(document)}
+                                    </Table.Cell>
+                                    <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
+                                    <Table.Cell>
+                                        <button
+                                            type="button"
+                                            aria-label={`Remove ${document.file.name} from selection`}
+                                            className="link-button"
+                                            onClick={() => {
+                                                onRemove(index);
+                                            }}
+                                        >
+                                            Remove
+                                        </button>
+                                    </Table.Cell>
+                                </Table.Row>
                             );
                         })}
                     </Table.Body>
                 </Table>
             )}
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <Button
-                    type="button"
-                    id="upload-button"
-                    disabled={!hasFileInput}
-                    onClick={uploadDocuments}
-                >
+                <Button type="button" id="upload-button" onClick={uploadDocuments}>
                     Upload
                 </Button>
                 {!!documents.length && (
