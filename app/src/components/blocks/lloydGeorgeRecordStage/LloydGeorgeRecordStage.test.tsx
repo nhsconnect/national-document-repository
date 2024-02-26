@@ -16,7 +16,6 @@ import useRole from '../../../helpers/hooks/useRole';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useConfig from '../../../helpers/hooks/useConfig';
-import { defaultFeatureFlags } from '../../../types/generic/featureFlags';
 
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();

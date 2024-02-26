@@ -13,7 +13,6 @@ import usePatient from '../../helpers/hooks/usePatient';
 import { act } from 'react-dom/test-utils';
 import { routes } from '../../types/generic/routes';
 import useConfig from '../../helpers/hooks/useConfig';
-import { defaultFeatureFlags } from '../../types/generic/featureFlags';
 
 jest.mock('../../helpers/hooks/useConfig');
 jest.mock('axios');
