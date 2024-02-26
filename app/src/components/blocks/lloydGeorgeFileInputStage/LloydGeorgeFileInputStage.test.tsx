@@ -237,9 +237,12 @@ describe('<LloydGeorgeFileInputStage />', () => {
         });
         it('does upload and then remove a file', async () => {
             renderApp();
-            lgFiles.push(lgDocumentThreeNamesOne);
             act(() => {
-                userEvent.upload(screen.getByTestId('button-input'), lgFiles);
+                userEvent.upload(screen.getByTestId('button-input'), [
+                    lgDocumentOne,
+                    lgDocumentTwo,
+                    lgDocumentThreeNamesOne,
+                ]);
             });
 
             expect(screen.queryAllByText(lgDocumentThreeNamesOne.name)).toHaveLength(2);
@@ -319,18 +322,20 @@ describe('<LloydGeorgeFileInputStage />', () => {
             act(() => {
                 userEvent.upload(screen.getByTestId(`button-input`), lgFileWithBadType);
             });
-
-            expect(screen.getByText(lgFileWithBadType.name)).toBeInTheDocument();
-
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
+            expect(
+                screen.getByText('There is a problem with some of your files'),
+            ).toBeInTheDocument();
+
+            expect(screen.getAllByText(lgFileWithBadType.name)).toHaveLength(2);
 
             expect(
-                await screen.findByText(
+                screen.getAllByText(
                     'One or more of the files do not match the required file type. Please check the file(s) and try again',
                 ),
-            ).toBeInTheDocument();
+            ).toHaveLength(2);
         });
 
         it('does not upload LG form if total number of file does not match file name', async () => {
@@ -342,17 +347,19 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 userEvent.upload(screen.getByTestId(`button-input`), lgExtraFile);
             });
 
-            expect(screen.getByText(lgExtraFile.name)).toBeInTheDocument();
-
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
-
             expect(
-                await screen.findByText(
+                screen.getByText('There is a problem with some of your files'),
+            ).toBeInTheDocument();
+
+            expect(screen.getAllByText(lgExtraFile.name)).toHaveLength(2);
+            expect(
+                screen.getAllByText(
                     'One or more of the files do not match the required filename format. Please check the file(s) and try again',
                 ),
-            ).toBeInTheDocument();
+            ).toHaveLength(2);
         });
 
         it('does not upload LG form if selected file does not match naming conventions', async () => {
@@ -365,17 +372,17 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 userEvent.upload(screen.getByTestId(`button-input`), pdfFileWithBadName);
             });
 
-            expect(screen.getByText(pdfFileWithBadName.name)).toBeInTheDocument();
+            expect(screen.getAllByText(pdfFileWithBadName.name)).toHaveLength(2);
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
 
             expect(
-                await screen.findByText(
+                await screen.findAllByText(
                     'One or more of the files do not match the required filename format. Please check the file(s) and try again',
                 ),
-            ).toBeInTheDocument();
+            ).toHaveLength(2);
         });
 
         it('does not upload LG form if selected file number is bigger than number of total files', async () => {
@@ -386,17 +393,17 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 userEvent.upload(screen.getByTestId(`button-input`), pdfFileWithBadNumber);
             });
 
-            expect(screen.getByText(pdfFileWithBadNumber.name)).toBeInTheDocument();
+            expect(screen.getAllByText(pdfFileWithBadNumber.name)).toHaveLength(2);
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
 
             expect(
-                await screen.findByText(
+                await screen.findAllByText(
                     'One or more of the files do not match the required filename format. Please check the file(s) and try again',
                 ),
-            ).toBeInTheDocument();
+            ).toHaveLength(2);
         });
 
         it('does not upload LG form if files do not match each other', async () => {
@@ -423,8 +430,8 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 ]);
             });
 
-            expect(screen.getByText(joeBloggsFile.name)).toBeInTheDocument();
-            expect(screen.getByText(johnSmithFile.name)).toBeInTheDocument();
+            expect(screen.getAllByText(joeBloggsFile.name)).toHaveLength(1);
+            expect(screen.getAllByText(johnSmithFile.name)).toHaveLength(2);
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));

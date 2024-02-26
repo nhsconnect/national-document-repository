@@ -1,4 +1,3 @@
-// TODO: put in seperate helper function, input UploadDoc[] output fileErrors[]
 import { UploadDocument, UploadFilesErrors } from '../../types/pages/UploadDocumentsPage/types';
 
 export const uploadDocumentValidation = (uploadDocuments: UploadDocument[]) => {
