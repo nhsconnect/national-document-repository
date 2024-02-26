@@ -1,6 +1,10 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import LgDownloadAllStage, { Props } from './LloydGeorgeDownloadAllStage';
-import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
+import {
+    buildConfig,
+    buildLgSearchResult,
+    buildPatientDetails,
+} from '../../../helpers/test/testBuilders';
 import axios from 'axios';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
@@ -8,9 +12,7 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { routes } from '../../../types/generic/routes';
 import useConfig from '../../../helpers/hooks/useConfig';
-import { defaultFeatureFlags } from '../../../types/generic/featureFlags';
 
-jest.mock('../../../helpers/hooks/useConfig');
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUsePatient = usePatient as jest.Mock;
@@ -30,12 +32,13 @@ jest.mock('moment', () => {
 jest.mock('axios');
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../helpers/hooks/useConfig');
 
 describe('LloydGeorgeDownloadAllStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
-        mockUseConfig.mockReturnValue({ featureFlags: defaultFeatureFlags, mockLocal: {} });
+        mockUseConfig.mockReturnValue(buildConfig());
     });
     afterEach(() => {
         jest.clearAllMocks();

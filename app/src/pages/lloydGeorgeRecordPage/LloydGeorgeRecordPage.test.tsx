@@ -4,6 +4,7 @@ import {
     buildPatientDetails,
     buildLgSearchResult,
     buildSearchResult,
+    buildConfig,
 } from '../../helpers/test/testBuilders';
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import axios from 'axios';
@@ -38,7 +39,7 @@ describe('LloydGeorgeRecordPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
-        mockUseConfig.mockReturnValue({ featureFlags: defaultFeatureFlags, mockLocal: {} });
+        mockUseConfig.mockReturnValue(buildConfig());
     });
 
     afterEach(() => {

@@ -1,5 +1,9 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
+import {
+    buildConfig,
+    buildLgSearchResult,
+    buildPatientDetails,
+} from '../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
 import LgRecordStage, { Props } from './LloydGeorgeRecordStage';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
@@ -36,7 +40,7 @@ describe('LloydGeorgeRecordStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
-        mockUseConfig.mockReturnValue({ featureFlags: defaultFeatureFlags, mockLocal: {} });
+        mockUseConfig.mockReturnValue(buildConfig());
     });
     afterEach(() => {
         jest.clearAllMocks();

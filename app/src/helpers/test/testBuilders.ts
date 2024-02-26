@@ -11,6 +11,8 @@ import { LloydGeorgeStitchResult } from '../requests/getLloydGeorgeRecord';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
+import { GlobalConfig, LocalFlags } from '../../providers/configProvider/ConfigProvider';
+import { FeatureFlags } from '../../types/generic/featureFlags';
 
 const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
     const auth: UserAuth = {
@@ -110,6 +112,28 @@ const buildLgSearchResult = () => {
     return result;
 };
 
+const buildConfig = (
+    localFlagsOverride?: Partial<LocalFlags>,
+    featureFlagsOverride?: Partial<FeatureFlags>,
+) => {
+    const globalConfig: GlobalConfig = {
+        mockLocal: {
+            isBsol: true,
+            recordUploaded: true,
+            userRole: REPOSITORY_ROLE.GP_ADMIN,
+            ...localFlagsOverride,
+        },
+        featureFlags: {
+            uploadLloydGeorgeWorkflowEnabled: false,
+            uploadLambdaEnabled: false,
+            uploadArfWorkflowEnabled: false,
+            ...featureFlagsOverride,
+        },
+    };
+
+    return globalConfig;
+};
+
 export {
     buildPatientDetails,
     buildTextFile,
@@ -118,4 +142,5 @@ export {
     buildLgSearchResult,
     buildUserAuth,
     buildLgFile,
+    buildConfig,
 };

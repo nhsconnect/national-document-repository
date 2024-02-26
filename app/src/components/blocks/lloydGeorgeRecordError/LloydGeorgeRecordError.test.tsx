@@ -7,43 +7,32 @@ import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { routes } from '../../../types/generic/routes';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
-import { defaultFeatureFlags } from '../../../types/generic/featureFlags';
 import useConfig from '../../../helpers/hooks/useConfig';
+import { buildConfig } from '../../../helpers/test/testBuilders';
 
-const mockSetStage = jest.fn();
-const mockNavigate = jest.fn();
 jest.mock('../../../helpers/hooks/useIsBSOL');
-
+jest.mock('../../../helpers/hooks/useRole');
+jest.mock('../../../helpers/hooks/useConfig');
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
 }));
-
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
 }));
 
-jest.mock('../../../helpers/hooks/useRole');
 const mockUseRole = useRole as jest.Mock;
-const mockedIsBSOL = useIsBSOL as jest.Mock;
-
-jest.mock('../../../helpers/hooks/useConfig');
+const mockIsBSOL = useIsBSOL as jest.Mock;
 const mockUseConfig = useConfig as jest.Mock;
-const mockUploadLgWorkflowEnabled = {
-    featureFlags: {
-        ...defaultFeatureFlags,
-        uploadLloydGeorgeWorkflowEnabled: true,
-        uploadLambdaEnabled: true,
-    },
-    mockLocal: {},
-};
+const mockSetStage = jest.fn();
+const mockNavigate = jest.fn();
 
 describe('LloydGeorgeRecordError', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-        mockUseConfig.mockReturnValue({ featureFlags: defaultFeatureFlags, mockLocal: {} });
+        mockUseConfig.mockReturnValue(buildConfig());
     });
 
     afterEach(() => {
@@ -79,7 +68,7 @@ describe('LloydGeorgeRecordError', () => {
 
         it("renders a message  when the document download status is 'No records' and user is non BSOL", () => {
             const timeoutStatus = DOWNLOAD_STAGE.NO_RECORDS;
-            mockedIsBSOL.mockReturnValue(false);
+            mockIsBSOL.mockReturnValue(false);
 
             render(
                 <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
@@ -93,9 +82,17 @@ describe('LloydGeorgeRecordError', () => {
 
         it("renders a message and upload button when the document download status is 'No records', user is admin BSOL and upload flags are enabled", () => {
             const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
-            mockedIsBSOL.mockReturnValue(true);
+            mockIsBSOL.mockReturnValue(true);
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-            mockUseConfig.mockReturnValue(mockUploadLgWorkflowEnabled);
+            mockUseConfig.mockReturnValue(
+                buildConfig(
+                    {},
+                    {
+                        uploadLloydGeorgeWorkflowEnabled: true,
+                        uploadLambdaEnabled: true,
+                    },
+                ),
+            );
 
             render(
                 <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={noRecordsStatus} />,
@@ -110,7 +107,7 @@ describe('LloydGeorgeRecordError', () => {
         it("renders a message but no upload button when the document download status is 'No records', user is admin BSOL and upload flags are not enabled", () => {
             const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
 
-            mockedIsBSOL.mockReturnValue(true);
+            mockIsBSOL.mockReturnValue(true);
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
             render(
@@ -194,9 +191,17 @@ describe('LloydGeorgeRecordError', () => {
 
         it("navigates to upload page, when the document download status is 'No records', user is admin BSOL and upload flags are enabled", () => {
             const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;
-            mockedIsBSOL.mockReturnValue(true);
+            mockIsBSOL.mockReturnValue(true);
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-            mockUseConfig.mockReturnValue(mockUploadLgWorkflowEnabled);
+            mockUseConfig.mockReturnValue(
+                buildConfig(
+                    {},
+                    {
+                        uploadLloydGeorgeWorkflowEnabled: true,
+                        uploadLambdaEnabled: true,
+                    },
+                ),
+            );
 
             render(
                 <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={noRecordsStatus} />,
