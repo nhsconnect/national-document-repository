@@ -25,6 +25,7 @@ import { AxiosError } from 'axios';
 import { isMock } from '../../../helpers/utils/isLocal';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
+import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -130,7 +131,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             (errorFile) => document.file === errorFile.file?.file,
         );
         if (errorFile) {
-            return <div className="lloydgeorge_file_upload_error">{errorFile.error}</div>;
+            return <div className="lloydgeorge_file_upload_error">{errorFile.error.message}</div>;
         }
     };
     return (
@@ -147,7 +148,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             {showNoFilesMessage && (
                 <ErrorBox
                     messageTitle={'There is a problem with some of your files'}
-                    messageLinkBody={'You did not select any file to upload'}
+                    messageLinkBody={fileUploadErrorMessages.noFiles.message}
                     errorBoxSummaryId={'error-box-summary'}
                     errorInputLink={'#upload-lloyd-george'}
                 />
@@ -219,7 +220,8 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                         <Button
                             data-testid={`upload-button-input`}
                             type={'button'}
-                            style={{ background: '#4C6272', marginBottom: 0, color: 'white' }}
+                            className={'nhsuk-button nhsuk-button--secondary'}
+                            style={{ marginBottom: 0 }}
                             onClick={() => {
                                 fileInputRef.current?.click();
                             }}

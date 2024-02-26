@@ -51,7 +51,7 @@ const ErrorBox = ({
                             errorMessageList.map((errorItem) => {
                                 return (
                                     <div key={errorItem.file?.id}>
-                                        <p>{errorItem.error}</p>
+                                        <p>{errorItem.error.errorBox}</p>
                                         <ErrorSummary.Item href={'#' + errorItem.file?.file.name}>
                                             <p>{errorItem.file?.file.name}</p>
                                         </ErrorSummary.Item>

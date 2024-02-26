@@ -10,6 +10,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { routes } from '../../../types/generic/routes';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
+import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
 
 jest.mock('../../../helpers/utils/toFileList', () => ({
     __esModule: true,
@@ -18,6 +19,8 @@ jest.mock('../../../helpers/utils/toFileList', () => ({
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('react-router');
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+window.scrollTo = jest.fn();
+
 const setStageMock = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
@@ -302,9 +305,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(
-                await screen.findAllByText(
-                    'Please ensure that all files are less than 5GB in size',
-                ),
+                await screen.findAllByText(fileUploadErrorMessages.fileSizeError.message),
             ).toHaveLength(2);
         });
 
@@ -332,10 +333,11 @@ describe('<LloydGeorgeFileInputStage />', () => {
             expect(screen.getAllByText(lgFileWithBadType.name)).toHaveLength(2);
 
             expect(
-                screen.getAllByText(
-                    'One or more of the files do not match the required file type. Please check the file(s) and try again',
-                ),
-            ).toHaveLength(2);
+                screen.getByText(fileUploadErrorMessages.fileTypeError.message),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(fileUploadErrorMessages.fileTypeError.errorBox),
+            ).toBeInTheDocument();
         });
 
         it('does not upload LG form if total number of file does not match file name', async () => {
@@ -356,10 +358,11 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
             expect(screen.getAllByText(lgExtraFile.name)).toHaveLength(2);
             expect(
-                screen.getAllByText(
-                    'One or more of the files do not match the required filename format. Please check the file(s) and try again',
-                ),
-            ).toHaveLength(2);
+                screen.getByText(fileUploadErrorMessages.fileNameError.message),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(fileUploadErrorMessages.fileNameError.errorBox),
+            ).toBeInTheDocument();
         });
 
         it('does not upload LG form if selected file does not match naming conventions', async () => {
@@ -379,10 +382,11 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(
-                await screen.findAllByText(
-                    'One or more of the files do not match the required filename format. Please check the file(s) and try again',
-                ),
-            ).toHaveLength(2);
+                screen.getByText(fileUploadErrorMessages.fileNameError.message),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(fileUploadErrorMessages.fileNameError.errorBox),
+            ).toBeInTheDocument();
         });
 
         it('does not upload LG form if selected file number is bigger than number of total files', async () => {
@@ -400,10 +404,11 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(
-                await screen.findAllByText(
-                    'One or more of the files do not match the required filename format. Please check the file(s) and try again',
-                ),
-            ).toHaveLength(2);
+                screen.getByText(fileUploadErrorMessages.fileNameError.message),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(fileUploadErrorMessages.fileNameError.errorBox),
+            ).toBeInTheDocument();
         });
 
         it('does not upload LG form if files do not match each other', async () => {
@@ -438,9 +443,10 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(
-                await screen.findByText(
-                    'One or more of the files do not match the required filename format. Please check the file(s) and try again',
-                ),
+                screen.getByText(fileUploadErrorMessages.fileNameError.message),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(fileUploadErrorMessages.fileNameError.errorBox),
             ).toBeInTheDocument();
         });
 
@@ -455,17 +461,18 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 ]);
             });
 
-            expect(screen.getAllByText(lgDocumentTwo.name)).toHaveLength(2);
+            expect(screen.getAllByText(lgDocumentTwo.name)).toHaveLength(4);
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
 
             expect(
-                await screen.findByText(
-                    'There are documents chosen that have the same name, a record with duplicate file names can not be uploaded because it does not match the required file format. Please check the files(s) and try again.',
-                ),
-            ).toBeInTheDocument();
+                await screen.findAllByText(fileUploadErrorMessages.duplicateFile.message),
+            ).toHaveLength(2);
+            expect(
+                await screen.findAllByText(fileUploadErrorMessages.duplicateFile.errorBox),
+            ).toHaveLength(2);
             expect(screen.queryByText(duplicateFileWarning)).not.toBeInTheDocument();
         });
 
@@ -513,7 +520,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
 
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), lgFiles);
@@ -553,7 +560,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
 
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), lgFiles);
