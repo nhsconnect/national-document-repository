@@ -27,6 +27,9 @@ const errorCodes: { [key: string]: string } = {
     GWY_5001: 'Failed to utilise AWS client/resource',
     SFB_5001: 'Error occur when sending email by SES',
     SFB_5002: 'Failed to fetch parameters for sending email from SSM param store',
+    FFL_5001: 'Failed to parse feature flag/s from AppConfig response',
+    FFL_5002: 'Failed to retrieve feature flag/s from AppConfig profile',
+    FFL_5003: 'Feature is not enabled',
 };
 
 export default errorCodes;
