@@ -11,6 +11,8 @@ import formatFileSize from '../../helpers/utils/formatFileSize';
 import usePatient from '../../helpers/hooks/usePatient';
 import { act } from 'react-dom/test-utils';
 import { routes } from '../../types/generic/routes';
+import useConfig from '../../helpers/hooks/useConfig';
+import { defaultFeatureFlags } from '../../types/generic/featureFlags';
 
 jest.mock('../../helpers/hooks/useConfig');
 jest.mock('axios');
@@ -23,6 +25,7 @@ const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockPatientDetails = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
+const mockUseConfig = useConfig as jest.Mock;
 
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
@@ -35,6 +38,7 @@ describe('LloydGeorgeRecordPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
+        mockUseConfig.mockReturnValue({ featureFlags: defaultFeatureFlags, mockLocal: {} });
     });
 
     afterEach(() => {

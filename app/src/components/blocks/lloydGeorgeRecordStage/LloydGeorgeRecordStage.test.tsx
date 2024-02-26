@@ -12,6 +12,8 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import useRole from '../../../helpers/hooks/useRole';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import useConfig from '../../../helpers/hooks/useConfig';
+import { defaultFeatureFlags } from '../../../types/generic/featureFlags';
 
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
@@ -19,11 +21,13 @@ const mockPatientDetails = buildPatientDetails();
 jest.mock('../../../helpers/hooks/useRole');
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('../../../helpers/hooks/useIsBSOL');
+jest.mock('../../../helpers/hooks/useConfig');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
 const mockedIsBSOL = useIsBSOL as jest.Mock;
 const mockSetStage = jest.fn();
+const mockUseConfig = useConfig as jest.Mock;
 
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
@@ -33,6 +37,7 @@ describe('LloydGeorgeRecordStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
+        mockUseConfig.mockReturnValue({ featureFlags: defaultFeatureFlags, mockLocal: {} });
     });
     afterEach(() => {
         jest.clearAllMocks();
