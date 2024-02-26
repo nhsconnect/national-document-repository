@@ -30,6 +30,7 @@ class NHSDocumentReference:
         self.deleted = ""
         self.virus_scanner_result = "Not Scanned"
         self.file_location = f"s3://{self.s3_bucket_name}/{self.s3_file_key}"
+        self.uploaded = False
 
     def set_deleted(self) -> None:
         self.deleted = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -51,6 +52,7 @@ class NHSDocumentReference:
             DocumentReferenceMetadataFields.CONTENT_TYPE.value: self.content_type,
             DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value: self.virus_scanner_result,
             DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: self.current_gp_ods,
+            DocumentReferenceMetadataFields.UPLOADED.value: self.uploaded,
         }
         return document_metadata
 
