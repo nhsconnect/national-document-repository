@@ -4,7 +4,6 @@ import userEvent from '@testing-library/user-event';
 import LgRecordStage, { Props } from './LloydGeorgeRecordStage';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
-import { useState } from 'react';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import { act } from 'react-dom/test-utils';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
