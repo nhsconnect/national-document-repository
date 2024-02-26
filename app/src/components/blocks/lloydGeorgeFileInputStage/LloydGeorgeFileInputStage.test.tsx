@@ -19,7 +19,7 @@ jest.mock('../../../helpers/utils/toFileList', () => ({
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('react-router');
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
-window.scrollTo = jest.fn();
+window.scrollTo = jest.fn() as jest.Mock;
 
 const setStageMock = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;
@@ -474,6 +474,24 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 await screen.findAllByText(fileUploadErrorMessages.duplicateFile.errorBox),
             ).toHaveLength(2);
             expect(screen.queryByText(duplicateFileWarning)).not.toBeInTheDocument();
+        });
+
+        it('does not upload LG form if no file was provided', async () => {
+            renderApp();
+
+            act(() => {
+                userEvent.click(screen.getByText('Upload'));
+            });
+
+            expect(
+                await screen.findByText(fileUploadErrorMessages.noFiles.message),
+            ).toBeInTheDocument();
+
+            expect(
+                await screen.findByText(fileUploadErrorMessages.noFiles.errorBox),
+            ).toBeInTheDocument();
+
+            expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
         });
 
         it("does allow the user to add the same file again if they remove for '%s' input", async () => {
