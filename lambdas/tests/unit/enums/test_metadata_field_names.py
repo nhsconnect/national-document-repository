@@ -8,7 +8,6 @@ def test_can_get_one_field_name():
 
 def test_returns_all_as_list():
     subject = DocumentReferenceMetadataFields.list()
-    print(subject)
     assert len(subject) == 12
     assert DocumentReferenceMetadataFields.ID.value in subject
     assert DocumentReferenceMetadataFields.CONTENT_TYPE.value in subject
