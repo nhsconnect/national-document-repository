@@ -54,7 +54,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             return;
         }
         setUploadFilesErrors(uploadDocumentValidation(documents));
-        if (!!uploadFilesErrors.length) {
+        if (uploadFilesErrors.length) {
             window.scrollTo(0, 0);
             return;
         }
