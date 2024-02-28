@@ -21,6 +21,11 @@ const patient = {
     active: false,
 };
 
+const featureFlags = {
+    uploadArfWorkflowEnabled: 'true',
+    uploadLambdaEnabled: 'true',
+};
+
 const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
 const serverError = 500;
 const successNoContent = 204;
@@ -91,6 +96,11 @@ const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 describe('GP Workflow: Upload docs and verify', () => {
     gpRoles.forEach((role) => {
         beforeEach(() => {
+            cy.intercept('GET', '**/FeatureFlags**', {
+                statusCode: 200,
+                body: featureFlags,
+            }).as('featureFlags');
+
             cy.login(role);
             navigateToUploadPage();
         });

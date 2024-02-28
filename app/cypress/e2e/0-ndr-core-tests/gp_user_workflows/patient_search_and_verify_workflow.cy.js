@@ -20,8 +20,17 @@ describe('GP Workflow: Patient search and verify', () => {
         active: false,
     };
 
+    const featureFlags = {
+        uploadArfWorkflowEnabled: 'true',
+    };
+
     gpRoles.forEach((role) => {
         beforeEach(() => {
+            cy.intercept('GET', '/FeatureFlags*', {
+                statusCode: 200,
+                body: featureFlags,
+            }).as('featureFlags');
+
             cy.login(role);
             cy.visit(searchPatientUrl);
         });
