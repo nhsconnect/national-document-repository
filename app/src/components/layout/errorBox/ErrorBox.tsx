@@ -47,17 +47,16 @@ const ErrorBox = ({
                             </ErrorSummary.Item>
                         )}
                         {messageBody && <p>{messageBody}</p>}
-                        {errorMessageList &&
-                            errorMessageList.map((errorItem) => {
-                                return (
-                                    <div key={errorItem.file?.id}>
-                                        <p>{errorItem.error.errorBox}</p>
-                                        <ErrorSummary.Item href={'#' + errorItem.file?.file.name}>
-                                            <p>{errorItem.file?.file.name}</p>
-                                        </ErrorSummary.Item>
-                                    </div>
-                                );
-                            })}
+                        {errorMessageList?.map((errorItem) => {
+                            return (
+                                <div key={errorItem.file?.id}>
+                                    <p>{errorItem.error.errorBox}</p>
+                                    <ErrorSummary.Item href={'#' + errorItem.file?.file.name}>
+                                        <p>{errorItem.file?.file.name}</p>
+                                    </ErrorSummary.Item>
+                                </div>
+                            );
+                        })}
                     </ErrorSummary.List>
                 </ErrorSummary.Body>
             </ErrorSummary>

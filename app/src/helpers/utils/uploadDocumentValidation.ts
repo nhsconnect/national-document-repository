@@ -15,32 +15,32 @@ export const uploadDocumentValidation = (uploadDocuments: UploadDocument[]) => {
     const errors: UploadFilesErrors[] = [];
     const lgFilesNumber = /of[0-9]+/;
     const FIVEGB = 5 * Math.pow(1024, 3);
-    for (let i = 0; i < uploadDocuments.length; i++) {
-        const currentFile = uploadDocuments[i].file;
+    for (let document of uploadDocuments) {
+        const currentFile = document.file;
         if (currentFile.size > FIVEGB) {
             errors.push({
-                file: uploadDocuments[i],
+                file: document,
                 error: fileUploadErrorMessages.fileSizeError,
             });
             continue;
         }
         if (currentFile.type !== 'application/pdf') {
             errors.push({
-                file: uploadDocuments[i],
+                file: document,
                 error: fileUploadErrorMessages.fileTypeError,
             });
             continue;
         }
         const isDuplicate = uploadDocuments?.some((compare: UploadDocument) => {
             return (
-                uploadDocuments[i].file.name === compare.file.name &&
-                uploadDocuments[i].file.size === compare.file.size &&
-                uploadDocuments[i].id !== compare.id
+                document.file.name === compare.file.name &&
+                document.file.size === compare.file.size &&
+                document.id !== compare.id
             );
         });
         if (isDuplicate) {
             errors.push({
-                file: uploadDocuments[i],
+                file: document,
                 error: fileUploadErrorMessages.duplicateFile,
             });
             continue;
@@ -67,7 +67,7 @@ export const uploadDocumentValidation = (uploadDocuments: UploadDocument[]) => {
             !doesFileNameMatchEachOther
         ) {
             errors.push({
-                file: uploadDocuments[i],
+                file: document,
                 error: fileUploadErrorMessages.fileNameError,
             });
         }
