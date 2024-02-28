@@ -22,6 +22,7 @@ describe('GP Workflow: Patient search and verify', () => {
 
     const featureFlags = {
         uploadArfWorkflowEnabled: 'true',
+        uploadLambdaEnabled: 'true',
     };
 
     gpRoles.forEach((role) => {
