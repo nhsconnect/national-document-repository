@@ -7,6 +7,7 @@ from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
 from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.bulk_upload.test_data import (
+    TEST_DOCUMENT_REFERENCE_LIST,
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
     TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
 )
@@ -30,6 +31,7 @@ from utils.lloyd_george_validator import (
     validate_filename_with_patient_details,
     validate_lg_file_names,
     validate_lg_file_type,
+    validate_lg_files,
 )
 
 
@@ -413,6 +415,16 @@ def test_allowed_to_ingest_ods_code_propagate_error(mock_get_ssm_parameter):
 
     with pytest.raises(ClientError):
         allowed_to_ingest_ods_code("H81109")
+
+
+def test_mismatch_nhs_in_validate_lg_file(mocker):
+    mocker.patch(
+        "utils.lloyd_george_validator.check_for_number_of_files_match_expected"
+    )
+    mocker.patch("utils.lloyd_george_validator.validate_file_name")
+
+    with pytest.raises(LGInvalidFilesException):
+        validate_lg_files(TEST_DOCUMENT_REFERENCE_LIST, "9000000009")
 
 
 @pytest.fixture
