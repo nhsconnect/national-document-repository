@@ -82,7 +82,6 @@ def validate_lg_files(file_list: list[NHSDocumentReference], nhs_number: str):
         check_for_number_of_files_match_expected(doc.file_name, len(file_list))
         validate_lg_file_type(doc.content_type)
         checks_per_filename(doc.file_name, nhs_number)
-
         files_name_list.append(doc.file_name)
 
     check_for_duplicate_files(files_name_list)
@@ -153,10 +152,6 @@ def validate_filename_with_patient_details(
 
         if not names_are_matching(patient_name, patient_full_name):
             raise LGInvalidFilesException("Patient name does not match our records")
-
-        patient_ods_code = patient_details.general_practice_ods
-        if not allowed_to_ingest_ods_code(patient_ods_code):
-            raise LGInvalidFilesException("Patient not registered at your practice")
 
     except (ClientError, ValueError) as e:
         logger.error(e)
