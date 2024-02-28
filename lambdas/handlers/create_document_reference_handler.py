@@ -64,6 +64,8 @@ def lambda_handler(event, context):
 
 
 def processing_event_details(event):
+    failed_message = "Create document reference failed"
+
     try:
         body = json.loads(event["body"])
         nhs_number = body["subject"]["identifier"]["value"]
@@ -71,7 +73,7 @@ def processing_event_details(event):
         if not body or not isinstance(body, dict):
             logger.error(
                 f"{LambdaError.CreateDocNoBody.to_str()}",
-                {"Result": "Create document reference failed"},
+                {"Result": failed_message},
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocNoBody)
 
@@ -81,12 +83,12 @@ def processing_event_details(event):
     except (JSONDecodeError, AttributeError) as e:
         logger.error(
             f"{LambdaError.CreateDocPayload.to_str()}: {str(e)}",
-            {"Result": "Create document reference failed"},
+            {"Result": failed_message},
         )
         raise CreateDocumentRefException(400, LambdaError.CreateDocPayload)
     except (KeyError, TypeError) as e:
         logger.error(
             f"{LambdaError.CreateDocProps.to_str()}: {str(e)}",
-            {"Result": "Create document reference failed"},
+            {"Result": failed_message},
         )
         raise CreateDocumentRefException(400, LambdaError.CreateDocProps)
