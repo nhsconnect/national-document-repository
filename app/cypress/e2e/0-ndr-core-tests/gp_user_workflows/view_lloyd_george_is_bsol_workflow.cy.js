@@ -374,6 +374,13 @@ describe('GP Workflow: View Lloyd George record', () => {
             'does not display upload text and button when neither upload feature flags are enabled',
             { tags: 'regression' },
             () => {
+                cy.intercept('GET', '/FeatureFlags*', {
+                    statusCode: 200,
+                    body: {
+                        uploadLloydGeorgeWorkflowEnabled: false,
+                        uploadLambdaEnabled: false,
+                    },
+                });
                 beforeEachConfiguration(Roles.GP_ADMIN);
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 404,
