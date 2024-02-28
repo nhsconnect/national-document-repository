@@ -7,10 +7,9 @@ from handlers.create_document_reference_handler import (
     processing_event_details,
 )
 from tests.unit.conftest import (
-    MOCK_ARF_BUCKET,
-    MOCK_LG_BUCKET,
     TEST_NHS_NUMBER,
     TEST_OBJECT_KEY,
+    MOCK_LG_STAGING_STORE_BUCKET
 )
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
@@ -23,8 +22,8 @@ from tests.unit.helpers.data.create_document_reference import (
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lambda_response import ApiGatewayResponse
 
-TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_ARF_BUCKET}/{TEST_OBJECT_KEY}"
-TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_LG_BUCKET}/{TEST_OBJECT_KEY}"
+TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_LG_STAGING_STORE_BUCKET}/{TEST_OBJECT_KEY}"
+TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_LG_STAGING_STORE_BUCKET}/{TEST_OBJECT_KEY}"
 
 
 class MockError(Enum):
@@ -75,38 +74,13 @@ def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
 
 
 arf_environment_variables = [
-    "DOCUMENT_STORE_BUCKET_NAME",
-    "DOCUMENT_STORE_DYNAMODB_NAME",
+    "STAGING_STORE_BUCKET_NAME"
 ]
 lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME", "LLOYD_GEORGE_DYNAMODB_NAME"]
 
 
-@pytest.mark.parametrize("environment_variable", lg_environment_variables)
-def test_lambda_handler_missing_environment_variables_type_lg_returns_500(
-    set_env,
-    monkeypatch,
-    lg_type_event,
-    environment_variable,
-    context,
-):
-    monkeypatch.delenv(environment_variable)
-
-    expected_body = {
-        "message": f"An error occurred due to missing environment variable: '{environment_variable}'",
-        "err_code": "ENV_5001",
-        "interaction_id": "88888888-4444-4444-4444-121212121212",
-    }
-    expected = ApiGatewayResponse(
-        500,
-        json.dumps(expected_body),
-        "POST",
-    ).create_api_gateway_response()
-    actual = lambda_handler(lg_type_event, context)
-    assert expected == actual
-
-
 @pytest.mark.parametrize("environment_variable", arf_environment_variables)
-def test_lambda_handler_missing_environment_variables_type_arf_returns_500(
+def test_lambda_handler_missing_environment_variables_type_staging_returns_500(
     set_env,
     monkeypatch,
     arf_type_event,
@@ -217,7 +191,7 @@ def test_lambda_handler_service_raise_error(
     ).create_api_gateway_response()
     actual = lambda_handler(arf_type_event, context)
     assert expected == actual
-    mock_service.assert_called_with(ARF_FILE_LIST)
+    mock_service.assert_called_with(TEST_NHS_NUMBER, ARF_FILE_LIST)
     mock_processing_event_details.assert_called_with(arf_type_event)
 
 

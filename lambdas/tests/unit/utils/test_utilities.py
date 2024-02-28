@@ -1,21 +1,21 @@
 import pytest
 from utils.exceptions import InvalidResourceIdException
-from utils.utilities import camelize_dict, redact_id_to_last_4_chars, validate_id
+from utils.utilities import camelize_dict, redact_id_to_last_4_chars, validate_nhs_number
 
 
-def test_validate_id_with_valid_id_returns_true():
+def test_validate_nhs_number_with_valid_id_returns_true():
     nhs_number = "0000000000"
 
-    result = validate_id(nhs_number)
+    result = validate_nhs_number(nhs_number)
 
     assert result
 
 
-def test_validate_id_with_valid_id_raises_InvalidResourceIdException():
+def test_validate_nhs_number_with_valid_id_raises_InvalidResourceIdException():
     nhs_number = "000000000"
 
     with pytest.raises(InvalidResourceIdException):
-        validate_id(nhs_number)
+        validate_nhs_number(nhs_number)
 
 
 def test_decapitalise_keys():

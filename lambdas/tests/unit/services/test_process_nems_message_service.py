@@ -36,9 +36,9 @@ def mock_map_bundle_entries_to_dict(mocker):
 
 
 @pytest.fixture
-def mock_validate_id(mocker):
-    mock_validate_id = mocker.patch("services.process_nems_message_service.validate_id")
-    yield mock_validate_id
+def mock_validate_nhs_number(mocker):
+    mock_validate_nhs_number = mocker.patch("services.process_nems_message_service.validate_nhs_number")
+    yield mock_validate_nhs_number
 
 
 @pytest.fixture
@@ -318,13 +318,13 @@ def test_handle_change_of_gp_message_when_patient_is_missing_returns_FhirResourc
 
 
 def test_handle_change_of_gp_message_when_nhs_number_validation_fails_raises_InvalidResourceIdException(
-    mock_service, mock_validate_id
+    mock_service, mock_validate_nhs_number
 ):
     function_input = {
         "Patient": [patient_bundle_resource],
         "Organisations": [],
     }
-    mock_validate_id.side_effect = InvalidResourceIdException()
+    mock_validate_nhs_number.side_effect = InvalidResourceIdException()
 
     with pytest.raises(InvalidResourceIdException):
         mock_service.handle_change_of_gp_message(function_input)
@@ -353,7 +353,7 @@ def test_handle_change_of_gp_message_when_no_active_gp_resource_throws_FhirResou
 
 def test_handle_change_of_gp_message_nems_validation_throws_OdsErrorException(
     mock_service,
-    mock_validate_id,
+    mock_validate_nhs_number,
     mock_update_LG_table_with_current_GP,
     mock_validate_nems_details,
 ):
@@ -368,12 +368,12 @@ def test_handle_change_of_gp_message_nems_validation_throws_OdsErrorException(
 
     mock_update_LG_table_with_current_GP.assert_not_called()
     mock_validate_nems_details.assert_called_once()
-    mock_validate_id.assert_called_once()
+    mock_validate_nhs_number.assert_called_once()
 
 
 def test_handle_change_of_gp_message_when_nems_validation_throws_OrganisationNotFoundException(
     mock_service,
-    mock_validate_id,
+    mock_validate_nhs_number,
     mock_update_LG_table_with_current_GP,
     mock_validate_nems_details,
 ):
@@ -388,12 +388,12 @@ def test_handle_change_of_gp_message_when_nems_validation_throws_OrganisationNot
 
     mock_update_LG_table_with_current_GP.assert_not_called()
     mock_validate_nems_details.assert_called_once()
-    mock_validate_id.assert_called_once()
+    mock_validate_nhs_number.assert_called_once()
 
 
 def test_handle_change_of_gp_message_happy_path(
     mock_service,
-    mock_validate_id,
+    mock_validate_nhs_number,
     mock_update_LG_table_with_current_GP,
     mock_validate_nems_details,
 ):
@@ -407,7 +407,7 @@ def test_handle_change_of_gp_message_happy_path(
     assert response is None
     mock_update_LG_table_with_current_GP.assert_called_once()
     mock_validate_nems_details.assert_called_once()
-    mock_validate_id.assert_called_once()
+    mock_validate_nhs_number.assert_called_once()
 
 
 def test_validate_nems_details_throws_OdsErrorException(mock_service):

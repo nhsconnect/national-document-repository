@@ -23,9 +23,8 @@ logger = LoggingService(__name__)
 @set_request_context_for_logging
 @ensure_environment_variables(
     names=[
-        "LLOYD_GEORGE_BUCKET_NAME",
+        "STAGING_STORE_BUCKET_NAME",
         "LLOYD_GEORGE_DYNAMODB_NAME",
-        "DOCUMENT_STORE_BUCKET_NAME",
         "DOCUMENT_STORE_DYNAMODB_NAME",
     ]
 )
@@ -40,8 +39,8 @@ def lambda_handler(event, context):
     request_context.patient_nhs_no = nhs_number
 
     logger.info("Processed upload documents from request")
-    docs_services = CreateDocumentReferenceService(nhs_number)
-    docs_services.create_document_reference_request(doc_list)
+    docs_services = CreateDocumentReferenceService()
+    docs_services.create_document_reference_request(nhs_number, doc_list)
 
     return ApiGatewayResponse(
         200, json.dumps(docs_services.url_responses), "POST"

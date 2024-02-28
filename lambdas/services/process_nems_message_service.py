@@ -20,7 +20,7 @@ from utils.exceptions import (
 )
 from utils.fhir_bundle_parser import map_bundle_entries_to_dict
 from utils.request_context import request_context
-from utils.utilities import validate_id
+from utils.utilities import validate_nhs_number
 
 logger = LoggingService(__name__)
 
@@ -129,7 +129,7 @@ class ProcessNemsMessageService:
         patient = patient_entries[0].resource
         patient_active_gp = patient.generalPractitioner[0].reference
         patient_nhs_number = patient.identifier[0].value
-        validate_id(patient_nhs_number)
+        validate_nhs_number(patient_nhs_number)
 
         organisation_entries = mapped_bundle.get(FHIR_RESOURCE_TYPES.Organisation.value)
         if organisation_entries is None:
