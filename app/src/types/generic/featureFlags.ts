@@ -1,5 +1,11 @@
 export type FeatureFlags = {
-    testFeature1: boolean;
-    testFeature2: boolean;
-    testFeature3: boolean;
+    uploadLloydGeorgeWorkflowEnabled: boolean;
+    uploadLambdaEnabled: boolean;
+    uploadArfWorkflowEnabled: boolean;
+};
+
+export const defaultFeatureFlags = {
+    uploadLloydGeorgeWorkflowEnabled: false,
+    uploadLambdaEnabled: false,
+    uploadArfWorkflowEnabled: false,
 };

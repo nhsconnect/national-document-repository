@@ -1,8 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-import { FeatureFlags } from '../../types/generic/featureFlags';
-import { defaultFeatureFlags } from '../../helpers/requests/getFeatureFlags';
+import { FeatureFlags, defaultFeatureFlags } from '../../types/generic/featureFlags';
 import { isLocal } from '../../helpers/utils/isLocal';
 
 type SetConfigOverride = (config: GlobalConfig) => void;

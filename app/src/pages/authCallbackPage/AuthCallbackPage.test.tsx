@@ -9,7 +9,7 @@ import { routes } from '../../types/generic/routes';
 import ConfigProvider, { useConfigContext } from '../../providers/configProvider/ConfigProvider';
 import { act } from 'react-dom/test-utils';
 import { endpoints } from '../../types/generic/endpoints';
-import { defaultFeatureFlags } from '../../helpers/requests/getFeatureFlags';
+import { defaultFeatureFlags } from '../../types/generic/featureFlags';
 
 jest.mock('../../helpers/hooks/useConfig');
 const mockedUseNavigate = jest.fn();
@@ -129,7 +129,7 @@ describe('AuthCallbackPage', () => {
                     return Promise.resolve({ data: buildUserAuth() });
                 } else {
                     return Promise.resolve({
-                        data: { ...defaultFeatureFlags, testFeature1: true },
+                        data: { ...defaultFeatureFlags, uploadLloydGeorgeWorkflowEnabled: true },
                     });
                 }
             });
@@ -148,8 +148,12 @@ const TestApp = () => {
     return (
         <div>
             <AuthCallbackPage />
-            <div>{`FLAG: ${JSON.stringify(config.featureFlags.testFeature1)}`.normalize()}</div>;
-            <div>{`LOGGEDIN: ${!!session.auth?.role}`.normalize()}</div>;
+            <div>
+                {`FLAG: ${JSON.stringify(
+                    config.featureFlags.uploadLloydGeorgeWorkflowEnabled,
+                )}`.normalize()}
+            </div>
+            ;<div>{`LOGGEDIN: ${!!session.auth?.role}`.normalize()}</div>;
         </div>
     );
 };

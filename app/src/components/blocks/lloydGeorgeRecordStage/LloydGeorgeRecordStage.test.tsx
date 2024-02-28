@@ -1,10 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
+import {
+    buildConfig,
+    buildLgSearchResult,
+    buildPatientDetails,
+} from '../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
 import LgRecordStage, { Props } from './LloydGeorgeRecordStage';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
-import { useState } from 'react';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import { act } from 'react-dom/test-utils';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
@@ -12,6 +15,7 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import useRole from '../../../helpers/hooks/useRole';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
+import useConfig from '../../../helpers/hooks/useConfig';
 
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
@@ -19,11 +23,13 @@ const mockPatientDetails = buildPatientDetails();
 jest.mock('../../../helpers/hooks/useRole');
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('../../../helpers/hooks/useIsBSOL');
+jest.mock('../../../helpers/hooks/useConfig');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
 const mockedIsBSOL = useIsBSOL as jest.Mock;
 const mockSetStage = jest.fn();
+const mockUseConfig = useConfig as jest.Mock;
 
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
@@ -33,6 +39,7 @@ describe('LloydGeorgeRecordStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
+        mockUseConfig.mockReturnValue(buildConfig());
     });
     afterEach(() => {
         jest.clearAllMocks();
