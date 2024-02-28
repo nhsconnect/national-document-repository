@@ -14,12 +14,39 @@ const REGEX_LLOYD_GEORGE_FILENAME = new RegExp(
     `[0-9]+of[0-9]+_Lloyd_George_Record_\\[(?<patient_name>${REGEX_PATIENT_NAME_PATTERN})]_\\[(?<nhs_number>${REGEX_NHS_NUMBER_REGEX})]_\\[(?<dob>\\d\\d-\\d\\d-\\d\\d\\d\\d)].pdf`,
 );
 
+const filenameMatchLloydGeorgeFormat = (
+    currentFile: File,
+    uploadDocuments: UploadDocument[],
+): boolean => {
+    const lgFilesNumber = /of[0-9]+/;
+    const expectedNumberOfFiles = currentFile.name.match(lgFilesNumber);
+    const doesPassRegex = Boolean(REGEX_LLOYD_GEORGE_FILENAME.exec(currentFile.name));
+    const doFilesTotalMatch =
+        expectedNumberOfFiles !== null &&
+        uploadDocuments.length === parseInt(expectedNumberOfFiles[0].slice(2));
+    const isFileNumberBiggerThanTotal =
+        expectedNumberOfFiles &&
+        parseInt(currentFile.name.split(lgFilesNumber)[0]) >
+            parseInt(expectedNumberOfFiles[0].slice(2));
+    const isFileNumberZero = currentFile.name.split(lgFilesNumber)[0] === '0';
+    const doesFileNameMatchEachOther =
+        currentFile.name.split(lgFilesNumber)[1] ===
+        uploadDocuments[0].file.name.split(lgFilesNumber)[1];
+    return (
+        doesPassRegex &&
+        doFilesTotalMatch &&
+        !isFileNumberBiggerThanTotal &&
+        !isFileNumberZero &&
+        doesFileNameMatchEachOther
+    );
+};
+
 export const uploadDocumentValidation = (
     uploadDocuments: UploadDocument[],
     patientDetails: PatientDetails | null,
 ) => {
     const errors: UploadFilesErrors[] = [];
-    const lgFilesNumber = /of[0-9]+/;
+
     const FIVEGB = 5 * Math.pow(1024, 3);
     for (let document of uploadDocuments) {
         const currentFile = document.file;
@@ -37,12 +64,8 @@ export const uploadDocumentValidation = (
             });
             continue;
         }
-        const isDuplicate = uploadDocuments?.some((compare: UploadDocument) => {
-            return (
-                document.file.name === compare.file.name &&
-                document.file.size === compare.file.size &&
-                document.id !== compare.id
-            );
+        const isDuplicate = uploadDocuments.some((compare: UploadDocument) => {
+            return document.file.name === compare.file.name && document.id !== compare.id;
         });
         if (isDuplicate) {
             errors.push({
@@ -52,36 +75,17 @@ export const uploadDocumentValidation = (
             continue;
         }
 
-        const expectedNumberOfFiles = currentFile.name.match(lgFilesNumber);
-        const doesPassRegex = REGEX_LLOYD_GEORGE_FILENAME.exec(currentFile.name);
-        const doFilesTotalMatch =
-            expectedNumberOfFiles &&
-            uploadDocuments.length === parseInt(expectedNumberOfFiles[0].slice(2));
-        const isFileNumberBiggerThanTotal =
-            expectedNumberOfFiles &&
-            parseInt(currentFile.name.split(lgFilesNumber)[0]) >
-                parseInt(expectedNumberOfFiles[0].slice(2));
-        const isFileNumberZero = currentFile.name.split(lgFilesNumber)[0] === '0';
-        const doesFileNameMatchEachOther =
-            currentFile.name.split(lgFilesNumber)[1] ===
-            uploadDocuments[0].file.name.split(lgFilesNumber)[1];
-        if (
-            !doesPassRegex ||
-            !doFilesTotalMatch ||
-            isFileNumberBiggerThanTotal ||
-            isFileNumberZero ||
-            !doesFileNameMatchEachOther
-        ) {
+        if (!filenameMatchLloydGeorgeFormat(currentFile, uploadDocuments)) {
             errors.push({
-                filename: document.file.name,
+                filename: currentFile.name,
                 error: fileUploadErrorMessages.fileNameError,
             });
         }
     }
 
     if (errors.length === 0 && patientDetails) {
-        const validateWithPds = validateFilenamesWithPatientDetail(uploadDocuments, patientDetails);
-        return validateWithPds;
+        // Only validate with patient details from PDS when filenames passed all the above checks,
+        return validateFilenamesWithPatientDetail(uploadDocuments, patientDetails);
     }
     return errors;
 };

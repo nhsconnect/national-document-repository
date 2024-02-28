@@ -3,7 +3,7 @@ export type fileUploadErrorMessageType = {
     errorBox: string;
 };
 
-export const fileUploadErrorMessages: Record<string, fileUploadErrorMessageType> = {
+export const fileUploadErrorMessages = {
     noFiles: {
         message: 'You did not select any file to upload',
         errorBox: 'You did not select any file to upload',
