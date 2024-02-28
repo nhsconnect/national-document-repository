@@ -2,7 +2,7 @@ import pytest
 from botocore.exceptions import ClientError
 from lambdas.enums.supported_document_types import SupportedDocumentTypes
 from lambdas.tests.unit.conftest import TEST_NHS_NUMBER
-from models.nhs_document_reference import UploadRequestDocument
+from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
 from services.create_document_reference_service import CreateDocumentReferenceService
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
@@ -11,6 +11,7 @@ from tests.unit.helpers.data.create_document_reference import (
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException
 
+NA_STRING = "Not Test Important"
 
 @pytest.fixture
 def mock_create_doc_ref_service(mocker, set_env):
@@ -51,6 +52,13 @@ def mock_create_reference_in_dynamodb(mock_create_doc_ref_service, mocker):
 
 
 @pytest.fixture()
+def mock_create_reference_in_dynamodb(mock_create_doc_ref_service, mocker):
+    yield mocker.patch.object(
+        mock_create_doc_ref_service, "create_reference_in_dynamodb"
+    )
+
+
+@pytest.fixture()
 def mock_validate_lg(mocker):
     yield mocker.patch("services.create_document_reference_service.validate_lg_files")
 
@@ -68,7 +76,7 @@ def test_create_document_reference_request_empty_list(
     mock_create_reference_in_dynamodb.assert_not_called()
 
 
-def test_create_document_reference_request_with_arf_list(
+def test_create_document_reference_request_with_arf_list_happy_path(
     mock_create_doc_ref_service,
     mocker,
     mock_prepare_doc_object,
@@ -77,66 +85,131 @@ def test_create_document_reference_request_with_arf_list(
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
 ):
-    mock_prepare_doc_object.return_value = ("test_return_value", SupportedDocumentTypes.ARF)
+
+    document_references = []
+    side_effects = []
+
+    for index, file, in enumerate(ARF_FILE_LIST):
+        document_references.append(NHSDocumentReference(
+            nhs_number=TEST_NHS_NUMBER,
+            s3_bucket_name= NA_STRING,
+            reference_id= NA_STRING,
+            content_type= NA_STRING,
+            file_name=file["fileName"]
+        ))
+        side_effects.append((document_references[index], SupportedDocumentTypes.ARF))
+    
+    
+    mock_prepare_doc_object.side_effect = side_effects
 
     mock_create_doc_ref_service.create_document_reference_request(TEST_NHS_NUMBER, ARF_FILE_LIST)
 
     mock_prepare_doc_object.assert_has_calls(
         [mocker.call(TEST_NHS_NUMBER, file) for file in ARF_FILE_LIST], any_order=True
     )
-    mock_prepare_pre_signed_url.assert_called_with("test_return_value")
+
+    mock_prepare_pre_signed_url.assert_has_calls(
+         [mocker.call(document_reference) for document_reference in document_references], any_order=True
+    )
+
+    assert mock_check_valid_doc_type.call_count == len(ARF_FILE_LIST)
     mock_create_reference_in_dynamodb.assert_called_once()
     mock_validate_lg.assert_not_called()
 
 
-def test_create_document_reference_request_with_lg_list(
+def test_create_document_reference_request_with_lg_list_happy_path(
     mock_create_doc_ref_service,
     mocker,
     mock_prepare_doc_object,
+    mock_check_valid_doc_type,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
 ):
-    mock_prepare_doc_object.return_value = "test_return_value"
-    mock_create_doc_ref_service.lg_documents = LG_FILE_LIST
+    document_references = []
+    side_effects = []
+
+    for index, file, in enumerate(LG_FILE_LIST):
+        document_references.append(NHSDocumentReference(
+            nhs_number=TEST_NHS_NUMBER,
+            s3_bucket_name= NA_STRING,
+            reference_id= NA_STRING,
+            content_type= NA_STRING,
+            file_name=file["fileName"]
+        ))
+        side_effects.append((document_references[index], SupportedDocumentTypes.LG))
+    
+    
+    mock_prepare_doc_object.side_effect = side_effects
 
     mock_create_doc_ref_service.create_document_reference_request(TEST_NHS_NUMBER, LG_FILE_LIST)
 
     mock_prepare_doc_object.assert_has_calls(
-        [mocker.call(file) for file in LG_FILE_LIST], any_order=True
+        [mocker.call(TEST_NHS_NUMBER, file) for file in LG_FILE_LIST], any_order=True
     )
-    mock_prepare_pre_signed_url.assert_called_with("test_return_value")
+    mock_prepare_pre_signed_url.assert_has_calls(
+         [mocker.call(document_reference) for document_reference in document_references], any_order=True
+    )
+
+    assert mock_check_valid_doc_type.call_count == len(LG_FILE_LIST)
     mock_create_reference_in_dynamodb.assert_called_once()
-    mock_validate_lg.assert_called_with(mock_create_doc_ref_service.lg_documents)
+    mock_validate_lg.assert_called_with(document_references)
 
 
 def test_create_document_reference_request_with_both_list(
     mock_create_doc_ref_service,
     mocker,
     mock_prepare_doc_object,
+    mock_check_valid_doc_type,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
 ):
-    mock_prepare_doc_object.return_value = "test_return_value"
-    mock_create_doc_ref_service.arf_documents = ARF_FILE_LIST
-    mock_create_doc_ref_service.lg_documents = LG_FILE_LIST
+    
+    document_references = []
+    lg_dictionaries = []
+    arf_dictionaries = []
+    side_effects = []
     files_list = ARF_FILE_LIST + LG_FILE_LIST
+
+    for index, file, in enumerate(files_list):
+        document_reference = NHSDocumentReference(
+            nhs_number=TEST_NHS_NUMBER,
+            s3_bucket_name= NA_STRING,
+            reference_id= NA_STRING,
+            content_type= NA_STRING,
+            file_name=file["fileName"]
+        )
+        
+        document_references.append(document_reference)
+        doc_type = SupportedDocumentTypes.ARF
+        if index >= len(ARF_FILE_LIST) :
+            doc_type = SupportedDocumentTypes.LG
+            lg_dictionaries.append(document_reference.to_dict())
+        else:
+            arf_dictionaries.append(document_reference.to_dict())
+
+        side_effects.append((document_reference, doc_type))
+    
+    
+    mock_prepare_doc_object.side_effect = side_effects
     mock_create_doc_ref_service.create_document_reference_request(TEST_NHS_NUMBER, files_list)
 
     mock_prepare_doc_object.assert_has_calls(
-        [mocker.call(file) for file in files_list], any_order=True
+        [mocker.call(TEST_NHS_NUMBER, file) for file in files_list], any_order=True
     )
-    mock_prepare_pre_signed_url.assert_called_with("test_return_value")
+    mock_prepare_pre_signed_url.assert_has_calls(
+         [mocker.call(document_reference) for document_reference in document_references], any_order=True
+    )
     mock_create_reference_in_dynamodb.assert_has_calls(
         [
             mocker.call(
                 mock_create_doc_ref_service.lg_dynamo_table,
-                mock_create_doc_ref_service.lg_documents_dict_format,
+                lg_dictionaries
             ),
             mocker.call(
                 mock_create_doc_ref_service.arf_dynamo_table,
-                mock_create_doc_ref_service.arf_documents_dict_format,
+                arf_dictionaries
             ),
         ]
     )
@@ -147,23 +220,40 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     mock_create_doc_ref_service,
     mocker,
     mock_prepare_doc_object,
+    mock_check_valid_doc_type,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
 ):
-    mock_prepare_doc_object.return_value = "test_return_value"
-    mock_create_doc_ref_service.lg_documents = LG_FILE_LIST
+    document_references = []
+    side_effects = []
+
+    for index, file, in enumerate(LG_FILE_LIST):
+        document_references.append(NHSDocumentReference(
+            nhs_number=TEST_NHS_NUMBER,
+            s3_bucket_name= NA_STRING,
+            reference_id= NA_STRING,
+            content_type= NA_STRING,
+            file_name=file["fileName"]
+        ))
+        side_effects.append((document_references[index], SupportedDocumentTypes.LG))
+    
+    
+    mock_prepare_doc_object.side_effect = side_effects
     mock_validate_lg.side_effect = LGInvalidFilesException("test")
 
     with pytest.raises(CreateDocumentRefException):
         mock_create_doc_ref_service.create_document_reference_request(TEST_NHS_NUMBER, LG_FILE_LIST)
 
     mock_prepare_doc_object.assert_has_calls(
-        [mocker.call(file) for file in LG_FILE_LIST], any_order=True
+        [mocker.call(TEST_NHS_NUMBER, file) for file in LG_FILE_LIST], any_order=True
     )
-    mock_prepare_pre_signed_url.assert_called_with("test_return_value")
+    mock_prepare_pre_signed_url.assert_has_calls(
+        [mocker.call(document_reference) for document_reference in document_references], any_order=True
+    )
+    
     mock_create_reference_in_dynamodb.assert_not_called()
-    mock_validate_lg.assert_called_with(mock_create_doc_ref_service.lg_documents)
+    mock_validate_lg.assert_called_with(document_references)
 
 
 def test_create_document_reference_invalid_nhs_number(mocker):
@@ -228,8 +318,6 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
     (actual_document_reference, type) = mock_create_doc_ref_service.prepare_doc_object(nhs_number, document)
 
     assert actual_document_reference == mocked_doc
-    # assert len(mock_create_doc_ref_service.arf_documents) == 1
-    # assert len(mock_create_doc_ref_service.arf_documents_dict_format) == 1
     nhs_doc_class.assert_called_with(
         nhs_number=nhs_number,
         s3_bucket_name=mock_create_doc_ref_service.staging_bucket_name,
@@ -258,12 +346,6 @@ def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
     (actual_document_reference, type) = mock_create_doc_ref_service.prepare_doc_object(nhs_number, document)
 
     assert actual_document_reference == mocked_doc
-
-    # assert len(mock_create_doc_ref_service.arf_documents) == 0
-    # assert len(mock_create_doc_ref_service.arf_documents_dict_format) == 0
-    # assert len(mock_create_doc_ref_service.lg_documents) == 1
-    # assert len(mock_create_doc_ref_service.lg_documents_dict_format) == 1
-
     nhs_doc_class.assert_called_with(
         nhs_number=nhs_number,
         s3_bucket_name=mock_create_doc_ref_service.staging_bucket_name,
@@ -325,34 +407,31 @@ def test_create_reference_in_dynamodb_both_tables(mock_create_doc_ref_service, m
     assert mock_create_doc_ref_service.dynamo_service.batch_writing.call_count == 1
 
 
-# def test_return_info_by_doc_type_raise_error(mock_create_doc_ref_service):
-#     with pytest.raises(CreateDocumentRefException):
-#         mock_create_doc_ref_service.return_info_by_doc_type("test")
+def test_check_valid_doc_type_when_invalid_doc_type_provided_throws_create_document_ref_exception(
+        mock_create_doc_ref_service
+):
+    with pytest.raises(CreateDocumentRefException):
+        mock_create_doc_ref_service.check_valid_doc_type('test')
+
+def test_check_valid_doc_type_when_valid_arf_doc_type_provided_returns(
+        mock_create_doc_ref_service
+):
+    raised = False
+    try:
+        mock_create_doc_ref_service.check_valid_doc_type('ARF')
+    except:
+        raised = True
+    assert raised == False
 
 
-# def test_return_info_by_doc_type_return_arf(mock_create_doc_ref_service):
-#     (
-#         s3_destination,
-#         documents_type_list,
-#         documents_list_dict_format,
-#     ) = mock_create_doc_ref_service.return_info_by_doc_type("ARF")
-#     assert s3_destination == mock_create_doc_ref_service.arf_s3_bucket_name
-#     assert documents_type_list == mock_create_doc_ref_service.arf_documents
-#     assert (
-#         documents_list_dict_format
-#         == mock_create_doc_ref_service.arf_documents_dict_format
-#     )
+def test_check_valid_doc_type_when_valid_lg_doc_type_provided_returns(
+        mock_create_doc_ref_service
+):
+    raised = False
+    try:
+        mock_create_doc_ref_service.check_valid_doc_type('LG')
+    except:
+        raised = True
+    assert raised == False
 
 
-# def test_return_info_by_doc_type_return_lg(mock_create_doc_ref_service):
-#     (
-#         s3_destination,
-#         documents_type_list,
-#         documents_list_dict_format,
-#     ) = mock_create_doc_ref_service.return_info_by_doc_type("LG")
-#     assert s3_destination == mock_create_doc_ref_service.lg_s3_bucket_name
-#     assert documents_type_list == mock_create_doc_ref_service.lg_documents
-#     assert (
-#         documents_list_dict_format
-#         == mock_create_doc_ref_service.lg_documents_dict_format
-#     )

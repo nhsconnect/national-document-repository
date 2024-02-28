@@ -13,6 +13,12 @@ from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_files
 from utils.utilities import create_reference_id, validate_nhs_number, validate_nhs_number
 
+FAILED_CREATE_REFERENCE_MESSAGE = "Create document reference failed"
+PROVIDED_DOCUMENT_SUPPORTED_MESSAGE = "Provided document is supported"
+UPLOAD_REFERENCE_SUCCESS_MESSAGE = "Upload reference creation was successful"
+UPLOAD_REFERENCE_FAILED_MESSAGE = "Upload reference creation was unsuccessful"
+PRESIGNED_URL_ERROR_MESSAGE = "An error occurred when creating pre-signed url for document reference"
+
 logger = LoggingService(__name__)
 
 
@@ -26,7 +32,7 @@ class CreateDocumentReferenceService:
         self.staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
 
 
-    def create_document_reference_request(self, nhs_number: int, documents_list: list[dict]):
+    def create_document_reference_request(self, nhs_number: str, documents_list: list[dict]):
 
         arf_documents: list[NHSDocumentReference] = []
         arf_documents_dict_format: list = []
@@ -38,7 +44,7 @@ class CreateDocumentReferenceService:
             validate_nhs_number(nhs_number)
             for document in documents_list:
                 (document_reference, doc_type) = self.prepare_doc_object(nhs_number, document)
-                self.check_valid_doc_type(doc_type)
+                self.check_valid_doc_type(doc_type.value)
                 
                 if doc_type.value == SupportedDocumentTypes.ARF.value:
                     arf_documents.append(document_reference)
@@ -64,11 +70,11 @@ class CreateDocumentReferenceService:
         except (InvalidResourceIdException, LGInvalidFilesException) as e:
             logger.error(
                 f"{LambdaError.CreateDocFiles.to_str()} :{str(e)}",
-                {"Result": "Create document reference failed"},
+                {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
 
-    def prepare_doc_object(self, nhs_number:str, document: dict) -> NHSDocumentReference:
+    def prepare_doc_object(self, nhs_number:str, document: dict) -> tuple[NHSDocumentReference, SupportedDocumentTypes]:
         try:
             validated_doc: UploadRequestDocument = UploadRequestDocument.model_validate(
                 document
@@ -76,7 +82,7 @@ class CreateDocumentReferenceService:
         except ValidationError as e:
             logger.error(
                 f"{LambdaError.CreateDocNoParse.to_str()} :{str(e)}",
-                {"Result": "Create document reference failed"},
+                {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
 
@@ -87,11 +93,11 @@ class CreateDocumentReferenceService:
         if document_type is None:
             logger.error(
                 f"{LambdaError.CreateDocNoType.to_str()}",
-                {"Result": "Create document reference failed"},
+                {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocNoType)
 
-        logger.info("Provided document is supported")
+        logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
         s3_object_key = create_reference_id()
 
@@ -109,7 +115,7 @@ class CreateDocumentReferenceService:
         try:
             s3_response = self.s3_service.create_upload_presigned_url(
                 document_reference.s3_bucket_name,
-                document_reference.nhs_number + "/" + document_reference.id,
+                document_reference.nhs_number + "/" + document_reference.reference_id,
             )
 
             return s3_response
@@ -118,7 +124,7 @@ class CreateDocumentReferenceService:
             logger.error(
                 f"{LambdaError.CreateDocPresign.to_str()}: {str(e)}",
                 {
-                    "Result": "An error occurred when creating pre-signed url for document reference"
+                    "Result": PRESIGNED_URL_ERROR_MESSAGE
                 },
             )
             raise CreateDocumentRefException(500, LambdaError.CreateDocPresign)
@@ -128,24 +134,24 @@ class CreateDocumentReferenceService:
             self.dynamo_service.batch_writing(dynamo_table, document_list)
             logger.info(
                 f"Writing document references to {dynamo_table}",
-                {"Result": "Upload reference was created successfully"},
+                {"Result": UPLOAD_REFERENCE_SUCCESS_MESSAGE},
             )
 
         except ClientError as e:
             logger.error(
                 f"{LambdaError.CreateDocUpload.to_str()}: {str(e)}",
-                {"Result": "Upload reference creation was unsuccessful"},
+                {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
             )
             raise CreateDocumentRefException(500, LambdaError.CreateDocUpload)
 
     def check_valid_doc_type(self, doc_type):
-        if (doc_type.value == SupportedDocumentTypes.LG.value or
-            doc_type.value == SupportedDocumentTypes.ARF.value):
+        if (doc_type == SupportedDocumentTypes.LG.value or
+            doc_type == SupportedDocumentTypes.ARF.value):
             return;
 
         logger.error(
                 f"{LambdaError.CreateDocInvalidType.to_str()}",
-                {"Result": "Upload reference creation was unsuccessful"},
+                {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
             )
         raise CreateDocumentRefException(400, LambdaError.CreateDocInvalidType)
 
