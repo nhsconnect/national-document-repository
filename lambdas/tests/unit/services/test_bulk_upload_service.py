@@ -643,7 +643,11 @@ def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
 
 
 def test_raise_client_error_from_ssm_with_pds_service(
-    mocker, mock_ods_validation, repo_under_test
+    mock_ods_validation,
+    repo_under_test,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation,
 ):
     mock_client_error = ClientError(
         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
