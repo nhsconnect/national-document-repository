@@ -42,6 +42,10 @@ class DocumentReference(BaseModel):
         alias=str(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value), default=None
     )
 
+    uploaded: str = Field(
+        alias=str(DocumentReferenceMetadataFields.UPLOADED.value), default=False
+    )
+
     def get_file_name_path(self):
         return pathlib.Path(self.file_name)
 
