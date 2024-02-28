@@ -652,7 +652,7 @@ def test_raise_client_error_from_ssm_with_pds_service(
     mock_client_error = ClientError(
         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
     )
-    mock_ods_validation.return_value = mock_client_error
+    mock_ods_validation.side_effect = mock_client_error
     with pytest.raises(ClientError):
         repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
