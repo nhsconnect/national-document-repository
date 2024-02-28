@@ -53,7 +53,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             window.scrollTo(0, 0);
             return;
         }
-        setUploadFilesErrors(uploadDocumentValidation(documents));
+        setUploadFilesErrors(uploadDocumentValidation(documents, patientDetails));
         if (uploadFilesErrors.length) {
             window.scrollTo(0, 0);
             return;
@@ -93,7 +93,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
         setShowNoFilesMessage(false);
-        setUploadFilesErrors(uploadDocumentValidation(updatedDocList));
+        setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
     };
     const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -124,7 +124,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
         }
         setDocuments(updatedDocList);
-        setUploadFilesErrors(uploadDocumentValidation(updatedDocList));
+        setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
     };
     const fileErrorMessage = (document: UploadDocument) => {
         const errorFile = uploadFilesErrors.find(

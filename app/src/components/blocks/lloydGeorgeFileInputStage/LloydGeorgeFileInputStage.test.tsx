@@ -11,6 +11,7 @@ import axios from 'axios';
 import { routes } from '../../../types/generic/routes';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
+import { MomentInput } from 'moment';
 
 jest.mock('../../../helpers/utils/toFileList', () => ({
     __esModule: true,
@@ -25,36 +26,45 @@ const setStageMock = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 
-const lgDocumentOne = buildLgFile(1, 2, 'Joe Blogs');
-const lgDocumentTwo = buildLgFile(2, 2, 'Joe Blogs');
+const lgDocumentOne = buildLgFile(1, 2, 'John Doe');
+const lgDocumentTwo = buildLgFile(2, 2, 'John Doe');
 const lgFiles = [lgDocumentOne, lgDocumentTwo];
 
 const lgDocumentThreeNamesOne = buildLgFile(1, 2, 'Dom Jacob Alexander');
 const lgDocumentThreeNamesTwo = buildLgFile(2, 2, 'Dom Jacob Alexander');
 const lgFilesThreeNames = [lgDocumentThreeNamesOne, lgDocumentThreeNamesTwo];
+const mockPatientDocumentThree = buildPatientDetails({
+    givenName: ['Dom', 'Jacob'],
+    familyName: 'Alexander',
+});
 
-const lgDocumentNonStandardCharacterNamesOne = buildLgFile(
-    1,
-    2,
-    'DomžĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖ JacobŗŘřŚśŜŝŞşŠšŢţŤťŦŧ AŨũŪūŬŭŮůŰűŲer',
-);
-const lgDocumentNonStandardCharacterNamesTwo = buildLgFile(
-    2,
-    2,
-    'DomžĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖ JacobŗŘřŚśŜŝŞşŠšŢţŤťŦŧ AŨũŪūŬŭŮůŰűŲer',
-);
+const nonStandardCharName =
+    'DomžĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖ JacobŗŘřŚśŜŝŞşŠšŢţŤťŦŧ AŨũŪūŬŭŮůŰűŲer';
+const lgDocumentNonStandardCharacterNamesOne = buildLgFile(1, 2, nonStandardCharName);
+const lgDocumentNonStandardCharacterNamesTwo = buildLgFile(2, 2, nonStandardCharName);
 const lgFilesNonStandardCharacterNames = [
     lgDocumentNonStandardCharacterNamesOne,
     lgDocumentNonStandardCharacterNamesTwo,
 ];
+const mockPatientNonStandardCharName = buildPatientDetails({
+    givenName: nonStandardCharName.split(' ').slice(0, 2),
+    familyName: nonStandardCharName.split(' ')[2],
+});
+
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
 jest.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+    return (arg: MomentInput) => {
+        if (!arg) {
+            arg = '2020-01-01T00:00:00.000Z';
+        }
+        return jest.requireActual('moment')(arg);
+    };
 });
 
 describe('<LloydGeorgeFileInputStage />', () => {
@@ -84,13 +94,17 @@ describe('<LloydGeorgeFileInputStage />', () => {
         });
 
         it('can upload documents to LG forms with multiple names using button', async () => {
+            mockedUsePatient.mockReturnValue(mockPatientDocumentThree);
+
             renderApp();
 
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
+                screen.getByText(
+                    'NHS number: ' + formatNhsNumber(mockPatientDocumentThree.nhsNumber),
+                ),
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
@@ -107,13 +121,17 @@ describe('<LloydGeorgeFileInputStage />', () => {
         });
 
         it('can upload documents to LG forms with non standard characters using button', async () => {
+            mockedUsePatient.mockReturnValue(mockPatientNonStandardCharName);
+
             renderApp();
 
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
+                screen.getByText(
+                    'NHS number: ' + formatNhsNumber(mockPatientNonStandardCharName.nhsNumber),
+                ),
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
@@ -125,7 +143,6 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     lgFilesNonStandardCharacterNames,
                 );
             });
-
             expect(
                 await screen.findAllByText(lgDocumentNonStandardCharacterNamesOne.name),
             ).toHaveLength(1);

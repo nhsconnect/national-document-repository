@@ -62,7 +62,7 @@ const buildLgFile = (
 ) => {
     const file = new File(
         ['test'],
-        `${fileNumber}of${numberOfFiles}_Lloyd_George_Record_[${patientname}]_[1234567890]_[25-12-2019].pdf`,
+        `${fileNumber}of${numberOfFiles}_Lloyd_George_Record_[${patientname}]_[9000000009]_[01-01-1970].pdf`,
         {
             type: 'application/pdf',
         },
