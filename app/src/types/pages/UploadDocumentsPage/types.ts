@@ -32,7 +32,7 @@ export type UploadDocument = {
 };
 
 export type UploadFilesErrors = {
-    file?: UploadDocument;
+    filename?: string;
     error: Record<string, string>;
 };
 

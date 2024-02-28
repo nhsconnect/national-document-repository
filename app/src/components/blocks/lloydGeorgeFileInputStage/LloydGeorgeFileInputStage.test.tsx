@@ -8,10 +8,10 @@ import LloydGeorgeFileInputStage, { Props } from './LloydGeorgeFileInputStage';
 import { UploadDocument } from '../../../types/pages/UploadDocumentsPage/types';
 import { useState } from 'react';
 import axios from 'axios';
+import { MomentInput } from 'moment';
 import { routes } from '../../../types/generic/routes';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
-import { MomentInput } from 'moment';
 
 jest.mock('../../../helpers/utils/toFileList', () => ({
     __esModule: true,

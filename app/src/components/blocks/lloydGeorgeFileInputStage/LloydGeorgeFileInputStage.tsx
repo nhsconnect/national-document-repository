@@ -49,12 +49,8 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
     const baseHeaders = useBaseAPIHeaders();
     const uploadDocuments = async () => {
         setShowNoFilesMessage(!hasFileInput);
-        if (!hasFileInput) {
-            window.scrollTo(0, 0);
-            return;
-        }
         setUploadFilesErrors(uploadDocumentValidation(documents, patientDetails));
-        if (uploadFilesErrors.length) {
+        if (!hasFileInput || uploadFilesErrors.length > 0) {
             window.scrollTo(0, 0);
             return;
         }
@@ -128,7 +124,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
     };
     const fileErrorMessage = (document: UploadDocument) => {
         const errorFile = uploadFilesErrors.find(
-            (errorFile) => document.file === errorFile.file?.file,
+            (errorFile) => document.file.name === errorFile.filename,
         );
         if (errorFile) {
             return <div className="lloydgeorge_file_upload_error">{errorFile.error.message}</div>;

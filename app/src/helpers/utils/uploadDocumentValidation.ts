@@ -14,54 +14,6 @@ const REGEX_LLOYD_GEORGE_FILENAME = new RegExp(
     `[0-9]+of[0-9]+_Lloyd_George_Record_\\[(?<patient_name>${REGEX_PATIENT_NAME_PATTERN})]_\\[(?<nhs_number>${REGEX_NHS_NUMBER_REGEX})]_\\[(?<dob>\\d\\d-\\d\\d-\\d\\d\\d\\d)].pdf`,
 );
 
-export const validateFilenamesWithPatientDetail = (
-    uploadDocuments: UploadDocument[],
-    patientDetails: PatientDetails,
-) => {
-    const dateOfBirth = new Date(patientDetails.birthDate);
-    const dateOfBirthString = moment(dateOfBirth).format('DD-MM-YYYY');
-    const patientNameFromPds = [...patientDetails.givenName, patientDetails.familyName].join(' ');
-    const nhsNumber = patientDetails.nhsNumber;
-
-    const errors: UploadFilesErrors[] = [];
-
-    for (let doc of uploadDocuments) {
-        const filename = doc.file.name;
-        const match = REGEX_LLOYD_GEORGE_FILENAME.exec(filename);
-
-        if (match?.groups?.nhs_number !== nhsNumber) {
-            errors.push({ file: doc, error: fileUploadErrorMessages.nhsNumberError });
-        }
-
-        if (match?.groups?.dob !== dateOfBirthString) {
-            errors.push({ file: doc, error: fileUploadErrorMessages.dateOfBirthError });
-        }
-
-        const patientNameInFilename = match?.groups?.patient_name as string;
-        if (!patientNameMatches(patientNameInFilename, patientNameFromPds)) {
-            errors.push({ file: doc, error: fileUploadErrorMessages.patientNameError });
-        }
-    }
-    return errors;
-};
-
-export const dateOfBirthMatches = (
-    dateOfBirthInFilename: string,
-    dateOfBirthFromPds: Date,
-): boolean => {
-    return moment(dateOfBirthFromPds).format('DD-MM-YYYY') === dateOfBirthInFilename;
-};
-
-export const patientNameMatches = (
-    patientNameInFileName: string,
-    patientNameFromPds: string,
-): boolean => {
-    return (
-        patientNameInFileName.normalize('NFD').toLowerCase() ===
-        patientNameFromPds.normalize('NFD').toLowerCase()
-    );
-};
-
 export const uploadDocumentValidation = (
     uploadDocuments: UploadDocument[],
     patientDetails: PatientDetails | null,
@@ -73,14 +25,14 @@ export const uploadDocumentValidation = (
         const currentFile = document.file;
         if (currentFile.size > FIVEGB) {
             errors.push({
-                file: document,
+                filename: document.file.name,
                 error: fileUploadErrorMessages.fileSizeError,
             });
             continue;
         }
         if (currentFile.type !== 'application/pdf') {
             errors.push({
-                file: document,
+                filename: document.file.name,
                 error: fileUploadErrorMessages.fileTypeError,
             });
             continue;
@@ -94,7 +46,7 @@ export const uploadDocumentValidation = (
         });
         if (isDuplicate) {
             errors.push({
-                file: document,
+                filename: document.file.name,
                 error: fileUploadErrorMessages.duplicateFile,
             });
             continue;
@@ -121,7 +73,7 @@ export const uploadDocumentValidation = (
             !doesFileNameMatchEachOther
         ) {
             errors.push({
-                file: document,
+                filename: document.file.name,
                 error: fileUploadErrorMessages.fileNameError,
             });
         }
@@ -132,4 +84,45 @@ export const uploadDocumentValidation = (
         return validateWithPds;
     }
     return errors;
+};
+
+export const validateFilenamesWithPatientDetail = (
+    uploadDocuments: UploadDocument[],
+    patientDetails: PatientDetails,
+) => {
+    const dateOfBirth = new Date(patientDetails.birthDate);
+    const dateOfBirthString = moment(dateOfBirth).format('DD-MM-YYYY');
+    const patientNameFromPds = [...patientDetails.givenName, patientDetails.familyName].join(' ');
+    const nhsNumber = patientDetails.nhsNumber;
+
+    const errors: UploadFilesErrors[] = [];
+
+    for (let doc of uploadDocuments) {
+        const filename = doc.file.name;
+        const match = REGEX_LLOYD_GEORGE_FILENAME.exec(filename);
+
+        if (match?.groups?.nhs_number !== nhsNumber) {
+            errors.push({ filename, error: fileUploadErrorMessages.nhsNumberError });
+        }
+
+        if (match?.groups?.dob !== dateOfBirthString) {
+            errors.push({ filename, error: fileUploadErrorMessages.dateOfBirthError });
+        }
+
+        const patientNameInFilename = match?.groups?.patient_name as string;
+        if (!patientNameMatches(patientNameInFilename, patientNameFromPds)) {
+            errors.push({ filename, error: fileUploadErrorMessages.patientNameError });
+        }
+    }
+    return errors;
+};
+
+export const patientNameMatches = (
+    patientNameInFileName: string,
+    patientNameFromPds: string,
+): boolean => {
+    return (
+        patientNameInFileName.normalize('NFD').toLowerCase() ===
+        patientNameFromPds.normalize('NFD').toLowerCase()
+    );
 };
