@@ -96,7 +96,9 @@ def test_create_document_reference_request_with_arf_list_happy_path(
                 file_name=file["fileName"],
             )
         )
-        side_effects.append((document_references[index], SupportedDocumentTypes.ARF.value))
+        side_effects.append(
+            (document_references[index], SupportedDocumentTypes.ARF.value)
+        )
 
     mock_prepare_doc_object.side_effect = side_effects
 
@@ -143,7 +145,9 @@ def test_create_document_reference_request_with_lg_list_happy_path(
                 file_name=file["fileName"],
             )
         )
-        side_effects.append((document_references[index], SupportedDocumentTypes.LG.value))
+        side_effects.append(
+            (document_references[index], SupportedDocumentTypes.LG.value)
+        )
 
     mock_prepare_doc_object.side_effect = side_effects
 
@@ -247,7 +251,9 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
                 file_name=file["fileName"],
             )
         )
-        side_effects.append((document_references[index], SupportedDocumentTypes.LG.value))
+        side_effects.append(
+            (document_references[index], SupportedDocumentTypes.LG.value)
+        )
 
     mock_prepare_doc_object.side_effect = side_effects
     mock_validate_lg.side_effect = LGInvalidFilesException("test")
