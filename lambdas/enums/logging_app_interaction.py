@@ -12,3 +12,4 @@ class LoggingAppInteraction(Enum):
     LOGOUT = "Logout"
     SEND_FEEDBACK = "Send feedback"
     FEATURE_FLAGS = "Feature flags"
+    UPLOAD_CONFIRMATION = "Upload confirmation"
