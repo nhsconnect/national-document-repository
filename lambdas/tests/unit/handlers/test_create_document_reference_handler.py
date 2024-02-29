@@ -61,9 +61,9 @@ def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
     set_env, both_type_event, context, mocker
 ):
     mock_service = mocker.patch(
-        "handlers.create_document_reference_handler.CreateDocumentReferenceService",
+        "handlers.create_document_reference_handler.CreateDocumentReferenceService.create_document_reference_request",
     )
-    mock_service.return_value.url_responses = LG_AND_ARF_MOCK_RESPONSE
+    mock_service.return_value = LG_AND_ARF_MOCK_RESPONSE
     expected = ApiGatewayResponse(
         200, json.dumps(LG_AND_ARF_MOCK_RESPONSE), "POST"
     ).create_api_gateway_response()
@@ -199,9 +199,9 @@ def test_lambda_handler_valid(
     mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
 
     mock_service = mocker.patch(
-        "handlers.create_document_reference_handler.CreateDocumentReferenceService",
+        "handlers.create_document_reference_handler.CreateDocumentReferenceService.create_document_reference_request",
     )
-    mock_service.return_value.url_responses = ARF_MOCK_RESPONSE
+    mock_service.return_value = ARF_MOCK_RESPONSE
 
     expected = ApiGatewayResponse(
         200,

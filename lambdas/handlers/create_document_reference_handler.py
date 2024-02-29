@@ -40,7 +40,9 @@ def lambda_handler(event, context):
 
     logger.info("Processed upload documents from request")
     docs_services = CreateDocumentReferenceService()
-    url_references = docs_services.create_document_reference_request(nhs_number, doc_list)
+    url_references = docs_services.create_document_reference_request(
+        nhs_number, doc_list
+    )
 
     return ApiGatewayResponse(
         200, json.dumps(url_references), "POST"
