@@ -73,6 +73,8 @@ class CreateDocumentReferenceService:
                     self.arf_dynamo_table, arf_documents_dict_format
                 )
 
+            return url_responses
+        
         except (InvalidResourceIdException, LGInvalidFilesException) as e:
             logger.error(
                 f"{LambdaError.CreateDocFiles.to_str()} :{str(e)}",
