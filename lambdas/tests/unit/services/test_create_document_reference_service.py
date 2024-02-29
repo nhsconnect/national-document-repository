@@ -96,7 +96,7 @@ def test_create_document_reference_request_with_arf_list_happy_path(
                 file_name=file["fileName"],
             )
         )
-        side_effects.append((document_references[index], SupportedDocumentTypes.ARF))
+        side_effects.append((document_references[index], SupportedDocumentTypes.ARF.value))
 
     mock_prepare_doc_object.side_effect = side_effects
 
@@ -143,7 +143,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
                 file_name=file["fileName"],
             )
         )
-        side_effects.append((document_references[index], SupportedDocumentTypes.LG))
+        side_effects.append((document_references[index], SupportedDocumentTypes.LG.value))
 
     mock_prepare_doc_object.side_effect = side_effects
 
@@ -192,9 +192,9 @@ def test_create_document_reference_request_with_both_list(
         )
 
         document_references.append(document_reference)
-        doc_type = SupportedDocumentTypes.ARF
+        doc_type = SupportedDocumentTypes.ARF.value
         if index >= len(ARF_FILE_LIST):
-            doc_type = SupportedDocumentTypes.LG
+            doc_type = SupportedDocumentTypes.LG.value
             lg_dictionaries.append(document_reference.to_dict())
         else:
             arf_dictionaries.append(document_reference.to_dict())
@@ -247,7 +247,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
                 file_name=file["fileName"],
             )
         )
-        side_effects.append((document_references[index], SupportedDocumentTypes.LG))
+        side_effects.append((document_references[index], SupportedDocumentTypes.LG.value))
 
     mock_prepare_doc_object.side_effect = side_effects
     mock_validate_lg.side_effect = LGInvalidFilesException("test")

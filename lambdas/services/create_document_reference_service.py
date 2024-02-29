@@ -48,13 +48,13 @@ class CreateDocumentReferenceService:
                 (document_reference, doc_type) = self.prepare_doc_object(
                     nhs_number, document
                 )
-                self.check_valid_doc_type(doc_type.value)
+                self.check_valid_doc_type(doc_type)
 
-                if doc_type.value == SupportedDocumentTypes.ARF.value:
+                if doc_type == SupportedDocumentTypes.ARF.value:
                     arf_documents.append(document_reference)
                     arf_documents_dict_format.append(document_reference.to_dict())
 
-                if doc_type.value == SupportedDocumentTypes.LG.value:
+                if doc_type == SupportedDocumentTypes.LG.value:
                     lg_documents.append(document_reference)
                     lg_documents_dict_format.append(document_reference.to_dict())
 
