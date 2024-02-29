@@ -28,14 +28,14 @@ export const fileUploadErrorMessages = {
     },
     dateOfBirthError: {
         message: 'This file contains incorrect patient information',
-        errorBox: "The patient's date of birth does not match the date of birth in this file",
+        errorBox: 'The patient’s date of birth does not match this filename',
     },
     patientNameError: {
         message: 'This file contains incorrect patient information',
-        errorBox: "The patient's name does not match the name on this file",
+        errorBox: 'The patient’s name does not match this filename',
     },
     nhsNumberError: {
         message: 'This file contains incorrect patient information',
-        errorBox: "The patient's NHS number does not match the NHS number in this file",
+        errorBox: 'The patient’s NHS number does not match this filename',
     },
 };
