@@ -1,4 +1,4 @@
-import { validateFilenamesWithPatientDetail } from './uploadDocumentValidation';
+import { validateWithPatientDetail } from './uploadDocumentValidation';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import { buildLgFile, buildPatientDetails } from '../test/testBuilders';
 

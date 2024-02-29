@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { buildPatientDetails, buildLgFile } from '../../../helpers/test/testBuilders';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
@@ -33,7 +33,7 @@ const lgFiles = [lgDocumentOne, lgDocumentTwo];
 const lgDocumentThreeNamesOne = buildLgFile(1, 2, 'Dom Jacob Alexander');
 const lgDocumentThreeNamesTwo = buildLgFile(2, 2, 'Dom Jacob Alexander');
 const lgFilesThreeNames = [lgDocumentThreeNamesOne, lgDocumentThreeNamesTwo];
-const mockPatientDocumentThree = buildPatientDetails({
+const mockPatientThreeWordsName = buildPatientDetails({
     givenName: ['Dom', 'Jacob'],
     familyName: 'Alexander',
 });
@@ -94,7 +94,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
         });
 
         it('can upload documents to LG forms with multiple names using button', async () => {
-            mockedUsePatient.mockReturnValue(mockPatientDocumentThree);
+            mockedUsePatient.mockReturnValue(mockPatientThreeWordsName);
 
             renderApp();
 
@@ -103,7 +103,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
             expect(
                 screen.getByText(
-                    'NHS number: ' + formatNhsNumber(mockPatientDocumentThree.nhsNumber),
+                    'NHS number: ' + formatNhsNumber(mockPatientThreeWordsName.nhsNumber),
                 ),
             ).toBeInTheDocument();
 
@@ -452,9 +452,6 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 ]);
             });
 
-            expect(screen.getAllByText(joeBloggsFile.name)).toHaveLength(1);
-            expect(screen.getAllByText(johnSmithFile.name)).toHaveLength(2);
-
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
@@ -509,6 +506,150 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+        });
+
+        describe('Validation with patient details from PDS', () => {
+            const uploadDocs = async (documents: File[]) => {
+                await act(async () => {
+                    userEvent.upload(screen.getByTestId(`button-input`), documents);
+                    userEvent.click(screen.getByText('Upload'));
+                });
+            };
+
+            it('does not upload LG if patient name does not match', async () => {
+                mockedUsePatient.mockReturnValue(
+                    buildPatientDetails({
+                        givenName: ['Janet', 'Doe'],
+                    }),
+                );
+                const documentsToUpload = [lgDocumentOne, lgDocumentTwo];
+
+                renderApp();
+
+                await uploadDocs(documentsToUpload);
+
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.patientNameError.message),
+                ).toHaveLength(2);
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.patientNameError.errorBox),
+                ).toHaveLength(2);
+
+                expect(mockedAxios.post).not.toBeCalled();
+            });
+
+            it('does not upload LG if patient date of birth does not match', async () => {
+                mockedUsePatient.mockReturnValue(
+                    buildPatientDetails({
+                        birthDate: '1993-04-05',
+                    }),
+                );
+                const documentsToUpload = [lgDocumentOne, lgDocumentTwo];
+
+                renderApp();
+
+                await uploadDocs(documentsToUpload);
+
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.dateOfBirthError.message),
+                ).toHaveLength(2);
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.dateOfBirthError.errorBox),
+                ).toHaveLength(2);
+
+                expect(mockedAxios.post).not.toBeCalled();
+            });
+
+            it('does not upload LG if patient nhs number does not match', async () => {
+                mockedUsePatient.mockReturnValue(
+                    buildPatientDetails({
+                        nhsNumber: '2345678901',
+                    }),
+                );
+                const documentsToUpload = [lgDocumentOne, lgDocumentTwo];
+
+                renderApp();
+
+                await uploadDocs(documentsToUpload);
+
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.nhsNumberError.message),
+                ).toHaveLength(2);
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.nhsNumberError.errorBox),
+                ).toHaveLength(2);
+
+                expect(mockedAxios.post).not.toBeCalled();
+            });
+
+            it('can display multiple errors related to patient details check', async () => {
+                mockedUsePatient.mockReturnValue(
+                    buildPatientDetails({
+                        givenName: ['Jack', 'Bloggs'],
+                        birthDate: '1993-04-05',
+                        nhsNumber: '2345678901',
+                    }),
+                );
+                const documentsToUpload = [lgDocumentOne, lgDocumentTwo];
+
+                renderApp();
+
+                await uploadDocs(documentsToUpload);
+
+                const expectedErrors = [
+                    fileUploadErrorMessages.nhsNumberError,
+                    fileUploadErrorMessages.dateOfBirthError,
+                    fileUploadErrorMessages.patientNameError,
+                ];
+
+                expectedErrors.forEach((errorType) => {
+                    expect(screen.getAllByText(errorType.message)).toHaveLength(2);
+                    expect(screen.getAllByText(errorType.errorBox)).toHaveLength(2);
+                });
+
+                expect(mockedAxios.post).not.toBeCalled();
+            });
+
+            it('Is case-insensitive when comparing patient names', async () => {
+                mockedUsePatient.mockReturnValue(
+                    buildPatientDetails({
+                        givenName: ['JOHN', 'Blogg'],
+                        familyName: 'SMITH',
+                    }),
+                );
+                const documentsToUpload = [
+                    buildLgFile(1, 2, 'John Blogg Smith'),
+                    buildLgFile(2, 2, 'John Blogg Smith'),
+                ];
+
+                renderApp();
+
+                await uploadDocs(documentsToUpload);
+
+                expect(
+                    screen.queryByText(fileUploadErrorMessages.patientNameError.message),
+                ).not.toBeInTheDocument();
+
+                expect(mockedAxios.post).toHaveBeenCalled();
+            });
+
+            it('Handles accent chars NFC NFD differences when comparing patient names', async () => {
+                mockedUsePatient.mockReturnValue(mockPatientNonStandardCharName);
+                const documentsToUpload = [
+                    buildLgFile(1, 2, nonStandardCharName.normalize('NFD')),
+                    buildLgFile(2, 2, nonStandardCharName.normalize('NFD')),
+                ];
+
+                renderApp();
+
+                await uploadDocs(documentsToUpload);
+
+                expect(
+                    screen.queryByText(fileUploadErrorMessages.patientNameError.message),
+                ).not.toBeInTheDocument();
+
+                expect(mockedAxios.post).toHaveBeenCalled();
+            });
         });
 
         it("does allow the user to add the same file again if they remove for '%s' input", async () => {

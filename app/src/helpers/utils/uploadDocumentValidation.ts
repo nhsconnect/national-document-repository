@@ -48,10 +48,9 @@ export const uploadDocumentValidation = (
             continue;
         }
 
-        const regexMatchResult = REGEX_LLOYD_GEORGE_FILENAME.exec(currentFile.name);
-        const doesPassRegex: boolean = !!regexMatchResult;
+        const failedRegexCheck: boolean = !REGEX_LLOYD_GEORGE_FILENAME.exec(currentFile.name);
 
-        if (!doesPassRegex) {
+        if (failedRegexCheck) {
             errors.push({
                 filename: currentFile.name,
                 error: fileUploadErrorMessages.fileNameError,
@@ -59,22 +58,27 @@ export const uploadDocumentValidation = (
             continue;
         }
 
-        if (!fileNumberCorrect(currentFile.name, uploadDocuments)) {
+        if (!fileNumberIsValid(currentFile.name, uploadDocuments)) {
             errors.push({
                 filename: currentFile.name,
                 error: fileUploadErrorMessages.fileNameError,
             });
+            continue;
+        }
+
+        if (patientDetails) {
+            const errorsWhenCompareWithPdsData = validateWithPatientDetail(
+                currentFile.name,
+                patientDetails,
+            );
+            errors.push(...errorsWhenCompareWithPdsData);
         }
     }
 
-    if (errors.length === 0 && patientDetails) {
-        // Only validate with patient details from PDS when filenames passed all the above checks,
-        return validateFilenamesWithPatientDetail(uploadDocuments, patientDetails);
-    }
     return errors;
 };
 
-const fileNumberCorrect = (filename: string, uploadDocuments: UploadDocument[]): boolean => {
+const fileNumberIsValid = (filename: string, uploadDocuments: UploadDocument[]): boolean => {
     const lgFilesNumber = /of[0-9]+/;
     const expectedNumberOfFiles = filename.match(lgFilesNumber);
     const doFilesTotalMatch =
@@ -94,8 +98,8 @@ const fileNumberCorrect = (filename: string, uploadDocuments: UploadDocument[]):
     );
 };
 
-export const validateFilenamesWithPatientDetail = (
-    uploadDocuments: UploadDocument[],
+export const validateWithPatientDetail = (
+    filename: string,
     patientDetails: PatientDetails,
 ): UploadFilesErrors[] => {
     const dateOfBirth = new Date(patientDetails.birthDate);
@@ -105,23 +109,21 @@ export const validateFilenamesWithPatientDetail = (
 
     const errors: UploadFilesErrors[] = [];
 
-    for (let doc of uploadDocuments) {
-        const filename = doc.file.name;
-        const match = REGEX_LLOYD_GEORGE_FILENAME.exec(filename);
+    const match = REGEX_LLOYD_GEORGE_FILENAME.exec(filename);
 
-        if (match?.groups?.nhs_number !== nhsNumber) {
-            errors.push({ filename, error: fileUploadErrorMessages.nhsNumberError });
-        }
-
-        if (match?.groups?.dob !== dateOfBirthString) {
-            errors.push({ filename, error: fileUploadErrorMessages.dateOfBirthError });
-        }
-
-        const patientNameInFilename = match?.groups?.patient_name as string;
-        if (!patientNameMatches(patientNameInFilename, patientNameFromPds)) {
-            errors.push({ filename, error: fileUploadErrorMessages.patientNameError });
-        }
+    if (match?.groups?.nhs_number !== nhsNumber) {
+        errors.push({ filename, error: fileUploadErrorMessages.nhsNumberError });
     }
+
+    if (match?.groups?.dob !== dateOfBirthString) {
+        errors.push({ filename, error: fileUploadErrorMessages.dateOfBirthError });
+    }
+
+    const patientNameInFilename = match?.groups?.patient_name as string;
+    if (!patientNameMatches(patientNameInFilename, patientNameFromPds)) {
+        errors.push({ filename, error: fileUploadErrorMessages.patientNameError });
+    }
+
     return errors;
 };
 
