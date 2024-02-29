@@ -260,6 +260,14 @@ class LambdaError(Enum):
     }
 
     """
+       Errors for Virus Scan lambda 
+    """
+    VirusScanNoToken = {
+        "err_code": "VSR_5001",
+        "message": "Virus scanner failed to fetch token",
+    }
+
+    """
        Errors with no exception
     """
     DocDelNull = {
