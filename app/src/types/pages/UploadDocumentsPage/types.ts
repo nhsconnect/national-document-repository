@@ -31,6 +31,11 @@ export type UploadDocument = {
     docType: DOCUMENT_TYPE;
 };
 
+export type UploadFilesErrors = {
+    file?: UploadDocument;
+    error: Record<string, string>;
+};
+
 export type SearchResult = {
     id: string;
     description: string;

@@ -32,6 +32,7 @@ class NHSDocumentReference:
         self.virus_scanner_result = "Not Scanned"
         self.sub_folder = sub_folder
         self.file_location = self.set_file_location()
+        self.uploaded = False
 
     def set_file_location(self):
         if self.sub_folder == "":
@@ -58,6 +59,7 @@ class NHSDocumentReference:
             DocumentReferenceMetadataFields.CONTENT_TYPE.value: self.content_type,
             DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value: self.virus_scanner_result,
             DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: self.current_gp_ods,
+            DocumentReferenceMetadataFields.UPLOADED.value: self.uploaded,
         }
         return document_metadata
 

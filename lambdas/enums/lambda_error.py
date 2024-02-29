@@ -254,6 +254,11 @@ class LambdaError(Enum):
         "message": "Failed to retrieve feature flag/s from AppConfig profile",
     }
 
+    FeatureFlagDisabled = {
+        "err_code": "FFL_5003",
+        "message": "Feature is not enabled",
+    }
+
     """
        Errors with no exception
     """

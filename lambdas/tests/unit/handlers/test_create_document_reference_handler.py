@@ -6,6 +6,7 @@ from handlers.create_document_reference_handler import (
     lambda_handler,
     processing_event_details,
 )
+from services.feature_flags_service import FeatureFlagService
 from tests.unit.conftest import (
     MOCK_LG_STAGING_STORE_BUCKET,
     TEST_NHS_NUMBER,
@@ -57,8 +58,26 @@ def mock_processing_event_details(mocker):
     )
 
 
+@pytest.fixture
+def mock_upload_lambda_enabled(mocker):
+    mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
+    mock_upload_lambda_feature_flag = mock_function.return_value = {
+        "uploadLambdaEnabled": True
+    }
+    yield mock_upload_lambda_feature_flag
+
+
+@pytest.fixture
+def mock_upload_lambda_disabled(mocker):
+    mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
+    mock_upload_lambda_feature_flag = mock_function.return_value = {
+        "uploadLambdaEnabled": False
+    }
+    yield mock_upload_lambda_feature_flag
+
+
 def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
-    set_env, both_type_event, context, mocker
+    set_env, both_type_event, context, mocker, mock_upload_lambda_enabled
 ):
     mock_service = mocker.patch(
         "handlers.create_document_reference_handler.CreateDocumentReferenceService.create_document_reference_request",
@@ -158,7 +177,12 @@ def test_processing_event_details_get_nhs_number_and_doc_list(arf_type_event):
 
 
 def test_lambda_handler_processing_event_details_raise_error(
-    mocker, arf_type_event, context, set_env, mock_processing_event_details
+    mocker,
+    arf_type_event,
+    context,
+    set_env,
+    mock_processing_event_details,
+    mock_upload_lambda_enabled,
 ):
     mock_processing_event_details.side_effect = CreateDocumentRefException(
         400, MockError.Error
@@ -174,7 +198,12 @@ def test_lambda_handler_processing_event_details_raise_error(
 
 
 def test_lambda_handler_service_raise_error(
-    mocker, arf_type_event, context, set_env, mock_processing_event_details
+    mocker,
+    arf_type_event,
+    context,
+    set_env,
+    mock_processing_event_details,
+    mock_upload_lambda_enabled,
 ):
     mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
 
@@ -194,7 +223,12 @@ def test_lambda_handler_service_raise_error(
 
 
 def test_lambda_handler_valid(
-    mocker, arf_type_event, context, set_env, mock_processing_event_details
+    mocker,
+    arf_type_event,
+    context,
+    set_env,
+    mock_processing_event_details,
+    mock_upload_lambda_enabled,
 ):
     mock_processing_event_details.return_value = (TEST_NHS_NUMBER, ARF_FILE_LIST)
 
@@ -211,3 +245,15 @@ def test_lambda_handler_valid(
     actual = lambda_handler(arf_type_event, context)
     assert expected == actual
     mock_processing_event_details.assert_called_with(arf_type_event)
+
+
+def test_no_event_processing_when_upload_lambda_flag_not_enabled(
+    set_env,
+    both_type_event,
+    context,
+    mock_processing_event_details,
+    mock_upload_lambda_disabled,
+):
+    lambda_handler(both_type_event, context)
+
+    mock_processing_event_details.assert_not_called()

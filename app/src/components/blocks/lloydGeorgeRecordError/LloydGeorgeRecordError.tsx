@@ -8,6 +8,7 @@ import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { routes } from '../../../types/generic/routes';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 import { ButtonLink } from 'nhsuk-react-components';
+import useConfig from '../../../helpers/hooks/useConfig';
 
 type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -18,6 +19,7 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
     const role = useRole();
     const navigate = useNavigate();
     const isBSOL = useIsBSOL();
+    const { featureFlags } = useConfig();
 
     if (downloadStage === DOWNLOAD_STAGE.TIMEOUT) {
         return (
@@ -48,21 +50,27 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
         return (
             <span>
                 <h3 data-testid="no-records-title">No records available for this patient </h3>
-                <p>
-                    You can upload full or part of a patient record. You can upload supporting files
-                    once the record is uploaded.
-                </p>
-                <div className="lloydgeorge_record-stage_header-content-no_record">
-                    <ButtonLink
-                        className="lloydgeorge_record-stage_header-content-no_record-upload"
-                        data-testid="upload-patient-record-button"
-                        onClick={() => {
-                            navigate(routes.LLOYD_GEORGE_UPLOAD);
-                        }}
-                    >
-                        Upload patient record
-                    </ButtonLink>
-                </div>
+                {featureFlags.uploadLloydGeorgeWorkflowEnabled &&
+                    featureFlags.uploadLambdaEnabled && (
+                        <>
+                            <p>
+                                You can upload full or part of a patient record. You can upload
+                                supporting files once the record is uploaded.
+                            </p>
+
+                            <div className="lloydgeorge_record-stage_header-content-no_record">
+                                <ButtonLink
+                                    className="lloydgeorge_record-stage_header-content-no_record-upload"
+                                    data-testid="upload-patient-record-button"
+                                    onClick={() => {
+                                        navigate(routes.LLOYD_GEORGE_UPLOAD);
+                                    }}
+                                >
+                                    Upload patient record
+                                </ButtonLink>
+                            </div>
+                        </>
+                    )}
             </span>
         );
     } else if (downloadStage === DOWNLOAD_STAGE.NO_RECORDS) {

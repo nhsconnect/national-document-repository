@@ -65,6 +65,7 @@ class CreateDocumentReferenceService:
 
             if lg_documents:
                 validate_lg_files(lg_documents)
+                
                 self.create_reference_in_dynamodb(
                     self.lg_dynamo_table, lg_documents_dict_format
                 )

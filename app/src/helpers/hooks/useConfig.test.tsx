@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import useConfig from './useConfig';
 import ConfigProvider, { GlobalConfig } from '../../providers/configProvider/ConfigProvider';
-import { defaultFeatureFlags } from '../requests/getFeatureFlags';
+import { defaultFeatureFlags } from '../../types/generic/featureFlags';
 
 describe('useConfig', () => {
     beforeEach(() => {
@@ -14,7 +14,7 @@ describe('useConfig', () => {
 
     it('returns true when feature flag in context', () => {
         const config: GlobalConfig = {
-            featureFlags: { ...defaultFeatureFlags, testFeature1: true },
+            featureFlags: { ...defaultFeatureFlags, uploadLloydGeorgeWorkflowEnabled: true },
             mockLocal: {},
         };
         renderHook(config);
@@ -23,7 +23,7 @@ describe('useConfig', () => {
 
     it('returns false when there is no feature flag in context', () => {
         const config: GlobalConfig = {
-            featureFlags: { ...defaultFeatureFlags, testFeature1: false },
+            featureFlags: { ...defaultFeatureFlags, uploadLloydGeorgeWorkflowEnabled: false },
             mockLocal: {},
         };
         renderHook(config);
@@ -33,7 +33,7 @@ describe('useConfig', () => {
 
 const TestApp = () => {
     const config = useConfig();
-    return <div>{`FLAG: ${!!config.featureFlags.testFeature1}`.normalize()}</div>;
+    return <div>{`FLAG: ${config.featureFlags.uploadLloydGeorgeWorkflowEnabled}`.normalize()}</div>;
 };
 
 const renderHook = (config?: GlobalConfig) => {

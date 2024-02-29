@@ -1,7 +1,8 @@
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ConfigProvider, { GlobalConfig, useConfigContext } from './ConfigProvider';
-import { defaultFeatureFlags } from '../../helpers/requests/getFeatureFlags';
+import { defaultFeatureFlags } from '../../types/generic/featureFlags';
+
 describe('SessionProvider', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -37,14 +38,14 @@ const TestApp = () => {
         ...config,
         featureFlags: {
             ...defaultFeatureFlags,
-            testFeature1: true,
+            uploadLloydGeorgeWorkflowEnabled: true,
         },
     };
     const flagOff: GlobalConfig = {
         ...config,
         featureFlags: {
             ...defaultFeatureFlags,
-            testFeature1: false,
+            uploadLloydGeorgeWorkflowEnabled: false,
         },
     };
     return (
@@ -56,7 +57,9 @@ const TestApp = () => {
             </div>
             <div>
                 <h1>Flags</h1>
-                <span>testFeature - {`${!!config.featureFlags.testFeature1}`}</span>
+                <span>
+                    testFeature - {`${config.featureFlags.uploadLloydGeorgeWorkflowEnabled}`}
+                </span>
             </div>
         </>
     );

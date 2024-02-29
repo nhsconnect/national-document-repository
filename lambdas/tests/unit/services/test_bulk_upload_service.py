@@ -90,6 +90,11 @@ def mock_pds_validation(mocker):
 
 
 @pytest.fixture
+def mock_ods_validation(mocker):
+    yield mocker.patch("services.bulk_upload_service.allowed_to_ingest_ods_code")
+
+
+@pytest.fixture
 def mock_handle_sqs_message(mocker):
     yield mocker.patch.object(BulkUploadService, "handle_sqs_message")
 
@@ -164,6 +169,7 @@ def test_handle_sqs_message_happy_path(
     mock_validate_files,
     mock_pds_service,
     mock_pds_validation,
+    mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_create_lg_records_and_copy_files = mocker.patch.object(
@@ -246,6 +252,7 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
     patient_name_in_metadata_file,
     mock_pds_validation,
     mock_pds_service,
+    mock_ods_validation,
 ):
     mock_validate_files.return_value = None
 
@@ -341,6 +348,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     mock_check_virus_result,
     mock_pds_service,
     mock_pds_validation,
+    mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_report_upload_failure = mocker.patch.object(
@@ -376,6 +384,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
     mock_check_virus_result,
     mock_pds_service,
     mock_pds_validation,
+    mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     repo_under_test.s3_repository.check_virus_result.side_effect = (
@@ -403,6 +412,7 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
     mock_check_virus_result,
     mock_pds_service,
     mock_pds_validation,
+    mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     repo_under_test.s3_repository.check_virus_result.side_effect = (
@@ -439,6 +449,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     mock_validate_files,
     mock_pds_service,
     mock_pds_validation,
+    mock_ods_validation,
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_rollback_transaction_s3 = mocker.patch.object(
@@ -629,3 +640,36 @@ def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
     expected.created = "mock_timestamp"
 
     assert actual.__eq__(expected)
+
+
+def test_raise_client_error_from_ssm_with_pds_service(
+    mock_ods_validation,
+    repo_under_test,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation,
+):
+    mock_client_error = ClientError(
+        {"Error": {"Code": "500", "Message": "test error"}}, "testing"
+    )
+    mock_ods_validation.side_effect = mock_client_error
+    with pytest.raises(ClientError):
+        repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+
+def test_mismatch_ods_with_pds_service(
+    repo_under_test,
+    mock_ods_validation,
+    set_env,
+    mock_uuid,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation,
+):
+    mock_ods_validation.return_value = False
+
+    repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    repo_under_test.dynamo_repository.report_upload_failure.assert_called_with(
+        TEST_STAGING_METADATA, "Patient not registered at your practice", "Y12345"
+    )
