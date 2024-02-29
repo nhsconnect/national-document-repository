@@ -32,6 +32,7 @@ class CreateDocumentReferenceService:
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
         self.staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
+        self.upload_sub_folder = "user_upload"
 
     def create_document_reference_request(
         self, nhs_number: str, documents_list: list[dict]
@@ -114,6 +115,7 @@ class CreateDocumentReferenceService:
         document_reference = NHSDocumentReference(
             nhs_number=nhs_number,
             s3_bucket_name=self.staging_bucket_name,
+            sub_folder=self.upload_sub_folder,
             reference_id=s3_object_key,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
@@ -125,7 +127,8 @@ class CreateDocumentReferenceService:
         try:
             s3_response = self.s3_service.create_upload_presigned_url(
                 document_reference.s3_bucket_name,
-                "/user_upload/"
+                self.upload_sub_folder
+                + "/"
                 + document_reference.nhs_number
                 + "/"
                 + document_reference.id,

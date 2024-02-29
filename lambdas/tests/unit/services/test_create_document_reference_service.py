@@ -343,6 +343,7 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
     nhs_doc_class.assert_called_with(
         nhs_number=nhs_number,
         s3_bucket_name=mock_create_doc_ref_service.staging_bucket_name,
+        sub_folder=mock_create_doc_ref_service.upload_sub_folder,
         reference_id=reference_id,
         content_type="text/plain",
         file_name="test1.txt",
@@ -373,6 +374,7 @@ def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
     nhs_doc_class.assert_called_with(
         nhs_number=nhs_number,
         s3_bucket_name=mock_create_doc_ref_service.staging_bucket_name,
+        sub_folder=mock_create_doc_ref_service.upload_sub_folder,
         reference_id=reference_id,
         content_type="application/pdf",
         file_name="1of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
