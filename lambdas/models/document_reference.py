@@ -42,7 +42,7 @@ class DocumentReference(BaseModel):
         alias=str(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value), default=None
     )
 
-    uploaded: str = Field(
+    uploaded: bool = Field(
         alias=str(DocumentReferenceMetadataFields.UPLOADED.value), default=False
     )
 
