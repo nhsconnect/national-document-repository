@@ -25,20 +25,20 @@ export const uploadDocumentValidation = (
         const currentFile = document.file;
         if (currentFile.size > FIVEGB) {
             errors.push({
-                filename: document.file.name,
+                filename: currentFile.name,
                 error: fileUploadErrorMessages.fileSizeError,
             });
             continue;
         }
         if (currentFile.type !== 'application/pdf') {
             errors.push({
-                filename: document.file.name,
+                filename: currentFile.name,
                 error: fileUploadErrorMessages.fileTypeError,
             });
             continue;
         }
         const isDuplicate = uploadDocuments.some((compare: UploadDocument) => {
-            return document.file.name === compare.file.name && document.id !== compare.id;
+            return currentFile.name === compare.file.name && document.id !== compare.id;
         });
         if (isDuplicate) {
             errors.push({
@@ -48,7 +48,18 @@ export const uploadDocumentValidation = (
             continue;
         }
 
-        if (!filenameMatchLloydGeorgeFormat(currentFile.name, uploadDocuments)) {
+        const regexMatchResult = REGEX_LLOYD_GEORGE_FILENAME.exec(currentFile.name);
+        const doesPassRegex: boolean = !!regexMatchResult;
+
+        if (!doesPassRegex) {
+            errors.push({
+                filename: currentFile.name,
+                error: fileUploadErrorMessages.fileNameError,
+            });
+            continue;
+        }
+
+        if (!fileNumberCorrect(currentFile.name, uploadDocuments)) {
             errors.push({
                 filename: currentFile.name,
                 error: fileUploadErrorMessages.fileNameError,
@@ -63,13 +74,9 @@ export const uploadDocumentValidation = (
     return errors;
 };
 
-const filenameMatchLloydGeorgeFormat = (
-    filename: string,
-    uploadDocuments: UploadDocument[],
-): boolean => {
+const fileNumberCorrect = (filename: string, uploadDocuments: UploadDocument[]): boolean => {
     const lgFilesNumber = /of[0-9]+/;
     const expectedNumberOfFiles = filename.match(lgFilesNumber);
-    const doesPassRegex = Boolean(REGEX_LLOYD_GEORGE_FILENAME.exec(filename));
     const doFilesTotalMatch =
         expectedNumberOfFiles !== null &&
         uploadDocuments.length === parseInt(expectedNumberOfFiles[0].slice(2));
@@ -80,7 +87,6 @@ const filenameMatchLloydGeorgeFormat = (
     const doesFileNameMatchEachOther =
         filename.split(lgFilesNumber)[1] === uploadDocuments[0].file.name.split(lgFilesNumber)[1];
     return (
-        doesPassRegex &&
         doFilesTotalMatch &&
         !isFileNumberBiggerThanTotal &&
         !isFileNumberZero &&

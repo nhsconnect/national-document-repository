@@ -59,10 +59,12 @@ const buildLgFile = (
     numberOfFiles: number,
     patientname: string,
     size?: number,
+    nhs_number: string = '9000000009',
+    dob: string = '01-01-1970',
 ) => {
     const file = new File(
         ['test'],
-        `${fileNumber}of${numberOfFiles}_Lloyd_George_Record_[${patientname}]_[9000000009]_[01-01-1970].pdf`,
+        `${fileNumber}of${numberOfFiles}_Lloyd_George_Record_[${patientname}]_[${nhs_number}]_[${dob}].pdf`,
         {
             type: 'application/pdf',
         },
