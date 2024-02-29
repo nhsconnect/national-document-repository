@@ -509,8 +509,8 @@ describe('<LloydGeorgeFileInputStage />', () => {
         });
 
         describe('Validation with patient details from PDS', () => {
-            const uploadDocs = async (documents: File[]) => {
-                await act(async () => {
+            const setDocsAndClickUploadButton = (documents: File[]) => {
+                return act(async () => {
                     userEvent.upload(screen.getByTestId(`button-input`), documents);
                     userEvent.click(screen.getByText('Upload'));
                 });
@@ -526,7 +526,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
                 renderApp();
 
-                await uploadDocs(documentsToUpload);
+                await setDocsAndClickUploadButton(documentsToUpload);
 
                 expect(
                     await screen.findAllByText(fileUploadErrorMessages.patientNameError.message),
@@ -548,7 +548,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
                 renderApp();
 
-                await uploadDocs(documentsToUpload);
+                await setDocsAndClickUploadButton(documentsToUpload);
 
                 expect(
                     await screen.findAllByText(fileUploadErrorMessages.dateOfBirthError.message),
@@ -570,7 +570,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
                 renderApp();
 
-                await uploadDocs(documentsToUpload);
+                await setDocsAndClickUploadButton(documentsToUpload);
 
                 expect(
                     await screen.findAllByText(fileUploadErrorMessages.nhsNumberError.message),
@@ -594,7 +594,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
                 renderApp();
 
-                await uploadDocs(documentsToUpload);
+                await setDocsAndClickUploadButton(documentsToUpload);
 
                 const expectedErrors = [
                     fileUploadErrorMessages.nhsNumberError,
@@ -624,7 +624,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
                 renderApp();
 
-                await uploadDocs(documentsToUpload);
+                await setDocsAndClickUploadButton(documentsToUpload);
 
                 expect(
                     screen.queryByText(fileUploadErrorMessages.patientNameError.message),
@@ -642,7 +642,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
                 renderApp();
 
-                await uploadDocs(documentsToUpload);
+                await setDocsAndClickUploadButton(documentsToUpload);
 
                 expect(
                     screen.queryByText(fileUploadErrorMessages.patientNameError.message),
