@@ -7,7 +7,6 @@ from enums.pds_ssm_parameters import SSMParameter
 from enums.supported_document_types import SupportedDocumentTypes
 from models.nhs_document_reference import NHSDocumentReference
 from models.pds_models import Patient, PatientDetails
-from pydantic import ValidationError
 from requests import HTTPError
 from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
@@ -74,14 +73,19 @@ def check_for_patient_already_exist_in_repo(nhs_number: str):
         )
 
 
-def validate_lg_files(file_list: list[NHSDocumentReference]):
+def validate_lg_files(file_list: list[NHSDocumentReference], nhs_number: str):
+    pds_patient_details = getting_patient_info_from_pds(nhs_number)
+
     files_name_list = []
+
     for doc in file_list:
         check_for_number_of_files_match_expected(doc.file_name, len(file_list))
         validate_lg_file_type(doc.content_type)
-        validate_file_name(doc.file_name)
+        checks_per_filename(doc.file_name, nhs_number)
         files_name_list.append(doc.file_name)
+
     check_for_duplicate_files(files_name_list)
+    validate_filename_with_patient_details(files_name_list, pds_patient_details)
 
 
 def validate_lg_file_names(file_name_list: list[str], nhs_number: str):
@@ -89,14 +93,19 @@ def validate_lg_file_names(file_name_list: list[str], nhs_number: str):
 
     for file_name in file_name_list:
         check_for_number_of_files_match_expected(file_name, len(file_name_list))
-        validate_file_name(file_name)
-        file_name_info = extract_info_from_filename(file_name)
-        if file_name_info["nhs_number"] != nhs_number:
-            raise LGInvalidFilesException(
-                "NHS number in file names does not match the given NHS number"
-            )
+        checks_per_filename(file_name, nhs_number)
+
     check_for_duplicate_files(file_name_list)
     check_for_file_names_agrees_with_each_other(file_name_list)
+
+
+def checks_per_filename(file_name: str, nhs_number: str):
+    validate_file_name(file_name)
+    file_name_info = extract_info_from_filename(file_name)
+    if file_name_info["nhs_number"] != nhs_number:
+        raise LGInvalidFilesException(
+            "NHS number in file names does not match the given NHS number"
+        )
 
 
 def extract_info_from_filename(filename: str) -> dict:
@@ -144,11 +153,7 @@ def validate_filename_with_patient_details(
         if not names_are_matching(patient_name, patient_full_name):
             raise LGInvalidFilesException("Patient name does not match our records")
 
-        patient_ods_code = patient_details.general_practice_ods
-        if not allowed_to_ingest_ods_code(patient_ods_code):
-            raise LGInvalidFilesException("Patient not registered at your practice")
-
-    except (ValidationError, ClientError, ValueError) as e:
+    except (ClientError, ValueError) as e:
         logger.error(e)
         raise LGInvalidFilesException(e)
 

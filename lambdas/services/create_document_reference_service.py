@@ -40,7 +40,7 @@ class CreateDocumentReferenceService:
                 document_reference = self.prepare_doc_object(document)
                 self.prepare_pre_signed_url(document_reference)
             if self.lg_documents:
-                validate_lg_files(self.lg_documents)
+                validate_lg_files(self.lg_documents, self.nhs_number)
                 self.create_reference_in_dynamodb(
                     self.lg_dynamo_table, self.lg_documents_dict_format
                 )

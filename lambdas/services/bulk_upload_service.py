@@ -24,6 +24,7 @@ from utils.exceptions import (
 )
 from utils.lloyd_george_validator import (
     LGInvalidFilesException,
+    allowed_to_ingest_ods_code,
     getting_patient_info_from_pds,
     validate_filename_with_patient_details,
     validate_lg_file_names,
@@ -110,6 +111,8 @@ class BulkUploadService:
             )
             patient_ods_code = pds_patient_details.general_practice_ods
             validate_filename_with_patient_details(file_names, pds_patient_details)
+            if not allowed_to_ingest_ods_code(patient_ods_code):
+                raise LGInvalidFilesException("Patient not registered at your practice")
         except (LGInvalidFilesException, PatientRecordAlreadyExistException) as error:
             logger.info(
                 f"Detected issue related to patient number: {staging_metadata.nhs_number}"

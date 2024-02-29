@@ -101,7 +101,9 @@ def test_create_document_reference_request_with_lg_list(
     )
     mock_prepare_pre_signed_url.assert_called_with("test_return_value")
     mock_create_reference_in_dynamodb.assert_called_once()
-    mock_validate_lg.assert_called_with(mock_create_doc_ref_service.lg_documents)
+    mock_validate_lg.assert_called_with(
+        mock_create_doc_ref_service.lg_documents, mock_create_doc_ref_service.nhs_number
+    )
 
 
 def test_create_document_reference_request_with_both_list(
@@ -157,7 +159,9 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     )
     mock_prepare_pre_signed_url.assert_called_with("test_return_value")
     mock_create_reference_in_dynamodb.assert_not_called()
-    mock_validate_lg.assert_called_with(mock_create_doc_ref_service.lg_documents)
+    mock_validate_lg.assert_called_with(
+        mock_create_doc_ref_service.lg_documents, mock_create_doc_ref_service.nhs_number
+    )
 
 
 def test_create_document_reference_invalid_nhs_number(mocker):
