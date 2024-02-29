@@ -59,7 +59,6 @@ class CreateDocumentReferenceService:
                     lg_documents.append(document_reference)
                     lg_documents_dict_format.append(document_reference.to_dict())
 
-                logger.info(json.dumps(document_reference))
                 url_responses[
                     document_reference.file_name
                 ] = self.prepare_pre_signed_url(document_reference)
@@ -125,11 +124,10 @@ class CreateDocumentReferenceService:
 
     def prepare_pre_signed_url(self, document_reference: NHSDocumentReference):
 
-        logger.info(json.dumps(document_reference))
         try:
             s3_response = self.s3_service.create_upload_presigned_url(
                 document_reference.s3_bucket_name,
-                document_reference.nhs_number + "/" + document_reference.reference_id
+                document_reference.nhs_number + "/" + document_reference.id
             )
 
             return s3_response
