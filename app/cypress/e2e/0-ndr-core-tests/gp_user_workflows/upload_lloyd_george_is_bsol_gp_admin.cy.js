@@ -78,13 +78,6 @@ const stubbedResponseMulti = {
 };
 describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and patient has no record', () => {
     const beforeEachConfiguration = () => {
-        cy.intercept('GET', '/FeatureFlags*', {
-            statusCode: 200,
-            body: {
-                uploadLloydGeorgeWorkflowEnabled: true,
-                uploadLambdaEnabled: true,
-            },
-        });
         cy.login(Roles.GP_ADMIN);
         cy.visit(searchPatientUrl);
 
