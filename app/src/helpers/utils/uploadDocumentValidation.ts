@@ -14,37 +14,10 @@ const REGEX_LLOYD_GEORGE_FILENAME = new RegExp(
     `[0-9]+of[0-9]+_Lloyd_George_Record_\\[(?<patient_name>${REGEX_PATIENT_NAME_PATTERN})]_\\[(?<nhs_number>${REGEX_NHS_NUMBER_REGEX})]_\\[(?<dob>\\d\\d-\\d\\d-\\d\\d\\d\\d)].pdf`,
 );
 
-const filenameMatchLloydGeorgeFormat = (
-    currentFile: File,
-    uploadDocuments: UploadDocument[],
-): boolean => {
-    const lgFilesNumber = /of[0-9]+/;
-    const expectedNumberOfFiles = currentFile.name.match(lgFilesNumber);
-    const doesPassRegex = Boolean(REGEX_LLOYD_GEORGE_FILENAME.exec(currentFile.name));
-    const doFilesTotalMatch =
-        expectedNumberOfFiles !== null &&
-        uploadDocuments.length === parseInt(expectedNumberOfFiles[0].slice(2));
-    const isFileNumberBiggerThanTotal =
-        expectedNumberOfFiles &&
-        parseInt(currentFile.name.split(lgFilesNumber)[0]) >
-            parseInt(expectedNumberOfFiles[0].slice(2));
-    const isFileNumberZero = currentFile.name.split(lgFilesNumber)[0] === '0';
-    const doesFileNameMatchEachOther =
-        currentFile.name.split(lgFilesNumber)[1] ===
-        uploadDocuments[0].file.name.split(lgFilesNumber)[1];
-    return (
-        doesPassRegex &&
-        doFilesTotalMatch &&
-        !isFileNumberBiggerThanTotal &&
-        !isFileNumberZero &&
-        doesFileNameMatchEachOther
-    );
-};
-
 export const uploadDocumentValidation = (
     uploadDocuments: UploadDocument[],
     patientDetails: PatientDetails | null,
-) => {
+): UploadFilesErrors[] => {
     const errors: UploadFilesErrors[] = [];
 
     const FIVEGB = 5 * Math.pow(1024, 3);
@@ -75,7 +48,7 @@ export const uploadDocumentValidation = (
             continue;
         }
 
-        if (!filenameMatchLloydGeorgeFormat(currentFile, uploadDocuments)) {
+        if (!filenameMatchLloydGeorgeFormat(currentFile.name, uploadDocuments)) {
             errors.push({
                 filename: currentFile.name,
                 error: fileUploadErrorMessages.fileNameError,
@@ -90,10 +63,35 @@ export const uploadDocumentValidation = (
     return errors;
 };
 
+const filenameMatchLloydGeorgeFormat = (
+    filename: string,
+    uploadDocuments: UploadDocument[],
+): boolean => {
+    const lgFilesNumber = /of[0-9]+/;
+    const expectedNumberOfFiles = filename.match(lgFilesNumber);
+    const doesPassRegex = Boolean(REGEX_LLOYD_GEORGE_FILENAME.exec(filename));
+    const doFilesTotalMatch =
+        expectedNumberOfFiles !== null &&
+        uploadDocuments.length === parseInt(expectedNumberOfFiles[0].slice(2));
+    const isFileNumberBiggerThanTotal =
+        expectedNumberOfFiles &&
+        parseInt(filename.split(lgFilesNumber)[0]) > parseInt(expectedNumberOfFiles[0].slice(2));
+    const isFileNumberZero = filename.split(lgFilesNumber)[0] === '0';
+    const doesFileNameMatchEachOther =
+        filename.split(lgFilesNumber)[1] === uploadDocuments[0].file.name.split(lgFilesNumber)[1];
+    return (
+        doesPassRegex &&
+        doFilesTotalMatch &&
+        !isFileNumberBiggerThanTotal &&
+        !isFileNumberZero &&
+        doesFileNameMatchEachOther
+    );
+};
+
 export const validateFilenamesWithPatientDetail = (
     uploadDocuments: UploadDocument[],
     patientDetails: PatientDetails,
-) => {
+): UploadFilesErrors[] => {
     const dateOfBirth = new Date(patientDetails.birthDate);
     const dateOfBirthString = moment(dateOfBirth).format('DD-MM-YYYY');
     const patientNameFromPds = [...patientDetails.givenName, patientDetails.familyName].join(' ');
