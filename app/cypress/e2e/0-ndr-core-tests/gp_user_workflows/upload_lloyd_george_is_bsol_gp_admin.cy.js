@@ -1,5 +1,5 @@
 import { Roles } from '../../../support/roles';
-import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
+import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatientLGUpload.json';
 
 const baseUrl = Cypress.config('baseUrl');
 const searchPatientUrl = '/search/patient';
