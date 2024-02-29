@@ -1,4 +1,5 @@
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
+import { fileUploadErrorMessageType } from '../../../helpers/utils/fileUploadErrorMessages';
 
 export type SetUploadStage = Dispatch<SetStateAction<UPLOAD_STAGE>>;
 export type SetUploadDocuments = Dispatch<SetStateAction<Array<UploadDocument>>>;
@@ -33,7 +34,7 @@ export type UploadDocument = {
 
 export type UploadFilesErrors = {
     filename?: string;
-    error: Record<string, string>;
+    error: fileUploadErrorMessageType;
 };
 
 export type SearchResult = {

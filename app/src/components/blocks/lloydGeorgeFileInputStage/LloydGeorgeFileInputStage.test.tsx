@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { buildPatientDetails, buildLgFile } from '../../../helpers/test/testBuilders';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
