@@ -26,6 +26,7 @@ logger = LoggingService(__name__)
         "STAGING_STORE_BUCKET_NAME",
         "LLOYD_GEORGE_DYNAMODB_NAME",
         "DOCUMENT_STORE_DYNAMODB_NAME",
+        "DOCUMENT_STORE_BUCKET_NAME"
     ]
 )
 @override_error_check

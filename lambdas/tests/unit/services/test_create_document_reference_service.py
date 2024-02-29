@@ -52,7 +52,6 @@ def mock_create_reference_in_dynamodb(mock_create_doc_ref_service, mocker):
         mock_create_doc_ref_service, "create_reference_in_dynamodb"
     )
 
-
 @pytest.fixture()
 def mock_validate_lg(mocker):
     yield mocker.patch("services.create_document_reference_service.validate_lg_files")
@@ -96,7 +95,7 @@ def test_create_document_reference_request_with_arf_list_happy_path(
                 file_name=file["fileName"],
             )
         )
-        side_effects.append((document_references[index], SupportedDocumentTypes.ARF))
+        side_effects.append((document_references[index], SupportedDocumentTypes.ARF.value))
 
     mock_prepare_doc_object.side_effect = side_effects
 
@@ -143,7 +142,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
                 file_name=file["fileName"],
             )
         )
-        side_effects.append((document_references[index], SupportedDocumentTypes.LG))
+        side_effects.append((document_references[index], SupportedDocumentTypes.LG.value))
 
     mock_prepare_doc_object.side_effect = side_effects
 
@@ -199,7 +198,7 @@ def test_create_document_reference_request_with_both_list(
         else:
             arf_dictionaries.append(document_reference.to_dict())
 
-        side_effects.append((document_reference, doc_type))
+        side_effects.append((document_reference, doc_type.value))
 
     mock_prepare_doc_object.side_effect = side_effects
     mock_create_doc_ref_service.create_document_reference_request(
@@ -247,7 +246,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
                 file_name=file["fileName"],
             )
         )
-        side_effects.append((document_references[index], SupportedDocumentTypes.LG))
+        side_effects.append((document_references[index], SupportedDocumentTypes.LG.value))
 
     mock_prepare_doc_object.side_effect = side_effects
     mock_validate_lg.side_effect = LGInvalidFilesException("test")
@@ -336,7 +335,7 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
     assert actual_document_reference == mocked_doc
     nhs_doc_class.assert_called_with(
         nhs_number=nhs_number,
-        s3_bucket_name=mock_create_doc_ref_service.staging_bucket_name,
+        s3_bucket_name=mock_create_doc_ref_service.arf_s3_bucket_name,
         reference_id=reference_id,
         content_type="text/plain",
         file_name="test1.txt",

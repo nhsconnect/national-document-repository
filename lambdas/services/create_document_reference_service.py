@@ -30,6 +30,7 @@ class CreateDocumentReferenceService:
         self.dynamo_service = DynamoDBService()
 
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
+        self.arf_s3_bucket_name = os.getenv("DOCUMENT_STORE_BUCKET_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
         self.staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
 
@@ -48,13 +49,13 @@ class CreateDocumentReferenceService:
                 (document_reference, doc_type) = self.prepare_doc_object(
                     nhs_number, document
                 )
-                self.check_valid_doc_type(doc_type.value)
+                self.check_valid_doc_type(doc_type)
 
-                if doc_type.value == SupportedDocumentTypes.ARF.value:
+                if doc_type== SupportedDocumentTypes.ARF.value:
                     arf_documents.append(document_reference)
                     arf_documents_dict_format.append(document_reference.to_dict())
 
-                if doc_type.value == SupportedDocumentTypes.LG.value:
+                if doc_type == SupportedDocumentTypes.LG.value:
                     lg_documents.append(document_reference)
                     lg_documents_dict_format.append(document_reference.to_dict())
 
@@ -109,9 +110,13 @@ class CreateDocumentReferenceService:
 
         s3_object_key = create_reference_id()
 
+        s3_bucket_location = self.staging_bucket_name
+        if document_type == SupportedDocumentTypes.ARF.value:
+            s3_bucket_location = self.arf_s3_bucket_name
+
         document_reference = NHSDocumentReference(
             nhs_number=nhs_number,
-            s3_bucket_name=self.staging_bucket_name,
+            s3_bucket_name=s3_bucket_location,
             reference_id=s3_object_key,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
