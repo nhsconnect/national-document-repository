@@ -80,14 +80,14 @@ export const uploadDocumentValidation = (
 
 const fileNumberIsValid = (filename: string, uploadDocuments: UploadDocument[]): boolean => {
     const lgFilesNumber = /of[0-9]+/;
-    const expectedNumberOfFiles = filename.match(lgFilesNumber);
+    const expectedNumberOfFiles = lgFilesNumber.exec(filename);
     const doFilesTotalMatch =
         expectedNumberOfFiles !== null &&
         uploadDocuments.length === parseInt(expectedNumberOfFiles[0].slice(2));
     const isFileNumberBiggerThanTotal =
-        expectedNumberOfFiles &&
+        expectedNumberOfFiles != null &&
         parseInt(filename.split(lgFilesNumber)[0]) > parseInt(expectedNumberOfFiles[0].slice(2));
-    const isFileNumberZero = filename.split(lgFilesNumber)[0] === '0';
+    const isFileNumberZero = parseInt(filename.split(lgFilesNumber)[0]) === 0;
     const doesFileNameMatchEachOther =
         filename.split(lgFilesNumber)[1] === uploadDocuments[0].file.name.split(lgFilesNumber)[1];
     return (
