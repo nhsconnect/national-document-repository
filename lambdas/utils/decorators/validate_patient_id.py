@@ -6,7 +6,7 @@ from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
 from utils.utilities import validate_nhs_number
 
-logger = LoggingService(__name__)                   
+logger = LoggingService(__name__)
 
 
 def extract_nhs_number_from_event(event) -> str:

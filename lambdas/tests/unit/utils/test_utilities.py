@@ -1,6 +1,10 @@
 import pytest
 from utils.exceptions import InvalidResourceIdException
-from utils.utilities import camelize_dict, redact_id_to_last_4_chars, validate_nhs_number
+from utils.utilities import (
+    camelize_dict,
+    redact_id_to_last_4_chars,
+    validate_nhs_number,
+)
 
 
 def test_validate_nhs_number_with_valid_id_returns_true():

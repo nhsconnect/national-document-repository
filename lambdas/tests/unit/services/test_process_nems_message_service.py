@@ -37,7 +37,9 @@ def mock_map_bundle_entries_to_dict(mocker):
 
 @pytest.fixture
 def mock_validate_nhs_number(mocker):
-    mock_validate_nhs_number = mocker.patch("services.process_nems_message_service.validate_nhs_number")
+    mock_validate_nhs_number = mocker.patch(
+        "services.process_nems_message_service.validate_nhs_number"
+    )
     yield mock_validate_nhs_number
 
 

@@ -7,9 +7,9 @@ from handlers.create_document_reference_handler import (
     processing_event_details,
 )
 from tests.unit.conftest import (
+    MOCK_LG_STAGING_STORE_BUCKET,
     TEST_NHS_NUMBER,
     TEST_OBJECT_KEY,
-    MOCK_LG_STAGING_STORE_BUCKET
 )
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
@@ -73,9 +73,7 @@ def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
     assert actual == expected
 
 
-arf_environment_variables = [
-    "STAGING_STORE_BUCKET_NAME"
-]
+arf_environment_variables = ["STAGING_STORE_BUCKET_NAME"]
 lg_environment_variables = ["LLOYD_GEORGE_BUCKET_NAME", "LLOYD_GEORGE_DYNAMODB_NAME"]
 
 
