@@ -12,3 +12,4 @@ class SSMParameter(Enum):
     VIRUS_API_USER = "/CloudStorageSecConsole-77i747u/dev/API_USERNAME"
     VIRUS_API_PASSWORD = "/CloudStorageSecConsole-77i747u/dev/API_PASSWORD"
     VIRUS_API_ACCESSTOKEN = "/CloudStorageSecConsole-77i747u/dev/API_ACCESSTOKEN"
+    VIRUS_API_BASEURL = "/CloudStorageSecConsole-77i747u/dev/API_BASEURL"
