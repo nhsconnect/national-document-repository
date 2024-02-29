@@ -67,7 +67,7 @@ export const uploadDocumentValidation = (
         }
 
         if (patientDetails) {
-            const errorsWhenCompareWithPdsData = validateWithPatientDetail(
+            const errorsWhenCompareWithPdsData = validateWithPatientDetails(
                 currentFile.name,
                 patientDetails,
             );
@@ -98,7 +98,7 @@ const fileNumberIsValid = (filename: string, uploadDocuments: UploadDocument[]):
     );
 };
 
-export const validateWithPatientDetail = (
+const validateWithPatientDetails = (
     filename: string,
     patientDetails: PatientDetails,
 ): UploadFilesErrors[] => {
@@ -127,10 +127,7 @@ export const validateWithPatientDetail = (
     return errors;
 };
 
-export const patientNameMatches = (
-    patientNameInFileName: string,
-    patientNameFromPds: string,
-): boolean => {
+const patientNameMatches = (patientNameInFileName: string, patientNameFromPds: string): boolean => {
     return (
         patientNameInFileName.normalize('NFD').toLowerCase() ===
         patientNameFromPds.normalize('NFD').toLowerCase()
