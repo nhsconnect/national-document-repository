@@ -43,7 +43,6 @@ describe('Feature flags - ARF Workflow', () => {
                     cy.login(role);
                     navigateToUploadPage();
 
-                    cy.url().should('include', 'upload');
                     cy.url().should('eq', baseUrl + '/patient/upload');
                     cy.get('h1').should('not.have.text', 'Unauthorised access');
                 },

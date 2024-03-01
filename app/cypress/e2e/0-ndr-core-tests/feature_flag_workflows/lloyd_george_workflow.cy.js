@@ -3,7 +3,6 @@ import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.j
 
 const beforeEachConfiguration = (role, featureFlags) => {
     cy.login(role, true, featureFlags);
-    // search patient
     cy.intercept('GET', '/SearchPatient*', {
         statusCode: 200,
         body: searchPatientPayload,
