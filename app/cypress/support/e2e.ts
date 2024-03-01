@@ -1,5 +1,6 @@
 import { DynamoDB, S3 } from 'aws-sdk';
 import { Roles, roleIds, roleList } from './roles';
+import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
 import Bluebird from 'cypress/types/bluebird';
 import './aws.commands';
 
@@ -11,7 +12,7 @@ Cypress.Commands.add('getByTestId', (selector, ...args) => {
     return cy.get(`[data-testid=${selector}]`, ...args);
 });
 
-Cypress.Commands.add('login', (role, isBSOL = true) => {
+Cypress.Commands.add('login', (role, isBSOL = true, featureFlags) => {
     if (roleIds.includes(role)) {
         const roleName = roleList.find((roleName) => Roles[roleName] === role);
         // Login for regression tests
@@ -25,6 +26,19 @@ Cypress.Commands.add('login', (role, isBSOL = true) => {
             statusCode: 200,
             fixture: fixturePath,
         }).as('auth');
+
+        if (featureFlags) {
+            cy.intercept('GET', '/FeatureFlags*', {
+                statusCode: 200,
+                body: featureFlags,
+            }).as('featureFlags');
+        } else {
+            cy.intercept('GET', '/FeatureFlags*', {
+                statusCode: 200,
+                body: defaultFeatureFlags,
+            }).as('featureFlags');
+        }
+
         cy.visit(authCallback);
         cy.wait('@auth');
     } else {
@@ -113,8 +127,9 @@ declare global {
              * Mock user login by intercepting the {baseUrl}/auth-callback request
              * @param {Roles} role - The user role to login with. Must be an enum of Roles
              * @param {boolean} isBSOL - Whether the user GP is located in BSOL area
+             * @param featureFlags - Feature flags values to override the defaults
              */
-            login(role: Roles, isBSOL?: boolean): Chainable<void>;
+            login(role: Roles, isBSOL?: boolean, featureFlags?: FeatureFlags): Chainable<void>;
 
             /**
              * Real user login via CIS2 and redirect back to {baseUrl}/auth-callback.
