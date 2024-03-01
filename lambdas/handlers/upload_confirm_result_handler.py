@@ -1,4 +1,7 @@
+import json
+
 from enums.logging_app_interaction import LoggingAppInteraction
+from services.upload_confirm_result_service import UploadConfirmResultService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -28,3 +31,8 @@ def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.UPLOAD_CONFIRMATION.value
 
     logger.info("Upload confirm result handler triggered")
+
+    documents = json.loads(event["body"])
+    upload_confirm_result_service = UploadConfirmResultService()
+
+    upload_confirm_result_service.process_documents(documents)
