@@ -53,7 +53,7 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
                 {featureFlags.uploadLloydGeorgeWorkflowEnabled &&
                     featureFlags.uploadLambdaEnabled && (
                         <>
-                            <p>
+                            <p data-testid="upload-patient-record-text">
                                 You can upload full or part of a patient record. You can upload
                                 supporting files once the record is uploaded.
                             </p>
