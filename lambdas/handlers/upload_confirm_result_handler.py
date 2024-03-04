@@ -37,11 +37,11 @@ def lambda_handler(event, context):
     logger.info("Upload confirm result handler triggered")
 
     nhs_number, documents = processing_event_details(event)
-    upload_confirm_result_service = UploadConfirmResultService()
+    upload_confirm_result_service = UploadConfirmResultService(nhs_number)
 
     try:
-        upload_confirm_result_service.process_documents(nhs_number, documents)
-        http_status_code = 200
+        upload_confirm_result_service.process_documents(documents)
+        http_status_code = 204
         response_body = f"Finished processing all {len(documents)} documents"
         logger.info(response_body)
     except UploadConfirmResultException as e:
@@ -59,8 +59,6 @@ def processing_event_details(event):
 
     try:
         body = json.loads(event["body"])
-        nhs_number = body["patientId"]
-        documents = body["documents"]
 
         if not body or not isinstance(body, dict):
             logger.error(
@@ -70,16 +68,23 @@ def processing_event_details(event):
             raise UploadConfirmResultException(
                 400, LambdaError.UploadConfirmResultMissingBody
             )
+
+        nhs_number = body["patientId"]
+        documents = body["documents"]
+
+        if not nhs_number or not documents:
+            logger.error(
+                f"{LambdaError.UploadConfirmResultProps.to_str()}",
+                {"Result": failed_message},
+            )
+            raise UploadConfirmResultException(
+                400, LambdaError.UploadConfirmResultProps
+            )
         return nhs_number, documents
-    except (JSONDecodeError, AttributeError) as e:
+
+    except JSONDecodeError as e:
         logger.error(
             f"{LambdaError.UploadConfirmResultPayload.to_str()}: {str(e)}",
-            {"Result": failed_message},
-        )
-        raise UploadConfirmResultException(400, LambdaError.UploadConfirmResultPayload)
-    except (KeyError, TypeError) as e:
-        logger.error(
-            f"{LambdaError.UploadConfirmResultProps.to_str()}: {str(e)}",
             {"Result": failed_message},
         )
         raise UploadConfirmResultException(400, LambdaError.UploadConfirmResultPayload)
