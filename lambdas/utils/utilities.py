@@ -8,7 +8,7 @@ from services.pds_api_service import PdsApiService
 from utils.exceptions import InvalidResourceIdException
 
 
-def validate_id(patient_id: str) -> bool:
+def validate_nhs_number(patient_id: str) -> bool:
     pattern = re.compile("^\\d{10}$")
 
     if not bool(pattern.match(patient_id)):
