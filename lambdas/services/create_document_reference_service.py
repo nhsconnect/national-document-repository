@@ -136,9 +136,9 @@ class CreateDocumentReferenceService:
                 document_reference.s3_bucket_name,
                 self.upload_sub_folder
                 + "/"
-                + document_reference.nhs_number
-                + "/"
                 + document_reference.doc_type
+                + "/"
+                + document_reference.nhs_number
                 + "/"
                 + document_reference.id,
             )
