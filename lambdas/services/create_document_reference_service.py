@@ -49,22 +49,27 @@ class CreateDocumentReferenceService:
                 (document_reference, doc_type) = self.prepare_doc_object(
                     nhs_number, document
                 )
-                self.check_valid_doc_type(doc_type)
 
-                if doc_type == SupportedDocumentTypes.ARF.value:
-                    arf_documents.append(document_reference)
-                    arf_documents_dict_format.append(document_reference.to_dict())
-
-                if doc_type == SupportedDocumentTypes.LG.value:
-                    lg_documents.append(document_reference)
-                    lg_documents_dict_format.append(document_reference.to_dict())
+                match (doc_type):
+                    case SupportedDocumentTypes.ARF.value:
+                        arf_documents.append(document_reference)
+                        arf_documents_dict_format.append(document_reference.to_dict())
+                    case SupportedDocumentTypes.LG.value:
+                        lg_documents.append(document_reference)
+                        lg_documents_dict_format.append(document_reference.to_dict())
+                    case _:
+                        logger.error(
+                            f"{LambdaError.CreateDocInvalidType.to_str()}",
+                            {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
+                        )
+                        raise CreateDocumentRefException(400, LambdaError.CreateDocInvalidType)
 
                 url_responses[
                     document_reference.file_name
                 ] = self.prepare_pre_signed_url(document_reference)
 
             if lg_documents:
-                validate_lg_files(lg_documents)
+                validate_lg_files(lg_documents, nhs_number)
                 
                 self.create_reference_in_dynamodb(
                     self.lg_dynamo_table, lg_documents_dict_format
@@ -158,16 +163,3 @@ class CreateDocumentReferenceService:
                 {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
             )
             raise CreateDocumentRefException(500, LambdaError.CreateDocUpload)
-
-    def check_valid_doc_type(self, doc_type):
-        if (
-            doc_type == SupportedDocumentTypes.LG.value
-            or doc_type == SupportedDocumentTypes.ARF.value
-        ):
-            return
-
-        logger.error(
-            f"{LambdaError.CreateDocInvalidType.to_str()}",
-            {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
-        )
-        raise CreateDocumentRefException(400, LambdaError.CreateDocInvalidType)

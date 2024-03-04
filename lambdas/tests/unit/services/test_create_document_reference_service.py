@@ -37,11 +37,6 @@ def mock_prepare_doc_object(mock_create_doc_ref_service, mocker):
 
 
 @pytest.fixture()
-def mock_check_valid_doc_type(mock_create_doc_ref_service, mocker):
-    yield mocker.patch.object(mock_create_doc_ref_service, "check_valid_doc_type")
-
-
-@pytest.fixture()
 def mock_prepare_pre_signed_url(mock_create_doc_ref_service, mocker):
     yield mocker.patch.object(mock_create_doc_ref_service, "prepare_pre_signed_url")
 
@@ -75,7 +70,6 @@ def test_create_document_reference_request_with_arf_list_happy_path(
     mock_create_doc_ref_service,
     mocker,
     mock_prepare_doc_object,
-    mock_check_valid_doc_type,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
@@ -115,7 +109,6 @@ def test_create_document_reference_request_with_arf_list_happy_path(
         any_order=True,
     )
 
-    assert mock_check_valid_doc_type.call_count == len(ARF_FILE_LIST)
     mock_create_reference_in_dynamodb.assert_called_once()
     mock_validate_lg.assert_not_called()
 
@@ -124,7 +117,6 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     mock_create_doc_ref_service,
     mocker,
     mock_prepare_doc_object,
-    mock_check_valid_doc_type,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
@@ -163,16 +155,14 @@ def test_create_document_reference_request_with_lg_list_happy_path(
         any_order=True,
     )
 
-    assert mock_check_valid_doc_type.call_count == len(LG_FILE_LIST)
     mock_create_reference_in_dynamodb.assert_called_once()
-    mock_validate_lg.assert_called_with(document_references)
+    mock_validate_lg.assert_called_with(document_references, TEST_NHS_NUMBER)
 
 
 def test_create_document_reference_request_with_both_list(
     mock_create_doc_ref_service,
     mocker,
     mock_prepare_doc_object,
-    mock_check_valid_doc_type,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
@@ -230,7 +220,6 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     mock_create_doc_ref_service,
     mocker,
     mock_prepare_doc_object,
-    mock_check_valid_doc_type,
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
@@ -272,7 +261,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     )
 
     mock_create_reference_in_dynamodb.assert_not_called()
-    mock_validate_lg.assert_called_with(document_references)
+    mock_validate_lg.assert_called_with(document_references, TEST_NHS_NUMBER)
 
 
 def test_create_document_reference_invalid_nhs_number(mocker):
@@ -431,34 +420,3 @@ def test_create_reference_in_dynamodb_both_tables(mock_create_doc_ref_service, m
         ]
     )
     assert mock_create_doc_ref_service.dynamo_service.batch_writing.call_count == 1
-
-
-def test_check_valid_doc_type_when_invalid_doc_type_provided_throws_create_document_ref_exception(
-    mock_create_doc_ref_service,
-):
-    with pytest.raises(CreateDocumentRefException):
-        mock_create_doc_ref_service.check_valid_doc_type("test")
-
-
-def test_check_valid_doc_type_when_valid_arf_doc_type_provided_returns(
-    mock_create_doc_ref_service,
-):
-    raised = False
-    try:
-        mock_create_doc_ref_service.check_valid_doc_type("ARF")
-    except:
-        raised = True
-        raise
-    assert raised is False
-
-
-def test_check_valid_doc_type_when_valid_lg_doc_type_provided_returns(
-    mock_create_doc_ref_service,
-):
-    raised = False
-    try:
-        mock_create_doc_ref_service.check_valid_doc_type("LG")
-    except:
-        raised = True
-        raise
-    assert raised is False
