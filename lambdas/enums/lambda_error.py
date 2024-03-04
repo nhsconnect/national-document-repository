@@ -260,6 +260,24 @@ class LambdaError(Enum):
     }
 
     """
+           Errors for Upload Confirm Result lambda 
+        """
+    UploadConfirmResultMissingBody = {
+        "err_code": "UC_4001",
+        "message": "Missing POST request body",
+    }
+
+    UploadConfirmResultPayload = {
+        "err_code": "UC_4002",
+        "message": "Invalid json in body",
+    }
+
+    UploadConfirmResultProps = {
+        "err_code": "UC_4003",
+        "message": "Request body missing some properties",
+    }
+
+    """
        Errors with no exception
     """
     DocDelNull = {

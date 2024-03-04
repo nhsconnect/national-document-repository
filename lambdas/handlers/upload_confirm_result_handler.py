@@ -1,5 +1,7 @@
 import json
+from json import JSONDecodeError
 
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.upload_confirm_result_service import UploadConfirmResultService
 from utils.audit_logging_setup import LoggingService
@@ -7,6 +9,8 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.exceptions import UploadConfirmResultException
+from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
 logger = LoggingService(__name__)
@@ -32,7 +36,50 @@ def lambda_handler(event, context):
 
     logger.info("Upload confirm result handler triggered")
 
-    documents = json.loads(event["body"])
+    nhs_number, documents = processing_event_details(event)
     upload_confirm_result_service = UploadConfirmResultService()
 
-    upload_confirm_result_service.process_documents(documents)
+    try:
+        upload_confirm_result_service.process_documents(nhs_number, documents)
+        http_status_code = 200
+        response_body = f"Finished processing all {len(documents)} documents"
+        logger.info(response_body)
+    except UploadConfirmResultException as e:
+        http_status_code = 500
+        response_body = f"Upload confirmation failed with error: {e}"
+        logger.error(str(e), {"Result": {response_body}})
+
+    return ApiGatewayResponse(
+        status_code=http_status_code, body=response_body, methods="POST"
+    ).create_api_gateway_response()
+
+
+def processing_event_details(event):
+    failed_message = "Upload confirm result failed"
+
+    try:
+        body = json.loads(event["body"])
+        nhs_number = body["patientId"]
+        documents = body["documents"]
+
+        if not body or not isinstance(body, dict):
+            logger.error(
+                f"{LambdaError.UploadConfirmResultMissingBody.to_str()}",
+                {"Result": failed_message},
+            )
+            raise UploadConfirmResultException(
+                400, LambdaError.UploadConfirmResultMissingBody
+            )
+        return nhs_number, documents
+    except (JSONDecodeError, AttributeError) as e:
+        logger.error(
+            f"{LambdaError.UploadConfirmResultPayload.to_str()}: {str(e)}",
+            {"Result": failed_message},
+        )
+        raise UploadConfirmResultException(400, LambdaError.UploadConfirmResultPayload)
+    except (KeyError, TypeError) as e:
+        logger.error(
+            f"{LambdaError.UploadConfirmResultProps.to_str()}: {str(e)}",
+            {"Result": failed_message},
+        )
+        raise UploadConfirmResultException(400, LambdaError.UploadConfirmResultPayload)
