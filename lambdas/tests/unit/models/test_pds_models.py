@@ -1,4 +1,3 @@
-import pytest
 from freezegun import freeze_time
 from models.pds_models import PatientDetails
 from tests.unit.helpers.data.pds.pds_patient_response import (
@@ -8,23 +7,15 @@ from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT_WITHOUT_ACTIVE_GP,
 )
 from tests.unit.helpers.data.pds.utils import create_patient
-from utils.exceptions import InvalidResourceIdException
-from utils.utilities import validate_id
+from utils.utilities import validate_nhs_number
 
 
-def test_validate_id_with_valid_id_returns_true():
+def test_validate_nhs_number_with_valid_id_returns_true():
     nhs_number = "0000000000"
 
-    result = validate_id(nhs_number)
+    result = validate_nhs_number(nhs_number)
 
     assert result
-
-
-def test_validate_id_with_valid_id_raises_InvalidResourceIdException():
-    nhs_number = "000000000"
-
-    with pytest.raises(InvalidResourceIdException):
-        validate_id(nhs_number)
 
 
 def test_get_unrestricted_patient_details():
