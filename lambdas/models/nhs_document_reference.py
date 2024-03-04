@@ -20,6 +20,7 @@ class NHSDocumentReference:
         content_type: str = "application/pdf",
         current_gp_ods: str = "",
         sub_folder: str = "",
+        doc_type: str = ""
     ) -> None:
         self.id = reference_id
         self.nhs_number = nhs_number
@@ -30,14 +31,22 @@ class NHSDocumentReference:
         self.s3_bucket_name = s3_bucket_name
         self.deleted = ""
         self.virus_scanner_result = "Not Scanned"
-        self.sub_folder = sub_folder
-        self.file_location = self.set_file_location()
         self.uploaded = False
+        self.sub_folder = sub_folder
+        self.doc_type = doc_type
+        self.file_location = self.set_file_location()
 
     def set_file_location(self):
-        if self.sub_folder == "":
-            return f"s3://{self.s3_bucket_name}/{self.s3_file_key}"
-        return f"s3://{self.s3_bucket_name}/{self.sub_folder}/{self.s3_file_key}"
+        file_location = f"s3://{self.s3_bucket_name}"
+
+        if self.sub_folder != "":
+            file_location = f"{file_location}/{self.sub_folder}"
+
+        if self.doc_type != "":
+            file_location = f"{file_location}/{self.doc_type}"
+        
+        file_location = f"{file_location}/{self.s3_file_key}"
+        return file_location
 
     def set_deleted(self) -> None:
         self.deleted = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
@@ -77,4 +86,6 @@ class NHSDocumentReference:
             and self.deleted == other.deleted
             and self.virus_scanner_result == other.virus_scanner_result
             and self.file_location == other.file_location
+            and self.sub_folder == other.sub_folder
+            and self.doc_type == other.doc_type
         )

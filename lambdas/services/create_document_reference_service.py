@@ -46,11 +46,11 @@ class CreateDocumentReferenceService:
         try:
             validate_nhs_number(nhs_number)
             for document in documents_list:
-                (document_reference, doc_type) = self.prepare_doc_object(
+                document_reference= self.prepare_doc_object(
                     nhs_number, document
                 )
 
-                match (doc_type):
+                match (document_reference.doc_type):
                     case SupportedDocumentTypes.ARF.value:
                         arf_documents.append(document_reference)
                         arf_documents_dict_format.append(document_reference.to_dict())
@@ -125,9 +125,10 @@ class CreateDocumentReferenceService:
             reference_id=s3_object_key,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
+            doc_type=document_type
         )
 
-        return document_reference, document_type
+        return document_reference
 
     def prepare_pre_signed_url(self, document_reference: NHSDocumentReference):
         try:
@@ -136,6 +137,8 @@ class CreateDocumentReferenceService:
                 self.upload_sub_folder
                 + "/"
                 + document_reference.nhs_number
+                + "/"
+                + document_reference.doc_type
                 + "/"
                 + document_reference.id,
             )
