@@ -20,7 +20,7 @@ class NHSDocumentReference:
         content_type: str = "application/pdf",
         current_gp_ods: str = "",
         sub_folder: str = "",
-        doc_type: str = ""
+        doc_type: str = "",
     ) -> None:
         self.id = reference_id
         self.nhs_number = nhs_number
@@ -44,7 +44,7 @@ class NHSDocumentReference:
 
         if self.doc_type != "":
             file_location = f"{file_location}/{self.doc_type}"
-        
+
         file_location = f"{file_location}/{self.s3_file_key}"
         return file_location
 

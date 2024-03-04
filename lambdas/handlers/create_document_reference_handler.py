@@ -30,7 +30,7 @@ logger = LoggingService(__name__)
         "APPCONFIG_ENVIRONMENT",
         "DOCUMENT_STORE_DYNAMODB_NAME",
         "LLOYD_GEORGE_DYNAMODB_NAME",
-        "STAGING_STORE_BUCKET_NAME"
+        "STAGING_STORE_BUCKET_NAME",
     ]
 )
 @override_error_check

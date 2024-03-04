@@ -46,9 +46,7 @@ class CreateDocumentReferenceService:
         try:
             validate_nhs_number(nhs_number)
             for document in documents_list:
-                document_reference= self.prepare_doc_object(
-                    nhs_number, document
-                )
+                document_reference = self.prepare_doc_object(nhs_number, document)
 
                 match (document_reference.doc_type):
                     case SupportedDocumentTypes.ARF.value:
@@ -62,7 +60,9 @@ class CreateDocumentReferenceService:
                             f"{LambdaError.CreateDocInvalidType.to_str()}",
                             {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
                         )
-                        raise CreateDocumentRefException(400, LambdaError.CreateDocInvalidType)
+                        raise CreateDocumentRefException(
+                            400, LambdaError.CreateDocInvalidType
+                        )
 
                 url_responses[
                     document_reference.file_name
@@ -70,7 +70,7 @@ class CreateDocumentReferenceService:
 
             if lg_documents:
                 validate_lg_files(lg_documents, nhs_number)
-                
+
                 self.create_reference_in_dynamodb(
                     self.lg_dynamo_table, lg_documents_dict_format
                 )
@@ -125,7 +125,7 @@ class CreateDocumentReferenceService:
             reference_id=s3_object_key,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
-            doc_type=document_type
+            doc_type=document_type,
         )
 
         return document_reference
