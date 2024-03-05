@@ -49,7 +49,7 @@ class UploadConfirmResultService:
     def copy_files_from_staging_bucket(
         self, document_references: list, bucket_name: str
     ):
-        staging_bucket = os.environ["STAGING_BUCKET"]
+        staging_bucket = os.environ["STAGING_STORE_BUCKET_NAME"]
 
         for document_reference in document_references:
             dest_file_key = f"{self.nhs_number}/{document_reference}"
