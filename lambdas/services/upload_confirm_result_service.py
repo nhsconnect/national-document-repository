@@ -1,6 +1,6 @@
 import os
 
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
@@ -72,13 +72,15 @@ class UploadConfirmResultService:
             self.dynamo_service.update_item(table_name, reference, {"Uploaded": True})
 
     def validate_number_of_documents(self, table_name: str, document_references: list):
-        logger.info(f"nhs number {self.nhs_number}")
-        query_response = self.dynamo_service.simple_query(
-            table_name=table_name,
-            key_condition_expression=Key("NhsNumber").eq(self.nhs_number),
+        filter_by_nhs_number = Attr("NhsNumber").eq(self.nhs_number)
+
+        query_response = self.dynamo_service.scan_table(
+            table_name=table_name, filter_expression=filter_by_nhs_number
         )
 
-        if len(query_response["Items"]) != len(document_references):
+        items = query_response.get("Items", None)
+
+        if len(query_response[items]) != len(document_references):
             raise UploadConfirmResultException(
                 f"Number of document references not equal to number of documents in "
                 f"dynamo table for nhs number: {self.nhs_number}"
