@@ -45,7 +45,7 @@ class UploadConfirmResultService:
     ):
         self.copy_files_from_staging_bucket(document_references, bucket_name)
         self.delete_files_from_staging_bucket(document_references)
-        self.update_dynamo_table(table_name, document_references)
+        self.update_dynamo_table(table_name, document_references, bucket_name)
 
     def copy_files_from_staging_bucket(
         self, document_references: list, bucket_name: str
@@ -68,11 +68,19 @@ class UploadConfirmResultService:
         for document_reference in document_references:
             self.s3_service.delete_object(self.staging_bucket, document_reference)
 
-    def update_dynamo_table(self, table_name: str, document_references: list[str]):
+    def update_dynamo_table(
+        self, table_name: str, document_references: list[str], bucket_name: str
+    ):
         logger.info("Updating dynamo table")
 
-        for reference in document_references:
-            self.dynamo_service.update_item(table_name, reference, {"Uploaded": True})
+        for document_reference in document_references:
+            file_location = f"s3://{bucket_name}/{self.nhs_number}/{document_reference}"
+
+            self.dynamo_service.update_item(
+                table_name,
+                document_reference,
+                {"Uploaded": True, "FileLocation": file_location},
+            )
 
     def validate_number_of_documents(self, table_name: str, document_references: list):
         logger.info(
