@@ -42,7 +42,7 @@ def lambda_handler(event, context):
     try:
         upload_confirm_result_service.process_documents(documents)
         http_status_code = 204
-        response_body = f"Finished processing all {len(documents)} documents"
+        response_body = "Finished processing all documents"
         logger.info(response_body)
     except UploadConfirmResultException as e:
         http_status_code = 500

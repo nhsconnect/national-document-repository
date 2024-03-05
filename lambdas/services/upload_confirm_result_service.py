@@ -74,7 +74,7 @@ class UploadConfirmResultService:
     def validate_number_of_documents(self, table_name: str, document_references: list):
         query_response = self.dynamo_service.simple_query(
             table_name=table_name,
-            key_condition_expression=Key("NhsNumber").eq(self.nhs_number),
+            key_condition_expression=Key("NhsNumberIndex").eq(self.nhs_number),
         )
 
         if len(query_response["Items"]) != len(document_references):
