@@ -15,6 +15,7 @@ class UploadConfirmResultService:
         self.dynamo_service = DynamoDBService()
         self.s3_service = S3Service()
         self.nhs_number = nhs_number
+        self.staging_bucket = os.environ["STAGING_STORE_BUCKET_NAME"]
 
     def process_documents(self, documents: dict):
         lg_table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
@@ -43,29 +44,25 @@ class UploadConfirmResultService:
         self, document_references: list, bucket_name: str, table_name: str
     ):
         self.copy_files_from_staging_bucket(document_references, bucket_name)
-        self.delete_files_from_staging_bucket(document_references, bucket_name)
+        self.delete_files_from_staging_bucket(document_references)
         self.update_dynamo_table(table_name, document_references)
 
     def copy_files_from_staging_bucket(
         self, document_references: list, bucket_name: str
     ):
-        staging_bucket = os.environ["STAGING_STORE_BUCKET_NAME"]
-
         for document_reference in document_references:
             dest_file_key = f"{self.nhs_number}/{document_reference}"
 
             self.s3_service.copy_across_bucket(
-                source_bucket=staging_bucket,
+                source_bucket=self.staging_bucket,
                 source_file_key=document_reference,
                 dest_bucket=bucket_name,
                 dest_file_key=dest_file_key,
             )
 
-    def delete_files_from_staging_bucket(
-        self, document_references: list, bucket_name: str
-    ):
+    def delete_files_from_staging_bucket(self, document_references: list):
         for document_reference in document_references:
-            self.s3_service.delete_object(bucket_name, document_reference)
+            self.s3_service.delete_object(self.staging_bucket, document_reference)
 
     def update_dynamo_table(self, table_name: str, document_references: list[str]):
         for reference in document_references:
