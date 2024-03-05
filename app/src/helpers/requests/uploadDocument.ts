@@ -14,13 +14,20 @@ type UploadDocumentsArgs = {
 };
 
 type UploadDocumentsToS3Args = {
-    setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
+    setDocumentState: (props: DocumentStateProps) => void;
     documents: UploadDocument[];
     data: UploadResult;
 };
 
 type gatewayResponse = {
     data: UploadResult;
+};
+
+type DocumentStateProps = {
+    id: string;
+    state: DOCUMENT_UPLOAD_STATE;
+    progress?: number;
+    attempts?: number;
 };
 
 const uploadDocument = async ({
@@ -30,19 +37,20 @@ const uploadDocument = async ({
     baseUrl,
     baseHeaders,
 }: UploadDocumentsArgs) => {
-    const setDocumentState = (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => {
+    const setDocumentState = ({ id, state, progress, attempts }: DocumentStateProps) => {
         setDocuments((prevDocuments: UploadDocument[]) => {
             return prevDocuments.map((document) => {
                 if (document.id === id) {
                     progress = progress ?? document.progress;
-                    return { ...document, state, progress };
+                    attempts = attempts ?? document.attempts;
+                    return { ...document, state, progress, attempts };
                 }
                 return document;
             });
         });
     };
     const docDetails = (document: UploadDocument) => {
-        setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
+        setDocumentState({ id: document.id, state: DOCUMENT_UPLOAD_STATE.UPLOADING });
         return {
             fileName: document.file.name,
             contentType: document.file.type,
@@ -90,12 +98,22 @@ const uploadDocument = async ({
         const error = e as AxiosError;
         if (error.response?.status === 403) {
             documents.forEach((document) => {
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
+                setDocumentState({
+                    id: document.id,
+                    state: DOCUMENT_UPLOAD_STATE.UNAUTHORISED,
+                    attempts: document.attempts + 1,
+                    progress: 0,
+                });
             });
             throw e;
         } else {
             documents.forEach((document) => {
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
+                setDocumentState({
+                    id: document.id,
+                    state: DOCUMENT_UPLOAD_STATE.FAILED,
+                    attempts: document.attempts + 1,
+                    progress: 0,
+                });
             });
             throw e;
         }
@@ -121,23 +139,38 @@ const uploadDocumentsToS3 = async ({
                 onUploadProgress: (progress) => {
                     const { loaded, total } = progress;
                     if (total) {
-                        setDocumentState(
-                            document.id,
-                            DOCUMENT_UPLOAD_STATE.UPLOADING,
-                            (loaded / total) * 100,
-                        );
+                        setDocumentState({
+                            id: document.id,
+                            state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                            progress: (loaded / total) * 100,
+                        });
                     }
                 },
             });
 
             if (s3Response.status === 204)
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+                setDocumentState({
+                    id: document.id,
+                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                    attempts: document.attempts + 1,
+                    progress: 0,
+                });
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
+                setDocumentState({
+                    id: document.id,
+                    state: DOCUMENT_UPLOAD_STATE.UNAUTHORISED,
+                    attempts: document.attempts + 1,
+                    progress: 0,
+                });
             } else {
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
+                setDocumentState({
+                    id: document.id,
+                    state: DOCUMENT_UPLOAD_STATE.FAILED,
+                    attempts: document.attempts + 1,
+                    progress: 0,
+                });
             }
         }
     }

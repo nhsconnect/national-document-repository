@@ -20,6 +20,9 @@ function LloydGeorgeUploadStage({ documents, setStage }: Props) {
         else if (document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload successful';
         else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
     };
+
+    const retryUpload = () => {};
+
     return (
         <>
             <h1>Uploading record</h1>

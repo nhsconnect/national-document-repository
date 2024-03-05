@@ -89,6 +89,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,
             docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+            attempts: 0,
         }));
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
