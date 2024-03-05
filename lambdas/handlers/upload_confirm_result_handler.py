@@ -1,4 +1,3 @@
-import json
 from json import JSONDecodeError
 
 from enums.lambda_error import LambdaError
@@ -58,7 +57,7 @@ def processing_event_details(event):
     failed_message = "Upload confirm result failed"
 
     try:
-        body = json.loads(event["body"])
+        body = event.get("body")
 
         if not body or not isinstance(body, dict):
             logger.error(
@@ -69,8 +68,8 @@ def processing_event_details(event):
                 400, LambdaError.UploadConfirmResultMissingBody
             )
 
-        nhs_number = body["patientId"]
-        documents = body["documents"]
+        nhs_number = body.get("patientId")
+        documents = body.get("documents")
 
         if not nhs_number or not documents:
             logger.error(
