@@ -80,7 +80,7 @@ class UploadConfirmResultService:
 
         items = query_response.get("Items", None)
 
-        if len(query_response[items]) != len(document_references):
+        if len(items) != len(document_references):
             raise UploadConfirmResultException(
                 f"Number of document references not equal to number of documents in "
                 f"dynamo table for nhs number: {self.nhs_number}"
