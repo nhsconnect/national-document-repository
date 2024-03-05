@@ -260,3 +260,16 @@ jobs:
       lambda_aws_name: FeatureFlagsLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_upload_confirm_result_lambda:
+    name: Deploy upload confirm result lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: upload_confirm_result_handler
+      lambda_aws_name: UploadConfirmResult
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
