@@ -270,6 +270,6 @@ jobs:
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: upload_confirm_result_handler
-      lambda_aws_name: UploadConfirmResult
+      lambda_aws_name: UploadConfirmResultLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
