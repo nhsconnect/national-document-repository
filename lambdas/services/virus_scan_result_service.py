@@ -109,7 +109,7 @@ class VirusScanResultService:
             raise VirusScanResultException(500, LambdaError.VirusScanTokenRequest)
 
     def update_ssm_access_token(self, access_token):
-        parameter_key = SSMParameter.VIRUS_API_ACCESSTOKEN.value
+        parameter_key = SSMParameter.VIRUS_API_ACCESS_TOKEN.value
         self.ssm_service.update_ssm_parameter(
             parameter_key=parameter_key,
             parameter_value=access_token,
@@ -117,10 +117,10 @@ class VirusScanResultService:
         )
 
     def get_ssm_parameters_for_request_access_token(self):
-        access_token_key = SSMParameter.VIRUS_API_ACCESSTOKEN.value
+        access_token_key = SSMParameter.VIRUS_API_ACCESS_TOKEN.value
         username_key = SSMParameter.VIRUS_API_USER.value
         password_key = SSMParameter.VIRUS_API_PASSWORD.value
-        url_key = SSMParameter.VIRUS_API_BASEURL.value
+        url_key = SSMParameter.VIRUS_API_BASE_URL.value
 
         parameters = [username_key, password_key, url_key, access_token_key]
 

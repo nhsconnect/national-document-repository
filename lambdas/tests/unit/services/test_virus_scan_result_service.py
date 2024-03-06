@@ -226,7 +226,7 @@ def test_update_access_token_ssm(mocker, virus_scanner_service):
     virus_scanner_service.update_ssm_access_token("test_string")
 
     virus_scanner_service.ssm_service.update_ssm_parameter.assert_called_with(
-        parameter_key=SSMParameter.VIRUS_API_ACCESSTOKEN.value,
+        parameter_key=SSMParameter.VIRUS_API_ACCESS_TOKEN.value,
         parameter_value="test_string",
         parameter_type="SecureString",
     )
@@ -234,10 +234,10 @@ def test_update_access_token_ssm(mocker, virus_scanner_service):
 
 def test_get_parameters_for_pds_api_request(virus_scanner_service):
     ssm_parameters_expected = {
-        SSMParameter.VIRUS_API_ACCESSTOKEN.value: f"test_value_{SSMParameter.VIRUS_API_ACCESSTOKEN.value}",
+        SSMParameter.VIRUS_API_ACCESS_TOKEN.value: f"test_value_{SSMParameter.VIRUS_API_ACCESS_TOKEN.value}",
         SSMParameter.VIRUS_API_USER.value: f"test_value_{SSMParameter.VIRUS_API_USER.value}",
         SSMParameter.VIRUS_API_PASSWORD.value: f"test_value_{SSMParameter.VIRUS_API_PASSWORD.value}",
-        SSMParameter.VIRUS_API_BASEURL.value: f"test_value_{SSMParameter.VIRUS_API_BASEURL.value}",
+        SSMParameter.VIRUS_API_BASE_URL.value: f"test_value_{SSMParameter.VIRUS_API_BASE_URL.value}",
     }
     assert virus_scanner_service.access_token == ""
     assert virus_scanner_service.username == ""
@@ -252,7 +252,7 @@ def test_get_parameters_for_pds_api_request(virus_scanner_service):
 
     assert (
         virus_scanner_service.access_token
-        == ssm_parameters_expected[SSMParameter.VIRUS_API_ACCESSTOKEN.value]
+        == ssm_parameters_expected[SSMParameter.VIRUS_API_ACCESS_TOKEN.value]
     )
     assert (
         virus_scanner_service.username
@@ -264,5 +264,5 @@ def test_get_parameters_for_pds_api_request(virus_scanner_service):
     )
     assert (
         virus_scanner_service.base_url
-        == ssm_parameters_expected[SSMParameter.VIRUS_API_BASEURL.value]
+        == ssm_parameters_expected[SSMParameter.VIRUS_API_BASE_URL.value]
     )
