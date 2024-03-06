@@ -38,7 +38,8 @@ class UploadConfirmResultService:
                 )
 
         except ClientError as e:
-            logger.error(f"Error with one of our services: {e}")
+            logger.error(f"Error with one of our services: {str(e)}")
+            raise UploadConfirmResultException("Error with one of our services")
 
     def move_files_and_update_dynamo(
         self, document_references: list, bucket_name: str, table_name: str
