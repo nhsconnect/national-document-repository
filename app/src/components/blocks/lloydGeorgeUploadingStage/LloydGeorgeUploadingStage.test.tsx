@@ -7,7 +7,6 @@ import {
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { buildTextFile } from '../../../helpers/test/testBuilders';
 import LloydGeorgeUploadStage from './LloydGeorgeUploadingStage';
-const mockSetStage = jest.fn();
 describe('<LloydGeorgeUploadingStage />', () => {
     describe('with NHS number', () => {
         const triggerUploadStateChange = (
@@ -29,7 +28,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 progress: 50,
                 docType: DOCUMENT_TYPE.LLOYD_GEORGE,
             };
-            render(<LloydGeorgeUploadStage documents={[documentOne]} setStage={mockSetStage} />);
+            render(<LloydGeorgeUploadStage documents={[documentOne]} />);
 
             triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.UPLOADING, 0);
 
@@ -66,10 +65,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             };
 
             const { rerender } = render(
-                <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
-                    setStage={mockSetStage}
-                />,
+                <LloydGeorgeUploadStage documents={[documentOne, documentTwo, documentThree]} />,
             );
             const getProgressBarValue = (document: UploadDocument) => {
                 const progressBar: HTMLProgressElement = screen.getByRole('progressbar', {
@@ -85,50 +81,35 @@ describe('<LloydGeorgeUploadingStage />', () => {
 
             triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.UPLOADING, 10);
             rerender(
-                <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
-                    setStage={mockSetStage}
-                />,
+                <LloydGeorgeUploadStage documents={[documentOne, documentTwo, documentThree]} />,
             );
             expect(getProgressBarValue(documentOne)).toEqual(10);
             expect(getProgressText(documentOne)).toContain('10% uploaded...');
 
             triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.UPLOADING, 70);
             rerender(
-                <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
-                    setStage={mockSetStage}
-                />,
+                <LloydGeorgeUploadStage documents={[documentOne, documentTwo, documentThree]} />,
             );
             expect(getProgressBarValue(documentOne)).toEqual(70);
             expect(getProgressText(documentOne)).toContain('70% uploaded...');
 
             triggerUploadStateChange(documentTwo, DOCUMENT_UPLOAD_STATE.UPLOADING, 20);
             rerender(
-                <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
-                    setStage={mockSetStage}
-                />,
+                <LloydGeorgeUploadStage documents={[documentOne, documentTwo, documentThree]} />,
             );
             expect(getProgressBarValue(documentTwo)).toEqual(20);
             expect(getProgressText(documentTwo)).toContain('20% uploaded...');
 
             triggerUploadStateChange(documentTwo, DOCUMENT_UPLOAD_STATE.SUCCEEDED, 100);
             rerender(
-                <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
-                    setStage={mockSetStage}
-                />,
+                <LloydGeorgeUploadStage documents={[documentOne, documentTwo, documentThree]} />,
             );
             expect(getProgressBarValue(documentTwo)).toEqual(100);
             expect(getProgressText(documentTwo)).toContain('Upload successful');
 
             triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.FAILED, 0);
             rerender(
-                <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
-                    setStage={mockSetStage}
-                />,
+                <LloydGeorgeUploadStage documents={[documentOne, documentTwo, documentThree]} />,
             );
             expect(getProgressBarValue(documentOne)).toEqual(0);
             expect(getProgressText(documentOne)).toContain('Upload failed');

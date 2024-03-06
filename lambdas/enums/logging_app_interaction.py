@@ -12,4 +12,4 @@ class LoggingAppInteraction(Enum):
     LOGOUT = "Logout"
     SEND_FEEDBACK = "Send feedback"
     FEATURE_FLAGS = "Feature flags"
-    VIRUS_SCAN = 'Virus Scan'
+    VIRUS_SCAN = "Virus Scan"

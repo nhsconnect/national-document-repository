@@ -1,9 +1,16 @@
+import json
+from json import JSONDecodeError
+
+from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.virus_scan_result_service import VirusScanResultService
 from utils.audit_logging_setup import LoggingService
-from utils.decorators import handle_lambda_exceptions, override_error_check
 from utils.decorators.ensure_env_var import ensure_environment_variables
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
+from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.lambda_exceptions import VirusScanResultException
+from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
 logger = LoggingService(__name__)
@@ -22,17 +29,18 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.VIRUS_SCAN.value
+    try:
+        event_body = json.loads(event["body"])
+        if not event_body:
+            raise VirusScanResultException(400, LambdaError.VirusScanNoBody)
+
+        document_reference = event_body["documentReference"]
+    except (JSONDecodeError, KeyError):
+        raise VirusScanResultException(400, LambdaError.VirusScanNoBody)
+
     virus_scan_result_service = VirusScanResultService()
-    new_access_token = virus_scan_result_service.fetch_new_access_token()
-    logger.info(f"access_token: {new_access_token}")
+    virus_scan_result_service.prepare_request(document_reference)
 
-
-# scan_url = baseURL + '/api/Scan'
-# form = encoder.MultipartEncoder({
-#     "documents": ("my_file", file, "application/octet-stream"),
-#     "composite": "NONE",
-# })
-# headers = {"Prefer": "respond-async", "Content-Type": form.content_type, 'Authorization': 'Bearer ' + access_token}
-# r = session.post(scan_url, headers=headers, data=form, timeout=4000)
-
-# parsed = json.loads(r.text)
+    return ApiGatewayResponse(
+        200, "Virus Scan was successful", "POST"
+    ).create_api_gateway_response()
