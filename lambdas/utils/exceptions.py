@@ -110,7 +110,3 @@ class BulkUploadMetadataException(Exception):
 
 class FhirResourceNotFound(Exception):
     pass
-
-
-class UploadConfirmResultException(Exception):
-    pass

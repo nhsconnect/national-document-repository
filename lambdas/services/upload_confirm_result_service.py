@@ -2,10 +2,11 @@ import os
 
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import UploadConfirmResultException
+from utils.lambda_exceptions import UploadConfirmResultException
 
 logger = LoggingService(__name__)
 
@@ -39,7 +40,9 @@ class UploadConfirmResultService:
 
         except ClientError as e:
             logger.error(f"Error with one of our services: {str(e)}")
-            raise UploadConfirmResultException("Error with one of our services")
+            raise UploadConfirmResultException(
+                500, LambdaError.UploadConfirmResultAWSFailure
+            )
 
     def move_files_and_update_dynamo(
         self, document_references: list, bucket_name: str, table_name: str
@@ -98,6 +101,5 @@ class UploadConfirmResultService:
 
         if len(items) != len(document_references):
             raise UploadConfirmResultException(
-                f"Number of document references not equal to number of documents in "
-                f"dynamo table for nhs number: {self.nhs_number}"
+                400, LambdaError.UploadConfirmResultBadRequest
             )

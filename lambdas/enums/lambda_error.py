@@ -277,6 +277,16 @@ class LambdaError(Enum):
         "message": "Request body missing some properties",
     }
 
+    UploadConfirmResultBadRequest = {
+        "err_code": "VSR_4004",
+        "message": "Number of document references not equal to number of documents in dynamo table for this nhs number",
+    }
+
+    UploadConfirmResultAWSFailure = {
+        "err_code": "VSR_5004",
+        "message": "Error occurred with an AWS service",
+    }
+
     """
        Errors with no exception
     """

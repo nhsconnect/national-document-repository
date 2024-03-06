@@ -9,7 +9,7 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.exceptions import UploadConfirmResultException
+from utils.lambda_exceptions import UploadConfirmResultException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -37,20 +37,15 @@ def lambda_handler(event, context):
     logger.info("Upload confirm result handler triggered")
 
     nhs_number, documents = processing_event_details(event)
+    request_context.patient_nhs_no = nhs_number
     upload_confirm_result_service = UploadConfirmResultService(nhs_number)
 
-    try:
-        upload_confirm_result_service.process_documents(documents)
-        http_status_code = 204
-        response_body = "Finished processing all documents"
-        logger.info(response_body)
-    except UploadConfirmResultException as e:
-        http_status_code = 500
-        response_body = f"Upload confirmation failed with error: {e}"
-        logger.error(str(e), {"Result": {response_body}})
+    upload_confirm_result_service.process_documents(documents)
+    response_body = "Finished processing all documents"
+    logger.info(response_body, {"Result": "Successfully processed all documents"})
 
     return ApiGatewayResponse(
-        status_code=http_status_code, body=response_body, methods="POST"
+        status_code=204, body=response_body, methods="POST"
     ).create_api_gateway_response()
 
 
