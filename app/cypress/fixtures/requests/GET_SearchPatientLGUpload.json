@@ -1,0 +1,10 @@
+{
+    "birthDate": "2011-01-01",
+    "familyName": "Test",
+    "givenName": ["Testy"],
+    "nhsNumber": "0123456789",
+    "postalCode": "AA1 1AA",
+    "superseded": false,
+    "restricted": false,
+    "active": true
+}
