@@ -12,6 +12,8 @@ from utils.lambda_exceptions import VirusScanResultException
 
 logger = LoggingService(__name__)
 
+FAIL_SCAN = "Virus scan result failed"
+
 
 class VirusScanResultService:
     def __init__(self):
@@ -29,7 +31,7 @@ class VirusScanResultService:
         except ClientError as e:
             logger.error(
                 f"{LambdaError.VirusScanAWSFailure.to_str()}: {str(e)}",
-                {"Result": "Virus scan result failed"},
+                {"Result": FAIL_SCAN},
             )
             raise VirusScanResultException(500, LambdaError.VirusScanAWSFailure)
 
@@ -65,14 +67,14 @@ class VirusScanResultService:
             else:
                 logger.info(
                     "File is not clean",
-                    {"Result": "Virus scan result failed"},
+                    {"Result": FAIL_SCAN},
                 )
                 raise VirusScanResultException(400, LambdaError.VirusScanUnclean)
 
         except HTTPError:
             logger.info(
                 "Virus scan request failed",
-                {"Result": "Virus scan result failed"},
+                {"Result": FAIL_SCAN},
             )
             raise VirusScanResultException(400, LambdaError.VirusScanTokenRequest)
 
@@ -102,7 +104,7 @@ class VirusScanResultService:
         except HTTPError as e:
             logger.error(
                 f"{LambdaError.VirusScanNoToken.to_str()}: {str(e)}",
-                {"Result": "Virus scan result failed"},
+                {"Result": FAIL_SCAN},
             )
             raise VirusScanResultException(500, LambdaError.VirusScanTokenRequest)
 
