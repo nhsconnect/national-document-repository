@@ -21,6 +21,7 @@ export enum DOCUMENT_UPLOAD_STATE {
     SUCCEEDED = 'SUCCEEDED',
     FAILED = 'FAILED',
     UNAUTHORISED = 'UNAUTHORISED',
+    INFECTED = 'INFECTED',
 }
 
 export type UploadDocument = {

@@ -17,6 +17,7 @@ type UploadDocumentsToS3Args = {
     setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
     documents: UploadDocument[];
     data: UploadResult;
+    baseUrl: string;
 };
 
 type gatewayResponse = {
@@ -73,11 +74,11 @@ const uploadDocument = async ({
         created: new Date(Date.now()).toISOString(),
     };
 
-    const gatewayUrl = baseUrl + endpoints.DOCUMENT_UPLOAD;
+    const uploadGatewayUrl = baseUrl + endpoints.DOCUMENT_UPLOAD;
 
     try {
         const { data }: gatewayResponse = await axios.post(
-            gatewayUrl,
+            uploadGatewayUrl,
             JSON.stringify(requestBody),
             {
                 headers: {
@@ -85,7 +86,7 @@ const uploadDocument = async ({
                 },
             },
         );
-        await uploadDocumentsToS3({ setDocumentState, documents, data });
+        await uploadDocumentsToS3({ setDocumentState, documents, data, baseUrl });
     } catch (e) {
         const error = e as AxiosError;
         if (error.response?.status === 403) {
@@ -106,7 +107,10 @@ const uploadDocumentsToS3 = async ({
     setDocumentState,
     documents,
     data,
+    baseUrl,
 }: UploadDocumentsToS3Args) => {
+    const virusScanGatewayUrl = baseUrl + endpoints.VIRUS_SCAN;
+
     for (const document of documents) {
         try {
             const docGatewayResponse: S3Upload = data[document.file.name];
@@ -129,9 +133,22 @@ const uploadDocumentsToS3 = async ({
                     }
                 },
             });
-
-            if (s3Response.status === 204)
+            const requestBody = {
+                documentReference: docGatewayResponse.fields.key,
+            };
+            if (s3Response.status === 204) {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+                try {
+                    await axios.post(virusScanGatewayUrl, requestBody);
+                } catch (e) {
+                    const error = e as AxiosError;
+                    if (error.response?.status === 400) {
+                        setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.INFECTED);
+                    } else {
+                        setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
+                    }
+                }
+            }
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {

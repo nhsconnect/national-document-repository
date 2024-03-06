@@ -13,4 +13,5 @@ export enum endpoints {
     FEEDBACK = '/Feedback',
 
     FEATURE_FLAGS = '/FeatureFlags',
+    VIRUS_SCAN = '/VirusScan',
 }

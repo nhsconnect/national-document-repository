@@ -19,6 +19,8 @@ function LloydGeorgeUploadStage({ documents, setStage }: Props) {
             return `${Math.round(document.progress)}% uploaded...`;
         else if (document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload successful';
         else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
+        else if (document.state === DOCUMENT_UPLOAD_STATE.INFECTED)
+            return 'File has failed a virus scan';
     };
     return (
         <>

@@ -5,7 +5,7 @@ export type FeatureFlags = {
 };
 
 export const defaultFeatureFlags = {
-    uploadLloydGeorgeWorkflowEnabled: false,
-    uploadLambdaEnabled: false,
+    uploadLloydGeorgeWorkflowEnabled: true,
+    uploadLambdaEnabled: true,
     uploadArfWorkflowEnabled: false,
 };
