@@ -10,7 +10,7 @@ from tests.unit.conftest import (
     TEST_FILE_KEY,
     TEST_NHS_NUMBER,
 )
-from utils.exceptions import UploadConfirmResultException
+from utils.lambda_exceptions import UploadConfirmResultException
 
 MOCK_LG_DOCUMENTS = {"LG": [TEST_FILE_KEY, TEST_FILE_KEY]}
 MOCK_LG_DOCUMENT_REFERENCES = [TEST_FILE_KEY, TEST_FILE_KEY]
