@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import LloydGeorgeUploadingStage from '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
 import { UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import LloydGeorgeFileInputStage from '../../components/blocks/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage';
-import LloydGeorgeUploadComplete from '../../components/blocks/lloydGeorgeUploadComplete/LloydGeorgeUploadComplete';
+import LloydGeorgeUploadCompleteStage from '../../components/blocks/lloydGeorgeUploadCompleteStage/LloydGeorgeUploadCompleteStage';
+import LloydGeorgeRetryUploadStage from '../../components/blocks/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
     UPLOAD = 1,
     COMPLETE = 2,
+    RETRY = 3,
 }
 
 function LloydGeorgeUploadPage() {
@@ -24,9 +26,17 @@ function LloydGeorgeUploadPage() {
                 />
             );
         case LG_UPLOAD_STAGE.UPLOAD:
-            return <LloydGeorgeUploadingStage documents={documents} setStage={setStage} />;
+            return (
+                <LloydGeorgeUploadingStage
+                    documents={documents}
+                    setStage={setStage}
+                    setDocuments={setDocuments}
+                />
+            );
         case LG_UPLOAD_STAGE.COMPLETE:
-            return <LloydGeorgeUploadComplete documents={documents} />;
+            return <LloydGeorgeUploadCompleteStage documents={documents} />;
+        case LG_UPLOAD_STAGE.RETRY:
+            return <LloydGeorgeRetryUploadStage />;
         default:
             return <div />;
     }

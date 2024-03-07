@@ -1,32 +1,78 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction, useEffect } from 'react';
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
+import ErrorBox from '../../layout/errorBox/ErrorBox';
+import LinkButton from '../../generic/linkButton/LinkButton';
+import usePatient from '../../../helpers/hooks/usePatient';
+import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
+import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
+import uploadDocuments from '../../../helpers/requests/uploadDocument';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 
 type Props = {
     documents: Array<UploadDocument>;
     setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
+    setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
 };
 
-function LloydGeorgeUploadStage({ documents, setStage }: Props) {
+function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
+    const patientDetails = usePatient();
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
+    const baseUrl = useBaseAPIUrl();
+    const baseHeaders = useBaseAPIHeaders();
+
     const getUploadMessage = (document: UploadDocument) => {
         if (document.state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
         else if (document.state === DOCUMENT_UPLOAD_STATE.UPLOADING)
             return `${Math.round(document.progress)}% uploaded...`;
         else if (document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload successful';
-        else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
+        else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED && document.attempts > 1)
+            return 'Upload failed';
+        else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED && document.attempts === 1)
+            return `${Math.round(document.progress)}% uploaded...`;
+        return null;
     };
+    console.log(documents);
+    const hasFailedUploads = documents.some((d) => !!d.attempts);
+    console.log('hasfailed:', hasFailedUploads);
 
-    const hasFailedUploads = documents.some((d) => d.attempts);
+    useEffect(() => {
+        const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
+        if (hasExceededUploadAttempts) {
+            setStage(LG_UPLOAD_STAGE.RETRY);
+        }
+    });
 
-    const retryUpload = () => {};
+    const retryUpload = async (documents: Array<UploadDocument>) => {
+        try {
+            await uploadDocuments({
+                nhsNumber,
+                setDocuments,
+                documents,
+                baseUrl,
+                baseHeaders,
+            });
+        } catch (e) {}
+    };
 
     return (
         <>
+            {hasFailedUploads && (
+                <ErrorBox
+                    errorBoxSummaryId="failed-uploads"
+                    messageTitle="There is a problem with some of your files"
+                    messageBody="Some of your files failed to upload, You cannot continue until you retry uploading these files."
+                    messageLinkBody="Retry uploading all failed files"
+                    errorOnClick={() => {
+                        const failedUploads = documents.filter((d) => d.attempts === 1);
+                        retryUpload(failedUploads);
+                    }}
+                />
+            )}
             <h1>Uploading record</h1>
             <WarningCallout>
                 <WarningCallout.Label headingLevel="h2">Stay on this page</WarningCallout.Label>
@@ -53,7 +99,14 @@ function LloydGeorgeUploadStage({ documents, setStage }: Props) {
                 <Table.Body>
                     {documents.map((document) => (
                         <Table.Row key={document.id}>
-                            <Table.Cell>{document.file.name}</Table.Cell>
+                            <Table.Cell>
+                                <div>{document.file.name}</div>
+                                {hasFailedUploads && (
+                                    <strong className="nhs-warning-color">
+                                        File failed to upload
+                                    </strong>
+                                )}
+                            </Table.Cell>
                             <Table.Cell style={{ width: '140px' }}>
                                 {formatFileSize(document.file.size)}
                             </Table.Cell>
@@ -66,6 +119,17 @@ function LloydGeorgeUploadStage({ documents, setStage }: Props) {
                                 <output aria-label={`${document.file.name} upload status`}>
                                     {getUploadMessage(document)}
                                 </output>
+                                {hasFailedUploads && (
+                                    <div style={{ textAlign: 'right' }}>
+                                        <LinkButton
+                                            onClick={() => {
+                                                retryUpload([document]);
+                                            }}
+                                        >
+                                            Retry upload
+                                        </LinkButton>
+                                    </div>
+                                )}
                             </Table.Cell>
                         </Table.Row>
                     ))}

@@ -26,6 +26,7 @@ import { isMock } from '../../../helpers/utils/isLocal';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
+import LinkButton from '../../generic/linkButton/LinkButton';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -71,12 +72,15 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error)) {
-                documents.map((document) => ({
-                    ...document,
-                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                    progress: 100,
-                }));
-                setStage(LG_UPLOAD_STAGE.COMPLETE);
+                setDocuments(
+                    documents.map((document) => ({
+                        ...document,
+                        state: DOCUMENT_UPLOAD_STATE.FAILED,
+                        progress: 0,
+                        attempts: 1,
+                    })),
+                );
+                // setStage(LG_UPLOAD_STAGE.COMPLETE);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
             }
@@ -284,7 +288,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                     Upload
                 </Button>
                 {!!documents.length && (
-                    <button
+                    <LinkButton
                         className={'lloydgeorge_link'}
                         type="button"
                         onClick={() => {
@@ -292,7 +296,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                         }}
                     >
                         Remove all
-                    </button>
+                    </LinkButton>
                 )}
             </div>
         </div>

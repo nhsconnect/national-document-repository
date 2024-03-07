@@ -34,7 +34,7 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
     if (renderTimeout) {
         return (
             <span>
-                <p data-testid="llyoyd-george-record-error-message">
+                <p data-testid="lloyd-george-record-error-message">
                     {'The Lloyd George document is too large to view in a browser, '}
                     <Link
                         to="#"

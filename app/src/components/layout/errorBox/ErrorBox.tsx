@@ -10,6 +10,7 @@ type Props = {
     errorInputLink?: string;
     errorBody?: string;
     dataTestId?: string;
+    errorOnClick?: () => void;
     errorMessageList?: UploadFilesErrors[];
 };
 
@@ -22,9 +23,12 @@ const ErrorBox = ({
     messageLinkBody,
     errorBody,
     errorMessageList,
+    errorOnClick,
     dataTestId,
 }: Props) => {
     const hasInputLink = errorInputLink && messageLinkBody;
+    const hasOnClick = errorOnClick && messageLinkBody;
+
     return (
         <div id="error-box" data-testid={dataTestId}>
             <ErrorSummary aria-labelledby={errorBoxSummaryId} role="alert" tabIndex={-1}>
@@ -41,12 +45,24 @@ const ErrorBox = ({
                                 {errorBody}
                             </ErrorSummary.Item>
                         )}
+
+                        {messageBody && <p>{messageBody}</p>}
                         {hasInputLink && (
                             <ErrorSummary.Item href={errorInputLink}>
                                 <p>{messageLinkBody}</p>
                             </ErrorSummary.Item>
                         )}
-                        {messageBody && <p>{messageBody}</p>}
+                        {hasOnClick && (
+                            <ErrorSummary.Item
+                                href={'#'}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    errorOnClick();
+                                }}
+                            >
+                                <p>{messageLinkBody}</p>
+                            </ErrorSummary.Item>
+                        )}
                         {errorMessageList?.map((errorItem) => {
                             return (
                                 <div key={errorItem.file?.id}>

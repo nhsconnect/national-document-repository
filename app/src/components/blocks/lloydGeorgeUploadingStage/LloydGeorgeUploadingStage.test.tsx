@@ -5,19 +5,35 @@ import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
-import { buildTextFile } from '../../../helpers/test/testBuilders';
+import { buildPatientDetails, buildTextFile } from '../../../helpers/test/testBuilders';
 import LloydGeorgeUploadStage from './LloydGeorgeUploadingStage';
+import usePatient from '../../../helpers/hooks/usePatient';
+const mockSetDocuments = jest.fn();
 const mockSetStage = jest.fn();
+jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+const mockedUsePatient = usePatient as jest.Mock;
+const mockPatient = buildPatientDetails();
 describe('<LloydGeorgeUploadingStage />', () => {
+    beforeEach(() => {
+        process.env.REACT_APP_ENVIRONMENT = 'jest';
+        mockedUsePatient.mockReturnValue(mockPatient);
+    });
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
     describe('with NHS number', () => {
         const triggerUploadStateChange = (
             document: UploadDocument,
             state: DOCUMENT_UPLOAD_STATE,
             progress: number,
+            attempts: number = 0,
         ) => {
             act(() => {
                 document.state = state;
                 document.progress = progress;
+                document.attempts = attempts;
             });
         };
 
@@ -30,7 +46,13 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                 attempts: 0,
             };
-            render(<LloydGeorgeUploadStage documents={[documentOne]} setStage={mockSetStage} />);
+            render(
+                <LloydGeorgeUploadStage
+                    documents={[documentOne]}
+                    setDocuments={mockSetDocuments}
+                    setStage={mockSetStage}
+                />,
+            );
 
             triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.UPLOADING, 0);
 
@@ -72,6 +94,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             const { rerender } = render(
                 <LloydGeorgeUploadStage
                     documents={[documentOne, documentTwo, documentThree]}
+                    setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
@@ -91,6 +114,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             rerender(
                 <LloydGeorgeUploadStage
                     documents={[documentOne, documentTwo, documentThree]}
+                    setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
@@ -101,6 +125,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             rerender(
                 <LloydGeorgeUploadStage
                     documents={[documentOne, documentTwo, documentThree]}
+                    setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
@@ -111,6 +136,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             rerender(
                 <LloydGeorgeUploadStage
                     documents={[documentOne, documentTwo, documentThree]}
+                    setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
@@ -121,16 +147,20 @@ describe('<LloydGeorgeUploadingStage />', () => {
             rerender(
                 <LloydGeorgeUploadStage
                     documents={[documentOne, documentTwo, documentThree]}
+                    setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
             expect(getProgressBarValue(documentTwo)).toEqual(100);
             expect(getProgressText(documentTwo)).toContain('Upload successful');
 
-            triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.FAILED, 0);
+            //TODO: ADD CASE FOR RETRY UPLOAD
+
+            triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.FAILED, 0, 2);
             rerender(
                 <LloydGeorgeUploadStage
                     documents={[documentOne, documentTwo, documentThree]}
+                    setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
