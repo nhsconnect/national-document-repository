@@ -24,7 +24,7 @@ function LloydGeorgeUploadPage() {
                 />
             );
         case LG_UPLOAD_STAGE.UPLOAD:
-            return <LloydGeorgeUploadingStage documents={documents} setStage={setStage} />;
+            return <LloydGeorgeUploadingStage documents={documents} />;
         case LG_UPLOAD_STAGE.COMPLETE:
             return <LloydGeorgeUploadComplete documents={documents} />;
         default:
