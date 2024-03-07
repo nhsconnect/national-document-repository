@@ -300,3 +300,16 @@ def test_get_parameters_for_pds_api_request(virus_scanner_service):
         virus_scanner_service.base_url
         == ssm_parameters_expected[SSMParameter.VIRUS_API_BASE_URL.value]
     )
+
+
+def test_scan_file_when_parameters_are_set(mocker, virus_scanner_service):
+    virus_scanner_service.get_ssm_parameters_for_request_access_token = (
+        mocker.MagicMock()
+    )
+    virus_scanner_service.request_virus_scan = mocker.MagicMock()
+    virus_scanner_service.base_url = "test.endpoint"
+
+    virus_scanner_service.scan_file("test_ref")
+
+    virus_scanner_service.get_ssm_parameters_for_request_access_token.assert_not_called()
+    virus_scanner_service.request_virus_scan.assert_called_once()

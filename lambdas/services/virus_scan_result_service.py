@@ -28,7 +28,8 @@ class VirusScanService:
 
     def scan_file(self, file_ref):
         try:
-            self.get_ssm_parameters_for_request_access_token()
+            if not self.base_url:
+                self.get_ssm_parameters_for_request_access_token()
             self.request_virus_scan(file_ref, retry_on_expired=True)
         except ClientError as e:
             logger.error(
