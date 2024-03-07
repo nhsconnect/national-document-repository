@@ -4,7 +4,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
 from requests import Response
-from services.virus_scan_result_service import VirusScanResultService
+from services.virus_scan_result_service import VirusScanService
 from tests.unit.helpers.data.virus_scanner.scan_results import (
     BAD_REQUEST_RESPONSE,
     CLEAN_FILE_RESPONSE,
@@ -16,7 +16,7 @@ from utils.lambda_exceptions import LambdaException, VirusScanResultException
 
 @pytest.fixture
 def virus_scanner_service(set_env, mocker):
-    service = VirusScanResultService()
+    service = VirusScanService()
     mocker.patch.object(service, "ssm_service")
     yield service
 
@@ -29,7 +29,7 @@ def test_prepare_request_raise_error(virus_scanner_service, mocker):
         ClientError({"Error": {"Code": "500", "Message": "mocked error"}}, "test")
     )
     with pytest.raises(VirusScanResultException):
-        virus_scanner_service.prepare_request("test_file_ref")
+        virus_scanner_service.scan_file("test_file_ref")
 
 
 def test_virus_scan_request_successful(mocker, virus_scanner_service):
@@ -50,7 +50,7 @@ def test_virus_scan_request_successful(mocker, virus_scanner_service):
     response._content = json.dumps(CLEAN_FILE_RESPONSE).encode("utf-8")
     mock_post = mocker.patch("requests.post", return_value=response)
     try:
-        virus_scanner_service.virus_scan_request(
+        virus_scanner_service.request_virus_scan(
             "test_file_ref", retry_on_expired=False
         )
     except LambdaException:
@@ -87,7 +87,7 @@ def test_virus_scan_request_invalid_token(mocker, virus_scanner_service):
     )
     virus_scanner_service.get_new_access_token = mocker.MagicMock()
     try:
-        virus_scanner_service.virus_scan_request("test_file_ref", retry_on_expired=True)
+        virus_scanner_service.request_virus_scan("test_file_ref", retry_on_expired=True)
     except LambdaException:
         assert False, "test"
 
@@ -118,7 +118,7 @@ def test_virus_scan_request_infected_file(mocker, virus_scanner_service):
     response._content = json.dumps(INFECTED_FILE_RESPONSE).encode("utf-8")
     mock_post = mocker.patch("requests.post", return_value=response)
     with pytest.raises(VirusScanResultException):
-        virus_scanner_service.virus_scan_request(
+        virus_scanner_service.request_virus_scan(
             "test_file_ref", retry_on_expired=False
         )
 
@@ -148,7 +148,7 @@ def test_virus_scan_request_bad_request(mocker, virus_scanner_service):
     response._content = json.dumps(BAD_REQUEST_RESPONSE).encode("utf-8")
     mock_post = mocker.patch("requests.post", return_value=response)
     with pytest.raises(VirusScanResultException):
-        virus_scanner_service.virus_scan_request(
+        virus_scanner_service.request_virus_scan(
             "test_file_ref", retry_on_expired=False
         )
 
@@ -196,6 +196,40 @@ def test_get_new_access_token_return_200(mocker, virus_scanner_service):
 def test_get_new_access_token_return_400(mocker, virus_scanner_service):
     response = Response()
     response.status_code = 400
+    virus_scanner_service.base_url = "test.endpoint"
+    virus_scanner_service.username = "test_username"
+    virus_scanner_service.password = "test_password"
+    mock_post = mocker.patch("requests.post", return_value=response)
+
+    excepted_token_url = virus_scanner_service.base_url + "/api/Token"
+    excepted_json_data_request = {
+        "username": virus_scanner_service.username,
+        "password": virus_scanner_service.password,
+    }
+
+    virus_scanner_service.update_ssm_access_token = mocker.MagicMock()
+
+    assert virus_scanner_service.access_token == ""
+    with pytest.raises(VirusScanResultException):
+        virus_scanner_service.get_new_access_token()
+
+    mock_post.assert_called_with(
+        url=excepted_token_url,
+        headers={"Content-type": "application/json"},
+        data=json.dumps(excepted_json_data_request),
+    )
+    assert virus_scanner_service.access_token == ""
+    virus_scanner_service.update_ssm_access_token.assert_not_called()
+
+
+def test_get_new_access_token_return_200_without_access_token(
+    mocker, virus_scanner_service
+):
+    response = Response()
+    response.status_code = 200
+    response._content = json.dumps({"test": "test_missing_access_token"}).encode(
+        "utf-8"
+    )
     virus_scanner_service.base_url = "test.endpoint"
     virus_scanner_service.username = "test_username"
     virus_scanner_service.password = "test_password"

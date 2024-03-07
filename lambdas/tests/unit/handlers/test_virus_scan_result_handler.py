@@ -11,9 +11,7 @@ VALID_EVENT = {"documentReference": "FILE_REF_TEST"}
 
 @pytest.fixture
 def mock_virus_scan_service(mocker):
-    mocked_class = mocker.patch(
-        "handlers.virus_scan_result_handler.VirusScanResultService"
-    )
+    mocked_class = mocker.patch("handlers.virus_scan_result_handler.VirusScanService")
     mocked_service = mocked_class.return_value
     yield mocked_service
 
@@ -28,7 +26,7 @@ def test_lambda_handler_respond_with_200(context, set_env, mock_virus_scan_servi
 
     assert actual == expected
 
-    mock_virus_scan_service.prepare_request.assert_called_once()
+    mock_virus_scan_service.scan_file.assert_called_once()
 
 
 def test_lambda_handler_respond_with_400_when_file_unclean(
@@ -36,7 +34,7 @@ def test_lambda_handler_respond_with_400_when_file_unclean(
 ):
     valid_event = {"httpMethod": "POST", "body": json.dumps(VALID_EVENT)}
 
-    mock_virus_scan_service.prepare_request.side_effect = VirusScanResultException(
+    mock_virus_scan_service.scan_file.side_effect = VirusScanResultException(
         400, LambdaError.MockError
     )
     actual = lambda_handler(valid_event, context)
@@ -47,7 +45,7 @@ def test_lambda_handler_respond_with_400_when_file_unclean(
 
     assert actual == expected
 
-    mock_virus_scan_service.prepare_request.assert_called_once()
+    mock_virus_scan_service.scan_file.assert_called_once()
 
 
 def test_lambda_handler_respond_with_400_when_no_body(
@@ -71,7 +69,7 @@ def test_lambda_handler_respond_with_400_when_no_body(
 
     assert actual == expected
 
-    mock_virus_scan_service.prepare_request.assert_not_called()
+    mock_virus_scan_service.scan_file.assert_not_called()
 
 
 def test_lambda_handler_respond_with_400_when_invalid_body(
@@ -93,4 +91,4 @@ def test_lambda_handler_respond_with_400_when_invalid_body(
 
     assert actual == expected
 
-    mock_virus_scan_service.prepare_request.assert_not_called()
+    mock_virus_scan_service.scan_file.assert_not_called()

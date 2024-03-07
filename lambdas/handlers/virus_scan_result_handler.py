@@ -3,7 +3,7 @@ from json import JSONDecodeError
 
 from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
-from services.virus_scan_result_service import VirusScanResultService
+from services.virus_scan_result_service import VirusScanService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -38,8 +38,8 @@ def lambda_handler(event, context):
     except (JSONDecodeError, KeyError):
         raise VirusScanResultException(400, LambdaError.VirusScanNoBody)
 
-    virus_scan_result_service = VirusScanResultService()
-    virus_scan_result_service.prepare_request(document_reference)
+    virus_scan_service = VirusScanService()
+    virus_scan_service.scan_file(document_reference)
 
     return ApiGatewayResponse(
         200, "Virus Scan was successful", "POST"

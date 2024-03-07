@@ -13,9 +13,11 @@ from utils.lambda_exceptions import VirusScanResultException
 logger = LoggingService(__name__)
 
 FAIL_SCAN = "Virus scan result failed"
+SCAN_ENDPOINT = "/api/Scan/Existing"
+TOKEN_ENDPOINT = "/api/Token"
 
 
-class VirusScanResultService:
+class VirusScanService:
     def __init__(self):
         self.staging_s3_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
         self.ssm_service = SSMService()
@@ -24,10 +26,10 @@ class VirusScanResultService:
         self.base_url = ""
         self.access_token = ""
 
-    def prepare_request(self, file_ref):
+    def scan_file(self, file_ref):
         try:
             self.get_ssm_parameters_for_request_access_token()
-            self.virus_scan_request(file_ref, retry_on_expired=True)
+            self.request_virus_scan(file_ref, retry_on_expired=True)
         except ClientError as e:
             logger.error(
                 f"{LambdaError.VirusScanAWSFailure.to_str()}: {str(e)}",
@@ -35,13 +37,13 @@ class VirusScanResultService:
             )
             raise VirusScanResultException(500, LambdaError.VirusScanAWSFailure)
 
-    def virus_scan_request(self, file_ref: str, retry_on_expired: bool):
+    def request_virus_scan(self, file_ref: str, retry_on_expired: bool):
         try:
             headers = {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer " + self.access_token,
             }
-            scan_url = self.base_url + "/api/Scan/Existing"
+            scan_url = self.base_url + SCAN_ENDPOINT
             json_data_request = {
                 "container": self.staging_s3_bucket_name,
                 "objectPath": file_ref,
@@ -53,7 +55,7 @@ class VirusScanResultService:
             )
             if response.status_code == 401 and retry_on_expired:
                 self.get_new_access_token()
-                return self.virus_scan_request(file_ref, retry_on_expired=False)
+                return self.request_virus_scan(file_ref, retry_on_expired=False)
             response.raise_for_status()
 
             parsed = response.json()
@@ -86,7 +88,7 @@ class VirusScanResultService:
             json_login = json.dumps(
                 {"username": self.username, "password": self.password}
             )
-            token_url = self.base_url + "/api/Token"
+            token_url = self.base_url + TOKEN_ENDPOINT
 
             response = requests.post(
                 url=token_url,
@@ -101,7 +103,7 @@ class VirusScanResultService:
             self.update_ssm_access_token(new_access_token)
             logger.info(f"new access token: {new_access_token}")
             self.access_token = new_access_token
-        except HTTPError as e:
+        except (HTTPError, KeyError, TypeError) as e:
             logger.error(
                 f"{LambdaError.VirusScanNoToken.to_str()}: {str(e)}",
                 {"Result": FAIL_SCAN},
