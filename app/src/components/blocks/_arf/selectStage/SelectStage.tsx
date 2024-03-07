@@ -51,7 +51,9 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                 baseUrl,
                 baseHeaders,
             });
-        } catch (e) {}
+        } catch (e) {
+            setStage(UPLOAD_STAGE.Stopped);
+        }
         setStage(UPLOAD_STAGE.Complete);
     };
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {

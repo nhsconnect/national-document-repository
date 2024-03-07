@@ -7,6 +7,7 @@ export enum UPLOAD_STAGE {
     Selecting = 0,
     Uploading = 1,
     Complete = 2,
+    Stopped = 3,
 }
 
 export enum DOCUMENT_TYPE {
@@ -22,6 +23,7 @@ export enum DOCUMENT_UPLOAD_STATE {
     FAILED = 'FAILED',
     UNAUTHORISED = 'UNAUTHORISED',
     INFECTED = 'INFECTED',
+    SCANNING = 'SCANNING',
 }
 
 export type UploadDocument = {

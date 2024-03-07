@@ -17,6 +17,7 @@ function UploadingStage({ documents }: Props) {
         else if (type === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Uploaded';
         else if (type === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
         else if (type === DOCUMENT_UPLOAD_STATE.INFECTED) return 'File has failed a virus scan';
+        else if (type === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
     };
 
     return (
