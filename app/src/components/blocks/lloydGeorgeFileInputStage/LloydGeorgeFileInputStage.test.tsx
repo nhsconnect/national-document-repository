@@ -8,6 +8,7 @@ import LloydGeorgeFileInputStage, { Props } from './LloydGeorgeFileInputStage';
 import { UploadDocument } from '../../../types/pages/UploadDocumentsPage/types';
 import { useState } from 'react';
 import axios from 'axios';
+import { MomentInput } from 'moment';
 import { routes } from '../../../types/generic/routes';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
@@ -25,36 +26,45 @@ const setStageMock = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 
-const lgDocumentOne = buildLgFile(1, 2, 'Joe Blogs');
-const lgDocumentTwo = buildLgFile(2, 2, 'Joe Blogs');
+const lgDocumentOne = buildLgFile(1, 2, 'John Doe');
+const lgDocumentTwo = buildLgFile(2, 2, 'John Doe');
 const lgFiles = [lgDocumentOne, lgDocumentTwo];
 
 const lgDocumentThreeNamesOne = buildLgFile(1, 2, 'Dom Jacob Alexander');
 const lgDocumentThreeNamesTwo = buildLgFile(2, 2, 'Dom Jacob Alexander');
 const lgFilesThreeNames = [lgDocumentThreeNamesOne, lgDocumentThreeNamesTwo];
+const mockPatientThreeWordsName = buildPatientDetails({
+    givenName: ['Dom', 'Jacob'],
+    familyName: 'Alexander',
+});
 
-const lgDocumentNonStandardCharacterNamesOne = buildLgFile(
-    1,
-    2,
-    'DomžĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖ JacobŗŘřŚśŜŝŞşŠšŢţŤťŦŧ AŨũŪūŬŭŮůŰűŲer',
-);
-const lgDocumentNonStandardCharacterNamesTwo = buildLgFile(
-    2,
-    2,
-    'DomžĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖ JacobŗŘřŚśŜŝŞşŠšŢţŤťŦŧ AŨũŪūŬŭŮůŰűŲer',
-);
+const nonStandardCharName =
+    'DomžĬĭĮįİıĲĳĴĵĶķĸĹĺĻļĽľĿŀŁłŃńŅņŇňŉŊŋŌōŎŏŐőŒœŔŕŖ JacobŗŘřŚśŜŝŞşŠšŢţŤťŦŧ AŨũŪūŬŭŮůŰűŲer';
+const lgDocumentNonStandardCharacterNamesOne = buildLgFile(1, 2, nonStandardCharName);
+const lgDocumentNonStandardCharacterNamesTwo = buildLgFile(2, 2, nonStandardCharName);
 const lgFilesNonStandardCharacterNames = [
     lgDocumentNonStandardCharacterNamesOne,
     lgDocumentNonStandardCharacterNamesTwo,
 ];
+const mockPatientNonStandardCharName = buildPatientDetails({
+    givenName: nonStandardCharName.split(' ').slice(0, 2),
+    familyName: nonStandardCharName.split(' ')[2],
+});
+
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
 jest.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+    return (arg: MomentInput) => {
+        if (!arg) {
+            arg = '2020-01-01T00:00:00.000Z';
+        }
+        return jest.requireActual('moment')(arg);
+    };
 });
 
 describe('<LloydGeorgeFileInputStage />', () => {
@@ -84,13 +94,17 @@ describe('<LloydGeorgeFileInputStage />', () => {
         });
 
         it('can upload documents to LG forms with multiple names using button', async () => {
+            mockedUsePatient.mockReturnValue(mockPatientThreeWordsName);
+
             renderApp();
 
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
+                screen.getByText(
+                    'NHS number: ' + formatNhsNumber(mockPatientThreeWordsName.nhsNumber),
+                ),
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
@@ -107,13 +121,17 @@ describe('<LloydGeorgeFileInputStage />', () => {
         });
 
         it('can upload documents to LG forms with non standard characters using button', async () => {
+            mockedUsePatient.mockReturnValue(mockPatientNonStandardCharName);
+
             renderApp();
 
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
             ).toBeInTheDocument();
             expect(
-                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
+                screen.getByText(
+                    'NHS number: ' + formatNhsNumber(mockPatientNonStandardCharName.nhsNumber),
+                ),
             ).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
@@ -125,7 +143,6 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     lgFilesNonStandardCharacterNames,
                 );
             });
-
             expect(
                 await screen.findAllByText(lgDocumentNonStandardCharacterNamesOne.name),
             ).toHaveLength(1);
@@ -435,9 +452,6 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 ]);
             });
 
-            expect(screen.getAllByText(joeBloggsFile.name)).toHaveLength(1);
-            expect(screen.getAllByText(johnSmithFile.name)).toHaveLength(2);
-
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
@@ -492,6 +506,150 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+        });
+
+        describe('Validation with patient details from PDS', () => {
+            const setDocsAndClickUploadButton = (documents: File[]) => {
+                return act(async () => {
+                    userEvent.upload(screen.getByTestId(`button-input`), documents);
+                    userEvent.click(screen.getByText('Upload'));
+                });
+            };
+
+            it('does not upload LG if patient name does not match', async () => {
+                mockedUsePatient.mockReturnValue(
+                    buildPatientDetails({
+                        givenName: ['Janet', 'Doe'],
+                    }),
+                );
+                const documentsToUpload = [lgDocumentOne, lgDocumentTwo];
+
+                renderApp();
+
+                await setDocsAndClickUploadButton(documentsToUpload);
+
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.patientNameError.message),
+                ).toHaveLength(2);
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.patientNameError.errorBox),
+                ).toHaveLength(2);
+
+                expect(mockedAxios.post).not.toBeCalled();
+            });
+
+            it('does not upload LG if patient date of birth does not match', async () => {
+                mockedUsePatient.mockReturnValue(
+                    buildPatientDetails({
+                        birthDate: '1993-04-05',
+                    }),
+                );
+                const documentsToUpload = [lgDocumentOne, lgDocumentTwo];
+
+                renderApp();
+
+                await setDocsAndClickUploadButton(documentsToUpload);
+
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.dateOfBirthError.message),
+                ).toHaveLength(2);
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.dateOfBirthError.errorBox),
+                ).toHaveLength(2);
+
+                expect(mockedAxios.post).not.toBeCalled();
+            });
+
+            it('does not upload LG if patient nhs number does not match', async () => {
+                mockedUsePatient.mockReturnValue(
+                    buildPatientDetails({
+                        nhsNumber: '2345678901',
+                    }),
+                );
+                const documentsToUpload = [lgDocumentOne, lgDocumentTwo];
+
+                renderApp();
+
+                await setDocsAndClickUploadButton(documentsToUpload);
+
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.nhsNumberError.message),
+                ).toHaveLength(2);
+                expect(
+                    await screen.findAllByText(fileUploadErrorMessages.nhsNumberError.errorBox),
+                ).toHaveLength(2);
+
+                expect(mockedAxios.post).not.toBeCalled();
+            });
+
+            it('can display multiple errors related to patient details check', async () => {
+                mockedUsePatient.mockReturnValue(
+                    buildPatientDetails({
+                        givenName: ['Jack', 'Bloggs'],
+                        birthDate: '1993-04-05',
+                        nhsNumber: '2345678901',
+                    }),
+                );
+                const documentsToUpload = [lgDocumentOne, lgDocumentTwo];
+
+                renderApp();
+
+                await setDocsAndClickUploadButton(documentsToUpload);
+
+                const expectedErrors = [
+                    fileUploadErrorMessages.nhsNumberError,
+                    fileUploadErrorMessages.dateOfBirthError,
+                    fileUploadErrorMessages.patientNameError,
+                ];
+
+                expectedErrors.forEach((errorType) => {
+                    expect(screen.getAllByText(errorType.message)).toHaveLength(2);
+                    expect(screen.getAllByText(errorType.errorBox)).toHaveLength(2);
+                });
+
+                expect(mockedAxios.post).not.toBeCalled();
+            });
+
+            it('Is case-insensitive when comparing patient names', async () => {
+                mockedUsePatient.mockReturnValue(
+                    buildPatientDetails({
+                        givenName: ['JOHN', 'Blogg'],
+                        familyName: 'SMITH',
+                    }),
+                );
+                const documentsToUpload = [
+                    buildLgFile(1, 2, 'John Blogg Smith'),
+                    buildLgFile(2, 2, 'John Blogg Smith'),
+                ];
+
+                renderApp();
+
+                await setDocsAndClickUploadButton(documentsToUpload);
+
+                expect(
+                    screen.queryByText(fileUploadErrorMessages.patientNameError.message),
+                ).not.toBeInTheDocument();
+
+                expect(mockedAxios.post).toHaveBeenCalled();
+            });
+
+            it('Handles accent chars NFC NFD differences when comparing patient names', async () => {
+                mockedUsePatient.mockReturnValue(mockPatientNonStandardCharName);
+                const documentsToUpload = [
+                    buildLgFile(1, 2, nonStandardCharName.normalize('NFD')),
+                    buildLgFile(2, 2, nonStandardCharName.normalize('NFD')),
+                ];
+
+                renderApp();
+
+                await setDocsAndClickUploadButton(documentsToUpload);
+
+                expect(
+                    screen.queryByText(fileUploadErrorMessages.patientNameError.message),
+                ).not.toBeInTheDocument();
+
+                expect(mockedAxios.post).toHaveBeenCalled();
+            });
         });
 
         it("does allow the user to add the same file again if they remove for '%s' input", async () => {

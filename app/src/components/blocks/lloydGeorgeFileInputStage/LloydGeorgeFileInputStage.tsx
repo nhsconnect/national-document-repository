@@ -50,12 +50,8 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
     const baseHeaders = useBaseAPIHeaders();
     const uploadDocuments = async () => {
         setShowNoFilesMessage(!hasFileInput);
-        if (!hasFileInput) {
-            window.scrollTo(0, 0);
-            return;
-        }
-        setUploadFilesErrors(uploadDocumentValidation(documents));
-        if (uploadFilesErrors.length) {
+        setUploadFilesErrors(uploadDocumentValidation(documents, patientDetails));
+        if (!hasFileInput || uploadFilesErrors.length > 0) {
             window.scrollTo(0, 0);
             return;
         }
@@ -98,7 +94,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
         setShowNoFilesMessage(false);
-        setUploadFilesErrors(uploadDocumentValidation(updatedDocList));
+        setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
     };
     const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -129,11 +125,11 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
         }
         setDocuments(updatedDocList);
-        setUploadFilesErrors(uploadDocumentValidation(updatedDocList));
+        setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
     };
     const fileErrorMessage = (document: UploadDocument) => {
         const errorFile = uploadFilesErrors.find(
-            (errorFile) => document.file === errorFile.file?.file,
+            (errorFile) => document.file.name === errorFile.filename,
         );
         if (errorFile) {
             return <div className="lloydgeorge_file_upload_error">{errorFile.error.message}</div>;
