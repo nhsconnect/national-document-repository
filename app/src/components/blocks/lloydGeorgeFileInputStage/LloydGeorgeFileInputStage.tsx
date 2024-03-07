@@ -71,12 +71,14 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error)) {
-                documents.map((document) => ({
-                    ...document,
-                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                    progress: 100,
-                }));
-                setStage(LG_UPLOAD_STAGE.COMPLETE);
+                setDocuments(
+                    documents.map((document) => ({
+                        ...document,
+                        state: DOCUMENT_UPLOAD_STATE.INFECTED,
+                        progress: 100,
+                    })),
+                );
+                setStage(LG_UPLOAD_STAGE.STOPPED);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
             }

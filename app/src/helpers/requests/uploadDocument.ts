@@ -138,28 +138,27 @@ const uploadDocumentsToS3 = async ({
             };
             if (s3Response.status === 204) {
                 try {
-                    setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SCANNING);
+                    setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SCANNING, undefined);
                     await axios.post(virusScanGatewayUrl, requestBody);
                 } catch (e) {
                     const error = e as AxiosError;
                     if (error.response?.status === 400) {
                         setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.INFECTED);
-                    } else {
-                        setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
                     }
+                    throw e;
                 }
             }
-            setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+            setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED, 100);
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
+            } else if (document.state === DOCUMENT_UPLOAD_STATE.INFECTED) {
+                throw e;
             } else {
                 setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
+                throw e;
             }
-        }
-        if (document.state === DOCUMENT_UPLOAD_STATE.INFECTED) {
-            throw new Error('Files upload stopped due to infected file');
         }
     }
 };

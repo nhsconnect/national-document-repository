@@ -7,7 +7,6 @@ export enum UPLOAD_STAGE {
     Selecting = 0,
     Uploading = 1,
     Complete = 2,
-    Stopped = 3,
 }
 
 export enum DOCUMENT_TYPE {

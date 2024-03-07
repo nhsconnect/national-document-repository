@@ -3,11 +3,13 @@ import LloydGeorgeUploadingStage from '../../components/blocks/lloydGeorgeUpload
 import { UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import LloydGeorgeFileInputStage from '../../components/blocks/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage';
 import LloydGeorgeUploadComplete from '../../components/blocks/lloydGeorgeUploadComplete/LloydGeorgeUploadComplete';
+import LloydGeorgeUploadFailure from '../../components/blocks/lloydGeorgeUploadFailure/LloydGeorgeUploadFailure';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
     UPLOAD = 1,
     COMPLETE = 2,
+    STOPPED = 3,
 }
 
 function LloydGeorgeUploadPage() {
@@ -27,6 +29,8 @@ function LloydGeorgeUploadPage() {
             return <LloydGeorgeUploadingStage documents={documents} setStage={setStage} />;
         case LG_UPLOAD_STAGE.COMPLETE:
             return <LloydGeorgeUploadComplete documents={documents} />;
+        case LG_UPLOAD_STAGE.STOPPED:
+            return <LloydGeorgeUploadFailure documents={documents} />;
         default:
             return <div />;
     }
