@@ -28,6 +28,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 id: '1',
                 progress: 50,
                 docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                attempts: 0,
             };
             render(<LloydGeorgeUploadStage documents={[documentOne]} setStage={mockSetStage} />);
 
@@ -49,6 +50,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 id: '1',
                 progress: 0,
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
             const documentTwo = {
                 file: buildTextFile('two', 200),
@@ -56,6 +58,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 id: '2',
                 progress: 0,
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
             const documentThree = {
                 file: buildTextFile('three', 100),
@@ -63,6 +66,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 id: '3',
                 progress: 0,
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
 
             const { rerender } = render(

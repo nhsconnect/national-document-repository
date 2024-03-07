@@ -21,6 +21,8 @@ function LloydGeorgeUploadStage({ documents, setStage }: Props) {
         else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
     };
 
+    const hasFailedUploads = documents.some((d) => d.attempts);
+
     const retryUpload = () => {};
 
     return (

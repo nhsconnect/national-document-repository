@@ -29,6 +29,7 @@ describe('<UploadDocumentsPage />', () => {
                 id: '1',
                 progress: 0,
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
             const documentTwo = {
                 file: buildTextFile('two', 200),
@@ -36,6 +37,7 @@ describe('<UploadDocumentsPage />', () => {
                 id: '2',
                 progress: 0,
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
             const documentThree = {
                 file: buildTextFile('three', 100),
@@ -43,6 +45,7 @@ describe('<UploadDocumentsPage />', () => {
                 id: '3',
                 progress: 0,
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
             render(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
 
@@ -63,6 +66,7 @@ describe('<UploadDocumentsPage />', () => {
                 id: '1',
                 progress: 0,
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
             const documentTwo = {
                 file: buildTextFile('two', 200),
@@ -70,6 +74,7 @@ describe('<UploadDocumentsPage />', () => {
                 id: '2',
                 progress: 0,
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
             const documentThree = {
                 file: buildTextFile('three', 100),
@@ -77,6 +82,7 @@ describe('<UploadDocumentsPage />', () => {
                 id: '3',
                 progress: 0,
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
 
             const { rerender } = render(

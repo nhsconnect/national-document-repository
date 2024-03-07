@@ -62,6 +62,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,
             docType: docType,
+            attempts: 0,
         }));
         const isArfDoc = docType === DOCUMENT_TYPE.ARF;
         const mergeList = isArfDoc ? lgDocuments : arfDocuments;

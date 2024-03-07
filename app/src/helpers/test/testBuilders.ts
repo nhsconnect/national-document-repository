@@ -88,6 +88,7 @@ const buildDocument = (
         progress: 0,
         id: uuidv4(),
         docType: docType ?? DOCUMENT_TYPE.ARF,
+        attempts: 0,
     };
     return mockDocument;
 };
