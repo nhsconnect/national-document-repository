@@ -53,7 +53,8 @@ function UploadingStage({ documents }: Props) {
                                     value={document.progress}
                                 ></progress>
                                 <output aria-label={`${document.file.name} upload status`}>
-                                    {document.state === DOCUMENT_UPLOAD_STATE.UPLOADING ? (
+                                    {document.state === DOCUMENT_UPLOAD_STATE.UPLOADING &&
+                                    document.progress ? (
                                         <> {Math.round(document.progress)}% uploaded... </>
                                     ) : (
                                         <>{getUploadMessage(document.state)}</>

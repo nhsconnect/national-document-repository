@@ -26,6 +26,7 @@ import { isMock } from '../../../helpers/utils/isLocal';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
+import { ErrorResponse } from '../../../types/generic/errorResponse';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -70,14 +71,16 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             setStage(LG_UPLOAD_STAGE.COMPLETE);
         } catch (e) {
             const error = e as AxiosError;
+            const errorResponse = (error.response?.data as ErrorResponse) ?? {};
             if (isMock(error)) {
                 setDocuments(
                     documents.map((document) => ({
                         ...document,
-                        state: DOCUMENT_UPLOAD_STATE.INFECTED,
+                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
                         progress: 100,
                     })),
                 );
+            } else if (errorResponse.err_code === 'VSR_5003') {
                 setStage(LG_UPLOAD_STAGE.STOPPED);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));

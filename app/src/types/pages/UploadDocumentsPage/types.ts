@@ -28,7 +28,7 @@ export enum DOCUMENT_UPLOAD_STATE {
 export type UploadDocument = {
     state: DOCUMENT_UPLOAD_STATE;
     file: File;
-    progress: number;
+    progress: number | undefined;
     id: string;
     docType: DOCUMENT_TYPE;
 };
