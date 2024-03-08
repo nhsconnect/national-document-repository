@@ -18,6 +18,7 @@ type UploadDocumentsToS3Args = {
     documents: UploadDocument[];
     data: UploadResult;
     baseUrl: string;
+    baseHeaders: AuthHeaders;
 };
 
 type gatewayResponse = {
@@ -86,7 +87,7 @@ const uploadDocument = async ({
                 },
             },
         );
-        await uploadDocumentsToS3({ setDocumentState, documents, data, baseUrl });
+        await uploadDocumentsToS3({ setDocumentState, documents, data, baseUrl, baseHeaders });
     } catch (e) {
         const error = e as AxiosError;
         if (error.response?.status === 403) {
@@ -108,6 +109,7 @@ const uploadDocumentsToS3 = async ({
     documents,
     data,
     baseUrl,
+    baseHeaders,
 }: UploadDocumentsToS3Args) => {
     const virusScanGatewayUrl = baseUrl + endpoints.VIRUS_SCAN;
 
@@ -139,7 +141,11 @@ const uploadDocumentsToS3 = async ({
             if (s3Response.status === 204) {
                 try {
                     setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SCANNING, undefined);
-                    await axios.post(virusScanGatewayUrl, requestBody);
+                    await axios.post(virusScanGatewayUrl, requestBody, {
+                        headers: {
+                            ...baseHeaders,
+                        },
+                    });
                 } catch (e) {
                     const error = e as AxiosError;
                     if (error.response?.status === 400) {
