@@ -26,7 +26,7 @@ class UploadConfirmResultService:
         arf_document_references: list[str] = documents.get("ARF")
         lg_document_references: list[str] = documents.get("LG")
 
-        if not arf_document_references or not lg_document_references:
+        if not arf_document_references and not lg_document_references:
             logger.error("Document object is missing a document type")
             raise UploadConfirmResultException(
                 400, LambdaError.UploadConfirmResultProps
