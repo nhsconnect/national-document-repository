@@ -11,6 +11,7 @@ from tests.unit.helpers.data.upload_confirm_result import (
     MOCK_ARF_DOCUMENTS,
     MOCK_INVALID_BODY_EVENT,
     MOCK_INVALID_NHS_NUMBER_EVENT,
+    MOCK_MISSING_BODY_EVENT,
     MOCK_MISSING_DOCUMENTS_EVENT,
     MOCK_MISSING_NHS_NUMBER_EVENT,
     MOCK_VALID_ARF_EVENT,
@@ -141,6 +142,13 @@ def test_processing_event_details_event_with_invalid_body_raises_exception(
 ):
     with pytest.raises(UploadConfirmResultException):
         processing_event_details(MOCK_INVALID_BODY_EVENT)
+
+
+def test_processing_event_details_missing_body_raises_exception(
+    set_env, context, mock_upload_confirm_result_service
+):
+    with pytest.raises(UploadConfirmResultException):
+        processing_event_details(MOCK_MISSING_BODY_EVENT)
 
 
 def test_processing_event_details_missing_nhs_number_raises_error():

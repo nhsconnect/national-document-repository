@@ -55,3 +55,4 @@ MOCK_MISSING_DOCUMENTS_EVENT = {
 }
 
 MOCK_INVALID_BODY_EVENT = {"httpMethod": "POST", "body": "test"}
+MOCK_MISSING_BODY_EVENT = {"httpMethod": "POST", "test": "test"}
