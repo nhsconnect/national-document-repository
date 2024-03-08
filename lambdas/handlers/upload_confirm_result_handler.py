@@ -9,9 +9,11 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
+from utils.exceptions import InvalidResourceIdException
 from utils.lambda_exceptions import UploadConfirmResultException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
+from utils.utilities import validate_id
 
 logger = LoggingService(__name__)
 
@@ -75,6 +77,7 @@ def processing_event_details(event):
             raise UploadConfirmResultException(
                 400, LambdaError.UploadConfirmResultProps
             )
+        validate_id(nhs_number)
         return nhs_number, documents
 
     except JSONDecodeError as e:
@@ -83,3 +86,10 @@ def processing_event_details(event):
             {"Result": failed_message},
         )
         raise UploadConfirmResultException(400, LambdaError.UploadConfirmResultPayload)
+
+    except InvalidResourceIdException as e:
+        logger.error(
+            f"{LambdaError.PatientIdInvalid.to_str()}: {str(e)}",
+            {"Result": failed_message},
+        )
+        raise UploadConfirmResultException(400, LambdaError.PatientIdInvalid)
