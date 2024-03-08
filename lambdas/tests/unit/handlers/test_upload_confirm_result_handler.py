@@ -6,7 +6,8 @@ from handlers.upload_confirm_result_handler import (
     lambda_handler,
     processing_event_details,
 )
-from helpers.data.upload_confirm_result import (
+from tests.unit.conftest import TEST_NHS_NUMBER
+from tests.unit.helpers.data.upload_confirm_result import (
     MOCK_ARF_DOCUMENTS,
     MOCK_INVALID_BODY_EVENT,
     MOCK_INVALID_NHS_NUMBER_EVENT,
@@ -16,7 +17,6 @@ from helpers.data.upload_confirm_result import (
     MOCK_VALID_BOTH_DOC_TYPES_EVENT,
     MOCK_VALID_LG_EVENT,
 )
-from tests.unit.conftest import TEST_NHS_NUMBER
 from utils.lambda_exceptions import UploadConfirmResultException
 from utils.lambda_response import ApiGatewayResponse
 
