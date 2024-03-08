@@ -28,7 +28,7 @@ function LloydGeorgeRetryUploadStage({ setStage }: Props) {
                 </p>
                 <p>
                     Make sure to safely store the full digital or paper Lloyd George record until
-                    it’s completely uploaded to this storage.
+                    it's completely uploaded to this storage.
                 </p>
                 <p>
                     Contact the{' '}
