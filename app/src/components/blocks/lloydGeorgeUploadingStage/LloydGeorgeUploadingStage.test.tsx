@@ -151,10 +151,19 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     setStage={mockSetStage}
                 />,
             );
-            expect(getProgressBarValue(documentTwo)).toEqual(100);
-            expect(getProgressText(documentTwo)).toContain('Upload successful');
+            expect(getProgressText(documentTwo)).toContain('0% uploaded...');
+            expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
 
-            //TODO: ADD CASE FOR RETRY UPLOAD
+            triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.FAILED, 0, 1);
+            rerender(
+                <LloydGeorgeUploadStage
+                    documents={[documentOne, documentTwo, documentThree]}
+                    setDocuments={mockSetDocuments}
+                    setStage={mockSetStage}
+                />,
+            );
+            expect(getProgressBarValue(documentOne)).toEqual(0);
+            expect(getProgressText(documentOne)).toContain('Upload failed');
 
             triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.FAILED, 0, 2);
             rerender(
