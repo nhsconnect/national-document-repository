@@ -36,13 +36,12 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
             return `${Math.round(document.progress)}% uploaded...`;
         return null;
     };
-    console.log(documents);
     const hasFailedUploads = documents.some((d) => !!d.attempts);
-    console.log('hasfailed:', hasFailedUploads);
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
         if (hasExceededUploadAttempts) {
+            setDocuments([]);
             setStage(LG_UPLOAD_STAGE.RETRY);
         }
     });

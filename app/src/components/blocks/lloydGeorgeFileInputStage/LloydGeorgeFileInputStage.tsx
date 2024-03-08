@@ -60,7 +60,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             await uploadDocument({
                 nhsNumber,
                 setDocuments,
-                documents: documents,
+                documents,
                 baseUrl,
                 baseHeaders,
             });
@@ -71,12 +71,10 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                 setDocuments(
                     documents.map((document) => ({
                         ...document,
-                        state: DOCUMENT_UPLOAD_STATE.FAILED,
-                        progress: 0,
-                        attempts: 1,
+                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
                     })),
                 );
-                // setStage(LG_UPLOAD_STAGE.COMPLETE);
+                setStage(LG_UPLOAD_STAGE.COMPLETE);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
             }

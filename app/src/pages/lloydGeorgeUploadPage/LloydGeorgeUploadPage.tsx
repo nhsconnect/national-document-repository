@@ -36,7 +36,7 @@ function LloydGeorgeUploadPage() {
         case LG_UPLOAD_STAGE.COMPLETE:
             return <LloydGeorgeUploadCompleteStage documents={documents} />;
         case LG_UPLOAD_STAGE.RETRY:
-            return <LloydGeorgeRetryUploadStage />;
+            return <LloydGeorgeRetryUploadStage setStage={setStage} />;
         default:
             return <div />;
     }
