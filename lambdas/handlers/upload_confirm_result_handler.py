@@ -53,7 +53,7 @@ def processing_event_details(event):
     failed_message = "Upload confirm result failed"
 
     try:
-        body = event.get("body")
+        body = json.loads(event.get("body", ""))
 
         if not body or not isinstance(body, dict):
             logger.error(
@@ -64,7 +64,6 @@ def processing_event_details(event):
                 400, LambdaError.UploadConfirmResultMissingBody
             )
 
-        body = json.loads(event.get("body"))
         nhs_number = body.get("patientId")
         documents = body.get("documents")
 
