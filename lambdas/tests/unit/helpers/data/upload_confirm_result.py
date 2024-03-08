@@ -54,5 +54,14 @@ MOCK_MISSING_DOCUMENTS_EVENT = {
     "body": json.dumps(MOCK_MISSING_DOCUMENTS_BODY),
 }
 
+MOCK_MISSING_DOCUMENT_TYPE_BODY = {
+    "patientId": TEST_NHS_NUMBER,
+    "documents": {"": [TEST_FILE_KEY]},
+}
+MOCK_MISSING_DOCUMENT_TYPE_EVENT = {
+    "httpMethod": "POST",
+    "body": json.dumps(MOCK_MISSING_DOCUMENT_TYPE_BODY),
+}
+
 MOCK_INVALID_BODY_EVENT = {"httpMethod": "POST", "body": "test"}
 MOCK_MISSING_BODY_EVENT = {"httpMethod": "POST", "test": "test"}

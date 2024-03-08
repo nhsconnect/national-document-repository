@@ -19,6 +19,7 @@ MOCK_ARF_DOCUMENTS = {"ARF": [TEST_FILE_KEY, TEST_FILE_KEY, TEST_FILE_KEY]}
 MOCK_ARF_DOCUMENT_REFERENCES = [TEST_FILE_KEY, TEST_FILE_KEY, TEST_FILE_KEY]
 
 MOCK_LG_AND_ARF_DOCUMENTS = {"LG": [TEST_FILE_KEY], "ARF": [TEST_FILE_KEY]}
+MOCK_NO_DOC_TYPE = {"": [TEST_FILE_KEY]}
 
 
 @pytest.fixture
@@ -54,8 +55,8 @@ def mock_copy_files_from_staging_bucket(patched_service, mocker):
 
 
 @pytest.fixture
-def mock_delete_files_from_staging_bucket(patched_service, mocker):
-    yield mocker.patch.object(patched_service, "delete_files_from_staging_bucket")
+def mock_delete_file_from_staging_bucket(patched_service, mocker):
+    yield mocker.patch.object(patched_service, "delete_file_from_staging_bucket")
 
 
 def test_process_documents_with_lg_document_references(
@@ -99,6 +100,18 @@ def test_process_documents_with_both_types_of_document_references(
     assert mock_move_files_and_update_dynamo.call_count == 2
 
 
+def test_process_documents_when_no_lg_or_arf_doc_type_in_documents_raises_exception(
+    patched_service,
+    mock_validate_number_of_documents,
+    mock_move_files_and_update_dynamo,
+):
+    with pytest.raises(UploadConfirmResultException):
+        patched_service.process_documents(MOCK_NO_DOC_TYPE)
+
+    mock_validate_number_of_documents.assert_not_called()
+    mock_move_files_and_update_dynamo.assert_not_called()
+
+
 def test_process_documents_when_dynamo_throws_error(
     patched_service, mock_update_dynamo_table
 ):
@@ -113,7 +126,7 @@ def test_process_documents_when_dynamo_throws_error(
 def test_move_files_and_update_dynamo(
     patched_service,
     mock_copy_files_from_staging_bucket,
-    mock_delete_files_from_staging_bucket,
+    mock_delete_file_from_staging_bucket,
     mock_update_dynamo_table,
 ):
     patched_service.move_files_and_update_dynamo(
@@ -123,12 +136,12 @@ def test_move_files_and_update_dynamo(
     mock_copy_files_from_staging_bucket.assert_called_once_with(
         MOCK_LG_DOCUMENT_REFERENCES, MOCK_LG_BUCKET
     )
-    mock_delete_files_from_staging_bucket.assert_called_once_with(
-        MOCK_LG_DOCUMENT_REFERENCES
+    mock_delete_file_from_staging_bucket.assert_called_with(TEST_FILE_KEY)
+    mock_update_dynamo_table.assert_called_with(
+        MOCK_LG_TABLE_NAME, TEST_FILE_KEY, MOCK_LG_BUCKET
     )
-    mock_update_dynamo_table.assert_called_once_with(
-        MOCK_LG_TABLE_NAME, MOCK_LG_DOCUMENT_REFERENCES, MOCK_LG_BUCKET
-    )
+    assert mock_delete_file_from_staging_bucket.call_count == 2
+    assert mock_update_dynamo_table.call_count == 2
 
 
 def test_copy_files_from_staging_bucket(patched_service):
@@ -139,10 +152,9 @@ def test_copy_files_from_staging_bucket(patched_service):
     assert patched_service.s3_service.copy_across_bucket.call_count == 3
 
 
-def test_delete_files_from_staging_bucket(patched_service):
-    patched_service.delete_files_from_staging_bucket(MOCK_LG_DOCUMENT_REFERENCES)
+def test_delete_file_from_staging_bucket(patched_service):
+    patched_service.delete_file_from_staging_bucket(TEST_FILE_KEY)
 
-    assert patched_service.s3_service.delete_object.call_count == 2
     patched_service.s3_service.delete_object.assert_called_with(
         MOCK_LG_STAGING_STORE_BUCKET, TEST_FILE_KEY
     )
@@ -152,10 +164,9 @@ def test_update_dynamo_table(patched_service):
     file_location = f"s3://{MOCK_ARF_BUCKET}/{TEST_NHS_NUMBER}/{TEST_FILE_KEY}"
 
     patched_service.update_dynamo_table(
-        MOCK_ARF_TABLE_NAME, MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET
+        MOCK_ARF_TABLE_NAME, TEST_FILE_KEY, MOCK_ARF_BUCKET
     )
 
-    assert patched_service.dynamo_service.update_item.call_count == 3
     patched_service.dynamo_service.update_item.assert_called_with(
         MOCK_ARF_TABLE_NAME,
         TEST_FILE_KEY,
