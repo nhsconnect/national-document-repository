@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { ButtonLink, WarningCallout } from 'nhsuk-react-components';
 import {
     DOCUMENT_UPLOAD_STATE,
@@ -6,12 +6,14 @@ import {
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
+import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 
 interface Props {
     documents: Array<UploadDocument>;
+    setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
 }
 
-function LloydGeorgeUploadFailure({ documents }: Props) {
+function LloydGeorgeUploadFailure({ documents, setStage }: Props) {
     const navigate = useNavigate();
 
     const infectedUploads = documents.filter((document) => {
@@ -54,7 +56,7 @@ function LloydGeorgeUploadFailure({ documents }: Props) {
                 role="button"
                 data-testid="retry-upload-btn"
                 onClick={() => {
-                    navigate(routes.LLOYD_GEORGE_UPLOAD);
+                    setStage(LG_UPLOAD_STAGE.SELECT);
                 }}
             >
                 Try upload again

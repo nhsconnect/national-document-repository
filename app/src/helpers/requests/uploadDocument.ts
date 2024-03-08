@@ -14,7 +14,11 @@ type UploadDocumentsArgs = {
 };
 
 type UploadDocumentsToS3Args = {
-    setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
+    setDocumentState: (
+        id: string,
+        state: DOCUMENT_UPLOAD_STATE,
+        progress?: number | undefined,
+    ) => void;
     documents: UploadDocument[];
     data: UploadResult;
     baseUrl: string;
@@ -32,7 +36,11 @@ const uploadDocument = async ({
     baseUrl,
     baseHeaders,
 }: UploadDocumentsArgs) => {
-    const setDocumentState = (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => {
+    const setDocumentState = (
+        id: string,
+        state: DOCUMENT_UPLOAD_STATE,
+        progress?: number | undefined,
+    ) => {
         setDocuments((prevDocuments: UploadDocument[]) => {
             return prevDocuments.map((document) => {
                 if (document.id === id) {

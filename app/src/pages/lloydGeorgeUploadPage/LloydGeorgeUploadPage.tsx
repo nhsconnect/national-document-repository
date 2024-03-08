@@ -30,7 +30,7 @@ function LloydGeorgeUploadPage() {
         case LG_UPLOAD_STAGE.COMPLETE:
             return <LloydGeorgeUploadComplete documents={documents} />;
         case LG_UPLOAD_STAGE.STOPPED:
-            return <LloydGeorgeUploadFailure documents={documents} />;
+            return <LloydGeorgeUploadFailure documents={documents} setStage={setStage} />;
         default:
             return <div />;
     }
