@@ -2,7 +2,6 @@ import json
 from enum import Enum
 
 import pytest
-from conftest import TEST_NHS_NUMBER
 from handlers.upload_confirm_result_handler import (
     lambda_handler,
     processing_event_details,
@@ -17,6 +16,7 @@ from helpers.data.upload_confirm_result import (
     MOCK_VALID_BOTH_DOC_TYPES_EVENT,
     MOCK_VALID_LG_EVENT,
 )
+from tests.unit.conftest import TEST_NHS_NUMBER
 from utils.lambda_exceptions import UploadConfirmResultException
 from utils.lambda_response import ApiGatewayResponse
 
