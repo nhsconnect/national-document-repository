@@ -80,7 +80,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                         progress: 100,
                     })),
                 );
-            } else if (errorResponse.err_code === 'VSR_5003') {
+            } else if (errorResponse.err_code === 'VSR_4002') {
                 setStage(LG_UPLOAD_STAGE.STOPPED);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
