@@ -58,9 +58,9 @@ class UploadConfirmResultService:
         logger.info(
             "Files successfully copied, deleting files from staging bucket and updating dynamo db table"
         )
+        self.delete_files_from_staging_bucket()
 
         for document_reference in document_references:
-            self.delete_file_from_staging_bucket(document_reference)
             self.update_dynamo_table(table_name, document_reference, bucket_name)
 
     def copy_files_from_staging_bucket(
@@ -78,8 +78,8 @@ class UploadConfirmResultService:
                 dest_file_key=dest_file_key,
             )
 
-    def delete_file_from_staging_bucket(self, document_reference: str):
-        self.s3_service.delete_object(self.staging_bucket, document_reference)
+    def delete_files_from_staging_bucket(self):
+        self.staging_bucket.objects.filter(Prefix=self.nhs_number).delete()
 
     def update_dynamo_table(
         self, table_name: str, document_reference: str, bucket_name: str
