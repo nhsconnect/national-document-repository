@@ -13,7 +13,7 @@ from utils.exceptions import InvalidResourceIdException
 from utils.lambda_exceptions import UploadConfirmResultException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
-from utils.utilities import validate_id
+from utils.utilities import validate_nhs_number
 
 logger = LoggingService(__name__)
 
@@ -76,7 +76,7 @@ def processing_event_details(event):
             raise UploadConfirmResultException(
                 400, LambdaError.UploadConfirmResultProps
             )
-        validate_id(nhs_number)
+        validate_nhs_number(nhs_number)
         return nhs_number, documents
 
     except JSONDecodeError as e:
