@@ -3,6 +3,7 @@ import os
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.supported_document_types import SupportedDocumentTypes
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -23,8 +24,12 @@ class UploadConfirmResultService:
         lg_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
         arf_bucket_name = os.environ["DOCUMENT_STORE_BUCKET_NAME"]
         arf_table_name = os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-        arf_document_references: list[str] = documents.get("ARF")
-        lg_document_references: list[str] = documents.get("LG")
+        arf_document_references: list[str] = documents.get(
+            SupportedDocumentTypes.ARF.value
+        )
+        lg_document_references: list[str] = documents.get(
+            SupportedDocumentTypes.LG.value
+        )
 
         if not arf_document_references and not lg_document_references:
             logger.error("Document object is missing a document type")
@@ -35,13 +40,19 @@ class UploadConfirmResultService:
         try:
             if arf_document_references:
                 self.move_files_and_update_dynamo(
-                    arf_document_references, arf_bucket_name, arf_table_name
+                    arf_document_references,
+                    arf_bucket_name,
+                    arf_table_name,
+                    SupportedDocumentTypes.ARF.value,
                 )
 
             if lg_document_references:
                 self.validate_number_of_documents(lg_table_name, lg_document_references)
                 self.move_files_and_update_dynamo(
-                    lg_document_references, lg_bucket_name, lg_table_name
+                    lg_document_references,
+                    lg_bucket_name,
+                    lg_table_name,
+                    SupportedDocumentTypes.LG.value,
                 )
 
         except ClientError as e:
@@ -51,14 +62,18 @@ class UploadConfirmResultService:
             )
 
     def move_files_and_update_dynamo(
-        self, document_references: list, bucket_name: str, table_name: str
+        self,
+        document_references: list,
+        bucket_name: str,
+        table_name: str,
+        doc_type: str,
     ):
         self.copy_files_from_staging_bucket(document_references, bucket_name)
 
         logger.info(
             "Files successfully copied, deleting files from staging bucket and updating dynamo db table"
         )
-        self.delete_files_from_staging_bucket()
+        self.delete_files_from_staging_bucket(doc_type)
 
         for document_reference in document_references:
             self.update_dynamo_table(table_name, document_reference, bucket_name)
@@ -78,8 +93,10 @@ class UploadConfirmResultService:
                 dest_file_key=dest_file_key,
             )
 
-    def delete_files_from_staging_bucket(self):
-        self.staging_bucket.objects.filter(Prefix=self.nhs_number).delete()
+    def delete_files_from_staging_bucket(self, doc_type):
+        self.s3_service.delete_directory_by_prefix(
+            self.staging_bucket, f"user_upload/{doc_type}/{self.nhs_number}"
+        )
 
     def update_dynamo_table(
         self, table_name: str, document_reference: str, bucket_name: str
