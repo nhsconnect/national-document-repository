@@ -303,12 +303,12 @@ class LambdaError(Enum):
     }
 
     UploadConfirmResultBadRequest = {
-        "err_code": "VSR_4004",
+        "err_code": "VC_4004",
         "message": "Number of document references not equal to number of documents in dynamo table for this nhs number",
     }
 
     UploadConfirmResultAWSFailure = {
-        "err_code": "VSR_5004",
+        "err_code": "VC_5004",
         "message": "Error occurred with an AWS service",
     }
 
