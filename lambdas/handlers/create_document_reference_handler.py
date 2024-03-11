@@ -28,10 +28,9 @@ logger = LoggingService(__name__)
         "APPCONFIG_APPLICATION",
         "APPCONFIG_CONFIGURATION",
         "APPCONFIG_ENVIRONMENT",
-        "DOCUMENT_STORE_BUCKET_NAME",
         "DOCUMENT_STORE_DYNAMODB_NAME",
-        "LLOYD_GEORGE_BUCKET_NAME",
         "LLOYD_GEORGE_DYNAMODB_NAME",
+        "STAGING_STORE_BUCKET_NAME",
     ]
 )
 @override_error_check
@@ -55,11 +54,13 @@ def lambda_handler(event, context):
     request_context.patient_nhs_no = nhs_number
 
     logger.info("Processed upload documents from request")
-    docs_services = CreateDocumentReferenceService(nhs_number)
-    docs_services.create_document_reference_request(doc_list)
+    docs_services = CreateDocumentReferenceService()
+    url_references = docs_services.create_document_reference_request(
+        nhs_number, doc_list
+    )
 
     return ApiGatewayResponse(
-        200, json.dumps(docs_services.url_responses), "POST"
+        200, json.dumps(url_references), "POST"
     ).create_api_gateway_response()
 
 

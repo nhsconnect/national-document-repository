@@ -1,18 +1,16 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 
 type Props = {
     documents: Array<UploadDocument>;
-    setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
 };
 
-function LloydGeorgeUploadStage({ documents, setStage }: Props) {
+function LloydGeorgeUploadStage({ documents }: Props) {
     const getUploadMessage = (document: UploadDocument) => {
         if (document.state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
         else if (document.state === DOCUMENT_UPLOAD_STATE.UPLOADING)

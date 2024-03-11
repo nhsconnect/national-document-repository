@@ -14,10 +14,10 @@ import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig, lloydGeorgeFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
-import uploadDocument from '../../../../helpers/requests/uploadDocument';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
+import uploadDocuments from '../../../../helpers/requests/uploadDocuments';
 
 interface Props {
     setDocuments: SetUploadDocuments;
@@ -41,10 +41,10 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
 
     const lgController = useController(lloydGeorgeFormConfig(control));
     const arfController = useController(ARFFormConfig(control));
-    const uploadDocuments = async () => {
+    const submitDocuments = async () => {
         setStage(UPLOAD_STAGE.Uploading);
         try {
-            await uploadDocument({
+            await uploadDocuments({
                 nhsNumber,
                 setDocuments,
                 documents,
@@ -103,7 +103,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
 
     return (
         <form
-            onSubmit={handleSubmit(uploadDocuments)}
+            onSubmit={handleSubmit(submitDocuments)}
             noValidate
             data-testid="upload-document-form"
         >
