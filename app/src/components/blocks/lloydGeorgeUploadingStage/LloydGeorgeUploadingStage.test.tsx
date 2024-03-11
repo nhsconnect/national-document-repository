@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import {
     DOCUMENT_TYPE,
@@ -8,12 +8,19 @@ import {
 import { buildPatientDetails, buildTextFile } from '../../../helpers/test/testBuilders';
 import LloydGeorgeUploadStage from './LloydGeorgeUploadingStage';
 import usePatient from '../../../helpers/hooks/usePatient';
+import userEvent from '@testing-library/user-event';
+import uploadDocument from '../../../helpers/requests/uploadDocument';
+import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 const mockSetDocuments = jest.fn();
 const mockSetStage = jest.fn();
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../helpers/requests/uploadDocument');
+
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
+const mockUploadDocument = uploadDocument as jest.Mock;
+
 describe('<LloydGeorgeUploadingStage />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
@@ -23,22 +30,33 @@ describe('<LloydGeorgeUploadingStage />', () => {
         jest.clearAllMocks();
     });
 
-    describe('with NHS number', () => {
-        const triggerUploadStateChange = (
-            document: UploadDocument,
-            state: DOCUMENT_UPLOAD_STATE,
-            progress: number,
-            attempts: number = 0,
-        ) => {
-            act(() => {
-                document.state = state;
-                document.progress = progress;
-                document.attempts = attempts;
-            });
-        };
+    const getProgressBarValue = (document: UploadDocument) => {
+        const progressBar: HTMLProgressElement = screen.getByRole('progressbar', {
+            name: `Uploading ${document.file.name}`,
+        });
+        return progressBar.value;
+    };
+    const getProgressText = (document: UploadDocument) => {
+        return screen.getByRole('status', {
+            name: `${document.file.name} upload status`,
+        }).textContent;
+    };
 
-        it('uploads documents and displays the progress', async () => {
-            const documentOne = {
+    const triggerUploadStateChange = (
+        document: UploadDocument,
+        state: DOCUMENT_UPLOAD_STATE,
+        { progress, attempts }: { progress: number; attempts?: number },
+    ) => {
+        act(() => {
+            document.state = state;
+            document.progress = progress;
+            document.attempts = attempts ?? document.attempts;
+        });
+    };
+
+    describe('Rendering', () => {
+        it('renders document with state and progress', async () => {
+            const uploadDocument = {
                 file: buildTextFile('one', 100),
                 state: DOCUMENT_UPLOAD_STATE.UPLOADING,
                 id: '1',
@@ -48,13 +66,15 @@ describe('<LloydGeorgeUploadingStage />', () => {
             };
             render(
                 <LloydGeorgeUploadStage
-                    documents={[documentOne]}
+                    documents={[uploadDocument]}
                     setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
 
-            triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.UPLOADING, 0);
+            triggerUploadStateChange(uploadDocument, DOCUMENT_UPLOAD_STATE.UPLOADING, {
+                progress: 0,
+            });
 
             expect(screen.queryByTestId('upload-document-form')).not.toBeInTheDocument();
             expect(
@@ -65,8 +85,8 @@ describe('<LloydGeorgeUploadingStage />', () => {
             expect(screen.getByText('50% uploaded...')).toBeInTheDocument();
         });
 
-        it('progress bar reflect the upload progress', async () => {
-            const documentOne = {
+        it('renders a progress bar that reflects changes in document upload progress', async () => {
+            const uploadDocument = {
                 file: buildTextFile('one', 100),
                 state: DOCUMENT_UPLOAD_STATE.SELECTED,
                 id: '1',
@@ -74,107 +94,125 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 docType: DOCUMENT_TYPE.ARF,
                 attempts: 0,
             };
-            const documentTwo = {
-                file: buildTextFile('two', 200),
-                state: DOCUMENT_UPLOAD_STATE.SELECTED,
-                id: '2',
-                progress: 0,
-                docType: DOCUMENT_TYPE.ARF,
-                attempts: 0,
-            };
-            const documentThree = {
-                file: buildTextFile('three', 100),
-                state: DOCUMENT_UPLOAD_STATE.SELECTED,
-                id: '3',
-                progress: 0,
-                docType: DOCUMENT_TYPE.ARF,
-                attempts: 0,
-            };
 
             const { rerender } = render(
                 <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
+                    documents={[uploadDocument]}
                     setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
-            const getProgressBarValue = (document: UploadDocument) => {
-                const progressBar: HTMLProgressElement = screen.getByRole('progressbar', {
-                    name: `Uploading ${document.file.name}`,
-                });
-                return progressBar.value;
+
+            triggerUploadStateChange(uploadDocument, DOCUMENT_UPLOAD_STATE.UPLOADING, {
+                progress: 10,
+            });
+            rerender(
+                <LloydGeorgeUploadStage
+                    documents={[uploadDocument]}
+                    setDocuments={mockSetDocuments}
+                    setStage={mockSetStage}
+                />,
+            );
+            expect(getProgressBarValue(uploadDocument)).toEqual(10);
+            expect(getProgressText(uploadDocument)).toContain('10% uploaded...');
+
+            triggerUploadStateChange(uploadDocument, DOCUMENT_UPLOAD_STATE.UPLOADING, {
+                progress: 70,
+            });
+            rerender(
+                <LloydGeorgeUploadStage
+                    documents={[uploadDocument]}
+                    setDocuments={mockSetDocuments}
+                    setStage={mockSetStage}
+                />,
+            );
+            expect(getProgressBarValue(uploadDocument)).toEqual(70);
+            expect(getProgressText(uploadDocument)).toContain('70% uploaded...');
+
+            triggerUploadStateChange(uploadDocument, DOCUMENT_UPLOAD_STATE.UPLOADING, {
+                progress: 20,
+            });
+            rerender(
+                <LloydGeorgeUploadStage
+                    documents={[uploadDocument]}
+                    setDocuments={mockSetDocuments}
+                    setStage={mockSetStage}
+                />,
+            );
+            expect(getProgressBarValue(uploadDocument)).toEqual(20);
+            expect(getProgressText(uploadDocument)).toContain('20% uploaded...');
+
+            triggerUploadStateChange(uploadDocument, DOCUMENT_UPLOAD_STATE.SUCCEEDED, {
+                progress: 100,
+            });
+            rerender(
+                <LloydGeorgeUploadStage
+                    documents={[uploadDocument]}
+                    setDocuments={mockSetDocuments}
+                    setStage={mockSetStage}
+                />,
+            );
+            expect(getProgressBarValue(uploadDocument)).toEqual(100);
+            expect(getProgressText(uploadDocument)).toContain('Upload successful');
+        });
+
+        it('renders a retry upload button when first attempt fails that reuploads document', () => {
+            const uploadDocument = {
+                file: buildTextFile('one', 100),
+                state: DOCUMENT_UPLOAD_STATE.FAILED,
+                id: '1',
+                progress: 0,
+                docType: DOCUMENT_TYPE.ARF,
+                attempts: 1,
             };
-            const getProgressText = (document: UploadDocument) => {
-                return screen.getByRole('status', {
-                    name: `${document.file.name} upload status`,
-                }).textContent;
-            };
 
-            triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.UPLOADING, 10);
-            rerender(
+            render(
                 <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
+                    documents={[uploadDocument]}
                     setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
-            expect(getProgressBarValue(documentOne)).toEqual(10);
-            expect(getProgressText(documentOne)).toContain('10% uploaded...');
 
-            triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.UPLOADING, 70);
-            rerender(
-                <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
-                />,
-            );
-            expect(getProgressBarValue(documentOne)).toEqual(70);
-            expect(getProgressText(documentOne)).toContain('70% uploaded...');
-
-            triggerUploadStateChange(documentTwo, DOCUMENT_UPLOAD_STATE.UPLOADING, 20);
-            rerender(
-                <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
-                />,
-            );
-            expect(getProgressBarValue(documentTwo)).toEqual(20);
-            expect(getProgressText(documentTwo)).toContain('20% uploaded...');
-
-            triggerUploadStateChange(documentTwo, DOCUMENT_UPLOAD_STATE.SUCCEEDED, 100);
-            rerender(
-                <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
-                />,
-            );
-            expect(getProgressText(documentTwo)).toContain('0% uploaded...');
+            expect(getProgressBarValue(uploadDocument)).toEqual(0);
+            expect(getProgressText(uploadDocument)).toContain('0% uploaded...');
             expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
 
-            triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.FAILED, 0, 1);
-            rerender(
-                <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
-                />,
-            );
-            expect(getProgressBarValue(documentOne)).toEqual(0);
-            expect(getProgressText(documentOne)).toContain('Upload failed');
+            userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
+            expect(mockUploadDocument).toHaveBeenCalled();
+        });
+    });
 
-            triggerUploadStateChange(documentOne, DOCUMENT_UPLOAD_STATE.FAILED, 0, 2);
-            rerender(
+    describe('Navigation', () => {
+        it('navigates to retry upload page when second attempt fails', async () => {
+            const uploadDocument = {
+                file: buildTextFile('one', 100),
+                state: DOCUMENT_UPLOAD_STATE.FAILED,
+                id: '1',
+                progress: 0,
+                docType: DOCUMENT_TYPE.ARF,
+                attempts: 1,
+            };
+
+            mockUploadDocument.mockRejectedValue({ status: 500 });
+
+            render(
                 <LloydGeorgeUploadStage
-                    documents={[documentOne, documentTwo, documentThree]}
+                    documents={[uploadDocument]}
                     setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
-            expect(getProgressBarValue(documentOne)).toEqual(0);
-            expect(getProgressText(documentOne)).toContain('Upload failed');
+
+            expect(getProgressBarValue(uploadDocument)).toEqual(0);
+            expect(getProgressText(uploadDocument)).toContain('0% uploaded...');
+            expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
+
+            userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
+
+            await waitFor(() => {
+                expect(mockSetStage).toHaveBeenCalledWith(LG_UPLOAD_STAGE.RETRY);
+            });
         });
     });
 });

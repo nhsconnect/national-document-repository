@@ -44,7 +44,7 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
             setDocuments([]);
             setStage(LG_UPLOAD_STAGE.RETRY);
         }
-    });
+    }, [documents, setDocuments, setStage]);
 
     const retryUpload = async (documents: Array<UploadDocument>) => {
         try {
