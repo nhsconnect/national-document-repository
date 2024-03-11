@@ -1,5 +1,6 @@
 import os
 
+from freezegun import freeze_time
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_CURRENT_GP_ODS, TEST_OBJECT_KEY
@@ -127,6 +128,7 @@ def build_test_sqs_message_from_nhs_number(nhs_number: str) -> dict:
     return build_test_sqs_message(staging_metadata)
 
 
+@freeze_time("2024-01-01 12:00:00")
 def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"):
     doc_ref = NHSDocumentReference(
         nhs_number=nhs_number,

@@ -10,7 +10,7 @@ from pydantic import ValidationError
 REGION_NAME = "eu-west-2"
 
 MOCK_TABLE_NAME = "test-table"
-MOCK_BUCKET = "test_s3_bucket"
+MOCK_BUCKET = "test-s3-bucket"
 
 MOCK_ARF_TABLE_NAME_ENV_NAME = "DOCUMENT_STORE_DYNAMODB_NAME"
 MOCK_ARF_BUCKET_ENV_NAME = "DOCUMENT_STORE_BUCKET_NAME"

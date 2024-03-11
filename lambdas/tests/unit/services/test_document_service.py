@@ -19,17 +19,7 @@ from tests.unit.helpers.data.dynamo_responses import (
     MOCK_SEARCH_RESPONSE,
 )
 
-MOCK_DOCUMENT = {
-    "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
-    "ContentType": "type",
-    "Created": "2023-08-23T13:38:04.095Z",
-    "Deleted": "",
-    "FileLocation": "s3://test_s3_bucket/test-key-123",
-    "FileName": "document.csv",
-    "NhsNumber": "9000000009",
-    "VirusScannerResult": "Clean",
-    "CurrentGpOds": "Y12345",
-}
+MOCK_DOCUMENT = MOCK_SEARCH_RESPONSE["Items"][0]
 
 
 @pytest.fixture

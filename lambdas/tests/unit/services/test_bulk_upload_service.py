@@ -625,6 +625,7 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under
     )
 
 
+@freeze_time("2024-01-01 12:00:00")
 def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
     TEST_STAGING_METADATA.retries = 0
     repo_under_test.s3_repository.lg_bucket_name = "test_lg_s3_bucket"
@@ -634,10 +635,6 @@ def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
         nhs_number=TEST_STAGING_METADATA.nhs_number,
         current_gp_ods=TEST_CURRENT_GP_ODS,
     )
-
-    # exclude the `created` timestamp from comparison
-    actual.created = "mock_timestamp"
-    expected.created = "mock_timestamp"
 
     assert actual.__eq__(expected)
 

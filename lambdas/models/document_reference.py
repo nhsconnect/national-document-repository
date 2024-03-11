@@ -42,8 +42,11 @@ class DocumentReference(BaseModel):
         alias=str(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value), default=None
     )
 
-    uploaded: bool = Field(
-        alias=str(DocumentReferenceMetadataFields.UPLOADED.value), default=False
+    uploaded: bool = Field(alias=str(DocumentReferenceMetadataFields.UPLOADED.value))
+    uploading: bool = Field(alias=str(DocumentReferenceMetadataFields.UPLOADING.value))
+    last_updated: str = Field(
+        alias=str(DocumentReferenceMetadataFields.LAST_UPDATED.value),
+        serialization_alias="lastUpdated",
     )
 
     def get_file_name_path(self):
@@ -85,7 +88,7 @@ class DocumentReference(BaseModel):
         return f"{self.get_base_name()}({duplicates}){self.get_file_extension()}"
 
     def __eq__(self, other):
-        if isinstance(self, DocumentReference):
+        if isinstance(other, DocumentReference):
             return (
                 self.id == other.id
                 and self.content_type == other.content_type
@@ -97,5 +100,8 @@ class DocumentReference(BaseModel):
                 and self.ttl == other.ttl
                 and self.virus_scanner_result == other.virus_scanner_result
                 and self.current_gp_ods == other.current_gp_ods
+                and self.uploaded == other.uploaded
+                and self.uploading == other.uploading
+                and self.last_updated == other.last_updated
             )
         return False
