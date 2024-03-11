@@ -182,6 +182,38 @@ describe('<LloydGeorgeUploadingStage />', () => {
             userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
             expect(mockUploadDocument).toHaveBeenCalled();
         });
+
+        it('renders a warning callout to retry failed document uploads', () => {
+            const uploadDocument = {
+                file: buildTextFile('one', 100),
+                state: DOCUMENT_UPLOAD_STATE.FAILED,
+                id: '1',
+                progress: 0,
+                docType: DOCUMENT_TYPE.ARF,
+                attempts: 1,
+            };
+
+            render(
+                <LloydGeorgeUploadStage
+                    documents={[uploadDocument]}
+                    setDocuments={mockSetDocuments}
+                    setStage={mockSetStage}
+                />,
+            );
+
+            const warningStrings = [
+                'There is a problem with some of your files',
+                'Some of your files failed to upload',
+                'You cannot continue until you retry uploading these files',
+                'Retry uploading all failed files',
+            ];
+            warningStrings.forEach((s) => {
+                const st = new RegExp(s, 'i');
+                expect(screen.getByText(st)).toBeInTheDocument();
+            });
+            userEvent.click(screen.getByRole('link', { name: 'Retry uploading all failed files' }));
+            expect(mockUploadDocument).toHaveBeenCalled();
+        });
     });
 
     describe('Navigation', () => {
