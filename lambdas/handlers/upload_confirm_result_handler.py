@@ -41,7 +41,6 @@ def lambda_handler(event, context):
     nhs_number, documents = processing_event_details(event)
     request_context.patient_nhs_no = nhs_number
     upload_confirm_result_service = UploadConfirmResultService(nhs_number)
-
     upload_confirm_result_service.process_documents(documents)
     response_body = "Finished processing all documents"
     logger.info(response_body, {"Result": "Successfully processed all documents"})
