@@ -15,10 +15,11 @@ const mockSetDocuments = jest.fn();
 const mockSetStage = jest.fn();
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../helpers/requests/uploadDocument');
 
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
+
+jest.mock('../../../helpers/requests/uploadDocument');
 const mockUploadDocument = uploadDocument as jest.Mock;
 
 describe('<LloydGeorgeUploadingStage />', () => {
@@ -194,22 +195,27 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 attempts: 1,
             };
 
-            mockUploadDocument.mockRejectedValue({ status: 500 });
-
-            render(
+            const { rerender } = render(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
                     setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
                 />,
             );
-
             expect(getProgressBarValue(uploadDocument)).toEqual(0);
             expect(getProgressText(uploadDocument)).toContain('0% uploaded...');
             expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
-
-            userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
-
+            triggerUploadStateChange(uploadDocument, DOCUMENT_UPLOAD_STATE.FAILED, {
+                progress: 0,
+                attempts: 2,
+            });
+            rerender(
+                <LloydGeorgeUploadStage
+                    documents={[uploadDocument]}
+                    setDocuments={mockSetDocuments}
+                    setStage={mockSetStage}
+                />,
+            );
             await waitFor(() => {
                 expect(mockSetStage).toHaveBeenCalledWith(LG_UPLOAD_STAGE.RETRY);
             });

@@ -283,7 +283,6 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                 </Button>
                 {!!documents.length && (
                     <LinkButton
-                        className={'lloydgeorge_link'}
                         type="button"
                         onClick={() => {
                             onRemove(-1);
