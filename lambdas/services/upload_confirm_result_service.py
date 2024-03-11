@@ -85,6 +85,10 @@ class UploadConfirmResultService:
 
         for document_reference in document_references:
             dest_file_key = f"{self.nhs_number}/{document_reference}"
+            logger.info(f"source file key: {document_reference}")
+            logger.info(f"dest file key: {dest_file_key}")
+            logger.info(f"dest bucket: {bucket_name}")
+            logger.info(f"source bucket: {self.staging_bucket}")
 
             self.s3_service.copy_across_bucket(
                 source_bucket=self.staging_bucket,
