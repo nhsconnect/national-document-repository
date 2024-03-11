@@ -10,16 +10,15 @@ from tests.unit.conftest import (
     TEST_FILE_KEY,
     TEST_NHS_NUMBER,
 )
+from tests.unit.helpers.data.upload_confirm_result import (
+    MOCK_ARF_DOCUMENT_REFERENCES,
+    MOCK_ARF_DOCUMENTS,
+    MOCK_BOTH_DOC_TYPES,
+    MOCK_LG_DOCUMENT_REFERENCES,
+    MOCK_LG_DOCUMENTS,
+    MOCK_NO_DOC_TYPE,
+)
 from utils.lambda_exceptions import UploadConfirmResultException
-
-MOCK_LG_DOCUMENTS = {"LG": [TEST_FILE_KEY, TEST_FILE_KEY]}
-MOCK_LG_DOCUMENT_REFERENCES = [TEST_FILE_KEY, TEST_FILE_KEY]
-
-MOCK_ARF_DOCUMENTS = {"ARF": [TEST_FILE_KEY, TEST_FILE_KEY, TEST_FILE_KEY]}
-MOCK_ARF_DOCUMENT_REFERENCES = [TEST_FILE_KEY, TEST_FILE_KEY, TEST_FILE_KEY]
-
-MOCK_LG_AND_ARF_DOCUMENTS = {"LG": [TEST_FILE_KEY], "ARF": [TEST_FILE_KEY]}
-MOCK_NO_DOC_TYPE = {"": [TEST_FILE_KEY]}
 
 
 @pytest.fixture
@@ -92,7 +91,7 @@ def test_process_documents_with_both_types_of_document_references(
     mock_validate_number_of_documents,
     mock_move_files_and_update_dynamo,
 ):
-    patched_service.process_documents(MOCK_LG_AND_ARF_DOCUMENTS)
+    patched_service.process_documents(MOCK_BOTH_DOC_TYPES)
 
     mock_validate_number_of_documents.assert_called_once_with(
         MOCK_LG_TABLE_NAME, [TEST_FILE_KEY]
@@ -130,15 +129,15 @@ def test_move_files_and_update_dynamo(
     mock_update_dynamo_table,
 ):
     patched_service.move_files_and_update_dynamo(
-        MOCK_LG_DOCUMENT_REFERENCES, MOCK_LG_BUCKET, MOCK_LG_TABLE_NAME
+        MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET, MOCK_ARF_TABLE_NAME
     )
 
     mock_copy_files_from_staging_bucket.assert_called_once_with(
-        MOCK_LG_DOCUMENT_REFERENCES, MOCK_LG_BUCKET
+        MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET
     )
     mock_delete_file_from_staging_bucket.assert_called_with(TEST_FILE_KEY)
     mock_update_dynamo_table.assert_called_with(
-        MOCK_LG_TABLE_NAME, TEST_FILE_KEY, MOCK_LG_BUCKET
+        MOCK_ARF_TABLE_NAME, TEST_FILE_KEY, MOCK_ARF_BUCKET
     )
     assert mock_delete_file_from_staging_bucket.call_count == 2
     assert mock_update_dynamo_table.call_count == 2
@@ -149,7 +148,7 @@ def test_copy_files_from_staging_bucket(patched_service):
         MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET
     )
 
-    assert patched_service.s3_service.copy_across_bucket.call_count == 3
+    assert patched_service.s3_service.copy_across_bucket.call_count == 2
 
 
 def test_delete_file_from_staging_bucket(patched_service):
@@ -175,7 +174,7 @@ def test_update_dynamo_table(patched_service):
 
 
 def test_validate_number_of_documents_success(patched_service):
-    patched_service.dynamo_service.scan_table.return_value = {"Items": ["doc1", "doc2"]}
+    patched_service.dynamo_service.scan_table.return_value = {"Items": ["doc1"]}
 
     patched_service.validate_number_of_documents(
         MOCK_LG_TABLE_NAME, MOCK_LG_DOCUMENT_REFERENCES
@@ -185,7 +184,7 @@ def test_validate_number_of_documents_success(patched_service):
 
 
 def test_validate_number_of_documents_raises_exception(patched_service):
-    patched_service.dynamo_service.scan_table.return_value = {"Items": ["doc1"]}
+    patched_service.dynamo_service.scan_table.return_value = {"Items": ["doc1", "doc2"]}
 
     with pytest.raises(UploadConfirmResultException):
         patched_service.validate_number_of_documents(
