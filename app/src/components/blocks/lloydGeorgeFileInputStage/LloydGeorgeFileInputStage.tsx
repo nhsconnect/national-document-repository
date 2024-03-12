@@ -12,7 +12,7 @@ import {
     UploadFilesErrors,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-import uploadDocument from '../../../helpers/requests/uploadDocument';
+import uploadDocuments from '../../../helpers/requests/uploadDocuments';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
@@ -47,7 +47,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage, setUploa
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
 
-    const uploadDocuments = async () => {
+    const submitDocuments = async () => {
         setShowNoFilesMessage(!hasFileInput);
         setUploadFilesErrors(uploadDocumentValidation(documents, patientDetails));
         if (!hasFileInput || uploadFilesErrors.length > 0) {
@@ -56,7 +56,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage, setUploa
         }
         try {
             setStage(LG_UPLOAD_STAGE.UPLOAD);
-            await uploadDocument({
+            await uploadDocuments({
                 nhsNumber,
                 setDocuments,
                 setUploadSession,
@@ -275,7 +275,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage, setUploa
                 </Table>
             )}
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <Button type="button" id="upload-button" onClick={uploadDocuments}>
+                <Button type="button" id="upload-button" onClick={submitDocuments}>
                     Upload
                 </Button>
                 {!!documents.length && (

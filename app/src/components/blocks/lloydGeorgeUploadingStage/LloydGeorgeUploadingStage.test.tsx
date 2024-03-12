@@ -5,22 +5,25 @@ import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../types/pages/UploadDocumentsPage/types';
-import { buildPatientDetails, buildTextFile } from '../../../helpers/test/testBuilders';
+import {
+    buildPatientDetails,
+    buildTextFile,
+    buildUploadSession,
+} from '../../../helpers/test/testBuilders';
 import LloydGeorgeUploadStage from './LloydGeorgeUploadingStage';
 import usePatient from '../../../helpers/hooks/usePatient';
 import userEvent from '@testing-library/user-event';
-import { uploadDocumentsToS3 } from '../../../helpers/requests/uploadDocument';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
+import { uploadDocumentsToS3 } from '../../../helpers/requests/uploadDocuments';
+
+jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../helpers/requests/uploadDocuments');
 const mockSetDocuments = jest.fn();
 const mockSetStage = jest.fn();
-jest.mock('../../../helpers/hooks/usePatient');
-jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
-
 const mockedUsePatient = usePatient as jest.Mock;
+const uploadMock = uploadDocumentsToS3 as jest.Mock;
 const mockPatient = buildPatientDetails();
-
-jest.mock('../../../helpers/requests/uploadDocument');
-const mockS3Upload = uploadDocumentsToS3 as jest.Mock;
 
 describe('<LloydGeorgeUploadingStage />', () => {
     beforeEach(() => {
@@ -167,11 +170,13 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 attempts: 1,
             };
 
+            const uploadSession = buildUploadSession([uploadDocument]);
             render(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
                     setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
+                    uploadSession={uploadSession}
                 />,
             );
 
@@ -180,7 +185,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
 
             userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
-            expect(mockS3Upload).toHaveBeenCalled();
+            expect(uploadMock).toHaveBeenCalled();
         });
 
         it('renders a warning callout to retry failed document uploads', () => {
@@ -193,11 +198,14 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 attempts: 1,
             };
 
+            const uploadSession = buildUploadSession([uploadDocument]);
+
             render(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
                     setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
+                    uploadSession={uploadSession}
                 />,
             );
 
@@ -212,7 +220,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 expect(screen.getByText(st)).toBeInTheDocument();
             });
             userEvent.click(screen.getByRole('link', { name: 'Retry uploading all failed files' }));
-            expect(mockS3Upload).toHaveBeenCalled();
+            expect(uploadMock).toHaveBeenCalled();
         });
     });
 
@@ -226,6 +234,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 docType: DOCUMENT_TYPE.ARF,
                 attempts: 1,
             };
+            const uploadSession = buildUploadSession([uploadDocument]);
 
             const { rerender } = render(
                 <LloydGeorgeUploadStage
@@ -246,6 +255,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                     documents={[uploadDocument]}
                     setDocuments={mockSetDocuments}
                     setStage={mockSetStage}
+                    uploadSession={uploadSession}
                 />,
             );
             await waitFor(() => {

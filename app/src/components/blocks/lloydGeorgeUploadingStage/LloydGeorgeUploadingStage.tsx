@@ -7,9 +7,9 @@ import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import LinkButton from '../../generic/linkButton/LinkButton';
-import { uploadDocumentsToS3 } from '../../../helpers/requests/uploadDocument';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { UploadSession } from '../../../types/generic/uploadResult';
+import { uploadDocumentsToS3 } from '../../../helpers/requests/uploadDocuments';
 
 type Props = {
     documents: Array<UploadDocument>;
@@ -19,7 +19,6 @@ type Props = {
 };
 
 function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSession }: Props) {
-    console.log(uploadSession);
     const getUploadMessage = (document: UploadDocument) => {
         if (document.state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
         else if (document.state === DOCUMENT_UPLOAD_STATE.UPLOADING)
@@ -64,7 +63,7 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
                     messageLinkBody="Retry uploading all failed files"
                     errorOnClick={() => {
                         const failedUploads = documents.filter(
-                            (d) => d.attempts === 1 && !d.progress,
+                            (d) => d.attempts === 1 && d.state !== DOCUMENT_UPLOAD_STATE.UPLOADING,
                         );
                         retryUpload(failedUploads);
                     }}

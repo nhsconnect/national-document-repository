@@ -102,7 +102,7 @@ export const uploadDocumentsToS3 = async ({
     }
 };
 
-const uploadDocument = async ({
+const uploadDocuments = async ({
     nhsNumber,
     setDocuments,
     setUploadSession,
@@ -110,13 +110,6 @@ const uploadDocument = async ({
     baseUrl,
     baseHeaders,
 }: UploadDocumentsArgs) => {
-    /**
-     * Upload Document helpers
-     */
-
-    /**
-     * Upload Document request
-     */
     const requestBody = {
         resourceType: 'DocumentReference',
         subject: {
@@ -173,4 +166,4 @@ const uploadDocument = async ({
     }
 };
 
-export default uploadDocument;
+export default uploadDocuments;
