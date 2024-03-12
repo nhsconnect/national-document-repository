@@ -1,5 +1,6 @@
 import pytest
 from botocore.exceptions import ClientError
+from enums.supported_document_types import SupportedDocumentTypes
 from services.upload_confirm_result_service import UploadConfirmResultService
 from tests.unit.conftest import (
     MOCK_ARF_BUCKET,
@@ -69,7 +70,10 @@ def test_process_documents_with_lg_document_references(
         MOCK_LG_TABLE_NAME, MOCK_LG_DOCUMENT_REFERENCES
     )
     mock_move_files_and_update_dynamo.assert_called_with(
-        MOCK_LG_DOCUMENT_REFERENCES, MOCK_LG_BUCKET, MOCK_LG_TABLE_NAME
+        MOCK_LG_DOCUMENT_REFERENCES,
+        MOCK_LG_BUCKET,
+        MOCK_LG_TABLE_NAME,
+        SupportedDocumentTypes.LG.value,
     )
 
 
@@ -82,7 +86,10 @@ def test_process_documents_with_arf_document_references(
 
     mock_validate_number_of_documents.assert_not_called()
     mock_move_files_and_update_dynamo.assert_called_with(
-        MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET, MOCK_ARF_TABLE_NAME
+        MOCK_ARF_DOCUMENT_REFERENCES,
+        MOCK_ARF_BUCKET,
+        MOCK_ARF_TABLE_NAME,
+        SupportedDocumentTypes.ARF.value,
     )
 
 
@@ -129,11 +136,14 @@ def test_move_files_and_update_dynamo(
     mock_update_dynamo_table,
 ):
     patched_service.move_files_and_update_dynamo(
-        MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET, MOCK_ARF_TABLE_NAME
+        MOCK_ARF_DOCUMENT_REFERENCES,
+        MOCK_ARF_BUCKET,
+        MOCK_ARF_TABLE_NAME,
+        SupportedDocumentTypes.ARF.value,
     )
 
     mock_copy_files_from_staging_bucket.assert_called_once_with(
-        MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET
+        MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET, SupportedDocumentTypes.ARF.value
     )
     mock_delete_file_from_staging_bucket.assert_called_with(TEST_FILE_KEY)
     mock_update_dynamo_table.assert_called_with(
@@ -145,7 +155,7 @@ def test_move_files_and_update_dynamo(
 
 def test_copy_files_from_staging_bucket(patched_service):
     patched_service.copy_files_from_staging_bucket(
-        MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET
+        MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET, SupportedDocumentTypes.ARF.value
     )
 
     assert patched_service.s3_service.copy_across_bucket.call_count == 2

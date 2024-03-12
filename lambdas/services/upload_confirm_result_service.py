@@ -73,9 +73,9 @@ class UploadConfirmResultService:
         logger.info(
             "Files successfully copied, deleting files from staging bucket and updating dynamo db table"
         )
-        self.delete_files_from_staging_bucket(doc_type)
 
         for document_reference in document_references:
+            self.delete_file_from_staging_bucket(document_reference)
             self.update_dynamo_table(table_name, document_reference, bucket_name)
 
     def copy_files_from_staging_bucket(
@@ -85,10 +85,6 @@ class UploadConfirmResultService:
 
         for document_reference in document_references:
             dest_file_key = f"{self.nhs_number}/{document_reference}"
-            logger.info(f"source file key: {document_reference}")
-            logger.info(f"dest file key: {dest_file_key}")
-            logger.info(f"dest bucket: {bucket_name}")
-            logger.info(f"source bucket: {self.staging_bucket}")
 
             self.s3_service.copy_across_bucket(
                 source_bucket=self.staging_bucket,
@@ -97,11 +93,8 @@ class UploadConfirmResultService:
                 dest_file_key=dest_file_key,
             )
 
-    def delete_files_from_staging_bucket(self, doc_type):
-        delete_response = self.s3_service.delete_object(
-            self.staging_bucket, f"user_upload/{doc_type}/{self.nhs_number}"
-        )
-        logger.info(delete_response)
+    def delete_file_from_staging_bucket(self, document_reference: str):
+        self.s3_service.delete_object(self.staging_bucket, document_reference)
 
     def update_dynamo_table(
         self, table_name: str, document_reference: str, bucket_name: str
