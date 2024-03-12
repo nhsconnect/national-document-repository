@@ -15,7 +15,10 @@ type Props = {
 function LloydGeorgeUploadStage({ documents, setStage }: Props) {
     const getUploadMessage = (document: UploadDocument) => {
         if (document.state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
-        else if (document.state === DOCUMENT_UPLOAD_STATE.UPLOADING && document.progress)
+        else if (
+            document.state === DOCUMENT_UPLOAD_STATE.UPLOADING &&
+            document.progress !== undefined
+        )
             return `${Math.round(document.progress)}% uploaded...`;
         else if (document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload successful';
         else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
