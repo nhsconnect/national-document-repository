@@ -1,4 +1,4 @@
-export type UploadResult = {
+export type UploadSession = {
     [key: string]: S3Upload;
 };
 

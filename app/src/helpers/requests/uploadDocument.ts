@@ -6,7 +6,7 @@ import {
     UploadDocument,
 } from '../../types/pages/UploadDocumentsPage/types';
 import axios, { AxiosError } from 'axios';
-import { S3Upload, S3UploadFields, UploadResult } from '../../types/generic/uploadResult';
+import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
 
 type UploadDocumentsArgs = {
@@ -24,13 +24,13 @@ type UploadDocumentsToS3Args = {
         progress?: number | undefined,
     ) => void;
     documents: UploadDocument[];
-    data: UploadResult;
+    data: UploadSession;
     baseUrl: string;
     baseHeaders: AuthHeaders;
 };
 
 type gatewayResponse = {
-    data: UploadResult;
+    data: UploadSession;
 };
 
 type KeyByType = {
