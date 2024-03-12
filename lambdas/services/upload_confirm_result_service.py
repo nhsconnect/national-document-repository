@@ -85,10 +85,13 @@ class UploadConfirmResultService:
 
         for document_reference in document_references:
             dest_file_key = f"{self.nhs_number}/{document_reference}"
+            source_file_key = (
+                f"user_upload/{doc_type}/{self.nhs_number}/{document_reference}"
+            )
 
             self.s3_service.copy_across_bucket(
                 source_bucket=self.staging_bucket,
-                source_file_key=f"user_upload/{doc_type}/{self.nhs_number}/{document_reference}",
+                source_file_key=source_file_key,
                 dest_bucket=bucket_name,
                 dest_file_key=dest_file_key,
             )
