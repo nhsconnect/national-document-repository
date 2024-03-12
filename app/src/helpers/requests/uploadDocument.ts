@@ -172,11 +172,14 @@ const uploadDocumentsToS3 = async ({
                     }
                 },
             });
+            console.log('S3 RESPONSE' + s3Response);
             const requestBody = {
                 documentReference: docGatewayResponse.fields.key,
             };
+            console.log('REQUEST BODY' + requestBody);
             if (s3Response.status === 204) {
                 try {
+                    console.log('IN S3 TRY');
                     setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SCANNING, undefined);
                     await axios.post(virusScanGatewayUrl, requestBody, {
                         headers: {
@@ -184,6 +187,8 @@ const uploadDocumentsToS3 = async ({
                         },
                     });
                 } catch (e) {
+                    console.log('IN S3 catch');
+
                     const error = e as AxiosError;
                     if (error.response?.status === 400) {
                         setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.INFECTED);
