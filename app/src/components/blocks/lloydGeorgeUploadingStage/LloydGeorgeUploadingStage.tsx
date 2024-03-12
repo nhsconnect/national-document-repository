@@ -19,6 +19,7 @@ type Props = {
 };
 
 function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSession }: Props) {
+    console.log(uploadSession);
     const getUploadMessage = (document: UploadDocument) => {
         if (document.state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
         else if (document.state === DOCUMENT_UPLOAD_STATE.UPLOADING)
@@ -37,7 +38,6 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
             setStage(LG_UPLOAD_STAGE.RETRY);
         }
         if (hasComplete) {
-            setDocuments([]);
             setStage(LG_UPLOAD_STAGE.COMPLETE);
         }
     }, [documents, setDocuments, setStage]);
