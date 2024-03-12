@@ -41,15 +41,16 @@ const uploadDocument = async ({
      * Upload Document helpers
      */
     const setDocument = ({ id, state, progress, attempts }: DocumentStateProps) => {
-        const newDocumentsState = documents.map((document) => {
-            if (document.id === id) {
-                progress = progress ?? document.progress;
-                attempts = attempts ?? document.attempts;
-                return { ...document, state, progress, attempts };
-            }
-            return document;
-        });
-        setDocuments(newDocumentsState);
+        setDocuments((prevState) =>
+            prevState.map((document) => {
+                if (document.id === id) {
+                    progress = progress ?? document.progress;
+                    attempts = attempts ?? document.attempts;
+                    return { ...document, state, progress, attempts };
+                }
+                return document;
+            }),
+        );
     };
     const docDetails = (document: UploadDocument) => {
         setDocument({ id: document.id, state: DOCUMENT_UPLOAD_STATE.UPLOADING });
