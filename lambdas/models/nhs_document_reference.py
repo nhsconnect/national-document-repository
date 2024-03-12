@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from pydantic import BaseModel
 
+DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+
 
 class UploadRequestDocument(BaseModel):
     fileName: str
@@ -20,20 +22,24 @@ class NHSDocumentReference:
         content_type: str = "application/pdf",
         current_gp_ods: str = "",
     ) -> None:
+        date_now = datetime.now(timezone.utc).strftime(DATE_FORMAT)
+
         self.id = reference_id
         self.nhs_number = nhs_number
         self.content_type = content_type
         self.current_gp_ods = current_gp_ods
         self.file_name = file_name
-        self.created = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        self.created = date_now
         self.s3_bucket_name = s3_bucket_name
         self.deleted = ""
         self.virus_scanner_result = "Not Scanned"
         self.file_location = f"s3://{self.s3_bucket_name}/{self.s3_file_key}"
         self.uploaded = False
+        self.uploading = False
+        self.last_updated = date_now
 
     def set_deleted(self) -> None:
-        self.deleted = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+        self.deleted = datetime.now(timezone.utc).strftime(DATE_FORMAT)
 
     def set_virus_scanner_result(self, updated_virus_scanner_result) -> None:
         self.virus_scanner_result = updated_virus_scanner_result
@@ -53,6 +59,8 @@ class NHSDocumentReference:
             DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value: self.virus_scanner_result,
             DocumentReferenceMetadataFields.CURRENT_GP_ODS.value: self.current_gp_ods,
             DocumentReferenceMetadataFields.UPLOADED.value: self.uploaded,
+            DocumentReferenceMetadataFields.UPLOADING.value: self.uploading,
+            DocumentReferenceMetadataFields.LAST_UPDATED.value: self.last_updated,
         }
         return document_metadata
 
@@ -61,13 +69,18 @@ class NHSDocumentReference:
         return f"{self.nhs_number}/{self.id}"
 
     def __eq__(self, other):
-        return (
-            self.id == other.id
-            and self.nhs_number == other.nhs_number
-            and self.content_type == other.content_type
-            and self.file_name == other.file_name
-            and self.created == other.created
-            and self.deleted == other.deleted
-            and self.virus_scanner_result == other.virus_scanner_result
-            and self.file_location == other.file_location
-        )
+        if isinstance(other, NHSDocumentReference):
+            return (
+                self.id == other.id
+                and self.nhs_number == other.nhs_number
+                and self.content_type == other.content_type
+                and self.file_name == other.file_name
+                and self.created == other.created
+                and self.deleted == other.deleted
+                and self.virus_scanner_result == other.virus_scanner_result
+                and self.file_location == other.file_location
+                and self.uploaded == other.uploaded
+                and self.uploading == other.uploading
+                and self.last_updated == other.last_updated
+            )
+        return False

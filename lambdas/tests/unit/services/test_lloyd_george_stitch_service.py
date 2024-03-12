@@ -34,6 +34,10 @@ def build_lg_doc_ref(
             "FileName": file_name,
             "NhsNumber": TEST_NHS_NUMBER,
             "VirusScannerResult": "Clean",
+            "CurrentGpOds": "Y12345",
+            "Uploaded": "True",
+            "Uploading": "False",
+            "LastUpdated": "2023-08-23T13:38:04.095Z",
         },
     )
 
