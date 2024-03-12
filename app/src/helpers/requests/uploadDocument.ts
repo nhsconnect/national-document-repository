@@ -1,6 +1,10 @@
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
-import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
+import {
+    DOCUMENT_TYPE,
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../types/pages/UploadDocumentsPage/types';
 import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadResult } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
@@ -27,6 +31,10 @@ type UploadDocumentsToS3Args = {
 
 type gatewayResponse = {
     data: UploadResult;
+};
+
+type KeyByType = {
+    [propName in DOCUMENT_TYPE]: [string];
 };
 
 const uploadDocument = async ({
@@ -88,7 +96,12 @@ const uploadDocument = async ({
     };
 
     const uploadGatewayUrl = baseUrl + endpoints.DOCUMENT_UPLOAD;
+    const uploadConfirmationGatewayUrl = baseUrl + endpoints.UPLOAD_CONFIRMATION;
 
+    const confirmationBody = {
+        patientId: nhsNumber,
+        documents: {},
+    };
     try {
         const { data }: gatewayResponse = await axios.post(
             uploadGatewayUrl,
@@ -99,7 +112,19 @@ const uploadDocument = async ({
                 },
             },
         );
-        await uploadDocumentsToS3({ setDocumentState, documents, data, baseUrl, baseHeaders });
+        confirmationBody.documents = await uploadDocumentsToS3({
+            setDocumentState,
+            documents,
+            data,
+            baseUrl,
+            baseHeaders,
+        });
+
+        await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
+            headers: {
+                ...baseHeaders,
+            },
+        });
     } catch (e) {
         const error = e as AxiosError;
         if (error.response?.status === 403) {
@@ -124,7 +149,7 @@ const uploadDocumentsToS3 = async ({
     baseHeaders,
 }: UploadDocumentsToS3Args) => {
     const virusScanGatewayUrl = baseUrl + endpoints.VIRUS_SCAN;
-
+    const filesKeyByType = {} as KeyByType;
     for (const document of documents) {
         try {
             const docGatewayResponse: S3Upload = data[document.file.name];
@@ -166,7 +191,9 @@ const uploadDocumentsToS3 = async ({
                     throw e;
                 }
             }
+            const fileKey = docGatewayResponse.fields.key.split('/');
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED, 100);
+            filesKeyByType[document.docType].push(fileKey[2]);
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
@@ -179,6 +206,7 @@ const uploadDocumentsToS3 = async ({
             }
         }
     }
+    return filesKeyByType;
 };
 
 export default uploadDocument;
