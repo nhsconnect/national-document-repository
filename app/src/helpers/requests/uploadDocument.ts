@@ -14,7 +14,7 @@ type UploadDocumentsArgs = {
 };
 
 type UploadDocumentsToS3Args = {
-    setDocumentState: (props: DocumentStateProps) => void;
+    setDocument: (props: DocumentStateProps) => void;
     documents: UploadDocument[];
     data: UploadResult;
 };
@@ -37,7 +37,7 @@ const uploadDocument = async ({
     baseUrl,
     baseHeaders,
 }: UploadDocumentsArgs) => {
-    const setDocumentState = ({ id, state, progress, attempts }: DocumentStateProps) => {
+    const setDocument = ({ id, state, progress, attempts }: DocumentStateProps) => {
         const newDocumentsState = documents.map((document) => {
             if (document.id === id) {
                 progress = progress ?? document.progress;
@@ -49,7 +49,7 @@ const uploadDocument = async ({
         setDocuments(newDocumentsState);
     };
     const docDetails = (document: UploadDocument) => {
-        setDocumentState({ id: document.id, state: DOCUMENT_UPLOAD_STATE.UPLOADING });
+        setDocument({ id: document.id, state: DOCUMENT_UPLOAD_STATE.UPLOADING });
         return {
             fileName: document.file.name,
             contentType: document.file.type,
@@ -92,31 +92,26 @@ const uploadDocument = async ({
                 },
             },
         );
-        await uploadDocumentsToS3({ setDocumentState, documents, data });
+        await uploadDocumentsToS3({ setDocument, documents, data });
     } catch (e) {
         const error = e as AxiosError;
 
-        const newDocState =
+        const state =
             error.response?.status === 403
                 ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
                 : DOCUMENT_UPLOAD_STATE.FAILED;
 
         const failedDocuments = documents.map((doc) => ({
             ...doc,
-            state: newDocState,
+            state,
             attempts: doc.attempts + 1,
             progress: 0,
         }));
         setDocuments(failedDocuments);
-        return failedDocuments;
     }
 };
 
-const uploadDocumentsToS3 = async ({
-    setDocumentState,
-    documents,
-    data,
-}: UploadDocumentsToS3Args) => {
+const uploadDocumentsToS3 = async ({ setDocument, documents, data }: UploadDocumentsToS3Args) => {
     for (const document of documents) {
         try {
             const docGatewayResponse: S3Upload = data[document.file.name];
@@ -131,7 +126,7 @@ const uploadDocumentsToS3 = async ({
                 onUploadProgress: (progress) => {
                     const { loaded, total } = progress;
                     if (total) {
-                        setDocumentState({
+                        setDocument({
                             id: document.id,
                             state: DOCUMENT_UPLOAD_STATE.UPLOADING,
                             progress: (loaded / total) * 100,
@@ -140,30 +135,29 @@ const uploadDocumentsToS3 = async ({
                 },
             });
 
-            if (s3Response.status === 204)
-                setDocumentState({
-                    id: document.id,
-                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                    attempts: 0,
-                    progress: 0,
-                });
+            const state =
+                s3Response.status === 403
+                    ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
+                    : DOCUMENT_UPLOAD_STATE.FAILED;
+            setDocument({
+                id: document.id,
+                state,
+                attempts: 0,
+                progress: 0,
+            });
         } catch (e) {
             const error = e as AxiosError;
-            if (error.response?.status === 403) {
-                setDocumentState({
-                    id: document.id,
-                    state: DOCUMENT_UPLOAD_STATE.UNAUTHORISED,
-                    attempts: document.attempts + 1,
-                    progress: 0,
-                });
-            } else {
-                setDocumentState({
-                    id: document.id,
-                    state: DOCUMENT_UPLOAD_STATE.FAILED,
-                    attempts: document.attempts + 1,
-                    progress: 0,
-                });
-            }
+
+            const state =
+                error.response?.status === 403
+                    ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
+                    : DOCUMENT_UPLOAD_STATE.FAILED;
+            setDocument({
+                id: document.id,
+                state,
+                attempts: document.attempts + 1,
+                progress: 0,
+            });
         }
     }
 };
