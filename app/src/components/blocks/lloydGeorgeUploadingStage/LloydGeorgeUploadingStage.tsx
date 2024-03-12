@@ -7,24 +7,18 @@ import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import LinkButton from '../../generic/linkButton/LinkButton';
-import usePatient from '../../../helpers/hooks/usePatient';
-import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
-import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
-import uploadDocuments from '../../../helpers/requests/uploadDocument';
+import { uploadDocumentsToS3 } from '../../../helpers/requests/uploadDocument';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
+import { UploadSession } from '../../../types/generic/uploadResult';
 
 type Props = {
     documents: Array<UploadDocument>;
     setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
     setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
+    uploadSession?: UploadSession | null;
 };
 
-function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
-    const patientDetails = usePatient();
-    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
-    const baseUrl = useBaseAPIUrl();
-    const baseHeaders = useBaseAPIHeaders();
-
+function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSession }: Props) {
     const getUploadMessage = (document: UploadDocument) => {
         if (document.state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
         else if (document.state === DOCUMENT_UPLOAD_STATE.UPLOADING)
@@ -49,15 +43,15 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
     }, [documents, setDocuments, setStage]);
 
     const retryUpload = async (documents: Array<UploadDocument>) => {
-        try {
-            await uploadDocuments({
-                nhsNumber,
-                setDocuments,
-                documents,
-                baseUrl,
-                baseHeaders,
-            });
-        } catch (e) {}
+        if (uploadSession) {
+            try {
+                await uploadDocumentsToS3({
+                    setDocuments,
+                    documents,
+                    uploadSession,
+                });
+            } catch (e) {}
+        }
     };
 
     return (
@@ -101,7 +95,9 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
                 </Table.Head>
                 <Table.Body>
                     {documents.map((document) => {
-                        const uploadFailed = !!document.attempts && !document.progress;
+                        const uploadFailed =
+                            !!document.attempts &&
+                            document.state !== DOCUMENT_UPLOAD_STATE.UPLOADING;
 
                         return (
                             <Table.Row key={document.id}>

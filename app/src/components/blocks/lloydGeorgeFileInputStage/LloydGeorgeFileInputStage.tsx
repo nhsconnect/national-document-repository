@@ -18,23 +18,23 @@ import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
-import { useNavigate } from 'react-router';
 import { AxiosError } from 'axios';
 import { isMock } from '../../../helpers/utils/isLocal';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
 import LinkButton from '../../generic/linkButton/LinkButton';
+import { UploadSession } from '../../../types/generic/uploadResult';
 
 export type Props = {
     documents: Array<UploadDocument>;
     setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
+    setUploadSession: Dispatch<SetStateAction<UploadSession | null>>;
     setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
 };
 
-function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props) {
+function LloydGeorgeFileInputStage({ documents, setDocuments, setStage, setUploadSession }: Props) {
     const patientDetails = usePatient();
-    const navigate = useNavigate();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const dob: string = patientDetails?.birthDate
@@ -59,6 +59,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             await uploadDocument({
                 nhsNumber,
                 setDocuments,
+                setUploadSession,
                 documents,
                 baseUrl,
                 baseHeaders,
