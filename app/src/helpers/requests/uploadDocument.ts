@@ -44,7 +44,11 @@ const uploadDocument = async ({
         setDocuments((prevDocuments: UploadDocument[]) => {
             return prevDocuments.map((document) => {
                 if (document.id === id) {
-                    progress = progress ?? document.progress;
+                    progress =
+                        state === DOCUMENT_UPLOAD_STATE.SCANNING
+                            ? progress
+                            : progress ?? document.progress;
+
                     return { ...document, state, progress };
                 }
                 return document;
