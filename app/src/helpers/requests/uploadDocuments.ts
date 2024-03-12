@@ -42,7 +42,12 @@ type VirusScanArgs = {
     baseUrl: string;
     baseHeaders: AuthHeaders;
 };
-
+type UploadConfirmationArgs = {
+    baseUrl: string;
+    baseHeaders: AuthHeaders;
+    nhsNumber: string;
+    documentKeysByType: FileKeyBuilder;
+};
 type FileKeyBuilder = {
     [key in DOCUMENT_TYPE]: string[];
 };
@@ -77,6 +82,23 @@ const virusScanResult = async ({ docRef, baseUrl, baseHeaders }: VirusScanArgs) 
         },
     });
 };
+const uploadConfirmation = async ({
+    baseUrl,
+    baseHeaders,
+    nhsNumber,
+    documentKeysByType,
+}: UploadConfirmationArgs) => {
+    const uploadConfirmationGatewayUrl = baseUrl + endpoints.UPLOAD_CONFIRMATION;
+    const confirmationBody = {
+        patientId: nhsNumber,
+        documents: { documentKeysByType },
+    };
+    await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
+        headers: {
+            ...baseHeaders,
+        },
+    });
+};
 
 export const uploadDocumentsToS3 = async ({
     baseUrl,
@@ -85,7 +107,7 @@ export const uploadDocumentsToS3 = async ({
     uploadSession,
     documents,
 }: UploadDocumentsToS3Args) => {
-    let fileKeyBuilder: Partial<FileKeyBuilder> = {};
+    let fileKeyBuilder: FileKeyBuilder = {} as FileKeyBuilder;
 
     for (const document of documents) {
         const docGatewayResponse: S3Upload = uploadSession[document.file.name];
@@ -198,12 +220,18 @@ const uploadDocuments = async ({
             },
         });
         setUploadSession(data);
-        await uploadDocumentsToS3({
+        const confirmationBodyDocuments = await uploadDocumentsToS3({
             setDocuments,
             documents,
             uploadSession: data,
             baseUrl,
             baseHeaders,
+        });
+        await uploadConfirmation({
+            baseUrl,
+            baseHeaders,
+            nhsNumber,
+            documentKeysByType: confirmationBodyDocuments,
         });
     } catch (e) {
         const error = e as AxiosError;

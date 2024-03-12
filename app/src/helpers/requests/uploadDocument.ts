@@ -21,7 +21,7 @@ type UploadDocumentsToS3Args = {
     setDocumentState: (
         id: string,
         state: DOCUMENT_UPLOAD_STATE,
-        progress?: number | undefined,
+        progress?: number | 'scan',
     ) => void;
     documents: UploadDocument[];
     data: UploadSession;
@@ -47,7 +47,7 @@ const uploadDocument = async ({
     const setDocumentState = (
         id: string,
         state: DOCUMENT_UPLOAD_STATE,
-        progress?: number | undefined,
+        progress?: number | 'scan',
     ) => {
         setDocuments((prevDocuments: UploadDocument[]) => {
             return prevDocuments.map((document) => {
@@ -119,7 +119,6 @@ const uploadDocument = async ({
             baseUrl,
             baseHeaders,
         });
-        console.log('confirmation body:' + confirmationBody);
         await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
             headers: {
                 ...baseHeaders,
@@ -172,14 +171,11 @@ const uploadDocumentsToS3 = async ({
                     }
                 },
             });
-            console.log('S3 RESPONSE' + s3Response);
             const requestBody = {
                 documentReference: docGatewayResponse.fields.key,
             };
-            console.log('REQUEST BODY' + requestBody);
             if (s3Response.status === 204) {
                 try {
-                    console.log('IN S3 TRY');
                     setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SCANNING, undefined);
                     await axios.post(virusScanGatewayUrl, requestBody, {
                         headers: {
@@ -187,8 +183,6 @@ const uploadDocumentsToS3 = async ({
                         },
                     });
                 } catch (e) {
-                    console.log('IN S3 catch');
-
                     const error = e as AxiosError;
                     if (error.response?.status === 400) {
                         setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.INFECTED);
@@ -197,12 +191,9 @@ const uploadDocumentsToS3 = async ({
                 }
             }
             const fileKey = docGatewayResponse.fields.key.split('/');
-            console.log('file key' + fileKey);
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED, 100);
             const array = filesKeyByType[document.docType] ?? [];
-            console.log('array ' + array);
             filesKeyByType[document.docType] = [...array, fileKey[3]];
-            console.log('object files key' + filesKeyByType);
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {

@@ -29,7 +29,7 @@ export enum DOCUMENT_UPLOAD_STATE {
 export type UploadDocument = {
     state: DOCUMENT_UPLOAD_STATE;
     file: File;
-    progress: number | undefined;
+    progress?: number | 'scan';
     id: string;
     docType: DOCUMENT_TYPE;
     attempts: number;
