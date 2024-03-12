@@ -145,7 +145,9 @@ def test_move_files_and_update_dynamo(
     mock_copy_files_from_staging_bucket.assert_called_once_with(
         MOCK_ARF_DOCUMENT_REFERENCES, MOCK_ARF_BUCKET, SupportedDocumentTypes.ARF.value
     )
-    mock_delete_file_from_staging_bucket.assert_called_with(TEST_FILE_KEY)
+    mock_delete_file_from_staging_bucket.assert_called_with(
+        TEST_FILE_KEY, SupportedDocumentTypes.ARF.value
+    )
     mock_update_dynamo_table.assert_called_with(
         MOCK_ARF_TABLE_NAME, TEST_FILE_KEY, MOCK_ARF_BUCKET
     )
@@ -162,10 +164,14 @@ def test_copy_files_from_staging_bucket(patched_service):
 
 
 def test_delete_file_from_staging_bucket(patched_service):
-    patched_service.delete_file_from_staging_bucket(TEST_FILE_KEY)
+    complete_file_key = f"user_upload/{SupportedDocumentTypes.ARF.value}/{TEST_NHS_NUMBER}/{TEST_FILE_KEY}"
+
+    patched_service.delete_file_from_staging_bucket(
+        TEST_FILE_KEY, SupportedDocumentTypes.ARF.value
+    )
 
     patched_service.s3_service.delete_object.assert_called_with(
-        MOCK_LG_STAGING_STORE_BUCKET, TEST_FILE_KEY
+        MOCK_LG_STAGING_STORE_BUCKET, complete_file_key
     )
 
 
