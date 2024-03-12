@@ -98,9 +98,6 @@ class UploadConfirmResultService:
             )
 
     def delete_files_from_staging_bucket(self, doc_type):
-        # self.s3_service.delete_directory_by_prefix(
-        #     self.staging_bucket, f"user_upload/{doc_type}/{self.nhs_number}"
-        # )
         delete_response = self.s3_service.delete_object(
             self.staging_bucket, f"user_upload/{doc_type}/{self.nhs_number}"
         )

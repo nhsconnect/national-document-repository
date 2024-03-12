@@ -79,9 +79,6 @@ class S3Service:
     def delete_object(self, s3_bucket_name: str, file_key: str):
         return self.client.delete_object(Bucket=s3_bucket_name, Key=file_key)
 
-    # def delete_directory_by_prefix(self, s3_bucket_name: str, prefix: str):
-    #     # self.client.filter(Prefix=prefix).delete()
-    #     self.client.
     def create_object_tag(
         self, s3_bucket_name: str, file_key: str, tag_key: str, tag_value: str
     ):
