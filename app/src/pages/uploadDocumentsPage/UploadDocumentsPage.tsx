@@ -11,7 +11,7 @@ import { UploadSession } from '../../types/generic/uploadResult';
 function UploadDocumentsPage() {
     const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
-    const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
+    const [, setUploadSession] = useState<UploadSession | null>(null);
     const config = useConfig();
     const navigate = useNavigate();
 
