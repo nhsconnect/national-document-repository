@@ -199,8 +199,9 @@ const uploadDocumentsToS3 = async ({
             const fileKey = docGatewayResponse.fields.key.split('/');
             console.log('file key' + fileKey);
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED, 100);
-            const prevArray = filesKeyByType[document.docType];
-            filesKeyByType[document.docType] = [...prevArray, fileKey[2]];
+            const array = filesKeyByType[document.docType] ?? [];
+            console.log('array ' + array);
+            filesKeyByType[document.docType] = [...array, fileKey[2]];
             console.log('object files key' + filesKeyByType);
         } catch (e) {
             const error = e as AxiosError;
