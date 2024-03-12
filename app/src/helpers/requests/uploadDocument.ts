@@ -201,7 +201,7 @@ const uploadDocumentsToS3 = async ({
             setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED, 100);
             const array = filesKeyByType[document.docType] ?? [];
             console.log('array ' + array);
-            filesKeyByType[document.docType] = [...array, fileKey[2]];
+            filesKeyByType[document.docType] = [...array, fileKey[3]];
             console.log('object files key' + filesKeyByType);
         } catch (e) {
             const error = e as AxiosError;
