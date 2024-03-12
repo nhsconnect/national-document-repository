@@ -119,7 +119,7 @@ const uploadDocument = async ({
             baseUrl,
             baseHeaders,
         });
-
+        console.log('confirmation body:' + confirmationBody);
         await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
             headers: {
                 ...baseHeaders,
