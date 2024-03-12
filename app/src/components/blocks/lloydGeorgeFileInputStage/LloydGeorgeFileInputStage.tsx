@@ -18,9 +18,7 @@ import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
-import { routes } from '../../../types/generic/routes';
 import { useNavigate } from 'react-router';
-import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios';
 import { isMock } from '../../../helpers/utils/isLocal';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
@@ -48,6 +46,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
     const [showNoFilesMessage, setShowNoFilesMessage] = useState<boolean>(false);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
+
     const uploadDocuments = async () => {
         setShowNoFilesMessage(!hasFileInput);
         setUploadFilesErrors(uploadDocumentValidation(documents, patientDetails));
@@ -64,7 +63,6 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                 baseUrl,
                 baseHeaders,
             });
-            setStage(LG_UPLOAD_STAGE.COMPLETE);
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error)) {
@@ -75,8 +73,6 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                     })),
                 );
                 setStage(LG_UPLOAD_STAGE.COMPLETE);
-            } else {
-                navigate(routes.SERVER_ERROR + errorToParams(error));
             }
         }
     };

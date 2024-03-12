@@ -40,9 +40,15 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
+        const hasComplete = documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+
         if (hasExceededUploadAttempts) {
             setDocuments([]);
             setStage(LG_UPLOAD_STAGE.RETRY);
+        }
+        if (hasComplete) {
+            setDocuments([]);
+            setStage(LG_UPLOAD_STAGE.COMPLETE);
         }
     }, [documents, setDocuments, setStage]);
 
