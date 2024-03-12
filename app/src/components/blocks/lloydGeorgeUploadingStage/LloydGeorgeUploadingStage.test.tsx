@@ -9,7 +9,7 @@ import { buildPatientDetails, buildTextFile } from '../../../helpers/test/testBu
 import LloydGeorgeUploadStage from './LloydGeorgeUploadingStage';
 import usePatient from '../../../helpers/hooks/usePatient';
 import userEvent from '@testing-library/user-event';
-import uploadDocument from '../../../helpers/requests/uploadDocument';
+import { uploadDocumentsToS3 } from '../../../helpers/requests/uploadDocument';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 const mockSetDocuments = jest.fn();
 const mockSetStage = jest.fn();
@@ -20,7 +20,7 @@ const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 
 jest.mock('../../../helpers/requests/uploadDocument');
-const mockUploadDocument = uploadDocument as jest.Mock;
+const mockS3Upload = uploadDocumentsToS3 as jest.Mock;
 
 describe('<LloydGeorgeUploadingStage />', () => {
     beforeEach(() => {
@@ -180,7 +180,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
 
             userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
-            expect(mockUploadDocument).toHaveBeenCalled();
+            expect(mockS3Upload).toHaveBeenCalled();
         });
 
         it('renders a warning callout to retry failed document uploads', () => {
@@ -212,7 +212,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 expect(screen.getByText(st)).toBeInTheDocument();
             });
             userEvent.click(screen.getByRole('link', { name: 'Retry uploading all failed files' }));
-            expect(mockUploadDocument).toHaveBeenCalled();
+            expect(mockS3Upload).toHaveBeenCalled();
         });
     });
 

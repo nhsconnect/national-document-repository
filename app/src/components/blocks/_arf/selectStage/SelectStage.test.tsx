@@ -17,6 +17,7 @@ import axios from 'axios';
 
 jest.mock('axios');
 const mockSetStage = jest.fn();
+const mockSetUploadSession = jest.fn();
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/utils/toFileList', () => ({
@@ -410,6 +411,13 @@ describe('<SelectStage />', () => {
     });
 
     const renderApp = () => {
-        render(<SelectStage setDocuments={jest.fn()} setStage={mockSetStage} documents={[]} />);
+        render(
+            <SelectStage
+                setDocuments={jest.fn()}
+                setStage={mockSetStage}
+                setUploadSession={mockSetUploadSession}
+                documents={[]}
+            />,
+        );
     };
 });

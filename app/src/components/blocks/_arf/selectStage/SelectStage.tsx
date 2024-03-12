@@ -18,14 +18,16 @@ import uploadDocument from '../../../../helpers/requests/uploadDocument';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
+import { UploadSession } from '../../../../types/generic/uploadResult';
 
 interface Props {
     setDocuments: SetUploadDocuments;
     setStage: Dispatch<SetStateAction<UPLOAD_STAGE>>;
+    setUploadSession: Dispatch<SetStateAction<UploadSession | null>>;
     documents: Array<UploadDocument>;
 }
 
-function SelectStage({ setDocuments, setStage, documents }: Props) {
+function SelectStage({ setDocuments, setUploadSession, setStage, documents }: Props) {
     const [arfDocuments, setArfDocuments] = useState<Array<UploadDocument>>([]);
     const [lgDocuments, setLgDocuments] = useState<Array<UploadDocument>>([]);
     const baseUrl = useBaseAPIUrl();
@@ -47,6 +49,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             await uploadDocument({
                 nhsNumber,
                 setDocuments,
+                setUploadSession,
                 documents,
                 baseUrl,
                 baseHeaders,

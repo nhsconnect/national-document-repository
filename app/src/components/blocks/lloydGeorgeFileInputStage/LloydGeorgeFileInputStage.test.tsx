@@ -22,6 +22,7 @@ jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 window.scrollTo = jest.fn() as jest.Mock;
 
 const setStageMock = jest.fn();
+const mockSetUploadSession = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 
@@ -722,6 +723,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 documents={documents}
                 setDocuments={setDocuments}
                 setStage={setStageMock}
+                setUploadSession={mockSetUploadSession}
                 {...props}
             />
         );
