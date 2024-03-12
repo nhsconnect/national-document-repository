@@ -36,7 +36,7 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
             return `${Math.round(document.progress)}% uploaded...`;
         return null;
     };
-    const hasFailedUploads = documents.some((d) => !!d.attempts);
+    const hasFailedUploads = documents.some((d) => !!d.attempts && !d.progress);
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
@@ -73,7 +73,9 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
                     messageBody="Some of your files failed to upload, You cannot continue until you retry uploading these files."
                     messageLinkBody="Retry uploading all failed files"
                     errorOnClick={() => {
-                        const failedUploads = documents.filter((d) => d.attempts === 1);
+                        const failedUploads = documents.filter(
+                            (d) => d.attempts === 1 && !d.progress,
+                        );
                         retryUpload(failedUploads);
                     }}
                 />
@@ -102,42 +104,46 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
                     </Table.Row>
                 </Table.Head>
                 <Table.Body>
-                    {documents.map((document) => (
-                        <Table.Row key={document.id}>
-                            <Table.Cell>
-                                <div>{document.file.name}</div>
-                                {hasFailedUploads && (
-                                    <strong className="nhs-warning-color">
-                                        File failed to upload
-                                    </strong>
-                                )}
-                            </Table.Cell>
-                            <Table.Cell style={{ width: '140px' }}>
-                                {formatFileSize(document.file.size)}
-                            </Table.Cell>
-                            <Table.Cell style={{ width: '200px' }}>
-                                <progress
-                                    aria-label={`Uploading ${document.file.name}`}
-                                    max="100"
-                                    value={document.progress}
-                                ></progress>
-                                <output aria-label={`${document.file.name} upload status`}>
-                                    {getUploadMessage(document)}
-                                </output>
-                                {hasFailedUploads && (
-                                    <div style={{ textAlign: 'right' }}>
-                                        <LinkButton
-                                            onClick={() => {
-                                                retryUpload([document]);
-                                            }}
-                                        >
-                                            Retry upload
-                                        </LinkButton>
-                                    </div>
-                                )}
-                            </Table.Cell>
-                        </Table.Row>
-                    ))}
+                    {documents.map((document) => {
+                        const uploadFailed = !!document.attempts && !document.progress;
+
+                        return (
+                            <Table.Row key={document.id}>
+                                <Table.Cell>
+                                    <div>{document.file.name}</div>
+                                    {uploadFailed && (
+                                        <strong className="nhs-warning-color">
+                                            File failed to upload
+                                        </strong>
+                                    )}
+                                </Table.Cell>
+                                <Table.Cell style={{ width: '140px' }}>
+                                    {formatFileSize(document.file.size)}
+                                </Table.Cell>
+                                <Table.Cell style={{ width: '200px' }}>
+                                    <progress
+                                        aria-label={`Uploading ${document.file.name}`}
+                                        max="100"
+                                        value={document.progress}
+                                    ></progress>
+                                    <output aria-label={`${document.file.name} upload status`}>
+                                        {getUploadMessage(document)}
+                                    </output>
+                                    {uploadFailed && (
+                                        <div style={{ textAlign: 'right' }}>
+                                            <LinkButton
+                                                onClick={() => {
+                                                    retryUpload([document]);
+                                                }}
+                                            >
+                                                Retry upload
+                                            </LinkButton>
+                                        </div>
+                                    )}
+                                </Table.Cell>
+                            </Table.Row>
+                        );
+                    })}
                 </Table.Body>
             </Table>
         </>

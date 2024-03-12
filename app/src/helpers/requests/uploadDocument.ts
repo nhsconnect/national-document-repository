@@ -37,6 +37,9 @@ const uploadDocument = async ({
     baseUrl,
     baseHeaders,
 }: UploadDocumentsArgs) => {
+    /**
+     * Upload Document helpers
+     */
     const setDocument = ({ id, state, progress, attempts }: DocumentStateProps) => {
         const newDocumentsState = documents.map((document) => {
             if (document.id === id) {
@@ -56,6 +59,64 @@ const uploadDocument = async ({
             docType: document.docType,
         };
     };
+    const uploadDocumentsToS3 = async ({
+        setDocument,
+        documents,
+        data,
+    }: UploadDocumentsToS3Args) => {
+        for (const document of documents) {
+            try {
+                const docGatewayResponse: S3Upload = data[document.file.name];
+                const formData = new FormData();
+                const docFields: S3UploadFields = docGatewayResponse.fields;
+                Object.entries(docFields).forEach(([key, value]) => {
+                    formData.append(key, value);
+                });
+                formData.append('file', document.file);
+                const s3url = docGatewayResponse.url;
+                const s3Response = await axios.post(s3url, formData, {
+                    onUploadProgress: (progress) => {
+                        const { loaded, total } = progress;
+                        if (total) {
+                            setDocument({
+                                id: document.id,
+                                state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                                progress: (loaded / total) * 100,
+                            });
+                        }
+                    },
+                });
+
+                const state =
+                    s3Response.status === 403
+                        ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
+                        : DOCUMENT_UPLOAD_STATE.FAILED;
+                setDocument({
+                    id: document.id,
+                    state,
+                    attempts: 0,
+                    progress: 0,
+                });
+            } catch (e) {
+                const error = e as AxiosError;
+
+                const state =
+                    error.response?.status === 403
+                        ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
+                        : DOCUMENT_UPLOAD_STATE.FAILED;
+                setDocument({
+                    id: document.id,
+                    state,
+                    attempts: document.attempts + 1,
+                    progress: 0,
+                });
+            }
+        }
+    };
+
+    /**
+     * Upload Document request
+     */
     const requestBody = {
         resourceType: 'DocumentReference',
         subject: {
@@ -108,57 +169,6 @@ const uploadDocument = async ({
             progress: 0,
         }));
         setDocuments(failedDocuments);
-    }
-};
-
-const uploadDocumentsToS3 = async ({ setDocument, documents, data }: UploadDocumentsToS3Args) => {
-    for (const document of documents) {
-        try {
-            const docGatewayResponse: S3Upload = data[document.file.name];
-            const formData = new FormData();
-            const docFields: S3UploadFields = docGatewayResponse.fields;
-            Object.entries(docFields).forEach(([key, value]) => {
-                formData.append(key, value);
-            });
-            formData.append('file', document.file);
-            const s3url = docGatewayResponse.url;
-            const s3Response = await axios.post(s3url, formData, {
-                onUploadProgress: (progress) => {
-                    const { loaded, total } = progress;
-                    if (total) {
-                        setDocument({
-                            id: document.id,
-                            state: DOCUMENT_UPLOAD_STATE.UPLOADING,
-                            progress: (loaded / total) * 100,
-                        });
-                    }
-                },
-            });
-
-            const state =
-                s3Response.status === 403
-                    ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
-                    : DOCUMENT_UPLOAD_STATE.FAILED;
-            setDocument({
-                id: document.id,
-                state,
-                attempts: 0,
-                progress: 0,
-            });
-        } catch (e) {
-            const error = e as AxiosError;
-
-            const state =
-                error.response?.status === 403
-                    ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
-                    : DOCUMENT_UPLOAD_STATE.FAILED;
-            setDocument({
-                id: document.id,
-                state,
-                attempts: document.attempts + 1,
-                progress: 0,
-            });
-        }
     }
 };
 
