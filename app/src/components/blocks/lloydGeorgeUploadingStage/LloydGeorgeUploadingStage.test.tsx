@@ -176,7 +176,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             );
 
             expect(getProgressBarValue(uploadDocument)).toEqual(0);
-            expect(getProgressText(uploadDocument)).toContain('0% uploaded...');
+            expect(getProgressText(uploadDocument)).toContain('Upload failed');
             expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
 
             userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
@@ -235,7 +235,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 />,
             );
             expect(getProgressBarValue(uploadDocument)).toEqual(0);
-            expect(getProgressText(uploadDocument)).toContain('0% uploaded...');
+            expect(getProgressText(uploadDocument)).toContain('Upload failed');
             expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
             triggerUploadStateChange(uploadDocument, DOCUMENT_UPLOAD_STATE.FAILED, {
                 progress: 0,

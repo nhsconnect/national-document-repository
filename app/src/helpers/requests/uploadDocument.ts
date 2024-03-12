@@ -88,8 +88,8 @@ const uploadDocument = async ({
                 });
 
                 const state =
-                    s3Response.status === 403
-                        ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
+                    s3Response.status === 204
+                        ? DOCUMENT_UPLOAD_STATE.SUCCEEDED
                         : DOCUMENT_UPLOAD_STATE.FAILED;
                 setDocument({
                     id: document.id,

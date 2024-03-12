@@ -30,11 +30,7 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments }: Props) {
         else if (document.state === DOCUMENT_UPLOAD_STATE.UPLOADING)
             return `${Math.round(document.progress)}% uploaded...`;
         else if (document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload successful';
-        else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED && document.attempts > 1)
-            return 'Upload failed';
-        else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED && document.attempts === 1)
-            return `${Math.round(document.progress)}% uploaded...`;
-        return null;
+        else return 'Upload failed';
     };
     const hasFailedUploads = documents.some((d) => !!d.attempts && !d.progress);
 
