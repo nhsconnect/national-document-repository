@@ -68,7 +68,7 @@ def processing_event_details(event):
         nhs_number = body.get("patientId")
         documents = body.get("documents")
 
-        if not nhs_number or not documents:
+        if not nhs_number or not documents or not isinstance(documents, dict):
             logger.error(
                 f"{LambdaError.UploadConfirmResultProps.to_str()}",
                 {"Result": failed_message},
