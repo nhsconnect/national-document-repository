@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
@@ -7,23 +7,15 @@ import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import LinkButton from '../../generic/linkButton/LinkButton';
-import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { UploadSession } from '../../../types/generic/uploadResult';
 
 type Props = {
     documents: Array<UploadDocument>;
-    setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
-    setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
     uploadSession: UploadSession | null;
     uploadAndScanDocuments: (documents: Array<UploadDocument>) => void;
 };
 
-function LloydGeorgeUploadStage({
-    documents,
-    setStage,
-    setDocuments,
-    uploadAndScanDocuments,
-}: Props) {
+function LloydGeorgeUploadStage({ documents, uploadAndScanDocuments }: Props) {
     const getUploadMessage = (document: UploadDocument) => {
         const progress = document.progress === 100 ? 99 : document.progress;
         const showProgress =

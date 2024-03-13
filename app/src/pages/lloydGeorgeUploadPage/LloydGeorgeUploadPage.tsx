@@ -129,8 +129,6 @@ function LloydGeorgeUploadPage() {
             return (
                 <LloydGeorgeUploadingStage
                     documents={documents}
-                    setStage={setStage}
-                    setDocuments={setDocuments}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={uploadAndScanDocuments}
                 />
@@ -141,6 +139,8 @@ function LloydGeorgeUploadPage() {
             return <LloydGeorgeUploadFailure documents={documents} setStage={setStage} />;
         case LG_UPLOAD_STAGE.RETRY:
             return <LloydGeorgeRetryUploadStage setStage={setStage} />;
+        case LG_UPLOAD_STAGE.CONFIRMATION:
+            return <div>CONFIRMING</div>;
         default:
             return <div />;
     }
