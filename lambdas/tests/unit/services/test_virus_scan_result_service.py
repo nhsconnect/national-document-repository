@@ -18,7 +18,13 @@ from utils.lambda_exceptions import LambdaException, VirusScanResultException
 def virus_scanner_service(set_env, mocker):
     service = VirusScanService()
     mocker.patch.object(service, "ssm_service")
+    mocker.patch.object(service, "dynamo_service")
     yield service
+
+
+@pytest.fixture
+def mock_update_dynamo_table(virus_scanner_service, mocker):
+    yield mocker.patch.object(virus_scanner_service, "update_dynamo_table")
 
 
 def test_prepare_request_raise_error(virus_scanner_service, mocker):
@@ -33,7 +39,7 @@ def test_prepare_request_raise_error(virus_scanner_service, mocker):
 
 
 def test_virus_scan_request_successful(mocker, virus_scanner_service):
-    file_ref = "test_file_ref"
+    file_ref = "test/LG/file_ref"
     virus_scanner_service.access_token = "test_token"
     virus_scanner_service.base_url = "test.endpoint"
     excepted_headers = {
@@ -51,7 +57,7 @@ def test_virus_scan_request_successful(mocker, virus_scanner_service):
     mock_post = mocker.patch("requests.post", return_value=response)
     try:
         virus_scanner_service.request_virus_scan(
-            "test_file_ref", retry_on_expired=False
+            "test/LG/file_ref", retry_on_expired=False
         )
     except LambdaException:
         assert False, "test"
@@ -65,7 +71,7 @@ def test_virus_scan_request_successful(mocker, virus_scanner_service):
 
 
 def test_virus_scan_request_invalid_token(mocker, virus_scanner_service):
-    file_ref = "test_file_ref"
+    file_ref = "test/ARF/file_ref"
     virus_scanner_service.access_token = "test_token"
     virus_scanner_service.base_url = "test.endpoint"
     excepted_headers = {
@@ -87,7 +93,9 @@ def test_virus_scan_request_invalid_token(mocker, virus_scanner_service):
     )
     virus_scanner_service.get_new_access_token = mocker.MagicMock()
     try:
-        virus_scanner_service.request_virus_scan("test_file_ref", retry_on_expired=True)
+        virus_scanner_service.request_virus_scan(
+            "test/ARF/file_ref", retry_on_expired=True
+        )
     except LambdaException:
         assert False, "test"
 
@@ -101,7 +109,7 @@ def test_virus_scan_request_invalid_token(mocker, virus_scanner_service):
 
 
 def test_virus_scan_request_infected_file(mocker, virus_scanner_service):
-    file_ref = "test_file_ref"
+    file_ref = "test/ARF/file_ref"
     virus_scanner_service.access_token = "test_token"
     virus_scanner_service.base_url = "test.endpoint"
     excepted_headers = {
@@ -119,7 +127,7 @@ def test_virus_scan_request_infected_file(mocker, virus_scanner_service):
     mock_post = mocker.patch("requests.post", return_value=response)
     with pytest.raises(VirusScanResultException):
         virus_scanner_service.request_virus_scan(
-            "test_file_ref", retry_on_expired=False
+            "test/ARF/file_ref", retry_on_expired=False
         )
 
     mock_post.assert_called_with(
@@ -131,7 +139,7 @@ def test_virus_scan_request_infected_file(mocker, virus_scanner_service):
 
 
 def test_virus_scan_request_bad_request(mocker, virus_scanner_service):
-    file_ref = "test_file_ref"
+    file_ref = "test/LG/file_ref"
     virus_scanner_service.access_token = "test_token"
     virus_scanner_service.base_url = "test.endpoint"
     excepted_headers = {
@@ -149,7 +157,7 @@ def test_virus_scan_request_bad_request(mocker, virus_scanner_service):
     mock_post = mocker.patch("requests.post", return_value=response)
     with pytest.raises(VirusScanResultException):
         virus_scanner_service.request_virus_scan(
-            "test_file_ref", retry_on_expired=False
+            "test/LG/file_ref", retry_on_expired=False
         )
 
     mock_post.assert_called_with(

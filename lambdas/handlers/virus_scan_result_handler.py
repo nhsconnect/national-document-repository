@@ -3,6 +3,7 @@ from json import JSONDecodeError
 
 from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
+from enums.supported_document_types import SupportedDocumentTypes
 from services.virus_scan_result_service import VirusScanService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
@@ -22,6 +23,8 @@ logger = LoggingService(__name__)
         "APPCONFIG_APPLICATION",
         "APPCONFIG_CONFIGURATION",
         "APPCONFIG_ENVIRONMENT",
+        "DOCUMENT_STORE_DYNAMODB_NAME",
+        "LLOYD_GEORGE_DYNAMODB_NAME",
         "STAGING_STORE_BUCKET_NAME",
     ]
 )
@@ -35,6 +38,14 @@ def lambda_handler(event, context):
             raise VirusScanResultException(400, LambdaError.VirusScanNoBody)
 
         document_reference = event_body["documentReference"]
+        if not any(
+            [
+                SupportedDocumentTypes.ARF.value,
+                SupportedDocumentTypes.LG.value in document_reference,
+            ]
+        ):
+            raise VirusScanResultException(400, LambdaError.VirusScanNoDocumentType)
+
     except (JSONDecodeError, KeyError):
         raise VirusScanResultException(400, LambdaError.VirusScanNoBody)
 
