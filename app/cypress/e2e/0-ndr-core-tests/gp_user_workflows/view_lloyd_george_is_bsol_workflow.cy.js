@@ -19,7 +19,7 @@ describe('GP Workflow: View Lloyd George record', () => {
     };
 
     const assertTimeoutLloydGeorgeError = (assertDownloadLink) => {
-        cy.getByTestId('llyoyd-george-record-error-message').should(
+        cy.getByTestId('lloyd-george-record-error-message').should(
             'include.text',
             'The Lloyd George document is too large to view in a browser,',
         );

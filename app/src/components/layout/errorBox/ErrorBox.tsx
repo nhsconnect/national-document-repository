@@ -10,6 +10,7 @@ type Props = {
     errorInputLink?: string;
     errorBody?: string;
     dataTestId?: string;
+    errorOnClick?: () => void;
     errorMessageList?: UploadFilesErrors[];
 };
 
@@ -22,9 +23,12 @@ const ErrorBox = ({
     messageLinkBody,
     errorBody,
     errorMessageList,
+    errorOnClick,
     dataTestId,
 }: Props) => {
     const hasInputLink = errorInputLink && messageLinkBody;
+    const hasOnClick = errorOnClick && messageLinkBody;
+
     return (
         <div id="error-box" data-testid={dataTestId}>
             <ErrorSummary aria-labelledby={errorBoxSummaryId} role="alert" tabIndex={-1}>
@@ -41,18 +45,32 @@ const ErrorBox = ({
                                 {errorBody}
                             </ErrorSummary.Item>
                         )}
+
+                        {messageBody && <p>{messageBody}</p>}
                         {hasInputLink && (
                             <ErrorSummary.Item href={errorInputLink}>
                                 <p>{messageLinkBody}</p>
                             </ErrorSummary.Item>
                         )}
-                        {messageBody && <p>{messageBody}</p>}
-                        {errorMessageList?.map((errorItem) => {
+                        {hasOnClick && (
+                            <ErrorSummary.Item
+                                href={'#'}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    errorOnClick();
+                                }}
+                            >
+                                <p>{messageLinkBody}</p>
+                            </ErrorSummary.Item>
+                        )}
+                        {errorMessageList?.map((errorItem, i) => {
+                            const key = (errorItem.filename ?? '') + errorItem.error.errorBox + i;
+
                             return (
-                                <div key={errorItem.file?.id}>
+                                <div key={key}>
                                     <p>{errorItem.error.errorBox}</p>
-                                    <ErrorSummary.Item href={'#' + errorItem.file?.file.name}>
-                                        <p>{errorItem.file?.file.name}</p>
+                                    <ErrorSummary.Item href={'#' + errorItem.filename}>
+                                        <p>{errorItem.filename}</p>
                                     </ErrorSummary.Item>
                                 </div>
                             );

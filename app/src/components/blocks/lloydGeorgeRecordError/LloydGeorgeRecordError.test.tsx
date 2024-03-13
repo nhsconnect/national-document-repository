@@ -98,7 +98,7 @@ describe('LloydGeorgeRecordError', () => {
                 <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={noRecordsStatus} />,
             );
 
-            expect(screen.getByText('No records available for this patient')).toBeInTheDocument();
+            expect(screen.getByText(/No records available for this patient/i)).toBeInTheDocument();
             expect(
                 screen.getByRole('button', { name: 'Upload patient record' }),
             ).toBeInTheDocument();
@@ -114,7 +114,7 @@ describe('LloydGeorgeRecordError', () => {
                 <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={noRecordsStatus} />,
             );
 
-            expect(screen.getByText('No records available for this patient')).toBeInTheDocument();
+            expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
             expect(
                 screen.queryByRole('button', { name: 'Upload patient record' }),
             ).not.toBeInTheDocument();
@@ -208,7 +208,7 @@ describe('LloydGeorgeRecordError', () => {
             );
 
             const uploadButton = screen.getByRole('button', { name: 'Upload patient record' });
-            expect(screen.getByText('No records available for this patient')).toBeInTheDocument();
+            expect(screen.getByText(/No records available for this patient/i)).toBeInTheDocument();
             expect(uploadButton).toBeInTheDocument();
 
             act(() => {

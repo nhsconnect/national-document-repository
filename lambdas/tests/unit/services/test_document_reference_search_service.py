@@ -4,24 +4,16 @@ import pytest
 from botocore.exceptions import ClientError
 from models.document_reference import DocumentReference
 from services.document_reference_search_service import DocumentReferenceSearchService
+from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentRefSearchException
 
-MOCK_DATA = {
-    "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
-    "ContentType": "type",
-    "Created": "2023-08-23T00:38:04.095Z",
-    "Deleted": "",
-    "FileLocation": "s3://test-bucket/9000000009/test-key-123",
-    "FileName": "document.csv",
-    "NhsNumber": "9000000009",
-    "VirusScannerResult": "Clean",
-}
-
-MOCK_DOCUMENT_REFERENCE = [DocumentReference.model_validate(MOCK_DATA)]
+MOCK_DOCUMENT_REFERENCE = [
+    DocumentReference.model_validate(MOCK_SEARCH_RESPONSE["Items"][0])
+]
 
 EXPECTED_RESPONSE = {
-    "created": "2023-08-23T00:38:04.095Z",
+    "created": "2023-08-23T13:38:04.095Z",
     "fileName": "document.csv",
     "virusScannerResult": "Clean",
 }

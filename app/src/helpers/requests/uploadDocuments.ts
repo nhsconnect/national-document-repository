@@ -11,7 +11,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 type UploadDocumentsArgs = {
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
-    setUploadSession?: Dispatch<SetStateAction<UploadSession | null>>;
+    setUploadSession: Dispatch<SetStateAction<UploadSession | null>>;
     documents: UploadDocument[];
     nhsNumber: string;
     baseUrl: string;
@@ -82,6 +82,7 @@ const virusScanResult = async ({ docRef, baseUrl, baseHeaders }: VirusScanArgs) 
         },
     });
 };
+
 const uploadConfirmation = async ({
     baseUrl,
     baseHeaders,
@@ -107,7 +108,9 @@ export const uploadDocumentsToS3 = async ({
     uploadSession,
     documents,
 }: UploadDocumentsToS3Args) => {
-    let fileKeyBuilder: FileKeyBuilder = {} as FileKeyBuilder;
+    // TODO: COPY FILEYKEYBUILDER LOGIC INTO UPLOAD CONFIRMATION
+
+    // let fileKeyBuilder: FileKeyBuilder = {} as FileKeyBuilder;
 
     for (const document of documents) {
         const docGatewayResponse: S3Upload = uploadSession[document.file.name];
@@ -152,10 +155,9 @@ export const uploadDocumentsToS3 = async ({
                     progress: 0,
                 });
             }
-            const fileKey = docGatewayResponse.fields.key.split('/');
-            const currentFileKeys = fileKeyBuilder[document.docType] ?? [];
-            fileKeyBuilder[document.docType] = [...currentFileKeys, fileKey[3]];
-            // return s3Response;
+            // const fileKey = docGatewayResponse.fields.key.split('/');
+            // const currentFileKeys = fileKeyBuilder[document.docType] ?? [];
+            // fileKeyBuilder[document.docType] = [...currentFileKeys, fileKey[3]];
         } catch (e) {
             const error = e as AxiosError;
 
@@ -171,8 +173,6 @@ export const uploadDocumentsToS3 = async ({
             });
         }
     }
-
-    return fileKeyBuilder;
 };
 
 const uploadDocuments = async ({
@@ -219,18 +219,13 @@ const uploadDocuments = async ({
                 ...baseHeaders,
             },
         });
-        const confirmationBodyDocuments = await uploadDocumentsToS3({
+        setUploadSession(data);
+        await uploadDocumentsToS3({
             setDocuments,
             documents,
             uploadSession: data,
             baseUrl,
             baseHeaders,
-        });
-        await uploadConfirmation({
-            baseUrl,
-            baseHeaders,
-            nhsNumber,
-            documentKeysByType: confirmationBodyDocuments,
         });
     } catch (e) {
         const error = e as AxiosError;

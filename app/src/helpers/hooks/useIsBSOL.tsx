@@ -4,7 +4,7 @@ function useIsBSOL() {
     const [session] = useSessionContext();
 
     const isBSOL = session.auth ? session.auth.isBSOL : null;
-    return isBSOL;
+    return !!isBSOL;
 }
 
 export default useIsBSOL;

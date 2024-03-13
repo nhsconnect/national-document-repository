@@ -12,31 +12,29 @@ import {
     UploadFilesErrors,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
+import uploadDocuments from '../../../helpers/requests/uploadDocuments';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
-import { routes } from '../../../types/generic/routes';
-import { useNavigate } from 'react-router';
-import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios';
 import { isMock } from '../../../helpers/utils/isLocal';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
-import { ErrorResponse } from '../../../types/generic/errorResponse';
-import uploadDocuments from '../../../helpers/requests/uploadDocuments';
+import LinkButton from '../../generic/linkButton/LinkButton';
+import { UploadSession } from '../../../types/generic/uploadResult';
 
 export type Props = {
     documents: Array<UploadDocument>;
     setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
+    setUploadSession: Dispatch<SetStateAction<UploadSession | null>>;
     setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
 };
 
-function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props) {
+function LloydGeorgeFileInputStage({ documents, setDocuments, setStage, setUploadSession }: Props) {
     const patientDetails = usePatient();
-    const navigate = useNavigate();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const dob: string = patientDetails?.birthDate
@@ -50,12 +48,8 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
     const baseHeaders = useBaseAPIHeaders();
     const submitDocuments = async () => {
         setShowNoFilesMessage(!hasFileInput);
-        if (!hasFileInput) {
-            window.scrollTo(0, 0);
-            return;
-        }
-        setUploadFilesErrors(uploadDocumentValidation(documents));
-        if (uploadFilesErrors.length) {
+        setUploadFilesErrors(uploadDocumentValidation(documents, patientDetails));
+        if (!hasFileInput || uploadFilesErrors.length > 0) {
             window.scrollTo(0, 0);
             return;
         }
@@ -64,26 +58,21 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             await uploadDocuments({
                 nhsNumber,
                 setDocuments,
+                setUploadSession,
                 documents,
                 baseUrl,
                 baseHeaders,
             });
-            setStage(LG_UPLOAD_STAGE.COMPLETE);
         } catch (e) {
             const error = e as AxiosError;
-            const errorResponse = (error.response?.data as ErrorResponse) ?? {};
             if (isMock(error)) {
                 setDocuments(
                     documents.map((document) => ({
                         ...document,
                         state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                        progress: 100,
                     })),
                 );
-            } else if (errorResponse.err_code === 'VSR_4002') {
-                setStage(LG_UPLOAD_STAGE.INFECTED);
-            } else {
-                navigate(routes.SERVER_ERROR + errorToParams(error));
+                setStage(LG_UPLOAD_STAGE.COMPLETE);
             }
         }
     };
@@ -99,7 +88,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
         setShowNoFilesMessage(false);
-        setUploadFilesErrors(uploadDocumentValidation(updatedDocList));
+        setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
     };
     const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -130,11 +119,11 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
         }
         setDocuments(updatedDocList);
-        setUploadFilesErrors(uploadDocumentValidation(updatedDocList));
+        setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
     };
     const fileErrorMessage = (document: UploadDocument) => {
         const errorFile = uploadFilesErrors.find(
-            (errorFile) => document.file === errorFile.file?.file,
+            (errorFile) => document.file.name === errorFile.filename,
         );
         if (errorFile) {
             return <div className="lloydgeorge_file_upload_error">{errorFile.error.message}</div>;
@@ -289,15 +278,14 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                     Upload
                 </Button>
                 {!!documents.length && (
-                    <button
-                        className={'lloydgeorge_link'}
+                    <LinkButton
                         type="button"
                         onClick={() => {
                             onRemove(-1);
                         }}
                     >
                         Remove all
-                    </button>
+                    </LinkButton>
                 )}
             </div>
         </div>

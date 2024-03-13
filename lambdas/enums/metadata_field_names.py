@@ -14,6 +14,8 @@ class DocumentReferenceMetadataFields(Enum):
     VIRUS_SCANNER_RESULT = "VirusScannerResult"
     CURRENT_GP_ODS = "CurrentGpOds"
     UPLOADED = "Uploaded"
+    UPLOADING = "Uploading"
+    LAST_UPDATED = "LastUpdated"
 
     @staticmethod
     def list() -> list[str]:
