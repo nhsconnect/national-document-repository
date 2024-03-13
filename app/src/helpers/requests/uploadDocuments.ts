@@ -101,8 +101,11 @@ export const uploadConfirmation = async ({
     const fileKeyBuilder = documents.reduce((acc, doc) => {
         const documentMetadata = uploadSession[doc.file.name];
         const fileKey = documentMetadata.fields.key.split('/');
+        console.log(doc);
+        console.log(documentMetadata);
 
         const previousKeys = acc[doc.docType] ?? null;
+        console.log(previousKeys);
 
         return {
             ...acc,

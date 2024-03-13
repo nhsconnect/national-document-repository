@@ -108,7 +108,7 @@ function LloydGeorgeUploadPage() {
                 baseHeaders,
             });
             setUploadSession(uploadSession);
-            await uploadAndScanDocuments(documents, uploadSession);
+            uploadAndScanDocuments(documents, uploadSession);
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error)) {
