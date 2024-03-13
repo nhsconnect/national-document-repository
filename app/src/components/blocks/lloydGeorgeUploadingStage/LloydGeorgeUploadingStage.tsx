@@ -43,13 +43,11 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
 
     const retryUpload = async (documents: Array<UploadDocument>) => {
         if (uploadSession) {
-            try {
-                await uploadDocumentsToS3({
-                    setDocuments,
-                    documents,
-                    uploadSession,
-                });
-            } catch (e) {}
+            await uploadDocumentsToS3({
+                setDocuments,
+                documents,
+                uploadSession,
+            });
         }
     };
 
