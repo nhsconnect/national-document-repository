@@ -22,16 +22,14 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
     const getUploadMessage = (document: UploadDocument) => {
         const progress = document.progress === 100 ? 99 : document.progress;
         const showProgress =
-            (document.state === DOCUMENT_UPLOAD_STATE.UPLOADING ||
-                document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) &&
-            progress !== undefined;
+            document.state === DOCUMENT_UPLOAD_STATE.UPLOADING && progress !== undefined;
 
         if (document.state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
         else if (showProgress) return `${Math.round(progress)}% uploaded...`;
-        else if (document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload successful';
         else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
         else if (document.state === DOCUMENT_UPLOAD_STATE.INFECTED)
             return 'File has failed a virus scan';
+        else if (document.state === DOCUMENT_UPLOAD_STATE.CLEAN) return 'Virus scan complete';
         else if (document.state === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
         else return 'Upload failed';
     };

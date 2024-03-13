@@ -39,7 +39,7 @@ function LloydGeorgeUploadPage() {
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
         const hasVirus = documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.INFECTED);
-        const hasComplete = documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+        const hasNoVirus = documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
 
         const confirmUpload = async () => {
             if (uploadSession) {
@@ -51,6 +51,12 @@ function LloydGeorgeUploadPage() {
                     uploadSession,
                     documents,
                 });
+                setDocuments(
+                    documents.map((document) => ({
+                        ...document,
+                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                    })),
+                );
                 setStage(LG_UPLOAD_STAGE.COMPLETE);
             }
         };
@@ -60,7 +66,7 @@ function LloydGeorgeUploadPage() {
             setStage(LG_UPLOAD_STAGE.RETRY);
         } else if (hasVirus) {
             setStage(LG_UPLOAD_STAGE.INFECTED);
-        } else if (hasComplete) {
+        } else if (hasNoVirus) {
             confirmUpload();
         }
     }, [baseHeaders, baseUrl, documents, nhsNumber, setDocuments, setStage, uploadSession]);
