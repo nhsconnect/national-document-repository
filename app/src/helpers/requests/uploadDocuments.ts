@@ -83,23 +83,23 @@ const virusScanResult = async ({ docRef, baseUrl, baseHeaders }: VirusScanArgs) 
     });
 };
 
-const uploadConfirmation = async ({
-    baseUrl,
-    baseHeaders,
-    nhsNumber,
-    documentKeysByType,
-}: UploadConfirmationArgs) => {
-    const uploadConfirmationGatewayUrl = baseUrl + endpoints.UPLOAD_CONFIRMATION;
-    const confirmationBody = {
-        patientId: nhsNumber,
-        documents: { documentKeysByType },
-    };
-    await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
-        headers: {
-            ...baseHeaders,
-        },
-    });
-};
+// const uploadConfirmation = async ({
+//     baseUrl,
+//     baseHeaders,
+//     nhsNumber,
+//     documentKeysByType,
+// }: UploadConfirmationArgs) => {
+//     const uploadConfirmationGatewayUrl = baseUrl + endpoints.UPLOAD_CONFIRMATION;
+//     const confirmationBody = {
+//         patientId: nhsNumber,
+//         documents: { documentKeysByType },
+//     };
+//     await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
+//         headers: {
+//             ...baseHeaders,
+//         },
+//     });
+// };
 
 export const uploadDocumentsToS3 = async ({
     baseUrl,
