@@ -65,29 +65,30 @@ function LloydGeorgeUploadPage() {
         }
     }, [baseHeaders, baseUrl, documents, nhsNumber, setDocuments, setStage, uploadSession]);
 
-    const uploadAndScanDocuments = (documents: Array<UploadDocument>) => {
-        if (uploadSession) {
-            documents.forEach(async (document) => {
-                const documentMetadata = uploadSession[document.file.name];
-                const documentReference = documentMetadata.fields.key;
-                await uploadDocumentToS3({ setDocuments, document, uploadSession });
-                setDocument(setDocuments, {
-                    id: document.id,
-                    state: DOCUMENT_UPLOAD_STATE.SCANNING,
-                    progress: 'scan',
-                });
-                const virusDocumentState = await virusScanResult({
-                    documentReference,
-                    baseUrl,
-                    baseHeaders,
-                });
-                setDocument(setDocuments, {
-                    id: document.id,
-                    state: virusDocumentState,
-                    progress: 100,
-                });
+    const uploadAndScanDocuments = (
+        documents: Array<UploadDocument>,
+        uploadSession: UploadSession,
+    ) => {
+        documents.forEach(async (document) => {
+            const documentMetadata = uploadSession[document.file.name];
+            const documentReference = documentMetadata.fields.key;
+            await uploadDocumentToS3({ setDocuments, document, uploadSession });
+            setDocument(setDocuments, {
+                id: document.id,
+                state: DOCUMENT_UPLOAD_STATE.SCANNING,
+                progress: 'scan',
             });
-        }
+            const virusDocumentState = await virusScanResult({
+                documentReference,
+                baseUrl,
+                baseHeaders,
+            });
+            setDocument(setDocuments, {
+                id: document.id,
+                state: virusDocumentState,
+                progress: 100,
+            });
+        });
     };
 
     const submitDocuments = async () => {
@@ -101,7 +102,7 @@ function LloydGeorgeUploadPage() {
                 baseHeaders,
             });
             setUploadSession(uploadSession);
-            await uploadAndScanDocuments(documents);
+            await uploadAndScanDocuments(documents, uploadSession);
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error)) {

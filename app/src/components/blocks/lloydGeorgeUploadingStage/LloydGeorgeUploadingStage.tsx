@@ -12,10 +12,13 @@ import { UploadSession } from '../../../types/generic/uploadResult';
 type Props = {
     documents: Array<UploadDocument>;
     uploadSession: UploadSession | null;
-    uploadAndScanDocuments: (documents: Array<UploadDocument>) => void;
+    uploadAndScanDocuments: (
+        documents: Array<UploadDocument>,
+        uploadSession: UploadSession,
+    ) => void;
 };
 
-function LloydGeorgeUploadStage({ documents, uploadAndScanDocuments }: Props) {
+function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocuments }: Props) {
     const getUploadMessage = (document: UploadDocument) => {
         const progress = document.progress === 100 ? 99 : document.progress;
         const showProgress =
@@ -50,7 +53,9 @@ function LloydGeorgeUploadStage({ documents, uploadAndScanDocuments }: Props) {
                             ].includes(d.state);
                             return d.attempts === 1 && notInProgress;
                         });
-                        uploadAndScanDocuments(failedUploads);
+                        if (uploadSession) {
+                            uploadAndScanDocuments(failedUploads, uploadSession);
+                        }
                     }}
                 />
             )}
@@ -112,7 +117,12 @@ function LloydGeorgeUploadStage({ documents, uploadAndScanDocuments }: Props) {
                                         <div style={{ textAlign: 'right' }}>
                                             <LinkButton
                                                 onClick={() => {
-                                                    uploadAndScanDocuments([document]);
+                                                    if (uploadSession) {
+                                                        uploadAndScanDocuments(
+                                                            [document],
+                                                            uploadSession,
+                                                        );
+                                                    }
                                                 }}
                                             >
                                                 Retry upload
