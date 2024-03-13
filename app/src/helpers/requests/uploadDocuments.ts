@@ -76,11 +76,16 @@ export const setDocument = (
 const virusScanResult = async ({ docRef, baseUrl, baseHeaders }: VirusScanArgs) => {
     const virusScanGatewayUrl = baseUrl + endpoints.VIRUS_SCAN;
     const body = { documentReference: docRef };
-    await axios.post(virusScanGatewayUrl, body, {
-        headers: {
-            ...baseHeaders,
-        },
-    });
+    try {
+        await axios.post(virusScanGatewayUrl, body, {
+            headers: {
+                ...baseHeaders,
+            },
+        });
+        return DOCUMENT_UPLOAD_STATE.CLEAN;
+    } catch (e) {
+        return DOCUMENT_UPLOAD_STATE.INFECTED;
+    }
 };
 
 // const uploadConfirmation = async ({
@@ -141,24 +146,17 @@ export const uploadDocumentsToS3 = async ({
                 progress: 'scan',
             });
             const docRef = docGatewayResponse.fields.key;
-            try {
-                await virusScanResult({ docRef, baseUrl, baseHeaders });
-                setDocument(setDocuments, {
-                    id: document.id,
-                    state: DOCUMENT_UPLOAD_STATE.CLEAN,
-                    progress: 100,
-                });
-            } catch {
-                setDocument(setDocuments, {
-                    id: document.id,
-                    state: DOCUMENT_UPLOAD_STATE.INFECTED,
-                    progress: 0,
-                });
-            }
+            const virusDocumentState = await virusScanResult({ docRef, baseUrl, baseHeaders });
+
+            setDocument(setDocuments, {
+                id: document.id,
+                state: virusDocumentState,
+                progress: 100,
+            });
+        } catch (e) {
             // const fileKey = docGatewayResponse.fields.key.split('/');
             // const currentFileKeys = fileKeyBuilder[document.docType] ?? [];
             // fileKeyBuilder[document.docType] = [...currentFileKeys, fileKey[3]];
-        } catch (e) {
             const error = e as AxiosError;
 
             const state =

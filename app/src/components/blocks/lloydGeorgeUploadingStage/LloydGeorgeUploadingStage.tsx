@@ -25,12 +25,14 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
     const baseHeaders = useBaseAPIHeaders();
 
     const getUploadMessage = (document: UploadDocument) => {
+        const progress = document.progress === 100 ? 99 : document.progress;
+        const showProgress =
+            (document.state === DOCUMENT_UPLOAD_STATE.UPLOADING ||
+                document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) &&
+            progress !== undefined;
+
         if (document.state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
-        else if (
-            document.state === DOCUMENT_UPLOAD_STATE.UPLOADING &&
-            document.progress !== undefined
-        )
-            return `${Math.round(document.progress)}% uploaded...`;
+        else if (showProgress) return `${Math.round(progress)}% uploaded...`;
         else if (document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload successful';
         else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
         else if (document.state === DOCUMENT_UPLOAD_STATE.INFECTED)
@@ -42,13 +44,15 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
+        const hasVirus = documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.INFECTED);
         const hasComplete = documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED);
 
         if (hasExceededUploadAttempts) {
             setDocuments([]);
             setStage(LG_UPLOAD_STAGE.RETRY);
-        }
-        if (hasComplete) {
+        } else if (hasVirus) {
+            setStage(LG_UPLOAD_STAGE.INFECTED);
+        } else if (hasComplete) {
             setStage(LG_UPLOAD_STAGE.COMPLETE);
         }
     }, [documents, setDocuments, setStage]);

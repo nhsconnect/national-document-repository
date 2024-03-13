@@ -157,7 +157,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 />,
             );
             expect(getProgressBarValue(uploadDocument)).toEqual(100);
-            expect(getProgressText(uploadDocument)).toContain('Upload successful');
+            expect(getProgressText(uploadDocument)).toContain('99% uploaded...');
         });
 
         it('renders a retry upload button when first attempt fails that reuploads document', () => {
