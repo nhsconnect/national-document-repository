@@ -103,7 +103,6 @@ class DynamoDBService:
         """
         try:
             table = self.get_table(table_name)
-
             results = table.query(KeyConditionExpression=key_condition_expression)
             if results is None or "Items" not in results:
                 logger.error(f"Unusable results in DynamoDB: {results!r}")

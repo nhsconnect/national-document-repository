@@ -62,3 +62,7 @@ class FeatureFlagsException(LambdaException):
 
 class VirusScanResultException(LambdaException):
     pass
+
+
+class UploadConfirmResultException(LambdaException):
+    pass
