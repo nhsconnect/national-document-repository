@@ -6,10 +6,12 @@ import CompleteStage from '../../components/blocks/_arf/completeStage/CompleteSt
 import { routes } from '../../types/generic/routes';
 import { useNavigate } from 'react-router';
 import useConfig from '../../helpers/hooks/useConfig';
+import { UploadSession } from '../../types/generic/uploadResult';
 
 function UploadDocumentsPage() {
     const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
+    const [, setUploadSession] = useState<UploadSession | null>(null);
     const config = useConfig();
     const navigate = useNavigate();
 
@@ -32,7 +34,12 @@ function UploadDocumentsPage() {
 
     if (stage === UPLOAD_STAGE.Selecting) {
         return (
-            <SelectStage setDocuments={setDocuments} setStage={setStage} documents={documents} />
+            <SelectStage
+                setDocuments={setDocuments}
+                setStage={setStage}
+                documents={documents}
+                setUploadSession={setUploadSession}
+            />
         );
     } else if (stage === UPLOAD_STAGE.Uploading) {
         return <UploadingStage documents={documents} />;

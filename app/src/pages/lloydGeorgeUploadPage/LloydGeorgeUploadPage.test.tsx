@@ -24,7 +24,7 @@ jest.mock(
     () => () => <h1>Mock files are uploading stage</h1>,
 );
 jest.mock(
-    '../../components/blocks/lloydGeorgeUploadComplete/LloydGeorgeUploadComplete',
+    '../../components/blocks/lloydGeorgeUploadCompleteStage/LloydGeorgeUploadCompleteStage',
     () => () => <h1>Mock complete stage</h1>,
 );
 

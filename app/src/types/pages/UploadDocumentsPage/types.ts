@@ -30,6 +30,7 @@ export type UploadDocument = {
     progress: number;
     id: string;
     docType: DOCUMENT_TYPE;
+    attempts: number;
 };
 
 export type UploadFilesErrors = {

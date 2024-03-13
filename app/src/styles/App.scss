@@ -395,6 +395,10 @@ $govuk-compatibility-govukelements: true;
     align-items: center;
 }
 
+.nhs-warning-color {
+    color: $color_nhsuk-red;
+}
+
 #feedback-form {
     max-width: 800px;
     & form > div {

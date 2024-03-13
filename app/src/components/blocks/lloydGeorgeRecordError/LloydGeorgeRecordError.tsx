@@ -21,10 +21,20 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
     const isBSOL = useIsBSOL();
     const { featureFlags } = useConfig();
 
-    if (downloadStage === DOWNLOAD_STAGE.TIMEOUT) {
+    const isAdminBsol = role === REPOSITORY_ROLE.GP_ADMIN && isBSOL;
+    const uploadJourneyEnabled =
+        featureFlags.uploadLloydGeorgeWorkflowEnabled && featureFlags.uploadLambdaEnabled;
+
+    const renderTimeout = downloadStage === DOWNLOAD_STAGE.TIMEOUT;
+    const renderUploadPath =
+        downloadStage === DOWNLOAD_STAGE.NO_RECORDS && isAdminBsol && uploadJourneyEnabled;
+    const renderNoRecords =
+        downloadStage === DOWNLOAD_STAGE.NO_RECORDS && (!isAdminBsol || !uploadJourneyEnabled);
+
+    if (renderTimeout) {
         return (
             <span>
-                <p data-testid="llyoyd-george-record-error-message">
+                <p data-testid="lloyd-george-record-error-message">
                     {'The Lloyd George document is too large to view in a browser, '}
                     <Link
                         to="#"
@@ -42,44 +52,32 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
                 </p>
             </span>
         );
-    } else if (
-        downloadStage === DOWNLOAD_STAGE.NO_RECORDS &&
-        role === REPOSITORY_ROLE.GP_ADMIN &&
-        isBSOL
-    ) {
+    } else if (renderUploadPath) {
         return (
             <span>
-                <h3 data-testid="no-records-title">No records available for this patient </h3>
-                {featureFlags.uploadLloydGeorgeWorkflowEnabled &&
-                    featureFlags.uploadLambdaEnabled && (
-                        <>
-                            <p data-testid="upload-patient-record-text">
-                                You can upload full or part of a patient record. You can upload
-                                supporting files once the record is uploaded.
-                            </p>
+                <h5 data-testid="no-records-title">No records available for this patient.</h5>
+                <p data-testid="upload-patient-record-text">
+                    You can upload full or part of a patient record. You can upload supporting files
+                    once the record is uploaded.
+                </p>
 
-                            <div className="lloydgeorge_record-stage_header-content-no_record">
-                                <ButtonLink
-                                    className="lloydgeorge_record-stage_header-content-no_record-upload"
-                                    data-testid="upload-patient-record-button"
-                                    onClick={() => {
-                                        navigate(routes.LLOYD_GEORGE_UPLOAD);
-                                    }}
-                                >
-                                    Upload patient record
-                                </ButtonLink>
-                            </div>
-                        </>
-                    )}
+                <div className="lloydgeorge_record-stage_header-content-no_record">
+                    <ButtonLink
+                        className="lloydgeorge_record-stage_header-content-no_record-upload"
+                        data-testid="upload-patient-record-button"
+                        onClick={() => {
+                            navigate(routes.LLOYD_GEORGE_UPLOAD);
+                        }}
+                    >
+                        Upload patient record
+                    </ButtonLink>
+                </div>
             </span>
         );
-    } else if (downloadStage === DOWNLOAD_STAGE.NO_RECORDS) {
+    } else if (renderNoRecords) {
         return <span>No documents are available.</span>;
-    } else {
-        return (
-            <ServiceError message="An error has occurred when creating the Lloyd George preview." />
-        );
     }
+    return <ServiceError message="An error has occurred when creating the Lloyd George preview." />;
 }
 
 export default LloydGeorgeRecordError;

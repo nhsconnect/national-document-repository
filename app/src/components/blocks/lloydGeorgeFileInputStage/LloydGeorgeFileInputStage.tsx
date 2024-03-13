@@ -12,30 +12,29 @@ import {
     UploadFilesErrors,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-import uploadDocument from '../../../helpers/requests/uploadDocument';
+import uploadDocuments from '../../../helpers/requests/uploadDocuments';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
-import { routes } from '../../../types/generic/routes';
-import { useNavigate } from 'react-router';
-import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios';
 import { isMock } from '../../../helpers/utils/isLocal';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
+import LinkButton from '../../generic/linkButton/LinkButton';
+import { UploadSession } from '../../../types/generic/uploadResult';
 
 export type Props = {
     documents: Array<UploadDocument>;
     setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
+    setUploadSession: Dispatch<SetStateAction<UploadSession | null>>;
     setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
 };
 
-function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props) {
+function LloydGeorgeFileInputStage({ documents, setDocuments, setStage, setUploadSession }: Props) {
     const patientDetails = usePatient();
-    const navigate = useNavigate();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const dob: string = patientDetails?.birthDate
@@ -47,7 +46,8 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
     const [showNoFilesMessage, setShowNoFilesMessage] = useState<boolean>(false);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-    const uploadDocuments = async () => {
+
+    const submitDocuments = async () => {
         setShowNoFilesMessage(!hasFileInput);
         setUploadFilesErrors(uploadDocumentValidation(documents, patientDetails));
         if (!hasFileInput || uploadFilesErrors.length > 0) {
@@ -56,25 +56,24 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         }
         try {
             setStage(LG_UPLOAD_STAGE.UPLOAD);
-            await uploadDocument({
+            await uploadDocuments({
                 nhsNumber,
                 setDocuments,
-                documents: documents,
+                setUploadSession,
+                documents,
                 baseUrl,
                 baseHeaders,
             });
-            setStage(LG_UPLOAD_STAGE.COMPLETE);
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error)) {
-                documents.map((document) => ({
-                    ...document,
-                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                    progress: 100,
-                }));
+                setDocuments(
+                    documents.map((document) => ({
+                        ...document,
+                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                    })),
+                );
                 setStage(LG_UPLOAD_STAGE.COMPLETE);
-            } else {
-                navigate(routes.SERVER_ERROR + errorToParams(error));
             }
         }
     };
@@ -85,6 +84,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,
             docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+            attempts: 0,
         }));
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
@@ -275,19 +275,18 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                 </Table>
             )}
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <Button type="button" id="upload-button" onClick={uploadDocuments}>
+                <Button type="button" id="upload-button" onClick={submitDocuments}>
                     Upload
                 </Button>
                 {!!documents.length && (
-                    <button
-                        className={'lloydgeorge_link'}
+                    <LinkButton
                         type="button"
                         onClick={() => {
                             onRemove(-1);
                         }}
                     >
                         Remove all
-                    </button>
+                    </LinkButton>
                 )}
             </div>
         </div>

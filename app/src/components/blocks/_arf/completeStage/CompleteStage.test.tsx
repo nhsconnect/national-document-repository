@@ -34,6 +34,7 @@ describe('<CompleteStage />', () => {
                 state: documentUploadStates.FAILED,
                 id: '1',
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
             const documentTwo: UploadDocument = {
                 file: buildTextFile('two', 200),
@@ -41,6 +42,7 @@ describe('<CompleteStage />', () => {
                 state: documentUploadStates.SUCCEEDED,
                 id: '2',
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
             const documentThree: UploadDocument = {
                 file: buildTextFile('three', 100),
@@ -48,6 +50,7 @@ describe('<CompleteStage />', () => {
                 state: documentUploadStates.SUCCEEDED,
                 id: '3',
                 docType: DOCUMENT_TYPE.ARF,
+                attempts: 0,
             };
 
             // @ts-ignore

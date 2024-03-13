@@ -14,18 +14,20 @@ import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig, lloydGeorgeFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
-import uploadDocument from '../../../../helpers/requests/uploadDocument';
+import uploadDocuments from '../../../../helpers/requests/uploadDocuments';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
+import { UploadSession } from '../../../../types/generic/uploadResult';
 
 interface Props {
     setDocuments: SetUploadDocuments;
     setStage: Dispatch<SetStateAction<UPLOAD_STAGE>>;
+    setUploadSession: Dispatch<SetStateAction<UploadSession | null>>;
     documents: Array<UploadDocument>;
 }
 
-function SelectStage({ setDocuments, setStage, documents }: Props) {
+function SelectStage({ setDocuments, setUploadSession, setStage, documents }: Props) {
     const [arfDocuments, setArfDocuments] = useState<Array<UploadDocument>>([]);
     const [lgDocuments, setLgDocuments] = useState<Array<UploadDocument>>([]);
     const baseUrl = useBaseAPIUrl();
@@ -41,12 +43,13 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
 
     const lgController = useController(lloydGeorgeFormConfig(control));
     const arfController = useController(ARFFormConfig(control));
-    const uploadDocuments = async () => {
+    const submitDocuments = async () => {
         setStage(UPLOAD_STAGE.Uploading);
         try {
-            await uploadDocument({
+            await uploadDocuments({
                 nhsNumber,
                 setDocuments,
+                setUploadSession,
                 documents,
                 baseUrl,
                 baseHeaders,
@@ -62,6 +65,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,
             docType: docType,
+            attempts: 0,
         }));
         const isArfDoc = docType === DOCUMENT_TYPE.ARF;
         const mergeList = isArfDoc ? lgDocuments : arfDocuments;
@@ -103,7 +107,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
 
     return (
         <form
-            onSubmit={handleSubmit(uploadDocuments)}
+            onSubmit={handleSubmit(submitDocuments)}
             noValidate
             data-testid="upload-document-form"
         >
