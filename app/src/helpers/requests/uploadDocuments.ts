@@ -9,9 +9,12 @@ import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
 
+type FileKeyBuilder = {
+    [key in DOCUMENT_TYPE]: string[];
+};
+
 type UploadDocumentsArgs = {
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
-    setUploadSession: Dispatch<SetStateAction<UploadSession | null>>;
     documents: UploadDocument[];
     nhsNumber: string;
     baseUrl: string;
@@ -19,10 +22,8 @@ type UploadDocumentsArgs = {
 };
 
 type UploadDocumentsToS3Args = {
-    baseUrl: string;
-    baseHeaders: AuthHeaders;
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
-    documents: UploadDocument[];
+    document: UploadDocument;
     uploadSession: UploadSession;
 };
 
@@ -38,7 +39,7 @@ type DocumentStateProps = {
 };
 
 type VirusScanArgs = {
-    docRef: string;
+    documentReference: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
 };
@@ -46,10 +47,8 @@ type UploadConfirmationArgs = {
     baseUrl: string;
     baseHeaders: AuthHeaders;
     nhsNumber: string;
-    documentKeysByType: FileKeyBuilder;
-};
-type FileKeyBuilder = {
-    [key in DOCUMENT_TYPE]: string[];
+    documents: Array<UploadDocument>;
+    uploadSession: UploadSession;
 };
 
 export const setDocument = (
@@ -73,9 +72,13 @@ export const setDocument = (
     );
 };
 
-const virusScanResult = async ({ docRef, baseUrl, baseHeaders }: VirusScanArgs) => {
+export const virusScanResult = async ({
+    documentReference,
+    baseUrl,
+    baseHeaders,
+}: VirusScanArgs) => {
     const virusScanGatewayUrl = baseUrl + endpoints.VIRUS_SCAN;
-    const body = { documentReference: docRef };
+    const body = { documentReference };
     try {
         await axios.post(virusScanGatewayUrl, body, {
             headers: {
@@ -88,95 +91,93 @@ const virusScanResult = async ({ docRef, baseUrl, baseHeaders }: VirusScanArgs) 
     }
 };
 
-// const uploadConfirmation = async ({
-//     baseUrl,
-//     baseHeaders,
-//     nhsNumber,
-//     documentKeysByType,
-// }: UploadConfirmationArgs) => {
-//     const uploadConfirmationGatewayUrl = baseUrl + endpoints.UPLOAD_CONFIRMATION;
-//     const confirmationBody = {
-//         patientId: nhsNumber,
-//         documents: { documentKeysByType },
-//     };
-//     await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
-//         headers: {
-//             ...baseHeaders,
-//         },
-//     });
-// };
-
-export const uploadDocumentsToS3 = async ({
+export const uploadConfirmation = async ({
     baseUrl,
     baseHeaders,
+    nhsNumber,
+    documents,
+    uploadSession,
+}: UploadConfirmationArgs) => {
+    const fileKeyBuilder = documents.reduce((acc, doc) => {
+        const documentMetadata = uploadSession[doc.file.name];
+        const fileKey = documentMetadata.fields.key.split('/');
+
+        return {
+            ...acc,
+            [doc.docType]: [...acc[doc.docType], fileKey[3]],
+        };
+    }, {} as FileKeyBuilder);
+
+    const uploadConfirmationGatewayUrl = baseUrl + endpoints.UPLOAD_CONFIRMATION;
+    const confirmationBody = {
+        patientId: nhsNumber,
+        documents: { fileKeyBuilder },
+    };
+    try {
+        await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
+            headers: {
+                ...baseHeaders,
+            },
+        });
+    } catch (e) {
+        // TODO : ADD CONFIRMATION FAILURE CODE
+    }
+};
+
+export const uploadDocumentToS3 = async ({
     setDocuments,
     uploadSession,
-    documents,
+    document,
 }: UploadDocumentsToS3Args) => {
-    // TODO: COPY FILEYKEYBUILDER LOGIC INTO UPLOAD CONFIRMATION
-
-    // let fileKeyBuilder: FileKeyBuilder = {} as FileKeyBuilder;
-
-    for (const document of documents) {
-        const docGatewayResponse: S3Upload = uploadSession[document.file.name];
-        const formData = new FormData();
-        const docFields: S3UploadFields = docGatewayResponse.fields;
-        Object.entries(docFields).forEach(([key, value]) => {
-            formData.append(key, value);
+    const documentMetadata: S3Upload = uploadSession[document.file.name];
+    const formData = new FormData();
+    const docFields: S3UploadFields = documentMetadata.fields;
+    Object.entries(docFields).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+    formData.append('file', document.file);
+    const s3url = documentMetadata.url;
+    try {
+        await axios.post(s3url, formData, {
+            onUploadProgress: (progress) => {
+                const { loaded, total } = progress;
+                if (total) {
+                    setDocument(setDocuments, {
+                        id: document.id,
+                        state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                        progress: (loaded / total) * 100,
+                    });
+                }
+            },
         });
-        formData.append('file', document.file);
-        const s3url = docGatewayResponse.url;
-        try {
-            await axios.post(s3url, formData, {
-                onUploadProgress: (progress) => {
-                    const { loaded, total } = progress;
-                    if (total) {
-                        setDocument(setDocuments, {
-                            id: document.id,
-                            state: DOCUMENT_UPLOAD_STATE.UPLOADING,
-                            progress: (loaded / total) * 100,
-                        });
-                    }
-                },
-            });
 
-            setDocument(setDocuments, {
-                id: document.id,
-                state: DOCUMENT_UPLOAD_STATE.SCANNING,
-                progress: 'scan',
-            });
-            const docRef = docGatewayResponse.fields.key;
-            const virusDocumentState = await virusScanResult({ docRef, baseUrl, baseHeaders });
+        setDocument(setDocuments, {
+            id: document.id,
+            state: DOCUMENT_UPLOAD_STATE.SCANNING,
+            progress: 'scan',
+        });
+        const docRef = documentMetadata.fields.key;
+        return docRef;
+    } catch (e) {
+        const error = e as AxiosError;
 
-            setDocument(setDocuments, {
-                id: document.id,
-                state: virusDocumentState,
-                progress: 100,
-            });
-        } catch (e) {
-            // const fileKey = docGatewayResponse.fields.key.split('/');
-            // const currentFileKeys = fileKeyBuilder[document.docType] ?? [];
-            // fileKeyBuilder[document.docType] = [...currentFileKeys, fileKey[3]];
-            const error = e as AxiosError;
-
-            const state =
-                error.response?.status === 403
-                    ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
-                    : DOCUMENT_UPLOAD_STATE.FAILED;
-            setDocument(setDocuments, {
-                id: document.id,
-                state,
-                attempts: document.attempts + 1,
-                progress: 0,
-            });
-        }
+        const state =
+            error.response?.status === 403
+                ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
+                : DOCUMENT_UPLOAD_STATE.FAILED;
+        setDocument(setDocuments, {
+            id: document.id,
+            state,
+            attempts: document.attempts + 1,
+            progress: 0,
+        });
+        throw e;
     }
 };
 
 const uploadDocuments = async ({
     nhsNumber,
     setDocuments,
-    setUploadSession,
     documents,
     baseUrl,
     baseHeaders,
@@ -217,14 +218,7 @@ const uploadDocuments = async ({
                 ...baseHeaders,
             },
         });
-        setUploadSession(data);
-        await uploadDocumentsToS3({
-            setDocuments,
-            documents,
-            uploadSession: data,
-            baseUrl,
-            baseHeaders,
-        });
+        return data;
     } catch (e) {
         const error = e as AxiosError;
 
@@ -240,6 +234,7 @@ const uploadDocuments = async ({
             progress: 0,
         }));
         setDocuments(failedDocuments);
+        throw e;
     }
 };
 

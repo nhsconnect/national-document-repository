@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect } from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
@@ -9,21 +9,21 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import LinkButton from '../../generic/linkButton/LinkButton';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { UploadSession } from '../../../types/generic/uploadResult';
-import { uploadDocumentsToS3 } from '../../../helpers/requests/uploadDocuments';
-import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
-import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 
 type Props = {
     documents: Array<UploadDocument>;
     setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
     setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
-    uploadSession?: UploadSession | null;
+    uploadSession: UploadSession | null;
+    uploadAndScanDocuments: (documents: Array<UploadDocument>) => void;
 };
 
-function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSession }: Props) {
-    const baseUrl = useBaseAPIUrl();
-    const baseHeaders = useBaseAPIHeaders();
-
+function LloydGeorgeUploadStage({
+    documents,
+    setStage,
+    setDocuments,
+    uploadAndScanDocuments,
+}: Props) {
     const getUploadMessage = (document: UploadDocument) => {
         const progress = document.progress === 100 ? 99 : document.progress;
         const showProgress =
@@ -42,33 +42,6 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
     };
     const hasFailedUploads = documents.some((d) => !!d.attempts && !d.progress);
 
-    useEffect(() => {
-        const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
-        const hasVirus = documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.INFECTED);
-        const hasComplete = documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED);
-
-        if (hasExceededUploadAttempts) {
-            setDocuments([]);
-            setStage(LG_UPLOAD_STAGE.RETRY);
-        } else if (hasVirus) {
-            setStage(LG_UPLOAD_STAGE.INFECTED);
-        } else if (hasComplete) {
-            setStage(LG_UPLOAD_STAGE.COMPLETE);
-        }
-    }, [documents, setDocuments, setStage]);
-
-    const retryUpload = async (documents: Array<UploadDocument>) => {
-        if (uploadSession) {
-            await uploadDocumentsToS3({
-                setDocuments,
-                documents,
-                uploadSession,
-                baseUrl,
-                baseHeaders,
-            });
-        }
-    };
-
     return (
         <>
             {hasFailedUploads && (
@@ -85,7 +58,7 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
                             ].includes(d.state);
                             return d.attempts === 1 && notInProgress;
                         });
-                        retryUpload(failedUploads);
+                        uploadAndScanDocuments(failedUploads);
                     }}
                 />
             )}
@@ -147,7 +120,7 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
                                         <div style={{ textAlign: 'right' }}>
                                             <LinkButton
                                                 onClick={() => {
-                                                    retryUpload([document]);
+                                                    uploadAndScanDocuments([document]);
                                                 }}
                                             >
                                                 Retry upload
