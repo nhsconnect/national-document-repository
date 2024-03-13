@@ -126,6 +126,9 @@ class UploadConfirmResultService:
         items = query_response.get("Items", None)
 
         if len(items) != len(document_references):
+            logger.error(
+                "Number of document references not equal to number of documents in dynamo table for this nhs number"
+            )
             raise UploadConfirmResultException(
                 400, LambdaError.UploadConfirmResultBadRequest
             )
