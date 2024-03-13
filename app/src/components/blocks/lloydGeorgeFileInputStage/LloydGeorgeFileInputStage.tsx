@@ -12,7 +12,6 @@ import {
     UploadFilesErrors,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-import uploadDocument from '../../../helpers/requests/uploadDocument';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
@@ -27,6 +26,7 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
 import { ErrorResponse } from '../../../types/generic/errorResponse';
+import uploadDocuments from '../../../helpers/requests/uploadDocuments';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -48,7 +48,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
     const [showNoFilesMessage, setShowNoFilesMessage] = useState<boolean>(false);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-    const uploadDocuments = async () => {
+    const submitDocuments = async () => {
         setShowNoFilesMessage(!hasFileInput);
         if (!hasFileInput) {
             window.scrollTo(0, 0);
@@ -61,10 +61,10 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
         }
         try {
             setStage(LG_UPLOAD_STAGE.UPLOAD);
-            await uploadDocument({
+            await uploadDocuments({
                 nhsNumber,
                 setDocuments,
-                documents: documents,
+                documents,
                 baseUrl,
                 baseHeaders,
             });
@@ -81,7 +81,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                     })),
                 );
             } else if (errorResponse.err_code === 'VSR_4002') {
-                setStage(LG_UPLOAD_STAGE.STOPPED);
+                setStage(LG_UPLOAD_STAGE.INFECTED);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
             }
@@ -94,6 +94,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,
             docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+            attempts: 0,
         }));
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
@@ -284,7 +285,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage }: Props)
                 </Table>
             )}
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <Button type="button" id="upload-button" onClick={uploadDocuments}>
+                <Button type="button" id="upload-button" onClick={submitDocuments}>
                     Upload
                 </Button>
                 {!!documents.length && (

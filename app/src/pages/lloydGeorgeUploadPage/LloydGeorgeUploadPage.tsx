@@ -9,7 +9,7 @@ export enum LG_UPLOAD_STAGE {
     SELECT = 0,
     UPLOAD = 1,
     COMPLETE = 2,
-    STOPPED = 3,
+    INFECTED = 3,
 }
 
 function LloydGeorgeUploadPage() {
@@ -29,7 +29,7 @@ function LloydGeorgeUploadPage() {
             return <LloydGeorgeUploadingStage documents={documents} setStage={setStage} />;
         case LG_UPLOAD_STAGE.COMPLETE:
             return <LloydGeorgeUploadComplete documents={documents} />;
-        case LG_UPLOAD_STAGE.STOPPED:
+        case LG_UPLOAD_STAGE.INFECTED:
             return <LloydGeorgeUploadFailure documents={documents} setStage={setStage} />;
         default:
             return <div />;

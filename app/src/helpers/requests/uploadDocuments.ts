@@ -11,7 +11,7 @@ import { Dispatch, SetStateAction } from 'react';
 
 type UploadDocumentsArgs = {
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
-    setUploadSession: Dispatch<SetStateAction<UploadSession | null>>;
+    setUploadSession?: Dispatch<SetStateAction<UploadSession | null>>;
     documents: UploadDocument[];
     nhsNumber: string;
     baseUrl: string;
@@ -219,7 +219,6 @@ const uploadDocuments = async ({
                 ...baseHeaders,
             },
         });
-        setUploadSession(data);
         const confirmationBodyDocuments = await uploadDocumentsToS3({
             setDocuments,
             documents,
