@@ -105,7 +105,7 @@ export const uploadConfirmation = async ({
         console.log(documentMetadata);
         console.log(acc);
 
-        const previousKeys = acc[doc.docType] ?? null;
+        const previousKeys = acc[doc.docType] ?? [];
         console.log(previousKeys);
 
         return {
