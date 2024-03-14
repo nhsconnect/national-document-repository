@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import LloydGeorgeUploadingStage from '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import LloydGeorgeFileInputStage from '../../components/blocks/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage';
-import LloydGeorgeUploadFailure from '../../components/blocks/lloydGeorgeUploadFailure/LloydGeorgeUploadFailure';
+import LloydGeorgeUploadInfectedStage from '../../components/blocks/lloydGeorgeUploadInfectedStage/LloydGeorgeUploadInfectedStage';
 import LloydGeorgeUploadCompleteStage from '../../components/blocks/lloydGeorgeUploadCompleteStage/LloydGeorgeUploadCompleteStage';
-import LloydGeorgeRetryUploadStage from '../../components/blocks/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
+import LloydGeorgeUploadFailedStage from '../../components/blocks/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage';
 import { UploadSession } from '../../types/generic/uploadResult';
 import uploadDocuments, {
     setDocument,
@@ -23,7 +23,7 @@ export enum LG_UPLOAD_STAGE {
     UPLOAD = 1,
     COMPLETE = 2,
     INFECTED = 3,
-    RETRY = 4,
+    FAILED = 4,
     CONFIRMATION = 5,
 }
 
@@ -63,8 +63,7 @@ function LloydGeorgeUploadPage() {
         };
 
         if (hasExceededUploadAttempts) {
-            setDocuments([]);
-            setStage(LG_UPLOAD_STAGE.RETRY);
+            setStage(LG_UPLOAD_STAGE.FAILED);
         } else if (hasVirus) {
             setStage(LG_UPLOAD_STAGE.INFECTED);
         } else if (hasNoVirus) {
@@ -127,6 +126,11 @@ function LloydGeorgeUploadPage() {
         }
     };
 
+    const restartUpload = () => {
+        setDocuments([]);
+        setStage(LG_UPLOAD_STAGE.SELECT);
+    };
+
     switch (stage) {
         case LG_UPLOAD_STAGE.SELECT:
             return (
@@ -147,9 +151,14 @@ function LloydGeorgeUploadPage() {
         case LG_UPLOAD_STAGE.COMPLETE:
             return <LloydGeorgeUploadCompleteStage documents={documents} />;
         case LG_UPLOAD_STAGE.INFECTED:
-            return <LloydGeorgeUploadFailure documents={documents} setStage={setStage} />;
-        case LG_UPLOAD_STAGE.RETRY:
-            return <LloydGeorgeRetryUploadStage setStage={setStage} />;
+            return (
+                <LloydGeorgeUploadInfectedStage
+                    documents={documents}
+                    restartUpload={restartUpload}
+                />
+            );
+        case LG_UPLOAD_STAGE.FAILED:
+            return <LloydGeorgeUploadFailedStage restartUpload={restartUpload} />;
         case LG_UPLOAD_STAGE.CONFIRMATION:
             return <div>CONFIRMING</div>;
         default:

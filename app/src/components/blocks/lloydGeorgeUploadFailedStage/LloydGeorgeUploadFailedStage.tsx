@@ -1,14 +1,13 @@
 import { Button, ButtonLink, WarningCallout } from 'nhsuk-react-components';
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
-import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 
 type Props = {
-    setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
+    restartUpload: () => void;
 };
 
-function LloydGeorgeRetryUploadStage({ setStage }: Props) {
+function LloydGeorgeUploadFailedStage({ restartUpload }: Props) {
     const navigate = useNavigate();
     return (
         <>
@@ -43,11 +42,7 @@ function LloydGeorgeRetryUploadStage({ setStage }: Props) {
                 </p>
             </WarningCallout>
             <div>
-                <Button
-                    type="button"
-                    id="upload-retry-button"
-                    onClick={() => setStage(LG_UPLOAD_STAGE.SELECT)}
-                >
+                <Button type="button" id="upload-retry-button" onClick={restartUpload}>
                     Try upload again
                 </Button>
                 <ButtonLink
@@ -66,4 +61,4 @@ function LloydGeorgeRetryUploadStage({ setStage }: Props) {
     );
 }
 
-export default LloydGeorgeRetryUploadStage;
+export default LloydGeorgeUploadFailedStage;

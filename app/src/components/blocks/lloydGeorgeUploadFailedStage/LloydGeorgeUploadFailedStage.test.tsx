@@ -1,19 +1,18 @@
 import { render, screen } from '@testing-library/react';
-import LloydGeorgeRetryUploadStage from './LloydGeorgeRetryUploadStage';
+import LloydGeorgeRetryUploadStage from './LloydGeorgeUploadFailedStage';
 import userEvent from '@testing-library/user-event';
-import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { routes } from '../../../types/generic/routes';
 
-const mockSetStage = jest.fn();
+const mockRestart = jest.fn();
 const mockUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockUseNavigate,
 }));
 
-describe('LloydGeorgeRetryUploadStage', () => {
+describe('LloydGeorgeUploadFailedStage', () => {
     describe('Rendering', () => {
         it('renders component', () => {
-            render(<LloydGeorgeRetryUploadStage setStage={mockSetStage} />);
+            render(<LloydGeorgeRetryUploadStage restartUpload={mockRestart} />);
 
             const contentStrings = [
                 'The record did not upload',
@@ -36,15 +35,15 @@ describe('LloydGeorgeRetryUploadStage', () => {
 
     describe('Navigation', () => {
         it('navigates to file input stage when try again is clicked', () => {
-            render(<LloydGeorgeRetryUploadStage setStage={mockSetStage} />);
+            render(<LloydGeorgeRetryUploadStage restartUpload={mockRestart} />);
 
             expect(screen.getByRole('button', { name: 'Try upload again' })).toBeInTheDocument();
             userEvent.click(screen.getByRole('button', { name: 'Try upload again' }));
-            expect(mockSetStage).toHaveBeenCalledWith(LG_UPLOAD_STAGE.SELECT);
+            expect(mockRestart).toHaveBeenCalled();
         });
 
         it('navigates to patient search when search patient is clicked', () => {
-            render(<LloydGeorgeRetryUploadStage setStage={mockSetStage} />);
+            render(<LloydGeorgeRetryUploadStage restartUpload={mockRestart} />);
 
             expect(
                 screen.getByRole('button', { name: 'Search for a patient' }),

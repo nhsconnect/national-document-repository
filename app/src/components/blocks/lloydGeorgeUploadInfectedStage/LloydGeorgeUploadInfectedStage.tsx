@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import { ButtonLink, WarningCallout } from 'nhsuk-react-components';
 import {
     DOCUMENT_UPLOAD_STATE,
@@ -6,14 +6,13 @@ import {
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
-import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 
 interface Props {
     documents: Array<UploadDocument>;
-    setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
+    restartUpload: () => void;
 }
 
-function LloydGeorgeUploadFailure({ documents, setStage }: Props) {
+function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
     const navigate = useNavigate();
 
     const infectedUploads = documents.filter((document) => {
@@ -52,13 +51,7 @@ function LloydGeorgeUploadFailure({ documents, setStage }: Props) {
                 </p>{' '}
             </WarningCallout>
 
-            <ButtonLink
-                role="button"
-                data-testid="retry-upload-btn"
-                onClick={() => {
-                    setStage(LG_UPLOAD_STAGE.SELECT);
-                }}
-            >
+            <ButtonLink role="button" data-testid="retry-upload-btn" onClick={restartUpload}>
                 Try upload again
             </ButtonLink>
 
@@ -77,4 +70,4 @@ function LloydGeorgeUploadFailure({ documents, setStage }: Props) {
     );
 }
 
-export default LloydGeorgeUploadFailure;
+export default LloydGeorgeUploadInfectedStage;
