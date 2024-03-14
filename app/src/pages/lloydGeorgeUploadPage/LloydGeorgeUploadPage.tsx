@@ -39,24 +39,14 @@ function LloydGeorgeUploadPage() {
     const mounted = useRef(false);
 
     useEffect(() => {
-        const hasExceededUploadAttempts = documents.length && documents.some((d) => d.attempts > 1);
-        const hasVirus =
-            documents.length && documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.INFECTED);
+        const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
+        const hasVirus = documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.INFECTED);
         const hasNoVirus =
             documents.length && documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
 
-        const boolTest = documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
-        console.log('HAS NO VIRUS:', hasNoVirus);
-        console.log('TEST NO VIRUS:', boolTest);
-
         const confirmUpload = async () => {
             if (uploadSession) {
-                mounted.current = true;
-                console.log('SETTING STAGE');
-
                 setStage(LG_UPLOAD_STAGE.CONFIRMATION);
-                console.log('SENDING REQUEST');
-
                 await uploadConfirmation({
                     baseUrl,
                     baseHeaders,
@@ -76,12 +66,10 @@ function LloydGeorgeUploadPage() {
 
         if (hasExceededUploadAttempts) {
             setStage(LG_UPLOAD_STAGE.FAILED);
-        }
-        if (hasVirus) {
+        } else if (hasVirus) {
             setStage(LG_UPLOAD_STAGE.INFECTED);
-        }
-        if (hasNoVirus && !mounted.current) {
-            console.log('ATTEMPTING CONFIRMATION');
+        } else if (hasNoVirus && !mounted.current) {
+            mounted.current = true;
             void confirmUpload();
         }
     }, [baseHeaders, baseUrl, documents, nhsNumber, setDocuments, setStage, uploadSession]);
