@@ -111,7 +111,7 @@ function LloydGeorgeUploadPage() {
                 baseHeaders,
             });
             setUploadSession(uploadSession);
-            uploadAndScanDocuments(documents, uploadSession);
+            await Promise.all([uploadAndScanDocuments(documents, uploadSession)]);
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error)) {

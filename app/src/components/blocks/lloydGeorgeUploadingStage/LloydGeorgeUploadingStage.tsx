@@ -45,6 +45,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                             const notInProgress = ![
                                 DOCUMENT_UPLOAD_STATE.UPLOADING,
                                 DOCUMENT_UPLOAD_STATE.SCANNING,
+                                DOCUMENT_UPLOAD_STATE.UNAUTHORISED,
                             ].includes(d.state);
                             return d.attempts === 1 && notInProgress;
                         });
@@ -82,6 +83,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                         const notInProgress = ![
                             DOCUMENT_UPLOAD_STATE.UPLOADING,
                             DOCUMENT_UPLOAD_STATE.SCANNING,
+                            DOCUMENT_UPLOAD_STATE.UNAUTHORISED,
                         ].includes(document.state);
 
                         const uploadFailed = !!document.attempts && notInProgress;

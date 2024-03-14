@@ -157,8 +157,7 @@ export const uploadDocumentToS3 = async ({
             state: DOCUMENT_UPLOAD_STATE.SCANNING,
             progress: 'scan',
         });
-        const docRef = documentMetadata.fields.key;
-        return docRef;
+        return documentMetadata.fields.key;
     } catch (e) {
         const error = e as AxiosError;
 
