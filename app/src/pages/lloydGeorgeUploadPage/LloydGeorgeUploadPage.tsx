@@ -38,11 +38,11 @@ function LloydGeorgeUploadPage() {
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
     const mounted = useRef(false);
 
-    useEffect(() => {
-        const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
-        const hasVirus = documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.INFECTED);
-        const hasNoVirus = documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
+    const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
+    const hasVirus = documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.INFECTED);
+    const hasNoVirus = documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
 
+    useEffect(() => {
         const confirmUpload = async () => {
             if (uploadSession) {
                 mounted.current = true;
@@ -58,8 +58,8 @@ function LloydGeorgeUploadPage() {
                     uploadSession,
                     documents,
                 });
-                setDocuments(
-                    documents.map((document) => ({
+                setDocuments((prevState) =>
+                    prevState.map((document) => ({
                         ...document,
                         state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
                     })),
@@ -76,7 +76,18 @@ function LloydGeorgeUploadPage() {
             console.log('ATTEMPTING CONFIRMATION');
             void confirmUpload();
         }
-    }, [baseHeaders, baseUrl, documents, nhsNumber, setDocuments, setStage, uploadSession]);
+    }, [
+        baseHeaders,
+        baseUrl,
+        documents,
+        hasExceededUploadAttempts,
+        hasNoVirus,
+        hasVirus,
+        nhsNumber,
+        setDocuments,
+        setStage,
+        uploadSession,
+    ]);
 
     const uploadAndScanDocuments = (
         documents: Array<UploadDocument>,
@@ -164,9 +175,9 @@ function LloydGeorgeUploadPage() {
         case LG_UPLOAD_STAGE.FAILED:
             return <LloydGeorgeUploadFailedStage restartUpload={restartUpload} />;
         case LG_UPLOAD_STAGE.CONFIRMATION:
-            return <div>CONFIRMING</div>;
-        default:
             return <Spinner status="Uploading..." />;
+        default:
+            return null;
     }
 }
 
