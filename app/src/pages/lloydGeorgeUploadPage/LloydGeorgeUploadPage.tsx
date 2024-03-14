@@ -45,7 +45,12 @@ function LloydGeorgeUploadPage() {
 
         const confirmUpload = async () => {
             if (uploadSession) {
+                mounted.current = true;
+                console.log('SETTING STAGE');
+
                 setStage(LG_UPLOAD_STAGE.CONFIRMATION);
+                console.log('SENDING REQUEST');
+
                 await uploadConfirmation({
                     baseUrl,
                     baseHeaders,
@@ -67,11 +72,9 @@ function LloydGeorgeUploadPage() {
             setStage(LG_UPLOAD_STAGE.FAILED);
         } else if (hasVirus) {
             setStage(LG_UPLOAD_STAGE.INFECTED);
-        } else if (hasNoVirus) {
-            if (!mounted.current) {
-                mounted.current = true;
-                void confirmUpload();
-            }
+        } else if (hasNoVirus && !mounted.current) {
+            console.log('ATTEMPTING CONFIRMATION');
+            void confirmUpload();
         }
     }, [baseHeaders, baseUrl, documents, nhsNumber, setDocuments, setStage, uploadSession]);
 
