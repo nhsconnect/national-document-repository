@@ -103,6 +103,7 @@ export const uploadConfirmation = async ({
         const fileKey = documentMetadata.fields.key.split('/');
         console.log(doc);
         console.log(documentMetadata);
+        console.log(acc);
 
         const previousKeys = acc[doc.docType] ?? null;
         console.log(previousKeys);
@@ -112,6 +113,7 @@ export const uploadConfirmation = async ({
             [doc.docType]: [...previousKeys, fileKey[3]],
         };
     }, {} as FileKeyBuilder);
+    console.log(fileKeyBuilder);
 
     const uploadConfirmationGatewayUrl = baseUrl + endpoints.UPLOAD_CONFIRMATION;
     const confirmationBody = {
