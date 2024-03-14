@@ -368,13 +368,13 @@ def test_update_dynamo_table(mocker, virus_scanner_service):
     mock_get_relevant_dynamo_table = mocker.patch.object(
         virus_scanner_service, "get_relevant_dynamo_table"
     )
-    mock_get_relevant_dynamo_table.return_value = MOCK_LG_TABLE_NAME
+    mock_get_relevant_dynamo_table.return_value = MOCK_LG_TABLE_NAME, "test-id"
 
     virus_scanner_service.update_dynamo_table(MOCK_LG_FILE_REF, VirusScanResult.CLEAN)
 
     virus_scanner_service.dynamo_service.update_item.assert_called_once_with(
         MOCK_LG_TABLE_NAME,
-        MOCK_LG_FILE_REF,
+        "test-id",
         {"VirusScannerResult": VirusScanResult.CLEAN},
     )
     mock_get_relevant_dynamo_table.assert_called_once()
