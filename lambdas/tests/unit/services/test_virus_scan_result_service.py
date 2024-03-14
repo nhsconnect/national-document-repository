@@ -6,6 +6,7 @@ from enums.pds_ssm_parameters import SSMParameter
 from enums.virus_scan_result import VirusScanResult
 from requests import Response
 from services.virus_scan_result_service import VirusScanService
+from tests.unit.conftest import MOCK_ARF_TABLE_NAME, MOCK_LG_TABLE_NAME
 from tests.unit.helpers.data.virus_scanner.scan_results import (
     BAD_REQUEST_RESPONSE,
     CLEAN_FILE_RESPONSE,
@@ -13,6 +14,9 @@ from tests.unit.helpers.data.virus_scanner.scan_results import (
     RESPONSE_TOKEN,
 )
 from utils.lambda_exceptions import LambdaException, VirusScanResultException
+
+MOCK_LG_FILE_REF = "test_folder/lg/111111111/test-id"
+MOCK_ARF_FILE_REF = "test_folder/ARF/111111111/test-id"
 
 
 @pytest.fixture
@@ -41,11 +45,10 @@ def test_prepare_request_raise_error(virus_scanner_service, mocker):
         ClientError({"Error": {"Code": "500", "Message": "mocked error"}}, "test")
     )
     with pytest.raises(VirusScanResultException):
-        virus_scanner_service.scan_file("test_file_ref")
+        virus_scanner_service.scan_file(MOCK_LG_FILE_REF)
 
 
 def test_virus_scan_request_successful(mocker, virus_scanner_service):
-    file_ref = "test/LG/file_ref"
     virus_scanner_service.access_token = "test_token"
     virus_scanner_service.base_url = "test.endpoint"
     excepted_headers = {
@@ -55,15 +58,16 @@ def test_virus_scan_request_successful(mocker, virus_scanner_service):
     excepted_scan_url = virus_scanner_service.base_url + "/api/Scan/Existing"
     excepted_json_data_request = {
         "container": virus_scanner_service.staging_s3_bucket_name,
-        "objectPath": file_ref,
+        "objectPath": MOCK_LG_FILE_REF,
     }
+    expected = VirusScanResult.CLEAN
     response = Response()
     response.status_code = 200
     response._content = json.dumps(CLEAN_FILE_RESPONSE).encode("utf-8")
     mock_post = mocker.patch("requests.post", return_value=response)
     try:
-        virus_scanner_service.request_virus_scan(
-            "test/LG/file_ref", retry_on_expired=False
+        actual = virus_scanner_service.request_virus_scan(
+            MOCK_LG_FILE_REF, retry_on_expired=False
         )
     except LambdaException:
         assert False, "test"
@@ -74,10 +78,10 @@ def test_virus_scan_request_successful(mocker, virus_scanner_service):
         data=json.dumps(excepted_json_data_request),
     )
     mock_post.assert_called_once()
+    assert actual == expected
 
 
 def test_virus_scan_request_invalid_token(mocker, virus_scanner_service):
-    file_ref = "test/ARF/file_ref"
     virus_scanner_service.access_token = "test_token"
     virus_scanner_service.base_url = "test.endpoint"
     excepted_headers = {
@@ -87,7 +91,7 @@ def test_virus_scan_request_invalid_token(mocker, virus_scanner_service):
     excepted_scan_url = virus_scanner_service.base_url + "/api/Scan/Existing"
     excepted_json_data_request = {
         "container": virus_scanner_service.staging_s3_bucket_name,
-        "objectPath": file_ref,
+        "objectPath": MOCK_ARF_FILE_REF,
     }
     first_response = Response()
     first_response.status_code = 401
@@ -100,7 +104,7 @@ def test_virus_scan_request_invalid_token(mocker, virus_scanner_service):
     virus_scanner_service.get_new_access_token = mocker.MagicMock()
     try:
         virus_scanner_service.request_virus_scan(
-            "test/ARF/file_ref", retry_on_expired=True
+            MOCK_ARF_FILE_REF, retry_on_expired=True
         )
     except LambdaException:
         assert False, "test"
@@ -115,7 +119,6 @@ def test_virus_scan_request_invalid_token(mocker, virus_scanner_service):
 
 
 def test_virus_scan_request_infected_file(mocker, virus_scanner_service):
-    file_ref = "test/ARF/file_ref"
     virus_scanner_service.access_token = "test_token"
     virus_scanner_service.base_url = "test.endpoint"
     excepted_headers = {
@@ -125,7 +128,7 @@ def test_virus_scan_request_infected_file(mocker, virus_scanner_service):
     excepted_scan_url = virus_scanner_service.base_url + "/api/Scan/Existing"
     excepted_json_data_request = {
         "container": virus_scanner_service.staging_s3_bucket_name,
-        "objectPath": file_ref,
+        "objectPath": MOCK_ARF_FILE_REF,
     }
     expected_result = VirusScanResult.INFECTED
     response = Response()
@@ -133,7 +136,7 @@ def test_virus_scan_request_infected_file(mocker, virus_scanner_service):
     response._content = json.dumps(INFECTED_FILE_RESPONSE).encode("utf-8")
     mock_post = mocker.patch("requests.post", return_value=response)
     actual = virus_scanner_service.request_virus_scan(
-        "test/ARF/file_ref", retry_on_expired=False
+        MOCK_ARF_FILE_REF, retry_on_expired=False
     )
 
     mock_post.assert_called_with(
@@ -146,7 +149,6 @@ def test_virus_scan_request_infected_file(mocker, virus_scanner_service):
 
 
 def test_virus_scan_request_bad_request(mocker, virus_scanner_service):
-    file_ref = "test/LG/file_ref"
     virus_scanner_service.access_token = "test_token"
     virus_scanner_service.base_url = "test.endpoint"
     excepted_headers = {
@@ -156,7 +158,7 @@ def test_virus_scan_request_bad_request(mocker, virus_scanner_service):
     excepted_scan_url = virus_scanner_service.base_url + "/api/Scan/Existing"
     excepted_json_data_request = {
         "container": virus_scanner_service.staging_s3_bucket_name,
-        "objectPath": file_ref,
+        "objectPath": MOCK_LG_FILE_REF,
     }
     response = Response()
     response.status_code = 400
@@ -164,7 +166,7 @@ def test_virus_scan_request_bad_request(mocker, virus_scanner_service):
     mock_post = mocker.patch("requests.post", return_value=response)
     with pytest.raises(VirusScanResultException):
         virus_scanner_service.request_virus_scan(
-            "test/LG/file_ref", retry_on_expired=False
+            MOCK_LG_FILE_REF, retry_on_expired=False
         )
 
     mock_post.assert_called_with(
@@ -271,7 +273,7 @@ def test_get_new_access_token_return_200_without_access_token(
     virus_scanner_service.update_ssm_access_token.assert_not_called()
 
 
-def test_update_access_token_ssm(mocker, virus_scanner_service):
+def test_update_access_token_ssm(virus_scanner_service):
     virus_scanner_service.update_ssm_access_token("test_string")
 
     virus_scanner_service.ssm_service.update_ssm_parameter.assert_called_with(
@@ -325,7 +327,54 @@ def test_scan_file_when_parameters_are_set(
     )
     mock_request_virus_scan.return_value = VirusScanResult.CLEAN
     virus_scanner_service.base_url = "test.endpoint"
-    virus_scanner_service.scan_file("test_ref/LG/111111111")
+
+    virus_scanner_service.scan_file(MOCK_LG_FILE_REF)
 
     virus_scanner_service.get_ssm_parameters_for_request_access_token.assert_not_called()
     mock_request_virus_scan.assert_called_once()
+    mock_update_dynamo_table.assert_called_once()
+
+
+def test_scan_file_when_update_dynamo_table_throws_client_error(
+    virus_scanner_service, mock_update_dynamo_table, mock_request_virus_scan
+):
+    virus_scanner_service.base_url = "test.endpoint"
+    mock_request_virus_scan.return_value = VirusScanResult.CLEAN
+    mock_update_dynamo_table.side_effect = ClientError(
+        {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
+    )
+
+    with pytest.raises(VirusScanResultException):
+        virus_scanner_service.scan_file(MOCK_LG_FILE_REF)
+
+
+def test_get_relevant_dynamo_table_arf(virus_scanner_service):
+    expected = MOCK_ARF_TABLE_NAME
+
+    actual = virus_scanner_service.get_relevant_dynamo_table(MOCK_ARF_FILE_REF)
+
+    assert actual == expected
+
+
+def test_get_relevant_dynamo_table_lg(virus_scanner_service):
+    expected = MOCK_LG_TABLE_NAME
+
+    actual = virus_scanner_service.get_relevant_dynamo_table(MOCK_LG_FILE_REF)
+
+    assert actual == expected
+
+
+def test_update_dynamo_table(mocker, virus_scanner_service):
+    mock_get_relevant_dynamo_table = mocker.patch.object(
+        virus_scanner_service, "get_relevant_dynamo_table"
+    )
+    mock_get_relevant_dynamo_table.return_value = MOCK_LG_TABLE_NAME
+
+    virus_scanner_service.update_dynamo_table(MOCK_LG_FILE_REF, VirusScanResult.CLEAN)
+
+    virus_scanner_service.dynamo_service.update_item.assert_called_once_with(
+        MOCK_LG_TABLE_NAME,
+        MOCK_LG_FILE_REF,
+        {"VirusScannerResult": VirusScanResult.CLEAN},
+    )
+    mock_get_relevant_dynamo_table.assert_called_once()

@@ -93,9 +93,6 @@ class VirusScanService:
 
     def get_new_access_token(self):
         try:
-            logger.info(f"username: {self.username}")
-            logger.info(f"password: {self.password}")
-
             json_login = json.dumps(
                 {"username": self.username, "password": self.password}
             )
@@ -155,7 +152,7 @@ class VirusScanService:
         )
 
     def get_relevant_dynamo_table(self, file_ref: str):
-        doc_type = file_ref.split("/")[1]
+        doc_type = file_ref.split("/")[1].upper()
 
         match doc_type:
             case SupportedDocumentTypes.ARF.value:
