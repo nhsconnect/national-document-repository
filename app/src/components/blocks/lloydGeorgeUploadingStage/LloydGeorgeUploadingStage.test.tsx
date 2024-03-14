@@ -258,7 +258,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 />,
             );
             await waitFor(() => {
-                expect(mockSetStage).toHaveBeenCalledWith(LG_UPLOAD_STAGE.RETRY);
+                expect(mockSetStage).toHaveBeenCalledWith(LG_UPLOAD_STAGE.FAILED);
             });
         });
     });
