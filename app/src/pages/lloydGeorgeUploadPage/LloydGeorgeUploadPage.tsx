@@ -18,6 +18,8 @@ import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { AxiosError } from 'axios';
 import { isMock } from '../../helpers/utils/isLocal';
 import Spinner from '../../components/generic/spinner/Spinner';
+import { routes } from '../../types/generic/routes';
+import { useNavigate } from 'react-router';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
@@ -37,6 +39,7 @@ function LloydGeorgeUploadPage() {
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
     const confirmed = useRef(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
@@ -111,10 +114,12 @@ function LloydGeorgeUploadPage() {
                 baseHeaders,
             });
             setUploadSession(uploadSession);
-            await Promise.all([uploadAndScanDocuments(documents, uploadSession)]);
+            uploadAndScanDocuments(documents, uploadSession);
         } catch (e) {
             const error = e as AxiosError;
-            if (isMock(error)) {
+            if (error.response?.status === 403) {
+                navigate(routes.START);
+            } else if (isMock(error)) {
                 setDocuments(
                     documents.map((document) => ({
                         ...document,

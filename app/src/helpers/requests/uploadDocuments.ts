@@ -160,14 +160,12 @@ export const uploadDocumentToS3 = async ({
         return documentMetadata.fields.key;
     } catch (e) {
         const error = e as AxiosError;
-
-        const state =
-            error.response?.status === 403
-                ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
-                : DOCUMENT_UPLOAD_STATE.FAILED;
+        if (error.response?.status === 403) {
+            throw e;
+        }
         setDocument(setDocuments, {
             id: document.id,
-            state,
+            state: DOCUMENT_UPLOAD_STATE.FAILED,
             attempts: document.attempts + 1,
             progress: 0,
         });
@@ -221,15 +219,13 @@ const uploadDocuments = async ({
         return data;
     } catch (e) {
         const error = e as AxiosError;
-
-        const state =
-            error.response?.status === 403
-                ? DOCUMENT_UPLOAD_STATE.UNAUTHORISED
-                : DOCUMENT_UPLOAD_STATE.FAILED;
+        if (error.response?.status === 403) {
+            throw e;
+        }
 
         const failedDocuments = documents.map((doc) => ({
             ...doc,
-            state,
+            state: DOCUMENT_UPLOAD_STATE.FAILED,
             attempts: doc.attempts + 1,
             progress: 0,
         }));
