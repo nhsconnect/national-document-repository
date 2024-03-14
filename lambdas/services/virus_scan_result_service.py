@@ -71,7 +71,7 @@ class VirusScanService:
                 "container": self.staging_s3_bucket_name,
                 "objectPath": file_ref,
             }
-            logger.info(json_data_request)
+            logger.info(f"Json data request: {json_data_request}")
 
             response = requests.post(
                 url=scan_url, data=json.dumps(json_data_request), headers=headers
@@ -105,11 +105,9 @@ class VirusScanService:
             )
 
             response.raise_for_status()
-            logger.info(response.json())
             new_access_token = response.json()["accessToken"]
 
             self.update_ssm_access_token(new_access_token)
-            logger.info(f"new access token: {new_access_token}")
             self.access_token = new_access_token
         except (HTTPError, KeyError, TypeError) as e:
             logger.error(
