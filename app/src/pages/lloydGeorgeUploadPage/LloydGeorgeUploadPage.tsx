@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import LloydGeorgeUploadingStage from '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import LloydGeorgeFileInputStage from '../../components/blocks/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage';
@@ -35,6 +35,7 @@ function LloydGeorgeUploadPage() {
     const [stage, setStage] = useState<LG_UPLOAD_STAGE>(LG_UPLOAD_STAGE.SELECT);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
+    const mounted = useRef(false);
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
@@ -66,8 +67,9 @@ function LloydGeorgeUploadPage() {
             setStage(LG_UPLOAD_STAGE.RETRY);
         } else if (hasVirus) {
             setStage(LG_UPLOAD_STAGE.INFECTED);
-        } else if (hasNoVirus) {
-            confirmUpload();
+        } else if (hasNoVirus && !mounted.current) {
+            mounted.current = true;
+            void confirmUpload();
         }
     }, [baseHeaders, baseUrl, documents, nhsNumber, setDocuments, setStage, uploadSession]);
 

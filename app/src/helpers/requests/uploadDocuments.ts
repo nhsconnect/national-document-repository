@@ -101,24 +101,18 @@ export const uploadConfirmation = async ({
     const fileKeyBuilder = documents.reduce((acc, doc) => {
         const documentMetadata = uploadSession[doc.file.name];
         const fileKey = documentMetadata.fields.key.split('/');
-        console.log(doc);
-        console.log(documentMetadata);
-        console.log(acc);
-
         const previousKeys = acc[doc.docType] ?? [];
-        console.log(previousKeys);
 
         return {
             ...acc,
             [doc.docType]: [...previousKeys, fileKey[3]],
         };
     }, {} as FileKeyBuilder);
-    console.log(fileKeyBuilder);
 
     const uploadConfirmationGatewayUrl = baseUrl + endpoints.UPLOAD_CONFIRMATION;
     const confirmationBody = {
         patientId: nhsNumber,
-        documents: { fileKeyBuilder },
+        documents: { ...fileKeyBuilder },
     };
     try {
         await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
