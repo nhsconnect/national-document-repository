@@ -36,7 +36,7 @@ function LloydGeorgeUploadPage() {
     const [stage, setStage] = useState<LG_UPLOAD_STAGE>(LG_UPLOAD_STAGE.SELECT);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
-    const mounted = useRef(false);
+    const confirmed = useRef(false);
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
@@ -68,8 +68,8 @@ function LloydGeorgeUploadPage() {
             setStage(LG_UPLOAD_STAGE.FAILED);
         } else if (hasVirus) {
             setStage(LG_UPLOAD_STAGE.INFECTED);
-        } else if (hasNoVirus && !mounted.current) {
-            mounted.current = true;
+        } else if (hasNoVirus && !confirmed.current) {
+            confirmed.current = true;
             void confirmUpload();
         }
     }, [baseHeaders, baseUrl, documents, nhsNumber, setDocuments, setStage, uploadSession]);
