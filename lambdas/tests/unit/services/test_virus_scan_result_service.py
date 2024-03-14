@@ -349,7 +349,7 @@ def test_scan_file_when_update_dynamo_table_throws_client_error(
 
 
 def test_get_relevant_dynamo_table_arf(virus_scanner_service):
-    expected = MOCK_ARF_TABLE_NAME
+    expected = MOCK_ARF_TABLE_NAME, "test-id"
 
     actual = virus_scanner_service.get_relevant_dynamo_table(MOCK_ARF_FILE_REF)
 
@@ -357,7 +357,7 @@ def test_get_relevant_dynamo_table_arf(virus_scanner_service):
 
 
 def test_get_relevant_dynamo_table_lg(virus_scanner_service):
-    expected = MOCK_LG_TABLE_NAME
+    expected = MOCK_LG_TABLE_NAME, "test-id"
 
     actual = virus_scanner_service.get_relevant_dynamo_table(MOCK_LG_FILE_REF)
 

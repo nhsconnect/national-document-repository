@@ -141,20 +141,21 @@ class VirusScanService:
         self.access_token = ssm_response[access_token_key]
 
     def update_dynamo_table(self, file_ref: str, scan_result: VirusScanResult):
-        table_name = self.get_relevant_dynamo_table(file_ref)
+        table_name, key = self.get_relevant_dynamo_table(file_ref)
         logger.info("Updating dynamo db table")
 
         self.dynamo_service.update_item(
             table_name,
-            file_ref,
+            key,
             {"VirusScannerResult": scan_result},
         )
 
     def get_relevant_dynamo_table(self, file_ref: str):
         doc_type = file_ref.split("/")[1].upper()
+        file_id = file_ref.split("/")[3]
 
         match doc_type:
             case SupportedDocumentTypes.ARF.value:
-                return self.arf_table_name
+                return self.arf_table_name, file_id
             case SupportedDocumentTypes.LG.value:
-                return self.lg_table_name
+                return self.lg_table_name, file_id
