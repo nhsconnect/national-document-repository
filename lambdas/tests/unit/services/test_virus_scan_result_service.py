@@ -3,6 +3,7 @@ import json
 import pytest
 from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
+from enums.virus_scan_result import VirusScanResult
 from requests import Response
 from services.virus_scan_result_service import VirusScanService
 from tests.unit.helpers.data.virus_scanner.scan_results import (
@@ -25,6 +26,11 @@ def virus_scanner_service(set_env, mocker):
 @pytest.fixture
 def mock_update_dynamo_table(virus_scanner_service, mocker):
     yield mocker.patch.object(virus_scanner_service, "update_dynamo_table")
+
+
+@pytest.fixture
+def mock_request_virus_scan(virus_scanner_service, mocker):
+    yield mocker.patch.object(virus_scanner_service, "request_virus_scan")
 
 
 def test_prepare_request_raise_error(virus_scanner_service, mocker):
@@ -121,14 +127,14 @@ def test_virus_scan_request_infected_file(mocker, virus_scanner_service):
         "container": virus_scanner_service.staging_s3_bucket_name,
         "objectPath": file_ref,
     }
+    expected_result = VirusScanResult.INFECTED
     response = Response()
     response.status_code = 200
     response._content = json.dumps(INFECTED_FILE_RESPONSE).encode("utf-8")
     mock_post = mocker.patch("requests.post", return_value=response)
-    with pytest.raises(VirusScanResultException):
-        virus_scanner_service.request_virus_scan(
-            "test/ARF/file_ref", retry_on_expired=False
-        )
+    actual = virus_scanner_service.request_virus_scan(
+        "test/ARF/file_ref", retry_on_expired=False
+    )
 
     mock_post.assert_called_with(
         url=excepted_scan_url,
@@ -136,6 +142,7 @@ def test_virus_scan_request_infected_file(mocker, virus_scanner_service):
         data=json.dumps(excepted_json_data_request),
     )
     mock_post.assert_called_once()
+    assert expected_result == actual
 
 
 def test_virus_scan_request_bad_request(mocker, virus_scanner_service):
@@ -310,14 +317,15 @@ def test_get_parameters_for_pds_api_request(virus_scanner_service):
     )
 
 
-def test_scan_file_when_parameters_are_set(mocker, virus_scanner_service):
+def test_scan_file_when_parameters_are_set(
+    mocker, virus_scanner_service, mock_update_dynamo_table, mock_request_virus_scan
+):
     virus_scanner_service.get_ssm_parameters_for_request_access_token = (
         mocker.MagicMock()
     )
-    virus_scanner_service.request_virus_scan = mocker.MagicMock()
+    mock_request_virus_scan.return_value = VirusScanResult.CLEAN
     virus_scanner_service.base_url = "test.endpoint"
-
-    virus_scanner_service.scan_file("test_ref")
+    virus_scanner_service.scan_file("test_ref/LG/111111111")
 
     virus_scanner_service.get_ssm_parameters_for_request_access_token.assert_not_called()
-    virus_scanner_service.request_virus_scan.assert_called_once()
+    mock_request_virus_scan.assert_called_once()
