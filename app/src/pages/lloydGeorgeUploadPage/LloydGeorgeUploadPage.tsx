@@ -67,9 +67,11 @@ function LloydGeorgeUploadPage() {
             setStage(LG_UPLOAD_STAGE.RETRY);
         } else if (hasVirus) {
             setStage(LG_UPLOAD_STAGE.INFECTED);
-        } else if (hasNoVirus && !mounted.current) {
-            mounted.current = true;
-            void confirmUpload();
+        } else if (hasNoVirus) {
+            if (!mounted.current) {
+                mounted.current = true;
+                void confirmUpload();
+            }
         }
     }, [baseHeaders, baseUrl, documents, nhsNumber, setDocuments, setStage, uploadSession]);
 
