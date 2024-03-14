@@ -17,6 +17,7 @@ import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { AxiosError } from 'axios';
 import { isMock } from '../../helpers/utils/isLocal';
+import Spinner from '../../components/generic/spinner/Spinner';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
@@ -162,7 +163,7 @@ function LloydGeorgeUploadPage() {
         case LG_UPLOAD_STAGE.CONFIRMATION:
             return <div>CONFIRMING</div>;
         default:
-            return <div />;
+            return <Spinner status="Uploading..." />;
     }
 }
 
