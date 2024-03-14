@@ -144,6 +144,7 @@ class VirusScanService:
 
     def update_dynamo_table(self, file_ref: str, scan_result: VirusScanResult):
         table_name = self.get_relevant_dynamo_table(file_ref)
+        logger.info("Updating dynamo db table")
 
         self.dynamo_service.update_item(
             table_name,
