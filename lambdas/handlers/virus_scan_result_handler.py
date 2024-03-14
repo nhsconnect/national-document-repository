@@ -37,7 +37,7 @@ def lambda_handler(event, context):
         if not event_body:
             raise VirusScanResultException(400, LambdaError.VirusScanNoBody)
 
-        document_reference = event_body["documentReference"]
+        document_reference = event_body.get("documentReference")
 
         if not any(
             doctype in document_reference.upper()
