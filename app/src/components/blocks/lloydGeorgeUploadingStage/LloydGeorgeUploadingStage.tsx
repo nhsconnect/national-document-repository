@@ -19,18 +19,15 @@ type Props = {
 };
 
 function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocuments }: Props) {
-    const getUploadMessage = (document: UploadDocument) => {
-        const progress = document.progress === 100 ? 99 : document.progress;
-        const showProgress =
-            document.state === DOCUMENT_UPLOAD_STATE.UPLOADING && progress !== undefined;
+    const getUploadMessage = ({ state, progress }: UploadDocument) => {
+        const showProgress = state === DOCUMENT_UPLOAD_STATE.UPLOADING && progress !== undefined;
 
-        if (document.state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
+        if (state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
         else if (showProgress) return `${Math.round(progress)}% uploaded...`;
-        else if (document.state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
-        else if (document.state === DOCUMENT_UPLOAD_STATE.INFECTED)
-            return 'File has failed a virus scan';
-        else if (document.state === DOCUMENT_UPLOAD_STATE.CLEAN) return 'Virus scan complete';
-        else if (document.state === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
+        else if (state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
+        else if (state === DOCUMENT_UPLOAD_STATE.INFECTED) return 'File has failed a virus scan';
+        else if (state === DOCUMENT_UPLOAD_STATE.CLEAN) return 'Virus scan complete';
+        else if (state === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
         else return 'Upload failed';
     };
     const hasFailedUploads = documents.some((d) => !!d.attempts && !d.progress);
