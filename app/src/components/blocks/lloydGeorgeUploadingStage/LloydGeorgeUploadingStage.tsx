@@ -28,7 +28,11 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
         else if (state === DOCUMENT_UPLOAD_STATE.INFECTED) return 'File has failed a virus scan';
         else if (state === DOCUMENT_UPLOAD_STATE.CLEAN) return 'Virus scan complete';
         else if (state === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
-        else return 'Upload failed';
+        else if (state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload succeeded';
+        else {
+            console.log(state);
+            return 'Upload failed';
+        }
     };
     const hasFailedUploads = documents.some((d) => !!d.attempts && !d.progress);
 
