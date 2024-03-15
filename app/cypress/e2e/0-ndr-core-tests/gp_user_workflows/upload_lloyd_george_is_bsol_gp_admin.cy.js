@@ -341,5 +341,70 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 testSearchPatientButton();
             },
         );
+
+        it(
+            `User can restart upload LG files journey when document upload fails more than once`,
+            { tags: 'regression' },
+            () => {
+                cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti).as(
+                    'doc_upload',
+                );
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                    req.reply({
+                        statusCode: 403,
+                        delay: 1500,
+                    });
+                }).as('s3_upload');
+
+                cy.getByTestId('button-input').selectFile(
+                    uploadedFilePathNames.LG[multiFileUsecaseIndex],
+                    { force: true },
+                );
+
+                clickUploadButton();
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                    req.reply({
+                        statusCode: 403,
+                        delay: 2500,
+                    });
+                }).as('s3_retry_upload');
+                cy.wait('@doc_upload');
+                cy.wait('@s3_upload');
+                cy.getByTestId('upload-documents-table')
+                    .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
+                    .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
+                cy.getByTestId('error-summary-btn').should('exist');
+
+                cy.getByTestId('error-summary-btn').click();
+                cy.wait('@s3_retry_upload');
+
+                cy.get('#upload-retry-button').should('exist');
+
+                cy.get('#upload-retry-button').click();
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                        delay: 1500,
+                    });
+                }).as('retry_success');
+                cy.getByTestId('button-input').selectFile(
+                    uploadedFilePathNames.LG[multiFileUsecaseIndex],
+                    { force: true },
+                );
+
+                clickUploadButton();
+
+                cy.wait('@retry_success');
+                cy.getByTestId('upload-complete-page')
+                    .should('include.text', 'Record uploaded for')
+                    .should('include.text', 'You have successfully uploaded 2 files')
+                    .should('include.text', 'Hide files')
+                    .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
+                    .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
+                testUploadCompletePageContent();
+
+                testViewRecordButton();
+            },
+        );
     });
 });
