@@ -295,7 +295,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
         );
 
         it(
-            `User can retry a multiple failed LG files using the "Retry all uploads"CTA button and can then view LG record`,
+            `User can retry a multiple failed LG files using the "Retry all uploads"warning  button and can then view LG record`,
             { tags: 'regression' },
             () => {
                 cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti).as(
