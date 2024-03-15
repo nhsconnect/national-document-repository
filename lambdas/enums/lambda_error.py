@@ -267,6 +267,10 @@ class LambdaError(Enum):
         "err_code": "VSR_4002",
         "message": "Virus scanner failed",
     }
+    VirusScanNoDocumentType = {
+        "err_code": "VSR_4003",
+        "message": "Document reference is missing a document type",
+    }
     VirusScanTokenRequest = {
         "err_code": "VSR_5001",
         "message": "Virus scanner failed to fetch token",
@@ -281,7 +285,7 @@ class LambdaError(Enum):
     }
     VirusScanAWSFailure = {
         "err_code": "VSR_5004",
-        "message": "Failed to fetch parameters from SSM param store",
+        "message": "Error occurred with an AWS service",
     }
 
     """
