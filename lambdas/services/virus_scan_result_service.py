@@ -141,7 +141,7 @@ class VirusScanService:
         self.access_token = ssm_response[access_token_key]
 
     def update_dynamo_table(self, file_ref: str, scan_result: VirusScanResult):
-        table_name, key = self.get_relevant_dynamo_table(file_ref)
+        table_name, key = self.get_dynamo_info(file_ref)
         logger.info("Updating dynamo db table")
 
         self.dynamo_service.update_item(
@@ -150,7 +150,7 @@ class VirusScanService:
             {"VirusScannerResult": scan_result},
         )
 
-    def get_relevant_dynamo_table(self, file_ref: str):
+    def get_dynamo_info(self, file_ref: str):
         doc_type = file_ref.split("/")[1].upper()
         file_id = file_ref.split("/")[3]
 

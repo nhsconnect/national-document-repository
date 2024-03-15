@@ -351,7 +351,7 @@ def test_scan_file_when_update_dynamo_table_throws_client_error(
 def test_get_relevant_dynamo_table_arf(virus_scanner_service):
     expected = MOCK_ARF_TABLE_NAME, "test-id"
 
-    actual = virus_scanner_service.get_relevant_dynamo_table(MOCK_ARF_FILE_REF)
+    actual = virus_scanner_service.get_dynamo_info(MOCK_ARF_FILE_REF)
 
     assert actual == expected
 
@@ -359,16 +359,14 @@ def test_get_relevant_dynamo_table_arf(virus_scanner_service):
 def test_get_relevant_dynamo_table_lg(virus_scanner_service):
     expected = MOCK_LG_TABLE_NAME, "test-id"
 
-    actual = virus_scanner_service.get_relevant_dynamo_table(MOCK_LG_FILE_REF)
+    actual = virus_scanner_service.get_dynamo_info(MOCK_LG_FILE_REF)
 
     assert actual == expected
 
 
 def test_update_dynamo_table(mocker, virus_scanner_service):
-    mock_get_relevant_dynamo_table = mocker.patch.object(
-        virus_scanner_service, "get_relevant_dynamo_table"
-    )
-    mock_get_relevant_dynamo_table.return_value = MOCK_LG_TABLE_NAME, "test-id"
+    mock_get_dynamo_info = mocker.patch.object(virus_scanner_service, "get_dynamo_info")
+    mock_get_dynamo_info.return_value = MOCK_LG_TABLE_NAME, "test-id"
 
     virus_scanner_service.update_dynamo_table(MOCK_LG_FILE_REF, VirusScanResult.CLEAN)
 
@@ -377,4 +375,4 @@ def test_update_dynamo_table(mocker, virus_scanner_service):
         "test-id",
         {"VirusScannerResult": VirusScanResult.CLEAN},
     )
-    mock_get_relevant_dynamo_table.assert_called_once()
+    mock_get_dynamo_info.assert_called_once()
