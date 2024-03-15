@@ -30,7 +30,6 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
         else if (state === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
         else if (state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload succeeded';
         else {
-            console.log(state);
             return 'Upload failed';
         }
     };
