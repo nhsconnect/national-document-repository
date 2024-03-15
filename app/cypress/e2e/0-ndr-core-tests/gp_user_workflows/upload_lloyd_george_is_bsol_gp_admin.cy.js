@@ -223,5 +223,73 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 testSearchPatientButton();
             },
         );
+
+        it(
+            `User can retry failed upload with a single LG file using the "Retry upload" button and can then view LG record`,
+            { tags: 'regression' },
+            () => {
+                const fileName = uploadedFileNames.LG[singleFileUsecaseIndex];
+
+                const stubbedResponse = {
+                    statusCode: 200,
+                    body: {
+                        [fileName]: {
+                            url: 'http://' + bucketUrlIdentifer,
+                            fields: {
+                                key: 'test key',
+                                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                                'x-amz-credential':
+                                    'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                                'x-amz-date': '20230904T125954Z',
+                                'x-amz-security-token': 'xxxxxxxxx',
+                                'x-amz-signature': '9xxxxxxxx',
+                            },
+                        },
+                    },
+                };
+
+                cy.intercept('POST', '**/DocumentReference**', stubbedResponse).as('doc_upload');
+
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                    req.reply({
+                        statusCode: 403,
+                        delay: 1500,
+                    });
+                }).as('s3_upload');
+
+                cy.getByTestId('button-input').selectFile(
+                    uploadedFilePathNames.LG[singleFileUsecaseIndex],
+                    { force: true },
+                );
+                clickUploadButton();
+                cy.wait('@doc_upload');
+                cy.wait('@s3_upload');
+
+                cy.getByTestId('retry-upload-btn').should('exist');
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                        delay: 1500,
+                    });
+                }).as('s3_retry_upload');
+
+                cy.getByTestId('retry-upload-btn').click();
+                cy.wait('@s3_retry_upload');
+                cy.getByTestId('upload-documents-table').should(
+                    'contain',
+                    uploadedFileNames.LG[singleFileUsecaseIndex],
+                );
+
+                cy.getByTestId('upload-complete-page')
+                    .should('include.text', 'Record uploaded for')
+                    .should('include.text', 'You have successfully uploaded 1 file')
+                    .should('include.text', 'Hide files')
+                    .should('contain', uploadedFileNames.LG[singleFileUsecaseIndex]);
+
+                testUploadCompletePageContent();
+
+                testViewRecordButton();
+            },
+        );
     });
 });
