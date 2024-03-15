@@ -119,7 +119,10 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
                                         {getUploadMessage(document)}
                                     </output>
                                     {uploadFailed && (
-                                        <div style={{ textAlign: 'right' }}>
+                                        <div
+                                            style={{ textAlign: 'right' }}
+                                            data-testid="retry-upload-btn"
+                                        >
                                             <LinkButton
                                                 onClick={() => {
                                                     retryUpload([document]);
