@@ -50,7 +50,7 @@ function LloydGeorgeUploadPage() {
         const confirmUpload = async () => {
             if (uploadSession) {
                 setStage(LG_UPLOAD_STAGE.CONFIRMATION);
-                await uploadConfirmation({
+                const confirmDocumentState = await uploadConfirmation({
                     baseUrl,
                     baseHeaders,
                     nhsNumber,
@@ -60,10 +60,14 @@ function LloydGeorgeUploadPage() {
                 setDocuments((prevState) =>
                     prevState.map((document) => ({
                         ...document,
-                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                        state: confirmDocumentState,
                     })),
                 );
-                setStage(LG_UPLOAD_STAGE.COMPLETE);
+                if (confirmDocumentState === DOCUMENT_UPLOAD_STATE.SUCCEEDED) {
+                    setStage(LG_UPLOAD_STAGE.COMPLETE);
+                } else {
+                    setStage(LG_UPLOAD_STAGE.FAILED);
+                }
             }
         };
 
@@ -165,7 +169,7 @@ function LloydGeorgeUploadPage() {
         case LG_UPLOAD_STAGE.FAILED:
             return <LloydGeorgeUploadFailedStage restartUpload={restartUpload} />;
         case LG_UPLOAD_STAGE.CONFIRMATION:
-            return <Spinner status="Uploading..." />;
+            return <Spinner status="Checking uploads..." />;
         default:
             return null;
     }

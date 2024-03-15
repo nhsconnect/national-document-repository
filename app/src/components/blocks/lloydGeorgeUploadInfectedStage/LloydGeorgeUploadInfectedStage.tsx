@@ -23,7 +23,7 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
         <div data-testid="failure-complete-page">
             <WarningCallout id="upload-stage-warning">
                 <WarningCallout.Label>This record did not upload</WarningCallout.Label>
-                <p style={{ fontWeight: 'bold' }}>[One] of your files:</p>
+                <p style={{ fontWeight: 'bold' }}>{infectedUploads.length} of your files:</p>
                 {infectedUploads.map((document) => {
                     return <p key={document.id}>{document.file.name}</p>;
                 })}{' '}

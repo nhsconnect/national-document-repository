@@ -120,8 +120,13 @@ export const uploadConfirmation = async ({
                 ...baseHeaders,
             },
         });
+        return DOCUMENT_UPLOAD_STATE.SUCCEEDED;
     } catch (e) {
-        // TODO : ADD CONFIRMATION FAILURE CODE
+        const error = e as AxiosError;
+        if (error.response?.status === 403) {
+            throw e;
+        }
+        return DOCUMENT_UPLOAD_STATE.FAILED;
     }
 };
 
