@@ -285,7 +285,7 @@ class LambdaError(Enum):
     }
     VirusScanAWSFailure = {
         "err_code": "VSR_5004",
-        "message": "Failed to fetch parameters from SSM param store",
+        "message": "Error occurred with an AWS service",
     }
 
     """
