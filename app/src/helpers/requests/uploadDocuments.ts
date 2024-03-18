@@ -9,6 +9,7 @@ import {
 import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
+import { setDocument } from '../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 
 type FileKeyBuilder = {
     [key in DOCUMENT_TYPE]: string[];
@@ -31,13 +32,6 @@ type DocRefResponse = {
     data: UploadSession;
 };
 
-type DocumentStateProps = {
-    id: string;
-    state: DOCUMENT_UPLOAD_STATE;
-    progress?: number | 'scan';
-    attempts?: number;
-};
-
 type VirusScanArgs = {
     documentReference: string;
     baseUrl: string;
@@ -49,28 +43,6 @@ type UploadConfirmationArgs = {
     nhsNumber: string;
     documents: Array<UploadDocument>;
     uploadSession: UploadSession;
-};
-
-export const setDocument = (
-    setDocuments: Dispatch<SetStateAction<UploadDocument[]>>,
-    { id, state, progress, attempts }: DocumentStateProps,
-) => {
-    setDocuments((prevState) =>
-        prevState.map((document) => {
-            if (document.id === id) {
-                if (progress === 'scan') {
-                    progress = undefined;
-                } else {
-                    progress = progress ?? document.progress;
-                }
-                attempts = attempts ?? document.attempts;
-                state = state ?? document.state;
-
-                return { ...document, state, progress, attempts };
-            }
-            return document;
-        }),
-    );
 };
 
 export const virusScanResult = async ({
@@ -124,10 +96,7 @@ export const uploadConfirmation = async ({
         return DOCUMENT_UPLOAD_STATE.SUCCEEDED;
     } catch (e) {
         const error = e as AxiosError;
-        if (error.response?.status === 403) {
-            throw e;
-        }
-        return DOCUMENT_UPLOAD_STATE.FAILED;
+        throw error;
     }
 };
 

@@ -7,7 +7,11 @@ import {
 } from '../../helpers/test/testBuilders';
 import LloydGeorgeUploadPage from './LloydGeorgeUploadPage';
 import userEvent from '@testing-library/user-event';
-import uploadDocuments from '../../helpers/requests/uploadDocuments';
+import uploadDocuments, {
+    uploadConfirmation,
+    uploadDocumentToS3,
+    virusScanResult,
+} from '../../helpers/requests/uploadDocuments';
 import { act } from 'react-dom/test-utils';
 import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
 jest.mock('../../helpers/requests/uploadDocuments');
@@ -17,6 +21,10 @@ jest.mock('../../helpers/hooks/usePatient');
 jest.mock('react-router');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockUploadDocuments = uploadDocuments as jest.Mock;
+const mockS3Upload = uploadDocumentToS3 as jest.Mock;
+const mockVirusScan = virusScanResult as jest.Mock;
+const mockUploadConfirmation = uploadConfirmation as jest.Mock;
+
 const mockPatient = buildPatientDetails();
 const lgFile = buildLgFile(1, 1, 'John Doe');
 const uploadDocument = {
@@ -34,6 +42,14 @@ jest.mock(
 jest.mock(
     '../../components/blocks/lloydGeorgeUploadCompleteStage/LloydGeorgeUploadCompleteStage',
     () => () => <h1>Mock complete stage</h1>,
+);
+jest.mock(
+    '../../components/blocks/lloydGeorgeUploadInfectedStage/LloydGeorgeUploadInfectedStage',
+    () => () => <h1>Mock virus infected stage</h1>,
+);
+jest.mock(
+    '../../components/blocks/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage',
+    () => () => <h1>Mock file failed stage</h1>,
 );
 
 describe('UploadDocumentsPage', () => {
@@ -77,6 +93,121 @@ describe('UploadDocumentsPage', () => {
                     name: 'Mock files are uploading stage',
                 }),
             ).toBeInTheDocument();
+        });
+
+        it('renders confirmation stage when submit documents is processing', async () => {
+            mockS3Upload.mockReturnValue(Promise.resolve());
+            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+            render(<LloydGeorgeUploadPage />);
+            expect(
+                screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
+            ).toBeInTheDocument();
+            act(() => {
+                userEvent.upload(screen.getByTestId(`button-input`), [lgFile]);
+            });
+            expect(screen.getByText(lgFile.name)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+            expect(mockUploadDocuments).toHaveBeenCalled();
+            await waitFor(() => {
+                expect(mockS3Upload).toHaveBeenCalled();
+            });
+            expect(mockVirusScan).toHaveBeenCalled();
+            expect(screen.getByRole('status')).toBeInTheDocument();
+            expect(screen.getByText('Checking uploads...')).toBeInTheDocument();
+        });
+
+        it('renders complete stage when submit documents is finished', async () => {
+            mockS3Upload.mockReturnValue(Promise.resolve());
+            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+            mockUploadConfirmation.mockReturnValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+            render(<LloydGeorgeUploadPage />);
+            expect(
+                screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
+            ).toBeInTheDocument();
+            act(() => {
+                userEvent.upload(screen.getByTestId(`button-input`), [lgFile]);
+            });
+            expect(screen.getByText(lgFile.name)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+            expect(mockUploadDocuments).toHaveBeenCalled();
+            await waitFor(() => {
+                expect(mockS3Upload).toHaveBeenCalled();
+            });
+            expect(mockVirusScan).toHaveBeenCalled();
+            await waitFor(() => {
+                expect(mockUploadConfirmation).toHaveBeenCalled();
+            });
+            await waitFor(() => {
+                expect(screen.getByText('Mock complete stage')).toBeInTheDocument();
+            });
+        });
+
+        it('renders file infected stage when virus scan fails', async () => {
+            mockS3Upload.mockReturnValue(Promise.resolve());
+            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.INFECTED);
+            render(<LloydGeorgeUploadPage />);
+            expect(
+                screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
+            ).toBeInTheDocument();
+            act(() => {
+                userEvent.upload(screen.getByTestId(`button-input`), [lgFile]);
+            });
+            expect(screen.getByText(lgFile.name)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+            expect(mockUploadDocuments).toHaveBeenCalled();
+            await waitFor(() => {
+                expect(mockS3Upload).toHaveBeenCalled();
+            });
+            expect(mockVirusScan).toHaveBeenCalled();
+            expect(screen.getByText('Mock virus infected stage')).toBeInTheDocument();
+        });
+
+        it('renders file upload failed stage when file upload fails', async () => {
+            mockS3Upload.mockReturnValue(Promise.resolve());
+            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+            mockUploadConfirmation.mockImplementation(() =>
+                Promise.reject({
+                    response: {
+                        status: 400,
+                    },
+                }),
+            );
+            render(<LloydGeorgeUploadPage />);
+            expect(
+                screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
+            ).toBeInTheDocument();
+            act(() => {
+                userEvent.upload(screen.getByTestId(`button-input`), [lgFile]);
+            });
+            expect(screen.getByText(lgFile.name)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+            expect(mockUploadDocuments).toHaveBeenCalled();
+            await waitFor(() => {
+                expect(mockS3Upload).toHaveBeenCalled();
+            });
+            expect(mockVirusScan).toHaveBeenCalled();
+            await waitFor(() => {
+                expect(mockUploadConfirmation).toHaveBeenCalled();
+            });
+            await waitFor(() => {
+                expect(screen.getByText('Mock file failed stage')).toBeInTheDocument();
+            });
         });
     });
 });

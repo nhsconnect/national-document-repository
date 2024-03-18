@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import LloydGeorgeUploadingStage from '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import LloydGeorgeFileInputStage from '../../components/blocks/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage';
@@ -7,7 +7,6 @@ import LloydGeorgeUploadCompleteStage from '../../components/blocks/lloydGeorgeU
 import LloydGeorgeUploadFailedStage from '../../components/blocks/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage';
 import { UploadSession } from '../../types/generic/uploadResult';
 import uploadDocuments, {
-    setDocument,
     uploadConfirmation,
     uploadDocumentToS3,
     virusScanResult,
@@ -30,6 +29,35 @@ export enum LG_UPLOAD_STAGE {
     CONFIRMATION = 5,
 }
 
+type UpdateDocumentArgs = {
+    id: string;
+    state: DOCUMENT_UPLOAD_STATE;
+    progress?: number | 'scan';
+    attempts?: number;
+};
+
+export const setDocument = (
+    setDocuments: Dispatch<SetStateAction<UploadDocument[]>>,
+    { id, state, progress, attempts }: UpdateDocumentArgs,
+) => {
+    setDocuments((prevState) =>
+        prevState.map((document) => {
+            if (document.id === id) {
+                if (progress === 'scan') {
+                    progress = undefined;
+                } else {
+                    progress = progress ?? document.progress;
+                }
+                attempts = attempts ?? document.attempts;
+                state = state ?? document.state;
+
+                return { ...document, state, progress, attempts };
+            }
+            return document;
+        }),
+    );
+};
+
 function LloydGeorgeUploadPage() {
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
@@ -50,22 +78,27 @@ function LloydGeorgeUploadPage() {
         const confirmUpload = async () => {
             if (uploadSession) {
                 setStage(LG_UPLOAD_STAGE.CONFIRMATION);
-                const confirmDocumentState = await uploadConfirmation({
-                    baseUrl,
-                    baseHeaders,
-                    nhsNumber,
-                    uploadSession,
-                    documents,
-                });
-                setDocuments((prevState) =>
-                    prevState.map((document) => ({
-                        ...document,
-                        state: confirmDocumentState,
-                    })),
-                );
-                if (confirmDocumentState === DOCUMENT_UPLOAD_STATE.SUCCEEDED) {
+                try {
+                    const confirmDocumentState = await uploadConfirmation({
+                        baseUrl,
+                        baseHeaders,
+                        nhsNumber,
+                        uploadSession,
+                        documents,
+                    });
+                    setDocuments((prevState) =>
+                        prevState.map((document) => ({
+                            ...document,
+                            state: confirmDocumentState,
+                        })),
+                    );
                     setStage(LG_UPLOAD_STAGE.COMPLETE);
-                } else {
+                } catch (e) {
+                    const error = e as AxiosError;
+                    if (error.response?.status === 403) {
+                        navigate(routes.START);
+                        return;
+                    }
                     setStage(LG_UPLOAD_STAGE.FAILED);
                 }
             }
@@ -82,10 +115,10 @@ function LloydGeorgeUploadPage() {
     }, [baseHeaders, baseUrl, documents, nhsNumber, setDocuments, setStage, uploadSession]);
 
     const uploadAndScanDocuments = (
-        documents: Array<UploadDocument>,
+        uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
-        documents.forEach(async (document) => {
+        uploadDocuments.forEach(async (document) => {
             const documentMetadata = uploadSession[document.file.name];
             const documentReference = documentMetadata.fields.key;
             try {
