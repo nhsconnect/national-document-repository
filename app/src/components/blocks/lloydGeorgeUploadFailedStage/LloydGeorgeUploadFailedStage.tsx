@@ -11,7 +11,7 @@ function LloydGeorgeUploadFailedStage({ restartUpload }: Props) {
     const navigate = useNavigate();
     return (
         <>
-            <WarningCallout>
+            <WarningCallout data-testid="lloyd-george-upload-failed-panel">
                 <WarningCallout.Label headingLevel="h2">
                     The record did not upload
                 </WarningCallout.Label>
@@ -42,7 +42,12 @@ function LloydGeorgeUploadFailedStage({ restartUpload }: Props) {
                 </p>
             </WarningCallout>
             <div>
-                <Button type="button" id="upload-retry-button" onClick={restartUpload}>
+                <Button
+                    type="button"
+                    id="upload-retry-button"
+                    data-testid="retry-upload-btn"
+                    onClick={restartUpload}
+                >
                     Try upload again
                 </Button>
                 <ButtonLink

@@ -478,5 +478,127 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 testViewRecordButton();
             },
         );
+
+        it(
+            `User's upload journey is stopped if an infected file is detected`,
+            { tags: 'regression' },
+            () => {
+                const fileName = uploadedFileNames.LG[singleFileUsecaseIndex];
+
+                const stubbedResponse = {
+                    statusCode: 200,
+                    body: {
+                        [fileName]: {
+                            url: 'http://' + bucketUrlIdentifer,
+                            fields: {
+                                key: 'test key',
+                                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                                'x-amz-credential':
+                                    'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                                'x-amz-date': '20230904T125954Z',
+                                'x-amz-security-token': 'xxxxxxxxx',
+                                'x-amz-signature': '9xxxxxxxx',
+                            },
+                        },
+                    },
+                };
+
+                cy.intercept('POST', '**/DocumentReference**', stubbedResponse).as('doc_upload');
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                    req.reply({
+                        statusCode: 200,
+                    });
+                }).as('s3_upload');
+
+                cy.intercept('POST', '**/VirusScan', (req) => {
+                    req.reply({
+                        statusCode: 500,
+                    });
+                }).as('virus_scan');
+
+                cy.getByTestId('button-input').selectFile(
+                    uploadedFilePathNames.LG[singleFileUsecaseIndex],
+                    { force: true },
+                );
+
+                clickUploadButton();
+                cy.wait('@doc_upload');
+                cy.wait('@s3_upload');
+
+                cy.getByTestId('failure-complete-page')
+                    .should('include.text', 'Has failed a virus scan')
+                    .should('include.text', uploadedFileNames.LG[singleFileUsecaseIndex]);
+
+                cy.getByTestId('retry-upload-btn').should('exist');
+                cy.getByTestId('retry-upload-btn').click();
+                cy.url().should('eq', baseUrl + '/patient/upload/lloyd-george-record');
+            },
+        );
+
+        it(
+            `User is shown an error screen when the upload complete endpoint fails to complete`,
+            { tags: 'regression' },
+            () => {
+                const fileName = uploadedFileNames.LG[singleFileUsecaseIndex];
+
+                const stubbedResponse = {
+                    statusCode: 200,
+                    body: {
+                        [fileName]: {
+                            url: 'http://' + bucketUrlIdentifer,
+                            fields: {
+                                key: 'test key',
+                                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
+                                'x-amz-credential':
+                                    'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
+                                'x-amz-date': '20230904T125954Z',
+                                'x-amz-security-token': 'xxxxxxxxx',
+                                'x-amz-signature': '9xxxxxxxx',
+                            },
+                        },
+                    },
+                };
+
+                cy.intercept('POST', '**/DocumentReference**', stubbedResponse).as('doc_upload');
+
+                cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                        delay: 1500,
+                    });
+                }).as('s3_upload');
+
+                cy.intercept('POST', '**/VirusScan', (req) => {
+                    req.reply({
+                        statusCode: 200,
+                    });
+                }).as('virus_scan');
+
+                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                    req.reply({
+                        statusCode: 500,
+                    });
+                }).as('upload_confirm');
+
+                cy.getByTestId('button-input').selectFile(
+                    uploadedFilePathNames.LG[singleFileUsecaseIndex],
+                    { force: true },
+                );
+
+                clickUploadButton();
+                cy.wait('@doc_upload');
+                cy.wait('@s3_upload');
+
+                cy.getByTestId('lloyd-george-upload-failed-panel').should('exist');
+                cy.getByTestId('lloyd-george-upload-failed-panel').should(
+                    'include.text',
+                    'One or more files failed to upload, which prevented the full record being uploaded',
+                );
+
+                cy.getByTestId('retry-upload-btn').should('exist');
+                cy.getByTestId('retry-upload-btn').click();
+                cy.url().should('eq', baseUrl + '/patient/upload/lloyd-george-record');
+            },
+        );
     });
 });
