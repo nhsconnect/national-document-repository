@@ -46,7 +46,6 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
         try {
             await uploadDocuments({
                 nhsNumber,
-                setDocuments,
                 documents,
                 baseUrl,
                 baseHeaders,
