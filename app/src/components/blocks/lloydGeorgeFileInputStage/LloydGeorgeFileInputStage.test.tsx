@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { buildPatientDetails, buildLgFile } from '../../../helpers/test/testBuilders';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
@@ -7,9 +7,7 @@ import userEvent from '@testing-library/user-event';
 import LloydGeorgeFileInputStage, { Props } from './LloydGeorgeFileInputStage';
 import { UploadDocument } from '../../../types/pages/UploadDocumentsPage/types';
 import { useState } from 'react';
-import axios from 'axios';
 import { MomentInput } from 'moment';
-import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
 
 jest.mock('../../../helpers/utils/toFileList', () => ({
@@ -55,8 +53,6 @@ const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
-jest.mock('axios');
-const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 jest.mock('moment', () => {
     return (arg: MomentInput) => {
@@ -535,7 +531,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     await screen.findAllByText(fileUploadErrorMessages.patientNameError.errorBox),
                 ).toHaveLength(2);
 
-                expect(mockedAxios.post).not.toBeCalled();
+                expect(submitDocumentsMock).not.toBeCalled();
             });
 
             it('does not upload LG if patient date of birth does not match', async () => {
@@ -557,7 +553,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     await screen.findAllByText(fileUploadErrorMessages.dateOfBirthError.errorBox),
                 ).toHaveLength(2);
 
-                expect(mockedAxios.post).not.toBeCalled();
+                expect(submitDocumentsMock).not.toBeCalled();
             });
 
             it('does not upload LG if patient nhs number does not match', async () => {
@@ -579,7 +575,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     await screen.findAllByText(fileUploadErrorMessages.nhsNumberError.errorBox),
                 ).toHaveLength(2);
 
-                expect(mockedAxios.post).not.toBeCalled();
+                expect(submitDocumentsMock).not.toBeCalled();
             });
 
             it('can display multiple errors related to patient details check', async () => {
@@ -607,7 +603,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     expect(screen.getAllByText(errorType.errorBox)).toHaveLength(2);
                 });
 
-                expect(mockedAxios.post).not.toBeCalled();
+                expect(submitDocumentsMock).not.toBeCalled();
             });
 
             it('Is case-insensitive when comparing patient names', async () => {
@@ -630,7 +626,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     screen.queryByText(fileUploadErrorMessages.patientNameError.message),
                 ).not.toBeInTheDocument();
 
-                expect(mockedAxios.post).toHaveBeenCalled();
+                expect(submitDocumentsMock).toHaveBeenCalled();
             });
 
             it('Handles accent chars NFC NFD differences when comparing patient names', async () => {
@@ -648,7 +644,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     screen.queryByText(fileUploadErrorMessages.patientNameError.message),
                 ).not.toBeInTheDocument();
 
-                expect(mockedAxios.post).toHaveBeenCalled();
+                expect(submitDocumentsMock).toHaveBeenCalled();
             });
         });
 
@@ -674,44 +670,6 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(await screen.findByText(lgDocumentOne.name)).toBeInTheDocument();
-        });
-    });
-
-    describe('Navigation', () => {
-        it('sets stage to uploading when upload files is triggered', async () => {
-            const response = {
-                response: {
-                    status: 200,
-                },
-            };
-            mockedAxios.post.mockImplementation(() => Promise.resolve(response));
-
-            renderApp();
-
-            expect(
-                screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText('NHS number: ' + formatNhsNumber(mockPatient.nhsNumber)),
-            ).toBeInTheDocument();
-
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
-
-            act(() => {
-                userEvent.upload(screen.getByTestId('button-input'), lgFiles);
-            });
-            expect(screen.getByText(`${lgFiles.length} files chosen`)).toBeInTheDocument();
-            expect(await screen.findAllByText(lgDocumentOne.name)).toHaveLength(1);
-            expect(await screen.findAllByText(lgDocumentTwo.name)).toHaveLength(1);
-
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
-            act(() => {
-                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
-            });
-            await waitFor(() => {
-                expect(setStageMock).toHaveBeenCalledWith(LG_UPLOAD_STAGE.UPLOAD);
-            });
         });
     });
 
