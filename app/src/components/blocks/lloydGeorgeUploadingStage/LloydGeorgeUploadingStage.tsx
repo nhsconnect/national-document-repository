@@ -34,7 +34,11 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
             return 'Upload failed';
         }
     };
-    const hasFailedUploads = documents.some((d) => !!d.attempts && !d.progress);
+    const hasFailedUploads = documents.some(
+        (d) =>
+            !!d.attempts &&
+            ![DOCUMENT_UPLOAD_STATE.UPLOADING, DOCUMENT_UPLOAD_STATE.SCANNING].includes(d.state),
+    );
 
     return (
         <>
