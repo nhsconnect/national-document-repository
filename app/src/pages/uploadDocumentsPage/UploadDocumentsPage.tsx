@@ -34,12 +34,7 @@ function UploadDocumentsPage() {
 
     if (stage === UPLOAD_STAGE.Selecting) {
         return (
-            <SelectStage
-                setDocuments={setDocuments}
-                setStage={setStage}
-                documents={documents}
-                setUploadSession={setUploadSession}
-            />
+            <SelectStage setDocuments={setDocuments} setStage={setStage} documents={documents} />
         );
     } else if (stage === UPLOAD_STAGE.Uploading) {
         return <UploadingStage documents={documents} />;
