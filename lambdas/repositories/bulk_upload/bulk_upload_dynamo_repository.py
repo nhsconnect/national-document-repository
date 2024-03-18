@@ -27,6 +27,12 @@ class BulkUploadDynamoRepository:
         )
         self.dynamo_records_in_transaction.append(document_reference)
 
+    def update_uploaded_fields_to_true(self, document_ids: list[str]):
+        for document_id in document_ids:
+            self.dynamo_repository.update_item(
+                self.lg_dynamo_table, document_id, {"Uploaded": True}
+            )
+
     def report_upload_complete(
         self, staging_metadata: StagingMetadata, pds_ods_code: str = ""
     ):

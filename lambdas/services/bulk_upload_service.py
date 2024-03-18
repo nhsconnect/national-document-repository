@@ -183,11 +183,14 @@ class BulkUploadService:
         self.dynamo_repository.init_transaction()
 
         logger.info(
-            "Transaction initialised. Transfering files to main S3 bucket and creating metadata"
+            "Transaction initialised. Transferring files to main S3 bucket and creating metadata"
         )
 
         try:
-            self.create_lg_records_and_copy_files(staging_metadata, patient_ods_code)
+            document_ids = self.create_lg_records_and_copy_files(
+                staging_metadata, patient_ods_code
+            )
+            self.dynamo_repository.update_uploaded_fields_to_true(document_ids)
             logger.info(
                 f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
                 {"Result": "Successful upload"},
@@ -263,8 +266,9 @@ class BulkUploadService:
 
     def create_lg_records_and_copy_files(
         self, staging_metadata: StagingMetadata, current_gp_ods: str
-    ):
+    ) -> str and list:
         nhs_number = staging_metadata.nhs_number
+        document_ids: list[str] = []
 
         for file_metadata in staging_metadata.files:
             document_reference = self.convert_to_document_reference(
@@ -278,6 +282,9 @@ class BulkUploadService:
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
+            document_ids.append(document_reference.id)
+
+        return document_ids
 
     def rollback_transaction(self):
         try:
