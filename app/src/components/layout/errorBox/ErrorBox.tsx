@@ -54,7 +54,6 @@ const ErrorBox = ({
                         )}
                         {hasOnClick && (
                             <ErrorSummary.Item
-
                                 href={'#'}
                                 onClick={(e) => {
                                     e.preventDefault();

@@ -26,7 +26,6 @@ export type Props = {
 };
 
 function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }: Props) {
-
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
@@ -47,7 +46,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
         }
         await submitDocuments();
     };
-  
+
     const updateFileList = (fileArray: File[]) => {
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
             id: uuidv4(),
@@ -247,7 +246,6 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
             )}
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
                 <Button type="button" id="upload-button" onClick={onSubmit}>
-
                     Upload
                 </Button>
                 {!!documents.length && (

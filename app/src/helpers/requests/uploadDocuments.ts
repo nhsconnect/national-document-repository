@@ -178,7 +178,6 @@ export const uploadDocumentToS3 = async ({
             progress: 0,
         });
         throw e;
-
     }
 };
 

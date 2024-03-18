@@ -55,7 +55,6 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                         if (uploadSession) {
                             uploadAndScanDocuments(failedUploads, uploadSession);
                         }
-
                     }}
                 />
             )}
@@ -123,7 +122,6 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                                                             uploadSession,
                                                         );
                                                     }
-
                                                 }}
                                             >
                                                 Retry upload
