@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import {
     DOCUMENT_TYPE,
@@ -15,13 +15,16 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import userEvent from '@testing-library/user-event';
 import { uploadDocumentToS3 } from '../../../helpers/requests/uploadDocuments';
 
+
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('../../../helpers/requests/uploadDocuments');
+
 const mockUploadAndScan = jest.fn();
 const mockSetStage = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;
 const uploadMock = uploadDocumentToS3 as jest.Mock;
+
 const mockPatient = buildPatientDetails();
 
 describe('<LloydGeorgeUploadingStage />', () => {
@@ -67,12 +70,14 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                 attempts: 0,
             };
+
             const uploadSession = buildUploadSession([uploadDocument]);
             render(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
                     uploadSession={uploadSession}
                     uploadAndScanDocuments={mockUploadAndScan}
+
                 />,
             );
 
@@ -95,7 +100,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 state: DOCUMENT_UPLOAD_STATE.SELECTED,
                 id: '1',
                 progress: 0,
-                docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                docType: DOCUMENT_TYPE.ARF,
                 attempts: 0,
             };
             const uploadSession = buildUploadSession([uploadDocument]);
@@ -220,6 +225,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             });
             userEvent.click(screen.getByRole('link', { name: 'Retry uploading all failed files' }));
             expect(mockUploadAndScan).toHaveBeenCalled();
+
         });
     });
 });

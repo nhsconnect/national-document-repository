@@ -27,7 +27,7 @@ interface Props {
     documents: Array<UploadDocument>;
 }
 
-function SelectStage({ setDocuments, setStage, documents }: Props) {
+function SelectStage({ setDocuments, setUploadSession, setStage, documents }: Props) {
     const [arfDocuments, setArfDocuments] = useState<Array<UploadDocument>>([]);
     const [lgDocuments, setLgDocuments] = useState<Array<UploadDocument>>([]);
     const baseUrl = useBaseAPIUrl();
@@ -49,6 +49,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             await uploadDocuments({
                 nhsNumber,
                 setDocuments,
+                setUploadSession,
                 documents,
                 baseUrl,
                 baseHeaders,

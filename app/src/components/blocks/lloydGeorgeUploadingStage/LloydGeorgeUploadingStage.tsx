@@ -1,4 +1,5 @@
 import React from 'react';
+
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
@@ -54,6 +55,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                         if (uploadSession) {
                             uploadAndScanDocuments(failedUploads, uploadSession);
                         }
+
                     }}
                 />
             )}
@@ -121,6 +123,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                                                             uploadSession,
                                                         );
                                                     }
+
                                                 }}
                                             >
                                                 Retry upload

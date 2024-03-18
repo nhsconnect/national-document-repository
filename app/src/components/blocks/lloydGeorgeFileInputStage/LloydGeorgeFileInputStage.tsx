@@ -12,7 +12,6 @@ import {
     UploadFilesErrors,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-
 import usePatient from '../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
@@ -27,6 +26,7 @@ export type Props = {
 };
 
 function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }: Props) {
+
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
@@ -47,6 +47,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
         }
         await submitDocuments();
     };
+  
     const updateFileList = (fileArray: File[]) => {
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
             id: uuidv4(),
@@ -246,6 +247,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
             )}
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
                 <Button type="button" id="upload-button" onClick={onSubmit}>
+
                     Upload
                 </Button>
                 {!!documents.length && (

@@ -5,6 +5,7 @@ import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../types/pages/UploadDocumentsPage/types';
+
 import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
@@ -15,6 +16,7 @@ type FileKeyBuilder = {
 
 type UploadDocumentsArgs = {
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
+
     documents: UploadDocument[];
     nhsNumber: string;
     baseUrl: string;
@@ -65,6 +67,7 @@ export const setDocument = (
                 }
                 attempts = attempts ?? document.attempts;
                 state = state ?? document.state;
+
                 return { ...document, state, progress, attempts };
             }
             return document;
@@ -175,6 +178,7 @@ export const uploadDocumentToS3 = async ({
             progress: 0,
         });
         throw e;
+
     }
 };
 
@@ -231,6 +235,7 @@ const uploadDocuments = async ({
         const failedDocuments = documents.map((doc) => ({
             ...doc,
             state: DOCUMENT_UPLOAD_STATE.FAILED,
+
             attempts: doc.attempts + 1,
             progress: 0,
         }));

@@ -8,6 +8,8 @@ import LloydGeorgeFileInputStage, { Props } from './LloydGeorgeFileInputStage';
 import { UploadDocument } from '../../../types/pages/UploadDocumentsPage/types';
 import { useState } from 'react';
 import { MomentInput } from 'moment';
+
+import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
 
 jest.mock('../../../helpers/utils/toFileList', () => ({
@@ -21,6 +23,7 @@ window.scrollTo = jest.fn() as jest.Mock;
 
 const setStageMock = jest.fn();
 const submitDocumentsMock = jest.fn();
+
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 
@@ -681,6 +684,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 documents={documents}
                 setDocuments={setDocuments}
                 submitDocuments={submitDocumentsMock}
+
                 {...props}
             />
         );
