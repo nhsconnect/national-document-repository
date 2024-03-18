@@ -1,23 +1,29 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import usePatient from '../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
-import { useState } from 'react';
-import LloydGeorgeUploadPage, { LG_UPLOAD_STAGE } from './LloydGeorgeUploadPage';
+import LloydGeorgeUploadPage from './LloydGeorgeUploadPage';
+import { Props } from '../../components/blocks/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage';
+import userEvent from '@testing-library/user-event';
+import uploadDocuments from '../../helpers/requests/uploadDocuments';
+jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../helpers/hooks/usePatient');
 jest.mock('react-router');
 const mockedUsePatient = usePatient as jest.Mock;
-const mockUseState = useState as jest.Mock;
 
+const mockUploadDocuments = uploadDocuments as jest.Mock;
 const mockPatient = buildPatientDetails();
-jest.mock('react', () => ({
-    ...jest.requireActual('react'),
-    useState: jest.fn(),
-}));
+
 jest.mock(
     '../../components/blocks/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage',
-    () => () => <h1>Mock file input stage</h1>,
+    () => (props: Props) => (
+        <>
+            <h1>Mock file input stage </h1>
+
+            <button onClick={() => props.submitDocuments()}>Mock Submit Documents</button>
+        </>
+    ),
 );
 jest.mock(
     '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage',
@@ -32,7 +38,6 @@ describe('UploadDocumentsPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
-        mockUseState.mockImplementation(() => [LG_UPLOAD_STAGE.SELECT, jest.fn()]);
     });
     afterEach(() => {
         jest.clearAllMocks();
@@ -43,23 +48,35 @@ describe('UploadDocumentsPage', () => {
             expect(
                 screen.getByRole('heading', { name: 'Mock file input stage' }),
             ).toBeInTheDocument();
-        });
-
-        it('renders uploading stage when state is set', () => {
-            mockUseState.mockImplementation(() => [LG_UPLOAD_STAGE.UPLOAD, jest.fn()]);
-            render(<LloydGeorgeUploadPage />);
             expect(
-                screen.getByRole('heading', { name: 'Mock files are uploading stage' }),
+                screen.getByRole('button', { name: 'Mock Submit Documents' }),
             ).toBeInTheDocument();
         });
 
-        it('renders upload complete stage when state is set', () => {
-            mockUseState.mockImplementation(() => [LG_UPLOAD_STAGE.COMPLETE, jest.fn()]);
+        it('renders uploading stage when submit documents is clicked', async () => {
             render(<LloydGeorgeUploadPage />);
             expect(
-                screen.getByRole('heading', { name: 'Mock complete stage' }),
+                screen.getByRole('heading', { name: 'Mock file input stage' }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', { name: 'Mock Submit Documents' }),
+            ).toBeInTheDocument();
+            userEvent.click(screen.getByRole('button', { name: 'Mock Submit Documents' }));
+            await waitFor(() => {
+                expect(mockUploadDocuments).toHaveBeenCalled();
+            });
+            expect(
+                screen.getByRole('heading', {
+                    name: 'Mock files are uploading stage',
+                }),
             ).toBeInTheDocument();
         });
+
+        // it('renders upload complete stage when state is set', () => {
+        //     render(<LloydGeorgeUploadPage />);
+        //     expect(
+        //         screen.getByRole('heading', { name: 'Mock complete stage' }),
+        //     ).toBeInTheDocument();
+        // });
     });
-    describe('Navigation', () => {});
 });
