@@ -282,9 +282,6 @@ class BulkUploadService:
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
-            logger.info(
-                f"Uploaded value before calling new function: {document_reference.uploaded}"
-            )
             document_ids.append(document_reference.id)
 
         return document_ids
