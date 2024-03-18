@@ -90,6 +90,21 @@ function LloydGeorgeUploadPage() {
             const documentReference = documentMetadata.fields.key;
             try {
                 await uploadDocumentToS3({ setDocuments, document, uploadSession });
+                setDocument(setDocuments, {
+                    id: document.id,
+                    state: DOCUMENT_UPLOAD_STATE.SCANNING,
+                    progress: 'scan',
+                });
+                const virusDocumentState = await virusScanResult({
+                    documentReference,
+                    baseUrl,
+                    baseHeaders,
+                });
+                setDocument(setDocuments, {
+                    id: document.id,
+                    state: virusDocumentState,
+                    progress: 100,
+                });
             } catch (e) {
                 setDocument(setDocuments, {
                     id: document.id,
@@ -98,21 +113,6 @@ function LloydGeorgeUploadPage() {
                     progress: 0,
                 });
             }
-            setDocument(setDocuments, {
-                id: document.id,
-                state: DOCUMENT_UPLOAD_STATE.SCANNING,
-                progress: 'scan',
-            });
-            const virusDocumentState = await virusScanResult({
-                documentReference,
-                baseUrl,
-                baseHeaders,
-            });
-            setDocument(setDocuments, {
-                id: document.id,
-                state: virusDocumentState,
-                progress: 100,
-            });
         });
     };
 
