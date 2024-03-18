@@ -112,7 +112,16 @@ function LloydGeorgeUploadPage() {
             confirmed.current = true;
             void confirmUpload();
         }
-    }, [baseHeaders, baseUrl, documents, nhsNumber, setDocuments, setStage, uploadSession]);
+    }, [
+        baseHeaders,
+        baseUrl,
+        documents,
+        navigate,
+        nhsNumber,
+        setDocuments,
+        setStage,
+        uploadSession,
+    ]);
 
     const uploadAndScanDocuments = (
         uploadDocuments: Array<UploadDocument>,
