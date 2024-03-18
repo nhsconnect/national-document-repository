@@ -88,7 +88,16 @@ function LloydGeorgeUploadPage() {
         documents.forEach(async (document) => {
             const documentMetadata = uploadSession[document.file.name];
             const documentReference = documentMetadata.fields.key;
-            await uploadDocumentToS3({ setDocuments, document, uploadSession });
+            try {
+                await uploadDocumentToS3({ setDocuments, document, uploadSession });
+            } catch (e) {
+                setDocument(setDocuments, {
+                    id: document.id,
+                    state: DOCUMENT_UPLOAD_STATE.FAILED,
+                    attempts: document.attempts + 1,
+                    progress: 0,
+                });
+            }
             setDocument(setDocuments, {
                 id: document.id,
                 state: DOCUMENT_UPLOAD_STATE.SCANNING,
@@ -112,7 +121,6 @@ function LloydGeorgeUploadPage() {
             setStage(LG_UPLOAD_STAGE.UPLOAD);
             const uploadSession = await uploadDocuments({
                 nhsNumber,
-                setDocuments,
                 documents,
                 baseUrl,
                 baseHeaders,
@@ -124,13 +132,22 @@ function LloydGeorgeUploadPage() {
             if (error.response?.status === 403) {
                 navigate(routes.START);
             } else if (isMock(error)) {
-                setDocuments(
-                    documents.map((document) => ({
-                        ...document,
+                setDocuments((prevState) =>
+                    prevState.map((doc) => ({
+                        ...doc,
                         state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
                     })),
                 );
                 setStage(LG_UPLOAD_STAGE.COMPLETE);
+            } else {
+                setDocuments((prevState) =>
+                    prevState.map((doc) => ({
+                        ...doc,
+                        state: DOCUMENT_UPLOAD_STATE.FAILED,
+                        attempts: doc.attempts + 1,
+                        progress: 0,
+                    })),
+                );
             }
         }
     };

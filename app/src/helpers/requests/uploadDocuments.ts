@@ -15,8 +15,6 @@ type FileKeyBuilder = {
 };
 
 type UploadDocumentsArgs = {
-    setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
-
     documents: UploadDocument[];
     nhsNumber: string;
     baseUrl: string;
@@ -147,7 +145,7 @@ export const uploadDocumentToS3 = async ({
     formData.append('file', document.file);
     const s3url = documentMetadata.url;
     try {
-        await axios.post(s3url, formData, {
+        return await axios.post(s3url, formData, {
             onUploadProgress: (progress) => {
                 const { loaded, total } = progress;
                 if (total) {
@@ -159,31 +157,14 @@ export const uploadDocumentToS3 = async ({
                 }
             },
         });
-
-        setDocument(setDocuments, {
-            id: document.id,
-            state: DOCUMENT_UPLOAD_STATE.SCANNING,
-            progress: 'scan',
-        });
-        return documentMetadata.fields.key;
     } catch (e) {
         const error = e as AxiosError;
-        if (error.response?.status === 403) {
-            throw e;
-        }
-        setDocument(setDocuments, {
-            id: document.id,
-            state: DOCUMENT_UPLOAD_STATE.FAILED,
-            attempts: document.attempts + 1,
-            progress: 0,
-        });
-        throw e;
+        throw error;
     }
 };
 
 const uploadDocuments = async ({
     nhsNumber,
-    setDocuments,
     documents,
     baseUrl,
     baseHeaders,
@@ -227,19 +208,7 @@ const uploadDocuments = async ({
         return data;
     } catch (e) {
         const error = e as AxiosError;
-        if (error.response?.status === 403) {
-            throw e;
-        }
-
-        const failedDocuments = documents.map((doc) => ({
-            ...doc,
-            state: DOCUMENT_UPLOAD_STATE.FAILED,
-
-            attempts: doc.attempts + 1,
-            progress: 0,
-        }));
-        setDocuments(failedDocuments);
-        throw e;
+        throw error;
     }
 };
 
