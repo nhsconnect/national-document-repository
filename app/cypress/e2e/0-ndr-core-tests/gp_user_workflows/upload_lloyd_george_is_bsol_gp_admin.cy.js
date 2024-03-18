@@ -135,6 +135,16 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 });
+                cy.intercept('POST', '**/VirusScan', (req) => {
+                    req.reply({
+                        statusCode: 200,
+                    });
+                }).as('virus_scan');
+                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                    });
+                }).as('upload_confirm');
 
                 cy.getByTestId('button-input').selectFile(
                     uploadedFilePathNames.LG[singleFileUsecaseIndex],
@@ -170,6 +180,16 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 });
+                cy.intercept('POST', '**/VirusScan', (req) => {
+                    req.reply({
+                        statusCode: 200,
+                    });
+                }).as('virus_scan');
+                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                    });
+                }).as('upload_confirm');
 
                 cy.getByTestId('button-input').selectFile(
                     uploadedFilePathNames.LG[multiFileUsecaseIndex],
@@ -202,6 +222,16 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 });
+                cy.intercept('POST', '**/VirusScan', (req) => {
+                    req.reply({
+                        statusCode: 200,
+                    });
+                }).as('virus_scan');
+                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                    });
+                }).as('upload_confirm');
 
                 cy.getByTestId('dropzone').selectFile(
                     uploadedFilePathNames.LG[multiFileUsecaseIndex],
@@ -252,10 +282,22 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
 
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
                     req.reply({
-                        statusCode: 403,
+                        statusCode: 407,
                         delay: 1500,
                     });
                 }).as('s3_upload');
+
+                cy.intercept('POST', '**/VirusScan', (req) => {
+                    req.reply({
+                        statusCode: 200,
+                    });
+                }).as('virus_scan');
+
+                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                    });
+                }).as('upload_confirm');
 
                 cy.getByTestId('button-input').selectFile(
                     uploadedFilePathNames.LG[singleFileUsecaseIndex],
@@ -266,7 +308,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 cy.wait('@doc_upload');
                 cy.wait('@s3_upload');
 
-                cy.getByTestId('retry-upload-btn').should('exist');
+                cy.getByTestId('retry-upload-error-box').should('exist');
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
                     req.reply({
                         statusCode: 204,
@@ -279,7 +321,8 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                     uploadedFileNames.LG[singleFileUsecaseIndex],
                 );
 
-                cy.getByTestId('retry-upload-btn').click();
+                cy.getByTestId('error-box-link').should('exist');
+                cy.getByTestId('error-box-link').click();
                 cy.wait('@s3_retry_upload');
 
                 cy.getByTestId('upload-complete-page')
@@ -307,6 +350,16 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 }).as('s3_upload');
+                cy.intercept('POST', '**/VirusScan', (req) => {
+                    req.reply({
+                        statusCode: 200,
+                    });
+                }).as('virus_scan');
+                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                    });
+                }).as('upload_confirm');
 
                 cy.getByTestId('button-input').selectFile(
                     uploadedFilePathNames.LG[multiFileUsecaseIndex],
@@ -314,20 +367,25 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 );
 
                 clickUploadButton();
+
+                cy.wait('@doc_upload');
+                cy.wait('@s3_upload');
+
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
                     req.reply({
                         statusCode: 204,
                         delay: 2500,
                     });
                 }).as('s3_retry_upload');
-                cy.wait('@doc_upload');
-                cy.wait('@s3_upload');
+
                 cy.getByTestId('upload-documents-table')
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
-                cy.getByTestId('error-summary-btn').should('exist');
 
-                cy.getByTestId('error-summary-btn').click();
+                cy.getByTestId('retry-upload-error-box').should('exist');
+
+                cy.getByTestId('error-box-link').should('exist');
+                cy.getByTestId('error-box-link').click();
                 cy.wait('@s3_retry_upload');
 
                 cy.getByTestId('upload-complete-page')
@@ -355,6 +413,16 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 }).as('s3_upload');
+                cy.intercept('POST', '**/VirusScan', (req) => {
+                    req.reply({
+                        statusCode: 200,
+                    });
+                }).as('virus_scan');
+                cy.intercept('POST', '**/UploadConfirm', (req) => {
+                    req.reply({
+                        statusCode: 204,
+                    });
+                }).as('upload_confirm');
 
                 cy.getByTestId('button-input').selectFile(
                     uploadedFilePathNames.LG[multiFileUsecaseIndex],
@@ -368,14 +436,18 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 2500,
                     });
                 }).as('s3_retry_upload');
+
                 cy.wait('@doc_upload');
                 cy.wait('@s3_upload');
+
                 cy.getByTestId('upload-documents-table')
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
-                cy.getByTestId('error-summary-btn').should('exist');
 
-                cy.getByTestId('error-summary-btn').click();
+                cy.getByTestId('retry-upload-error-box').should('exist');
+
+                cy.getByTestId('error-box-link').should('exist');
+                cy.getByTestId('error-box-link').click();
                 cy.wait('@s3_retry_upload');
 
                 cy.get('#upload-retry-button').should('exist');

@@ -48,6 +48,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                     messageTitle="There is a problem with some of your files"
                     messageBody="Some of your files failed to upload, You cannot continue until you retry uploading these files."
                     messageLinkBody="Retry uploading all failed files"
+                    dataTestId="retry-upload-error-box"
                     errorOnClick={() => {
                         const failedUploads = documents.filter((d) => {
                             const notInProgress = ![
