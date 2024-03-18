@@ -14,14 +14,16 @@ import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig, lloydGeorgeFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
+import uploadDocuments from '../../../../helpers/requests/uploadDocuments';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
-import uploadDocuments from '../../../../helpers/requests/uploadDocuments';
+import { UploadSession } from '../../../../types/generic/uploadResult';
 
 interface Props {
     setDocuments: SetUploadDocuments;
     setStage: Dispatch<SetStateAction<UPLOAD_STAGE>>;
+    setUploadSession: Dispatch<SetStateAction<UploadSession | null>>;
     documents: Array<UploadDocument>;
 }
 
@@ -62,6 +64,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
             progress: 0,
             docType: docType,
+            attempts: 0,
         }));
         const isArfDoc = docType === DOCUMENT_TYPE.ARF;
         const mergeList = isArfDoc ? lgDocuments : arfDocuments;

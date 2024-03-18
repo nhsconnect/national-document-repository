@@ -22,14 +22,18 @@ export enum DOCUMENT_UPLOAD_STATE {
     SUCCEEDED = 'SUCCEEDED',
     FAILED = 'FAILED',
     UNAUTHORISED = 'UNAUTHORISED',
+    SCANNING = 'SCANNING',
+    CLEAN = 'CLEAN',
+    INFECTED = 'INFECTED',
 }
 
 export type UploadDocument = {
     state: DOCUMENT_UPLOAD_STATE;
     file: File;
-    progress: number;
+    progress?: number;
     id: string;
     docType: DOCUMENT_TYPE;
+    attempts: number;
 };
 
 export type UploadFilesErrors = {

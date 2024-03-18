@@ -14,7 +14,7 @@ interface Props {
     documents: Array<UploadDocument>;
 }
 
-function LloydGeorgeUploadComplete({ documents }: Props) {
+function LloydGeorgeUploadCompleteStage({ documents }: Props) {
     const navigate = useNavigate();
 
     const successfulUploads = documents.filter((document) => {
@@ -92,4 +92,4 @@ function LloydGeorgeUploadComplete({ documents }: Props) {
     );
 }
 
-export default LloydGeorgeUploadComplete;
+export default LloydGeorgeUploadCompleteStage;

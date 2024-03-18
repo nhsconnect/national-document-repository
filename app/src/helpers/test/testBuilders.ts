@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import moment from 'moment';
 import { GlobalConfig, LocalFlags } from '../../providers/configProvider/ConfigProvider';
 import { FeatureFlags } from '../../types/generic/featureFlags';
+import { UploadSession } from '../../types/generic/uploadResult';
 
 const buildUserAuth = (userAuthOverride?: Partial<UserAuth>) => {
     const auth: UserAuth = {
@@ -90,8 +91,30 @@ const buildDocument = (
         progress: 0,
         id: uuidv4(),
         docType: docType ?? DOCUMENT_TYPE.ARF,
+        attempts: 0,
     };
     return mockDocument;
+};
+
+const buildUploadSession = (documents: Array<UploadDocument>) => {
+    return documents.reduce(
+        (acc, doc) => ({
+            ...acc,
+            [doc.file.name]: {
+                fields: {
+                    key: 'string',
+                    'x-amz-algorithm': 'string',
+                    'x-amz-credential': 'string',
+                    'x-amz-date': 'string',
+                    'x-amz-security-token': 'string',
+                    policy: 'string',
+                    'x-amz-signature': 'string',
+                },
+                url: 'https://test.s3.com',
+            },
+        }),
+        {} as UploadSession,
+    );
 };
 
 const buildSearchResult = (searchResultOverride?: Partial<SearchResult>) => {
@@ -145,4 +168,5 @@ export {
     buildUserAuth,
     buildLgFile,
     buildConfig,
+    buildUploadSession,
 };

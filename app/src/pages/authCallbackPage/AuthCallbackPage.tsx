@@ -12,6 +12,7 @@ import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { useConfigContext } from '../../providers/configProvider/ConfigProvider';
 import getFeatureFlags from '../../helpers/requests/getFeatureFlags';
+import { FeatureFlags, defaultFeatureFlags } from '../../types/generic/featureFlags';
 
 type Props = {};
 
@@ -33,23 +34,16 @@ const AuthCallbackPage = (props: Props) => {
                 navigate(routes.AUTH_ERROR);
             }
         };
-        const handleSuccess = async (auth: UserAuth) => {
+        const handleSuccess = (auth: UserAuth, featureFlags: FeatureFlags) => {
             const { GP_ADMIN, GP_CLINICAL, PCSE } = REPOSITORY_ROLE;
             setSession({
-                auth: auth,
+                auth,
                 isLoggedIn: true,
             });
-            const jwtToken = auth.authorisation_token ?? '';
-            const featureFlagsData = await getFeatureFlags({
-                baseUrl,
-                baseHeaders: {
-                    'Content-Type': 'application/json',
-                    Authorization: jwtToken,
-                },
-            });
+
             setConfig({
-                mockLocal: mockLocal,
-                featureFlags: featureFlagsData,
+                mockLocal,
+                featureFlags,
             });
 
             if ([GP_ADMIN, GP_CLINICAL, PCSE].includes(auth.role)) {
@@ -62,12 +56,30 @@ const AuthCallbackPage = (props: Props) => {
         const handleCallback = async (args: AuthTokenArgs) => {
             try {
                 const authData = await getAuthToken(args);
-                await handleSuccess(authData);
+                const jwtToken = authData.authorisation_token ?? '';
+                const featureFlagsData = await getFeatureFlags({
+                    baseUrl,
+                    baseHeaders: {
+                        'Content-Type': 'application/json',
+                        Authorization: jwtToken,
+                    },
+                });
+                handleSuccess(authData, featureFlagsData);
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
                     const { isBsol, userRole } = mockLocal;
-                    await handleSuccess(buildUserAuth({ isBSOL: !!isBsol, role: userRole }));
+                    const mockFeatureFlags = Object.entries(defaultFeatureFlags).reduce(
+                        (acc, [k, v]) => ({
+                            ...acc,
+                            [k]: true,
+                        }),
+                        {} as FeatureFlags,
+                    );
+                    handleSuccess(
+                        buildUserAuth({ isBSOL: !!isBsol, role: userRole }),
+                        mockFeatureFlags,
+                    );
                 } else {
                     handleError(error);
                 }

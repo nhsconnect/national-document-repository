@@ -1,9 +1,17 @@
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { endpoints } from '../../types/generic/endpoints';
-import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
+import {
+    DOCUMENT_TYPE,
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../types/pages/UploadDocumentsPage/types';
 import axios, { AxiosError } from 'axios';
-import { S3Upload, S3UploadFields, UploadResult } from '../../types/generic/uploadResult';
+import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
+
+type FileKeyBuilder = {
+    [key in DOCUMENT_TYPE]: string[];
+};
 
 type UploadDocumentsArgs = {
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
@@ -14,13 +22,160 @@ type UploadDocumentsArgs = {
 };
 
 type UploadDocumentsToS3Args = {
-    setDocumentState: (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => void;
-    documents: UploadDocument[];
-    data: UploadResult;
+    setDocuments: Dispatch<SetStateAction<UploadDocument[]>>;
+    document: UploadDocument;
+    uploadSession: UploadSession;
 };
 
-type gatewayResponse = {
-    data: UploadResult;
+type DocRefResponse = {
+    data: UploadSession;
+};
+
+type DocumentStateProps = {
+    id: string;
+    state: DOCUMENT_UPLOAD_STATE;
+    progress?: number | 'scan';
+    attempts?: number;
+};
+
+type VirusScanArgs = {
+    documentReference: string;
+    baseUrl: string;
+    baseHeaders: AuthHeaders;
+};
+type UploadConfirmationArgs = {
+    baseUrl: string;
+    baseHeaders: AuthHeaders;
+    nhsNumber: string;
+    documents: Array<UploadDocument>;
+    uploadSession: UploadSession;
+};
+
+export const setDocument = (
+    setDocuments: Dispatch<SetStateAction<UploadDocument[]>>,
+    { id, state, progress, attempts }: DocumentStateProps,
+) => {
+    setDocuments((prevState) =>
+        prevState.map((document) => {
+            if (document.id === id) {
+                if (progress === 'scan') {
+                    progress = undefined;
+                } else {
+                    progress = progress ?? document.progress;
+                }
+                attempts = attempts ?? document.attempts;
+                state = state ?? document.state;
+                return { ...document, state, progress, attempts };
+            }
+            return document;
+        }),
+    );
+};
+
+export const virusScanResult = async ({
+    documentReference,
+    baseUrl,
+    baseHeaders,
+}: VirusScanArgs) => {
+    const virusScanGatewayUrl = baseUrl + endpoints.VIRUS_SCAN;
+    const body = { documentReference };
+    try {
+        await axios.post(virusScanGatewayUrl, body, {
+            headers: {
+                ...baseHeaders,
+            },
+        });
+        return DOCUMENT_UPLOAD_STATE.CLEAN;
+    } catch (e) {
+        return DOCUMENT_UPLOAD_STATE.INFECTED;
+    }
+};
+
+export const uploadConfirmation = async ({
+    baseUrl,
+    baseHeaders,
+    nhsNumber,
+    documents,
+    uploadSession,
+}: UploadConfirmationArgs) => {
+    const fileKeyBuilder = documents.reduce((acc, doc) => {
+        const documentMetadata = uploadSession[doc.file.name];
+        const fileKey = documentMetadata.fields.key.split('/');
+        const previousKeys = acc[doc.docType] ?? [];
+
+        return {
+            ...acc,
+            [doc.docType]: [...previousKeys, fileKey[3]],
+        };
+    }, {} as FileKeyBuilder);
+
+    const uploadConfirmationGatewayUrl = baseUrl + endpoints.UPLOAD_CONFIRMATION;
+    const confirmationBody = {
+        patientId: nhsNumber,
+        documents: { ...fileKeyBuilder },
+    };
+    try {
+        await axios.post(uploadConfirmationGatewayUrl, confirmationBody, {
+            headers: {
+                ...baseHeaders,
+            },
+        });
+        return DOCUMENT_UPLOAD_STATE.SUCCEEDED;
+    } catch (e) {
+        const error = e as AxiosError;
+        if (error.response?.status === 403) {
+            throw e;
+        }
+        return DOCUMENT_UPLOAD_STATE.FAILED;
+    }
+};
+
+export const uploadDocumentToS3 = async ({
+    setDocuments,
+    uploadSession,
+    document,
+}: UploadDocumentsToS3Args) => {
+    const documentMetadata: S3Upload = uploadSession[document.file.name];
+    const formData = new FormData();
+    const docFields: S3UploadFields = documentMetadata.fields;
+    Object.entries(docFields).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+    formData.append('file', document.file);
+    const s3url = documentMetadata.url;
+    try {
+        await axios.post(s3url, formData, {
+            onUploadProgress: (progress) => {
+                const { loaded, total } = progress;
+                if (total) {
+                    setDocument(setDocuments, {
+                        id: document.id,
+                        state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                        progress: (loaded / total) * 100,
+                    });
+                }
+            },
+        });
+
+        setDocument(setDocuments, {
+            id: document.id,
+            state: DOCUMENT_UPLOAD_STATE.SCANNING,
+            progress: 'scan',
+        });
+        return documentMetadata.fields.key;
+    } catch (e) {
+        const error = e as AxiosError;
+        if (error.response?.status === 403) {
+            throw e;
+        }
+        setDocument(setDocuments, {
+            id: document.id,
+            state: DOCUMENT_UPLOAD_STATE.FAILED,
+            attempts: document.attempts + 1,
+            progress: 0,
+        });
+        throw e;
+    }
 };
 
 const uploadDocuments = async ({
@@ -30,25 +185,6 @@ const uploadDocuments = async ({
     baseUrl,
     baseHeaders,
 }: UploadDocumentsArgs) => {
-    const setDocumentState = (id: string, state: DOCUMENT_UPLOAD_STATE, progress?: number) => {
-        setDocuments((prevDocuments: UploadDocument[]) => {
-            return prevDocuments.map((document) => {
-                if (document.id === id) {
-                    progress = progress ?? document.progress;
-                    return { ...document, state, progress };
-                }
-                return document;
-            });
-        });
-    };
-    const docDetails = (document: UploadDocument) => {
-        setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UPLOADING);
-        return {
-            fileName: document.file.name,
-            contentType: document.file.type,
-            docType: document.docType,
-        };
-    };
     const requestBody = {
         resourceType: 'DocumentReference',
         subject: {
@@ -67,7 +203,11 @@ const uploadDocuments = async ({
         },
         content: [
             {
-                attachment: documents.map(docDetails),
+                attachment: documents.map((doc) => ({
+                    fileName: doc.file.name,
+                    contentType: doc.file.type,
+                    docType: doc.docType,
+                })),
             },
         ],
         created: new Date(Date.now()).toISOString(),
@@ -76,71 +216,26 @@ const uploadDocuments = async ({
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_UPLOAD;
 
     try {
-        const { data }: gatewayResponse = await axios.post(
-            gatewayUrl,
-            JSON.stringify(requestBody),
-            {
-                headers: {
-                    ...baseHeaders,
-                },
+        const { data }: DocRefResponse = await axios.post(gatewayUrl, JSON.stringify(requestBody), {
+            headers: {
+                ...baseHeaders,
             },
-        );
-        await uploadDocumentsToS3({ setDocumentState, documents, data });
+        });
+        return data;
     } catch (e) {
         const error = e as AxiosError;
         if (error.response?.status === 403) {
-            documents.forEach((document) => {
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
-            });
-            throw e;
-        } else {
-            documents.forEach((document) => {
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
-            });
             throw e;
         }
-    }
-};
 
-const uploadDocumentsToS3 = async ({
-    setDocumentState,
-    documents,
-    data,
-}: UploadDocumentsToS3Args) => {
-    for (const document of documents) {
-        try {
-            const docGatewayResponse: S3Upload = data[document.file.name];
-            const formData = new FormData();
-            const docFields: S3UploadFields = docGatewayResponse.fields;
-            Object.entries(docFields).forEach(([key, value]) => {
-                formData.append(key, value);
-            });
-            formData.append('file', document.file);
-            const s3url = docGatewayResponse.url;
-
-            const s3Response = await axios.post(s3url, formData, {
-                onUploadProgress: (progress) => {
-                    const { loaded, total } = progress;
-                    if (total) {
-                        setDocumentState(
-                            document.id,
-                            DOCUMENT_UPLOAD_STATE.UPLOADING,
-                            (loaded / total) * 100,
-                        );
-                    }
-                },
-            });
-
-            if (s3Response.status === 204)
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.SUCCEEDED);
-        } catch (e) {
-            const error = e as AxiosError;
-            if (error.response?.status === 403) {
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.UNAUTHORISED);
-            } else {
-                setDocumentState(document.id, DOCUMENT_UPLOAD_STATE.FAILED);
-            }
-        }
+        const failedDocuments = documents.map((doc) => ({
+            ...doc,
+            state: DOCUMENT_UPLOAD_STATE.FAILED,
+            attempts: doc.attempts + 1,
+            progress: 0,
+        }));
+        setDocuments(failedDocuments);
+        throw e;
     }
 };
 
