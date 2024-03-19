@@ -10,7 +10,7 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import LinkButton from '../../generic/linkButton/LinkButton';
 import { UploadSession } from '../../../types/generic/uploadResult';
 
-type Props = {
+export type Props = {
     documents: Array<UploadDocument>;
     uploadSession: UploadSession | null;
     uploadAndScanDocuments: (

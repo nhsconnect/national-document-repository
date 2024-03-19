@@ -14,6 +14,7 @@ import uploadDocuments, {
 } from '../../helpers/requests/uploadDocuments';
 import { act } from 'react-dom/test-utils';
 import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
+import { Props } from '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
 jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
@@ -37,7 +38,15 @@ const uploadDocument = {
 };
 jest.mock(
     '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage',
-    () => () => <h1>Mock files are uploading stage</h1>,
+    () =>
+        ({ documents }: Props) => (
+            <>
+                <h1>Mock files are uploading stage</h1>
+                {documents.map((d) => (
+                    <output key={d.id}>{d.file.name}</output>
+                ))}
+            </>
+        ),
 );
 jest.mock(
     '../../components/blocks/lloydGeorgeUploadCompleteStage/LloydGeorgeUploadCompleteStage',
@@ -74,6 +83,9 @@ describe('UploadDocumentsPage', () => {
         });
 
         it('renders uploading stage when submit documents is clicked', async () => {
+            mockS3Upload.mockReturnValue(Promise.resolve());
+            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+            mockUploadConfirmation.mockReturnValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
             render(<LloydGeorgeUploadPage />);
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
@@ -84,15 +96,28 @@ describe('UploadDocumentsPage', () => {
             expect(screen.getByText(lgFile.name)).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
 
-            userEvent.click(screen.getByRole('button', { name: 'Upload' }));
-            await waitFor(() => {
-                expect(mockUploadDocuments).toHaveBeenCalled();
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
+            expect(mockUploadDocuments).toHaveBeenCalled();
+
             expect(
                 screen.getByRole('heading', {
                     name: 'Mock files are uploading stage',
                 }),
             ).toBeInTheDocument();
+            expect(screen.getByText(uploadDocument.file.name)).toBeInTheDocument();
+
+            await waitFor(() => {
+                expect(mockS3Upload).toHaveBeenCalled();
+            });
+            expect(mockVirusScan).toHaveBeenCalled();
+            await waitFor(() => {
+                expect(mockUploadConfirmation).toHaveBeenCalled();
+            });
+            await waitFor(() => {
+                expect(screen.getByText('Mock complete stage')).toBeInTheDocument();
+            });
         });
 
         it('renders confirmation stage when submit documents is processing', async () => {
