@@ -1,5 +1,6 @@
 import os
 
+from enums.virus_scan_result import VirusScanResult
 from freezegun import freeze_time
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
@@ -138,7 +139,7 @@ def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"
         s3_bucket_name=MOCK_LG_BUCKET,
         current_gp_ods=TEST_CURRENT_GP_ODS,
     )
-    doc_ref.virus_scanner_result = "Clean"
+    doc_ref.virus_scanner_result = VirusScanResult.CLEAN
     return doc_ref
 
 
