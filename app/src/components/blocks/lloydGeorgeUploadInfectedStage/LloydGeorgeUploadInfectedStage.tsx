@@ -23,10 +23,16 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
         <div data-testid="failure-complete-page">
             <WarningCallout id="upload-stage-warning">
                 <WarningCallout.Label>The record did not upload</WarningCallout.Label>
-                <strong>Some of your files failed a virus scan:</strong>
-                {infectedUploads.map((document) => (
-                    <i key={document.id}>{document.file.name}</i>
-                ))}{' '}
+                <p>
+                    <strong>Some of your files failed a virus scan:</strong>
+                </p>
+                <ul style={{ listStyle: 'none' }}>
+                    {infectedUploads.map((document) => (
+                        <li key={document.id}>
+                            <i key={document.id}>{document.file.name}</i>
+                        </li>
+                    ))}{' '}
+                </ul>
                 <p>
                     This prevented the Lloyd George record being uploaded. You will need to check
                     your files and try again.
