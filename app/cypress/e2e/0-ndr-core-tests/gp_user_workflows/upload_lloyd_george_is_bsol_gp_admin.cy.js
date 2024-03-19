@@ -169,6 +169,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 testViewRecordButton();
             },
         );
+
         it(
             `User can upload a multiple LG file using the "Select files" button and can then view LG record`,
             { tags: 'regression' },
