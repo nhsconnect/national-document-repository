@@ -190,7 +190,9 @@ class BulkUploadService:
             document_ids = self.create_lg_records_and_copy_files(
                 staging_metadata, patient_ods_code
             )
-            self.dynamo_repository.update_uploaded_fields_to_true(document_ids)
+            self.dynamo_repository.update_uploaded_fields_to_true_in_lg_table(
+                document_ids
+            )
             logger.info(
                 f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
                 {"Result": "Successful upload"},
