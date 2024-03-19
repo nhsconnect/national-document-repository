@@ -277,7 +277,7 @@ class BulkUploadService:
             self.s3_repository.copy_to_lg_bucket(
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
-            document_reference.uploaded = True
+            document_reference.set_uploaded_to_true()
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
 
     def rollback_transaction(self):
