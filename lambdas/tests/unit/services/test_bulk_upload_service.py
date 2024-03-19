@@ -633,7 +633,7 @@ def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
         current_gp_ods=TEST_CURRENT_GP_ODS,
     )
 
-    assert actual == expected
+    assert actual.__eq__(expected)
 
 
 def test_raise_client_error_from_ssm_with_pds_service(
