@@ -1,4 +1,4 @@
-name: "ZBASE Lambdas: Deploy all required Lambda functions"
+name: 'ZBASE Lambdas: Deploy all required Lambda functions'
 
 on:
   workflow_call:
@@ -10,13 +10,13 @@ on:
         required: true
         type: string
       build_branch:
-        description: "Feature branch to push to test?"
+        description: 'Feature branch to push to test?'
         required: true
-        type: "string"
+        type: 'string'
       sandbox:
-        description: "Which Sandbox to push to"
+        description: 'Which Sandbox to push to'
         required: true
-        type: "string"
+        type: 'string'
     secrets:
       AWS_ASSUME_ROLE:
         required: true
@@ -27,12 +27,10 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-
   view_action_parameters:
     name: View Deploy all input variables
     runs-on: ubuntu-latest
-    steps: 
-    
+    steps:
       - name: Display client passed variables
         run: |
           echo Python Version: ${{ inputs.python_version }}
@@ -52,7 +50,7 @@ jobs:
       lambda_aws_name: CreateDocRefLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-  
+
   deploy_search_patient_details_lambda:
     name: Deploy search_patient_details_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
@@ -91,7 +89,7 @@ jobs:
       lambda_aws_name: DeleteDocRefLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-  
+
   deploy_document_manifest_by_nhs_number_lambda:
     name: Deploy document_manifest_by_nhs_number_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
@@ -258,5 +256,31 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: feature_flags_handler
       lambda_aws_name: FeatureFlagsLambda
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_virus_scan_result_lambda:
+    name: Deploy virus scan result lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: virus_scan_result_handler
+      lambda_aws_name: VirusScanResult
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_upload_confirm_result_lambda:
+    name: Deploy upload confirm result lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: upload_confirm_result_handler
+      lambda_aws_name: UploadConfirmResultLambda
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
