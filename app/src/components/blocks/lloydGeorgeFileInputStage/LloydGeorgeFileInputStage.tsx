@@ -12,28 +12,20 @@ import {
     UploadFilesErrors,
 } from '../../../types/pages/UploadDocumentsPage/types';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-import uploadDocuments from '../../../helpers/requests/uploadDocuments';
-import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
-import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
-import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
-import { AxiosError } from 'axios';
-import { isMock } from '../../../helpers/utils/isLocal';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
 import LinkButton from '../../generic/linkButton/LinkButton';
-import { UploadSession } from '../../../types/generic/uploadResult';
 
 export type Props = {
     documents: Array<UploadDocument>;
     setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
-    setUploadSession: Dispatch<SetStateAction<UploadSession | null>>;
-    setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
+    submitDocuments: () => void;
 };
 
-function LloydGeorgeFileInputStage({ documents, setDocuments, setStage, setUploadSession }: Props) {
+function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }: Props) {
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
@@ -44,39 +36,17 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage, setUploa
     const [uploadFilesErrors, setUploadFilesErrors] = useState<Array<UploadFilesErrors>>([]);
     const hasFileInput = !!documents.length;
     const [showNoFilesMessage, setShowNoFilesMessage] = useState<boolean>(false);
-    const baseUrl = useBaseAPIUrl();
-    const baseHeaders = useBaseAPIHeaders();
 
-    const submitDocuments = async () => {
+    const onSubmit = async () => {
         setShowNoFilesMessage(!hasFileInput);
         setUploadFilesErrors(uploadDocumentValidation(documents, patientDetails));
         if (!hasFileInput || uploadFilesErrors.length > 0) {
             window.scrollTo(0, 0);
             return;
         }
-        try {
-            setStage(LG_UPLOAD_STAGE.UPLOAD);
-            await uploadDocuments({
-                nhsNumber,
-                setDocuments,
-                setUploadSession,
-                documents,
-                baseUrl,
-                baseHeaders,
-            });
-        } catch (e) {
-            const error = e as AxiosError;
-            if (isMock(error)) {
-                setDocuments(
-                    documents.map((document) => ({
-                        ...document,
-                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                    })),
-                );
-                setStage(LG_UPLOAD_STAGE.COMPLETE);
-            }
-        }
+        await submitDocuments();
     };
+
     const updateFileList = (fileArray: File[]) => {
         const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
             id: uuidv4(),
@@ -275,7 +245,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, setStage, setUploa
                 </Table>
             )}
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <Button type="button" id="upload-button" onClick={submitDocuments}>
+                <Button type="button" id="upload-button" onClick={onSubmit}>
                     Upload
                 </Button>
                 {!!documents.length && (

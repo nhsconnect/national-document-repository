@@ -4,7 +4,7 @@ from enums.lambda_error import LambdaError
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_response import ApiGatewayResponse
-from utils.utilities import validate_id
+from utils.utilities import validate_nhs_number
 
 logger = LoggingService(__name__)
 
@@ -28,7 +28,7 @@ def validate_patient_id(lambda_func: Callable):
     def interceptor(event, context):
         try:
             nhs_number = extract_nhs_number_from_event(event)
-            validate_id(nhs_number)
+            validate_nhs_number(nhs_number)
         except InvalidResourceIdException as e:
             nhs_number = extract_nhs_number_from_event(event)
             logger.error(

@@ -1,4 +1,5 @@
-import React, { Dispatch, SetStateAction, useEffect } from 'react';
+import React from 'react';
+
 import {
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
@@ -7,52 +8,37 @@ import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
 import LinkButton from '../../generic/linkButton/LinkButton';
-import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { UploadSession } from '../../../types/generic/uploadResult';
-import { uploadDocumentsToS3 } from '../../../helpers/requests/uploadDocuments';
 
-type Props = {
+export type Props = {
     documents: Array<UploadDocument>;
-    setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
-    setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
-    uploadSession?: UploadSession | null;
+    uploadSession: UploadSession | null;
+    uploadAndScanDocuments: (
+        documents: Array<UploadDocument>,
+        uploadSession: UploadSession,
+    ) => void;
 };
 
-function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSession }: Props) {
-    const getUploadMessage = (document: UploadDocument) => {
-        if (document.state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
-        else if (document.state === DOCUMENT_UPLOAD_STATE.UPLOADING)
-            return `${Math.round(document.progress)}% uploaded...`;
-        else if (document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload successful';
-        else return 'Upload failed';
-    };
-    const hasFailedUploads = documents.some((d) => !!d.attempts && !d.progress);
+function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocuments }: Props) {
+    const getUploadMessage = ({ state, progress }: UploadDocument) => {
+        const showProgress = state === DOCUMENT_UPLOAD_STATE.UPLOADING && progress !== undefined;
 
-    useEffect(() => {
-        const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
-        const hasComplete = documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED);
-
-        if (hasExceededUploadAttempts) {
-            setDocuments([]);
-            setStage(LG_UPLOAD_STAGE.RETRY);
-        }
-        if (hasComplete) {
-            setStage(LG_UPLOAD_STAGE.COMPLETE);
-        }
-    }, [documents, setDocuments, setStage]);
-
-    const retryUpload = async (documents: Array<UploadDocument>) => {
-        if (uploadSession) {
-            await uploadDocumentsToS3({
-                setDocuments,
-                documents,
-                uploadSession,
-            });
-        } else {
-            setDocuments([]);
-            setStage(LG_UPLOAD_STAGE.RETRY);
+        if (state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
+        else if (showProgress) return `${Math.round(progress)}% uploaded...`;
+        else if (state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
+        else if (state === DOCUMENT_UPLOAD_STATE.INFECTED) return 'File has failed a virus scan';
+        else if (state === DOCUMENT_UPLOAD_STATE.CLEAN) return 'Virus scan complete';
+        else if (state === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
+        else if (state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload succeeded';
+        else {
+            return 'Upload failed';
         }
     };
+    const hasFailedUploads = documents.some(
+        (d) =>
+            !!d.attempts &&
+            ![DOCUMENT_UPLOAD_STATE.UPLOADING, DOCUMENT_UPLOAD_STATE.SCANNING].includes(d.state),
+    );
 
     return (
         <>
@@ -62,11 +48,18 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
                     messageTitle="There is a problem with some of your files"
                     messageBody="Some of your files failed to upload, You cannot continue until you retry uploading these files."
                     messageLinkBody="Retry uploading all failed files"
+                    dataTestId="retry-upload-error-box"
                     errorOnClick={() => {
-                        const failedUploads = documents.filter(
-                            (d) => d.attempts === 1 && d.state !== DOCUMENT_UPLOAD_STATE.UPLOADING,
-                        );
-                        retryUpload(failedUploads);
+                        const failedUploads = documents.filter((d) => {
+                            const notInProgress = ![
+                                DOCUMENT_UPLOAD_STATE.UPLOADING,
+                                DOCUMENT_UPLOAD_STATE.SCANNING,
+                            ].includes(d.state);
+                            return d.attempts === 1 && notInProgress;
+                        });
+                        if (uploadSession) {
+                            uploadAndScanDocuments(failedUploads, uploadSession);
+                        }
                     }}
                 />
             )}
@@ -95,9 +88,12 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
                 </Table.Head>
                 <Table.Body>
                     {documents.map((document) => {
-                        const uploadFailed =
-                            !!document.attempts &&
-                            document.state !== DOCUMENT_UPLOAD_STATE.UPLOADING;
+                        const notInProgress = ![
+                            DOCUMENT_UPLOAD_STATE.UPLOADING,
+                            DOCUMENT_UPLOAD_STATE.SCANNING,
+                        ].includes(document.state);
+
+                        const uploadFailed = !!document.attempts && notInProgress;
 
                         return (
                             <Table.Row key={document.id}>
@@ -122,13 +118,15 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
                                         {getUploadMessage(document)}
                                     </output>
                                     {uploadFailed && (
-                                        <div
-                                            style={{ textAlign: 'right' }}
-                                            data-testid="retry-upload-btn"
-                                        >
+                                        <div style={{ textAlign: 'right' }}>
                                             <LinkButton
                                                 onClick={() => {
-                                                    retryUpload([document]);
+                                                    if (uploadSession) {
+                                                        uploadAndScanDocuments(
+                                                            [document],
+                                                            uploadSession,
+                                                        );
+                                                    }
                                                 }}
                                             >
                                                 Retry upload

@@ -411,13 +411,6 @@ describe('<SelectStage />', () => {
     });
 
     const renderApp = () => {
-        render(
-            <SelectStage
-                setDocuments={jest.fn()}
-                setStage={mockSetStage}
-                setUploadSession={mockSetUploadSession}
-                documents={[]}
-            />,
-        );
+        render(<SelectStage setDocuments={jest.fn()} setStage={mockSetStage} documents={[]} />);
     };
 });

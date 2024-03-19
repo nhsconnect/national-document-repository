@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import {
     DOCUMENT_TYPE,
@@ -13,16 +13,13 @@ import {
 import LloydGeorgeUploadStage from './LloydGeorgeUploadingStage';
 import usePatient from '../../../helpers/hooks/usePatient';
 import userEvent from '@testing-library/user-event';
-import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
-import { uploadDocumentsToS3 } from '../../../helpers/requests/uploadDocuments';
 
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('../../../helpers/requests/uploadDocuments');
-const mockSetDocuments = jest.fn();
-const mockSetStage = jest.fn();
+
+const mockUploadAndScan = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;
-const uploadMock = uploadDocumentsToS3 as jest.Mock;
 const mockPatient = buildPatientDetails();
 
 describe('<LloydGeorgeUploadingStage />', () => {
@@ -68,11 +65,13 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                 attempts: 0,
             };
+
+            const uploadSession = buildUploadSession([uploadDocument]);
             render(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
+                    uploadSession={uploadSession}
+                    uploadAndScanDocuments={mockUploadAndScan}
                 />,
             );
 
@@ -98,12 +97,13 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 docType: DOCUMENT_TYPE.ARF,
                 attempts: 0,
             };
+            const uploadSession = buildUploadSession([uploadDocument]);
 
             const { rerender } = render(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
+                    uploadSession={uploadSession}
+                    uploadAndScanDocuments={mockUploadAndScan}
                 />,
             );
 
@@ -113,8 +113,8 @@ describe('<LloydGeorgeUploadingStage />', () => {
             rerender(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
+                    uploadSession={uploadSession}
+                    uploadAndScanDocuments={mockUploadAndScan}
                 />,
             );
             expect(getProgressBarValue(uploadDocument)).toEqual(10);
@@ -126,8 +126,8 @@ describe('<LloydGeorgeUploadingStage />', () => {
             rerender(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
+                    uploadSession={uploadSession}
+                    uploadAndScanDocuments={mockUploadAndScan}
                 />,
             );
             expect(getProgressBarValue(uploadDocument)).toEqual(70);
@@ -139,8 +139,8 @@ describe('<LloydGeorgeUploadingStage />', () => {
             rerender(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
+                    uploadSession={uploadSession}
+                    uploadAndScanDocuments={mockUploadAndScan}
                 />,
             );
             expect(getProgressBarValue(uploadDocument)).toEqual(20);
@@ -152,12 +152,12 @@ describe('<LloydGeorgeUploadingStage />', () => {
             rerender(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
+                    uploadSession={uploadSession}
+                    uploadAndScanDocuments={mockUploadAndScan}
                 />,
             );
             expect(getProgressBarValue(uploadDocument)).toEqual(100);
-            expect(getProgressText(uploadDocument)).toContain('Upload successful');
+            expect(getProgressText(uploadDocument)).toContain('Upload succeeded');
         });
 
         it('renders a retry upload button when first attempt fails that reuploads document', () => {
@@ -174,9 +174,8 @@ describe('<LloydGeorgeUploadingStage />', () => {
             render(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
                     uploadSession={uploadSession}
+                    uploadAndScanDocuments={mockUploadAndScan}
                 />,
             );
 
@@ -185,7 +184,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
             expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
 
             userEvent.click(screen.getByRole('button', { name: 'Retry upload' }));
-            expect(uploadMock).toHaveBeenCalled();
+            expect(mockUploadAndScan).toHaveBeenCalled();
         });
 
         it('renders a warning callout to retry failed document uploads', () => {
@@ -203,9 +202,8 @@ describe('<LloydGeorgeUploadingStage />', () => {
             render(
                 <LloydGeorgeUploadStage
                     documents={[uploadDocument]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
                     uploadSession={uploadSession}
+                    uploadAndScanDocuments={mockUploadAndScan}
                 />,
             );
 
@@ -220,47 +218,7 @@ describe('<LloydGeorgeUploadingStage />', () => {
                 expect(screen.getByText(st)).toBeInTheDocument();
             });
             userEvent.click(screen.getByRole('link', { name: 'Retry uploading all failed files' }));
-            expect(uploadMock).toHaveBeenCalled();
-        });
-    });
-
-    describe('Navigation', () => {
-        it('navigates to retry upload page when second attempt fails', async () => {
-            const uploadDocument = {
-                file: buildTextFile('one', 100),
-                state: DOCUMENT_UPLOAD_STATE.FAILED,
-                id: '1',
-                progress: 0,
-                docType: DOCUMENT_TYPE.ARF,
-                attempts: 1,
-            };
-            const uploadSession = buildUploadSession([uploadDocument]);
-
-            const { rerender } = render(
-                <LloydGeorgeUploadStage
-                    documents={[uploadDocument]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
-                />,
-            );
-            expect(getProgressBarValue(uploadDocument)).toEqual(0);
-            expect(getProgressText(uploadDocument)).toContain('Upload failed');
-            expect(screen.getByRole('button', { name: 'Retry upload' })).toBeInTheDocument();
-            triggerUploadStateChange(uploadDocument, DOCUMENT_UPLOAD_STATE.FAILED, {
-                progress: 0,
-                attempts: 2,
-            });
-            rerender(
-                <LloydGeorgeUploadStage
-                    documents={[uploadDocument]}
-                    setDocuments={mockSetDocuments}
-                    setStage={mockSetStage}
-                    uploadSession={uploadSession}
-                />,
-            );
-            await waitFor(() => {
-                expect(mockSetStage).toHaveBeenCalledWith(LG_UPLOAD_STAGE.RETRY);
-            });
+            expect(mockUploadAndScan).toHaveBeenCalled();
         });
     });
 });

@@ -260,6 +260,59 @@ class LambdaError(Enum):
     }
 
     """
+       Errors for Virus Scan lambda 
+    """
+    VirusScanNoBody = {"err_code": "VSR_4001", "message": "Missing event body"}
+    VirusScanUnclean = {
+        "err_code": "VSR_4002",
+        "message": "Virus scanner failed",
+    }
+    VirusScanNoDocumentType = {
+        "err_code": "VSR_4003",
+        "message": "Document reference is missing a document type",
+    }
+    VirusScanTokenRequest = {
+        "err_code": "VSR_5001",
+        "message": "Virus scanner failed to fetch token",
+    }
+    VirusScanNoToken = {
+        "err_code": "VSR_5002",
+        "message": "Virus scanner failed to create new token",
+    }
+    VirusScanFailedRequest = {
+        "err_code": "VSR_5003",
+        "message": "Virus scanner failed request",
+    }
+    VirusScanAWSFailure = {
+        "err_code": "VSR_5004",
+        "message": "Error occurred with an AWS service",
+    }
+
+    """
+       Errors for Upload Confirm Result lambda 
+    """
+    UploadConfirmResultMissingBody = {
+        "err_code": "UC_4001",
+        "message": "Missing POST request body",
+    }
+    UploadConfirmResultPayload = {
+        "err_code": "UC_4002",
+        "message": "Invalid json in body",
+    }
+    UploadConfirmResultProps = {
+        "err_code": "UC_4003",
+        "message": "Request body missing some properties",
+    }
+    UploadConfirmResultBadRequest = {
+        "err_code": "UC_4004",
+        "message": "Number of document references not equal to number of documents in dynamo table for this nhs number",
+    }
+    UploadConfirmResultAWSFailure = {
+        "err_code": "UC_5004",
+        "message": "Error occurred with an AWS service",
+    }
+
+    """
        Errors with no exception
     """
     DocDelNull = {
@@ -299,4 +352,10 @@ class LambdaError(Enum):
     GatewayError = {
         "err_code": "GWY_5001",
         "message": "Failed to utilise AWS client/resource",
+    }
+
+    MockError = {
+        "message": "Client error",
+        "err_code": "AB_XXXX",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
     }

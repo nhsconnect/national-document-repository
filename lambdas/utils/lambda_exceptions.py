@@ -58,3 +58,11 @@ class SendFeedbackException(LambdaException):
 
 class FeatureFlagsException(LambdaException):
     pass
+
+
+class VirusScanResultException(LambdaException):
+    pass
+
+
+class UploadConfirmResultException(LambdaException):
+    pass

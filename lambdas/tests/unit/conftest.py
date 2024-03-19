@@ -66,11 +66,12 @@ TEST_CURRENT_GP_ODS = "Y12345"
 
 AUTH_STATE_TABLE_NAME = "test_state_table"
 AUTH_SESSION_TABLE_NAME = "test_session_table"
-OIDC_CALLBACK_URL = "https://fake-url.com"
-OIDC_ISSUER_URL = "https://fake-url.com"
-OIDC_TOKEN_URL = "https://fake-url.com"
-OIDC_USER_INFO_URL = "https://fake-url.com"
-OIDC_JWKS_URL = "https://fake-url.com"
+FAKE_URL = "https://fake-url.com"
+OIDC_CALLBACK_URL = FAKE_URL
+OIDC_ISSUER_URL = FAKE_URL
+OIDC_TOKEN_URL = FAKE_URL
+OIDC_USER_INFO_URL = FAKE_URL
+OIDC_JWKS_URL = FAKE_URL
 OIDC_CLIENT_ID = "client-id"
 OIDC_CLIENT_SECRET = "client-secret-shhhhhh"
 WORKSPACE = "dev"
