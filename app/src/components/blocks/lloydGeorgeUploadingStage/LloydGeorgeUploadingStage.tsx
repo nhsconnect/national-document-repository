@@ -48,6 +48,9 @@ function LloydGeorgeUploadStage({ documents, setStage, setDocuments, uploadSessi
                 documents,
                 uploadSession,
             });
+        } else {
+            setDocuments([]);
+            setStage(LG_UPLOAD_STAGE.RETRY);
         }
     };
 
