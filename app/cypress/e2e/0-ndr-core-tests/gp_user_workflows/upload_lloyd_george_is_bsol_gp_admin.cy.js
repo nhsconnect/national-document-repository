@@ -527,7 +527,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 cy.wait('@s3_upload');
 
                 cy.getByTestId('failure-complete-page')
-                    .should('include.text', 'Has failed a virus scan')
+                    .should('include.text', 'Some of your files failed a virus scan')
                     .should('include.text', uploadedFileNames.LG[singleFileUsecaseIndex]);
 
                 cy.getByTestId('retry-upload-btn').should('exist');
