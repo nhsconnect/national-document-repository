@@ -187,12 +187,7 @@ class BulkUploadService:
         )
 
         try:
-            document_ids = self.create_lg_records_and_copy_files(
-                staging_metadata, patient_ods_code
-            )
-            self.dynamo_repository.update_uploaded_fields_to_true_in_lg_table(
-                document_ids
-            )
+            self.create_lg_records_and_copy_files(staging_metadata, patient_ods_code)
             logger.info(
                 f"Successfully uploaded the Lloyd George records for patient: {staging_metadata.nhs_number}",
                 {"Result": "Successful upload"},
@@ -268,9 +263,8 @@ class BulkUploadService:
 
     def create_lg_records_and_copy_files(
         self, staging_metadata: StagingMetadata, current_gp_ods: str
-    ) -> str and list:
+    ):
         nhs_number = staging_metadata.nhs_number
-        document_ids: list[str] = []
 
         for file_metadata in staging_metadata.files:
             document_reference = self.convert_to_document_reference(
@@ -283,10 +277,8 @@ class BulkUploadService:
             self.s3_repository.copy_to_lg_bucket(
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
+            document_reference.uploaded = True
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
-            document_ids.append(document_reference.id)
-
-        return document_ids
 
     def rollback_transaction(self):
         try:
@@ -312,6 +304,7 @@ class BulkUploadService:
             current_gp_ods=current_gp_ods,
         )
         document_reference.set_virus_scanner_result(VirusScanResult.CLEAN)
+
         return document_reference
 
     @staticmethod

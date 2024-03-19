@@ -189,7 +189,6 @@ def test_handle_sqs_message_happy_path(
     )
     mock_report_upload_complete.assert_called()
     mock_remove_ingested_file_from_source_bucket.assert_called()
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_called()
 
 
 def set_up_mocks_for_non_ascii_files(
@@ -266,7 +265,6 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
     repo_under_test.handle_sqs_message(message=test_sqs_message)
 
     repo_under_test.dynamo_repository.report_upload_complete.assert_called()
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_called()
     assert repo_under_test.s3_repository.check_virus_result.call_count == 1
     assert repo_under_test.s3_repository.copy_to_lg_bucket.call_count == 3
 
@@ -303,7 +301,6 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA, str(mocked_error), ""
     )
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_not_called()
 
 
 def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invalid(
@@ -337,7 +334,6 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA_WITH_INVALID_FILENAME, str(mocked_error), ""
     )
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_is_infected(
@@ -374,7 +370,6 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
     )
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_not_called()
 
 
 def test_handle_sqs_message_report_failure_when_document_not_exist(
@@ -403,7 +398,6 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
         "One or more of the files is not accessible from staging bucket",
         "Y12345",
     )
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_not_called()
 
 
 def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_result_not_available(
@@ -441,7 +435,6 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
     mock_report_upload_failure.assert_not_called()
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_not_called()
 
 
 def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_transfer_failed_halfway(
@@ -490,7 +483,6 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
         "Y12345",
     )
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_not_called()
 
 
 def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract_data_from_message(
@@ -505,7 +497,6 @@ def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract
         repo_under_test.handle_sqs_message(invalid_message)
 
     mock_create_lg_records_and_copy_files.assert_not_called()
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_not_called()
 
 
 def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(
@@ -520,7 +511,6 @@ def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(
     repo_under_test.handle_sqs_message({"body": invalid_file_name_metadata_as_json})
 
     repo_under_test.dynamo_repository.report_upload_failure.assert_called()
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_not_called()
 
 
 @freeze_time("2023-10-2 13:00:00")
@@ -536,7 +526,6 @@ def test_reports_failure_when_max_retries_reached(
 
     repo_under_test.sqs_repository.send_message_with_nhs_number_attr_fifo.assert_not_called()
     repo_under_test.dynamo_repository.report_upload_failure.assert_called()
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_not_called()
 
 
 def test_resolve_source_file_path_when_filenames_dont_have_accented_chars(
@@ -608,13 +597,8 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under
     )
     TEST_STAGING_METADATA.retries = 0
     repo_under_test.resolve_source_file_path(TEST_STAGING_METADATA)
-    expected = [
-        "1234-4567-8912-HSDF-TEST",
-        "1234-4567-8912-HSDF-TEST",
-        "1234-4567-8912-HSDF-TEST",
-    ]
 
-    actual = repo_under_test.create_lg_records_and_copy_files(
+    repo_under_test.create_lg_records_and_copy_files(
         TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
     )
 
@@ -636,7 +620,6 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under
         repo_under_test.dynamo_repository.create_record_in_lg_dynamo_table.call_count
         == 3
     )
-    assert actual == expected
 
 
 @freeze_time("2024-01-01 12:00:00")
@@ -649,7 +632,6 @@ def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
         nhs_number=TEST_STAGING_METADATA.nhs_number,
         current_gp_ods=TEST_CURRENT_GP_ODS,
     )
-
     assert actual.__eq__(expected)
 
 
@@ -684,43 +666,6 @@ def test_mismatch_ods_with_pds_service(
     repo_under_test.dynamo_repository.report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA, "Patient not registered at your practice", "Y12345"
     )
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.assert_not_called()
-
-
-def test_update_uploaded_fields_to_true_in_lg_table_client_error(
-    repo_under_test,
-    mocker,
-    set_env,
-    mock_uuid,
-    mock_check_virus_result,
-    mock_validate_files,
-    mock_pds_service,
-    mock_pds_validation,
-    mock_ods_validation,
-):
-    TEST_STAGING_METADATA.retries = 0
-    mocker.patch.object(repo_under_test, "create_lg_records_and_copy_files")
-    mock_rollback_transaction = mocker.patch.object(
-        repo_under_test, "rollback_transaction"
-    )
-    mock_client_error = ClientError(
-        {"Error": {"Code": "AccessDenied", "Message": "Access Denied"}},
-        "GetObject",
-    )
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table.side_effect = (
-        mock_client_error
-    )
-
-    repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
-
-    mock_rollback_transaction.assert_called()
-    repo_under_test.dynamo_repository.report_upload_failure.assert_called_with(
-        TEST_STAGING_METADATA,
-        "Validation passed but error occurred during file transfer",
-        "Y12345",
-    )
-    repo_under_test.s3_repository.remove_ingested_file_from_source_bucket.assert_not_called()
-    repo_under_test.dynamo_repository.report_upload_complete.assert_not_called()
 
 
 def test_create_lg_records_and_copy_files_client_error(
@@ -757,4 +702,3 @@ def test_create_lg_records_and_copy_files_client_error(
     )
     repo_under_test.s3_repository.remove_ingested_file_from_source_bucket.assert_not_called()
     repo_under_test.dynamo_repository.report_upload_complete.assert_not_called()
-    repo_under_test.dynamo_repository.update_uploaded_fields_to_true_in_lg_table().assert_not_called()

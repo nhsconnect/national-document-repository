@@ -40,17 +40,6 @@ def test_create_record_in_dynamodb_table(set_env, repo_under_test):
     )
 
 
-def test_update_uploaded_fields_to_true_in_lg_table(repo_under_test):
-    document_ids = ["test-id-1", "test-id-2"]
-
-    repo_under_test.update_uploaded_fields_to_true_in_lg_table(document_ids)
-
-    assert repo_under_test.dynamo_repository.update_item.call_count == 2
-    repo_under_test.dynamo_repository.update_item.assert_called_with(
-        MOCK_LG_TABLE_NAME, document_ids[1], {"Uploaded": True}
-    )
-
-
 @freeze_time("2023-10-1 13:00:00")
 def test_report_upload_complete_add_record_to_dynamodb(
     repo_under_test, set_env, mock_uuid
