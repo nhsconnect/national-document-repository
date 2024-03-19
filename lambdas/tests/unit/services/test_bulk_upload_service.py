@@ -16,6 +16,7 @@ from tests.unit.conftest import (
 )
 from tests.unit.helpers.data.bulk_upload.test_data import (  # TEST_FILE_METADATA,
     TEST_DOCUMENT_REFERENCE,
+    TEST_FILE_METADATA,
     TEST_SQS_10_MESSAGES_AS_LIST,
     TEST_SQS_MESSAGE,
     TEST_SQS_MESSAGE_WITH_INVALID_FILENAME,
@@ -621,18 +622,18 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under
     )
 
 
-# @freeze_time("2024-01-01 12:00:00")
-# def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
-#     TEST_STAGING_METADATA.retries = 0
-#     repo_under_test.s3_repository.lg_bucket_name = "test_lg_s3_bucket"
-#     expected = TEST_DOCUMENT_REFERENCE
-#     actual = repo_under_test.convert_to_document_reference(
-#         file_metadata=TEST_FILE_METADATA,
-#         nhs_number=TEST_STAGING_METADATA.nhs_number,
-#         current_gp_ods=TEST_CURRENT_GP_ODS,
-#     )
-#
-#     assert actual == expected
+@freeze_time("2024-01-01 12:00:00")
+def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
+    TEST_STAGING_METADATA.retries = 0
+    repo_under_test.s3_repository.lg_bucket_name = "test_lg_s3_bucket"
+    expected = TEST_DOCUMENT_REFERENCE
+    actual = repo_under_test.convert_to_document_reference(
+        file_metadata=TEST_FILE_METADATA,
+        nhs_number=TEST_STAGING_METADATA.nhs_number,
+        current_gp_ods=TEST_CURRENT_GP_ODS,
+    )
+
+    assert actual.__eq__(expected)
 
 
 def test_raise_client_error_from_ssm_with_pds_service(
