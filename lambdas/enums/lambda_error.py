@@ -65,6 +65,14 @@ class LambdaError(Enum):
         "err_code": "CDR_4007",
         "message": "Failed to parse document upload request data",
     }
+    CreateDocRecordAlreadyInPlace = {
+        "err_code": "CDR_4008",
+        "message": "The patient already has a full set of record.",
+    }
+    CreateDocStillUploading = {
+        "err_code": "CDR_4230",
+        "message": "The patients record is in the process of being uploaded, please try again in three minutes",
+    }
     CreateDocPresign = {
         "err_code": "CDR_5001",
         "message": "An error occurred when creating pre-signed url for document reference",

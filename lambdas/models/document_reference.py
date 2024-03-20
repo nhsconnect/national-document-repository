@@ -1,4 +1,5 @@
 import pathlib
+from datetime import datetime, timedelta
 from typing import Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -42,8 +43,12 @@ class DocumentReference(BaseModel):
         alias=str(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value), default=None
     )
 
-    uploaded: bool = Field(alias=str(DocumentReferenceMetadataFields.UPLOADED.value))
-    uploading: bool = Field(alias=str(DocumentReferenceMetadataFields.UPLOADING.value))
+    uploaded: bool = Field(
+        alias=str(DocumentReferenceMetadataFields.UPLOADED.value), default=False
+    )
+    uploading: bool = Field(
+        alias=str(DocumentReferenceMetadataFields.UPLOADING.value), default=False
+    )
     last_updated: str = Field(
         alias=str(DocumentReferenceMetadataFields.LAST_UPDATED.value),
         serialization_alias="lastUpdated",
@@ -86,6 +91,11 @@ class DocumentReference(BaseModel):
 
     def create_unique_filename(self, duplicates: int):
         return f"{self.get_base_name()}({duplicates}){self.get_file_extension()}"
+
+    def last_updated_within_three_minutes(self) -> bool:
+        last_updated = datetime.fromisoformat(self.last_updated)
+        three_minutes_ago = datetime.now() - timedelta(minutes=3)
+        return last_updated >= three_minutes_ago
 
     def __eq__(self, other):
         if isinstance(other, DocumentReference):
