@@ -1,11 +1,11 @@
 import json
 import os
+from datetime import datetime
 from json import JSONDecodeError
 
 from botocore.exceptions import ClientError
 from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
-from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.document_reference import DocumentReference
 from pydantic import ValidationError
 from services.document_service import DocumentService
@@ -24,15 +24,35 @@ class DocumentReferenceSearchService(DocumentService):
 
             results: list[dict] = []
 
+            # filter_builder = DynamoQueryFilterBuilder()
+            #
+            # filter_builder.add_condition(
+            #     attribute=str(DocumentReferenceMetadataFields.DELETED.value),
+            #     attr_operator=AttributeOperator.EQUAL,
+            #     filter_value="",
+            # )
+            #
+            # delete_filter_expression = filter_builder.build()
+
             filter_builder = DynamoQueryFilterBuilder()
+            time_limit = int(datetime.now().timestamp() - (60 * 3))
+
+            filter_builder.add_condition("Deleted", AttributeOperator.EQUAL, "")
+            delete_filter_expression = filter_builder.build()
+
+            filter_builder.add_condition("Uploaded", AttributeOperator.EQUAL, True)
+            uploaded_filter_expression = filter_builder.build()
 
             filter_builder.add_condition(
-                attribute=str(DocumentReferenceMetadataFields.DELETED.value),
-                attr_operator=AttributeOperator.EQUAL,
-                filter_value="",
+                "Uploading", AttributeOperator.EQUAL, True
+            ).add_condition(
+                "LastUpdated", AttributeOperator.GREATER_OR_EQUAL, time_limit
             )
+            uploading_filter_expression = filter_builder.build()
 
-            delete_filter_expression = filter_builder.build()
+            filter_expression = delete_filter_expression & (
+                uploaded_filter_expression | uploading_filter_expression
+            )
 
             for table_name in list_of_table_names:
                 logger.info(f"Searching for results in {table_name}")
@@ -42,7 +62,7 @@ class DocumentReferenceSearchService(DocumentService):
                 ] = self.fetch_documents_from_table_with_filter(
                     nhs_number,
                     table_name,
-                    query_filter=delete_filter_expression,
+                    query_filter=filter_expression,
                 )
 
                 results.extend(
