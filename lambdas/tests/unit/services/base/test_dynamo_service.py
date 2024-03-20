@@ -89,7 +89,7 @@ def test_query_with_requested_fields_with_filter_returns_items_from_dynamo(
             DocumentReferenceMetadataFields.FILE_NAME.value,
             DocumentReferenceMetadataFields.CREATED.value,
         ],
-        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        query_filter={DocumentReferenceMetadataFields.DELETED.value: ""},
     )
 
     mock_table.assert_called_with(MOCK_TABLE_NAME)

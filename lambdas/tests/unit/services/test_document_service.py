@@ -63,7 +63,7 @@ def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_refe
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         requested_fields=DocumentReferenceMetadataFields.list(),
-        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        query_filter={DocumentReferenceMetadataFields.DELETED.value: ""},
     )
 
 
@@ -86,7 +86,7 @@ def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_ref
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         requested_fields=DocumentReferenceMetadataFields.list(),
-        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        query_filter={DocumentReferenceMetadataFields.DELETED.value: ""},
     )
 
 
@@ -183,7 +183,7 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         requested_fields=DocumentReferenceMetadataFields.list(),
-        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        query_filter={DocumentReferenceMetadataFields.DELETED.value: ""},
     )
 
 

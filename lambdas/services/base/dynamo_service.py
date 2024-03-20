@@ -1,9 +1,8 @@
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, ConditionBase, Key
 from botocore.exceptions import ClientError
 from utils.audit_logging_setup import LoggingService
 from utils.dynamo_utils import (
-    create_attribute_filter,
     create_expression_attribute_values,
     create_expressions,
     create_update_expression,
@@ -40,8 +39,8 @@ class DynamoDBService:
         index_name,
         search_key,
         search_condition: str,
-        requested_fields: list = None,
-        filtered_fields: dict = None,
+        requested_fields: list[str] = None,
+        query_filter: Attr | ConditionBase = None,
     ):
         try:
             table = self.get_table(table_name)
@@ -52,29 +51,19 @@ class DynamoDBService:
                     "Unable to query DynamoDB with empty requested fields"
                 )
 
-            projection_expression, expression_attribute_names = create_expressions(
-                requested_fields
-            )
+            projection_expression = ",".join(requested_fields)
 
-            if not filtered_fields:
+            if not query_filter:
                 results = table.query(
                     IndexName=index_name,
                     KeyConditionExpression=Key(search_key).eq(search_condition),
-                    ExpressionAttributeNames=expression_attribute_names,
                     ProjectionExpression=projection_expression,
                 )
             else:
-                fields_filter = create_attribute_filter(filtered_fields)
-                expression_attribute_values = create_expression_attribute_values(
-                    filtered_fields
-                )
-
                 results = table.query(
                     IndexName=index_name,
                     KeyConditionExpression=Key(search_key).eq(search_condition),
-                    FilterExpression=fields_filter,
-                    ExpressionAttributeNames=expression_attribute_names,
-                    ExpressionAttributeValues=expression_attribute_values,
+                    FilterExpression=query_filter,
                     ProjectionExpression=projection_expression,
                 )
 
