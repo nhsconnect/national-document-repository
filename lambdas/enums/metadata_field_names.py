@@ -19,7 +19,9 @@ class DocumentReferenceMetadataFields(Enum):
 
     @staticmethod
     def list() -> list[str]:
-        return [str(field.value) for field in DocumentReferenceMetadataFields]
+        fields = [str(field.value) for field in DocumentReferenceMetadataFields]
+        fields.remove(DocumentReferenceMetadataFields.TTL.value)
+        return fields
 
 
 class DocumentZipTraceFields(Enum):
