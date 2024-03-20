@@ -1,11 +1,11 @@
 import os
 
-from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
+from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import UploadConfirmResultException
 
@@ -15,6 +15,7 @@ logger = LoggingService(__name__)
 class UploadConfirmResultService:
     def __init__(self, nhs_number):
         self.dynamo_service = DynamoDBService()
+        self.document_service = DocumentService()
         self.s3_service = S3Service()
         self.nhs_number = nhs_number
         self.staging_bucket = os.environ["STAGING_STORE_BUCKET_NAME"]
@@ -112,18 +113,14 @@ class UploadConfirmResultService:
             {"Uploaded": True, "FileLocation": file_location},
         )
 
-    def validate_number_of_documents(self, table_name: str, document_references: list):
+    def validate_number_of_documents(self, _table_name: str, document_references: list):
         logger.info(
             "Checking number of document references in list matches number of documents in dynamo table"
         )
 
-        filter_by_nhs_number = Attr("NhsNumber").eq(self.nhs_number)
-
-        query_response = self.dynamo_service.scan_table(
-            table_name=table_name, filter_expression=filter_by_nhs_number
+        items = self.document_service.fetch_available_document_references_by_type(
+            nhs_number=self.nhs_number, doc_type=SupportedDocumentTypes.LG
         )
-
-        items = query_response.get("Items", None)
 
         if len(items) != len(document_references):
             logger.error(
