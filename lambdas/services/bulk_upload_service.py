@@ -183,7 +183,7 @@ class BulkUploadService:
         self.dynamo_repository.init_transaction()
 
         logger.info(
-            "Transaction initialised. Transfering files to main S3 bucket and creating metadata"
+            "Transaction initialised. Transferring files to main S3 bucket and creating metadata"
         )
 
         try:
@@ -277,6 +277,7 @@ class BulkUploadService:
             self.s3_repository.copy_to_lg_bucket(
                 source_file_key=source_file_key, dest_file_key=dest_file_key
             )
+            document_reference.set_uploaded_to_true()
             self.dynamo_repository.create_record_in_lg_dynamo_table(document_reference)
 
     def rollback_transaction(self):
@@ -303,6 +304,7 @@ class BulkUploadService:
             current_gp_ods=current_gp_ods,
         )
         document_reference.set_virus_scanner_result(VirusScanResult.CLEAN)
+
         return document_reference
 
     @staticmethod

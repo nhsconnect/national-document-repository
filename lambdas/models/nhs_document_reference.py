@@ -63,6 +63,9 @@ class NHSDocumentReference:
     def update_location(self, updated_file_location):
         self.file_location = updated_file_location
 
+    def set_uploaded_to_true(self):
+        self.uploaded = True
+
     def to_dict(self):
         document_metadata = {
             DocumentReferenceMetadataFields.ID.value: str(self.id),

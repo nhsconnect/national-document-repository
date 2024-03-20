@@ -1,4 +1,5 @@
 import json
+from copy import copy
 
 import pytest
 from botocore.exceptions import ClientError
@@ -289,7 +290,6 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
     mock_report_upload_failure = mocker.patch.object(
         repo_under_test.dynamo_repository, "report_upload_failure"
     )
-
     mocked_error = PatientRecordAlreadyExistException(
         "Lloyd George already exists for patient, upload cancelled."
     )
@@ -299,7 +299,6 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
 
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
-
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA, str(mocked_error), ""
     )
@@ -333,7 +332,6 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
 
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
-
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA_WITH_INVALID_FILENAME, str(mocked_error), ""
     )
@@ -464,7 +462,6 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
         repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
     )
-
     mock_client_error = ClientError(
         {"Error": {"Code": "AccessDenied", "Message": "Access Denied"}},
         "GetObject",
@@ -487,6 +484,10 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
         "Y12345",
     )
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
+    assert (
+        repo_under_test.dynamo_repository.create_record_in_lg_dynamo_table.call_count
+        == 2
+    )
 
 
 def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract_data_from_message(
@@ -511,7 +512,9 @@ def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(
         TEST_STAGING_METADATA_WITH_INVALID_FILENAME.model_dump()
     )
     mock_validate_files.side_effect = LGInvalidFilesException
+
     repo_under_test.handle_sqs_message({"body": invalid_file_name_metadata_as_json})
+
     repo_under_test.dynamo_repository.report_upload_failure.assert_called()
 
 
@@ -594,11 +597,11 @@ def test_resolves_source_file_path_raise_S3FileNotFoundException_if_filename_can
 
 
 def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under_test):
+    test_document_reference = copy(TEST_DOCUMENT_REFERENCE)
     repo_under_test.convert_to_document_reference = mocker.MagicMock(
-        return_value=TEST_DOCUMENT_REFERENCE
+        return_value=test_document_reference
     )
     TEST_STAGING_METADATA.retries = 0
-
     repo_under_test.resolve_source_file_path(TEST_STAGING_METADATA)
 
     repo_under_test.create_lg_records_and_copy_files(
@@ -614,10 +617,10 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under
             source_file_key=expected_source_file_key,
             dest_file_key=expected_dest_file_key,
         )
+        assert test_document_reference.uploaded.__eq__(True)
     assert repo_under_test.s3_repository.copy_to_lg_bucket.call_count == 3
-
     repo_under_test.dynamo_repository.create_record_in_lg_dynamo_table.assert_any_call(
-        TEST_DOCUMENT_REFERENCE
+        test_document_reference
     )
     assert (
         repo_under_test.dynamo_repository.create_record_in_lg_dynamo_table.call_count
@@ -630,6 +633,7 @@ def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
     TEST_STAGING_METADATA.retries = 0
     repo_under_test.s3_repository.lg_bucket_name = "test_lg_s3_bucket"
     expected = TEST_DOCUMENT_REFERENCE
+
     actual = repo_under_test.convert_to_document_reference(
         file_metadata=TEST_FILE_METADATA,
         nhs_number=TEST_STAGING_METADATA.nhs_number,
@@ -670,3 +674,39 @@ def test_mismatch_ods_with_pds_service(
     repo_under_test.dynamo_repository.report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA, "Patient not registered at your practice", "Y12345"
     )
+
+
+def test_create_lg_records_and_copy_files_client_error(
+    repo_under_test,
+    mocker,
+    set_env,
+    mock_uuid,
+    mock_check_virus_result,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation,
+    mock_ods_validation,
+):
+    TEST_STAGING_METADATA.retries = 0
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        repo_under_test, "create_lg_records_and_copy_files"
+    )
+    mock_rollback_transaction = mocker.patch.object(
+        repo_under_test, "rollback_transaction"
+    )
+    mock_client_error = ClientError(
+        {"Error": {"Code": "AccessDenied", "Message": "Access Denied"}},
+        "GetObject",
+    )
+    mock_create_lg_records_and_copy_files.side_effect = mock_client_error
+
+    repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    mock_rollback_transaction.assert_called()
+    repo_under_test.dynamo_repository.report_upload_failure.assert_called_with(
+        TEST_STAGING_METADATA,
+        "Validation passed but error occurred during file transfer",
+        "Y12345",
+    )
+    repo_under_test.s3_repository.remove_ingested_file_from_source_bucket.assert_not_called()
+    repo_under_test.dynamo_repository.report_upload_complete.assert_not_called()
