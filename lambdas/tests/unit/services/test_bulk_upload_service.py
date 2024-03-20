@@ -1,4 +1,5 @@
 import json
+from copy import copy
 
 import pytest
 from botocore.exceptions import ClientError
@@ -23,7 +24,6 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_SQS_MESSAGES_AS_LIST,
     TEST_STAGING_METADATA,
     TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
-    build_test_document_reference,
     build_test_sqs_message,
     build_test_staging_metadata_from_patient_name,
     make_s3_file_paths,
@@ -597,9 +597,7 @@ def test_resolves_source_file_path_raise_S3FileNotFoundException_if_filename_can
 
 
 def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under_test):
-    test_document_reference = build_test_document_reference(
-        make_valid_lg_file_names(3)[0]
-    )
+    test_document_reference = copy(TEST_DOCUMENT_REFERENCE)
     repo_under_test.convert_to_document_reference = mocker.MagicMock(
         return_value=test_document_reference
     )
