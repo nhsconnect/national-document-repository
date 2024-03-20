@@ -27,10 +27,13 @@ def patched_service(set_env, mocker):
     service = UploadConfirmResultService(TEST_NHS_NUMBER)
     mock_dynamo_service = mocker.patch.object(service, "dynamo_service")
     mocker.patch.object(mock_dynamo_service, "update_item")
-    mocker.patch.object(mock_dynamo_service, "scan_table")
     mock_s3_service = mocker.patch.object(service, "s3_service")
     mocker.patch.object(mock_s3_service, "copy_across_bucket")
     mocker.patch.object(mock_s3_service, "delete_object")
+    mock_document_service = mocker.patch.object(service, "document_service")
+    mocker.patch.object(
+        mock_document_service, "fetch_available_document_references_by_type"
+    )
     yield service
 
 
@@ -67,7 +70,7 @@ def test_process_documents_with_lg_document_references(
     patched_service.process_documents(MOCK_LG_DOCUMENTS)
 
     mock_validate_number_of_documents.assert_called_with(
-        MOCK_LG_TABLE_NAME, MOCK_LG_DOCUMENT_REFERENCES
+        SupportedDocumentTypes.LG, MOCK_LG_DOCUMENT_REFERENCES
     )
     mock_move_files_and_update_dynamo.assert_called_with(
         MOCK_LG_DOCUMENT_REFERENCES,
@@ -101,7 +104,7 @@ def test_process_documents_with_both_types_of_document_references(
     patched_service.process_documents(MOCK_BOTH_DOC_TYPES)
 
     mock_validate_number_of_documents.assert_called_once_with(
-        MOCK_LG_TABLE_NAME, [TEST_FILE_KEY]
+        SupportedDocumentTypes.LG, [TEST_FILE_KEY]
     )
     assert mock_move_files_and_update_dynamo.call_count == 2
 
@@ -190,21 +193,26 @@ def test_update_dynamo_table(patched_service):
 
 
 def test_validate_number_of_documents_success(patched_service):
-    patched_service.dynamo_service.scan_table.return_value = {"Items": ["doc1"]}
+    patched_service.document_service.fetch_available_document_references_by_type.return_value = [
+        "doc1"
+    ]
 
     patched_service.validate_number_of_documents(
         MOCK_LG_TABLE_NAME, MOCK_LG_DOCUMENT_REFERENCES
     )
 
-    patched_service.dynamo_service.scan_table.assert_called_once()
+    patched_service.document_service.fetch_available_document_references_by_type.assert_called_once()
 
 
 def test_validate_number_of_documents_raises_exception(patched_service):
-    patched_service.dynamo_service.scan_table.return_value = {"Items": ["doc1", "doc2"]}
+    patched_service.document_service.fetch_available_document_references_by_type.return_value = [
+        "doc1",
+        "doc2",
+    ]
 
     with pytest.raises(UploadConfirmResultException):
         patched_service.validate_number_of_documents(
             MOCK_LG_TABLE_NAME, MOCK_LG_DOCUMENT_REFERENCES
         )
 
-    patched_service.dynamo_service.scan_table.assert_called_once()
+    patched_service.document_service.fetch_available_document_references_by_type.assert_called_once()
