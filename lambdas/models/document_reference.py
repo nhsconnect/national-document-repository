@@ -1,5 +1,5 @@
 import pathlib
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -93,9 +93,15 @@ class DocumentReference(BaseModel):
         return f"{self.get_base_name()}({duplicates}){self.get_file_extension()}"
 
     def last_updated_within_three_minutes(self) -> bool:
-        three_minutes = 60 * 3
-        last_updated = float(self.last_updated)
-        return datetime.now().timestamp() - last_updated <= three_minutes
+        if isinstance(self.last_updated, (int, float)) or self.last_updated.isnumeric():
+            # handle last_updated as epoch time
+            last_updated = float(self.last_updated)
+            three_minutes_ago = datetime.now().timestamp() - 60 * 3
+        else:
+            # handle last_updated as iso time string
+            last_updated = datetime.fromisoformat(self.last_updated)
+            three_minutes_ago = datetime.now() - timedelta(minutes=3)
+        return last_updated >= three_minutes_ago
 
     def __eq__(self, other):
         if isinstance(other, DocumentReference):
