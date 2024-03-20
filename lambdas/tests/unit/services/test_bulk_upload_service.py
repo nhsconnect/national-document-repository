@@ -23,6 +23,7 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_SQS_MESSAGES_AS_LIST,
     TEST_STAGING_METADATA,
     TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
+    build_test_document_reference,
     build_test_sqs_message,
     build_test_staging_metadata_from_patient_name,
     make_s3_file_paths,
@@ -483,6 +484,10 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
         "Y12345",
     )
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
+    assert (
+        repo_under_test.dynamo_repository.create_record_in_lg_dynamo_table.call_count
+        == 2
+    )
 
 
 def test_handle_sqs_message_raise_InvalidMessageException_when_failed_to_extract_data_from_message(
@@ -592,8 +597,11 @@ def test_resolves_source_file_path_raise_S3FileNotFoundException_if_filename_can
 
 
 def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under_test):
+    test_document_reference = build_test_document_reference(
+        make_valid_lg_file_names(3)[0]
+    )
     repo_under_test.convert_to_document_reference = mocker.MagicMock(
-        return_value=TEST_DOCUMENT_REFERENCE
+        return_value=test_document_reference
     )
     TEST_STAGING_METADATA.retries = 0
     repo_under_test.resolve_source_file_path(TEST_STAGING_METADATA)
@@ -611,10 +619,10 @@ def test_create_lg_records_and_copy_files(set_env, mocker, mock_uuid, repo_under
             source_file_key=expected_source_file_key,
             dest_file_key=expected_dest_file_key,
         )
+        assert test_document_reference.uploaded.__eq__(True)
     assert repo_under_test.s3_repository.copy_to_lg_bucket.call_count == 3
-
     repo_under_test.dynamo_repository.create_record_in_lg_dynamo_table.assert_any_call(
-        TEST_DOCUMENT_REFERENCE
+        test_document_reference
     )
     assert (
         repo_under_test.dynamo_repository.create_record_in_lg_dynamo_table.call_count
@@ -627,6 +635,7 @@ def test_convert_to_document_reference(set_env, mock_uuid, repo_under_test):
     TEST_STAGING_METADATA.retries = 0
     repo_under_test.s3_repository.lg_bucket_name = "test_lg_s3_bucket"
     expected = TEST_DOCUMENT_REFERENCE
+
     actual = repo_under_test.convert_to_document_reference(
         file_metadata=TEST_FILE_METADATA,
         nhs_number=TEST_STAGING_METADATA.nhs_number,
