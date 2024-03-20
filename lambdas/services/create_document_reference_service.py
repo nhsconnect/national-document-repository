@@ -2,6 +2,7 @@ import os
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
@@ -177,50 +178,70 @@ class CreateDocumentReferenceService:
         self,
         nhs_number: str,
     ):
-        all_records = self.document_service.fetch_available_document_references_by_type(
-            nhs_number, SupportedDocumentTypes.LG
-        )
-        self.stop_if_upload_is_ongoing(all_records)
-        self.stop_if_got_a_full_set_of_lloyd_george_record(all_records)
-        self.remove_records_of_failed_upload(nhs_number, all_records)
+        logger.info("Looking for previous records for this patient...")
 
-    def stop_if_upload_is_ongoing(self, all_records: list[DocumentReference]):
-        is_uploading = any(
-            not record.uploaded
-            and record.uploading
-            and record.last_updated_within_three_minutes()
-            for record in all_records
+        # Note for migrating to DynamoQueryFilterBuilder:
+        # This query should be filtering by {deleted: ""} only.
+        previous_records = (
+            self.document_service.fetch_available_document_references_by_type(
+                nhs_number, SupportedDocumentTypes.LG
+            )
         )
-        if is_uploading:
+        if not previous_records:
             logger.info(
-                "Found an on-going upload process for this patient. Will not process the new upload."
+                "No record was found for this patient. Will continue to create doc ref."
+            )
+            return
+
+        records_not_uploaded = [
+            record for record in previous_records if not record.uploaded
+        ]
+
+        if not records_not_uploaded:
+            logger.info(
+                "The patient already has a full set of record. "
+                "We should not be processing the new Lloyd George record upload."
+            )
+            logger.error(
+                f"{LambdaError.CreateDocRecordAlreadyInPlace.to_str()}",
+                {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
+            )
+            raise CreateDocumentRefException(
+                400, LambdaError.CreateDocRecordAlreadyInPlace
+            )
+
+        if self.upload_is_ongoing(records_not_uploaded):
+            logger.error(
+                "Found an on-going upload process for this patient. Will not process the new upload.",
+                {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
             )
             raise CreateDocumentRefException(423, LambdaError.CreateDocStillUploading)
 
-    def stop_if_got_a_full_set_of_lloyd_george_record(
-        self, all_records: list[DocumentReference]
-    ):
-        has_a_full_set_of_record = len(all_records) > 0 and all(
-            record.uploaded for record in all_records
-        )
+        self.remove_records_of_failed_upload(nhs_number, previous_records)
 
-        if has_a_full_set_of_record:
-            logger.info(
-                "The patient already has a full set of record. We should not be processing the new Lloyd George record upload."
-            )
+    @staticmethod
+    def upload_is_ongoing(records_not_uploaded: list[DocumentReference]) -> bool:
+        return any(
+            record.uploading and record.last_updated_within_three_minutes()
+            for record in records_not_uploaded
+        )
 
     def remove_records_of_failed_upload(
         self,
         nhs_number: str,
         all_records: list[DocumentReference],
     ):
-        has_failed_upload = any(
-            not record.uploaded and not record.last_updated_within_three_minutes()
-            for record in all_records
+        logger.info(
+            "Found previous record(s) of failed upload."
+            "Will delete those records before creating new document references."
         )
-
-        logger.info("Found record of failed upload ")
-        if has_failed_upload:
-            self.document_deletion_service.delete_specific_doc_type(
-                nhs_number, SupportedDocumentTypes.LG
-            )
+        self.document_deletion_service.delete_specific_doc_type(
+            nhs_number, SupportedDocumentTypes.LG
+        )
+        self.document_service.delete_documents(
+            table_name=self.lg_dynamo_table,
+            document_references=all_records,
+            type_of_delete=S3LifecycleTags.SOFT_DELETE.value,
+            # as uploaded=False, file may be not existing in s3. better let staging bucket's expiration rule handle the deletion
+            delete_s3_files=False,
+        )

@@ -1,5 +1,5 @@
 import pathlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -96,11 +96,11 @@ class DocumentReference(BaseModel):
         if isinstance(self.last_updated, (int, float)) or self.last_updated.isnumeric():
             # handle last_updated as epoch time
             last_updated = float(self.last_updated)
-            three_minutes_ago = datetime.now().timestamp() - 60 * 3
+            three_minutes_ago = datetime.now(timezone.utc).timestamp() - 60 * 3
         else:
             # handle last_updated as iso time string
             last_updated = datetime.fromisoformat(self.last_updated)
-            three_minutes_ago = datetime.now() - timedelta(minutes=3)
+            three_minutes_ago = datetime.now(timezone.utc) - timedelta(minutes=3)
         return last_updated >= three_minutes_ago
 
     def __eq__(self, other):
