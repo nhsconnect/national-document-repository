@@ -70,7 +70,7 @@ def test_process_documents_with_lg_document_references(
     patched_service.process_documents(MOCK_LG_DOCUMENTS)
 
     mock_validate_number_of_documents.assert_called_with(
-        MOCK_LG_TABLE_NAME, MOCK_LG_DOCUMENT_REFERENCES
+        SupportedDocumentTypes.LG, MOCK_LG_DOCUMENT_REFERENCES
     )
     mock_move_files_and_update_dynamo.assert_called_with(
         MOCK_LG_DOCUMENT_REFERENCES,
@@ -104,7 +104,7 @@ def test_process_documents_with_both_types_of_document_references(
     patched_service.process_documents(MOCK_BOTH_DOC_TYPES)
 
     mock_validate_number_of_documents.assert_called_once_with(
-        MOCK_LG_TABLE_NAME, [TEST_FILE_KEY]
+        SupportedDocumentTypes.LG, [TEST_FILE_KEY]
     )
     assert mock_move_files_and_update_dynamo.call_count == 2
 

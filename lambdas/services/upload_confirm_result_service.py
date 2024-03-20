@@ -48,7 +48,9 @@ class UploadConfirmResultService:
                 )
 
             if lg_document_references:
-                self.validate_number_of_documents(lg_table_name, lg_document_references)
+                self.validate_number_of_documents(
+                    SupportedDocumentTypes.LG, lg_document_references
+                )
                 self.move_files_and_update_dynamo(
                     lg_document_references,
                     lg_bucket_name,
@@ -113,13 +115,15 @@ class UploadConfirmResultService:
             {"Uploaded": True, "FileLocation": file_location},
         )
 
-    def validate_number_of_documents(self, _table_name: str, document_references: list):
+    def validate_number_of_documents(
+        self, doc_type: SupportedDocumentTypes, document_references: list
+    ):
         logger.info(
             "Checking number of document references in list matches number of documents in dynamo table"
         )
 
         items = self.document_service.fetch_available_document_references_by_type(
-            nhs_number=self.nhs_number, doc_type=SupportedDocumentTypes.LG
+            nhs_number=self.nhs_number, doc_type=doc_type
         )
 
         if len(items) != len(document_references):
