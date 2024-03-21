@@ -75,7 +75,6 @@ class DocumentService:
         table_name: str,
         document_references: list[DocumentReference],
         type_of_delete: str,
-        delete_s3_files: bool = True,
     ):
         deletion_date = datetime.now(timezone.utc)
 
@@ -99,13 +98,12 @@ class DocumentService:
         logger.info(f"Deleting items in table: {table_name}")
 
         for reference in document_references:
-            if delete_s3_files:
-                self.s3_service.create_object_tag(
-                    file_key=reference.get_file_key(),
-                    s3_bucket_name=reference.get_file_bucket(),
-                    tag_key=tag_key,
-                    tag_value=str(S3LifecycleTags.ENABLE_TAG.value),
-                )
+            self.s3_service.create_object_tag(
+                file_key=reference.get_file_key(),
+                s3_bucket_name=reference.get_file_bucket(),
+                tag_key=tag_key,
+                tag_value=str(S3LifecycleTags.ENABLE_TAG.value),
+            )
 
             self.dynamo_service.update_item(
                 table_name, reference.id, updated_fields=update_fields

@@ -49,7 +49,7 @@ class DocumentReference(BaseModel):
     uploading: bool = Field(
         alias=str(DocumentReferenceMetadataFields.UPLOADING.value), default=False
     )
-    last_updated: str = Field(
+    last_updated: int = Field(
         alias=str(DocumentReferenceMetadataFields.LAST_UPDATED.value),
         serialization_alias="lastUpdated",
     )

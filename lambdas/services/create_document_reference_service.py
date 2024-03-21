@@ -2,7 +2,6 @@ import os
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
-from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
@@ -230,18 +229,20 @@ class CreateDocumentReferenceService:
     def remove_records_of_failed_upload(
         self,
         nhs_number: str,
-        all_records: list[DocumentReference],
+        failed_upload_records: list[DocumentReference],
     ):
         logger.info(
             "Found previous record(s) of failed upload."
             "Will delete those records before creating new document references."
         )
+
         self.document_deletion_service.delete_specific_doc_type(
             nhs_number, SupportedDocumentTypes.LG
         )
-        self.document_service.delete_documents(
-            table_name=self.lg_dynamo_table,
-            document_references=all_records,
-            type_of_delete=S3LifecycleTags.SOFT_DELETE.value,
-            delete_s3_files=False,
-        )
+
+        for record in failed_upload_records:
+            s3_bucket_name = record.get_file_bucket()
+            file_key = record.get_file_key()
+            self.s3_service.delete_object(s3_bucket_name, file_key)
+
+        logger.info("Previous failed records are deleted.")
