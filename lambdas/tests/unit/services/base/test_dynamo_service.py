@@ -1,10 +1,12 @@
 import pytest
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
+from enums.dynamo_filter import AttributeOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.base.dynamo_service import DynamoDBService
 from tests.unit.conftest import MOCK_TABLE_NAME, TEST_NHS_NUMBER
 from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.exceptions import DynamoServiceException
 
 MOCK_CLIENT_ERROR = ClientError(
@@ -30,15 +32,22 @@ def mock_table(mocker, mock_service):
     yield mocker.patch.object(mock_service, "get_table")
 
 
+@pytest.fixture
+def mock_filter_expression():
+    filter_builder = DynamoQueryFilterBuilder()
+    filter_expression = filter_builder.add_condition(
+        attribute=str(DocumentReferenceMetadataFields.DELETED.value),
+        attr_operator=AttributeOperator.EQUAL,
+        filter_value="",
+    ).build()
+    yield filter_expression
+
+
 def test_query_with_requested_fields_returns_items_from_dynamo(
     mock_service, mock_table
 ):
     search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
-    expected_projection = "#FileName_attr,#Created_attr"
-    expected_expr_attr_names = {
-        "#FileName_attr": "FileName",
-        "#Created_attr": "Created",
-    }
+    expected_projection = "FileName,Created"
 
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
     expected = MOCK_SEARCH_RESPONSE
@@ -58,7 +67,6 @@ def test_query_with_requested_fields_returns_items_from_dynamo(
     mock_table.return_value.query.assert_called_once_with(
         IndexName="NhsNumberIndex",
         KeyConditionExpression=search_key_obj,
-        ExpressionAttributeNames=expected_expr_attr_names,
         ProjectionExpression=expected_projection,
     )
 
@@ -66,16 +74,11 @@ def test_query_with_requested_fields_returns_items_from_dynamo(
 
 
 def test_query_with_requested_fields_with_filter_returns_items_from_dynamo(
-    mock_service, mock_table
+    mock_service, mock_table, mock_filter_expression
 ):
     search_key_obj = Key("NhsNumber").eq(TEST_NHS_NUMBER)
-    expected_projection = "#FileName_attr,#Created_attr"
-    expected_expr_attr_names = {
-        "#FileName_attr": "FileName",
-        "#Created_attr": "Created",
-    }
-    expected_filter = "attribute_not_exists(Deleted) OR Deleted = :Deleted_val"
-    expected_attributes_values = {":Deleted_val": ""}
+    expected_projection = "FileName,Created"
+    expected_filter = Attr("Deleted").eq("")
 
     mock_table.return_value.query.return_value = MOCK_SEARCH_RESPONSE
     expected = MOCK_SEARCH_RESPONSE
@@ -89,17 +92,15 @@ def test_query_with_requested_fields_with_filter_returns_items_from_dynamo(
             DocumentReferenceMetadataFields.FILE_NAME.value,
             DocumentReferenceMetadataFields.CREATED.value,
         ],
-        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        query_filter=mock_filter_expression,
     )
 
     mock_table.assert_called_with(MOCK_TABLE_NAME)
     mock_table.return_value.query.assert_called_once_with(
         IndexName="NhsNumberIndex",
         KeyConditionExpression=search_key_obj,
-        ExpressionAttributeNames=expected_expr_attr_names,
         ProjectionExpression=expected_projection,
         FilterExpression=expected_filter,
-        ExpressionAttributeValues=expected_attributes_values,
     )
 
     assert expected == actual

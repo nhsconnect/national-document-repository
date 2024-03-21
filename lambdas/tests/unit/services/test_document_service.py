@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from unittest.mock import call
 
 import pytest
+from enums.dynamo_filter import AttributeOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.s3_lifecycle_tags import S3LifecycleDays, S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
@@ -18,6 +19,7 @@ from tests.unit.helpers.data.dynamo_responses import (
     MOCK_EMPTY_RESPONSE,
     MOCK_SEARCH_RESPONSE,
 )
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 
 MOCK_DOCUMENT = MOCK_SEARCH_RESPONSE["Items"][0]
 
@@ -44,13 +46,24 @@ def mock_s3_service(mocker, mock_service):
     yield mock_service.s3_service
 
 
+@pytest.fixture
+def mock_filter_expression():
+    filter_builder = DynamoQueryFilterBuilder()
+    filter_expression = filter_builder.add_condition(
+        attribute=str(DocumentReferenceMetadataFields.DELETED.value),
+        attr_operator=AttributeOperator.EQUAL,
+        filter_value="",
+    ).build()
+    yield filter_expression
+
+
 def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_references(
-    mock_service, mock_dynamo_service
+    mock_service, mock_dynamo_service, mock_filter_expression
 ):
     mock_dynamo_service.query_with_requested_fields.return_value = MOCK_SEARCH_RESPONSE
 
     results = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, SupportedDocumentTypes.LG
+        TEST_NHS_NUMBER, SupportedDocumentTypes.LG, mock_filter_expression
     )
 
     assert len(results) == 3
@@ -63,17 +76,17 @@ def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_refe
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         requested_fields=DocumentReferenceMetadataFields.list(),
-        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        query_filter=mock_filter_expression,
     )
 
 
 def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_references(
-    mock_service, mock_dynamo_service
+    mock_service, mock_dynamo_service, mock_filter_expression
 ):
     mock_dynamo_service.query_with_requested_fields.return_value = MOCK_SEARCH_RESPONSE
 
     results = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, SupportedDocumentTypes.ARF
+        TEST_NHS_NUMBER, SupportedDocumentTypes.ARF, mock_filter_expression
     )
 
     assert len(results) == 3
@@ -86,17 +99,17 @@ def test_fetch_available_document_references_by_type_arf_returns_list_of_doc_ref
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         requested_fields=DocumentReferenceMetadataFields.list(),
-        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        query_filter=mock_filter_expression,
     )
 
 
 def test_fetch_available_document_references_by_type_all_returns_list_of_doc_references(
-    mocker, mock_service, mock_dynamo_service
+    mocker, mock_service, mock_dynamo_service, mock_filter_expression
 ):
     mock_dynamo_service.query_with_requested_fields.return_value = MOCK_SEARCH_RESPONSE
 
     results = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, SupportedDocumentTypes.ALL
+        TEST_NHS_NUMBER, SupportedDocumentTypes.ALL, mock_filter_expression
     )
 
     assert len(results) == 6
@@ -110,7 +123,7 @@ def test_fetch_available_document_references_by_type_all_returns_list_of_doc_ref
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
             requested_fields=DocumentReferenceMetadataFields.list(),
-            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+            query_filter=mock_filter_expression,
         ),
         mocker.call(
             table_name=MOCK_LG_TABLE_NAME,
@@ -118,7 +131,7 @@ def test_fetch_available_document_references_by_type_all_returns_list_of_doc_ref
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
             requested_fields=DocumentReferenceMetadataFields.list(),
-            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+            query_filter=mock_filter_expression,
         ),
     ]
 
@@ -128,7 +141,7 @@ def test_fetch_available_document_references_by_type_all_returns_list_of_doc_ref
 
 
 def test_fetch_available_document_references_by_type_all_only_one_result_is_returned_returns_doc_references(
-    mocker, mock_service, mock_dynamo_service
+    mocker, mock_service, mock_dynamo_service, mock_filter_expression
 ):
     mock_dynamo_service.query_with_requested_fields.side_effect = [
         MOCK_SEARCH_RESPONSE,
@@ -136,7 +149,7 @@ def test_fetch_available_document_references_by_type_all_only_one_result_is_retu
     ]
 
     results = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, SupportedDocumentTypes.ALL
+        TEST_NHS_NUMBER, SupportedDocumentTypes.ALL, mock_filter_expression
     )
 
     assert len(results) == 3
@@ -150,7 +163,7 @@ def test_fetch_available_document_references_by_type_all_only_one_result_is_retu
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
             requested_fields=DocumentReferenceMetadataFields.list(),
-            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+            query_filter=mock_filter_expression,
         ),
         mocker.call(
             table_name=MOCK_LG_TABLE_NAME,
@@ -158,7 +171,7 @@ def test_fetch_available_document_references_by_type_all_only_one_result_is_retu
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
             requested_fields=DocumentReferenceMetadataFields.list(),
-            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+            query_filter=mock_filter_expression,
         ),
     ]
 
@@ -168,12 +181,12 @@ def test_fetch_available_document_references_by_type_all_only_one_result_is_retu
 
 
 def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_doc_references(
-    mock_service, mock_dynamo_service
+    mock_service, mock_dynamo_service, mock_filter_expression
 ):
     mock_dynamo_service.query_with_requested_fields.return_value = MOCK_EMPTY_RESPONSE
 
     result = mock_service.fetch_available_document_references_by_type(
-        TEST_NHS_NUMBER, SupportedDocumentTypes.LG
+        TEST_NHS_NUMBER, SupportedDocumentTypes.LG, mock_filter_expression
     )
 
     assert len(result) == 0
@@ -183,12 +196,12 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
         search_key="NhsNumber",
         search_condition=TEST_NHS_NUMBER,
         requested_fields=DocumentReferenceMetadataFields.list(),
-        filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+        query_filter=mock_filter_expression,
     )
 
 
 def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
-    mocker, mock_service, mock_dynamo_service
+    mocker, mock_service, mock_dynamo_service, mock_filter_expression
 ):
     expected_calls = [
         mocker.call(
@@ -197,7 +210,7 @@ def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
             requested_fields=DocumentReferenceMetadataFields.list(),
-            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+            query_filter=mock_filter_expression,
         )
     ]
 
@@ -206,7 +219,7 @@ def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
     results = mock_service.fetch_documents_from_table_with_filter(
         nhs_number=TEST_NHS_NUMBER,
         table=MOCK_LG_TABLE_NAME,
-        attr_filter={DocumentReferenceMetadataFields.DELETED.value: ""},
+        query_filter=mock_filter_expression,
     )
 
     assert len(results) == 3
@@ -219,7 +232,7 @@ def test_fetch_documents_from_table_with_filter_returns_list_of_doc_references(
 
 
 def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_references(
-    mocker, mock_service, mock_dynamo_service
+    mocker, mock_service, mock_dynamo_service, mock_filter_expression
 ):
     expected_calls = [
         mocker.call(
@@ -228,7 +241,7 @@ def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_refere
             search_key="NhsNumber",
             search_condition=TEST_NHS_NUMBER,
             requested_fields=DocumentReferenceMetadataFields.list(),
-            filtered_fields={DocumentReferenceMetadataFields.DELETED.value: ""},
+            query_filter=mock_filter_expression,
         )
     ]
     mock_dynamo_service.query_with_requested_fields.return_value = MOCK_EMPTY_RESPONSE
@@ -236,7 +249,7 @@ def test_fetch_documents_from_table_with_filter_returns_empty_list_of_doc_refere
     results = mock_service.fetch_documents_from_table_with_filter(
         nhs_number=TEST_NHS_NUMBER,
         table=MOCK_LG_TABLE_NAME,
-        attr_filter={DocumentReferenceMetadataFields.DELETED.value: ""},
+        query_filter=mock_filter_expression,
     )
 
     assert len(results) == 0
