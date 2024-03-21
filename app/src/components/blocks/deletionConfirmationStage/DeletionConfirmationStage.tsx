@@ -35,7 +35,7 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
                 <Card.Content>
                     <Card.Heading style={{ margin: 'auto' }}>Deletion complete</Card.Heading>
                     <Card.Description style={{ fontSize: '16px' }}>
-                        {numberOfFiles} file{numberOfFiles !== 1 && 's'} from the{' '}
+                        You have successfully deleted {numberOfFiles} file(s) from the{' '}
                         {isGP && 'Lloyd George '}
                         record of:{' '}
                     </Card.Description>

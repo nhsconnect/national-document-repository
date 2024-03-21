@@ -32,7 +32,9 @@ describe('LloydGeorgeDownloadComplete', () => {
         );
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
-        expect(screen.getByText('Documents from the Lloyd George record of:')).toBeInTheDocument();
+        expect(
+            screen.getByText('You have successfully downloaded the Lloyd George record of:'),
+        ).toBeInTheDocument();
         expect(
             screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
         ).toBeInTheDocument();
@@ -51,7 +53,9 @@ describe('LloydGeorgeDownloadComplete', () => {
         );
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
-        expect(screen.getByText('Documents from the Lloyd George record of:')).toBeInTheDocument();
+        expect(
+            screen.getByText('You have successfully downloaded the Lloyd George record of:'),
+        ).toBeInTheDocument();
         expect(
             screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
         ).toBeInTheDocument();
@@ -83,7 +87,9 @@ describe('LloydGeorgeDownloadComplete', () => {
         );
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
-        expect(screen.getByText('Documents from the Lloyd George record of:')).toBeInTheDocument();
+        expect(
+            screen.getByText('You have successfully downloaded the Lloyd George record of:'),
+        ).toBeInTheDocument();
         expect(
             screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
         ).toBeInTheDocument();

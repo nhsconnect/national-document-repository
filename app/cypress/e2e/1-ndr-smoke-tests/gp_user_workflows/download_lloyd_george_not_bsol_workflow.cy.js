@@ -60,7 +60,9 @@ describe('GP Workflow: View Lloyd George record', () => {
                 // Assert contents of page after download
                 cy.get('.lloydgeorge_download-complete', { timeout: 20000 }).should('exist');
                 cy.contains('Download complete').should('be.visible');
-                cy.contains('Documents from the Lloyd George record of:').should('be.visible');
+                cy.contains('You have successfully downloaded the Lloyd George record of:').should(
+                    'be.visible',
+                );
                 cy.contains(`(NHS number: ${activePatient})`).should('be.visible');
 
                 // Assert file has been downloaded

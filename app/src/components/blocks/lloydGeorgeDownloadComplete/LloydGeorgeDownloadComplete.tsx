@@ -3,6 +3,8 @@ import { Button, Card } from 'nhsuk-react-components';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
+import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
+import CardDescription from 'nhsuk-react-components/dist/lib/components/card/components/CardDescription';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
@@ -12,6 +14,8 @@ export type Props = {
 
 function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDownload }: Props) {
     const patientDetails = usePatient();
+    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
+    const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
     const handleReturnButtonClick = () => {
         setStage(LG_RECORD_STAGE.RECORD);
@@ -27,13 +31,16 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
                     <Card.Heading className="lloydgeorge_download-complete_details-content_header">
                         Download complete
                     </Card.Heading>
-                    Documents from the Lloyd George record of:
+                    <Card.Description>
+                        You have successfully downloaded the{'\n'}
+                        Lloyd George record of:
+                    </Card.Description>
                     <div className="lloydgeorge_download-complete_details-content_subheader">
                         <strong>
                             {patientDetails?.givenName + ' ' + patientDetails?.familyName}
                         </strong>
                     </div>
-                    <div>{`(NHS number: ${patientDetails?.nhsNumber})`}</div>
+                    <div>NHS number: {formattedNhsNumber}</div>
                 </Card.Content>
             </Card>
             {deleteAfterDownload ? (
@@ -42,7 +49,7 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
                     <h2>Keep this patient's record safe</h2>
                     <ol>
                         <li>
-                            Store the record in accessible and recoverable format within a secure
+                            Store the record in an accessible and recoverable format within a secure
                             network folder
                         </li>
                         <li>
@@ -69,6 +76,7 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
                     </p>
                     <h3>Follow the Record Management Code of Practice</h3>
                     <p>
+                        The{' '}
                         <a href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code">
                             Record Management Code of Practice
                         </a>{' '}
