@@ -125,10 +125,11 @@ class UploadConfirmResultService:
         )
         filter_builder = DynamoQueryFilterBuilder()
 
-        filter_builder.add_condition(
-            "Deleted", AttributeOperator.EQUAL, ""
-        ).add_condition("Uploading", AttributeOperator.EQUAL, True)
-        filter_expression = filter_builder.build()
+        filter_expression = (
+            filter_builder.add_condition("Deleted", AttributeOperator.EQUAL, "")
+            .add_condition("Uploading", AttributeOperator.EQUAL, True)
+            .build()
+        )
         items = self.document_service.fetch_available_document_references_by_type(
             nhs_number=self.nhs_number,
             doc_type=doc_type,
