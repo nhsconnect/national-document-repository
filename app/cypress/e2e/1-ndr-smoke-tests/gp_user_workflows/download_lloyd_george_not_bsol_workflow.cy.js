@@ -63,7 +63,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.contains('You have successfully downloaded the Lloyd George record of:').should(
                     'be.visible',
                 );
-                cy.contains(`(NHS number: ${activePatient})`).should('be.visible');
+                cy.contains(`NHS number: ${activePatient}`).should('be.visible');
 
                 // Assert file has been downloaded
                 cy.readFile(

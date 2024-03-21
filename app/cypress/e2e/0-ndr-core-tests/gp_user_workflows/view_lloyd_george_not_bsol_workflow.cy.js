@@ -254,9 +254,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     cy.contains(
                         `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
                     ).should('be.visible');
-                    cy.contains(`(NHS number: ${searchPatientPayload.nhsNumber})`).should(
-                        'be.visible',
-                    );
+                    cy.contains(`NHS number: 900 000 0009`).should('be.visible');
 
                     // Assert file has been downloaded
                     cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);

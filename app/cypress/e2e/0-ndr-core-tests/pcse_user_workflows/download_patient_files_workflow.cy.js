@@ -267,7 +267,7 @@ describe('PCSE Workflow: Access and download found files', () => {
                     'be.visible',
                 );
                 cy.contains('GivenName Surname').should('be.visible');
-                cy.contains('(NHS number: 900 000 0009)').should('be.visible');
+                cy.contains('NHS number: 900 000 0009').should('be.visible');
             },
         );
 
