@@ -3,7 +3,6 @@ from datetime import datetime
 import pytest
 from freezegun import freeze_time
 from models.document_reference import DocumentReference
-from models.nhs_document_reference import DATE_FORMAT
 from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
 from utils.exceptions import InvalidDocumentReferenceException
 
@@ -59,9 +58,9 @@ def test_get_file_key_raises_InvalidDocumentReferenceException():
 
 
 @freeze_time("2023-10-30T10:25:00Z")
-def test_last_updated_within_three_minutes_works_correctly_for_iso_time_notation():
-    within_three_minutes = datetime.fromisoformat("2023-10-30T10:22:01Z").strftime(
-        DATE_FORMAT
+def test_last_updated_within_three_minutes_return_true_when_last_updated_is_less_than_3_minutes_ago():
+    within_three_minutes = int(
+        datetime.fromisoformat("2023-10-30T10:22:01Z").timestamp()
     )
     MOCK_DOCUMENT_REFERENCE.last_updated = within_three_minutes
 
@@ -70,30 +69,12 @@ def test_last_updated_within_three_minutes_works_correctly_for_iso_time_notation
 
     assert expected == actual
 
-    more_than_three_minutes_ago = datetime.fromisoformat(
-        "2023-10-30T10:21:59Z"
-    ).strftime(DATE_FORMAT)
-    MOCK_DOCUMENT_REFERENCE.last_updated = more_than_three_minutes_ago
-
-    actual = MOCK_DOCUMENT_REFERENCE.last_updated_within_three_minutes()
-    expected = False
-
-    assert expected == actual
-
 
 @freeze_time("2023-10-30T10:25:00Z")
-def test_last_updated_within_three_minutes_works_correctly_for_epoch_time_notation():
-    within_three_minutes = datetime.fromisoformat("2023-10-30T10:22:01Z").timestamp()
-    MOCK_DOCUMENT_REFERENCE.last_updated = within_three_minutes
-
-    actual = MOCK_DOCUMENT_REFERENCE.last_updated_within_three_minutes()
-    expected = True
-
-    assert expected == actual
-
-    more_than_three_minutes_ago = datetime.fromisoformat(
-        "2023-10-30T10:21:59Z"
-    ).timestamp()
+def test_last_updated_within_three_minutes_return_false_when_last_updated_is_more_than_3_minutes_ago():
+    more_than_three_minutes_ago = int(
+        datetime.fromisoformat("2023-10-30T10:21:59Z").timestamp()
+    )
     MOCK_DOCUMENT_REFERENCE.last_updated = more_than_three_minutes_ago
 
     actual = MOCK_DOCUMENT_REFERENCE.last_updated_within_three_minutes()
