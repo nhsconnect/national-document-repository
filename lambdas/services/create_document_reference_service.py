@@ -133,6 +133,7 @@ class CreateDocumentReferenceService:
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
             doc_type=document_type,
+            uploading=True,
         )
 
         return document_reference

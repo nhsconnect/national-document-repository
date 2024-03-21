@@ -23,6 +23,7 @@ class NHSDocumentReference:
         current_gp_ods: str = "",
         sub_folder: str = "",
         doc_type: str = "",
+        uploading: bool = False,
     ) -> None:
         date_now = datetime.now(timezone.utc).strftime(DATE_FORMAT)
 
@@ -39,7 +40,7 @@ class NHSDocumentReference:
         self.sub_folder = sub_folder
         self.doc_type = doc_type
         self.file_location = self.set_file_location()
-        self.uploading = False
+        self.uploading = uploading
         self.last_updated = date_now
 
     def set_file_location(self):
