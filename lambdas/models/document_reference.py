@@ -43,12 +43,8 @@ class DocumentReference(BaseModel):
         alias=str(DocumentReferenceMetadataFields.CURRENT_GP_ODS.value), default=None
     )
 
-    uploaded: bool = Field(
-        alias=str(DocumentReferenceMetadataFields.UPLOADED.value), default=False
-    )
-    uploading: bool = Field(
-        alias=str(DocumentReferenceMetadataFields.UPLOADING.value), default=False
-    )
+    uploaded: bool = Field(alias=str(DocumentReferenceMetadataFields.UPLOADED.value))
+    uploading: bool = Field(alias=str(DocumentReferenceMetadataFields.UPLOADING.value))
     last_updated: int = Field(
         alias=str(DocumentReferenceMetadataFields.LAST_UPDATED.value),
         serialization_alias="lastUpdated",

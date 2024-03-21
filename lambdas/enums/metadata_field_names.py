@@ -10,7 +10,6 @@ class DocumentReferenceMetadataFields(Enum):
     FILE_LOCATION = "FileLocation"
     NHS_NUMBER = "NhsNumber"
     TTL = "TTL"
-    TYPE = "Type"
     VIRUS_SCANNER_RESULT = "VirusScannerResult"
     CURRENT_GP_ODS = "CurrentGpOds"
     UPLOADED = "Uploaded"
@@ -19,7 +18,9 @@ class DocumentReferenceMetadataFields(Enum):
 
     @staticmethod
     def list() -> list[str]:
-        return [str(field.value) for field in DocumentReferenceMetadataFields]
+        fields = [str(field.value) for field in DocumentReferenceMetadataFields]
+        fields.remove(DocumentReferenceMetadataFields.TTL.value)
+        return fields
 
 
 class DocumentZipTraceFields(Enum):

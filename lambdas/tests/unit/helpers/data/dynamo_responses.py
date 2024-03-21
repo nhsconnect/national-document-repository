@@ -3,7 +3,7 @@ MOCK_SEARCH_RESPONSE = {
         {
             "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
             "ContentType": "type",
-            "Created": "2023-08-23T13:38:04.095Z",
+            "Created": "2024-01-01T12:00:00.000Z",
             "Deleted": "",
             "FileLocation": "s3://test-s3-bucket/9000000009/test-key-123",
             "FileName": "document.csv",
@@ -12,12 +12,12 @@ MOCK_SEARCH_RESPONSE = {
             "CurrentGpOds": "Y12345",
             "Uploaded": True,
             "Uploading": False,
-            "LastUpdated": 1710776877,
+            "LastUpdated": 1704110400,  # Timestamp: 2024-01-01T12:00:00
         },
         {
             "ID": "4d8683b9-1665-40d2-8499-6e8302d507ff",
             "ContentType": "type",
-            "Created": "2023-08-23T13:38:04.095Z",
+            "Created": "2024-01-01T12:00:00.000Z",
             "Deleted": "",
             "FileLocation": "s3://test-s3-bucket/9000000009/test-key-223",
             "FileName": "results.pdf",
@@ -26,12 +26,12 @@ MOCK_SEARCH_RESPONSE = {
             "CurrentGpOds": "Y12345",
             "Uploaded": True,
             "Uploading": False,
-            "LastUpdated": 1710776877,
+            "LastUpdated": 1704110400,  # Timestamp: 2024-01-01T12:00:00
         },
         {
             "ID": "5d8683b9-1665-40d2-8499-6e8302d507ff",
             "ContentType": "type",
-            "Created": "2023-08-24T14:38:04.095Z",
+            "Created": "2024-01-01T12:00:00.000Z",
             "Deleted": "",
             "FileLocation": "s3://test-s3-bucket/9000000009/test-key-323",
             "FileName": "output.csv",
@@ -40,7 +40,7 @@ MOCK_SEARCH_RESPONSE = {
             "CurrentGpOds": "Y12345",
             "Uploaded": True,
             "Uploading": False,
-            "LastUpdated": 1710776877,
+            "LastUpdated": 1704110400,  # Timestamp: 2024-01-01T12:00:00
         },
     ],
     "Count": 3,

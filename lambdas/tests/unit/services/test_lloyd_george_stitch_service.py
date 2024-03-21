@@ -37,7 +37,7 @@ def build_lg_doc_ref(
             "CurrentGpOds": "Y12345",
             "Uploaded": "True",
             "Uploading": "False",
-            "LastUpdated": 1710776877,
+            "LastUpdated": 1704110400,
         },
     )
 
