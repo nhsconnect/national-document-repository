@@ -1,9 +1,7 @@
 import os
 
 from botocore.exceptions import ClientError
-from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
-from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
@@ -13,7 +11,7 @@ from services.base.s3_service import S3Service
 from services.document_deletion_service import DocumentDeletionService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
+from utils.common_query_filters import NotDeleted
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_files
@@ -183,21 +181,11 @@ class CreateDocumentReferenceService:
     ) -> None:
         logger.info("Looking for previous records for this patient...")
 
-        filter_out_soft_delete = (
-            DynamoQueryFilterBuilder()
-            .add_condition(
-                attribute=str(DocumentReferenceMetadataFields.DELETED.value),
-                attr_operator=AttributeOperator.EQUAL,
-                filter_value="",
-            )
-            .build()
-        )
-
         previous_records = (
             self.document_service.fetch_available_document_references_by_type(
-                nhs_number,
-                SupportedDocumentTypes.LG,
-                query_filter=filter_out_soft_delete,
+                nhs_number=nhs_number,
+                doc_type=SupportedDocumentTypes.LG,
+                query_filter=NotDeleted,
             )
         )
         if not previous_records:

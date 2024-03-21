@@ -7,6 +7,7 @@ from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import NotDeleted
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentDeletionServiceException
 
@@ -43,7 +44,7 @@ class DocumentDeletionService:
     ) -> list[DocumentReference]:
         try:
             results = self.document_service.fetch_available_document_references_by_type(
-                nhs_number, doc_type
+                nhs_number, doc_type, NotDeleted
             )
 
             if not results:

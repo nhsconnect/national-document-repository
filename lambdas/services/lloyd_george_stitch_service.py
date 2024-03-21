@@ -14,6 +14,7 @@ from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from services.pdf_stitch_service import stitch_pdf
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import UploadCompleted
 from utils.filename_utils import extract_page_number
 from utils.lambda_exceptions import LGStitchServiceException
 from utils.utilities import create_reference_id
@@ -96,8 +97,9 @@ class LloydGeorgeStitchService:
         self, nhs_number: str
     ) -> list[DocumentReference]:
         try:
+            # Temporarily set a query filter to stop error, please overwrite this by PRMDR-738
             return self.document_service.fetch_available_document_references_by_type(
-                nhs_number, SupportedDocumentTypes.LG
+                nhs_number, SupportedDocumentTypes.LG, UploadCompleted
             )
         except ClientError as e:
             logger.error(

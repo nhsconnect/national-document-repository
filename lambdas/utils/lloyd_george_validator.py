@@ -11,6 +11,7 @@ from requests import HTTPError
 from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import NotDeleted
 from utils.exceptions import (
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
@@ -64,7 +65,9 @@ def check_for_number_of_files_match_expected(file_name: str, total_files_number:
 def check_for_patient_already_exist_in_repo(nhs_number: str):
     document_service = DocumentService()
     documents_found = document_service.fetch_available_document_references_by_type(
-        nhs_number=nhs_number, doc_type=SupportedDocumentTypes.LG
+        nhs_number=nhs_number,
+        doc_type=SupportedDocumentTypes.LG,
+        query_filter=NotDeleted,
     )
 
     if documents_found:
