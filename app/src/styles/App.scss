@@ -291,38 +291,57 @@ $govuk-compatibility-govukelements: true;
         }
     }
     &_download-complete {
-        max-width: 620px;
+        width: 711px;
         &_details {
             &-content {
+                padding: 95px 76px;
                 text-align: center;
                 background-color: $color_nhsuk-blue;
                 color: #fff;
-                padding: 38px;
-                font-size: 20px;
+                font-size: 24px;
+                white-space: pre-wrap;
                 &_header {
+                    font-weight: 700;
                     font-size: 48px;
+                    margin-bottom: 25px;
                 }
                 &_subheader {
-                    font-size: 34px;
+                    font-weight: 700;
+                    margin-top: 25px;
+                }
+                &_description {
+                    font-size: 24px !important;
                 }
             }
+        }
+        &_paragraph-headers {
+            font-weight: 700;
+            font-size: 32px;
         }
     }
     &_upload-complete {
-        max-width: 660px;
+        max-width: 711px;
         &_card {
-            text-align: center;
-            background-color: $color_nhsuk-blue;
-            color: #fff;
-            padding: 38px;
-            font-size: 16px;
-            &_header {
-                font-size: 42px;
+            &_content {
+                padding: 95px 76px;
+                text-align: center;
+                background-color: $color_nhsuk-blue;
+                color: #fff;
+                font-weight: 400;
+                font-size: 24px !important;
+                white-space: pre-wrap;
+                &_header {
+                    font-weight: 700;
+                    font-size: 48px;
+                }
+                &_subheader {
+                    font-weight: 700;
+                    margin-top: 25px;
+                }
+                &_description {
+                    font-size: 24px !important;
+                }
             }
-        }
-        &_subheader {
-            font-size: 20px;
-            font-weight: 700;
         }
     }
     &_drag-and-drop {
@@ -371,12 +390,31 @@ $govuk-compatibility-govukelements: true;
     }
 }
 
-.deletion-complete-card {
-    text-align: center !important;
-    width: auto !important;
-    float: none !important;
-    background-color: $color_nhsuk-blue;
-    color: #fff;
+.deletion-complete {
+    width: 711px;
+    &_card {
+        &_content {
+            padding: 95px 76px;
+            text-align: center;
+            background-color: $color_nhsuk-blue;
+            color: #fff;
+            font-weight: 400;
+            font-size: 24px !important;
+            white-space: pre-wrap;
+            &_header {
+                font-weight: 700;
+                font-size: 48px;
+                margin-bottom: 25px;
+            }
+            &_subheader {
+                font-weight: 700;
+                margin-top: 25px;
+            }
+            &_description {
+                font-size: 24px !important;
+            }
+        }
+    }
 }
 
 .govuk-phase-banner {
