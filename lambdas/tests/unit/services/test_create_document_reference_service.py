@@ -20,6 +20,7 @@ def mock_create_doc_ref_service(mocker, set_env):
     create_doc_ref_service = CreateDocumentReferenceService()
     mocker.patch.object(create_doc_ref_service, "s3_service")
     mocker.patch.object(create_doc_ref_service, "dynamo_service")
+    mocker.patch.object(create_doc_ref_service, "document_service")
     yield create_doc_ref_service
 
 
@@ -51,6 +52,16 @@ def mock_create_reference_in_dynamodb(mock_create_doc_ref_service, mocker):
 @pytest.fixture()
 def mock_validate_lg(mocker):
     yield mocker.patch("services.create_document_reference_service.validate_lg_files")
+
+
+@pytest.fixture
+def mock_previous_lg_record(mocker, mock_create_doc_ref_service):
+    mock = mocker.patch.object(
+        mock_create_doc_ref_service.document_service,
+        "fetch_available_document_references_by_type",
+    )
+    mock.return_value = []
+    yield mock
 
 
 def test_create_document_reference_request_empty_list(
@@ -121,6 +132,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
+    mock_previous_lg_record,
 ):
     document_references = []
     side_effects = []
@@ -166,6 +178,7 @@ def test_create_document_reference_request_with_both_list(
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
+    mock_previous_lg_record,
 ):
     document_references = []
     lg_dictionaries = []
@@ -341,6 +354,7 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
         content_type="text/plain",
         file_name="test1.txt",
         doc_type=SupportedDocumentTypes.ARF.value,
+        uploading=True,
     )
 
 
@@ -373,6 +387,7 @@ def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
         content_type="application/pdf",
         file_name="1of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[25-12-2019].pdf",
         doc_type=SupportedDocumentTypes.LG.value,
+        uploading=True,
     )
 
 
