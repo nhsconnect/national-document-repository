@@ -177,7 +177,7 @@ class CreateDocumentReferenceService:
     def check_existing_lloyd_george_records(
         self,
         nhs_number: str,
-    ):
+    ) -> None:
         logger.info("Looking for previous records for this patient...")
 
         # Note for migrating to DynamoQueryFilterBuilder:
@@ -193,11 +193,27 @@ class CreateDocumentReferenceService:
             )
             return
 
-        records_not_uploaded = [
-            record for record in previous_records if not record.uploaded
-        ]
+        self.stop_if_all_records_uploaded(previous_records)
+        self.stop_if_upload_is_in_process(previous_records)
+        self.remove_records_of_failed_upload(nhs_number, previous_records)
 
-        if not records_not_uploaded:
+    def stop_if_upload_is_in_process(self, previous_records: list[DocumentReference]):
+        upload_is_in_process = any(
+            not record.uploaded
+            and record.uploading
+            and record.last_updated_within_three_minutes()
+            for record in previous_records
+        )
+        if upload_is_in_process:
+            logger.error(
+                "Found an on-going upload process for this patient. Will not process the new upload.",
+                {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
+            )
+            raise CreateDocumentRefException(423, LambdaError.CreateDocStillUploading)
+
+    def stop_if_all_records_uploaded(self, previous_records: list[DocumentReference]):
+        all_records_uploaded = all(record.uploaded for record in previous_records)
+        if all_records_uploaded:
             logger.info(
                 "The patient already has a full set of record. "
                 "We should not be processing the new Lloyd George record upload."
@@ -209,22 +225,6 @@ class CreateDocumentReferenceService:
             raise CreateDocumentRefException(
                 400, LambdaError.CreateDocRecordAlreadyInPlace
             )
-
-        if self.upload_is_ongoing(records_not_uploaded):
-            logger.error(
-                "Found an on-going upload process for this patient. Will not process the new upload.",
-                {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
-            )
-            raise CreateDocumentRefException(423, LambdaError.CreateDocStillUploading)
-
-        self.remove_records_of_failed_upload(nhs_number, previous_records)
-
-    @staticmethod
-    def upload_is_ongoing(records_not_uploaded: list[DocumentReference]) -> bool:
-        return any(
-            record.uploading and record.last_updated_within_three_minutes()
-            for record in records_not_uploaded
-        )
 
     def remove_records_of_failed_upload(
         self,
@@ -242,6 +242,5 @@ class CreateDocumentReferenceService:
             table_name=self.lg_dynamo_table,
             document_references=all_records,
             type_of_delete=S3LifecycleTags.SOFT_DELETE.value,
-            # as uploaded=False, file may be not existing in s3. better let staging bucket's expiration rule handle the deletion
             delete_s3_files=False,
         )
