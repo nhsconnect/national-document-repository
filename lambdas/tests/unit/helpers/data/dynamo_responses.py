@@ -10,8 +10,8 @@ MOCK_SEARCH_RESPONSE = {
             "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
             "CurrentGpOds": "Y12345",
-            "Uploaded": True,
-            "Uploading": False,
+            "Uploaded": "True",
+            "Uploading": "False",
             "LastUpdated": 1704110400,  # Timestamp: 2024-01-01T12:00:00
         },
         {
@@ -24,8 +24,8 @@ MOCK_SEARCH_RESPONSE = {
             "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
             "CurrentGpOds": "Y12345",
-            "Uploaded": True,
-            "Uploading": False,
+            "Uploaded": "True",
+            "Uploading": "False",
             "LastUpdated": 1704110400,  # Timestamp: 2024-01-01T12:00:00
         },
         {
@@ -38,8 +38,8 @@ MOCK_SEARCH_RESPONSE = {
             "NhsNumber": "9000000009",
             "VirusScannerResult": "Clean",
             "CurrentGpOds": "Y12345",
-            "Uploaded": True,
-            "Uploading": False,
+            "Uploaded": "True",
+            "Uploading": "False",
             "LastUpdated": 1704110400,  # Timestamp: 2024-01-01T12:00:00
         },
     ],

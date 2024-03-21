@@ -1,5 +1,6 @@
 from boto3.dynamodb.conditions import Attr, ConditionBase
 from enums.dynamo_filter import AttributeOperator, ConditionOperator
+from utils.exceptions import DynamoServiceException
 
 
 class DynamoQueryFilterBuilder:
@@ -24,7 +25,9 @@ class DynamoQueryFilterBuilder:
             case AttributeOperator.LESS_THAN_OR_EQUAL:
                 condition = Attr(attribute).lte(filter_value)
             case _:
-                raise ValueError(f"Unsupported attribute operator: {attr_operator}")
+                raise DynamoServiceException(
+                    f"Unsupported attribute filter operator: {attr_operator}"
+                )
 
         self.filter_conditions.append(condition)
         return self
@@ -35,7 +38,7 @@ class DynamoQueryFilterBuilder:
 
     def build(self) -> Attr | ConditionBase:
         if not self.filter_conditions:
-            return None
+            raise DynamoServiceException("Unable to build empty attribute filter")
 
         combined_condition = self.filter_conditions[0]
         for condition in self.filter_conditions[1:]:

@@ -3,6 +3,7 @@ from boto3.dynamodb.conditions import Attr
 from enums.dynamo_filter import AttributeOperator, ConditionOperator
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
+from utils.exceptions import DynamoServiceException
 
 
 @pytest.fixture
@@ -10,7 +11,7 @@ def dynamo_filter():
     return DynamoQueryFilterBuilder()
 
 
-def test_create_query_filter_builder_handles_single_equals_attribute_filter(
+def test_query_filter_builder_handles_single_equals_attribute_filter(
     dynamo_filter,
 ):
     expected = Attr("Deleted").eq("Test")
@@ -24,7 +25,7 @@ def test_create_query_filter_builder_handles_single_equals_attribute_filter(
     assert actual == expected
 
 
-def test_create_query_filter_builder_handles_single_not_equals_attribute_filter(
+def test_query_filter_builder_handles_single_not_equals_attribute_filter(
     dynamo_filter,
 ):
     expected = Attr("Deleted").ne("Test")
@@ -38,7 +39,7 @@ def test_create_query_filter_builder_handles_single_not_equals_attribute_filter(
     assert actual == expected
 
 
-def test_create_query_filter_builder_handles_single_less_than_attribute_filter(
+def test_query_filter_builder_handles_single_less_than_attribute_filter(
     dynamo_filter,
 ):
     expected = Attr("Deleted").lt("Test")
@@ -52,7 +53,7 @@ def test_create_query_filter_builder_handles_single_less_than_attribute_filter(
     assert actual == expected
 
 
-def test_create_query_filter_builder_handles_single_less_than_equal_to_attribute_filter(
+def test_query_filter_builder_handles_single_less_than_equal_to_attribute_filter(
     dynamo_filter,
 ):
     expected = Attr("Deleted").lte("Test")
@@ -66,7 +67,7 @@ def test_create_query_filter_builder_handles_single_less_than_equal_to_attribute
     assert actual == expected
 
 
-def test_create_query_filter_builder_handles_single_greater_than_attribute_filter(
+def test_query_filter_builder_handles_single_greater_than_attribute_filter(
     dynamo_filter,
 ):
     expected = Attr("Deleted").gt("Test")
@@ -80,7 +81,7 @@ def test_create_query_filter_builder_handles_single_greater_than_attribute_filte
     assert actual == expected
 
 
-def test_create_query_filter_builder_handles_single_greater_than_equal_to_attribute_filter(
+def test_query_filter_builder_handles_single_greater_than_equal_to_attribute_filter(
     dynamo_filter,
 ):
     expected = Attr("Deleted").gte("Test")
@@ -94,7 +95,7 @@ def test_create_query_filter_builder_handles_single_greater_than_equal_to_attrib
     assert actual == expected
 
 
-def test_create_query_filter_builder_handles_multiple_attributes_with_and_operator(
+def test_query_filter_builder_handles_multiple_attributes_with_and_operator(
     dynamo_filter,
 ):
     expected = Attr("Deleted").eq("Test") & Attr("FileName").eq("Test")
@@ -116,7 +117,7 @@ def test_create_query_filter_builder_handles_multiple_attributes_with_and_operat
     assert actual == expected
 
 
-def test_create_query_filter_builder_handles_multiple_attributes_with_or_operator(
+def test_query_filter_builder_handles_multiple_attributes_with_or_operator(
     dynamo_filter,
 ):
     expected = Attr("Deleted").eq("Test") | Attr("FileName").eq("Test")
@@ -137,3 +138,21 @@ def test_create_query_filter_builder_handles_multiple_attributes_with_or_operato
     )
 
     assert actual == expected
+
+
+def test_query_filter_builder_invalid_conditions_operator_raises_exception(
+    dynamo_filter,
+):
+    with pytest.raises(DynamoServiceException):
+        dynamo_filter.add_condition(
+            attribute=str(DocumentReferenceMetadataFields.DELETED.value),
+            attr_operator="invalid",
+            filter_value="Test",
+        )
+
+
+def test_query_filter_builder_empty_conditions_build_raises_exception(
+    dynamo_filter,
+):
+    with pytest.raises(DynamoServiceException):
+        dynamo_filter.build()
