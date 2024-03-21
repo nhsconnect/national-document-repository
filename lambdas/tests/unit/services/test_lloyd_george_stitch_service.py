@@ -1,5 +1,6 @@
 import json
 import tempfile
+from copy import copy
 
 import pytest
 from boto3.dynamodb.conditions import Attr, ConditionBase
@@ -190,6 +191,42 @@ def test_stitch_lloyd_george_record_raise_404_error_if_no_record_for_patient(
 
     assert e.value.status_code == 404
     assert e.value.err_code == "LGS_4001"
+
+
+def test_stitch_lloyd_george_record_raises_exception_when_uploading_in_process(
+    stitch_service, mocker
+):
+    stitch_service.document_service = mocker.MagicMock()
+
+    file_in_progress = copy(MOCK_LLOYD_GEORGE_DOCUMENT_REFS[0])
+    file_in_progress.uploaded = False
+    file_in_progress.uploading = True
+
+    stitch_service.document_service.fetch_available_document_references_by_type.return_value = [
+        file_in_progress
+    ]
+
+    with pytest.raises(LGStitchServiceException) as e:
+        stitch_service.get_lloyd_george_record_for_patient(TEST_NHS_NUMBER)
+
+    assert e.value.status_code == 423
+    assert e.value.err_code == "LGL_423"
+
+
+def test_stitch_lloyd_george_record_raises_exception_when_not_all_files_uploaded(
+    stitch_service, mocker
+):
+    stitch_service.document_service = mocker.MagicMock()
+
+    stitch_service.document_service.fetch_available_document_references_by_type.return_value = MOCK_LLOYD_GEORGE_DOCUMENT_REFS[
+        0:1
+    ]
+
+    with pytest.raises(LGStitchServiceException) as e:
+        stitch_service.get_lloyd_george_record_for_patient(TEST_NHS_NUMBER)
+
+    assert e.value.status_code == 400
+    assert e.value.err_code == "LGL_400"
 
 
 def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_get_dynamodb_record(

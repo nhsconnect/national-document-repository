@@ -1,4 +1,5 @@
 import os
+from copy import copy
 
 import pytest
 from enums.supported_document_types import SupportedDocumentTypes
@@ -132,6 +133,35 @@ def test_create_document_manifest_presigned_raises_exception_when_validation_err
 
     with pytest.raises(DocumentManifestServiceException):
         mock_service.create_document_manifest_presigned_url(SupportedDocumentTypes.ALL)
+
+
+def test_create_document_manifest_presigned_raises_exception_when_uploading_in_process(
+    mock_service, validation_error
+):
+    file_in_progress = copy(TEST_LLOYD_GEORGE_DOCUMENT_REFS[0])
+    file_in_progress.uploaded = False
+    file_in_progress.uploading = True
+
+    mock_service.document_service.fetch_available_document_references_by_type.return_value = [
+        file_in_progress
+    ]
+
+    with pytest.raises(DocumentManifestServiceException) as e:
+        mock_service.create_document_manifest_presigned_url(SupportedDocumentTypes.LG)
+
+    assert e.value.status_code == 423
+    assert e.value.err_code == "LGL_423"
+
+
+def test_create_document_manifest_presigned_raises_exception_when_not_all_files_uploaded(
+    mock_service, validation_error
+):
+    mock_service.document_service.fetch_available_document_references_by_type.return_value = TEST_LLOYD_GEORGE_DOCUMENT_REFS[
+        0:1
+    ]
+
+    with pytest.raises(DocumentManifestServiceException):
+        mock_service.create_document_manifest_presigned_url(SupportedDocumentTypes.LG)
 
 
 def test_create_document_manifest_presigned_raises_exception_when_documents_empty(
