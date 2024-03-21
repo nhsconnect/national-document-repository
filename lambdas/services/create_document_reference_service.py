@@ -208,7 +208,7 @@ class CreateDocumentReferenceService:
 
         self.stop_if_all_records_uploaded(previous_records)
         self.stop_if_upload_is_in_process(previous_records)
-        self.remove_records_of_failed_upload(nhs_number, previous_records)
+        self.remove_records_of_failed_lloyd_george_upload(nhs_number, previous_records)
 
     def stop_if_upload_is_in_process(self, previous_records: list[DocumentReference]):
         upload_is_in_process = any(
@@ -239,9 +239,8 @@ class CreateDocumentReferenceService:
                 400, LambdaError.CreateDocRecordAlreadyInPlace
             )
 
-    def remove_records_of_failed_upload(
+    def remove_records_of_failed_lloyd_george_upload(
         self,
-        nhs_number: str,
         failed_upload_records: list[DocumentReference],
     ):
         logger.info(
@@ -249,8 +248,8 @@ class CreateDocumentReferenceService:
             "Will delete those records before creating new document references."
         )
 
-        self.document_deletion_service.delete_specific_doc_type(
-            nhs_number, SupportedDocumentTypes.LG
+        self.document_service.delete_metadata_records(
+            table_name=self.lg_dynamo_table, document_references=failed_upload_records
         )
 
         for record in failed_upload_records:
