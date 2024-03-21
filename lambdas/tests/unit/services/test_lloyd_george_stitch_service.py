@@ -9,6 +9,7 @@ from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
+from utils.common_query_filters import UploadCompleted
 from utils.lambda_exceptions import LGStitchServiceException
 
 
@@ -84,7 +85,7 @@ def patched_stitch_service(set_env, mocker):
 
 @pytest.fixture
 def mock_fetch_doc_ref_by_type(mocker):
-    def mocked_method(nhs_number: str, doc_type: str):
+    def mocked_method(nhs_number: str, doc_type: str, _query_filter):
         if nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.LG:
             return MOCK_LLOYD_GEORGE_DOCUMENT_REFS
         return []
@@ -249,7 +250,7 @@ def test_get_lloyd_george_record_for_patient(
 
     assert actual == expected
     mock_fetch_doc_ref_by_type.assert_called_with(
-        TEST_NHS_NUMBER, SupportedDocumentTypes.LG
+        TEST_NHS_NUMBER, SupportedDocumentTypes.LG, UploadCompleted
     )
 
 
@@ -265,7 +266,7 @@ def test_get_lloyd_george_record_for_patient_return_empty_list_if_no_record(
 
     assert actual == expected
     mock_fetch_doc_ref_by_type.assert_called_with(
-        nhs_number_with_no_record, SupportedDocumentTypes.LG
+        nhs_number_with_no_record, SupportedDocumentTypes.LG, UploadCompleted
     )
 
 

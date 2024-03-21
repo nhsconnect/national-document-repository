@@ -14,7 +14,7 @@ TEST_NHS_NUMBER_WITH_NO_RECORD = "1234567890"
 TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD = "234567890"
 
 
-def mocked_document_query(nhs_number: str, doc_type: str):
+def mocked_document_query(nhs_number: str, doc_type: str, _query_filter=None):
     if nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.LG:
         return TEST_LG_DOC_STORE_REFERENCES
     elif nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.ARF:

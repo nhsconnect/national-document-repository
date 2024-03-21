@@ -13,6 +13,7 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
 )
 from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
+from utils.common_query_filters import NotDeleted
 from utils.exceptions import (
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
@@ -317,7 +318,9 @@ def test_check_for_patient_already_exist_in_repo_return_none_when_patient_record
     assert actual == expected
 
     mock_fetch_available_document_references_by_type.assert_called_with(
-        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG
+        nhs_number=TEST_NHS_NUMBER,
+        doc_type=SupportedDocumentTypes.LG,
+        query_filter=NotDeleted,
     )
 
 
@@ -332,7 +335,9 @@ def test_check_check_for_patient_already_exist_in_repo_raise_exception_when_pati
         check_for_patient_already_exist_in_repo(TEST_NHS_NUMBER)
 
     mock_fetch_available_document_references_by_type.assert_called_with(
-        nhs_number=TEST_NHS_NUMBER, doc_type=SupportedDocumentTypes.LG
+        nhs_number=TEST_NHS_NUMBER,
+        doc_type=SupportedDocumentTypes.LG,
+        query_filter=NotDeleted,
     )
 
 
