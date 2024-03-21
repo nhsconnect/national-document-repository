@@ -57,10 +57,10 @@ def test_get_file_key_raises_InvalidDocumentReferenceException():
         MOCK_DOCUMENT_REFERENCE.get_file_key()
 
 
-@freeze_time("2023-10-30T10:25:00Z")
+@freeze_time("2023-10-30T10:25:00")
 def test_last_updated_within_three_minutes_return_true_when_last_updated_is_less_than_3_minutes_ago():
     within_three_minutes = int(
-        datetime.fromisoformat("2023-10-30T10:22:01Z").timestamp()
+        datetime.fromisoformat("2023-10-30T10:22:01").timestamp()
     )
     MOCK_DOCUMENT_REFERENCE.last_updated = within_three_minutes
 
@@ -70,10 +70,10 @@ def test_last_updated_within_three_minutes_return_true_when_last_updated_is_less
     assert expected == actual
 
 
-@freeze_time("2023-10-30T10:25:00Z")
+@freeze_time("2023-10-30T10:25:00")
 def test_last_updated_within_three_minutes_return_false_when_last_updated_is_more_than_3_minutes_ago():
     more_than_three_minutes_ago = int(
-        datetime.fromisoformat("2023-10-30T10:21:59Z").timestamp()
+        datetime.fromisoformat("2023-10-30T10:21:59").timestamp()
     )
     MOCK_DOCUMENT_REFERENCE.last_updated = more_than_three_minutes_ago
 
