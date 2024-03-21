@@ -28,8 +28,10 @@ function LloydGeorgeUploadCompleteStage({ documents }: Props) {
                     <Card.Heading className="lloydgeorge_upload-complete_card_content_header">
                         Record uploaded for
                     </Card.Heading>
-                    <ReducedPatientInfo className={'lloydgeorge_upload-complete_subheader'} />
-                    <div className="lloydgeorge_upload-complete_subheader">
+                    <ReducedPatientInfo
+                        className={'lloydgeorge_upload-complete_card_content_subheader'}
+                    />
+                    <div className="lloydgeorge_upload-complete_card_content_subheader">
                         Date uploaded: {getFormattedDate(new Date())}
                     </div>
                 </Card.Content>
