@@ -208,7 +208,7 @@ class CreateDocumentReferenceService:
 
         self.stop_if_all_records_uploaded(previous_records)
         self.stop_if_upload_is_in_process(previous_records)
-        self.remove_records_of_failed_lloyd_george_upload(nhs_number, previous_records)
+        self.remove_records_of_failed_lloyd_george_upload(previous_records)
 
     def stop_if_upload_is_in_process(self, previous_records: list[DocumentReference]):
         upload_is_in_process = any(
