@@ -2,6 +2,7 @@ import json
 import tempfile
 
 import pytest
+from boto3.dynamodb.conditions import Attr, ConditionBase
 from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
@@ -9,6 +10,7 @@ from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
+from utils.dynamo_utils import filter_expression_for_available_docs
 from utils.lambda_exceptions import LGStitchServiceException
 
 
@@ -18,7 +20,10 @@ def build_lg_doc_ref_list(page_numbers: list[int]) -> list[DocumentReference]:
 
 
 def build_lg_doc_ref(
-    curr_page_number: int, total_page_number: int
+    curr_page_number: int,
+    total_page_number: int,
+    uploaded: str = "True",
+    uploading: str = "False",
 ) -> DocumentReference:
     file_name = (
         f"{curr_page_number}of{total_page_number}_"
@@ -35,8 +40,8 @@ def build_lg_doc_ref(
             "NhsNumber": TEST_NHS_NUMBER,
             "VirusScannerResult": "Clean",
             "CurrentGpOds": "Y12345",
-            "Uploaded": "True",
-            "Uploading": "False",
+            "Uploaded": uploaded,
+            "Uploading": uploading,
             "LastUpdated": 1704110400,
         },
     )
@@ -84,7 +89,9 @@ def patched_stitch_service(set_env, mocker):
 
 @pytest.fixture
 def mock_fetch_doc_ref_by_type(mocker):
-    def mocked_method(nhs_number: str, doc_type: str):
+    def mocked_method(
+        nhs_number: str, doc_type: str, query_filter: Attr | ConditionBase
+    ):
         if nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.LG:
             return MOCK_LLOYD_GEORGE_DOCUMENT_REFS
         return []
@@ -170,12 +177,16 @@ def test_stitch_lloyd_george_record_happy_path(
 
 
 def test_stitch_lloyd_george_record_raise_404_error_if_no_record_for_patient(
-    patched_stitch_service,
+    stitch_service, mocker
 ):
-    patched_stitch_service.get_lloyd_george_record_for_patient.return_value = []
+    stitch_service.document_service = mocker.MagicMock()
+
+    stitch_service.document_service.fetch_available_document_references_by_type.return_value = (
+        []
+    )
 
     with pytest.raises(LGStitchServiceException) as e:
-        patched_stitch_service.stitch_lloyd_george_record(TEST_NHS_NUMBER)
+        stitch_service.get_lloyd_george_record_for_patient(TEST_NHS_NUMBER)
 
     assert e.value.status_code == 404
     assert e.value.err_code == "LGS_4001"
@@ -244,28 +255,14 @@ def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_upload_stitched
 def test_get_lloyd_george_record_for_patient(
     stitch_service, mock_fetch_doc_ref_by_type
 ):
+    mock_filters = filter_expression_for_available_docs()
+
     expected = MOCK_LLOYD_GEORGE_DOCUMENT_REFS
     actual = stitch_service.get_lloyd_george_record_for_patient(TEST_NHS_NUMBER)
 
     assert actual == expected
     mock_fetch_doc_ref_by_type.assert_called_with(
-        TEST_NHS_NUMBER, SupportedDocumentTypes.LG
-    )
-
-
-def test_get_lloyd_george_record_for_patient_return_empty_list_if_no_record(
-    stitch_service, mock_fetch_doc_ref_by_type
-):
-    nhs_number_with_no_record = "1234567890"
-
-    expected = []
-    actual = stitch_service.get_lloyd_george_record_for_patient(
-        nhs_number_with_no_record
-    )
-
-    assert actual == expected
-    mock_fetch_doc_ref_by_type.assert_called_with(
-        nhs_number_with_no_record, SupportedDocumentTypes.LG
+        TEST_NHS_NUMBER, SupportedDocumentTypes.LG, query_filter=mock_filters
     )
 
 

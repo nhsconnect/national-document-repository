@@ -353,6 +353,14 @@ class LambdaError(Enum):
         "err_code": "GWY_5001",
         "message": "Failed to utilise AWS client/resource",
     }
+    UploadInProgressError = {
+        "err_code": "LGL_423",
+        "message": "Records are in the process of being uploaded",
+    }
+    IncompleteRecordError = {
+        "err_code": "LGL_400",
+        "message": "Incomplete record, Failed to create document manifest",
+    }
 
     MockError = {
         "message": "Client error",

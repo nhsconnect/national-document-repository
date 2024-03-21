@@ -1,12 +1,14 @@
 from typing import Literal
 
 from botocore.exceptions import ClientError
+from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.s3_lifecycle_tags import S3LifecycleTags
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentDeletionServiceException
 
@@ -42,8 +44,12 @@ class DocumentDeletionService:
         doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
     ) -> list[DocumentReference]:
         try:
+            filter_builder = DynamoQueryFilterBuilder()
+
+            filter_builder.add_condition("Deleted", AttributeOperator.EQUAL, "")
+            filter_expression = filter_builder.build()
             results = self.document_service.fetch_available_document_references_by_type(
-                nhs_number, doc_type
+                nhs_number, doc_type, filter_expression
             )
 
             if not results:

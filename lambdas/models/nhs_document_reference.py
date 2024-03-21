@@ -23,15 +23,16 @@ class NHSDocumentReference:
         current_gp_ods: str = "",
         sub_folder: str = "",
         doc_type: str = "",
+        uploading: bool = False,
     ) -> None:
-        date_now = datetime.now(timezone.utc).strftime(DATE_FORMAT)
+        date_now = datetime.now(timezone.utc)
 
         self.id = reference_id
         self.nhs_number = nhs_number
         self.content_type = content_type
         self.current_gp_ods = current_gp_ods
         self.file_name = file_name
-        self.created = date_now
+        self.created = date_now.strftime(DATE_FORMAT)
         self.s3_bucket_name = s3_bucket_name
         self.deleted = ""
         self.virus_scanner_result = "Not Scanned"
@@ -39,8 +40,8 @@ class NHSDocumentReference:
         self.sub_folder = sub_folder
         self.doc_type = doc_type
         self.file_location = self.set_file_location()
-        self.uploading = False
-        self.last_updated = date_now
+        self.uploading = uploading
+        self.last_updated = int(date_now.timestamp())
 
     def set_file_location(self):
         file_location = f"s3://{self.s3_bucket_name}"
