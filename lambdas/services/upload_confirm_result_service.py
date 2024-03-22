@@ -113,7 +113,7 @@ class UploadConfirmResultService:
         self.dynamo_service.update_item(
             table_name,
             document_reference,
-            {"Uploaded": True, "FileLocation": file_location},
+            {"Uploaded": True, "Uploading": False, "FileLocation": file_location},
         )
 
     def validate_number_of_documents(
