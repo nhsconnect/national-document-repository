@@ -13,7 +13,7 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.dynamo_utils import filter_expression_for_available_docs
+from utils.common_query_filters import UploadCompleted
 from utils.exceptions import DynamoServiceException, FileUploadInProgress
 from utils.lambda_exceptions import DocumentManifestServiceException
 from utils.lloyd_george_validator import (
@@ -41,12 +41,11 @@ class DocumentManifestService:
         self, doc_type: SupportedDocumentTypes
     ) -> str:
         try:
-            filter_expression = filter_expression_for_available_docs()
             documents = (
                 self.document_service.fetch_available_document_references_by_type(
                     nhs_number=self.nhs_number,
                     doc_type=doc_type,
-                    query_filter=filter_expression,
+                    query_filter=UploadCompleted,
                 )
             )
             file_in_progress_message = (
