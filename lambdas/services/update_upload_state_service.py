@@ -27,9 +27,7 @@ class UpdateUploadStateService:
                 doc_ref = file["reference"]
                 doc_type = file["type"]
                 uploaded = file["fields"][Fields.UPLOADING.value]
-                self.update_document(
-                    doc_ref=doc_ref, doc_type=doc_type, uploaded=uploaded["value"]
-                )
+                self.update_document(doc_ref, doc_type, uploaded)
         except (ValidationError, KeyError, TypeError) as e:
             logger.error(
                 f"{LambdaError.UpdateUploadStateValidation.to_str()} :{str(e)}",
