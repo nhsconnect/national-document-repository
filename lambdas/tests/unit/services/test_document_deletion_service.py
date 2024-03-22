@@ -14,7 +14,9 @@ TEST_NHS_NUMBER_WITH_NO_RECORD = "1234567890"
 TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD = "234567890"
 
 
-def mocked_document_query(nhs_number: str, doc_type: str, _query_filter=None):
+def mocked_document_query(
+    nhs_number: str, doc_type: SupportedDocumentTypes, filter_expression
+):
     if nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.LG:
         return TEST_LG_DOC_STORE_REFERENCES
     elif nhs_number == TEST_NHS_NUMBER and doc_type == SupportedDocumentTypes.ARF:
@@ -40,7 +42,8 @@ def mock_delete_doc(mocker):
 @pytest.fixture
 def mock_delete_specific_doc_type(mocker):
     def mocked_method(nhs_number: str, doc_type: SupportedDocumentTypes):
-        return mocked_document_query(nhs_number, doc_type)
+        filter_expression = None
+        return mocked_document_query(nhs_number, doc_type, filter_expression)
 
     yield mocker.patch.object(
         DocumentDeletionService,

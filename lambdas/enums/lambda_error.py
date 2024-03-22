@@ -365,6 +365,7 @@ class LambdaError(Enum):
         "err_code": "LGL_400",
         "message": "Incomplete record, Failed to create document manifest",
     }
+
     MockError = {
         "message": "Client error",
         "err_code": "AB_XXXX",

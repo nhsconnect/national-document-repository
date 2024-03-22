@@ -14,9 +14,14 @@ from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from services.pdf_stitch_service import stitch_pdf
 from utils.audit_logging_setup import LoggingService
-from utils.common_query_filters import UploadCompleted
+from utils.dynamo_utils import filter_expression_for_available_docs
+from utils.exceptions import FileUploadInProgress
 from utils.filename_utils import extract_page_number
 from utils.lambda_exceptions import LGStitchServiceException
+from utils.lloyd_george_validator import (
+    LGInvalidFilesException,
+    check_for_number_of_files_match_expected,
+)
 from utils.utilities import create_reference_id
 
 logger = LoggingService(__name__)
@@ -37,16 +42,6 @@ class LloydGeorgeStitchService:
     def stitch_lloyd_george_record(self, nhs_number: str) -> str:
         try:
             lg_records = self.get_lloyd_george_record_for_patient(nhs_number)
-            if len(lg_records) == 0:
-                logger.error(
-                    f"{LambdaError.StitchNotFound.to_str()}",
-                    {"Result": "Lloyd George stitching failed"},
-                )
-                raise LGStitchServiceException(
-                    404,
-                    LambdaError.StitchNotFound,
-                )
-
             ordered_lg_records = self.sort_documents_by_filenames(lg_records)
             all_lg_parts = self.download_lloyd_george_files(ordered_lg_records)
         except ClientError as e:
@@ -97,16 +92,58 @@ class LloydGeorgeStitchService:
         self, nhs_number: str
     ) -> list[DocumentReference]:
         try:
-            # Temporarily set a query filter to stop error, please overwrite this by PRMDR-738
-            return self.document_service.fetch_available_document_references_by_type(
-                nhs_number, SupportedDocumentTypes.LG, UploadCompleted
+            filter_expression = filter_expression_for_available_docs()
+            available_docs = (
+                self.document_service.fetch_available_document_references_by_type(
+                    nhs_number,
+                    SupportedDocumentTypes.LG,
+                    query_filter=filter_expression,
+                )
             )
+
+            file_in_progress_message = (
+                "The patients Lloyd George record is in the process of being uploaded"
+            )
+            if not available_docs:
+                logger.error(
+                    f"{LambdaError.StitchNotFound.to_str()}",
+                    {"Result": "Lloyd George stitching failed"},
+                )
+                raise LGStitchServiceException(
+                    404,
+                    LambdaError.StitchNotFound,
+                )
+            for document in available_docs:
+                if document.uploading and not document.uploaded:
+                    raise FileUploadInProgress(file_in_progress_message)
+
+            check_for_number_of_files_match_expected(
+                available_docs[0].file_name, len(available_docs)
+            )
+
+            return available_docs
         except ClientError as e:
             logger.error(
                 f"{LambdaError.StitchDB.to_str()}: {str(e)}",
                 {"Result": "Lloyd George stitching failed"},
             )
             raise LGStitchServiceException(500, LambdaError.StitchDB)
+        except FileUploadInProgress as e:
+            logger.error(
+                f"{LambdaError.UploadInProgressError.to_str()}: {str(e)}",
+                {"Result": "Lloyd George stitching failed"},
+            )
+            raise LGStitchServiceException(
+                status_code=423, error=LambdaError.UploadInProgressError
+            )
+        except LGInvalidFilesException as e:
+            logger.error(
+                f"{LambdaError.IncompleteRecordError.to_str()}: {str(e)}",
+                {"Result": "Failed to create document manifest"},
+            )
+            raise LGStitchServiceException(
+                status_code=400, error=LambdaError.IncompleteRecordError
+            )
 
     @staticmethod
     def sort_documents_by_filenames(
