@@ -19,6 +19,7 @@ import { isMock } from '../../helpers/utils/isLocal';
 import Spinner from '../../components/generic/spinner/Spinner';
 import { routes } from '../../types/generic/routes';
 import { useNavigate } from 'react-router';
+import { errorToParams } from '../../helpers/utils/errorToParams';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
@@ -173,6 +174,8 @@ function LloydGeorgeUploadPage() {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
                 navigate(routes.START);
+            } else if (error.response?.status === 423) {
+                navigate(routes.SERVER_ERROR + errorToParams(error));
             } else if (isMock(error)) {
                 setDocuments((prevState) =>
                     prevState.map((doc) => ({

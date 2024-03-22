@@ -30,6 +30,7 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
         downloadStage === DOWNLOAD_STAGE.NO_RECORDS && isAdminBsol && uploadJourneyEnabled;
     const renderNoRecords =
         downloadStage === DOWNLOAD_STAGE.NO_RECORDS && (!isAdminBsol || !uploadJourneyEnabled);
+    const renderUploadInProgress = downloadStage === DOWNLOAD_STAGE.UPLOADING;
 
     if (renderTimeout) {
         return (
@@ -76,6 +77,12 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
         );
     } else if (renderNoRecords) {
         return <span>No documents are available.</span>;
+    } else if (renderUploadInProgress) {
+        return (
+            <span>
+                You can view this record once it’s finished uploading. This may take a few minutes.
+            </span>
+        );
     }
     return <ServiceError message="An error has occurred when creating the Lloyd George preview." />;
 }

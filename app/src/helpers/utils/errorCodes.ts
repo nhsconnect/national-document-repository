@@ -30,6 +30,7 @@ const errorCodes: { [key: string]: string } = {
     FFL_5001: 'Failed to parse feature flag/s from AppConfig response',
     FFL_5002: 'Failed to retrieve feature flag/s from AppConfig profile',
     FFL_5003: 'Feature is not enabled',
+    LGL_423: 'Record is uploading. Wait a few minutes and try again',
 };
 
 export default errorCodes;
