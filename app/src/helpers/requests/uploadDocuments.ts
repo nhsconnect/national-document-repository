@@ -205,7 +205,7 @@ export const updateUploadDocumentState = async ({
             return {
                 reference: documentReference,
                 type: doc.docType,
-                fields: [{ fieldname: 'Uploading', value: `${uploading}` }],
+                fields: [{ Uploading: `${uploading}` }],
             };
         });
         const body = {
