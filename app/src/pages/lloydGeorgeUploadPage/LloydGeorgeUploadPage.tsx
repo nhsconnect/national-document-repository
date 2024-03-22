@@ -142,7 +142,7 @@ function LloydGeorgeUploadPage() {
         }
         uploadDocuments.forEach(async (document) => {
             const documentMetadata = uploadSession[document.file.name];
-            const documentReference = documentMetadata.fields.key.split('/')[3];
+            const documentReference = documentMetadata.fields.key;
             try {
                 await uploadDocumentToS3({ setDocuments, document, uploadSession });
                 setDocument(setDocuments, {
