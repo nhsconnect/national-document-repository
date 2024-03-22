@@ -8,6 +8,7 @@ import {
 import LloydGeorgeUploadPage from './LloydGeorgeUploadPage';
 import userEvent from '@testing-library/user-event';
 import uploadDocuments, {
+    updateDocumentState,
     uploadConfirmation,
     uploadDocumentToS3,
     virusScanResult,
@@ -25,6 +26,7 @@ const mockUploadDocuments = uploadDocuments as jest.Mock;
 const mockS3Upload = uploadDocumentToS3 as jest.Mock;
 const mockVirusScan = virusScanResult as jest.Mock;
 const mockUploadConfirmation = uploadConfirmation as jest.Mock;
+const mockUpdateDocumentState = updateDocumentState as jest.Mock;
 
 const mockPatient = buildPatientDetails();
 const lgFile = buildLgFile(1, 1, 'John Doe');
@@ -61,7 +63,7 @@ jest.mock(
     () => () => <h1>Mock file failed stage</h1>,
 );
 
-describe('UploadDocumentsPage', () => {
+describe('LloydGeorgeUploadDocumentsPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
