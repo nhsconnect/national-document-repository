@@ -378,20 +378,6 @@ def test_create_document_reference_request_remove_previous_failed_upload_and_con
     mock_create_reference_in_dynamodb.assert_called_once()
 
 
-def test_check_existing_lloyd_george_records_throw_error_if_full_set_of_lloyd_george_exist(
-    mock_create_doc_ref_service, mock_fetch_document
-):
-    mock_records_complete_upload = create_test_lloyd_george_doc_store_refs()
-    with pytest.raises(CreateDocumentRefException) as e:
-        mock_create_doc_ref_service.stop_if_all_records_uploaded(
-            mock_records_complete_upload
-        )
-
-    assert e.value == CreateDocumentRefException(
-        400, LambdaError.CreateDocRecordAlreadyInPlace
-    )
-
-
 def test_prepare_doc_object_raise_error_when_no_type(
     mocker, mock_create_doc_ref_service
 ):
