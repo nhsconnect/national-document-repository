@@ -53,8 +53,8 @@ class DocumentManifestService:
                 "The patients Lloyd George record is in the process of being uploaded"
             )
 
-            for doc in documents:
-                if doc.uploading and not doc.uploaded:
+            for document in documents:
+                if document.uploading and not document.uploaded:
                     raise FileUploadInProgress(file_in_progress_message)
 
             if not documents:

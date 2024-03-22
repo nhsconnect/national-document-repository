@@ -113,8 +113,8 @@ class LloydGeorgeStitchService:
                     404,
                     LambdaError.StitchNotFound,
                 )
-            for doc in available_docs:
-                if doc.uploading and not doc.uploaded:
+            for document in available_docs:
+                if document.uploading and not document.uploaded:
                     raise FileUploadInProgress(file_in_progress_message)
 
             check_for_number_of_files_match_expected(
