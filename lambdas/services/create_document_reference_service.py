@@ -207,11 +207,10 @@ class CreateDocumentReferenceService:
         )
         if upload_is_in_process:
             logger.error(
-                "Found an on-going upload process for this patient. Will not process the new upload.",
+                "Records are in the process of being uploaded. Will not process the new upload.",
                 {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
             )
-            # TODO: get the error code from another branch
-            raise CreateDocumentRefException(423, LambdaError.CreateDocStillUploading)
+            raise CreateDocumentRefException(423, LambdaError.UploadInProgressError)
 
     def stop_if_all_records_uploaded(self, previous_records: list[DocumentReference]):
         all_records_uploaded = all(record.uploaded for record in previous_records)
@@ -233,7 +232,7 @@ class CreateDocumentReferenceService:
         failed_upload_records: list[DocumentReference],
     ):
         logger.info(
-            "Found previous records of failed upload."
+            "Found previous records of failed upload. "
             "Will delete those records before creating new document references."
         )
 

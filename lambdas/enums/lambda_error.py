@@ -69,10 +69,6 @@ class LambdaError(Enum):
         "err_code": "CDR_4008",
         "message": "The patient already has a full set of record.",
     }
-    CreateDocStillUploading = {
-        "err_code": "CDR_4230",
-        "message": "The patients record is in the process of being uploaded, please try again in three minutes",
-    }
     CreateDocPresign = {
         "err_code": "CDR_5001",
         "message": "An error occurred when creating pre-signed url for document reference",
@@ -361,7 +357,14 @@ class LambdaError(Enum):
         "err_code": "GWY_5001",
         "message": "Failed to utilise AWS client/resource",
     }
-
+    UploadInProgressError = {
+        "err_code": "LGL_423",
+        "message": "Records are in the process of being uploaded",
+    }
+    IncompleteRecordError = {
+        "err_code": "LGL_400",
+        "message": "Incomplete record, Failed to create document manifest",
+    }
     MockError = {
         "message": "Client error",
         "err_code": "AB_XXXX",
