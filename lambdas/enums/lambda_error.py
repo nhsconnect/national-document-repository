@@ -313,6 +313,18 @@ class LambdaError(Enum):
     }
 
     """
+       Errors for Update Upload State lambda 
+    """
+    UpdateUploadStateMissingBody = {
+        "err_code": "US_4001",
+        "message": "Missing PUT request body",
+    }
+    UpdateUploadStateValidation = {
+        "err_code": "US_4002",
+        "message": "Missing fields",
+    }
+
+    """
        Errors with no exception
     """
     DocDelNull = {

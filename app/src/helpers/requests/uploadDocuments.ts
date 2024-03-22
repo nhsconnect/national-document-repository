@@ -45,6 +45,13 @@ type UploadConfirmationArgs = {
     uploadSession: UploadSession;
 };
 
+type UpdateUploadDocumentStateArgs = {
+    document: UploadDocument;
+    baseUrl: string;
+    baseHeaders: AuthHeaders;
+    documentReference: string;
+};
+
 export const virusScanResult = async ({
     documentReference,
     baseUrl,
@@ -178,6 +185,35 @@ const uploadDocuments = async ({
     } catch (e) {
         const error = e as AxiosError;
         throw error;
+    }
+};
+
+export const updateUploadDocumentState = async ({
+    document,
+    documentReference,
+    baseUrl,
+    baseHeaders,
+}: UpdateUploadDocumentStateArgs) => {
+    const virusScanGatewayUrl = baseUrl + endpoints.UPLOAD_DOCUMENT_STATE;
+    const body = {
+        files: [
+            {
+                reference: documentReference,
+                type: document.docType,
+                fields: [{ fieldname: 'Uploading', value: 'true' }],
+            },
+        ],
+    };
+    try {
+        const res = await axios.post(virusScanGatewayUrl, body, {
+            headers: {
+                ...baseHeaders,
+            },
+        });
+        console.log(res);
+        return res;
+    } catch (e) {
+        return DOCUMENT_UPLOAD_STATE.INFECTED;
     }
 };
 
