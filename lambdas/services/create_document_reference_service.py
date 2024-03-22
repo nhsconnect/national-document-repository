@@ -210,6 +210,7 @@ class CreateDocumentReferenceService:
                 "Found an on-going upload process for this patient. Will not process the new upload.",
                 {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
             )
+            # TODO: get the error code from another branch
             raise CreateDocumentRefException(423, LambdaError.CreateDocStillUploading)
 
     def stop_if_all_records_uploaded(self, previous_records: list[DocumentReference]):
@@ -232,17 +233,19 @@ class CreateDocumentReferenceService:
         failed_upload_records: list[DocumentReference],
     ):
         logger.info(
-            "Found previous record(s) of failed upload."
+            "Found previous records of failed upload."
             "Will delete those records before creating new document references."
         )
 
-        self.document_service.delete_metadata_records(
-            table_name=self.lg_dynamo_table, document_references=failed_upload_records
-        )
-
+        logger.info("Deleting files from s3...")
         for record in failed_upload_records:
             s3_bucket_name = record.get_file_bucket()
             file_key = record.get_file_key()
             self.s3_service.delete_object(s3_bucket_name, file_key)
+
+        logger.info("Deleting dynamodb record...")
+        self.document_service.delete_metadata_records(
+            table_name=self.lg_dynamo_table, document_references=failed_upload_records
+        )
 
         logger.info("Previous failed records are deleted.")
