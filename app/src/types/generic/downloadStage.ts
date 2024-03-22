@@ -6,4 +6,5 @@ export enum DOWNLOAD_STAGE {
     TIMEOUT = 'TIMEOUT',
     NO_RECORDS = 'NO_RECORDS',
     REFRESH = 'REFRESH',
+    UPLOADING = 'UPLOADING',
 }

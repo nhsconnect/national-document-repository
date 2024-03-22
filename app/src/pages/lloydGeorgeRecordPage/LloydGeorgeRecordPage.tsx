@@ -20,6 +20,7 @@ import { errorToParams } from '../../helpers/utils/errorToParams';
 import { isMock } from '../../helpers/utils/isLocal';
 import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
+import { ErrorResponse } from '../../types/generic/errorResponse';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -67,6 +68,8 @@ function LloydGeorgeRecordPage() {
                 }
             } catch (e) {
                 const error = e as AxiosError;
+                const errorResponse = (error.response?.data as ErrorResponse) ?? {};
+
                 if (isMock(error)) {
                     if (!!config.mockLocal.recordUploaded) {
                         onSuccess(1, moment().format(), '/dev/testFile.pdf', 59000);
@@ -76,10 +79,15 @@ function LloydGeorgeRecordPage() {
                 } else {
                     if (error.response?.status === 504) {
                         setDownloadStage(DOWNLOAD_STAGE.TIMEOUT);
-                    } else if (error.response?.status === 404) {
+                    } else if (
+                        error.response?.status === 404 ||
+                        (error.response?.status === 400 && errorResponse?.err_code === 'LGL_400')
+                    ) {
                         setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
                     } else if (error.response?.status && error.response?.status >= 500) {
                         navigate(routes.SERVER_ERROR + errorToParams(error));
+                    } else if (error.response?.status === 423) {
+                        setDownloadStage(DOWNLOAD_STAGE.UPLOADING);
                     } else {
                         setDownloadStage(DOWNLOAD_STAGE.FAILED);
                     }

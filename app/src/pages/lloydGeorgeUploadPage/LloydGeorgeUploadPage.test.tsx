@@ -8,6 +8,7 @@ import {
 import LloydGeorgeUploadPage from './LloydGeorgeUploadPage';
 import userEvent from '@testing-library/user-event';
 import uploadDocuments, {
+    updateDocumentState,
     uploadConfirmation,
     uploadDocumentToS3,
     virusScanResult,
@@ -20,13 +21,19 @@ jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../helpers/hooks/usePatient');
 jest.mock('react-router');
+// jest.mock('moment', () => {
+//     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+// });
+
 const mockedUsePatient = usePatient as jest.Mock;
 const mockUploadDocuments = uploadDocuments as jest.Mock;
 const mockS3Upload = uploadDocumentToS3 as jest.Mock;
 const mockVirusScan = virusScanResult as jest.Mock;
 const mockUploadConfirmation = uploadConfirmation as jest.Mock;
-
+const mockUpdateDocumentState = updateDocumentState as jest.Mock;
+const mockNavigate = jest.fn();
 const mockPatient = buildPatientDetails();
+
 const lgFile = buildLgFile(1, 1, 'John Doe');
 const uploadDocument = {
     file: lgFile,
@@ -48,6 +55,7 @@ jest.mock(
             </>
         ),
 );
+
 jest.mock(
     '../../components/blocks/lloydGeorgeUploadCompleteStage/LloydGeorgeUploadCompleteStage',
     () => () => <h1>Mock complete stage</h1>,
@@ -60,8 +68,11 @@ jest.mock(
     '../../components/blocks/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage',
     () => () => <h1>Mock file failed stage</h1>,
 );
+jest.mock('react-router', () => ({
+    useNavigate: () => mockNavigate,
+}));
 
-describe('UploadDocumentsPage', () => {
+describe('LloydGeorgeUploadDocumentsPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
@@ -235,4 +246,36 @@ describe('UploadDocumentsPage', () => {
             });
         });
     });
+    // describe('Navigating', () => {
+    //     it('navigates to Error page when call to lg record view return 423', async () => {
+    //         const errorResponse = {
+    //             response: {
+    //                 status: 423,
+    //                 data: { message: 'An error occurred', err_code: 'SP_1001' },
+    //             },
+    //         };
+    //         mockUploadDocuments.mockImplementation(() => Promise.reject(errorResponse));
+    //
+    //         render(<LloydGeorgeUploadPage />);
+    //         expect(
+    //             screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
+    //         ).toBeInTheDocument();
+    //         act(() => {
+    //             userEvent.upload(screen.getByTestId(`button-input`), [lgFile]);
+    //         });
+    //         expect(screen.getByText(lgFile.name)).toBeInTheDocument();
+    //         expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
+    //
+    //         act(() => {
+    //             userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+    //         });
+    //         expect(mockUploadDocuments).toHaveBeenCalled();
+    //
+    //         await waitFor(() => {
+    //             expect(mockNavigate).toHaveBeenCalledWith(
+    //                 routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+    //             );
+    //         });
+    //     });
+    // });
 });

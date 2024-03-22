@@ -7,6 +7,7 @@ import LloydGeorgeUploadCompleteStage from '../../components/blocks/lloydGeorgeU
 import LloydGeorgeUploadFailedStage from '../../components/blocks/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage';
 import { UploadSession } from '../../types/generic/uploadResult';
 import uploadDocuments, {
+    updateDocumentState,
     uploadConfirmation,
     uploadDocumentToS3,
     virusScanResult,
@@ -19,6 +20,7 @@ import { isMock } from '../../helpers/utils/isLocal';
 import Spinner from '../../components/generic/spinner/Spinner';
 import { routes } from '../../types/generic/routes';
 import { useNavigate } from 'react-router';
+import { errorToParams } from '../../helpers/utils/errorToParams';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
@@ -130,6 +132,7 @@ function LloydGeorgeUploadPage() {
         uploadDocuments.forEach(async (document) => {
             const documentMetadata = uploadSession[document.file.name];
             const documentReference = documentMetadata.fields.key;
+            const intervalTimer = startIntervalTimer(documentReference, document);
             try {
                 await uploadDocumentToS3({ setDocuments, document, uploadSession });
                 setDocument(setDocuments, {
@@ -142,18 +145,21 @@ function LloydGeorgeUploadPage() {
                     baseUrl,
                     baseHeaders,
                 });
+                window.clearInterval(intervalTimer);
                 setDocument(setDocuments, {
                     id: document.id,
                     state: virusDocumentState,
                     progress: 100,
                 });
             } catch (e) {
+                window.clearInterval(intervalTimer);
                 setDocument(setDocuments, {
                     id: document.id,
                     state: DOCUMENT_UPLOAD_STATE.FAILED,
                     attempts: document.attempts + 1,
                     progress: 0,
                 });
+                await updateDocumentUploadingState(documentReference, document, false);
             }
         });
     };
@@ -173,6 +179,8 @@ function LloydGeorgeUploadPage() {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
                 navigate(routes.START);
+            } else if (error.response?.status === 423) {
+                navigate(routes.SERVER_ERROR + errorToParams(error));
             } else if (isMock(error)) {
                 setDocuments((prevState) =>
                     prevState.map((doc) => ({
@@ -193,10 +201,27 @@ function LloydGeorgeUploadPage() {
             }
         }
     };
-
+    const updateDocumentUploadingState = async (
+        documentReference: string,
+        document: UploadDocument,
+        uploadingState: boolean,
+    ) => {
+        await updateDocumentState({
+            document,
+            uploadingState: uploadingState,
+            documentReference,
+            baseUrl,
+            baseHeaders,
+        });
+    };
     const restartUpload = () => {
         setDocuments([]);
         setStage(LG_UPLOAD_STAGE.SELECT);
+    };
+    const startIntervalTimer = (documentReference: string, document: UploadDocument) => {
+        return window.setInterval(async () => {
+            await updateDocumentUploadingState(documentReference, document, true);
+        }, 120000);
     };
 
     switch (stage) {
