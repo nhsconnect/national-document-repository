@@ -195,11 +195,12 @@ export const updateDocumentState = async ({
     baseUrl,
     baseHeaders,
 }: UpdateStateArgs) => {
+    const fileKey = documentReference.split('/')[3];
     const updateUploadStateUrl = baseUrl + endpoints.UPLOAD_DOCUMENT_STATE;
     const body = {
         files: [
             {
-                reference: documentReference,
+                reference: fileKey,
                 type: document.docType,
                 fields: { Uploading: uploadingState },
             },
