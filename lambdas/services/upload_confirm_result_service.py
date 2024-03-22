@@ -1,12 +1,14 @@
 import os
 
 from botocore.exceptions import ClientError
+from enums.dynamo_filter import AttributeOperator
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.lambda_exceptions import UploadConfirmResultException
 
 logger = LoggingService(__name__)
@@ -112,7 +114,7 @@ class UploadConfirmResultService:
         self.dynamo_service.update_item(
             table_name,
             document_reference,
-            {"Uploaded": True, "FileLocation": file_location},
+            {"Uploaded": True, "Uploading": False, "FileLocation": file_location},
         )
 
     def validate_number_of_documents(
@@ -121,9 +123,17 @@ class UploadConfirmResultService:
         logger.info(
             "Checking number of document references in list matches number of documents in dynamo table"
         )
+        filter_builder = DynamoQueryFilterBuilder()
 
+        filter_expression = (
+            filter_builder.add_condition("Deleted", AttributeOperator.EQUAL, "")
+            .add_condition("Uploading", AttributeOperator.EQUAL, True)
+            .build()
+        )
         items = self.document_service.fetch_available_document_references_by_type(
-            nhs_number=self.nhs_number, doc_type=doc_type
+            nhs_number=self.nhs_number,
+            doc_type=doc_type,
+            query_filter=filter_expression,
         )
 
         if len(items) != len(document_references):

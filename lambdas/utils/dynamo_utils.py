@@ -1,4 +1,8 @@
+from datetime import datetime
+
 import inflection
+from enums.dynamo_filter import AttributeOperator
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 
 
 def create_expressions(requested_fields: list) -> tuple[str, dict]:
@@ -107,3 +111,23 @@ def create_expression_attribute_placeholder(value: str) -> str:
         "#VirusScanResult_attr"
     """
     return f"#{inflection.camelize(value, uppercase_first_letter=True)}_attr"
+
+
+def filter_expression_for_available_docs():
+    filter_builder = DynamoQueryFilterBuilder()
+    time_limit = int(datetime.now().timestamp() - (60 * 3))
+
+    filter_builder.add_condition("Deleted", AttributeOperator.EQUAL, "")
+    delete_filter_expression = filter_builder.build()
+
+    filter_builder.add_condition("Uploaded", AttributeOperator.EQUAL, True)
+    uploaded_filter_expression = filter_builder.build()
+
+    filter_builder.add_condition(
+        "Uploading", AttributeOperator.EQUAL, True
+    ).add_condition("LastUpdated", AttributeOperator.GREATER_OR_EQUAL, time_limit)
+    uploading_filter_expression = filter_builder.build()
+
+    return delete_filter_expression & (
+        uploaded_filter_expression | uploading_filter_expression
+    )

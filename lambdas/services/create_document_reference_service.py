@@ -48,7 +48,7 @@ class CreateDocumentReferenceService:
             for document in documents_list:
                 document_reference = self.prepare_doc_object(nhs_number, document)
 
-                match (document_reference.doc_type):
+                match document_reference.doc_type:
                     case SupportedDocumentTypes.ARF.value:
                         arf_documents.append(document_reference)
                         arf_documents_dict_format.append(document_reference.to_dict())
@@ -91,7 +91,7 @@ class CreateDocumentReferenceService:
 
     def prepare_doc_object(
         self, nhs_number: str, document: dict
-    ) -> tuple[NHSDocumentReference, SupportedDocumentTypes]:
+    ) -> NHSDocumentReference:
         try:
             validated_doc: UploadRequestDocument = UploadRequestDocument.model_validate(
                 document
@@ -126,6 +126,7 @@ class CreateDocumentReferenceService:
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
             doc_type=document_type,
+            uploading=True,
         )
 
         return document_reference
