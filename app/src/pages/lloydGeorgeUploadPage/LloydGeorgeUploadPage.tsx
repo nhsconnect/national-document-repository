@@ -7,6 +7,7 @@ import LloydGeorgeUploadCompleteStage from '../../components/blocks/lloydGeorgeU
 import LloydGeorgeUploadFailedStage from '../../components/blocks/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage';
 import { UploadSession } from '../../types/generic/uploadResult';
 import uploadDocuments, {
+    updateUploadDocumentState,
     uploadConfirmation,
     uploadDocumentToS3,
     virusScanResult,
@@ -123,13 +124,25 @@ function LloydGeorgeUploadPage() {
         uploadSession,
     ]);
 
-    const uploadAndScanDocuments = (
+    const uploadAndScanDocuments = async (
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
+        try {
+            const uploadState = await updateUploadDocumentState({
+                uploading: true,
+                baseUrl,
+                baseHeaders,
+                uploadSession,
+                documents: uploadDocuments,
+            });
+            console.log(uploadState);
+        } catch (e) {
+            console.log(e);
+        }
         uploadDocuments.forEach(async (document) => {
             const documentMetadata = uploadSession[document.file.name];
-            const documentReference = documentMetadata.fields.key;
+            const documentReference = documentMetadata.fields.key.split('/')[3];
             try {
                 await uploadDocumentToS3({ setDocuments, document, uploadSession });
                 setDocument(setDocuments, {

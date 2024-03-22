@@ -46,10 +46,11 @@ type UploadConfirmationArgs = {
 };
 
 type UpdateUploadDocumentStateArgs = {
-    document: UploadDocument;
+    uploading: boolean;
+    documents: Array<UploadDocument>;
     baseUrl: string;
     baseHeaders: AuthHeaders;
-    documentReference: string;
+    uploadSession: UploadSession;
 };
 
 export const virusScanResult = async ({
@@ -189,22 +190,27 @@ const uploadDocuments = async ({
 };
 
 export const updateUploadDocumentState = async ({
-    document,
-    documentReference,
+    uploading,
+    documents,
+    uploadSession,
     baseUrl,
     baseHeaders,
 }: UpdateUploadDocumentStateArgs) => {
     const virusScanGatewayUrl = baseUrl + endpoints.UPLOAD_DOCUMENT_STATE;
-    const body = {
-        files: [
-            {
-                reference: documentReference,
-                type: document.docType,
-                fields: [{ fieldname: 'Uploading', value: 'true' }],
-            },
-        ],
-    };
+
     try {
+        const files = documents.map((doc) => {
+            const documentMetadata = uploadSession[doc.file.name];
+            const documentReference = documentMetadata.fields.key.split('/')[3];
+            return {
+                reference: documentReference,
+                type: doc.docType,
+                fields: [{ fieldname: 'Uploading', value: `${uploading}` }],
+            };
+        });
+        const body = {
+            files,
+        };
         const res = await axios.post(virusScanGatewayUrl, body, {
             headers: {
                 ...baseHeaders,
