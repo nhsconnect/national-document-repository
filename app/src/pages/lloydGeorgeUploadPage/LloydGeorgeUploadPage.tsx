@@ -7,6 +7,7 @@ import LloydGeorgeUploadCompleteStage from '../../components/blocks/lloydGeorgeU
 import LloydGeorgeUploadFailedStage from '../../components/blocks/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage';
 import { UploadSession } from '../../types/generic/uploadResult';
 import uploadDocuments, {
+    updateDocumentState,
     uploadConfirmation,
     uploadDocumentToS3,
     virusScanResult,
@@ -69,6 +70,7 @@ function LloydGeorgeUploadPage() {
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
     const confirmed = useRef(false);
     const navigate = useNavigate();
+    let timerID: NodeJS.Timeout;
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
@@ -95,6 +97,7 @@ function LloydGeorgeUploadPage() {
                     );
                     setStage(LG_UPLOAD_STAGE.COMPLETE);
                 } catch (e) {
+                    clearTimeout(timerID);
                     const error = e as AxiosError;
                     if (error.response?.status === 403) {
                         navigate(routes.START);
@@ -138,6 +141,7 @@ function LloydGeorgeUploadPage() {
                     state: DOCUMENT_UPLOAD_STATE.SCANNING,
                     progress: 'scan',
                 });
+                clearTimeout(timerID);
                 const virusDocumentState = await virusScanResult({
                     documentReference,
                     baseUrl,
@@ -149,6 +153,7 @@ function LloydGeorgeUploadPage() {
                     progress: 100,
                 });
             } catch (e) {
+                clearTimeout(timerID);
                 setDocument(setDocuments, {
                     id: document.id,
                     state: DOCUMENT_UPLOAD_STATE.FAILED,
@@ -161,6 +166,7 @@ function LloydGeorgeUploadPage() {
 
     const submitDocuments = async () => {
         try {
+            clearTimeout(timerID);
             setStage(LG_UPLOAD_STAGE.UPLOAD);
             const uploadSession = await uploadDocuments({
                 nhsNumber,
@@ -170,7 +176,9 @@ function LloydGeorgeUploadPage() {
             });
             setUploadSession(uploadSession);
             uploadAndScanDocuments(documents, uploadSession);
+            startTimer(120000, uploadSession);
         } catch (e) {
+            clearTimeout(timerID);
             const error = e as AxiosError;
             if (error.response?.status === 403) {
                 navigate(routes.START);
@@ -201,7 +209,19 @@ function LloydGeorgeUploadPage() {
         setDocuments([]);
         setStage(LG_UPLOAD_STAGE.SELECT);
     };
-
+    const startTimer = (delayTime: number, uploadSession: UploadSession) => {
+        clearTimeout(timerID);
+        timerID = setTimeout(async () => {
+            await updateDocumentState({
+                documents,
+                uploadingState: true,
+                uploadSession,
+                baseUrl,
+                baseHeaders,
+            });
+        }, delayTime);
+        startTimer(delayTime, uploadSession);
+    };
     switch (stage) {
         case LG_UPLOAD_STAGE.SELECT:
             return (
