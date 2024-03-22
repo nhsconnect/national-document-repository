@@ -42,7 +42,7 @@ class UpdateUploadStateService:
         self.dynamo_service.update_item(
             table_name=table,
             key=doc_ref,
-            updated_fields=self.format_status_update(updated_fields),
+            updated_fields=self.format_update(updated_fields),
         )
 
     def format_update(self, fields):
