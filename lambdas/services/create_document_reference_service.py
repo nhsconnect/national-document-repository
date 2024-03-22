@@ -243,7 +243,7 @@ class CreateDocumentReferenceService:
             self.s3_service.delete_object(s3_bucket_name, file_key)
 
         logger.info("Deleting dynamodb record...")
-        self.document_service.delete_metadata_records(
+        self.document_service.hard_delete_metadata_records(
             table_name=self.lg_dynamo_table, document_references=failed_upload_records
         )
 

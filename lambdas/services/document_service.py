@@ -123,11 +123,12 @@ class DocumentService:
                 table_name, reference.id, updated_fields=update_fields
             )
 
-    def delete_metadata_records(
+    def hard_delete_metadata_records(
         self, table_name: str, document_references: list[DocumentReference]
     ):
+        logger.info(f"Deleting items in table: {table_name} (HARD DELETE)")
         primary_key_name = DocumentReferenceMetadataFields.ID.value
         for reference in document_references:
             primary_key_value = reference.id
             deletion_key = {primary_key_name: primary_key_value}
-            self.dynamo_service.delete_item(table_name, key=deletion_key)
+            self.dynamo_service.delete_item(table_name, deletion_key)
