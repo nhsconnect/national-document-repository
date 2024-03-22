@@ -159,6 +159,7 @@ function LloydGeorgeUploadPage() {
                     attempts: document.attempts + 1,
                     progress: 0,
                 });
+                await updateDocumentUploadingState(documentReference, document, false);
             }
         });
     };
@@ -200,20 +201,26 @@ function LloydGeorgeUploadPage() {
             }
         }
     };
-
+    const updateDocumentUploadingState = async (
+        documentReference: string,
+        document: UploadDocument,
+        uploadingState: boolean,
+    ) => {
+        await updateDocumentState({
+            document,
+            uploadingState: uploadingState,
+            documentReference,
+            baseUrl,
+            baseHeaders,
+        });
+    };
     const restartUpload = () => {
         setDocuments([]);
         setStage(LG_UPLOAD_STAGE.SELECT);
     };
     const startIntervalTimer = (documentReference: string, document: UploadDocument) => {
         return window.setInterval(async () => {
-            await updateDocumentState({
-                document,
-                uploadingState: true,
-                documentReference,
-                baseUrl,
-                baseHeaders,
-            });
+            await updateDocumentUploadingState(documentReference, document, true);
         }, 120000);
     };
 
