@@ -1,6 +1,7 @@
 import viewLloydGeorgePayload from '../../../fixtures/requests/GET_LloydGeorgeStitch.json';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
 import { Roles } from '../../../support/roles';
+import { formatNhsNumber } from '../../../../src/helpers/utils/formatNhsNumber';
 
 const baseUrl = Cypress.config('baseUrl');
 const searchPatientUrl = '/search/patient';
@@ -61,7 +62,9 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.contains(
                     `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
                 ).should('be.visible');
-                cy.contains(`NHS number: 900 000 0009`).should('be.visible');
+                cy.contains(
+                    `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
+                ).should('be.visible');
 
                 // Assert file has been downloaded
                 cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
