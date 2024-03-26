@@ -26,6 +26,8 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../types/generic/inputRef';
 import BackButton from '../../generic/backButton/BackButton';
+import { routes } from '../../../types/generic/routes';
+import { useNavigate } from 'react-router-dom';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -49,6 +51,8 @@ function LloydGeorgeRecordStage({
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
     const patientDetails = usePatient();
+    const navigate = useNavigate();
+
     const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
@@ -246,6 +250,14 @@ function LloydGeorgeRecordStage({
             ) : (
                 <PdfViewer fileUrl={lloydGeorgeUrl} />
             )}
+            <ButtonLink
+                onClick={(e) => {
+                    e.preventDefault();
+                    navigate(routes.ANALYSE_LLOYD_GEORGE);
+                }}
+            >
+                Analyse this document
+            </ButtonLink>
         </div>
     );
 }

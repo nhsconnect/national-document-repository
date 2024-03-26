@@ -6,7 +6,7 @@ type Args = {
     baseHeaders: AuthHeaders;
 };
 const getLloydGeorgeAnalysis = async ({ baseUrl, baseHeaders }: Args) => {
-    const gatewayUrl = baseUrl + endpoints.FEEDBACK;
+    const gatewayUrl = baseUrl + endpoints.MEDICAL_ANALYSIS;
 
     try {
         const { data } = await axios.get(gatewayUrl, {
