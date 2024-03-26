@@ -69,6 +69,9 @@ function LloydGeorgeMedicalSummaryPage() {
         }
     };
     const medications = searchResults?.MEDICATION ?? {};
+    const medicalConditions = searchResults?.MEDICAL_CONDITION ?? {};
+    const anatomy = searchResults?.ANATOMY ?? {};
+    const treatmentProcedure = searchResults?.TEST_TREATMENT_PROCEDURE ?? {};
 
     return !isAnalysingDocuments ? (
         <Button type="button" id="upload-button" onClick={() => analyseLG}>
@@ -87,7 +90,6 @@ function LloydGeorgeMedicalSummaryPage() {
             </div>
             <div className="nhsuk-tabs" data-module="nhsuk-tabs">
                 <h2 className="nhsuk-tabs__title">Contents</h2>
-
                 <ul className="nhsuk-tabs__list">
                     <li className="nhsuk-tabs__list-item nhsuk-tabs__list-item--selected">
                         <a className="nhsuk-tabs__tab" href="#Medication">
@@ -113,7 +115,6 @@ function LloydGeorgeMedicalSummaryPage() {
                         </a>
                     </li>
                 </ul>
-
                 <div className="nhsuk-tabs__panel" id="Medication">
                     <Table.Body>
                         {Object.keys(medications).map((medication: string) => {
@@ -131,18 +132,60 @@ function LloydGeorgeMedicalSummaryPage() {
                         })}
                     </Table.Body>{' '}
                 </div>
-
                 <div
                     className="nhsuk-tabs__panel nhsuk-tabs__panel--hidden"
                     id="Medical-conditions"
-                ></div>
-
+                >
+                    <Table.Body>
+                        {Object.keys(medicalConditions).map((condition: string) => {
+                            const pageNumbers = medicalConditions[condition].map(
+                                (field) => field.PageNumber,
+                            );
+                            return (
+                                <Table.Row key={condition}>
+                                    <Table.Cell>
+                                        <div>{condition}</div>
+                                    </Table.Cell>
+                                    <Table.Cell>{pageNumbers}</Table.Cell>
+                                </Table.Row>
+                            );
+                        })}
+                    </Table.Body>{' '}
+                </div>
                 <div className="nhsuk-tabs__panel nhsuk-tabs__panel--hidden" id="Anatomy"></div>
-
+                <Table.Body>
+                    {Object.keys(anatomy).map((anatomyKey: string) => {
+                        const pageNumbers = anatomy[anatomyKey].map((field) => field.PageNumber);
+                        return (
+                            <Table.Row key={anatomyKey}>
+                                <Table.Cell>
+                                    <div>{anatomyKey}</div>
+                                </Table.Cell>
+                                <Table.Cell>{pageNumbers}</Table.Cell>
+                            </Table.Row>
+                        );
+                    })}
+                </Table.Body>{' '}
                 <div
                     className="nhsuk-tabs__panel nhsuk-tabs__panel--hidden"
                     id="Test-treatment-procedure"
-                ></div>
+                >
+                    <Table.Body>
+                        {Object.keys(treatmentProcedure).map((treatmentProcedureKey: string) => {
+                            const pageNumbers = anatomy[treatmentProcedureKey].map(
+                                (field) => field.PageNumber,
+                            );
+                            return (
+                                <Table.Row key={treatmentProcedureKey}>
+                                    <Table.Cell>
+                                        <div>{treatmentProcedureKey}</div>
+                                    </Table.Cell>
+                                    <Table.Cell>{pageNumbers}</Table.Cell>
+                                </Table.Row>
+                            );
+                        })}
+                    </Table.Body>{' '}
+                </div>
             </div>
         </div>
     );

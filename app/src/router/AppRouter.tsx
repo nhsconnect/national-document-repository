@@ -23,6 +23,7 @@ import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
 import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
 import PrivacyPage from '../pages/privacyPage/PrivacyPage';
 import LloydGeorgeUploadPage from '../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
+import LloydGeorgeMedicalSummaryPage from '../pages/lloydGeorgeMedicalSummayPage/LloydGeorgeMedicalSummayPage';
 
 const {
     START,
@@ -42,6 +43,7 @@ const {
     LLOYD_GEORGE_UPLOAD,
     ARF_DOWNLOAD_DOCUMENTS,
     ARF_UPLOAD_DOCUMENTS,
+    ANALYSE_LLOYD_GEORGE,
 } = routes;
 
 type Routes = {
@@ -107,6 +109,11 @@ export const routeMap: Routes = {
     },
     [LLOYD_GEORGE]: {
         page: <LloydGeorgeRecordPage />,
+        type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.PCSE],
+    },
+    [ANALYSE_LLOYD_GEORGE]: {
+        page: <LloydGeorgeMedicalSummaryPage />,
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.PCSE],
     },
