@@ -15,4 +15,5 @@ export enum endpoints {
     FEATURE_FLAGS = '/FeatureFlags',
     VIRUS_SCAN = '/VirusScan',
     UPLOAD_CONFIRMATION = '/UploadConfirm',
+    MEDICAL_ANALYSIS = '/MedicalAnalysis',
 }
