@@ -3,11 +3,15 @@ import os
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
+from models.document_reference import DocumentReference
 from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
+from services.document_deletion_service import DocumentDeletionService
+from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import NotDeleted
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_files
@@ -28,6 +32,8 @@ class CreateDocumentReferenceService:
     def __init__(self):
         self.s3_service = S3Service()
         self.dynamo_service = DynamoDBService()
+        self.document_service = DocumentService()
+        self.document_deletion_service = DocumentDeletionService()
 
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
@@ -70,6 +76,7 @@ class CreateDocumentReferenceService:
 
             if lg_documents:
                 validate_lg_files(lg_documents, nhs_number)
+                self.check_existing_lloyd_george_records(nhs_number)
 
                 self.create_reference_in_dynamodb(
                     self.lg_dynamo_table, lg_documents_dict_format
@@ -167,3 +174,77 @@ class CreateDocumentReferenceService:
                 {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
             )
             raise CreateDocumentRefException(500, LambdaError.CreateDocUpload)
+
+    def check_existing_lloyd_george_records(
+        self,
+        nhs_number: str,
+    ) -> None:
+        logger.info("Looking for previous records for this patient...")
+
+        previous_records = (
+            self.document_service.fetch_available_document_references_by_type(
+                nhs_number=nhs_number,
+                doc_type=SupportedDocumentTypes.LG,
+                query_filter=NotDeleted,
+            )
+        )
+        if not previous_records:
+            logger.info(
+                "No record was found for this patient. Will continue to create doc ref."
+            )
+            return
+
+        self.stop_if_all_records_uploaded(previous_records)
+        self.stop_if_upload_is_in_process(previous_records)
+        self.remove_records_of_failed_lloyd_george_upload(previous_records)
+
+    def stop_if_upload_is_in_process(self, previous_records: list[DocumentReference]):
+        upload_is_in_process = any(
+            not record.uploaded
+            and record.uploading
+            and record.last_updated_within_three_minutes()
+            for record in previous_records
+        )
+        if upload_is_in_process:
+            logger.error(
+                "Records are in the process of being uploaded. Will not process the new upload.",
+                {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
+            )
+            raise CreateDocumentRefException(423, LambdaError.UploadInProgressError)
+
+    def stop_if_all_records_uploaded(self, previous_records: list[DocumentReference]):
+        all_records_uploaded = all(record.uploaded for record in previous_records)
+        if all_records_uploaded:
+            logger.info(
+                "The patient already has a full set of record. "
+                "We should not be processing the new Lloyd George record upload."
+            )
+            logger.error(
+                f"{LambdaError.CreateDocRecordAlreadyInPlace.to_str()}",
+                {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
+            )
+            raise CreateDocumentRefException(
+                400, LambdaError.CreateDocRecordAlreadyInPlace
+            )
+
+    def remove_records_of_failed_lloyd_george_upload(
+        self,
+        failed_upload_records: list[DocumentReference],
+    ):
+        logger.info(
+            "Found previous records of failed upload. "
+            "Will delete those records before creating new document references."
+        )
+
+        logger.info("Deleting files from s3...")
+        for record in failed_upload_records:
+            s3_bucket_name = record.get_file_bucket()
+            file_key = record.get_file_key()
+            self.s3_service.delete_object(s3_bucket_name, file_key)
+
+        logger.info("Deleting dynamodb record...")
+        self.document_service.hard_delete_metadata_records(
+            table_name=self.lg_dynamo_table, document_references=failed_upload_records
+        )
+
+        logger.info("Previous failed records are deleted.")

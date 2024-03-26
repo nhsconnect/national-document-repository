@@ -337,3 +337,23 @@ def test_update_documents(mock_service, mock_dynamo_service):
     mock_dynamo_service.update_item.assert_has_calls(
         [update_item_call, update_item_call]
     )
+
+
+def test_hard_delete_metadata_records(mock_service, mock_dynamo_service):
+    test_doc_refs = [
+        DocumentReference.model_validate(mock_document)
+        for mock_document in MOCK_SEARCH_RESPONSE["Items"][:2]
+    ]
+    expected_deletion_keys = [
+        {DocumentReferenceMetadataFields.ID.value: doc_ref.id}
+        for doc_ref in test_doc_refs
+    ]
+
+    mock_service.hard_delete_metadata_records(MOCK_TABLE_NAME, test_doc_refs)
+
+    mock_dynamo_service.delete_item.assert_has_calls(
+        [
+            call(MOCK_TABLE_NAME, expected_deletion_keys[0]),
+            call(MOCK_TABLE_NAME, expected_deletion_keys[1]),
+        ]
+    )

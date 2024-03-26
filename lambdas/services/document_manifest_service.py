@@ -13,8 +13,8 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.dynamo_utils import filter_expression_for_available_docs
-from utils.exceptions import DynamoServiceException, FileUploadInProgress
+from utils.common_query_filters import UploadCompleted
+from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentManifestServiceException
 from utils.lloyd_george_validator import (
     LGInvalidFilesException,
@@ -41,21 +41,13 @@ class DocumentManifestService:
         self, doc_type: SupportedDocumentTypes
     ) -> str:
         try:
-            filter_expression = filter_expression_for_available_docs()
             documents = (
                 self.document_service.fetch_available_document_references_by_type(
                     nhs_number=self.nhs_number,
                     doc_type=doc_type,
-                    query_filter=filter_expression,
+                    query_filter=UploadCompleted,
                 )
             )
-            file_in_progress_message = (
-                "The patients Lloyd George record is in the process of being uploaded"
-            )
-
-            for document in documents:
-                if document.uploading and not document.uploaded:
-                    raise FileUploadInProgress(file_in_progress_message)
 
             if not documents:
                 logger.error(
@@ -85,14 +77,6 @@ class DocumentManifestService:
             )
             raise DocumentManifestServiceException(
                 status_code=500, error=LambdaError.ManifestDB
-            )
-        except FileUploadInProgress as e:
-            logger.error(
-                f"{LambdaError.UploadInProgressError.to_str()}: {str(e)}",
-                {"Result": "Failed to create document manifest"},
-            )
-            raise DocumentManifestServiceException(
-                status_code=423, error=LambdaError.UploadInProgressError
             )
         except LGInvalidFilesException as e:
             logger.error(
