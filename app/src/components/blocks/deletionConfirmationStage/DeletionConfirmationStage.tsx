@@ -3,12 +3,11 @@ import { ButtonLink, Card } from 'nhsuk-react-components';
 import { routes } from '../../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
-import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
-import usePatient from '../../../helpers/hooks/usePatient';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
+import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
 
 export type Props = {
     numberOfFiles: number;
@@ -18,9 +17,6 @@ export type Props = {
 
 function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }: Props) {
     const navigate = useNavigate();
-    const patientDetails = usePatient();
-    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
-    const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const role = useRole();
     const handleClick = () => {
         if (setStage && setDownloadStage) {
@@ -31,21 +27,17 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
     const isGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
     return (
         <div className="deletion-complete">
-            <Card style={{ maxWidth: '620px' }} className="deletion-complete-card">
-                <Card.Content>
-                    <Card.Heading style={{ margin: 'auto' }}>Deletion complete</Card.Heading>
-                    <Card.Description style={{ fontSize: '16px' }}>
-                        {numberOfFiles} file{numberOfFiles !== 1 && 's'} from the{' '}
-                        {isGP && 'Lloyd George '}
+            <Card className="deletion-complete_card">
+                <Card.Content className="deletion-complete_card_content">
+                    <Card.Heading className="deletion-complete_card_content_header">
+                        Deletion complete
+                    </Card.Heading>
+                    <Card.Description className="deletion-complete_card_content_description">
+                        You have successfully deleted {numberOfFiles} file(s){'\n'}
+                        from the {isGP && 'Lloyd George '}
                         record of:{' '}
                     </Card.Description>
-                    <Card.Description style={{ fontWeight: '700', fontSize: '24px' }}>
-                        {patientDetails?.givenName?.map((name) => `${name} `)}
-                        {patientDetails?.familyName}
-                    </Card.Description>
-                    <Card.Description style={{ fontSize: '16px' }}>
-                        (NHS number: {formattedNhsNumber})
-                    </Card.Description>
+                    <ReducedPatientInfo className={'deletion-complete_card_content_subheader'} />
                 </Card.Content>
             </Card>
             <p style={{ marginTop: 40 }}>

@@ -1,6 +1,7 @@
 import viewLloydGeorgePayload from '../../../fixtures/requests/GET_LloydGeorgeStitch.json';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
 import { Roles, roleName } from '../../../support/roles';
+import { formatNhsNumber } from '../../../../src/helpers/utils/formatNhsNumber';
 
 const baseUrl = Cypress.config('baseUrl');
 const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
@@ -211,9 +212,13 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 // assert delete success page is as expected
                 cy.contains('Deletion complete').should('be.visible');
-                cy.contains('12 files from the Lloyd George record of:').should('be.visible');
+                cy.contains(
+                    'You have successfully deleted 12 file(s) from the Lloyd George record of:',
+                ).should('be.visible');
                 cy.contains('GivenName Surname').should('be.visible');
-                cy.contains('(NHS number: 900 000 0009)').should('be.visible');
+                cy.contains(
+                    `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
+                ).should('be.visible');
 
                 cy.getByTestId('lg-return-btn').click();
 

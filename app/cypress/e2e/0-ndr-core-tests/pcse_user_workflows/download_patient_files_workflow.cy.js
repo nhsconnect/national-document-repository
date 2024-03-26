@@ -1,5 +1,6 @@
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatient.json';
 import { Roles } from '../../../support/roles';
+import { formatNhsNumber } from '../../../../src/helpers/utils/formatNhsNumber';
 
 describe('PCSE Workflow: Access and download found files', () => {
     // env vars
@@ -263,9 +264,13 @@ describe('PCSE Workflow: Access and download found files', () => {
 
                 // assert delete success page is as expected
                 cy.contains('Deletion complete').should('be.visible');
-                cy.contains('2 files from the record of:').should('be.visible');
+                cy.contains('You have successfully deleted 2 file(s) from the record of:').should(
+                    'be.visible',
+                );
                 cy.contains('GivenName Surname').should('be.visible');
-                cy.contains('(NHS number: 900 000 0009)').should('be.visible');
+                cy.contains(
+                    `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
+                ).should('be.visible');
             },
         );
 
