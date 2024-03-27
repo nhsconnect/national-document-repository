@@ -54,7 +54,7 @@ function LloydGeorgeMedicalSummaryPage() {
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const [searchResults, setSearchResults] = useState<SearchResult>();
-
+    const [activePanel, setActivePanel] = useState<string>('Medication');
     const analyseLG = async () => {
         try {
             const results = await getLloydGeorgeAnalysis({
@@ -83,11 +83,18 @@ function LloydGeorgeMedicalSummaryPage() {
             return acc;
         }, []);
     };
-
+    const table_header = (
+        <Table.Head>
+            <Table.Row>
+                <Table.Cell>Keyword</Table.Cell>
+                <Table.Cell>Page numbers</Table.Cell>
+            </Table.Row>
+        </Table.Head>
+    );
     return (
         <div>
             <BackButton />
-
+            <h1>Medical analysis results</h1>
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
                 <p data-testid="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
@@ -104,40 +111,82 @@ function LloydGeorgeMedicalSummaryPage() {
                     <div className="nhsuk-tabs" data-module="nhsuk-tabs">
                         <h2 className="nhsuk-tabs__title">Contents</h2>
                         <ul className="nhsuk-tabs__list">
-                            <li className="nhsuk-tabs__list-item nhsuk-tabs__list-item--selected">
-                                <a className="nhsuk-tabs__tab" href="#Medication">
+                            <li
+                                className={
+                                    activePanel === 'Medication'
+                                        ? 'nhsuk-tabs__list-item nhsuk-tabs__list-item--selected'
+                                        : 'nhsuk-tabs__list-item'
+                                }
+                            >
+                                <a
+                                    className="nhsuk-tabs__tab"
+                                    onClick={() => setActivePanel('Medication')}
+                                >
                                     Medications
                                 </a>
                             </li>
 
-                            <li className="nhsuk-tabs__list-item">
-                                <a className="nhsuk-tabs__tab" href="#Medical-conditions">
+                            <li
+                                className={
+                                    activePanel === 'Medical-conditions'
+                                        ? 'nhsuk-tabs__list-item nhsuk-tabs__list-item--selected'
+                                        : 'nhsuk-tabs__list-item'
+                                }
+                            >
+                                <a
+                                    className="nhsuk-tabs__tab"
+                                    onClick={() => setActivePanel('Medical-conditions')}
+                                >
                                     Medical conditions
                                 </a>
                             </li>
 
-                            <li className="nhsuk-tabs__list-item">
-                                <a className="nhsuk-tabs__tab" href="#Anatomy">
+                            <li
+                                className={
+                                    activePanel === 'Anatomy'
+                                        ? 'nhsuk-tabs__list-item nhsuk-tabs__list-item--selected'
+                                        : 'nhsuk-tabs__list-item'
+                                }
+                            >
+                                <a
+                                    className="nhsuk-tabs__tab"
+                                    onClick={() => setActivePanel('Anatomy')}
+                                >
                                     Anatomy
                                 </a>
                             </li>
 
-                            <li className="nhsuk-tabs__list-item">
-                                <a className="nhsuk-tabs__tab" href="#Test-treatment-procedure">
+                            <li
+                                className={
+                                    activePanel === 'Test-treatment-procedure'
+                                        ? 'nhsuk-tabs__list-item nhsuk-tabs__list-item--selected'
+                                        : 'nhsuk-tabs__list-item'
+                                }
+                            >
+                                <a
+                                    className="nhsuk-tabs__tab"
+                                    onClick={() => setActivePanel('Test-treatment-procedure')}
+                                >
                                     Test treatment procedure
                                 </a>
                             </li>
                         </ul>
-                        <div className="nhsuk-tabs__panel" id="Medication">
+                        <div
+                            className={
+                                activePanel === 'Medication'
+                                    ? 'nhsuk-tabs__panel'
+                                    : 'nhsuk-tabs__panel--hidden'
+                            }
+                            id="Medication"
+                        >
                             <Table
                                 responsive
                                 caption="Medications"
                                 captionProps={{
                                     className: 'nhsuk-table__caption',
                                 }}
-                                id="Medication"
                             >
-                                {' '}
+                                {table_header}
                                 <Table.Body>
                                     {Object.keys(medications).map((medication: string) => {
                                         const pageNumbers: number[] = getPageNumbers(
@@ -155,7 +204,14 @@ function LloydGeorgeMedicalSummaryPage() {
                                 </Table.Body>{' '}
                             </Table>
                         </div>
-                        <div className="nhsuk-tabs__panel--hidden" id="Medical-conditions">
+                        <div
+                            className={
+                                activePanel === 'Medical-conditions'
+                                    ? 'nhsuk-tabs__panel'
+                                    : 'nhsuk-tabs__panel--hidden'
+                            }
+                            id="Medical-conditions"
+                        >
                             <Table
                                 responsive
                                 caption="Medical conditions"
@@ -164,6 +220,8 @@ function LloydGeorgeMedicalSummaryPage() {
                                 }}
                                 id="Medical-conditions"
                             >
+                                {table_header}
+
                                 <Table.Body>
                                     {Object.keys(medicalConditions).map((condition: string) => {
                                         const pageNumbers = getPageNumbers(
@@ -182,43 +240,72 @@ function LloydGeorgeMedicalSummaryPage() {
                             </Table>{' '}
                         </div>
                         <div
-                            className="nhsuk-tabs__panel nhsuk-tabs__panel--hidden"
+                            className={
+                                activePanel === 'Anatomy'
+                                    ? 'nhsuk-tabs__panel'
+                                    : 'nhsuk-tabs__panel--hidden'
+                            }
                             id="Anatomy"
-                        ></div>
-                        <Table.Body>
-                            {Object.keys(anatomy).map((anatomyKey: string) => {
-                                const pageNumbers = getPageNumbers(anatomy[anatomyKey]);
-                                return (
-                                    <Table.Row key={anatomyKey}>
-                                        <Table.Cell>
-                                            <div>{anatomyKey}</div>
-                                        </Table.Cell>
-                                        <Table.Cell>{pageNumbers.join()}</Table.Cell>
-                                    </Table.Row>
-                                );
-                            })}
-                        </Table.Body>{' '}
-                        <div
-                            className="nhsuk-tabs__panel nhsuk-tabs__panel--hidden"
-                            id="Test-treatment-procedure"
                         >
-                            <Table.Body>
-                                {Object.keys(treatmentProcedure).map(
-                                    (treatmentProcedureKey: string) => {
-                                        const pageNumbers = getPageNumbers(
-                                            treatmentProcedure[treatmentProcedureKey],
-                                        );
+                            <Table
+                                responsive
+                                caption="Anatomy"
+                                captionProps={{
+                                    className: 'nhsuk-table__caption',
+                                }}
+                                id="Anatomy"
+                            >
+                                {table_header}
+                                <Table.Body>
+                                    {Object.keys(anatomy).map((anatomyKey: string) => {
+                                        const pageNumbers = getPageNumbers(anatomy[anatomyKey]);
                                         return (
-                                            <Table.Row key={treatmentProcedureKey}>
+                                            <Table.Row key={anatomyKey}>
                                                 <Table.Cell>
-                                                    <div>{treatmentProcedureKey}</div>
+                                                    <div>{anatomyKey}</div>
                                                 </Table.Cell>
                                                 <Table.Cell>{pageNumbers.join()}</Table.Cell>
                                             </Table.Row>
                                         );
-                                    },
-                                )}
-                            </Table.Body>{' '}
+                                    })}
+                                </Table.Body>{' '}
+                            </Table>
+                        </div>
+                        <div
+                            className={
+                                activePanel === 'Test-treatment-procedure'
+                                    ? 'nhsuk-tabs__panel'
+                                    : 'nhsuk-tabs__panel--hidden'
+                            }
+                            id="Test-treatment-procedure"
+                        >
+                            <Table
+                                responsive
+                                caption="Treatment Procedure"
+                                captionProps={{
+                                    className: 'nhsuk-table__caption',
+                                }}
+                                id="treatmentProcedure"
+                            >
+                                {table_header}
+                                <Table.Body>
+                                    {Object.keys(treatmentProcedure).map(
+                                        (treatmentProcedureKey: string) => {
+                                            const pageNumbers = getPageNumbers(
+                                                treatmentProcedure[treatmentProcedureKey],
+                                            );
+                                            return (
+                                                <Table.Row key={treatmentProcedureKey}>
+                                                    <Table.Cell>
+                                                        <div>{treatmentProcedureKey}</div>
+                                                    </Table.Cell>
+                                                    <Table.Cell>{pageNumbers.join()}</Table.Cell>
+                                                </Table.Row>
+                                            );
+                                        },
+                                    )}
+                                </Table.Body>{' '}
+                            </Table>
                         </div>
                     </div>
                 </div>

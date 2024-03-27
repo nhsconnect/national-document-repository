@@ -244,20 +244,20 @@ function LloydGeorgeRecordStage({
                                 </button>
                                 <PdfViewer fileUrl={lloydGeorgeUrl} />
                             </Details>
+                            <ButtonLink
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    navigate(routes.ANALYSE_LLOYD_GEORGE);
+                                }}
+                            >
+                                Analyse this document
+                            </ButtonLink>
                         </>
                     )}
                 </>
             ) : (
                 <PdfViewer fileUrl={lloydGeorgeUrl} />
             )}
-            <ButtonLink
-                onClick={(e) => {
-                    e.preventDefault();
-                    navigate(routes.ANALYSE_LLOYD_GEORGE);
-                }}
-            >
-                Analyse this document
-            </ButtonLink>
         </div>
     );
 }
