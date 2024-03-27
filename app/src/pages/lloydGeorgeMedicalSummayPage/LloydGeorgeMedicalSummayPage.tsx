@@ -6,7 +6,7 @@ import BackButton from '../../components/generic/backButton/BackButton';
 
 import { getFormattedDate } from '../../helpers/utils/formatDate';
 import { formatNhsNumber } from '../../helpers/utils/formatNhsNumber';
-import { Button, Table } from 'nhsuk-react-components';
+import { Button, Table, WarningCallout } from 'nhsuk-react-components';
 import getLloydGeorgeAnalysis from '../../helpers/requests/getLloydGeorgeAnalysis';
 import { AxiosError } from 'axios';
 import { routes } from '../../types/generic/routes';
@@ -73,10 +73,20 @@ function LloydGeorgeMedicalSummaryPage() {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
     };
+    const medicalInfo = searchResults?.PROTECTED_HEALTH_INFORMATION ?? {};
     const medications = searchResults?.MEDICATION ?? {};
     const medicalConditions = searchResults?.MEDICAL_CONDITION ?? {};
     const anatomy = searchResults?.ANATOMY ?? {};
     const treatmentProcedure = searchResults?.TEST_TREATMENT_PROCEDURE ?? {};
+    const getMedicalInfoName = Object.keys(medicalInfo).find((info: string) => {
+        const type = medicalInfo[info][0].Type;
+        return type === 'NAME';
+    });
+    const getMedicalInfoNhsNumber = Object.keys(medicalInfo).find((info: string) => {
+        const type = medicalInfo[info][0].Type;
+
+        return type === 'ID' && info.length === 10;
+    });
     const getPageNumbers = (analysisObject: AnalysisFields[]) => {
         return analysisObject.reduce((acc: number[], curr) => {
             if (!acc.includes(curr.PageNumber)) acc.push(curr.PageNumber);
@@ -108,6 +118,24 @@ function LloydGeorgeMedicalSummaryPage() {
                 </Button>
             ) : (
                 <div>
+                    {medicalInfo ? (
+                        <WarningCallout>
+                            <WarningCallout.Label>Patient Information found</WarningCallout.Label>
+                            <p>
+                                During the analysis on this patient's document the following
+                                personal information was found:
+                                <p></p>
+                                <ul>
+                                    <li>Name: {getMedicalInfoName}</li>
+                                    <li>NHS number: {getMedicalInfoNhsNumber}</li>
+                                </ul>
+                                If this information does not belong to this patient please contact
+                                the service desk.
+                            </p>
+                        </WarningCallout>
+                    ) : (
+                        <></>
+                    )}
                     <div className="nhsuk-tabs" data-module="nhsuk-tabs">
                         <h2 className="nhsuk-tabs__title">Contents</h2>
                         <ul className="nhsuk-tabs__list">
