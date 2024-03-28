@@ -79,14 +79,15 @@ function LloydGeorgeRecordDetails({
             ) : (
                 role !== REPOSITORY_ROLE.GP_CLINICAL && (
                     <div className="lloydgeorge_record-details_actions">
-                        <div
+                        <button
                             data-testid="actions-menu"
-                            className={`nhsuk-select lloydgeorge_record-details_actions-select ${
+                            className={`nhsuk-select clickable lloydgeorge_record-details_actions-select ${
                                 showActionsMenu
                                     ? 'lloydgeorge_record-details_actions-select--selected'
                                     : ''
                             }`}
                             onClick={handleMoreActions}
+                            tabIndex={0}
                         >
                             <div
                                 className={`lloydgeorge_record-details_actions-select_border ${
@@ -99,7 +100,7 @@ function LloydGeorgeRecordDetails({
                                 Select an action...
                             </span>
                             <Chevron className="lloydgeorge_record-details_actions-select_icon" />
-                        </div>
+                        </button>
                         {showActionsMenu && (
                             <div ref={actionsRef}>
                                 <Card className="lloydgeorge_record-details_actions-menu">
