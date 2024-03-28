@@ -207,14 +207,14 @@ export const updateDocumentState = async ({
         ],
     };
     try {
-        const res = await axios.post(updateUploadStateUrl, body, {
+        await axios.post(updateUploadStateUrl, body, {
             headers: {
                 ...baseHeaders,
             },
         });
-        return res;
     } catch (e) {
-        return DOCUMENT_UPLOAD_STATE.UPLOADING;
+        // DOCUMENT_UPLOAD_STATE.UPLOADING;
+        throw e;
     }
 };
 
