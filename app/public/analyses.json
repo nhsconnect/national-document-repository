@@ -1,0 +1,2079 @@
+{
+  "PROTECTED_HEALTH_INFORMATION": {
+    "9000000001": [
+      {
+        "Id": 3,
+        "BeginOffset": 12,
+        "EndOffset": 22,
+        "Score": 0.9975125789642334,
+        "Text": "9000000001",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 0
+      },
+      {
+        "Id": 29,
+        "BeginOffset": 34,
+        "EndOffset": 44,
+        "Score": 0.9913378953933716,
+        "Text": "9000000001",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 1,
+        "BeginOffset": 12,
+        "EndOffset": 22,
+        "Score": 0.997619092464447,
+        "Text": "9000000001",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 2
+      },
+      {
+        "Id": 15,
+        "BeginOffset": 34,
+        "EndOffset": 44,
+        "Score": 0.9911778569221497,
+        "Text": "9000000001",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 15,
+        "BeginOffset": 12,
+        "EndOffset": 22,
+        "Score": 0.9972328543663025,
+        "Text": "9000000001",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 18,
+        "BeginOffset": 12,
+        "EndOffset": 22,
+        "Score": 0.9972099661827087,
+        "Text": "9000000001",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 1,
+        "BeginOffset": 12,
+        "EndOffset": 22,
+        "Score": 0.9973166584968567,
+        "Text": "9000000001",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 6
+      },
+      {
+        "Id": 10,
+        "BeginOffset": 12,
+        "EndOffset": 22,
+        "Score": 0.997327446937561,
+        "Text": "9000000001",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 9,
+        "BeginOffset": 12,
+        "EndOffset": 22,
+        "Score": 0.997123658657074,
+        "Text": "9000000001",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 8
+      },
+      {
+        "Id": 1,
+        "BeginOffset": 12,
+        "EndOffset": 22,
+        "Score": 0.9971923232078552,
+        "Text": "9000000001",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 9
+      }
+    ],
+    "John Morris Doe": [
+      {
+        "Id": 4,
+        "BeginOffset": 29,
+        "EndOffset": 44,
+        "Score": 0.9999144077301025,
+        "Text": "John Morris Doe",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 0
+      },
+      {
+        "Id": 28,
+        "BeginOffset": 6,
+        "EndOffset": 21,
+        "Score": 0.9998036026954651,
+        "Text": "John Morris Doe",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 14,
+        "BeginOffset": 6,
+        "EndOffset": 21,
+        "Score": 0.9998133778572083,
+        "Text": "John Morris Doe",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 16,
+        "BeginOffset": 29,
+        "EndOffset": 44,
+        "Score": 0.9999042749404907,
+        "Text": "John Morris Doe",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 19,
+        "BeginOffset": 29,
+        "EndOffset": 44,
+        "Score": 0.9999022483825684,
+        "Text": "John Morris Doe",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 2,
+        "BeginOffset": 29,
+        "EndOffset": 44,
+        "Score": 0.9998548030853271,
+        "Text": "John Morris Doe",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 6
+      },
+      {
+        "Id": 11,
+        "BeginOffset": 29,
+        "EndOffset": 44,
+        "Score": 0.9999297857284546,
+        "Text": "John Morris Doe",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 2,
+        "BeginOffset": 29,
+        "EndOffset": 44,
+        "Score": 0.9998515844345093,
+        "Text": "John Morris Doe",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 9
+      }
+    ],
+    "01/01/1980": [
+      {
+        "Id": 5,
+        "BeginOffset": 62,
+        "EndOffset": 72,
+        "Score": 0.9999790191650391,
+        "Text": "01/01/1980",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "John Morris": [
+      {
+        "Id": 6,
+        "BeginOffset": 99,
+        "EndOffset": 110,
+        "Score": 0.9998095631599426,
+        "Text": "John Morris",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 0
+      },
+      {
+        "Id": 2,
+        "BeginOffset": 29,
+        "EndOffset": 40,
+        "Score": 0.9998192191123962,
+        "Text": "John Morris",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 2
+      },
+      {
+        "Id": 10,
+        "BeginOffset": 29,
+        "EndOffset": 40,
+        "Score": 0.9998165965080261,
+        "Text": "John Morris",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 8
+      }
+    ],
+    "Chapelfield Road": [
+      {
+        "Id": 7,
+        "BeginOffset": 166,
+        "EndOffset": 182,
+        "Score": 0.19655956327915192,
+        "Text": "Chapelfield Road",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ADDRESS",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "Barrow": [
+      {
+        "Id": 8,
+        "BeginOffset": 191,
+        "EndOffset": 197,
+        "Score": 0.3097738027572632,
+        "Text": "Barrow",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "David": [
+      {
+        "Id": 9,
+        "BeginOffset": 283,
+        "EndOffset": 288,
+        "Score": 0.9970191717147827,
+        "Text": "David",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "McAvenue": [
+      {
+        "Id": 10,
+        "BeginOffset": 300,
+        "EndOffset": 308,
+        "Score": 0.3771350085735321,
+        "Text": "McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "01133 800000": [
+      {
+        "Id": 11,
+        "BeginOffset": 400,
+        "EndOffset": 412,
+        "Score": 0.08585941791534424,
+        "Text": "01133 800000",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 0
+      },
+      {
+        "Id": 13,
+        "BeginOffset": 503,
+        "EndOffset": 515,
+        "Score": 0.20496012270450592,
+        "Text": "01133 800000",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ADDRESS",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "A82038": [
+      {
+        "Id": 12,
+        "BeginOffset": 413,
+        "EndOffset": 419,
+        "Score": 0.9952402114868164,
+        "Text": "A82038",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "Fulford Grange": [
+      {
+        "Id": 14,
+        "BeginOffset": 516,
+        "EndOffset": 530,
+        "Score": 0.9986086487770081,
+        "Text": "Fulford Grange",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "Micklefield Lane": [
+      {
+        "Id": 15,
+        "BeginOffset": 540,
+        "EndOffset": 556,
+        "Score": 0.8626418709754944,
+        "Text": "Micklefield Lane",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ADDRESS",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "Rawdon": [
+      {
+        "Id": 16,
+        "BeginOffset": 557,
+        "EndOffset": 563,
+        "Score": 0.2585104703903198,
+        "Text": "Rawdon",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ADDRESS",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "LS19 6BA": [
+      {
+        "Id": 17,
+        "BeginOffset": 574,
+        "EndOffset": 582,
+        "Score": 0.6962276697158813,
+        "Text": "LS19 6BA",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ADDRESS",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "326324002": [
+      {
+        "Id": 30,
+        "BeginOffset": 149,
+        "EndOffset": 158,
+        "Score": 0.9972482323646545,
+        "Text": "326324002",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "524211000001108": [
+      {
+        "Id": 31,
+        "BeginOffset": 203,
+        "EndOffset": 218,
+        "Score": 0.9988528490066528,
+        "Text": "524211000001108",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "3493211000001100": [
+      {
+        "Id": 32,
+        "BeginOffset": 279,
+        "EndOffset": 295,
+        "Score": 0.9976804256439209,
+        "Text": "3493211000001100",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "13331511000001101": [
+      {
+        "Id": 33,
+        "BeginOffset": 359,
+        "EndOffset": 376,
+        "Score": 0.8722748756408691,
+        "Text": "13331511000001101",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "7864110000001105": [
+      {
+        "Id": 34,
+        "BeginOffset": 440,
+        "EndOffset": 456,
+        "Score": 0.9982151985168457,
+        "Text": "7864110000001105",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "ID",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "David McAvenue": [
+      {
+        "Id": 35,
+        "BeginOffset": 587,
+        "EndOffset": 601,
+        "Score": 0.9997761845588684,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 37,
+        "BeginOffset": 663,
+        "EndOffset": 677,
+        "Score": 0.9998782873153687,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 40,
+        "BeginOffset": 902,
+        "EndOffset": 916,
+        "Score": 0.9997599720954895,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 42,
+        "BeginOffset": 969,
+        "EndOffset": 983,
+        "Score": 0.9998756647109985,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 45,
+        "BeginOffset": 1218,
+        "EndOffset": 1232,
+        "Score": 0.9997887015342712,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 47,
+        "BeginOffset": 1290,
+        "EndOffset": 1304,
+        "Score": 0.999883770942688,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 18,
+        "BeginOffset": 168,
+        "EndOffset": 182,
+        "Score": 0.9998911619186401,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 21,
+        "BeginOffset": 258,
+        "EndOffset": 272,
+        "Score": 0.9999294281005859,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 24,
+        "BeginOffset": 355,
+        "EndOffset": 369,
+        "Score": 0.9999117851257324,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 27,
+        "BeginOffset": 467,
+        "EndOffset": 481,
+        "Score": 0.9998883008956909,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 30,
+        "BeginOffset": 568,
+        "EndOffset": 582,
+        "Score": 0.9999061822891235,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 17,
+        "BeginOffset": 71,
+        "EndOffset": 85,
+        "Score": 0.9995341300964355,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 19,
+        "BeginOffset": 142,
+        "EndOffset": 156,
+        "Score": 0.9995028972625732,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 21,
+        "BeginOffset": 269,
+        "EndOffset": 283,
+        "Score": 0.9994388222694397,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 23,
+        "BeginOffset": 375,
+        "EndOffset": 389,
+        "Score": 0.9997116923332214,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 26,
+        "BeginOffset": 478,
+        "EndOffset": 492,
+        "Score": 0.999914288520813,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 28,
+        "BeginOffset": 590,
+        "EndOffset": 604,
+        "Score": 0.9999040365219116,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 30,
+        "BeginOffset": 663,
+        "EndOffset": 677,
+        "Score": 0.9999029636383057,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 31,
+        "BeginOffset": 720,
+        "EndOffset": 734,
+        "Score": 0.9994677901268005,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 22,
+        "BeginOffset": 144,
+        "EndOffset": 158,
+        "Score": 0.9996278285980225,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 26,
+        "BeginOffset": 433,
+        "EndOffset": 447,
+        "Score": 0.9997374415397644,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 30,
+        "BeginOffset": 741,
+        "EndOffset": 755,
+        "Score": 0.9996551275253296,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 34,
+        "BeginOffset": 1045,
+        "EndOffset": 1059,
+        "Score": 0.9996391534805298,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 14,
+        "BeginOffset": 142,
+        "EndOffset": 156,
+        "Score": 0.9997267127037048,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 18,
+        "BeginOffset": 389,
+        "EndOffset": 403,
+        "Score": 0.9997598528862,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 13,
+        "BeginOffset": 155,
+        "EndOffset": 169,
+        "Score": 0.9995548129081726,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 8
+      },
+      {
+        "Id": 17,
+        "BeginOffset": 426,
+        "EndOffset": 440,
+        "Score": 0.9996622800827026,
+        "Text": "David McAvenue",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "NAME",
+        "Traits": [],
+        "PageNumber": 8
+      }
+    ],
+    "13/01/2010": [
+      {
+        "Id": 36,
+        "BeginOffset": 631,
+        "EndOffset": 641,
+        "Score": 0.9999895095825195,
+        "Text": "13/01/2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 41,
+        "BeginOffset": 934,
+        "EndOffset": 944,
+        "Score": 0.9999854564666748,
+        "Text": "13/01/2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 46,
+        "BeginOffset": 1255,
+        "EndOffset": 1265,
+        "Score": 0.9999854564666748,
+        "Text": "13/01/2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "2018-10-27": [
+      {
+        "Id": 38,
+        "BeginOffset": 742,
+        "EndOffset": 752,
+        "Score": 0.996841311454773,
+        "Text": "2018-10-27",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "2010-01-13": [
+      {
+        "Id": 39,
+        "BeginOffset": 753,
+        "EndOffset": 763,
+        "Score": 0.999437153339386,
+        "Text": "2010-01-13",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 43,
+        "BeginOffset": 1057,
+        "EndOffset": 1067,
+        "Score": 0.9987888932228088,
+        "Text": "2010-01-13",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 48,
+        "BeginOffset": 1379,
+        "EndOffset": 1389,
+        "Score": 0.9975132942199707,
+        "Text": "2010-01-13",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 49,
+        "BeginOffset": 1390,
+        "EndOffset": 1400,
+        "Score": 0.9982328414916992,
+        "Text": "2010-01-13",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "2010-01-14": [
+      {
+        "Id": 44,
+        "BeginOffset": 1068,
+        "EndOffset": 1078,
+        "Score": 0.9988486766815186,
+        "Text": "2010-01-14",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "25-02-2021": [
+      {
+        "Id": 16,
+        "BeginOffset": 124,
+        "EndOffset": 134,
+        "Score": 0.9998621940612793,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 20,
+        "BeginOffset": 244,
+        "EndOffset": 254,
+        "Score": 0.9996500015258789,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 23,
+        "BeginOffset": 341,
+        "EndOffset": 351,
+        "Score": 0.9996401071548462,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 25,
+        "BeginOffset": 423,
+        "EndOffset": 433,
+        "Score": 0.9996567964553833,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 29,
+        "BeginOffset": 554,
+        "EndOffset": 564,
+        "Score": 0.9996830224990845,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 21,
+        "BeginOffset": 110,
+        "EndOffset": 120,
+        "Score": 0.999653697013855,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 24,
+        "BeginOffset": 375,
+        "EndOffset": 385,
+        "Score": 0.9997573494911194,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 28,
+        "BeginOffset": 690,
+        "EndOffset": 700,
+        "Score": 0.9998865127563477,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 32,
+        "BeginOffset": 997,
+        "EndOffset": 1007,
+        "Score": 0.9996596574783325,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 13,
+        "BeginOffset": 128,
+        "EndOffset": 138,
+        "Score": 0.9992871880531311,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 17,
+        "BeginOffset": 375,
+        "EndOffset": 385,
+        "Score": 0.999518871307373,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 12,
+        "BeginOffset": 133,
+        "EndOffset": 143,
+        "Score": 0.999754011631012,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 8
+      },
+      {
+        "Id": 15,
+        "BeginOffset": 387,
+        "EndOffset": 397,
+        "Score": 0.9996464252471924,
+        "Text": "25-02-2021",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 8
+      }
+    ],
+    "26-10-2020": [
+      {
+        "Id": 17,
+        "BeginOffset": 144,
+        "EndOffset": 154,
+        "Score": 0.9995272159576416,
+        "Text": "26-10-2020",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 19,
+        "BeginOffset": 223,
+        "EndOffset": 233,
+        "Score": 0.9992607235908508,
+        "Text": "26-10-2020",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 22,
+        "BeginOffset": 311,
+        "EndOffset": 321,
+        "Score": 0.9995923638343811,
+        "Text": "26-10-2020",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 26,
+        "BeginOffset": 434,
+        "EndOffset": 444,
+        "Score": 0.9997425675392151,
+        "Text": "26-10-2020",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 3
+      },
+      {
+        "Id": 28,
+        "BeginOffset": 534,
+        "EndOffset": 544,
+        "Score": 0.9996962547302246,
+        "Text": "26-10-2020",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 3
+      }
+    ],
+    "2009-11-02": [
+      {
+        "Id": 18,
+        "BeginOffset": 86,
+        "EndOffset": 96,
+        "Score": 0.9995725750923157,
+        "Text": "2009-11-02",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 20,
+        "BeginOffset": 157,
+        "EndOffset": 167,
+        "Score": 0.999672532081604,
+        "Text": "2009-11-02",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 22,
+        "BeginOffset": 284,
+        "EndOffset": 294,
+        "Score": 0.9996743202209473,
+        "Text": "2009-11-02",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 24,
+        "BeginOffset": 396,
+        "EndOffset": 406,
+        "Score": 0.9990808963775635,
+        "Text": "2009-11-02",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 25,
+        "BeginOffset": 464,
+        "EndOffset": 474,
+        "Score": 0.9986804127693176,
+        "Text": "2009-11-02",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 27,
+        "BeginOffset": 576,
+        "EndOffset": 586,
+        "Score": 0.9984273910522461,
+        "Text": "2009-11-02",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 29,
+        "BeginOffset": 649,
+        "EndOffset": 659,
+        "Score": 0.9981599450111389,
+        "Text": "2009-11-02",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 4
+      },
+      {
+        "Id": 32,
+        "BeginOffset": 735,
+        "EndOffset": 745,
+        "Score": 0.9998131394386292,
+        "Text": "2009-11-02",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 4
+      }
+    ],
+    "23-03-2010": [
+      {
+        "Id": 20,
+        "BeginOffset": 93,
+        "EndOffset": 103,
+        "Score": 0.999638557434082,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 23,
+        "BeginOffset": 159,
+        "EndOffset": 169,
+        "Score": 0.9996970891952515,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 25,
+        "BeginOffset": 386,
+        "EndOffset": 396,
+        "Score": 0.9998377561569214,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 27,
+        "BeginOffset": 458,
+        "EndOffset": 468,
+        "Score": 0.9997441172599792,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 29,
+        "BeginOffset": 711,
+        "EndOffset": 721,
+        "Score": 0.9998855590820312,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 31,
+        "BeginOffset": 766,
+        "EndOffset": 776,
+        "Score": 0.9997486472129822,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 33,
+        "BeginOffset": 1015,
+        "EndOffset": 1025,
+        "Score": 0.9996758699417114,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 35,
+        "BeginOffset": 1060,
+        "EndOffset": 1070,
+        "Score": 0.9997664093971252,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 15,
+        "BeginOffset": 157,
+        "EndOffset": 167,
+        "Score": 0.9997662901878357,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 19,
+        "BeginOffset": 404,
+        "EndOffset": 414,
+        "Score": 0.9998505115509033,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 14,
+        "BeginOffset": 170,
+        "EndOffset": 180,
+        "Score": 0.9998660087585449,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 8
+      },
+      {
+        "Id": 18,
+        "BeginOffset": 441,
+        "EndOffset": 451,
+        "Score": 0.999901294708252,
+        "Text": "23-03-2010",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 8
+      }
+    ],
+    "23-03-2009": [
+      {
+        "Id": 12,
+        "BeginOffset": 111,
+        "EndOffset": 121,
+        "Score": 0.9994915723800659,
+        "Text": "23-03-2009",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 16,
+        "BeginOffset": 358,
+        "EndOffset": 368,
+        "Score": 0.9995713829994202,
+        "Text": "23-03-2009",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 11,
+        "BeginOffset": 116,
+        "EndOffset": 126,
+        "Score": 0.9998288154602051,
+        "Text": "23-03-2009",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 8
+      },
+      {
+        "Id": 16,
+        "BeginOffset": 398,
+        "EndOffset": 408,
+        "Score": 0.9993919134140015,
+        "Text": "23-03-2009",
+        "Category": "PROTECTED_HEALTH_INFORMATION",
+        "Type": "DATE",
+        "Traits": [],
+        "PageNumber": 8
+      }
+    ]
+  },
+  "BEHAVIORAL_ENVIRONMENTAL_SOCIAL": {
+    "Male": [
+      {
+        "Id": 18,
+        "BeginOffset": 133,
+        "EndOffset": 137,
+        "Score": 0.9523085355758667,
+        "Text": "Male",
+        "Category": "BEHAVIORAL_ENVIRONMENTAL_SOCIAL",
+        "Type": "GENDER",
+        "Traits": [],
+        "PageNumber": 0
+      },
+      {
+        "Id": 19,
+        "BeginOffset": 316,
+        "EndOffset": 320,
+        "Score": 0.9864243865013123,
+        "Text": "Male",
+        "Category": "BEHAVIORAL_ENVIRONMENTAL_SOCIAL",
+        "Type": "GENDER",
+        "Traits": [],
+        "PageNumber": 0
+      }
+    ],
+    "Latex": [
+      {
+        "Id": 21,
+        "BeginOffset": 92,
+        "EndOffset": 97,
+        "Score": 0.8479288220405579,
+        "Text": "Latex",
+        "Category": "BEHAVIORAL_ENVIRONMENTAL_SOCIAL",
+        "Type": "ALLERGIES",
+        "Traits": [],
+        "PageNumber": 8
+      }
+    ]
+  },
+  "MEDICATION": {
+    "Levonorgestrel": [
+      {
+        "Id": 1,
+        "BeginOffset": 82,
+        "EndOffset": 96,
+        "Score": 0.9935668110847473,
+        "Text": "Levonorgestrel",
+        "Category": "MEDICATION",
+        "Type": "GENERIC_NAME",
+        "Traits": [],
+        "Attributes": [
+          {
+            "Type": "STRENGTH",
+            "Score": 0.156226247549057,
+            "RelationshipScore": 0.9989739656448364,
+            "RelationshipType": "STRENGTH",
+            "Id": 2,
+            "BeginOffset": 97,
+            "EndOffset": 109,
+            "Text": "150microgram",
+            "Category": "MEDICATION",
+            "Traits": []
+          },
+          {
+            "Type": "DOSAGE",
+            "Score": 0.16980411112308502,
+            "RelationshipScore": 0.9967191815376282,
+            "RelationshipType": "DOSAGE",
+            "Id": 4,
+            "BeginOffset": 129,
+            "EndOffset": 140,
+            "Text": "30microgram",
+            "Category": "MEDICATION",
+            "Traits": []
+          },
+          {
+            "Type": "FORM",
+            "Score": 0.8985769748687744,
+            "RelationshipScore": 0.9999792575836182,
+            "RelationshipType": "FORM",
+            "Id": 5,
+            "BeginOffset": 141,
+            "EndOffset": 148,
+            "Text": "tablets",
+            "Category": "MEDICATION",
+            "Traits": []
+          }
+        ],
+        "PageNumber": 1
+      },
+      {
+        "Id": 13,
+        "BeginOffset": 788,
+        "EndOffset": 802,
+        "Score": 0.9920932650566101,
+        "Text": "Levonorgestrel",
+        "Category": "MEDICATION",
+        "Type": "GENERIC_NAME",
+        "Traits": [],
+        "Attributes": [
+          {
+            "Type": "STRENGTH",
+            "Score": 0.07588452845811844,
+            "RelationshipScore": 0.9864370226860046,
+            "RelationshipType": "STRENGTH",
+            "Id": 14,
+            "BeginOffset": 803,
+            "EndOffset": 815,
+            "Text": "150microgram",
+            "Category": "MEDICATION",
+            "Traits": []
+          },
+          {
+            "Type": "DOSAGE",
+            "Score": 0.5703266859054565,
+            "RelationshipScore": 0.9822152256965637,
+            "RelationshipType": "DOSAGE",
+            "Id": 16,
+            "BeginOffset": 835,
+            "EndOffset": 846,
+            "Text": "30microgram",
+            "Category": "MEDICATION",
+            "Traits": []
+          },
+          {
+            "Type": "FORM",
+            "Score": 0.9671004414558411,
+            "RelationshipScore": 0.9973664879798889,
+            "RelationshipType": "FORM",
+            "Id": 17,
+            "BeginOffset": 847,
+            "EndOffset": 854,
+            "Text": "tablets",
+            "Category": "MEDICATION",
+            "Traits": []
+          }
+        ],
+        "PageNumber": 1
+      }
+    ],
+    "Ethinylestradiol": [
+      {
+        "Id": 3,
+        "BeginOffset": 112,
+        "EndOffset": 128,
+        "Score": 0.8691690564155579,
+        "Text": "Ethinylestradiol",
+        "Category": "MEDICATION",
+        "Type": "GENERIC_NAME",
+        "Traits": [],
+        "Attributes": [
+          {
+            "Type": "DOSAGE",
+            "Score": 0.16980411112308502,
+            "RelationshipScore": 0.99996018409729,
+            "RelationshipType": "DOSAGE",
+            "Id": 4,
+            "BeginOffset": 129,
+            "EndOffset": 140,
+            "Text": "30microgram",
+            "Category": "MEDICATION",
+            "Traits": []
+          },
+          {
+            "Type": "FORM",
+            "Score": 0.8985769748687744,
+            "RelationshipScore": 0.999998927116394,
+            "RelationshipType": "FORM",
+            "Id": 5,
+            "BeginOffset": 141,
+            "EndOffset": 148,
+            "Text": "tablets",
+            "Category": "MEDICATION",
+            "Traits": []
+          }
+        ],
+        "PageNumber": 1
+      },
+      {
+        "Id": 15,
+        "BeginOffset": 818,
+        "EndOffset": 834,
+        "Score": 0.33359718322753906,
+        "Text": "Ethinylestradiol",
+        "Category": "MEDICATION",
+        "Type": "GENERIC_NAME",
+        "Traits": [],
+        "Attributes": [
+          {
+            "Type": "DOSAGE",
+            "Score": 0.5703266859054565,
+            "RelationshipScore": 0.9998098015785217,
+            "RelationshipType": "DOSAGE",
+            "Id": 16,
+            "BeginOffset": 835,
+            "EndOffset": 846,
+            "Text": "30microgram",
+            "Category": "MEDICATION",
+            "Traits": []
+          },
+          {
+            "Type": "FORM",
+            "Score": 0.9671004414558411,
+            "RelationshipScore": 0.9999767541885376,
+            "RelationshipType": "FORM",
+            "Id": 17,
+            "BeginOffset": 847,
+            "EndOffset": 854,
+            "Text": "tablets",
+            "Category": "MEDICATION",
+            "Traits": []
+          }
+        ],
+        "PageNumber": 1
+      }
+    ],
+    "Marvelon": [
+      {
+        "Id": 6,
+        "BeginOffset": 159,
+        "EndOffset": 167,
+        "Score": 0.5604020357131958,
+        "Text": "Marvelon",
+        "Category": "MEDICATION",
+        "Type": "BRAND_NAME",
+        "Traits": [],
+        "Attributes": [
+          {
+            "Type": "FORM",
+            "Score": 0.8411670327186584,
+            "RelationshipScore": 0.9999858140945435,
+            "RelationshipType": "FORM",
+            "Id": 7,
+            "BeginOffset": 168,
+            "EndOffset": 175,
+            "Text": "tablets",
+            "Category": "MEDICATION",
+            "Traits": []
+          }
+        ],
+        "PageNumber": 1
+      }
+    ],
+    "Mirena": [
+      {
+        "Id": 8,
+        "BeginOffset": 219,
+        "EndOffset": 225,
+        "Score": 0.6402559280395508,
+        "Text": "Mirena",
+        "Category": "MEDICATION",
+        "Type": "BRAND_NAME",
+        "Traits": [],
+        "Attributes": [
+          {
+            "Type": "FORM",
+            "Score": 0.516052782535553,
+            "RelationshipScore": 0.9933737516403198,
+            "RelationshipType": "FORM",
+            "Id": 10,
+            "BeginOffset": 319,
+            "EndOffset": 324,
+            "Text": "jelly",
+            "Category": "MEDICATION",
+            "Traits": []
+          }
+        ],
+        "PageNumber": 1
+      }
+    ],
+    "Bayer": [
+      {
+        "Id": 9,
+        "BeginOffset": 268,
+        "EndOffset": 273,
+        "Score": 0.591776430606842,
+        "Text": "Bayer",
+        "Category": "MEDICATION",
+        "Type": "BRAND_NAME",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "Flexi-T 300": [
+      {
+        "Id": 11,
+        "BeginOffset": 377,
+        "EndOffset": 388,
+        "Score": 0.44401997327804565,
+        "Text": "Flexi-T 300",
+        "Category": "MEDICATION",
+        "Type": "BRAND_NAME",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 12,
+        "BeginOffset": 489,
+        "EndOffset": 500,
+        "Score": 0.6633036136627197,
+        "Text": "Flexi-T 300",
+        "Category": "MEDICATION",
+        "Type": "BRAND_NAME",
+        "Traits": [],
+        "PageNumber": 1
+      }
+    ],
+    "diazepam": [
+      {
+        "Id": 1,
+        "BeginOffset": 368,
+        "EndOffset": 376,
+        "Score": 0.9618430137634277,
+        "Text": "diazepam",
+        "Category": "MEDICATION",
+        "Type": "GENERIC_NAME",
+        "Traits": [
+          {
+            "Name": "NEGATION",
+            "Score": 0.9218624830245972
+          }
+        ],
+        "PageNumber": 8
+      }
+    ]
+  },
+  "TEST_TREATMENT_PROCEDURE": {
+    "Medication": [
+      {
+        "Id": 50,
+        "BeginOffset": 855,
+        "EndOffset": 865,
+        "Score": 0.5849667191505432,
+        "Text": "Medication",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "TREATMENT_NAME",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 51,
+        "BeginOffset": 1168,
+        "EndOffset": 1178,
+        "Score": 0.7646898031234741,
+        "Text": "Medication",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "TREATMENT_NAME",
+        "Traits": [],
+        "PageNumber": 1
+      },
+      {
+        "Id": 32,
+        "BeginOffset": 283,
+        "EndOffset": 293,
+        "Score": 0.7938326001167297,
+        "Text": "Medication",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "TREATMENT_NAME",
+        "Traits": [],
+        "PageNumber": 3
+      }
+    ],
+    "influenza vacination": [
+      {
+        "Id": 31,
+        "BeginOffset": 83,
+        "EndOffset": 103,
+        "Score": 0.7903234958648682,
+        "Text": "influenza vacination",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "TREATMENT_NAME",
+        "Traits": [],
+        "PageNumber": 3
+      }
+    ],
+    "EMIS TEST": [
+      {
+        "Id": 36,
+        "BeginOffset": 243,
+        "EndOffset": 252,
+        "Score": 0.5810713768005371,
+        "Text": "EMIS TEST",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "TEST_NAME",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 19,
+        "BeginOffset": 229,
+        "EndOffset": 238,
+        "Score": 0.5662497878074646,
+        "Text": "EMIS TEST",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "TEST_NAME",
+        "Traits": [],
+        "PageNumber": 8
+      }
+    ],
+    "GP Surgery": [
+      {
+        "Id": 37,
+        "BeginOffset": 325,
+        "EndOffset": 335,
+        "Score": 0.7603938579559326,
+        "Text": "GP Surgery",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "PROCEDURE_NAME",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 38,
+        "BeginOffset": 629,
+        "EndOffset": 639,
+        "Score": 0.8948066830635071,
+        "Text": "GP Surgery",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "PROCEDURE_NAME",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 39,
+        "BeginOffset": 937,
+        "EndOffset": 947,
+        "Score": 0.9067418575286865,
+        "Text": "GP Surgery",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "PROCEDURE_NAME",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 3,
+        "BeginOffset": 127,
+        "EndOffset": 137,
+        "Score": 0.8121109008789062,
+        "Text": "GP Surgery",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "PROCEDURE_NAME",
+        "Traits": [],
+        "PageNumber": 6
+      },
+      {
+        "Id": 22,
+        "BeginOffset": 298,
+        "EndOffset": 308,
+        "Score": 0.8189310431480408,
+        "Text": "GP Surgery",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "PROCEDURE_NAME",
+        "Traits": [],
+        "PageNumber": 7
+      },
+      {
+        "Id": 20,
+        "BeginOffset": 311,
+        "EndOffset": 321,
+        "Score": 0.5146331787109375,
+        "Text": "GP Surgery",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "PROCEDURE_NAME",
+        "Traits": [],
+        "PageNumber": 8
+      }
+    ],
+    "blood pressure": [
+      {
+        "Id": 21,
+        "BeginOffset": 76,
+        "EndOffset": 90,
+        "Score": 0.9498858451843262,
+        "Text": "blood pressure",
+        "Category": "TEST_TREATMENT_PROCEDURE",
+        "Type": "TEST_NAME",
+        "Traits": [],
+        "Attributes": [
+          {
+            "Type": "TEST_VALUE",
+            "Score": 0.9104449152946472,
+            "RelationshipScore": 0.9995372295379639,
+            "RelationshipType": "TEST_VALUE",
+            "Id": 20,
+            "BeginOffset": 67,
+            "EndOffset": 75,
+            "Text": "Elevated",
+            "Category": "TEST_TREATMENT_PROCEDURE",
+            "Traits": []
+          }
+        ],
+        "PageNumber": 7
+      }
+    ]
+  },
+  "MEDICAL_CONDITION": {
+    "Malignant essential hypertension": [
+      {
+        "Id": 1,
+        "BeginOffset": 380,
+        "EndOffset": 412,
+        "Score": 0.6230016350746155,
+        "Text": "Malignant essential hypertension",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [
+          {
+            "Name": "DIAGNOSIS",
+            "Score": 0.9274260401725769
+          }
+        ],
+        "PageNumber": 3
+      }
+    ],
+    "Hypertensive disorder": [
+      {
+        "Id": 2,
+        "BeginOffset": 502,
+        "EndOffset": 523,
+        "Score": 0.9795213341712952,
+        "Text": "Hypertensive disorder",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [
+          {
+            "Name": "DIAGNOSIS",
+            "Score": 0.9448043704032898
+          }
+        ],
+        "PageNumber": 3
+      }
+    ],
+    "Heart Attack": [
+      {
+        "Id": 3,
+        "BeginOffset": 233,
+        "EndOffset": 245,
+        "Score": 0.9784137606620789,
+        "Text": "Heart Attack",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [
+          {
+            "Name": "DIAGNOSIS",
+            "Score": 0.9786989092826843
+          }
+        ],
+        "PageNumber": 4
+      }
+    ],
+    "menstrual disorder": [
+      {
+        "Id": 5,
+        "BeginOffset": 689,
+        "EndOffset": 707,
+        "Score": 0.9969224333763123,
+        "Text": "menstrual disorder",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [
+          {
+            "Name": "DIAGNOSIS",
+            "Score": 0.975249171257019
+          }
+        ],
+        "PageNumber": 4
+      }
+    ],
+    "Abdominal pain": [
+      {
+        "Id": 6,
+        "BeginOffset": 758,
+        "EndOffset": 772,
+        "Score": 0.9912760257720947,
+        "Text": "Abdominal pain",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [
+          {
+            "Name": "SYMPTOM",
+            "Score": 0.9506031274795532
+          }
+        ],
+        "PageNumber": 4
+      }
+    ],
+    "Gout": [
+      {
+        "Id": 2,
+        "BeginOffset": 71,
+        "EndOffset": 75,
+        "Score": 0.9483571648597717,
+        "Text": "Gout",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [
+          {
+            "Name": "DIAGNOSIS",
+            "Score": 0.8525941967964172
+          }
+        ],
+        "PageNumber": 5
+      }
+    ],
+    "nEpisodicity": [
+      {
+        "Id": 3,
+        "BeginOffset": 812,
+        "EndOffset": 824,
+        "Score": 0.5827645659446716,
+        "Text": "nEpisodicity",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [],
+        "PageNumber": 5
+      },
+      {
+        "Id": 5,
+        "BeginOffset": 1116,
+        "EndOffset": 1128,
+        "Score": 0.5353628396987915,
+        "Text": "nEpisodicity",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [],
+        "PageNumber": 5
+      }
+    ],
+    "Haemorrhage": [
+      {
+        "Id": 4,
+        "BeginOffset": 960,
+        "EndOffset": 971,
+        "Score": 0.47728368639945984,
+        "Text": "Haemorrhage",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [],
+        "Attributes": [
+          {
+            "Type": "SYSTEM_ORGAN_SITE",
+            "Score": 0.914268970489502,
+            "RelationshipScore": 0.9965584874153137,
+            "RelationshipType": "SYSTEM_ORGAN_SITE",
+            "Id": 1,
+            "BeginOffset": 975,
+            "EndOffset": 986,
+            "Text": "parathyroid",
+            "Category": "ANATOMY",
+            "Traits": []
+          }
+        ],
+        "PageNumber": 5
+      }
+    ],
+    "Elevated blood pressure": [
+      {
+        "Id": 2,
+        "BeginOffset": 67,
+        "EndOffset": 90,
+        "Score": 0.9222450256347656,
+        "Text": "Elevated blood pressure",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [],
+        "PageNumber": 7
+      }
+    ],
+    "Low back pain": [
+      {
+        "Id": 3,
+        "BeginOffset": 324,
+        "EndOffset": 337,
+        "Score": 0.9775029420852661,
+        "Text": "Low back pain",
+        "Category": "MEDICAL_CONDITION",
+        "Type": "DX_NAME",
+        "Traits": [
+          {
+            "Name": "SYMPTOM",
+            "Score": 0.8755362629890442
+          }
+        ],
+        "PageNumber": 7
+      }
+    ]
+  },
+  "ANATOMY": {
+    "Heart": [
+      {
+        "Id": 1,
+        "BeginOffset": 233,
+        "EndOffset": 238,
+        "Score": 0.9770014882087708,
+        "Text": "Heart",
+        "Category": "ANATOMY",
+        "Type": "SYSTEM_ORGAN_SITE",
+        "Traits": [],
+        "PageNumber": 4
+      }
+    ],
+    "Abdominal": [
+      {
+        "Id": 2,
+        "BeginOffset": 758,
+        "EndOffset": 767,
+        "Score": 0.9947997331619263,
+        "Text": "Abdominal",
+        "Category": "ANATOMY",
+        "Type": "SYSTEM_ORGAN_SITE",
+        "Traits": [],
+        "PageNumber": 4
+      }
+    ],
+    "parathyroid": [
+      {
+        "Id": 1,
+        "BeginOffset": 975,
+        "EndOffset": 986,
+        "Score": 0.914268970489502,
+        "Text": "parathyroid",
+        "Category": "ANATOMY",
+        "Type": "SYSTEM_ORGAN_SITE",
+        "Traits": [],
+        "PageNumber": 5
+      }
+    ],
+    "Low back": [
+      {
+        "Id": 1,
+        "BeginOffset": 324,
+        "EndOffset": 332,
+        "Score": 0.9951801300048828,
+        "Text": "Low back",
+        "Category": "ANATOMY",
+        "Type": "SYSTEM_ORGAN_SITE",
+        "Traits": [],
+        "PageNumber": 7
+      }
+    ]
+  }
+}

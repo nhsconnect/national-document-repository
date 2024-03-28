@@ -4,8 +4,9 @@ import { endpoints } from '../../types/generic/endpoints';
 type Args = {
     baseUrl: string;
     baseHeaders: AuthHeaders;
+    nhsNumber: number;
 };
-const getLloydGeorgeAnalysis = async ({ baseUrl, baseHeaders }: Args) => {
+const getLloydGeorgeAnalysis = async ({ baseUrl, baseHeaders, nhsNumber }: Args) => {
     const gatewayUrl = baseUrl + endpoints.MEDICAL_ANALYSIS;
 
     try {
@@ -14,7 +15,7 @@ const getLloydGeorgeAnalysis = async ({ baseUrl, baseHeaders }: Args) => {
                 ...baseHeaders,
             },
             params: {
-                fileId: 'random_text',
+                NhsNumber: nhsNumber,
             },
         });
         return data;

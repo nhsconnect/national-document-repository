@@ -60,6 +60,7 @@ function LloydGeorgeMedicalSummaryPage() {
             const results = await getLloydGeorgeAnalysis({
                 baseUrl,
                 baseHeaders,
+                nhsNumber,
             });
             setSearchResults(results ?? []);
         } catch (e) {
