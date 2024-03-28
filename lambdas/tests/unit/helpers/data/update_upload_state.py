@@ -4,8 +4,9 @@ from tests.unit.conftest import TEST_FILE_KEY
 
 Fields = DocumentReferenceMetadataFields
 
+MOCK_DOCUMENT_REFERENCE = TEST_FILE_KEY
+
 MOCK_LG_DOCTYPE = SupportedDocumentTypes.LG.value
-MOCK_LG_DOCUMENT_REFERENCE = TEST_FILE_KEY
 MOCK_LG_DOCUMENTS_REQUEST = {
     "files": [
         {
@@ -17,7 +18,6 @@ MOCK_LG_DOCUMENTS_REQUEST = {
 }
 
 MOCK_ARF_DOCTYPE = SupportedDocumentTypes.ARF.value
-MOCK_ARF_DOCUMENT_REFERENCE = TEST_FILE_KEY
 MOCK_ARF_DOCUMENTS_REQUEST = {
     "files": [
         {
@@ -27,3 +27,44 @@ MOCK_ARF_DOCUMENTS_REQUEST = {
         }
     ]
 }
+
+MOCK_ALL_DOCUMENTS_REQUEST = {
+    "files": [
+        {
+            "reference": TEST_FILE_KEY,
+            "type": SupportedDocumentTypes.ALL.value,
+            "fields": {Fields.UPLOADING.value: "true"},
+        }
+    ]
+}
+
+MOCK_NO_DOCTYPE_REQUEST = {
+    "files": [
+        {
+            "reference": TEST_FILE_KEY,
+            "type": "",
+            "fields": {Fields.UPLOADING.value: "true"},
+        }
+    ]
+}
+MOCK_NO_REFERENCE_REQUEST = {
+    "files": [
+        {
+            "reference": TEST_FILE_KEY,
+            "type": "",
+            "fields": {Fields.UPLOADING.value: "true"},
+        }
+    ]
+}
+
+MOCK_NO_FIELDS_REQUEST = {
+    "files": [
+        {
+            "reference": TEST_FILE_KEY,
+            "type": "",
+            "fields": {},
+        }
+    ]
+}
+
+MOCK_BOTH_DOCTYPES = SupportedDocumentTypes.ALL.value

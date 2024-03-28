@@ -1,9 +1,10 @@
 import os
 from datetime import datetime, timezone
 
+from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from pydantic import ValidationError
+from enums.supported_document_types import SupportedDocumentTypes
 from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
 from utils.lambda_exceptions import UpdateUploadStateException
@@ -27,23 +28,43 @@ class UpdateUploadStateService:
                 doc_ref = file["reference"]
                 doc_type = file["type"]
                 uploaded = file["fields"][Fields.UPLOADING.value]
-                self.update_document(doc_ref, doc_type, uploaded)
-        except (ValidationError, KeyError, TypeError) as e:
+                if not doc_type or not doc_ref or not uploaded:
+                    raise UpdateUploadStateException(
+                        404, LambdaError.UpdateUploadStateValidation
+                    )
+                elif doc_type not in [
+                    SupportedDocumentTypes.ARF.value,
+                    SupportedDocumentTypes.LG.value,
+                ]:
+                    raise UpdateUploadStateException(
+                        404, LambdaError.UpdateUploadStateDocType
+                    )
+                else:
+                    self.update_document(doc_ref, doc_type, uploaded)
+        except (KeyError, TypeError) as e:
             logger.error(
-                f"{LambdaError.UpdateUploadStateValidation.to_str()} :{str(e)}",
+                f"{LambdaError.UpdateUploadStateKey.to_str()} :{str(e)}",
             )
-            raise UpdateUploadStateException(
-                400, LambdaError.UpdateUploadStateValidation
-            )
+            raise UpdateUploadStateException(404, LambdaError.UpdateUploadStateKey)
 
     def update_document(self, doc_ref, doc_type, uploaded):
-        table = self.arf_dynamo_table if doc_type == "ARF" else self.lg_dynamo_table
-        updated_fields = {Fields.UPLOADING.value: uploaded}
-        self.dynamo_service.update_item(
-            table_name=table,
-            key=doc_ref,
-            updated_fields=self.format_update(updated_fields),
+        updated_fields = self.format_update({Fields.UPLOADING.value: uploaded})
+        table = (
+            self.lg_dynamo_table
+            if doc_type == SupportedDocumentTypes.LG.value
+            else self.arf_dynamo_table
         )
+        try:
+            self.dynamo_service.update_item(
+                table_name=table,
+                key=doc_ref,
+                updated_fields=updated_fields,
+            )
+        except ClientError as e:
+            logger.error(
+                f"{LambdaError.UpdateUploadStateClient.to_str()} :{str(e)}",
+            )
+            raise UpdateUploadStateException(500, LambdaError.UpdateUploadStateClient)
 
     def format_update(self, fields):
         date_now = int(datetime.now(timezone.utc).timestamp())

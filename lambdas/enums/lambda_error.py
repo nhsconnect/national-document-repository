@@ -323,6 +323,18 @@ class LambdaError(Enum):
         "err_code": "US_4002",
         "message": "Missing fields",
     }
+    UpdateUploadStateDocType = {
+        "err_code": "US_4003",
+        "message": "Doctype invalid",
+    }
+    UpdateUploadStateKey = {
+        "err_code": "US_4004",
+        "message": "Key or type error on request",
+    }
+    UpdateUploadStateClient = {
+        "err_code": "US_5001",
+        "message": "Dynamo client error",
+    }
 
     """
        Errors with no exception
