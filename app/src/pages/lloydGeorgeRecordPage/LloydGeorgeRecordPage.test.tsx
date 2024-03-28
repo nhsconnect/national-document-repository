@@ -13,6 +13,9 @@ import usePatient from '../../helpers/hooks/usePatient';
 import { act } from 'react-dom/test-utils';
 import { routes } from '../../types/generic/routes';
 import useConfig from '../../helpers/hooks/useConfig';
+import useRole from '../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { LinkProps } from 'react-router-dom';
 
 jest.mock('../../helpers/hooks/useConfig');
 jest.mock('axios');
@@ -26,7 +29,12 @@ const mockPatientDetails = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 const mockUseConfig = useConfig as jest.Mock;
-
+const mockUseRole = useRole as jest.Mock;
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} role="link" />,
+    useNavigate: () => mockNavigate,
+}));
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
 }));
@@ -81,6 +89,70 @@ describe('LloydGeorgeRecordPage', () => {
         await waitFor(async () => {
             expect(screen.getByText('No documents are available.')).toBeInTheDocument();
         });
+
+        expect(screen.queryByText('View record')).not.toBeInTheDocument();
+    });
+    it('renders initial lg record view with no docs available text if lambda return records status is uploading for more than 3 min', async () => {
+        const errorResponse = {
+            response: {
+                status: 400,
+                data: { err_code: 'LGL_400', message: '400 no docs found' },
+                message: '400 no docs found',
+            },
+        };
+
+        mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+        render(<LloydGeorgeRecordPage />);
+
+        await waitFor(async () => {
+            expect(screen.getByText('No documents are available.')).toBeInTheDocument();
+        });
+
+        expect(screen.queryByText('View record')).not.toBeInTheDocument();
+    });
+    it('renders initial lg record view with docs are uploading text if response status is 423', async () => {
+        const errorResponse = {
+            response: {
+                status: 423,
+                data: { err_code: 'LGL_423', message: '423' },
+                message: '423',
+            },
+        };
+
+        mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+        render(<LloydGeorgeRecordPage />);
+
+        await waitFor(async () => {
+            expect(
+                screen.getByText(
+                    'You can view this record once it’s finished uploading. This may take a few minutes.',
+                ),
+            ).toBeInTheDocument();
+        });
+
+        expect(screen.queryByText('View record')).not.toBeInTheDocument();
+    });
+    it('renders initial lg record view with timeout text if response is 504', async () => {
+        const errorResponse = {
+            response: {
+                status: 504,
+                message: '504 no docs found',
+            },
+        };
+
+        mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+        mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+
+        render(<LloydGeorgeRecordPage />);
+
+        await waitFor(async () => {
+            expect(
+                screen.getByText(/The Lloyd George document is too large to view in a browser/i),
+            ).toBeInTheDocument();
+        });
+        expect(screen.getByText(/please download instead/i)).toBeInTheDocument();
 
         expect(screen.queryByText('View record')).not.toBeInTheDocument();
     });
