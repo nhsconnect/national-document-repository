@@ -6,6 +6,7 @@ import {
     buildUploadSession,
 } from '../../helpers/test/testBuilders';
 import LloydGeorgeUploadPage from './LloydGeorgeUploadPage';
+import { routes } from '../../types/generic/routes';
 import userEvent from '@testing-library/user-event';
 import uploadDocuments, {
     updateDocumentState,
@@ -16,14 +17,21 @@ import uploadDocuments, {
 import { act } from 'react-dom/test-utils';
 import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
 import { Props } from '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
+import { MomentInput } from 'moment/moment';
+
 jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../helpers/hooks/usePatient');
 jest.mock('react-router');
-// jest.mock('moment', () => {
-//     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-// });
+jest.mock('moment', () => {
+    return (arg: MomentInput) => {
+        if (!arg) {
+            arg = '2020-01-01T00:00:00.000Z';
+        }
+        return jest.requireActual('moment')(arg);
+    };
+});
 
 const mockedUsePatient = usePatient as jest.Mock;
 const mockUploadDocuments = uploadDocuments as jest.Mock;
@@ -246,36 +254,36 @@ describe('LloydGeorgeUploadDocumentsPage', () => {
             });
         });
     });
-    // describe('Navigating', () => {
-    //     it('navigates to Error page when call to lg record view return 423', async () => {
-    //         const errorResponse = {
-    //             response: {
-    //                 status: 423,
-    //                 data: { message: 'An error occurred', err_code: 'SP_1001' },
-    //             },
-    //         };
-    //         mockUploadDocuments.mockImplementation(() => Promise.reject(errorResponse));
-    //
-    //         render(<LloydGeorgeUploadPage />);
-    //         expect(
-    //             screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
-    //         ).toBeInTheDocument();
-    //         act(() => {
-    //             userEvent.upload(screen.getByTestId(`button-input`), [lgFile]);
-    //         });
-    //         expect(screen.getByText(lgFile.name)).toBeInTheDocument();
-    //         expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-    //
-    //         act(() => {
-    //             userEvent.click(screen.getByRole('button', { name: 'Upload' }));
-    //         });
-    //         expect(mockUploadDocuments).toHaveBeenCalled();
-    //
-    //         await waitFor(() => {
-    //             expect(mockNavigate).toHaveBeenCalledWith(
-    //                 routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
-    //             );
-    //         });
-    //     });
-    // });
+    describe('Navigating', () => {
+        it('navigates to Error page when call to lg record view return 423', async () => {
+            const errorResponse = {
+                response: {
+                    status: 423,
+                    data: { message: 'An error occurred', err_code: 'SP_1001' },
+                },
+            };
+            mockUploadDocuments.mockImplementation(() => Promise.reject(errorResponse));
+
+            render(<LloydGeorgeUploadPage />);
+            expect(
+                screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
+            ).toBeInTheDocument();
+            act(() => {
+                userEvent.upload(screen.getByTestId(`button-input`), [lgFile]);
+            });
+            expect(screen.getByText(lgFile.name)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+            expect(mockUploadDocuments).toHaveBeenCalled();
+
+            await waitFor(() => {
+                expect(mockNavigate).toHaveBeenCalledWith(
+                    routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+                );
+            });
+        });
+    });
 });
