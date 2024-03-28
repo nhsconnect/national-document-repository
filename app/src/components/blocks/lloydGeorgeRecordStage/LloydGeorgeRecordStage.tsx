@@ -116,7 +116,7 @@ function LloydGeorgeRecordStage({
                         setFullScreen(false);
                     }}
                 >
-                    Go back
+                    Exit full screen
                 </BackLink>
             )}
             {!fullScreen && userIsGpAdminNonBSOL && (
