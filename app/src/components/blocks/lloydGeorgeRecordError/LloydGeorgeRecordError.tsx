@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, MouseEvent, SetStateAction } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import ServiceError from '../../layout/serviceErrorBox/ServiceErrorBox';
@@ -65,7 +65,9 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
                     <ButtonLink
                         className="lloydgeorge_record-stage_header-content-no_record-upload"
                         data-testid="upload-patient-record-button"
-                        onClick={() => {
+                        href="#"
+                        onClick={(e: MouseEvent<HTMLAnchorElement>) => {
+                            e.preventDefault();
                             navigate(routes.LLOYD_GEORGE_UPLOAD);
                         }}
                     >
