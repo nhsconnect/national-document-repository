@@ -317,7 +317,7 @@ class LambdaError(Enum):
     """
     UpdateUploadStateMissingBody = {
         "err_code": "US_4001",
-        "message": "Missing PUT request body",
+        "message": "Missing request body",
     }
     UpdateUploadStateValidation = {
         "err_code": "US_4002",

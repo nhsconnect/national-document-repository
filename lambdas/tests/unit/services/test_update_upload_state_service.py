@@ -10,6 +10,7 @@ from tests.unit.helpers.data.update_upload_state import (
     MOCK_LG_DOCUMENTS_REQUEST,
     MOCK_NO_DOCTYPE_REQUEST,
     MOCK_NO_FIELDS_REQUEST,
+    MOCK_NO_FILES_REQUEST,
     MOCK_NO_REFERENCE_REQUEST,
 )
 from utils.lambda_exceptions import UpdateUploadStateException
@@ -85,6 +86,18 @@ def test_process_documents_when_fields_empty_and_raises_exception(
 ):
     with pytest.raises(UpdateUploadStateException):
         patched_service.handle_update_state(MOCK_NO_FIELDS_REQUEST)
+
+    mock_update_document.assert_not_called()
+    mock_format_update.assert_not_called()
+
+
+def test_process_documents_no_files_key_raises_exception(
+    patched_service,
+    mock_update_document,
+    mock_format_update,
+):
+    with pytest.raises(UpdateUploadStateException):
+        patched_service.handle_update_state(MOCK_NO_FILES_REQUEST)
 
     mock_update_document.assert_not_called()
     mock_format_update.assert_not_called()

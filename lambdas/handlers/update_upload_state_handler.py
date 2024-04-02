@@ -30,15 +30,18 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.UPDATE_UPLOAD_STATE.value
-
+    failed_message = "Update upload state failed"
     logger.info("Update upload state handler triggered")
     try:
         event_body = json.loads(event["body"])
-        if not event_body:
+        if not event_body or not isinstance(event_body, dict):
+            logger.error(
+                f"{LambdaError.UploadConfirmResultMissingBody.to_str()}",
+                {"Result": failed_message},
+            )
             raise UpdateUploadStateException(
                 400, LambdaError.UpdateUploadStateMissingBody
             )
-
         logger.info("Using update upload service...")
         update_upload_state_service = UpdateUploadStateService()
         update_upload_state_service.handle_update_state(event_body)
@@ -46,9 +49,15 @@ def lambda_handler(event, context):
             200, "Update upload state successful", "POST"
         ).create_api_gateway_response()
 
-    except (JSONDecodeError, KeyError) as e:
+    except (JSONDecodeError, AttributeError) as e:
         logger.error(
-            f"{LambdaError.UpdateUploadStateMissingBody.to_str()}: {e}",
-            {"Result": "Unsuccessful update state"},
+            f"{LambdaError.UpdateUploadStateMissingBody.to_str()}: {str(e)}",
+            {"Result": failed_message},
+        )
+        raise UpdateUploadStateException(400, LambdaError.UpdateUploadStateMissingBody)
+    except (KeyError, TypeError) as e:
+        logger.error(
+            f"{LambdaError.UpdateUploadStateMissingBody.to_str()}: {str(e)}",
+            {"Result": failed_message},
         )
         raise UpdateUploadStateException(400, LambdaError.UpdateUploadStateMissingBody)
