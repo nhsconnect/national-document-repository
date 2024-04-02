@@ -10,7 +10,6 @@ from tests.unit.helpers.data.update_upload_state import (
     MOCK_VALID_ARF_EVENT,
     MOCK_VALID_LG_EVENT,
 )
-from utils.lambda_exceptions import UpdateUploadStateException
 from utils.lambda_response import ApiGatewayResponse
 
 
@@ -124,13 +123,31 @@ def test_lambda_handler_missing_environment_variables_type_arf_returns_500(
     assert expected == actual
 
 
-def test_processing_event_details_event_with_invalid_body_raises_exception(
-    set_env, context
-):
-    with pytest.raises(UpdateUploadStateException):
-        lambda_handler(MOCK_INVALID_BODY_EVENT, context)
+def test_lambda_handler_invalid_body_raises_exception(set_env, context):
+    expected_body = {
+        "message": "Invalid request body",
+        "err_code": "US_4005",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
+    expected = ApiGatewayResponse(
+        400,
+        json.dumps(expected_body),
+        "POST",
+    ).create_api_gateway_response()
+    actual = lambda_handler(MOCK_INVALID_BODY_EVENT, context)
+    assert expected == actual
 
 
-def test_processing_event_details_missing_body_raises_exception(set_env, context):
-    with pytest.raises(UpdateUploadStateException):
-        lambda_handler(MOCK_NO_BODY_EVENT, context)
+def test_lambda_handler_missing_body_raises_exception(set_env, context):
+    expected_body = {
+        "message": "Missing request body",
+        "err_code": "US_4001",
+        "interaction_id": "88888888-4444-4444-4444-121212121212",
+    }
+    expected = ApiGatewayResponse(
+        400,
+        json.dumps(expected_body),
+        "POST",
+    ).create_api_gateway_response()
+    actual = lambda_handler(MOCK_NO_BODY_EVENT, context)
+    assert expected == actual

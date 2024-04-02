@@ -331,6 +331,10 @@ class LambdaError(Enum):
         "err_code": "US_4004",
         "message": "Key or type error on request",
     }
+    UpdateUploadStateInvalidBody = {
+        "err_code": "US_4005",
+        "message": "Invalid request body",
+    }
     UpdateUploadStateClient = {
         "err_code": "US_5001",
         "message": "Dynamo client error",

@@ -34,14 +34,6 @@ def lambda_handler(event, context):
     logger.info("Update upload state handler triggered")
     try:
         event_body = json.loads(event["body"])
-        if not event_body or not isinstance(event_body, dict):
-            logger.error(
-                f"{LambdaError.UploadConfirmResultMissingBody.to_str()}",
-                {"Result": failed_message},
-            )
-            raise UpdateUploadStateException(
-                400, LambdaError.UpdateUploadStateMissingBody
-            )
         logger.info("Using update upload service...")
         update_upload_state_service = UpdateUploadStateService()
         update_upload_state_service.handle_update_state(event_body)
@@ -51,10 +43,10 @@ def lambda_handler(event, context):
 
     except (JSONDecodeError, AttributeError) as e:
         logger.error(
-            f"{LambdaError.UpdateUploadStateMissingBody.to_str()}: {str(e)}",
+            f"{LambdaError.UpdateUploadStateInvalidBody.to_str()}: {str(e)}",
             {"Result": failed_message},
         )
-        raise UpdateUploadStateException(400, LambdaError.UpdateUploadStateMissingBody)
+        raise UpdateUploadStateException(400, LambdaError.UpdateUploadStateInvalidBody)
     except (KeyError, TypeError) as e:
         logger.error(
             f"{LambdaError.UpdateUploadStateMissingBody.to_str()}: {str(e)}",
