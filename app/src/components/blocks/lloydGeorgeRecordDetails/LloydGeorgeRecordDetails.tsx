@@ -81,13 +81,12 @@ function LloydGeorgeRecordDetails({
                     <div className="lloydgeorge_record-details_actions">
                         <button
                             data-testid="actions-menu"
-                            className={`nhsuk-select clickable lloydgeorge_record-details_actions-select ${
+                            className={`nhsuk-select lloydgeorge_record-details_actions-select ${
                                 showActionsMenu
                                     ? 'lloydgeorge_record-details_actions-select--selected'
                                     : ''
                             }`}
                             onClick={handleMoreActions}
-                            tabIndex={0}
                         >
                             <div
                                 className={`lloydgeorge_record-details_actions-select_border ${
