@@ -69,7 +69,7 @@ function LloydGeorgeUploadCompleteStage({ documents }: Props) {
             <ButtonLink
                 role="button"
                 data-testid="view-record-btn"
-                href={routes.LLOYD_GEORGE}
+                href="#"
                 onClick={(e) => {
                     e.preventDefault();
                     navigate(routes.LLOYD_GEORGE);
@@ -83,7 +83,7 @@ function LloydGeorgeUploadCompleteStage({ documents }: Props) {
                 data-testid="search-patient-btn"
                 style={{ marginLeft: 18 }}
                 role="button"
-                href={routes.SEARCH_PATIENT}
+                href="#"
                 onClick={(e) => {
                     e.preventDefault();
                     navigate(routes.SEARCH_PATIENT);
