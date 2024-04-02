@@ -20,7 +20,6 @@ const NavLinks = () => {
                 role="link"
                 className="clickable"
                 onClick={(e) => nav(e, routes.HOME)}
-                tabIndex={0}
                 href="#"
             >
                 Home
@@ -30,7 +29,6 @@ const NavLinks = () => {
                 className="clickable"
                 data-testid="logout-btn"
                 onClick={(e) => nav(e, routes.LOGOUT)}
-                tabIndex={0}
                 href="#"
             >
                 Log Out
