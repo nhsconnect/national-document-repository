@@ -95,7 +95,7 @@ describe('LloydGeorgeRecordStage', () => {
         await waitFor(() => {
             expect(screen.queryByText('Lloyd George record')).not.toBeInTheDocument();
         });
-        expect(screen.getByText('Go back')).toBeInTheDocument();
+        expect(screen.getByText('Exit full screen')).toBeInTheDocument();
         expect(screen.getByText(patientName)).toBeInTheDocument();
         expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
         expect(screen.getByText(/NHS number/)).toBeInTheDocument();
@@ -115,7 +115,7 @@ describe('LloydGeorgeRecordStage', () => {
         });
 
         act(() => {
-            userEvent.click(screen.getByText('Go back'));
+            userEvent.click(screen.getByText('Exit full screen'));
         });
 
         await waitFor(() => {
