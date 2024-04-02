@@ -119,6 +119,9 @@ function LloydGeorgeUploadPage() {
             window.clearInterval(intervalTimer);
             void confirmUpload();
         }
+        return () => {
+            window.clearInterval(intervalTimer);
+        };
     }, [
         baseHeaders,
         baseUrl,
