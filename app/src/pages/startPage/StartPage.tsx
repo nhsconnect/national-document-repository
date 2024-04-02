@@ -16,7 +16,6 @@ function StartPage(props: Props) {
     const baseAPIUrl = useBaseAPIUrl();
     const [isLoading, setIsLoading] = useState(false);
     const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
         setIsLoading(true);
         e.preventDefault();
         if (isLocal) {
@@ -50,7 +49,7 @@ function StartPage(props: Props) {
                 <li>your NHS smartcard</li>
                 <li>patient details including their name, date of birth and NHS number</li>
             </ul>
-            <ButtonLink data-testid="start-btn" onClick={handleLogin} href="#" tabIndex={0}>
+            <ButtonLink data-testid="start-btn" onClick={handleLogin} tabIndex={0} href="#">
                 Start now
             </ButtonLink>
             <h3>Get support with the service</h3>
