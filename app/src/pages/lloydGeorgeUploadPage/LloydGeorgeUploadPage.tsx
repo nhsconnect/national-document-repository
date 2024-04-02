@@ -70,14 +70,13 @@ function LloydGeorgeUploadPage() {
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
     const confirmed = useRef(false);
     const navigate = useNavigate();
-    let intervalTimer: number = 0;
+    const [intervalTimer, setIntervalTimer] = useState(0);
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
         const hasVirus = documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.INFECTED);
         const hasNoVirus =
             documents.length && documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
-        window.clearInterval(intervalTimer);
 
         const confirmUpload = async () => {
             if (uploadSession) {
@@ -96,6 +95,7 @@ function LloydGeorgeUploadPage() {
                             state: confirmDocumentState,
                         })),
                     );
+                    window.clearInterval(intervalTimer);
                     setStage(LG_UPLOAD_STAGE.COMPLETE);
                 } catch (e) {
                     const error = e as AxiosError;
@@ -109,11 +109,14 @@ function LloydGeorgeUploadPage() {
         };
 
         if (hasExceededUploadAttempts) {
+            window.clearInterval(intervalTimer);
             setStage(LG_UPLOAD_STAGE.FAILED);
         } else if (hasVirus) {
+            window.clearInterval(intervalTimer);
             setStage(LG_UPLOAD_STAGE.INFECTED);
         } else if (hasNoVirus && !confirmed.current) {
             confirmed.current = true;
+            window.clearInterval(intervalTimer);
             void confirmUpload();
         }
     }, [
@@ -132,10 +135,10 @@ function LloydGeorgeUploadPage() {
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
+        setIntervalTimer(startIntervalTimer(uploadDocuments, uploadSession));
         uploadDocuments.forEach(async (document) => {
             const documentMetadata = uploadSession[document.file.name];
             const documentReference = documentMetadata.fields.key;
-            intervalTimer = startIntervalTimer(documentReference, document);
             try {
                 await uploadDocumentToS3({ setDocuments, document, uploadSession });
                 setDocument(setDocuments, {
@@ -148,7 +151,6 @@ function LloydGeorgeUploadPage() {
                     baseUrl,
                     baseHeaders,
                 });
-                window.clearInterval(intervalTimer);
                 setDocument(setDocuments, {
                     id: document.id,
                     state: virusDocumentState,
@@ -221,15 +223,22 @@ function LloydGeorgeUploadPage() {
         setDocuments([]);
         setStage(LG_UPLOAD_STAGE.SELECT);
     };
-    const startIntervalTimer = (documentReference: string, document: UploadDocument) => {
+    const startIntervalTimer = (
+        uploadDocuments: Array<UploadDocument>,
+        uploadSession: UploadSession,
+    ) => {
         return window.setInterval(async () => {
-            await updateDocumentUploadingState(documentReference, document, true);
+            const uploadStatePromises = uploadDocuments.map((document) => {
+                const documentMetadata = uploadSession[document.file.name];
+                const documentReference = documentMetadata.fields.key;
+                return updateDocumentUploadingState(documentReference, document, true);
+            });
+            await Promise.all(uploadStatePromises);
         }, 120000);
     };
 
     switch (stage) {
         case LG_UPLOAD_STAGE.SELECT:
-            window.clearInterval(intervalTimer);
             return (
                 <LloydGeorgeFileInputStage
                     documents={documents}
@@ -238,7 +247,6 @@ function LloydGeorgeUploadPage() {
                 />
             );
         case LG_UPLOAD_STAGE.UPLOAD:
-            window.clearInterval(intervalTimer);
             return (
                 <LloydGeorgeUploadingStage
                     documents={documents}
@@ -247,10 +255,8 @@ function LloydGeorgeUploadPage() {
                 />
             );
         case LG_UPLOAD_STAGE.COMPLETE:
-            window.clearInterval(intervalTimer);
             return <LloydGeorgeUploadCompleteStage documents={documents} />;
         case LG_UPLOAD_STAGE.INFECTED:
-            window.clearInterval(intervalTimer);
             return (
                 <LloydGeorgeUploadInfectedStage
                     documents={documents}
@@ -258,13 +264,10 @@ function LloydGeorgeUploadPage() {
                 />
             );
         case LG_UPLOAD_STAGE.FAILED:
-            window.clearInterval(intervalTimer);
             return <LloydGeorgeUploadFailedStage restartUpload={restartUpload} />;
         case LG_UPLOAD_STAGE.CONFIRMATION:
-            window.clearInterval(intervalTimer);
             return <Spinner status="Checking uploads..." />;
         default:
-            window.clearInterval(intervalTimer);
             return null;
     }
 }
