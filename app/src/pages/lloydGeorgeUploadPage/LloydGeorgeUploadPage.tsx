@@ -70,7 +70,7 @@ function LloydGeorgeUploadPage() {
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
     const confirmed = useRef(false);
     const navigate = useNavigate();
-    let intervalTimer: number;
+    let intervalTimer: number = 0;
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
@@ -125,6 +125,7 @@ function LloydGeorgeUploadPage() {
         setDocuments,
         setStage,
         uploadSession,
+        intervalTimer,
     ]);
 
     const uploadAndScanDocuments = (
