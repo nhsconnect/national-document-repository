@@ -1,4 +1,5 @@
 import pathlib
+from datetime import datetime, timezone
 from typing import Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
@@ -86,6 +87,10 @@ class DocumentReference(BaseModel):
 
     def create_unique_filename(self, duplicates: int):
         return f"{self.get_base_name()}({duplicates}){self.get_file_extension()}"
+
+    def last_updated_within_three_minutes(self) -> bool:
+        three_minutes_ago = datetime.now(timezone.utc).timestamp() - 60 * 3
+        return self.last_updated >= three_minutes_ago
 
     def __eq__(self, other):
         if isinstance(other, DocumentReference):

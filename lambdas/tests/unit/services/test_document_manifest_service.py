@@ -1,5 +1,4 @@
 import os
-from copy import copy
 
 import pytest
 from enums.supported_document_types import SupportedDocumentTypes
@@ -10,7 +9,7 @@ from tests.unit.helpers.data.test_documents import (
     create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
 )
-from utils.dynamo_utils import filter_expression_for_available_docs
+from utils.common_query_filters import UploadCompleted
 from utils.lambda_exceptions import DocumentManifestServiceException
 
 TEST_DOC_STORE_DOCUMENT_REFS = create_test_doc_store_refs()
@@ -63,13 +62,12 @@ def test_create_document_manifest_presigned_url_doc_store(
     response = mock_service.create_document_manifest_presigned_url(
         SupportedDocumentTypes.ARF
     )
-    mock_filters = filter_expression_for_available_docs()
     assert mock_service.zip_file_name == f"patient-record-{TEST_NHS_NUMBER}.zip"
     assert response == MOCK_PRESIGNED_URL_RESPONSE
     mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
         nhs_number=TEST_NHS_NUMBER,
         doc_type=SupportedDocumentTypes.ARF,
-        query_filter=mock_filters,
+        query_filter=UploadCompleted,
     )
     mock_s3_service.create_download_presigned_url.assert_called_once_with(
         s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
@@ -82,7 +80,6 @@ def test_create_document_manifest_presigned_url_lloyd_george(
     mock_service.document_service.fetch_available_document_references_by_type.return_value = (
         TEST_LLOYD_GEORGE_DOCUMENT_REFS
     )
-    mock_filters = filter_expression_for_available_docs()
 
     response = mock_service.create_document_manifest_presigned_url(
         SupportedDocumentTypes.LG
@@ -93,7 +90,7 @@ def test_create_document_manifest_presigned_url_lloyd_george(
     mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
         nhs_number=TEST_NHS_NUMBER,
         doc_type=SupportedDocumentTypes.LG,
-        query_filter=mock_filters,
+        query_filter=UploadCompleted,
     )
     mock_s3_service.create_download_presigned_url.assert_called_once_with(
         s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
@@ -106,7 +103,6 @@ def test_create_document_manifest_presigned_url_all(
     mock_service.document_service.fetch_available_document_references_by_type.return_value = (
         TEST_DOC_STORE_DOCUMENT_REFS + TEST_LLOYD_GEORGE_DOCUMENT_REFS
     )
-    mock_filters = filter_expression_for_available_docs()
 
     response = mock_service.create_document_manifest_presigned_url(
         SupportedDocumentTypes.ALL
@@ -117,7 +113,7 @@ def test_create_document_manifest_presigned_url_all(
     mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
         nhs_number=TEST_NHS_NUMBER,
         doc_type=SupportedDocumentTypes.ALL,
-        query_filter=mock_filters,
+        query_filter=UploadCompleted,
     )
     mock_s3_service.create_download_presigned_url.assert_called_once_with(
         s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
@@ -133,24 +129,6 @@ def test_create_document_manifest_presigned_raises_exception_when_validation_err
 
     with pytest.raises(DocumentManifestServiceException):
         mock_service.create_document_manifest_presigned_url(SupportedDocumentTypes.ALL)
-
-
-def test_create_document_manifest_presigned_raises_exception_when_uploading_in_process(
-    mock_service, validation_error
-):
-    file_in_progress = copy(TEST_LLOYD_GEORGE_DOCUMENT_REFS[0])
-    file_in_progress.uploaded = False
-    file_in_progress.uploading = True
-
-    mock_service.document_service.fetch_available_document_references_by_type.return_value = [
-        file_in_progress
-    ]
-
-    with pytest.raises(DocumentManifestServiceException) as e:
-        mock_service.create_document_manifest_presigned_url(SupportedDocumentTypes.LG)
-
-    assert e.value.status_code == 423
-    assert e.value.err_code == "LGL_423"
 
 
 def test_create_document_manifest_presigned_raises_exception_when_not_all_files_uploaded(
