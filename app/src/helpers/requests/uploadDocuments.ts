@@ -206,16 +206,11 @@ export const updateDocumentState = async ({
             },
         ],
     };
-    try {
-        await axios.post(updateUploadStateUrl, body, {
-            headers: {
-                ...baseHeaders,
-            },
-        });
-    } catch (e) {
-        // DOCUMENT_UPLOAD_STATE.UPLOADING;
-        throw e;
-    }
+    await axios.post(updateUploadStateUrl, body, {
+        headers: {
+            ...baseHeaders,
+        },
+    });
 };
 
 export default uploadDocuments;
