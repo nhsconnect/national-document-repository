@@ -54,7 +54,15 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
                 </p>{' '}
             </WarningCallout>
 
-            <ButtonLink role="button" data-testid="retry-upload-btn" onClick={restartUpload}>
+            <ButtonLink
+                role="button"
+                data-testid="retry-upload-btn"
+                onClick={(e) => {
+                    e.preventDefault();
+                    restartUpload();
+                }}
+                href="#"
+            >
                 Try upload again
             </ButtonLink>
 
@@ -63,7 +71,9 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
                 data-testid="search-patient-btn"
                 style={{ marginLeft: 18 }}
                 role="button"
-                onClick={() => {
+                href="#"
+                onClick={(e) => {
+                    e.preventDefault();
                     navigate(routes.SEARCH_PATIENT);
                 }}
             >
