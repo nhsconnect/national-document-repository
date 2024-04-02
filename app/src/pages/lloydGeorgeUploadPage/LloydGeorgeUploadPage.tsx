@@ -229,6 +229,7 @@ function LloydGeorgeUploadPage() {
 
     switch (stage) {
         case LG_UPLOAD_STAGE.SELECT:
+            window.clearInterval(intervalTimer);
             return (
                 <LloydGeorgeFileInputStage
                     documents={documents}
@@ -237,6 +238,7 @@ function LloydGeorgeUploadPage() {
                 />
             );
         case LG_UPLOAD_STAGE.UPLOAD:
+            window.clearInterval(intervalTimer);
             return (
                 <LloydGeorgeUploadingStage
                     documents={documents}
@@ -245,8 +247,10 @@ function LloydGeorgeUploadPage() {
                 />
             );
         case LG_UPLOAD_STAGE.COMPLETE:
+            window.clearInterval(intervalTimer);
             return <LloydGeorgeUploadCompleteStage documents={documents} />;
         case LG_UPLOAD_STAGE.INFECTED:
+            window.clearInterval(intervalTimer);
             return (
                 <LloydGeorgeUploadInfectedStage
                     documents={documents}
@@ -254,10 +258,13 @@ function LloydGeorgeUploadPage() {
                 />
             );
         case LG_UPLOAD_STAGE.FAILED:
+            window.clearInterval(intervalTimer);
             return <LloydGeorgeUploadFailedStage restartUpload={restartUpload} />;
         case LG_UPLOAD_STAGE.CONFIRMATION:
+            window.clearInterval(intervalTimer);
             return <Spinner status="Checking uploads..." />;
         default:
+            window.clearInterval(intervalTimer);
             return null;
     }
 }
