@@ -188,7 +188,6 @@ function LloydGeorgeRecordStage({
                                         onClick={handleCancelButton}
                                         className="nhsuk-button nhsuk-button--secondary"
                                         style={{ marginLeft: 30 }}
-                                        role="button"
                                     >
                                         Cancel
                                     </Button>
