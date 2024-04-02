@@ -57,11 +57,11 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
             <ButtonLink
                 role="button"
                 data-testid="retry-upload-btn"
+                href="#"
                 onClick={(e) => {
                     e.preventDefault();
                     restartUpload();
                 }}
-                href="#"
             >
                 Try upload again
             </ButtonLink>
