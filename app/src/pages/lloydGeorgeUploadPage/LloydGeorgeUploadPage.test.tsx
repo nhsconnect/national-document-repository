@@ -324,6 +324,34 @@ describe('LloydGeorgeUploadDocumentsPage', () => {
                 );
             });
         });
+        it('navigates to start page when when call to lg record view return 403', async () => {
+            const errorResponse = {
+                response: {
+                    status: 403,
+                    data: { message: 'An error occurred', err_code: 'SP_1001' },
+                },
+            };
+            mockUploadDocuments.mockImplementation(() => Promise.reject(errorResponse));
+
+            render(<LloydGeorgeUploadPage />);
+            expect(
+                screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
+            ).toBeInTheDocument();
+            act(() => {
+                userEvent.upload(screen.getByTestId(`button-input`), [lgFile]);
+            });
+            expect(screen.getByText(lgFile.name)).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+            expect(mockUploadDocuments).toHaveBeenCalled();
+
+            await waitFor(() => {
+                expect(mockNavigate).toHaveBeenCalledWith(routes.START);
+            });
+        });
         it('navigates to start page when confirmation returns 403', async () => {
             mockS3Upload.mockReturnValue(Promise.resolve());
             mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
