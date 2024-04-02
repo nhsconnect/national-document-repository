@@ -70,12 +70,14 @@ function LloydGeorgeUploadPage() {
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
     const confirmed = useRef(false);
     const navigate = useNavigate();
+    let intervalTimer: number;
 
     useEffect(() => {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
         const hasVirus = documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.INFECTED);
         const hasNoVirus =
             documents.length && documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
+        window.clearInterval(intervalTimer);
 
         const confirmUpload = async () => {
             if (uploadSession) {
@@ -132,7 +134,7 @@ function LloydGeorgeUploadPage() {
         uploadDocuments.forEach(async (document) => {
             const documentMetadata = uploadSession[document.file.name];
             const documentReference = documentMetadata.fields.key;
-            const intervalTimer = startIntervalTimer(documentReference, document);
+            intervalTimer = startIntervalTimer(documentReference, document);
             try {
                 await uploadDocumentToS3({ setDocuments, document, uploadSession });
                 setDocument(setDocuments, {
