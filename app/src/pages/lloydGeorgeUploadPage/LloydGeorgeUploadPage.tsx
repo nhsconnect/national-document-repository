@@ -138,7 +138,8 @@ function LloydGeorgeUploadPage() {
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
-        setIntervalTimer(startIntervalTimer(uploadDocuments, uploadSession));
+        const updateStateInterval = startIntervalTimer(uploadDocuments, uploadSession);
+        setIntervalTimer(updateStateInterval);
         uploadDocuments.forEach(async (document) => {
             const documentMetadata = uploadSession[document.file.name];
             const documentReference = documentMetadata.fields.key;
@@ -230,13 +231,21 @@ function LloydGeorgeUploadPage() {
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
+        console.log('STARTING INTERVAL');
         return window.setInterval(async () => {
+            console.log('TRIGGERING INTERVAL');
             const uploadStatePromises = uploadDocuments.map((document) => {
                 const documentMetadata = uploadSession[document.file.name];
                 const documentReference = documentMetadata.fields.key;
                 return updateDocumentUploadingState(documentReference, document, true);
             });
-            await Promise.all(uploadStatePromises);
+            console.log(uploadStatePromises);
+            try {
+                const res = await Promise.all(uploadStatePromises);
+                console.log(res);
+            } catch (e) {
+                console.log(e);
+            }
         }, 120000);
     };
 
