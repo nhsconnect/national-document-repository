@@ -95,7 +95,7 @@ function LloydGeorgeUploadPage() {
                             state: confirmDocumentState,
                         })),
                     );
-                    window.clearInterval(intervalTimer);
+                    // window.clearInterval(intervalTimer);
                     setStage(LG_UPLOAD_STAGE.COMPLETE);
                 } catch (e) {
                     const error = e as AxiosError;
@@ -109,18 +109,18 @@ function LloydGeorgeUploadPage() {
         };
 
         if (hasExceededUploadAttempts) {
-            window.clearInterval(intervalTimer);
+            // window.clearInterval(intervalTimer);
             setStage(LG_UPLOAD_STAGE.FAILED);
         } else if (hasVirus) {
-            window.clearInterval(intervalTimer);
+            // window.clearInterval(intervalTimer);
             setStage(LG_UPLOAD_STAGE.INFECTED);
         } else if (hasNoVirus && !confirmed.current) {
             confirmed.current = true;
-            window.clearInterval(intervalTimer);
+            // window.clearInterval(intervalTimer);
             void confirmUpload();
         }
         return () => {
-            window.clearInterval(intervalTimer);
+            // window.clearInterval(intervalTimer);
         };
     }, [
         baseHeaders,
@@ -161,7 +161,7 @@ function LloydGeorgeUploadPage() {
                     progress: 100,
                 });
             } catch (e) {
-                window.clearInterval(intervalTimer);
+                // window.clearInterval(intervalTimer);
                 setDocument(setDocuments, {
                     id: document.id,
                     state: DOCUMENT_UPLOAD_STATE.FAILED,
@@ -225,7 +225,7 @@ function LloydGeorgeUploadPage() {
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
-        console.log('STARTING INTERVAL');
+        console.log('STARTING INTERVAL', console.log(uploadDocuments, uploadSession));
         return window.setInterval(() => {
             console.log('TRIGGERING INTERVAL');
             uploadDocuments.forEach(async (document) => {
