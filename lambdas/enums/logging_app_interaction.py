@@ -14,3 +14,4 @@ class LoggingAppInteraction(Enum):
     FEATURE_FLAGS = "Feature flags"
     VIRUS_SCAN = "Virus Scan"
     UPLOAD_CONFIRMATION = "Upload confirmation"
+    UPDATE_UPLOAD_STATE = "Update upload state"
