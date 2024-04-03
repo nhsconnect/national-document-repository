@@ -80,6 +80,7 @@ function LloydGeorgeUploadPage() {
 
         const confirmUpload = async () => {
             if (uploadSession) {
+                window.clearInterval(intervalTimer);
                 setStage(LG_UPLOAD_STAGE.CONFIRMATION);
                 try {
                     const confirmDocumentState = await uploadConfirmation({
@@ -109,19 +110,15 @@ function LloydGeorgeUploadPage() {
         };
 
         if (hasExceededUploadAttempts) {
-            // window.clearInterval(intervalTimer);
+            window.clearInterval(intervalTimer);
             setStage(LG_UPLOAD_STAGE.FAILED);
         } else if (hasVirus) {
-            // window.clearInterval(intervalTimer);
+            window.clearInterval(intervalTimer);
             setStage(LG_UPLOAD_STAGE.INFECTED);
         } else if (hasNoVirus && !confirmed.current) {
             confirmed.current = true;
-            // window.clearInterval(intervalTimer);
             void confirmUpload();
         }
-        return () => {
-            // window.clearInterval(intervalTimer);
-        };
     }, [
         baseHeaders,
         baseUrl,
@@ -133,6 +130,12 @@ function LloydGeorgeUploadPage() {
         uploadSession,
         intervalTimer,
     ]);
+
+    useEffect(() => {
+        return () => {
+            window.clearInterval(intervalTimer);
+        };
+    }, []);
 
     const uploadAndScanDocuments = (
         uploadDocuments: Array<UploadDocument>,
