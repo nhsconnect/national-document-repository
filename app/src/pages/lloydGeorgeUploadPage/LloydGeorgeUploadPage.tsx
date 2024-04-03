@@ -135,7 +135,7 @@ function LloydGeorgeUploadPage() {
         return () => {
             window.clearInterval(intervalTimer);
         };
-    }, []);
+    }, [intervalTimer]);
 
     const uploadAndScanDocuments = (
         uploadDocuments: Array<UploadDocument>,
