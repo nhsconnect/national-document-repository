@@ -233,23 +233,16 @@ function LloydGeorgeUploadPage() {
     ) => {
         console.log('STARTING INTERVAL');
         return window.setInterval(() => {
-            const updateStateReq = async () => {
-                console.log('TRIGGERING INTERVAL');
-                const uploadStatePromises = uploadDocuments.map((document) => {
-                    const documentMetadata = uploadSession[document.file.name];
-                    const documentReference = documentMetadata.fields.key;
-                    return updateDocumentUploadingState(documentReference, document, true);
-                });
-                console.log(uploadStatePromises);
+            console.log('TRIGGERING INTERVAL');
+            uploadDocuments.forEach(async (document) => {
+                const documentMetadata = uploadSession[document.file.name];
+                const documentReference = documentMetadata.fields.key;
                 try {
-                    const res = Promise.all(uploadStatePromises);
-                    console.log('RES: ', res);
+                    await updateDocumentUploadingState(documentReference, document, true);
                 } catch (e) {
-                    console.error('ERR: ', e);
+                    console.log(e);
                 }
-            };
-
-            void updateStateReq();
+            });
         }, 120000);
     };
 
