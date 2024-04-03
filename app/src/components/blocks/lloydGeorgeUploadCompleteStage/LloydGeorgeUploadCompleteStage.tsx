@@ -24,15 +24,14 @@ function LloydGeorgeUploadCompleteStage({ documents }: Props) {
     return (
         <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">
             <Card className="lloydgeorge_upload-complete_card" data-testid="upload-complete-card">
-                <Card.Content>
-                    <Card.Heading className="lloydgeorge_upload-complete_card_header">
+                <Card.Content className="lloydgeorge_upload-complete_card_content">
+                    <Card.Heading className="lloydgeorge_upload-complete_card_content_header">
                         Record uploaded for
                     </Card.Heading>
-                    <ReducedPatientInfo className={'lloydgeorge_upload-complete_subheader'} />
-                    <div
-                        style={{ marginTop: 30 }}
-                        className="lloydgeorge_upload-complete_subheader"
-                    >
+                    <ReducedPatientInfo
+                        className={'lloydgeorge_upload-complete_card_content_subheader'}
+                    />
+                    <div className="lloydgeorge_upload-complete_card_content_subheader">
                         Date uploaded: {getFormattedDate(new Date())}
                     </div>
                 </Card.Content>

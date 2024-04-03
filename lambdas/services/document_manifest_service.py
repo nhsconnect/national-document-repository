@@ -13,8 +13,13 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import UploadCompleted
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentManifestServiceException
+from utils.lloyd_george_validator import (
+    LGInvalidFilesException,
+    check_for_number_of_files_match_expected,
+)
 
 logger = LoggingService(__name__)
 
@@ -38,9 +43,12 @@ class DocumentManifestService:
         try:
             documents = (
                 self.document_service.fetch_available_document_references_by_type(
-                    nhs_number=self.nhs_number, doc_type=doc_type
+                    nhs_number=self.nhs_number,
+                    doc_type=doc_type,
+                    query_filter=UploadCompleted,
                 )
             )
+
             if not documents:
                 logger.error(
                     f"{LambdaError.ManifestNoDocs.to_str()}",
@@ -49,6 +57,11 @@ class DocumentManifestService:
                 raise DocumentManifestServiceException(
                     status_code=404, error=LambdaError.ManifestNoDocs
                 )
+            if doc_type == SupportedDocumentTypes.LG:
+                check_for_number_of_files_match_expected(
+                    documents[0].file_name, len(documents)
+                )
+
         except ValidationError as e:
             logger.error(
                 f"{LambdaError.ManifestValidation.to_str()}: {str(e)}",
@@ -64,6 +77,14 @@ class DocumentManifestService:
             )
             raise DocumentManifestServiceException(
                 status_code=500, error=LambdaError.ManifestDB
+            )
+        except LGInvalidFilesException as e:
+            logger.error(
+                f"{LambdaError.IncompleteRecordError.to_str()}: {str(e)}",
+                {"Result": "Failed to create document manifest"},
+            )
+            raise DocumentManifestServiceException(
+                status_code=400, error=LambdaError.IncompleteRecordError
             )
 
         self.download_documents_to_be_zipped(documents)

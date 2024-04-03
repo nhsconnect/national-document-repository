@@ -1,8 +1,8 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { Button, Card } from 'nhsuk-react-components';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
-import usePatient from '../../../helpers/hooks/usePatient';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
+import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
@@ -11,8 +11,6 @@ export type Props = {
 };
 
 function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDownload }: Props) {
-    const patientDetails = usePatient();
-
     const handleReturnButtonClick = () => {
         setStage(LG_RECORD_STAGE.RECORD);
         if (deleteAfterDownload) {
@@ -27,22 +25,24 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
                     <Card.Heading className="lloydgeorge_download-complete_details-content_header">
                         Download complete
                     </Card.Heading>
-                    Documents from the Lloyd George record of:
-                    <div className="lloydgeorge_download-complete_details-content_subheader">
-                        <strong>
-                            {patientDetails?.givenName + ' ' + patientDetails?.familyName}
-                        </strong>
-                    </div>
-                    <div>{`(NHS number: ${patientDetails?.nhsNumber})`}</div>
+                    <Card.Description className="lloydgeorge_download-complete_details-content_description">
+                        You have successfully downloaded the{'\n'}
+                        Lloyd George record of:
+                    </Card.Description>
+                    <ReducedPatientInfo
+                        className={'lloydgeorge_download-complete_details-content_subheader'}
+                    />
                 </Card.Content>
             </Card>
             {deleteAfterDownload ? (
                 <>
                     <p>This record has been removed from our storage.</p>
-                    <h2>Keep this patient's record safe</h2>
+                    <p className="lloydgeorge_download-complete_paragraph-headers">
+                        Keep this patient's record safe
+                    </p>
                     <ol>
                         <li>
-                            Store the record in accessible and recoverable format within a secure
+                            Store the record in an accessible and recoverable format within a secure
                             network folder
                         </li>
                         <li>
@@ -60,15 +60,20 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
                             </a>
                         </li>
                     </ol>
-                    <h3>Your responsibilities with this record</h3>
+                    <p className="lloydgeorge_download-complete_paragraph-headers">
+                        Your responsibilities with this record
+                    </p>
                     <p>
                         Everyone in a health and care organisation is responsible for managing
                         records appropriately. It is important all general practice staff understand
                         their responsibilities for creating, maintaining, and disposing of records
                         appropriately.
                     </p>
-                    <h3>Follow the Record Management Code of Practice</h3>
+                    <p className="lloydgeorge_download-complete_paragraph-headers">
+                        Follow the Record Management Code of Practice
+                    </p>
                     <p>
+                        The{' '}
                         <a href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code">
                             Record Management Code of Practice
                         </a>{' '}

@@ -7,6 +7,7 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import NotDeleted
 from utils.lambda_exceptions import UploadConfirmResultException
 
 logger = LoggingService(__name__)
@@ -112,7 +113,7 @@ class UploadConfirmResultService:
         self.dynamo_service.update_item(
             table_name,
             document_reference,
-            {"Uploaded": True, "FileLocation": file_location},
+            {"Uploaded": True, "Uploading": False, "FileLocation": file_location},
         )
 
     def validate_number_of_documents(
@@ -123,7 +124,7 @@ class UploadConfirmResultService:
         )
 
         items = self.document_service.fetch_available_document_references_by_type(
-            nhs_number=self.nhs_number, doc_type=doc_type
+            nhs_number=self.nhs_number, doc_type=doc_type, query_filter=NotDeleted
         )
 
         if len(items) != len(document_references):

@@ -59,7 +59,9 @@ describe('DeletionConfirmationStage', () => {
                 });
 
                 expect(
-                    screen.getByText(`${numberOfFiles} files from the Lloyd George record of:`),
+                    screen.getByText(
+                        `You have successfully deleted ${numberOfFiles} file(s) from the Lloyd George record of:`,
+                    ),
                 ).toBeInTheDocument();
                 expect(screen.getByText(patientName)).toBeInTheDocument();
                 expect(screen.getByText(/NHS number/)).toBeInTheDocument();
@@ -84,10 +86,14 @@ describe('DeletionConfirmationStage', () => {
             });
 
             expect(
-                screen.queryByText(`${numberOfFiles} files from the Lloyd George record of:`),
+                screen.queryByText(
+                    `You have successfully deleted ${numberOfFiles} file(s) from the Lloyd George record of:`,
+                ),
             ).not.toBeInTheDocument();
             expect(
-                screen.getByText(`${numberOfFiles} file from the record of:`),
+                screen.getByText(
+                    `You have successfully deleted ${numberOfFiles} file(s) from the record of:`,
+                ),
             ).toBeInTheDocument();
             expect(screen.getByText(patientName)).toBeInTheDocument();
             expect(screen.getByText(/NHS number/)).toBeInTheDocument();
