@@ -96,7 +96,7 @@ function LloydGeorgeUploadPage() {
                             state: confirmDocumentState,
                         })),
                     );
-                    // window.clearInterval(intervalTimer);
+                    window.clearInterval(intervalTimer);
                     setStage(LG_UPLOAD_STAGE.COMPLETE);
                 } catch (e) {
                     const error = e as AxiosError;
