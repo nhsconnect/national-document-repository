@@ -232,7 +232,7 @@ function LloydGeorgeUploadPage() {
         uploadSession: UploadSession,
     ) => {
         console.log('STARTING INTERVAL');
-        return window.setInterval(async () => {
+        return window.setInterval(() => {
             console.log('TRIGGERING INTERVAL');
             const uploadStatePromises = uploadDocuments.map((document) => {
                 const documentMetadata = uploadSession[document.file.name];
@@ -240,12 +240,15 @@ function LloydGeorgeUploadPage() {
                 return updateDocumentUploadingState(documentReference, document, true);
             });
             console.log(uploadStatePromises);
-            try {
-                const res = await Promise.all(uploadStatePromises);
-                console.log(res);
-            } catch (e) {
-                console.log(e);
-            }
+            Promise.all(uploadStatePromises)
+                .then((res) => {
+                    res.forEach((r) => {
+                        console.log(r);
+                    });
+                })
+                .catch((e) => {
+                    console.error(e);
+                });
         }, 120000);
     };
 
