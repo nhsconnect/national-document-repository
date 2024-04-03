@@ -67,5 +67,13 @@ class UpdateUploadStateService:
             raise UpdateUploadStateException(500, LambdaError.UpdateUploadStateClient)
 
     def format_update(self, fields):
-        date_now = int(datetime.now(timezone.utc).timestamp())
-        return {**fields, Fields.LAST_UPDATED.value: date_now}
+        try:
+            date_now = int(datetime.now(timezone.utc).timestamp())
+            return {**fields, Fields.LAST_UPDATED.value: date_now}
+        except TypeError as e:
+            logger.error(
+                f"{LambdaError.UpdateUploadStateFieldType.to_str()} :{str(e)}",
+            )
+            raise UpdateUploadStateException(
+                404, LambdaError.UpdateUploadStateFieldType
+            )

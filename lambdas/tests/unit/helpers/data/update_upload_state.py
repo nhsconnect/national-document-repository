@@ -69,7 +69,11 @@ MOCK_NO_FIELDS_REQUEST = {
     ]
 }
 
+MOCK_UPLOADING_FIELDS = {Fields.UPLOADING.value: True}
+
 MOCK_NO_FILES_REQUEST = {"test": "test"}
+
+MOCK_EMPTY_LIST = []
 
 MOCK_BOTH_DOCTYPES = SupportedDocumentTypes.ALL.value
 
