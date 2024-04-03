@@ -99,7 +99,6 @@ function LloydGeorgeRecordStage({
 
     return (
         <div className="lloydgeorge_record-stage">
-            <BackButton />
             {formState.errors.confirmDownloadRemove && (
                 <ErrorBox
                     dataTestId="confirm-download-and-remove-error"
@@ -108,7 +107,7 @@ function LloydGeorgeRecordStage({
                     errorBody="You must confirm if you want to download and remove this record"
                 />
             )}
-            {fullScreen && (
+            {fullScreen ? (
                 <BackLink
                     data-testid="back-link"
                     href="#"
@@ -118,6 +117,8 @@ function LloydGeorgeRecordStage({
                 >
                     Go back
                 </BackLink>
+            ) : (
+                <BackButton />
             )}
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">

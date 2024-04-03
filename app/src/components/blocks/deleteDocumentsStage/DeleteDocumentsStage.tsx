@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
-import { Button, Fieldset, Radios } from 'nhsuk-react-components';
+import { BackLink, Button, Fieldset, Radios } from 'nhsuk-react-components';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import DeletionConfirmationStage from '../deletionConfirmationStage/DeletionConfirmationStage';
 import deleteAllDocuments, { DeleteResponse } from '../../../helpers/requests/deleteAllDocuments';
@@ -125,6 +125,7 @@ function DeleteDocumentsStage({
 
     return deletionStage !== SUBMISSION_STATE.SUCCEEDED ? (
         <>
+            <BackLink onClick={handleNoOption}>Go Back</BackLink>
             {deletionStage === SUBMISSION_STATE.FAILED && <ServiceError />}
             <form onSubmit={handleSubmit(submit)}>
                 <Fieldset>

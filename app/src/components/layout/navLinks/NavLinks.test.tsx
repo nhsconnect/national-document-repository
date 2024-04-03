@@ -36,11 +36,28 @@ describe('NavLinks', () => {
 
             expect(screen.getByRole('link', { name: 'Log Out' })).toBeInTheDocument();
         });
+
+        it('renders a navlink for app searcg when user logged in', () => {
+            const isLoggedIn = true;
+            renderNav(isLoggedIn);
+
+            expect(screen.getByRole('link', { name: 'Search For A Patient' })).toBeInTheDocument();
+        });
+
         it('does not render a navlink for app home when user logged out', () => {
             const isLoggedIn = false;
             renderNav(isLoggedIn);
 
             expect(screen.queryByRole('link', { name: 'Home' })).not.toBeInTheDocument();
+        });
+
+        it('does not render a navlink for app home search user logged out', () => {
+            const isLoggedIn = false;
+            renderNav(isLoggedIn);
+
+            expect(
+                screen.queryByRole('link', { name: 'Search For A Patient' }),
+            ).not.toBeInTheDocument();
         });
 
         it('does not render a navlink for app logout when user logged out', () => {
@@ -64,7 +81,23 @@ describe('NavLinks', () => {
             });
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+            });
+        });
+
+        it('navigates to app search when search link is clicked', async () => {
+            const isLoggedIn = true;
+            renderNav(isLoggedIn);
+
+            const searchLink = screen.getByRole('link', { name: 'Search For A Patient' });
+            expect(searchLink).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(searchLink);
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SEARCH_PATIENT);
             });
         });
 
