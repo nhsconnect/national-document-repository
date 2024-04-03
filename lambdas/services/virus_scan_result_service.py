@@ -85,6 +85,7 @@ class VirusScanService:
             return parsed["result"]
 
         except HTTPError:
+            logger.info(HTTPError.response)
             logger.info(
                 "Virus scan request failed",
                 {"Result": FAIL_SCAN},

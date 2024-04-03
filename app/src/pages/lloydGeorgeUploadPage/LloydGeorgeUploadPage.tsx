@@ -164,14 +164,14 @@ function LloydGeorgeUploadPage() {
                     progress: 100,
                 });
             } catch (e) {
-                // window.clearInterval(intervalTimer);
+                window.clearInterval(intervalTimer);
                 setDocument(setDocuments, {
                     id: document.id,
                     state: DOCUMENT_UPLOAD_STATE.FAILED,
                     attempts: document.attempts + 1,
                     progress: 0,
                 });
-                await await updateDocumentState({
+                await updateDocumentState({
                     document,
                     uploadingState: false,
                     documentReference,
@@ -228,24 +228,19 @@ function LloydGeorgeUploadPage() {
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
-        console.log('STARTING INTERVAL', console.log(uploadDocuments, uploadSession));
         return window.setInterval(() => {
-            console.log('TRIGGERING INTERVAL');
             uploadDocuments.forEach(async (document) => {
                 const documentMetadata = uploadSession[document.file.name];
                 const documentReference = documentMetadata.fields.key;
                 try {
-                    const res = await updateDocumentState({
+                    await updateDocumentState({
                         document,
                         uploadingState: true,
                         documentReference,
                         baseUrl,
                         baseHeaders,
                     });
-                    console.log(res);
-                } catch (e) {
-                    console.log(e);
-                }
+                } catch (e) {}
             });
         }, 120000);
     };
