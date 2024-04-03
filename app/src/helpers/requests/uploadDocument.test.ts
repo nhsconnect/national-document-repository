@@ -7,8 +7,6 @@ import { updateDocumentState } from './uploadDocuments';
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-// ...
-
 describe('[POST] updateDocumentState', () => {
     test('updateDocumentState handles a 2XX response', async () => {
         const document = buildDocument(buildTextFile('test1'), documentUploadStates.SUCCEEDED);

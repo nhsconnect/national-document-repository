@@ -80,7 +80,7 @@ jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
 }));
 
-describe('LloydGeorgeUploadDocumentsPage', () => {
+describe('LloydGeorgeUploadPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
@@ -169,7 +169,6 @@ describe('LloydGeorgeUploadDocumentsPage', () => {
             mockS3Upload.mockReturnValue(Promise.resolve());
             mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
             mockUploadConfirmation.mockReturnValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
-            mockUpdateDocumentState(Promise.resolve());
 
             render(<LloydGeorgeUploadPage />);
             expect(

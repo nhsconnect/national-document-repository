@@ -164,7 +164,7 @@ function LloydGeorgeUploadPage() {
                     progress: 100,
                 });
             } catch (e) {
-                window.clearInterval(intervalTimer);
+                window.clearInterval(updateStateInterval);
                 setDocument(setDocuments, {
                     id: document.id,
                     state: DOCUMENT_UPLOAD_STATE.FAILED,
