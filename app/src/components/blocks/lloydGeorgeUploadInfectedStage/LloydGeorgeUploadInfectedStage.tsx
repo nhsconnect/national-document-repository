@@ -29,7 +29,9 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
     return (
         <div data-testid="failure-complete-page">
             <WarningCallout id="upload-stage-warning">
-                <WarningCallout.Label>The record did not upload</WarningCallout.Label>
+                <WarningCallout.Label headingLevel="h1">
+                    The record did not upload
+                </WarningCallout.Label>
                 <p>
                     <strong>Some of your files failed a virus scan:</strong>
                 </p>

@@ -20,7 +20,7 @@ function LloydGeorgeUploadFailedStage({ restartUpload }: Props) {
     return (
         <>
             <WarningCallout data-testid="lloyd-george-upload-failed-panel">
-                <WarningCallout.Label headingLevel="h2">
+                <WarningCallout.Label headingLevel="h1">
                     The record did not upload
                 </WarningCallout.Label>
                 <p>
