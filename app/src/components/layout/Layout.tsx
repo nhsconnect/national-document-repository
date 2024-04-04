@@ -5,6 +5,7 @@ import PhaseBanner from './phaseBanner/PhaseBanner';
 import Footer from './footer/Footer';
 import { SkipLink } from 'nhsuk-react-components';
 import { useLocation } from 'react-router-dom';
+import { focusElement } from '../../helpers/utils/focusElement';
 
 type Props = {
     children: ReactNode;
@@ -15,6 +16,7 @@ function Layout({ children }: Props) {
     const mainRef = useRef<HTMLDivElement | null>(null);
     const location = useLocation();
 
+    // re-focus the layout on route change, so that skip link become the next focusable element
     useEffect(() => {
         if (location?.hash) {
             return;
@@ -22,14 +24,20 @@ function Layout({ children }: Props) {
         layoutRef?.current?.focus();
     }, [location]);
 
-    const focusMain = (e: MouseEvent<HTMLAnchorElement>) => {
+    const focusMainContent = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
-        mainRef?.current?.focus();
+
+        const firstHeadingElement = document.getElementsByTagName('h1')[0];
+        if (firstHeadingElement) {
+            focusElement(firstHeadingElement);
+        } else if (mainRef?.current) {
+            focusElement(mainRef?.current);
+        }
     };
 
     return (
         <div ref={layoutRef} tabIndex={-1}>
-            <SkipLink onClick={focusMain}>Skip to main content</SkipLink>
+            <SkipLink onClick={focusMainContent}>Skip to main content</SkipLink>
             <Header />
             <PhaseBanner />
             <div
@@ -44,9 +52,8 @@ function Layout({ children }: Props) {
                 <main
                     className="nhsuk-main-wrapper app-homepage"
                     id="maincontent"
-                    role="main"
                     ref={mainRef}
-                    tabIndex={-1}
+                    role="main"
                 >
                     <section className="app-homepage-content">
                         <div>{children}</div>
