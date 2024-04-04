@@ -5,7 +5,7 @@ import PhaseBanner from './phaseBanner/PhaseBanner';
 import Footer from './footer/Footer';
 import { SkipLink } from 'nhsuk-react-components';
 import { useLocation } from 'react-router-dom';
-import { focusElement } from '../../helpers/utils/focusElement';
+import { focusElement } from '../../helpers/utils/manageFocus';
 
 type Props = {
     children: ReactNode;
@@ -21,6 +21,7 @@ function Layout({ children }: Props) {
         if (location?.hash) {
             return;
         }
+
         layoutRef?.current?.focus();
     }, [location]);
 
@@ -31,12 +32,12 @@ function Layout({ children }: Props) {
         if (firstHeadingElement) {
             focusElement(firstHeadingElement);
         } else if (mainRef?.current) {
-            focusElement(mainRef?.current);
+            focusElement(mainRef.current);
         }
     };
 
     return (
-        <div ref={layoutRef} tabIndex={-1}>
+        <div ref={layoutRef} tabIndex={-1} id="layout">
             <SkipLink onClick={focusMainContent}>Skip to main content</SkipLink>
             <Header />
             <PhaseBanner />

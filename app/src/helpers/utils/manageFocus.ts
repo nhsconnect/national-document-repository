@@ -17,3 +17,10 @@ export function focusElement(element: HTMLElement): void {
 
     element.focus();
 }
+
+export function focusLayoutDiv() {
+    const layoutDiv = document.querySelector('div#layout');
+    if (layoutDiv) {
+        (layoutDiv as HTMLDivElement).focus();
+    }
+}
