@@ -1,4 +1,5 @@
 import os
+import string
 from datetime import datetime, timezone
 
 from botocore.exceptions import ClientError
@@ -21,7 +22,7 @@ class UpdateUploadStateService:
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
 
-    def handle_update_state(self, event_body):
+    def handle_update_state(self, event_body: dict):
         try:
             files = event_body["files"]
             for file in files:
@@ -47,7 +48,9 @@ class UpdateUploadStateService:
             )
             raise UpdateUploadStateException(404, LambdaError.UpdateUploadStateKey)
 
-    def update_document(self, doc_ref, doc_type, uploaded):
+    def update_document(
+        self, doc_ref: string, doc_type: SupportedDocumentTypes, uploaded: string
+    ):
         updated_fields = self.format_update({Fields.UPLOADING.value: uploaded})
         table = (
             self.lg_dynamo_table
@@ -66,7 +69,7 @@ class UpdateUploadStateService:
             )
             raise UpdateUploadStateException(500, LambdaError.UpdateUploadStateClient)
 
-    def format_update(self, fields):
+    def format_update(self, fields: list) -> dict:
         try:
             date_now = int(datetime.now(timezone.utc).timestamp())
             return {**fields, Fields.LAST_UPDATED.value: date_now}
