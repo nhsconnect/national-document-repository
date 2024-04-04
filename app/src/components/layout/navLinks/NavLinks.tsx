@@ -16,7 +16,12 @@ const NavLinks = () => {
 
     return session.isLoggedIn ? (
         <Header.Nav>
-            <Header.NavItem role="link" className="clickable" onClick={(e) => nav(e, routes.HOME)}>
+            <Header.NavItem
+                role="link"
+                className="clickable"
+                onClick={(e) => nav(e, routes.HOME)}
+                href="#"
+            >
                 Home
             </Header.NavItem>
             <Header.NavItem
@@ -24,6 +29,7 @@ const NavLinks = () => {
                 className="clickable"
                 data-testid="logout-btn"
                 onClick={(e) => nav(e, routes.LOGOUT)}
+                href="#"
             >
                 Log Out
             </Header.NavItem>

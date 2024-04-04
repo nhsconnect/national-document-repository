@@ -40,6 +40,7 @@ const UnauthorisedLoginPage = () => {
                 .
             </p>
             <ButtonLink
+                href="#"
                 onClick={(e) => {
                     e.preventDefault();
                     navigate(routes.START);

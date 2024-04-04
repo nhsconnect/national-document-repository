@@ -30,6 +30,7 @@ const ServerErrorPage = () => {
                 you submitted again.
             </p>
             <ButtonLink
+                href="#"
                 onClick={(e) => {
                     e.preventDefault();
                     const errorUrl = window.location.href;

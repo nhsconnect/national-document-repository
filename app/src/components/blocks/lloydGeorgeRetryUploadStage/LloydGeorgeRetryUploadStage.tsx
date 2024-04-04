@@ -55,7 +55,9 @@ function LloydGeorgeRetryUploadStage({ setStage }: Props) {
                     data-testid="search-patient-btn"
                     style={{ marginLeft: 18 }}
                     role="button"
-                    onClick={() => {
+                    href="#"
+                    onClick={(e) => {
+                        e.preventDefault();
                         navigate(routes.SEARCH_PATIENT);
                     }}
                 >

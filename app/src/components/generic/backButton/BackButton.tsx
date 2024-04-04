@@ -12,7 +12,7 @@ const BackButton = () => {
     };
 
     return (
-        <BackLink className="clickable" onClick={onBack}>
+        <BackLink className="clickable" onClick={onBack} href="#" tabIndex={0}>
             Back
         </BackLink>
     );

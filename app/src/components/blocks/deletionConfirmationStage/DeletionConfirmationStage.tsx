@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, MouseEvent, SetStateAction } from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
 import { routes } from '../../../types/generic/routes';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,8 @@ export type Props = {
 function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }: Props) {
     const navigate = useNavigate();
     const role = useRole();
-    const handleClick = () => {
+    const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
         if (setStage && setDownloadStage) {
             setDownloadStage(DOWNLOAD_STAGE.REFRESH);
             setStage(LG_RECORD_STAGE.RECORD);
@@ -42,7 +43,7 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
             </Card>
             <p style={{ marginTop: 40 }}>
                 {isGP ? (
-                    <ButtonLink onClick={handleClick} data-testid="lg-return-btn">
+                    <ButtonLink onClick={handleClick} data-testid="lg-return-btn" href="#">
                         Return to patient's Lloyd George record page
                     </ButtonLink>
                 ) : (
