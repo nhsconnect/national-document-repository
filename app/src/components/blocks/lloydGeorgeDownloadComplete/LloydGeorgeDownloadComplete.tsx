@@ -22,7 +22,10 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
         <div className="lloydgeorge_download-complete">
             <Card className="lloydgeorge_download-complete_details">
                 <Card.Content className="lloydgeorge_download-complete_details-content">
-                    <Card.Heading className="lloydgeorge_download-complete_details-content_header">
+                    <Card.Heading
+                        className="lloydgeorge_download-complete_details-content_header"
+                        headingLevel="h1"
+                    >
                         Download complete
                     </Card.Heading>
                     <Card.Description className="lloydgeorge_download-complete_details-content_description">

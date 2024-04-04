@@ -25,7 +25,10 @@ function LloydGeorgeUploadCompleteStage({ documents }: Props) {
         <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">
             <Card className="lloydgeorge_upload-complete_card" data-testid="upload-complete-card">
                 <Card.Content className="lloydgeorge_upload-complete_card_content">
-                    <Card.Heading className="lloydgeorge_upload-complete_card_content_header">
+                    <Card.Heading
+                        className="lloydgeorge_upload-complete_card_content_header"
+                        headingLevel="h1"
+                    >
                         Record uploaded for
                     </Card.Heading>
                     <ReducedPatientInfo

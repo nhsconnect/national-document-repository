@@ -30,7 +30,10 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
         <div className="deletion-complete">
             <Card className="deletion-complete_card">
                 <Card.Content className="deletion-complete_card_content">
-                    <Card.Heading className="deletion-complete_card_content_header">
+                    <Card.Heading
+                        className="deletion-complete_card_content_header"
+                        headingLevel="h1"
+                    >
                         Deletion complete
                     </Card.Heading>
                     <Card.Description className="deletion-complete_card_content_description">
