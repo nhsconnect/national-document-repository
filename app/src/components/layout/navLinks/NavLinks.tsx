@@ -14,7 +14,6 @@ const NavLinks = () => {
         navigate(link);
     };
 
-    console.log(width);
     useEffect(() => {
         const handleResizeWindow = () => setWidth(window.innerWidth);
         window.addEventListener('resize', handleResizeWindow);
