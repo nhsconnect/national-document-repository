@@ -22,57 +22,49 @@ const NavLinks = () => {
         };
     }, []);
 
+    const appLinks = [
+        { href: routes.SEARCH_PATIENT, label: 'Search For A Patient', id: 'search-btn' },
+        { href: routes.LOGOUT, label: 'Log Out', id: 'logout-btn' },
+    ];
+
     return session.isLoggedIn ? (
-        <Header.Nav style={{ display: 'initial', color: 'white' }}>
+        <Header.Nav style={{ display: 'initial', color: 'white' }} className="navlinks">
             <Header.NavItem
+                className="navlinks_item clickable"
                 style={{ color: 'white' }}
                 role="link"
-                className="clickable"
                 onClick={(e) => nav(e, routes.START)}
             >
                 Home
             </Header.NavItem>
             {width <= 990 ? (
                 <>
-                    <Header.NavItem
-                        role="link"
-                        className="clickable"
-                        style={{ color: 'white' }}
-                        data-testid="search-btn"
-                        onClick={(e) => nav(e, routes.SEARCH_PATIENT)}
-                    >
-                        Search For A Patient
-                    </Header.NavItem>
-                    <Header.NavItem
-                        role="link"
-                        className="clickable"
-                        style={{ color: 'white' }}
-                        data-testid="logout-btn"
-                        onClick={(e) => nav(e, routes.LOGOUT)}
-                    >
-                        Log Out
-                    </Header.NavItem>
+                    {appLinks.map((l) => (
+                        <Header.NavItem
+                            className="navlinks_item navlinks_item--mobile clickable"
+                            key={l.href}
+                            role="link"
+                            data-testid={l.id}
+                            onClick={(e) => nav(e, l.href)}
+                        >
+                            {l.label}
+                        </Header.NavItem>
+                    ))}
                 </>
             ) : (
                 <div style={{ display: 'flex', flexFlow: 'row nowrap' }}>
-                    <Header.NavItem
-                        role="link"
-                        className="clickable"
-                        style={{ margin: '0 2rem' }}
-                        data-testid="search-btn"
-                        onClick={(e) => nav(e, routes.SEARCH_PATIENT)}
-                    >
-                        Search For A Patient
-                    </Header.NavItem>
-                    <Header.NavItem
-                        role="link"
-                        className="clickable"
-                        style={{ margin: '0 2rem' }}
-                        data-testid="logout-btn"
-                        onClick={(e) => nav(e, routes.LOGOUT)}
-                    >
-                        Log Out
-                    </Header.NavItem>
+                    {appLinks.map((l) => (
+                        <Header.NavItem
+                            className="navlinks_item clickable"
+                            key={l.href}
+                            style={{ margin: '0 2rem' }}
+                            role="link"
+                            data-testid={l.id}
+                            onClick={(e) => nav(e, l.href)}
+                        >
+                            {l.label}
+                        </Header.NavItem>
+                    ))}
                 </div>
             )}
         </Header.Nav>
