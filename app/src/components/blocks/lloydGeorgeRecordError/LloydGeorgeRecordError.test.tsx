@@ -79,6 +79,22 @@ describe('LloydGeorgeRecordError', () => {
                 screen.queryByRole('button', { name: 'Upload patient record' }),
             ).not.toBeInTheDocument();
         });
+        it("renders a message  when the document download status is 'Uploading'", () => {
+            const timeoutStatus = DOWNLOAD_STAGE.UPLOADING;
+
+            render(
+                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
+            );
+
+            expect(
+                screen.getByText(
+                    /You can view this record once it’s finished uploading. This may take a few minutes./i,
+                ),
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByRole('button', { name: 'Upload patient record' }),
+            ).not.toBeInTheDocument();
+        });
 
         it("renders a message and upload button when the document download status is 'No records', user is admin BSOL and upload flags are enabled", () => {
             const noRecordsStatus = DOWNLOAD_STAGE.NO_RECORDS;

@@ -32,6 +32,14 @@ type DocRefResponse = {
     data: UploadSession;
 };
 
+type UpdateStateArgs = {
+    document: UploadDocument;
+    uploadingState: boolean;
+    documentReference: string;
+    baseUrl: string;
+    baseHeaders: AuthHeaders;
+};
+
 type VirusScanArgs = {
     documentReference: string;
     baseUrl: string;
@@ -179,6 +187,32 @@ const uploadDocuments = async ({
         const error = e as AxiosError;
         throw error;
     }
+};
+export const updateDocumentState = async ({
+    document,
+    uploadingState,
+    documentReference,
+    baseUrl,
+    baseHeaders,
+}: UpdateStateArgs) => {
+    const fileKey = documentReference.split('/')[3];
+    const updateUploadStateUrl = baseUrl + endpoints.UPLOAD_DOCUMENT_STATE;
+    const body = {
+        files: [
+            {
+                reference: fileKey,
+                type: document.docType,
+                fields: { Uploading: uploadingState },
+            },
+        ],
+    };
+    try {
+        return await axios.post(updateUploadStateUrl, body, {
+            headers: {
+                ...baseHeaders,
+            },
+        });
+    } catch (e) {}
 };
 
 export default uploadDocuments;
