@@ -46,7 +46,7 @@ def test_handle_update_state_with_lg_document_references(
     patched_service.handle_update_state(MOCK_LG_DOCUMENTS_REQUEST)
 
     mock_update_document.assert_called_with(
-        MOCK_DOCUMENT_REFERENCE, MOCK_LG_DOCTYPE, "true"
+        MOCK_DOCUMENT_REFERENCE, MOCK_LG_DOCTYPE, "True"
     )
 
 
@@ -56,7 +56,7 @@ def test_handle_update_state_with_arf_document_references(
     patched_service.handle_update_state(MOCK_ARF_DOCUMENTS_REQUEST)
 
     mock_update_document.assert_called_with(
-        MOCK_DOCUMENT_REFERENCE, MOCK_ARF_DOCTYPE, "true"
+        MOCK_DOCUMENT_REFERENCE, MOCK_ARF_DOCTYPE, "True"
     )
 
 

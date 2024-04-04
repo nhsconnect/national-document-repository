@@ -1,5 +1,4 @@
 import os
-import string
 from datetime import datetime, timezone
 
 from botocore.exceptions import ClientError
@@ -28,8 +27,14 @@ class UpdateUploadStateService:
             for file in files:
                 doc_ref = file["reference"]
                 doc_type = file["type"]
-                uploaded = file["fields"][Fields.UPLOADING.value]
-                if not doc_type or not doc_ref or not uploaded:
+                field = file["fields"][Fields.UPLOADING.value]
+                not_valid = (
+                    not doc_type
+                    or not doc_ref
+                    or not field
+                    or not isinstance(field, str)
+                )
+                if not_valid:
                     raise UpdateUploadStateException(
                         404, LambdaError.UpdateUploadStateValidation
                     )
@@ -41,6 +46,8 @@ class UpdateUploadStateService:
                         404, LambdaError.UpdateUploadStateDocType
                     )
                 else:
+                    is_true = field.lower() == "true"
+                    uploaded = "True" if is_true else "False"
                     self.update_document(doc_ref, doc_type, uploaded)
         except (KeyError, TypeError) as e:
             logger.error(
@@ -49,7 +56,7 @@ class UpdateUploadStateService:
             raise UpdateUploadStateException(404, LambdaError.UpdateUploadStateKey)
 
     def update_document(
-        self, doc_ref: string, doc_type: SupportedDocumentTypes, uploaded: string
+        self, doc_ref: str, doc_type: SupportedDocumentTypes, uploaded: str
     ):
         updated_fields = self.format_update({Fields.UPLOADING.value: uploaded})
         table = (
