@@ -56,10 +56,10 @@ describe('GP Workflow: View Lloyd George record', () => {
     };
 
     gpRoles.forEach((role) => {
-        beforeEach(() => {
-            beforeEachConfiguration(role);
-        });
         context(`View Lloyd George document for ${roleName(role)} role`, () => {
+            beforeEach(() => {
+                beforeEachConfiguration(role);
+            });
             it(
                 roleName(role) + ' can view a Lloyd George document of an active patient',
                 { tags: 'regression' },
@@ -107,13 +107,31 @@ describe('GP Workflow: View Lloyd George record', () => {
                         statusCode: 404,
                     });
                     cy.get('#verify-submit').click();
-
                     // Assert
                     assertPatientInfo();
                     assertEmptyLloydGeorgeCard();
                 },
             );
+            it(
+                `It displays an waiting message when uploading Lloyd George record is in progress for the patient for a ${roleName(
+                    role,
+                )}`,
+                { tags: 'regression' },
+                () => {
+                    cy.intercept('GET', '/LloydGeorgeStitch*', {
+                        statusCode: 423,
+                    });
+                    cy.get('#verify-submit').click();
 
+                    // Assert
+                    assertPatientInfo();
+                    cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
+                    cy.getByTestId('pdf-card').should(
+                        'include.text',
+                        'You can view this record once it’s finished uploading. This may take a few minutes.',
+                    );
+                },
+            );
             it(
                 `It displays an error when the Lloyd George Stitch API call fails for a ${roleName(
                     role,
