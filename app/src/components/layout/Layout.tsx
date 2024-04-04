@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { MouseEvent, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import Header from './header/Header';
 import PhaseBanner from './phaseBanner/PhaseBanner';
@@ -12,21 +12,24 @@ type Props = {
 
 function Layout({ children }: Props) {
     const layoutRef = useRef<HTMLDivElement | null>(null);
+    const mainRef = useRef<HTMLDivElement | null>(null);
     const location = useLocation();
 
-    // focus the layout div on every route change to ensure user get to skiplink when they press tab
     useEffect(() => {
         if (location?.hash) {
             return;
         }
-        if (layoutRef) {
-            layoutRef.current?.focus();
-        }
+        layoutRef?.current?.focus();
     }, [location]);
+
+    const focusMain = (e: MouseEvent<HTMLAnchorElement>) => {
+        e.preventDefault();
+        mainRef?.current?.focus();
+    };
 
     return (
         <div ref={layoutRef} tabIndex={-1}>
-            <SkipLink>Skip to main content</SkipLink>
+            <SkipLink onClick={focusMain}>Skip to main content</SkipLink>
             <Header />
             <PhaseBanner />
             <div
@@ -42,6 +45,7 @@ function Layout({ children }: Props) {
                     className="nhsuk-main-wrapper app-homepage"
                     id="maincontent"
                     role="main"
+                    ref={mainRef}
                     tabIndex={-1}
                 >
                     <section className="app-homepage-content">
