@@ -1,5 +1,5 @@
 export function focusElement(element: HTMLElement): void {
-    if (document && document.activeElement === element) {
+    if (document?.activeElement === element) {
         return;
     }
 
