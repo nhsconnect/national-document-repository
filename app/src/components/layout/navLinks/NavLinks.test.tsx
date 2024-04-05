@@ -34,14 +34,14 @@ describe('NavLinks', () => {
             const isLoggedIn = true;
             renderNav(isLoggedIn);
 
-            expect(screen.getByRole('link', { name: 'Log Out' })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Log out' })).toBeInTheDocument();
         });
 
         it('renders a navlink for app searcg when user logged in', () => {
             const isLoggedIn = true;
             renderNav(isLoggedIn);
 
-            expect(screen.getByRole('link', { name: 'Search For A Patient' })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Search for a patient' })).toBeInTheDocument();
         });
 
         it('does not render a navlink for app home when user logged out', () => {
@@ -56,7 +56,7 @@ describe('NavLinks', () => {
             renderNav(isLoggedIn);
 
             expect(
-                screen.queryByRole('link', { name: 'Search For A Patient' }),
+                screen.queryByRole('link', { name: 'Search for a patient' }),
             ).not.toBeInTheDocument();
         });
 
@@ -64,7 +64,7 @@ describe('NavLinks', () => {
             const isLoggedIn = false;
             renderNav(isLoggedIn);
 
-            expect(screen.queryByRole('link', { name: 'Log Out' })).not.toBeInTheDocument();
+            expect(screen.queryByRole('link', { name: 'Log out' })).not.toBeInTheDocument();
         });
     });
 
@@ -89,7 +89,7 @@ describe('NavLinks', () => {
             const isLoggedIn = true;
             renderNav(isLoggedIn);
 
-            const searchLink = screen.getByRole('link', { name: 'Search For A Patient' });
+            const searchLink = screen.getByRole('link', { name: 'Search for a patient' });
             expect(searchLink).toBeInTheDocument();
 
             act(() => {
@@ -105,7 +105,7 @@ describe('NavLinks', () => {
             const isLoggedIn = true;
             renderNav(isLoggedIn);
 
-            const logoutLink = screen.getByRole('link', { name: 'Log Out' });
+            const logoutLink = screen.getByRole('link', { name: 'Log out' });
             expect(logoutLink).toBeInTheDocument();
 
             act(() => {
