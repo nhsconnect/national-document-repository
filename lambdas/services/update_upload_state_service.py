@@ -76,7 +76,7 @@ class UpdateUploadStateService:
             )
             raise UpdateUploadStateException(500, LambdaError.UpdateUploadStateClient)
 
-    def format_update(self, fields: list) -> dict:
+    def format_update(self, fields: dict) -> dict:
         try:
             date_now = int(datetime.now(timezone.utc).timestamp())
             return {**fields, Fields.LAST_UPDATED.value: date_now}
