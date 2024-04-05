@@ -21,6 +21,6 @@ export function focusElement(element: HTMLElement): void {
 export function focusLayoutDiv() {
     const layoutDiv = document.querySelector('div#layout');
     if (layoutDiv) {
-        (layoutDiv as HTMLDivElement).focus();
+        focusElement(layoutDiv as HTMLDivElement);
     }
 }
