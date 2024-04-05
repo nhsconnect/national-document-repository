@@ -446,6 +446,10 @@ $govuk-compatibility-govukelements: true;
 
 .navlinks {
     display: initial;
+    &_wrapper {
+        display: flex;
+        flex-flow: row nowrap;
+    }
     .nhsuk-header__navigation-title {
         color: $color_nhsuk-white;
     }

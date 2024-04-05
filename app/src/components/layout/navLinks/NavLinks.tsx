@@ -55,7 +55,7 @@ const NavLinks = () => {
                     ))}
                 </>
             ) : (
-                <div style={{ display: 'flex', flexFlow: 'row nowrap' }}>
+                <div className="navlinks_wrapper">
                     {appLinks.map((l) => (
                         <Header.NavItem
                             tabIndex={0}
