@@ -27,12 +27,12 @@ class UpdateUploadStateService:
             for file in files:
                 doc_ref = file["reference"]
                 doc_type = file["type"]
-                field = file["fields"][Fields.UPLOADING.value]
+                uploaded = file["fields"][Fields.UPLOADING.value]
                 not_valid = (
                     not doc_type
                     or not doc_ref
-                    or not field
-                    or not isinstance(field, str)
+                    or not uploaded
+                    or not isinstance(uploaded, bool)
                 )
                 if not_valid:
                     raise UpdateUploadStateException(
@@ -46,8 +46,6 @@ class UpdateUploadStateService:
                         404, LambdaError.UpdateUploadStateDocType
                     )
                 else:
-                    is_true = field.lower() == "true"
-                    uploaded = "True" if is_true else "False"
                     self.update_document(doc_ref, doc_type, uploaded)
         except (KeyError, TypeError) as e:
             logger.error(

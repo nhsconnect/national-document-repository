@@ -14,7 +14,7 @@ MOCK_LG_DOCUMENTS_REQUEST = {
         {
             "reference": TEST_FILE_KEY,
             "type": SupportedDocumentTypes.LG.value,
-            "fields": {Fields.UPLOADING.value: "true"},
+            "fields": {Fields.UPLOADING.value: True},
         }
     ]
 }
@@ -25,7 +25,7 @@ MOCK_ARF_DOCUMENTS_REQUEST = {
         {
             "reference": TEST_FILE_KEY,
             "type": SupportedDocumentTypes.ARF.value,
-            "fields": {Fields.UPLOADING.value: "true"},
+            "fields": {Fields.UPLOADING.value: True},
         }
     ]
 }
@@ -35,7 +35,7 @@ MOCK_ALL_DOCUMENTS_REQUEST = {
         {
             "reference": TEST_FILE_KEY,
             "type": SupportedDocumentTypes.ALL.value,
-            "fields": {Fields.UPLOADING.value: "true"},
+            "fields": {Fields.UPLOADING.value: True},
         }
     ]
 }
@@ -45,7 +45,7 @@ MOCK_NO_DOCTYPE_REQUEST = {
         {
             "reference": TEST_FILE_KEY,
             "type": "",
-            "fields": {Fields.UPLOADING.value: "true"},
+            "fields": {Fields.UPLOADING.value: True},
         }
     ]
 }
@@ -54,7 +54,7 @@ MOCK_NO_REFERENCE_REQUEST = {
         {
             "reference": TEST_FILE_KEY,
             "type": "",
-            "fields": {Fields.UPLOADING.value: "true"},
+            "fields": {Fields.UPLOADING.value: True},
         }
     ]
 }
