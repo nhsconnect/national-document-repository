@@ -28,7 +28,7 @@ function Layout({ children }: Props) {
     const focusMainContent = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
 
-        const firstHeadingElement = document.getElementsByTagName('h1')[0];
+        const firstHeadingElement = document?.getElementsByTagName('h1')?.[0];
         if (firstHeadingElement) {
             focusElement(firstHeadingElement);
         } else if (mainRef?.current) {

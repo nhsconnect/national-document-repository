@@ -1,5 +1,5 @@
 export function focusElement(element: HTMLElement): void {
-    if (document.activeElement === element) {
+    if (document && document.activeElement === element) {
         return;
     }
 
@@ -19,7 +19,7 @@ export function focusElement(element: HTMLElement): void {
 }
 
 export function focusLayoutDiv() {
-    const layoutDiv = document.querySelector('div#layout');
+    const layoutDiv = document?.querySelector('div#layout');
     if (layoutDiv) {
         focusElement(layoutDiv as HTMLDivElement);
     }
