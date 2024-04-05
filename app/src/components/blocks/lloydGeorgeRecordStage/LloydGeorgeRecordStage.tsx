@@ -2,7 +2,6 @@ import React, { Dispatch, SetStateAction, useState } from 'react';
 import {
     BackLink,
     Button,
-    ButtonLink,
     Card,
     Checkboxes,
     Details,
@@ -115,7 +114,7 @@ function LloydGeorgeRecordStage({
                         setFullScreen(false);
                     }}
                 >
-                    Go back
+                    Exit full screen
                 </BackLink>
             ) : (
                 <BackButton />
@@ -186,14 +185,13 @@ function LloydGeorgeRecordStage({
                                     >
                                         Yes, download and remove
                                     </Button>
-                                    <ButtonLink
+                                    <Button
                                         onClick={handleCancelButton}
                                         className="nhsuk-button nhsuk-button--secondary"
                                         style={{ marginLeft: 30 }}
-                                        role="button"
                                     >
                                         Cancel
-                                    </ButtonLink>
+                                    </Button>
                                 </form>
                             </InsetText>
                         )}

@@ -317,6 +317,38 @@ class LambdaError(Enum):
     }
 
     """
+       Errors for Update Upload State lambda 
+    """
+    UpdateUploadStateMissingBody = {
+        "err_code": "US_4001",
+        "message": "Missing request body",
+    }
+    UpdateUploadStateValidation = {
+        "err_code": "US_4002",
+        "message": "Missing fields",
+    }
+    UpdateUploadStateDocType = {
+        "err_code": "US_4003",
+        "message": "Doctype invalid",
+    }
+    UpdateUploadStateKey = {
+        "err_code": "US_4004",
+        "message": "Key or type error on request",
+    }
+    UpdateUploadStateInvalidBody = {
+        "err_code": "US_4005",
+        "message": "Invalid request body",
+    }
+    UpdateUploadStateFieldType = {
+        "err_code": "US_4006",
+        "message": "Invalid field type",
+    }
+    UpdateUploadStateClient = {
+        "err_code": "US_5001",
+        "message": "Dynamo client error",
+    }
+
+    """
        Errors with no exception
     """
     DocDelNull = {

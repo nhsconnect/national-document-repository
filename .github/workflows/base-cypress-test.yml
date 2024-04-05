@@ -16,18 +16,17 @@ on:
         description: 'what browser to run against'
         required: true
         type: 'string'
-        
+
 permissions:
   pull-requests: write
   id-token: write # This is required for requesting the JWT
   contents: read # This is required for actions/checkout
 
 jobs:
-
   view_action_parameters:
     name: View input params
     runs-on: ubuntu-latest
-    steps: 
+    steps:
       - name: Display client passed variables
         run: |
           echo Build Branch: ${{ inputs.build_branch }}
@@ -66,3 +65,16 @@ jobs:
         env:
           CYPRESS_BASE_URL: ${{ inputs.cypress_base_url }}
           CYPRESS_grepTags: 'regression'
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/screenshots
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-videos
+          path: /home/runner/work/national-document-repository/national-document-repository/app/cypress/videos
+          if-no-files-found: ignore

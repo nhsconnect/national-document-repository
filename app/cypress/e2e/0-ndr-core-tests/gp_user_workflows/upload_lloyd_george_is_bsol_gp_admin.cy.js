@@ -97,6 +97,11 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
         cy.getByTestId('upload-patient-record-button').click();
         cy.url().should('include', 'upload');
         cy.url().should('eq', baseUrl + '/patient/upload/lloyd-george-record');
+        cy.intercept('POST', '**/UploadState', (req) => {
+            req.reply({
+                statusCode: 200,
+            });
+        });
     };
 
     beforeEach(() => {
@@ -339,7 +344,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
         );
 
         it(
-            `User can retry a multiple failed LG files using the "Retry all uploads"warning  button and can then view LG record`,
+            `User can retry a multiple failed LG files using the "Retry all uploads" warning button and can then view LG record`,
             { tags: 'regression' },
             () => {
                 cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti).as(
@@ -510,7 +515,6 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         statusCode: 200,
                     });
                 }).as('s3_upload');
-
                 cy.intercept('POST', '**/VirusScan', (req) => {
                     req.reply({
                         statusCode: 500,
@@ -568,7 +572,6 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         delay: 1500,
                     });
                 }).as('s3_upload');
-
                 cy.intercept('POST', '**/VirusScan', (req) => {
                     req.reply({
                         statusCode: 200,
@@ -599,6 +602,25 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 cy.getByTestId('retry-upload-btn').should('exist');
                 cy.getByTestId('retry-upload-btn').click();
                 cy.url().should('eq', baseUrl + '/patient/upload/lloyd-george-record');
+            },
+        );
+        it(
+            `It navigate to error page when uploading Lloyd George record is in progress for the patient`,
+            { tags: 'regression' },
+            () => {
+                const stubbedResponse = {
+                    statusCode: 423,
+                    data: { err_code: 'LGL_423' },
+                };
+
+                cy.intercept('POST', '**/DocumentReference**', stubbedResponse);
+
+                cy.getByTestId('button-input').selectFile(
+                    uploadedFilePathNames.LG[singleFileUsecaseIndex],
+                    { force: true },
+                );
+                clickUploadButton();
+                cy.contains('Sorry, there is a problem with the service').should('be.visible');
             },
         );
     });

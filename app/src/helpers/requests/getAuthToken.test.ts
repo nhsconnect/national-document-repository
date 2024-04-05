@@ -1,6 +1,4 @@
 import axios, { AxiosError } from 'axios';
-import getDocumentSearchResults from './getDocumentSearchResults';
-import { SearchResult } from '../../types/generic/searchResult';
 import { buildUserAuth } from '../test/testBuilders';
 import { UserAuth } from '../../types/blocks/userAuth';
 import getAuthToken from './getAuthToken';
@@ -11,8 +9,8 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 // ...
 
-describe('[GET] getDocumentSearchResults', () => {
-    test('Document search results handles a 2XX response', async () => {
+describe('[GET] getAuthToken', () => {
+    test('getAuthToken handles a 2XX response', async () => {
         const mockAuth = buildUserAuth();
         mockedAxios.get.mockImplementation(() => Promise.resolve({ status: 200, data: mockAuth }));
         const args = {
@@ -36,16 +34,16 @@ describe('[GET] getDocumentSearchResults', () => {
         expect(data.role).toBe(mockAuth.role);
     });
 
-    test('Document search results catches a 4XX response', async () => {
+    test('getAuthToken catches a 4XX response', async () => {
         mockedAxios.get.mockImplementation(() => Promise.reject({ status: 403 }));
         const args = {
-            nhsNumber: '',
+            code: 'xx',
+            state: 'xx',
             baseUrl: '/test',
-            baseHeaders: { 'Content-Type': 'application/json', test: 'test' },
         };
-        let response: SearchResult[] | AxiosError;
+        let response: UserAuth | AxiosError;
         try {
-            response = await getDocumentSearchResults(args);
+            response = await getAuthToken(args);
         } catch (e) {
             const error = e as AxiosError;
             response = error;
@@ -59,16 +57,16 @@ describe('[GET] getDocumentSearchResults', () => {
         expect(status).toBe(403);
     });
 
-    test('Document search results catches a 5XX response', async () => {
+    test('getAuthToken catches a 5XX response', async () => {
         mockedAxios.get.mockImplementation(() => Promise.reject({ status: 500 }));
         const args = {
-            nhsNumber: '',
+            code: 'xx',
+            state: 'xx',
             baseUrl: '/test',
-            baseHeaders: { 'Content-Type': 'application/json', test: 'test' },
         };
-        let response: SearchResult[] | AxiosError;
+        let response: UserAuth | AxiosError;
         try {
-            response = await getDocumentSearchResults(args);
+            response = await getAuthToken(args);
         } catch (e) {
             const error = e as AxiosError;
             response = error;

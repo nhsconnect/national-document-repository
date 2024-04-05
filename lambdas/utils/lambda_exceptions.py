@@ -66,3 +66,7 @@ class VirusScanResultException(LambdaException):
 
 class UploadConfirmResultException(LambdaException):
     pass
+
+
+class UpdateUploadStateException(LambdaException):
+    pass

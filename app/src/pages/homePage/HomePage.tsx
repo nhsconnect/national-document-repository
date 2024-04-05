@@ -28,7 +28,9 @@ const HomePage = (props: Props) => {
         <ButtonLink
             role="button"
             data-testid="search-patient-btn"
-            onClick={() => {
+            href="#"
+            onClick={(e) => {
+                e.preventDefault();
                 navigate(routes.SEARCH_PATIENT);
             }}
         >
