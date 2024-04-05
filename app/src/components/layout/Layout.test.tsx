@@ -53,7 +53,7 @@ describe('Layout', () => {
             expect(skipLink).toHaveFocus();
         });
 
-        it('does not misfire if route was not changed', async () => {
+        it('does not reset focus if route has not changed', async () => {
             renderTestApp();
 
             const linkToTheSamePage = screen.getByRole('link', {
@@ -82,9 +82,11 @@ const renderTestApp = (initialUrl: string = '/testPage1') => {
                                     <h1>Test heading 1</h1>
                                     <h2>Test heading 2</h2>
                                     <p>Some content</p>
-                                    <Link to={'/withoutSizeOneHeading'}>Link to another page</Link>
+                                    <Link to="/withoutSizeOneHeading">Link to another page</Link>
                                     <span id="someElement">Linked element in the same page</span>
-                                    <a href="#someElement">Link to something in the same page</a>
+                                    <Link to="#someElement">
+                                        Link to something in the same page
+                                    </Link>
                                 </div>
                             }
                         ></Route>
