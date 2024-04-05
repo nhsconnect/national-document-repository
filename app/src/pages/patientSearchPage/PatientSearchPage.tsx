@@ -68,7 +68,7 @@ function PatientSearchPage() {
             if (error.response?.status === 400) {
                 setInputError('Enter a valid patient NHS number.');
             } else if (error.response?.status === 403) {
-                navigate(routes.START);
+                navigate(routes.SESSION_EXPIRED);
             } else if (error.response?.status === 404) {
                 setInputError('Sorry, patient data not found.');
             } else {

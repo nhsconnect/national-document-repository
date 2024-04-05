@@ -52,7 +52,7 @@ function DocumentSearchResultsPage() {
             } catch (e) {
                 const error = e as AxiosError;
                 if (error.response?.status === 403) {
-                    navigate(routes.START);
+                    navigate(routes.SESSION_EXPIRED);
                 } else if (error.response?.status && error.response?.status >= 500) {
                     navigate(routes.SERVER_ERROR + errorToParams(error));
                 } else {

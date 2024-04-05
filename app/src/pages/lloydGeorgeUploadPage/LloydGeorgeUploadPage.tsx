@@ -101,7 +101,7 @@ function LloydGeorgeUploadPage() {
                 } catch (e) {
                     const error = e as AxiosError;
                     if (error.response?.status === 403) {
-                        navigate(routes.START);
+                        navigate(routes.SESSION_EXPIRED);
                         return;
                     }
                     setStage(LG_UPLOAD_STAGE.FAILED);
@@ -196,7 +196,7 @@ function LloydGeorgeUploadPage() {
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
-                navigate(routes.START);
+                navigate(routes.SESSION_EXPIRED);
             } else if (error.response?.status === 423) {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
             } else if (isMock(error)) {
