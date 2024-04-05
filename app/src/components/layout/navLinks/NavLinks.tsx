@@ -23,15 +23,14 @@ const NavLinks = () => {
     }, []);
 
     const appLinks = [
-        { href: routes.SEARCH_PATIENT, label: 'Search For A Patient', id: 'search-btn' },
-        { href: routes.LOGOUT, label: 'Log Out', id: 'logout-btn' },
+        { href: routes.SEARCH_PATIENT, label: 'Search for a patient', id: 'search-btn' },
+        { href: routes.LOGOUT, label: 'Log out', id: 'logout-btn' },
     ];
 
     return session.isLoggedIn ? (
-        <Header.Nav style={{ display: 'initial', color: 'white' }} className="navlinks">
+        <Header.Nav className="navlinks">
             <Header.NavItem
                 className="navlinks_item clickable"
-                style={{ color: 'white' }}
                 role="link"
                 onClick={(e) => nav(e, routes.START)}
             >
@@ -55,9 +54,8 @@ const NavLinks = () => {
                 <div style={{ display: 'flex', flexFlow: 'row nowrap' }}>
                     {appLinks.map((l) => (
                         <Header.NavItem
-                            className="navlinks_item clickable"
+                            className="navlinks_item navlinks_item--desktop clickable"
                             key={l.href}
-                            style={{ margin: '0 2rem' }}
                             role="link"
                             data-testid={l.id}
                             onClick={(e) => nav(e, l.href)}

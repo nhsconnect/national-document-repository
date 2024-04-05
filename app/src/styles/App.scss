@@ -443,3 +443,22 @@ $govuk-compatibility-govukelements: true;
         margin: 50px 0;
     }
 }
+
+.navlinks {
+    display: initial;
+    .nhsuk-header__navigation-title {
+        color: $color_nhsuk-white;
+    }
+    .nhsuk-header__navigation-close {
+        display: none;
+    }
+    &_item {
+        a,
+        a:hover {
+            color: $color_nhsuk-white;
+        }
+        &--desktop {
+            margin: 0 2rem;
+        }
+    }
+}
