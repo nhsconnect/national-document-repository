@@ -23,6 +23,7 @@ import FeedbackPage from '../pages/feedbackPage/FeedbackPage';
 import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
 import PrivacyPage from '../pages/privacyPage/PrivacyPage';
 import LloydGeorgeUploadPage from '../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
+import SessionExpiredErrorPage from '../pages/sessionExpiredErrorPage/SessionExpiredErrorPage';
 
 const {
     START,
@@ -33,6 +34,7 @@ const {
     UNAUTHORISED_LOGIN,
     AUTH_ERROR,
     SERVER_ERROR,
+    SESSION_EXPIRED,
     FEEDBACK,
     LOGOUT,
     SEARCH_PATIENT,
@@ -76,6 +78,10 @@ export const routeMap: Routes = {
     },
     [SERVER_ERROR]: {
         page: <ServerErrorPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
+    [SESSION_EXPIRED]: {
+        page: <SessionExpiredErrorPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
     [PRIVACY_POLICY]: {
