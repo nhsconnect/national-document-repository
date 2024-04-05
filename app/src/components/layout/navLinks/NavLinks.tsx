@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { MouseEvent as ReactEvent } from 'react';
 import { Header } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
@@ -8,31 +8,69 @@ import { useSessionContext } from '../../../providers/sessionProvider/SessionPro
 const NavLinks = () => {
     const navigate = useNavigate();
     const [session] = useSessionContext();
-
+    const [width, setWidth] = useState<number>(window.innerWidth);
     const nav = (e: ReactEvent<HTMLAnchorElement, MouseEvent>, link: string) => {
         e.preventDefault();
         navigate(link);
     };
 
+    useEffect(() => {
+        const handleResizeWindow = () => setWidth(window.innerWidth);
+        window.addEventListener('resize', handleResizeWindow);
+        return () => {
+            window.removeEventListener('resize', handleResizeWindow);
+        };
+    }, []);
+
+    const appLinks = [
+        { href: routes.SEARCH_PATIENT, label: 'Search for a patient', id: 'search-btn' },
+        { href: routes.LOGOUT, label: 'Log out', id: 'logout-btn' },
+    ];
+
     return session.isLoggedIn ? (
-        <Header.Nav>
+        <Header.Nav className="navlinks">
             <Header.NavItem
-                role="link"
-                className="clickable"
-                onClick={(e) => nav(e, routes.HOME)}
+                tabIndex={0}
                 href="#"
+                className="navlinks_item clickable"
+                role="link"
+                onClick={(e) => nav(e, routes.START)}
             >
                 Home
             </Header.NavItem>
-            <Header.NavItem
-                role="link"
-                className="clickable"
-                data-testid="logout-btn"
-                onClick={(e) => nav(e, routes.LOGOUT)}
-                href="#"
-            >
-                Log Out
-            </Header.NavItem>
+            {width <= 990 ? (
+                <>
+                    {appLinks.map((l) => (
+                        <Header.NavItem
+                            tabIndex={0}
+                            href="#"
+                            className="navlinks_item navlinks_item--mobile clickable"
+                            key={l.href}
+                            role="link"
+                            data-testid={l.id}
+                            onClick={(e) => nav(e, l.href)}
+                        >
+                            {l.label}
+                        </Header.NavItem>
+                    ))}
+                </>
+            ) : (
+                <div className="navlinks_wrapper">
+                    {appLinks.map((l) => (
+                        <Header.NavItem
+                            tabIndex={0}
+                            href="#"
+                            className="navlinks_item navlinks_item--desktop clickable"
+                            key={l.href}
+                            role="link"
+                            data-testid={l.id}
+                            onClick={(e) => nav(e, l.href)}
+                        >
+                            {l.label}
+                        </Header.NavItem>
+                    ))}
+                </div>
+            )}
         </Header.Nav>
     ) : null;
 };
