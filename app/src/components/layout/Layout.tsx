@@ -26,6 +26,10 @@ function Layout({ children }: Props) {
     }, [location]);
 
     const focusMainContent = (e: MouseEvent<HTMLAnchorElement>) => {
+        /**
+         * Note: This function relies on the `document` object.
+         * In case if we migrate to SSR approach in the future, we will need to review the logic here.
+         */
         e.preventDefault();
 
         const firstHeadingElement = document?.getElementsByTagName('h1')?.[0];
