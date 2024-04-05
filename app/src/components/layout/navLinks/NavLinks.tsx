@@ -30,6 +30,8 @@ const NavLinks = () => {
     return session.isLoggedIn ? (
         <Header.Nav className="navlinks">
             <Header.NavItem
+                tabIndex={0}
+                href="#"
                 className="navlinks_item clickable"
                 role="link"
                 onClick={(e) => nav(e, routes.START)}
@@ -40,6 +42,8 @@ const NavLinks = () => {
                 <>
                     {appLinks.map((l) => (
                         <Header.NavItem
+                            tabIndex={0}
+                            href="#"
                             className="navlinks_item navlinks_item--mobile clickable"
                             key={l.href}
                             role="link"
@@ -54,6 +58,8 @@ const NavLinks = () => {
                 <div style={{ display: 'flex', flexFlow: 'row nowrap' }}>
                     {appLinks.map((l) => (
                         <Header.NavItem
+                            tabIndex={0}
+                            href="#"
                             className="navlinks_item navlinks_item--desktop clickable"
                             key={l.href}
                             role="link"
