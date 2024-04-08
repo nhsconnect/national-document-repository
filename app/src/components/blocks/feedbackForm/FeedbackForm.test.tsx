@@ -254,11 +254,41 @@ describe('<FeedbackForm />', () => {
             );
             expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
 
-            await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(
-                    routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
-                );
+            expect(mockedUseNavigate).toHaveBeenCalledWith(
+                routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+            );
+        });
+
+        it('navigates to Session Expire page when call to feedback endpoint return 403', async () => {
+            const errorResponse = {
+                response: {
+                    status: 403,
+                    data: { message: 'Unauthorized' },
+                },
+            };
+            mockedAxios.post.mockImplementation(() => Promise.reject(errorResponse));
+
+            const mockInputData = {
+                feedbackContent: 'Mock feedback content',
+                howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
+                respondentName: 'Jane Smith',
+                respondentEmail: 'jane_smith@testing.com',
+            };
+
+            renderComponent();
+
+            act(() => {
+                fillInForm(mockInputData);
+                clickSubmitButton();
             });
+
+            await waitFor(() =>
+                expect(mockedAxios.post).toBeCalledWith(baseURL + '/Feedback', mockInputData, {
+                    headers: {},
+                }),
+            );
+            expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
         });
     });
 });
