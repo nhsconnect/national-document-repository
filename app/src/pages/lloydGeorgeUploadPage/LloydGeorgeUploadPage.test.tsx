@@ -323,7 +323,7 @@ describe('LloydGeorgeUploadPage', () => {
                 );
             });
         });
-        it('navigates to start page when when call to lg record view return 403', async () => {
+        it('navigates to session expire page when when call to lg record view return 403', async () => {
             const errorResponse = {
                 response: {
                     status: 403,
@@ -348,10 +348,10 @@ describe('LloydGeorgeUploadPage', () => {
             expect(mockUploadDocuments).toHaveBeenCalled();
 
             await waitFor(() => {
-                expect(mockNavigate).toHaveBeenCalledWith(routes.START);
+                expect(mockNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });
         });
-        it('navigates to start page when confirmation returns 403', async () => {
+        it('navigates to session expire page when confirmation returns 403', async () => {
             mockS3Upload.mockReturnValue(Promise.resolve());
             mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
             mockUploadConfirmation.mockImplementation(() =>
@@ -383,7 +383,7 @@ describe('LloydGeorgeUploadPage', () => {
                 expect(mockUploadConfirmation).toHaveBeenCalled();
             });
             await waitFor(() => {
-                expect(mockNavigate).toHaveBeenCalledWith(routes.START);
+                expect(mockNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });
         });
     });

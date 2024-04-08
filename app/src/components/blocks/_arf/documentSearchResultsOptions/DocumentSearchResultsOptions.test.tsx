@@ -134,7 +134,7 @@ describe('DocumentSearchResultsOptions', () => {
     });
 
     describe('Navigation', () => {
-        it('navigates to home page when API returns 403', async () => {
+        it('navigates to session expire page when API returns 403', async () => {
             const history = createMemoryHistory({
                 initialEntries: ['/example'],
                 initialIndex: 1,
@@ -155,7 +155,7 @@ describe('DocumentSearchResultsOptions', () => {
             userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });
         });
         it('navigates to error page when API returns 5XX', async () => {

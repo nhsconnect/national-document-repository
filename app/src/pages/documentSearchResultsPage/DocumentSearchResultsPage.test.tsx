@@ -206,7 +206,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 );
             });
         });
-        it('navigates to Start page when a document search fails', async () => {
+        it('navigates to session expire page when a document search return 403 unauthorised error', async () => {
             const errorResponse = {
                 response: {
                     status: 403,
@@ -218,7 +218,7 @@ describe('<DocumentSearchResultsPage />', () => {
             render(<DocumentSearchResultsPage />);
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });
         });
     });

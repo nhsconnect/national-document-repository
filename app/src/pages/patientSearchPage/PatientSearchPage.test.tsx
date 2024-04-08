@@ -177,7 +177,7 @@ describe('PatientSearchPage', () => {
             },
         );
 
-        it('navigates to start page when user is unauthorized to make request', async () => {
+        it('navigates to session expired page page when user is unauthorized to make request', async () => {
             const errorResponse = {
                 response: {
                     status: 403,
@@ -192,7 +192,7 @@ describe('PatientSearchPage', () => {
             userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });
         });
 
