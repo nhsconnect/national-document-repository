@@ -1,6 +1,5 @@
 import { ButtonLink } from 'nhsuk-react-components';
 import React, { MouseEvent, useState } from 'react';
-import { unixTimestamp } from '../../helpers/utils/createTimestamp';
 import { endpoints } from '../../types/generic/endpoints';
 import Spinner from '../../components/generic/spinner/Spinner';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';

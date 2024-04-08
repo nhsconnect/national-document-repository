@@ -1,7 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
 import SessionExpiredErrorPage from './SessionExpiredErrorPage';
-import { routes } from '../../types/generic/routes';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { endpoints } from '../../types/generic/endpoints';
 
