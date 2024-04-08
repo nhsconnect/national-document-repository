@@ -77,6 +77,16 @@ $govuk-compatibility-govukelements: true;
     }
 }
 
+@mixin link-focus {
+    background-color: #ffeb3b;
+    box-shadow:
+        0 -2px #ffeb3b,
+        0 4px #212b32;
+    color: #212b32;
+    outline: 4px solid transparent;
+    text-decoration: none;
+}
+
 .link-button {
     background: none;
     border: none;
@@ -97,13 +107,7 @@ $govuk-compatibility-govukelements: true;
         color: #002f5c;
     }
     &:focus {
-        background-color: #ffeb3b;
-        box-shadow:
-            0 -2px #ffeb3b,
-            0 4px #212b32;
-        color: #212b32;
-        outline: 4px solid transparent;
-        text-decoration: none;
+        @include link-focus;
     }
 }
 
@@ -367,6 +371,10 @@ $govuk-compatibility-govukelements: true;
         text-align: left;
         text-decoration: underline;
         cursor: pointer;
+
+        &:focus {
+            @include link-focus;
+        }
     }
     &_file_upload_error {
         font-family: Arial, sans-serif;
@@ -376,6 +384,19 @@ $govuk-compatibility-govukelements: true;
         letter-spacing: 0;
         text-align: left;
         color: #d5281b;
+    }
+
+    &_upload-submission {
+        display: flex;
+        align-items: baseline;
+
+        .lloydgeorge_link {
+            margin-left: 25px;
+            padding: 0;
+            &:focus {
+                @include link-focus;
+            }
+        }
     }
 }
 
@@ -388,6 +409,12 @@ $govuk-compatibility-govukelements: true;
     #pdf-viewer {
         margin-top: 6px;
     }
+}
+
+.pdfobject-container:focus {
+    border: 2px solid #212b32;
+    outline: 4px solid #ffeb3b;
+    outline-offset: 0;
 }
 
 .deletion-complete {
@@ -465,4 +492,8 @@ $govuk-compatibility-govukelements: true;
             margin: 0 2rem;
         }
     }
+}
+
+.nhsuk-error-summary__list div {
+    margin-bottom: 24px;
 }
