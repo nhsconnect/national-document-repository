@@ -1,7 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
-// import ServerErrorPage from './ServerErrorPage';
+import { render, screen } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
-import userEvent from '@testing-library/user-event';
 import { unixTimestamp } from '../../helpers/utils/createTimestamp';
 import SessionExpiredErrorPage from './SessionExpiredErrorPage';
 import { routes } from '../../types/generic/routes';
@@ -11,13 +9,12 @@ const mockedNavigate = jest.fn();
 jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
-//
+
 jest.mock('react-router', () => ({
     useNavigate: () => mockedNavigate,
-    useLocation: () => jest.fn(),
 }));
-//
-describe('ServerErrorPage', () => {
+
+describe('SessionExpiredErrorPage', () => {
     it('render a page with a user friendly message to state that their session expired', () => {
         render(<SessionExpiredErrorPage />);
 
@@ -40,7 +37,7 @@ describe('ServerErrorPage', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByRole('link', {
-                name: 'Contact the NHS National Service Desk',
+                name: /Contact the NHS National Service Desk/,
             }),
         ).toBeInTheDocument();
 
