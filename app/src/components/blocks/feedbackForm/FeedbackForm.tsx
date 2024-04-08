@@ -44,6 +44,7 @@ function FeedbackForm({ stage, setStage }: Props) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
                 navigate(routes.SESSION_EXPIRED);
+                return;
             }
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
