@@ -1,62 +1,60 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
-import { unixTimestamp } from '../../helpers/utils/createTimestamp';
 import SessionExpiredErrorPage from './SessionExpiredErrorPage';
 import { routes } from '../../types/generic/routes';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import { endpoints } from '../../types/generic/endpoints';
 
-const mockedNavigate = jest.fn();
+jest.mock('../../helpers/hooks/useBaseAPIUrl');
 
-jest.mock('moment', () => {
-    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
-});
-
-jest.mock('react-router', () => ({
-    useNavigate: () => mockedNavigate,
-}));
+const originalWindowLocation = window.location;
+const mockLocationReplace = jest.fn();
+const mockUseBaseUrl = useBaseAPIUrl as jest.Mock;
 
 describe('SessionExpiredErrorPage', () => {
+    afterAll(() => {
+        Object.defineProperty(window, 'location', {
+            value: originalWindowLocation,
+        });
+    });
+
     it('render a page with a user friendly message to state that their session expired', () => {
         render(<SessionExpiredErrorPage />);
 
         expect(
-            screen.getByRole('heading', { name: 'You have been logged out' }),
+            screen.getByRole('heading', { name: 'We signed you out due to inactivity' }),
         ).toBeInTheDocument();
 
         expect(
             screen.getByText(
-                'Your session has automatically expired following a period of inactivity. This is to protect patient security.',
+                "This is to protect your information. You'll need to enter any information you submitted again.",
             ),
         ).toBeInTheDocument();
-
-        expect(screen.getByText('Log in again to use this service.')).toBeInTheDocument();
-
-        expect(
-            screen.getByRole('heading', {
-                name: 'If this error keeps appearing',
-            }),
-        ).toBeInTheDocument();
-        expect(
-            screen.getByRole('link', {
-                name: /Contact the NHS National Service Desk/,
-            }),
-        ).toBeInTheDocument();
-
-        const mockInteractionId = unixTimestamp();
-        expect(screen.getByText(mockInteractionId)).toBeInTheDocument();
     });
 
-    it('navigate to start page when user click the return button', () => {
+    it('move to login endpoint when user click the button', async () => {
+        const mockBackendUrl = 'http://localhost/mock_url/';
+        mockUseBaseUrl.mockReturnValue(mockBackendUrl);
+
+        Object.defineProperty(window, 'location', {
+            value: {
+                replace: mockLocationReplace,
+            },
+        });
+
         render(<SessionExpiredErrorPage />);
 
-        const returnButton = screen.getByRole('button', {
-            name: 'Return to start and log in again',
+        const signBackInButton = screen.getByRole('button', {
+            name: 'Sign back in',
         });
-        expect(returnButton).toBeInTheDocument();
+        expect(signBackInButton).toBeInTheDocument();
 
         act(() => {
-            returnButton.click();
+            signBackInButton.click();
         });
 
-        expect(mockedNavigate).toBeCalledWith(routes.START);
+        await waitFor(() =>
+            expect(mockLocationReplace).toBeCalledWith(mockBackendUrl + endpoints.LOGIN),
+        );
     });
 });

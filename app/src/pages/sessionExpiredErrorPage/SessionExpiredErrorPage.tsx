@@ -1,47 +1,33 @@
-import { useNavigate } from 'react-router';
 import { ButtonLink } from 'nhsuk-react-components';
-import React from 'react';
+import React, { MouseEvent, useState } from 'react';
 import { unixTimestamp } from '../../helpers/utils/createTimestamp';
-import { routes } from '../../types/generic/routes';
+import { endpoints } from '../../types/generic/endpoints';
+import Spinner from '../../components/generic/spinner/Spinner';
+import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 
 const SessionExpiredErrorPage = () => {
-    const navigate = useNavigate();
+    const baseAPIUrl = useBaseAPIUrl();
+    const [isLoading, setIsLoading] = useState(false);
 
-    return (
+    const handleLogin = (e: MouseEvent<HTMLAnchorElement>) => {
+        setIsLoading(true);
+        e.preventDefault();
+        window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
+    };
+
+    return !isLoading ? (
         <>
-            <h1>You have been logged out</h1>
+            <h1>We signed you out due to inactivity</h1>
             <p>
-                Your session has automatically expired following a period of inactivity. This is to
-                protect patient security.
+                This is to protect your information. You'll need to enter any information you
+                submitted again.
             </p>
-            <p>Log in again to use this service.</p>
-            <ButtonLink
-                href="#"
-                onClick={(e) => {
-                    e.preventDefault();
-                    navigate(routes.START);
-                }}
-            >
-                Return to start and log in again
+            <ButtonLink href="#" onClick={handleLogin}>
+                Sign back in
             </ButtonLink>
-
-            <h2>If this error keeps appearing</h2>
-            <p>
-                <a
-                    href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    Contact the NHS National Service Desk (opens in a new tab)
-                </a>{' '}
-                or call 0300 303 5678
-            </p>
-
-            <p>
-                When contacting the service desk, quote this error code as reference:{' '}
-                <strong>{unixTimestamp()}</strong>
-            </p>
         </>
+    ) : (
+        <Spinner status="Logging in..." />
     );
 };
 export default SessionExpiredErrorPage;
