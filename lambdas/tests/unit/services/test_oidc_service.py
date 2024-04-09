@@ -9,21 +9,24 @@ from requests import Response
 from services.oidc_service import OidcService
 from tests.unit.helpers.mock_response import MockResponse
 from utils.exceptions import AuthorisationException, OidcApiException
+from utils.request_context import request_context
 
+MOCK_PREFIX = "/auth/mock/"
 MOCK_PARAMETERS = {
-    "OIDC_CLIENT_ID": "mock_client_id",
-    "OIDC_CLIENT_SECRET": "mock_client_secret",
-    "OIDC_ISSUER_URL": "https://localhost/mock_issuer_url",
-    "OIDC_TOKEN_URL": "https://localhost/mock_token_url",
-    "OIDC_USER_INFO_URL": "https://localhost/mock_userinfo_url",
+    "/auth/mock/OIDC_CLIENT_ID": "mock_client_id",
+    "/auth/mock/OIDC_CLIENT_SECRET": "mock_client_secret",
+    "/auth/mock/OIDC_ISSUER_URL": "https://localhost/mock_issuer_url",
+    "/auth/mock/OIDC_TOKEN_URL": "https://localhost/mock_token_url",
+    "/auth/mock/OIDC_USER_INFO_URL": "https://localhost/mock_userinfo_url",
     "OIDC_CALLBACK_URL": "https://localhost/mock_callback_url",
-    "OIDC_JWKS_URL": "https://localhost/mock_jwks_url",
+    "/auth/mock/OIDC_JWKS_URL": "https://localhost/mock_jwks_url",
     "ENVIRONMENT": "prod",
 }
 
 
 @pytest.fixture
 def oidc_service(mocker):
+    request_context.auth_ssm_prefix = "/auth/mock/"
     oidc_service = OidcService()
     mocker.patch.object(
         oidc_service, "fetch_oidc_parameters", return_value=MOCK_PARAMETERS
@@ -170,8 +173,8 @@ def mock_cis2_public_key_and_id_tokens():
 
     claim_set = {
         "name": "fake_id_token",
-        "iss": MOCK_PARAMETERS["OIDC_ISSUER_URL"],
-        "aud": MOCK_PARAMETERS["OIDC_CLIENT_ID"],
+        "iss": MOCK_PARAMETERS["/auth/mock/OIDC_ISSUER_URL"],
+        "aud": MOCK_PARAMETERS["/auth/mock/OIDC_CLIENT_ID"],
         "exp": time.time() + 3600,
         "acr": "AAL3",
     }

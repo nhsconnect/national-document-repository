@@ -1,4 +1,5 @@
 from enums.logging_app_interaction import LoggingAppInteraction
+from services.dynamic_configuration_service import DynamicConfigurationService
 from services.login_redirect_service import LoginRedirectService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
@@ -13,12 +14,22 @@ logger = LoggingService(__name__)
 
 @set_request_context_for_logging
 @override_error_check
-@ensure_environment_variables(names=["AUTH_DYNAMODB_NAME"])
+@ensure_environment_variables(
+    names=[
+        "AUTH_DYNAMODB_NAME",
+        "APPCONFIG_APPLICATION",
+        "APPCONFIG_CONFIGURATION",
+        "APPCONFIG_ENVIRONMENT",
+        "OIDC_CALLBACK_URL",
+    ]
+)
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGIN.value
     logger.info("Login Redirect handler triggered")
 
+    configuration_service = DynamicConfigurationService()
+    configuration_service.set_auth_ssm_prefix()
     login_redirect_service = LoginRedirectService()
     location_header = login_redirect_service.prepare_redirect_response()
     return ApiGatewayResponse(303, "", "GET").create_api_gateway_response(

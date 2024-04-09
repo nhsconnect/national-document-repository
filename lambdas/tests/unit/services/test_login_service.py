@@ -7,9 +7,7 @@ from models.oidc_models import IdTokenClaimSet
 from services.base.dynamo_service import DynamoDBService
 from services.login_service import LoginService
 from services.ods_api_service import OdsApiService
-from services.oidc_service import OidcService
 from services.token_handler_ssm_service import TokenHandlerSSMService
-from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException
 from utils.lambda_exceptions import LoginException
 
@@ -42,12 +40,8 @@ def mock_aws_infras(mocker, set_env):
 
 @pytest.fixture
 def mock_oidc_service(mocker, mock_userinfo):
-    mocker.patch.object(OidcService, "__init__", return_value=None)
-    mocker.patch.object(OidcService, "set_up_oidc_parameters", return_value=None)
-    mocked_fetch_token = mocker.patch.object(OidcService, "fetch_tokens")
-    mocked_fetch_user_org_codes = mocker.patch.object(
-        OidcService, "fetch_user_org_codes"
-    )
+    mock_service = mocker.MagicMock()
+    mocker.patch("services.login_service.OidcService", return_value=mock_service)
 
     mocked_tokens = [
         "fake_access_token",
@@ -58,22 +52,16 @@ def mock_oidc_service(mocker, mock_userinfo):
             selected_roleid="1234",
         ),
     ]
-    mocked_fetch_token.return_value = mocked_tokens
-    mocked_fetch_user_org_codes.return_value = ["mock_ods_code1"]
-
-    mocked_fetch_user_info = mocker.patch.object(OidcService, "fetch_userinfo")
-    mocked_fetch_user_info.return_value = mock_userinfo
-
-    mocked_fetch_user_role_code = mocker.patch.object(
-        OidcService, "fetch_user_role_code"
-    )
-    mocked_fetch_user_role_code.return_value = ("R8008", "500000000000")
+    mock_service.fetch_tokens.return_value = mocked_tokens
+    mock_service.fetch_user_org_codes.return_value = ["mock_ods_code1"]
+    mock_service.fetch_user_info.return_value = mock_userinfo
+    mock_service.fetch_user_role_code.return_value = ("R8008", "500000000000")
 
     yield {
-        "fetch_token": mocked_fetch_token,
-        "fetch_user_org_codes": mocked_fetch_user_org_codes,
-        "fetch_user_role_code": mocked_fetch_user_role_code,
-        "fetch_user_info": mocked_fetch_user_info,
+        "fetch_token": mock_service.fetch_tokens,
+        "fetch_user_org_codes": mock_service.fetch_user_org_codes,
+        "fetch_user_role_code": mock_service.fetch_user_info,
+        "fetch_user_info": mock_service.fetch_user_role_code,
     }
 
 
@@ -98,17 +86,11 @@ def mock_jwt_encode(mocker):
     yield mocker.patch("jwt.encode", return_value="test_ndr_auth_token")
 
 
-@pytest.fixture
-def mock_logging_service(mocker):
-    yield mocker.patch.object(LoggingService, "__init__", return_value=None)
-
-
 def test_exchange_token_respond_with_auth_token_and_repo_role(
     mock_aws_infras,
     mock_oidc_service,
     mock_ods_api_service,
     mock_jwt_encode,
-    mock_logging_service,
     mocker,
 ):
     auth_code = "auth_code"
@@ -236,7 +218,7 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
             {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
         ),
     )
-
+    mocker.patch("services.login_service.OidcService")
     mock_oidc = mocker.patch("services.oidc_service.OidcService.fetch_oidc_parameters")
     mock_oidc.return_value = {
         "OIDC_CLIENT_ID": "client-id",
@@ -256,11 +238,12 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
     assert actual.value.status_code == 500
 
 
-def test_generate_repository_role_gp_admin(mock_logging_service, set_env, mocker):
+def test_generate_repository_role_gp_admin(set_env, mocker):
     ods_code = "ods_code"
     org_role_code = "org_role_code"
     user_role_code = "role_code"
     org = {"org_ods_code": ods_code, "role_code": org_role_code}
+    mocker.patch("services.login_service.OidcService")
 
     mocker.patch.object(
         TokenHandlerSSMService,
@@ -278,11 +261,12 @@ def test_generate_repository_role_gp_admin(mock_logging_service, set_env, mocker
     assert expected == actual
 
 
-def test_generate_repository_role_gp_clinical(mock_logging_service, set_env, mocker):
+def test_generate_repository_role_gp_clinical(set_env, mocker):
     ods_code = "ods_code"
     org_role_code = "org_role_code"
     user_role_code = "role_code"
     org = {"org_ods_code": ods_code, "role_code": org_role_code}
+    mocker.patch("services.login_service.OidcService")
 
     mocker.patch.object(
         TokenHandlerSSMService,
@@ -305,11 +289,12 @@ def test_generate_repository_role_gp_clinical(mock_logging_service, set_env, moc
     assert expected == actual
 
 
-def test_generate_repository_role_pcse(mock_logging_service, set_env, mocker):
+def test_generate_repository_role_pcse(set_env, mocker):
     ods_code = "ods_code"
     user_role_code = "role_code"
     org_role_code = "org_role_code"
     org = {"org_ods_code": ods_code, "role_code": org_role_code}
+    mocker.patch("services.login_service.OidcService")
 
     mocker.patch.object(
         TokenHandlerSSMService,
@@ -335,11 +320,10 @@ def test_generate_repository_role_pcse(mock_logging_service, set_env, mocker):
     assert expected == actual
 
 
-def test_generate_repository_role_no_role_raises_auth_error(
-    mock_logging_service, set_env, mocker
-):
+def test_generate_repository_role_no_role_raises_auth_error(set_env, mocker):
     user_role_code = "role_code"
     org = {"org_ods_code": "ods_code", "role_code": "not_gp_or_pcse"}
+    mocker.patch("services.login_service.OidcService")
 
     mocker.patch.object(
         TokenHandlerSSMService,

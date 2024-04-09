@@ -7,9 +7,9 @@ from utils.exceptions import AuthorisationException, LogoutFailureException
 
 @pytest.fixture()
 def mock_back_channel_logout_service(mocker, set_env):
+    mocker.patch("services.back_channel_logout_service.OidcService")
+    mocker.patch("services.back_channel_logout_service.DynamoDBService")
     patched_back_channel_logout_service = BackChannelLogoutService()
-    mocker.patch.object(patched_back_channel_logout_service, "oidc_service")
-    mocker.patch.object(patched_back_channel_logout_service, "dynamodb_service")
     yield patched_back_channel_logout_service
 
 

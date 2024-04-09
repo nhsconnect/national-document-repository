@@ -3,6 +3,7 @@ from botocore.exceptions import ClientError
 from oauthlib.oauth2 import InsecureTransportError
 from services.login_redirect_service import LoginRedirectService
 from utils.lambda_exceptions import LoginRedirectException
+from utils.request_context import request_context
 
 RETURN_URL = (
     "https://www.string_value_1.com?"
@@ -27,6 +28,7 @@ class FakeWebAppClient:
 def mock_service(mocker, set_env):
     mocker.patch("boto3.resource")
     mocker.patch("boto3.client")
+    request_context.ssm_prefix = "/auth/mock/"
     service = LoginRedirectService()
     yield service
 
@@ -39,8 +41,8 @@ def mock_dynamo(mocker, mock_service):
 @pytest.fixture
 def mock_ssm(mocker, mock_service):
     mock_service.oidc_parameters = {
-        "OIDC_AUTHORISE_URL": "string",
-        "OIDC_CLIENT_ID": "string",
+        "/auth/mock/OIDC_AUTHORISE_URL": "string",
+        "/auth/mock/OIDC_CLIENT_ID": "string",
     }
     yield mocker.patch.object(mock_service, "ssm_service")
 

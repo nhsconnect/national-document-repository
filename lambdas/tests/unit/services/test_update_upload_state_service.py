@@ -137,7 +137,6 @@ def test_format_update_success(patched_service):
 
 
 def test_format_update_throws_error(patched_service):
-
     with pytest.raises(UpdateUploadStateException):
         patched_service.handle_update_state(MOCK_EMPTY_LIST)
 
