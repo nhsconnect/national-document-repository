@@ -54,7 +54,7 @@ class UpdateUploadStateService:
             raise UpdateUploadStateException(400, LambdaError.UpdateUploadStateKey)
 
     def update_document(
-        self, doc_ref: str, doc_type: SupportedDocumentTypes, uploaded: str
+        self, doc_ref: str, doc_type: SupportedDocumentTypes, uploaded: bool
     ):
         updated_fields = self.format_update({Fields.UPLOADING.value: uploaded})
         table = (
