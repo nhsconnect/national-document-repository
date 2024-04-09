@@ -36,14 +36,14 @@ class UpdateUploadStateService:
                 )
                 if not_valid:
                     raise UpdateUploadStateException(
-                        404, LambdaError.UpdateUploadStateValidation
+                        400, LambdaError.UpdateUploadStateValidation
                     )
                 elif doc_type not in [
                     SupportedDocumentTypes.ARF.value,
                     SupportedDocumentTypes.LG.value,
                 ]:
                     raise UpdateUploadStateException(
-                        404, LambdaError.UpdateUploadStateDocType
+                        400, LambdaError.UpdateUploadStateDocType
                     )
                 else:
                     self.update_document(doc_ref, doc_type, uploaded)
@@ -51,7 +51,7 @@ class UpdateUploadStateService:
             logger.error(
                 f"{LambdaError.UpdateUploadStateKey.to_str()} :{str(e)}",
             )
-            raise UpdateUploadStateException(404, LambdaError.UpdateUploadStateKey)
+            raise UpdateUploadStateException(400, LambdaError.UpdateUploadStateKey)
 
     def update_document(
         self, doc_ref: str, doc_type: SupportedDocumentTypes, uploaded: str
@@ -83,5 +83,5 @@ class UpdateUploadStateService:
                 f"{LambdaError.UpdateUploadStateFieldType.to_str()} :{str(e)}",
             )
             raise UpdateUploadStateException(
-                404, LambdaError.UpdateUploadStateFieldType
+                400, LambdaError.UpdateUploadStateFieldType
             )
