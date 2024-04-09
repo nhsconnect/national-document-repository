@@ -34,9 +34,7 @@ def mock_update_upload_state_service(mocker):
 def test_update_upload_state_handler_success_lg(
     set_env, context, mock_update_upload_state_service
 ):
-    expected = ApiGatewayResponse(
-        200, "Update upload state successful", "POST"
-    ).create_api_gateway_response()
+    expected = ApiGatewayResponse(204, "", "POST").create_api_gateway_response()
 
     actual = lambda_handler(MOCK_VALID_LG_EVENT, context)
 
@@ -46,9 +44,7 @@ def test_update_upload_state_handler_success_lg(
 def test_update_upload_state_handler_success_arf(
     set_env, context, mock_update_upload_state_service
 ):
-    expected = ApiGatewayResponse(
-        200, "Update upload state successful", "POST"
-    ).create_api_gateway_response()
+    expected = ApiGatewayResponse(204, "", "POST").create_api_gateway_response()
 
     actual = lambda_handler(MOCK_VALID_ARF_EVENT, context)
 
@@ -56,14 +52,13 @@ def test_update_upload_state_handler_success_arf(
 
 
 def test_update_upload_state_handler_both_doc_types_raise_error(set_env, context):
-
     expected_body = {
         "message": "Doctype invalid",
         "err_code": "US_4003",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
     expected = ApiGatewayResponse(
-        404, json.dumps(expected_body), "POST"
+        400, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
 
     actual = lambda_handler(MOCK_INVALID_ALL_EVENT, context)
