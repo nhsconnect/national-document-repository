@@ -1,8 +1,9 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, SetStateAction, useEffect } from 'react';
 import { Button, Card } from 'nhsuk-react-components';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
+import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
@@ -11,6 +12,12 @@ export type Props = {
 };
 
 function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDownload }: Props) {
+    // temp solution to focus on layout div so that skip-link can be selected.
+    // we should remove this when this component become a separate route.
+    useEffect(() => {
+        focusLayoutDiv();
+    }, []);
+
     const handleReturnButtonClick = () => {
         setStage(LG_RECORD_STAGE.RECORD);
         if (deleteAfterDownload) {
@@ -22,7 +29,10 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
         <div className="lloydgeorge_download-complete">
             <Card className="lloydgeorge_download-complete_details">
                 <Card.Content className="lloydgeorge_download-complete_details-content">
-                    <Card.Heading className="lloydgeorge_download-complete_details-content_header">
+                    <Card.Heading
+                        className="lloydgeorge_download-complete_details-content_header"
+                        headingLevel="h1"
+                    >
                         Download complete
                     </Card.Heading>
                     <Card.Description className="lloydgeorge_download-complete_details-content_description">

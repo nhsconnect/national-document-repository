@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
 import {
     DOCUMENT_UPLOAD_STATE,
@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
 import DocumentsListView from '../../generic/documentsListView/DocumentsListView';
 import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
+import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
 
 interface Props {
     documents: Array<UploadDocument>;
@@ -16,6 +17,12 @@ interface Props {
 
 function LloydGeorgeUploadCompleteStage({ documents }: Props) {
     const navigate = useNavigate();
+
+    // temp solution to focus on layout div so that skip-link can be selected.
+    // we should remove this when this component become a separate route.
+    useEffect(() => {
+        focusLayoutDiv();
+    }, []);
 
     const successfulUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED;
@@ -25,7 +32,10 @@ function LloydGeorgeUploadCompleteStage({ documents }: Props) {
         <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">
             <Card className="lloydgeorge_upload-complete_card" data-testid="upload-complete-card">
                 <Card.Content className="lloydgeorge_upload-complete_card_content">
-                    <Card.Heading className="lloydgeorge_upload-complete_card_content_header">
+                    <Card.Heading
+                        className="lloydgeorge_upload-complete_card_content_header"
+                        headingLevel="h1"
+                    >
                         Record uploaded for
                     </Card.Heading>
                     <ReducedPatientInfo

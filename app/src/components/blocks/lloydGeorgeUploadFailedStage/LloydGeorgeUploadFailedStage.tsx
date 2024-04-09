@@ -1,7 +1,8 @@
 import { Button, ButtonLink, WarningCallout } from 'nhsuk-react-components';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
+import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
 
 type Props = {
     restartUpload: () => void;
@@ -9,10 +10,17 @@ type Props = {
 
 function LloydGeorgeUploadFailedStage({ restartUpload }: Props) {
     const navigate = useNavigate();
+
+    // temp solution to focus on layout div so that skip-link can be selected.
+    // we should remove this if this component become a separate route.
+    useEffect(() => {
+        focusLayoutDiv();
+    }, []);
+
     return (
         <>
             <WarningCallout data-testid="lloyd-george-upload-failed-panel">
-                <WarningCallout.Label headingLevel="h2">
+                <WarningCallout.Label headingLevel="h1">
                     The record did not upload
                 </WarningCallout.Label>
                 <p>

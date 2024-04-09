@@ -213,7 +213,10 @@ function LloydGeorgeRecordStage({
                             data-testid="pdf-card"
                             className="lloydgeorge_record-stage_header-content"
                         >
-                            <Card.Heading className="lloydgeorge_record-stage_header-content-label">
+                            <Card.Heading
+                                className="lloydgeorge_record-stage_header-content-label"
+                                headingLevel="h1"
+                            >
                                 Lloyd George record
                             </Card.Heading>
                             <PdfCardDescription />

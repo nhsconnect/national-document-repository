@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ButtonLink, WarningCallout } from 'nhsuk-react-components';
 import {
     DOCUMENT_UPLOAD_STATE,
@@ -6,6 +6,7 @@ import {
 } from '../../../types/pages/UploadDocumentsPage/types';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
+import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
 
 interface Props {
     documents: Array<UploadDocument>;
@@ -15,6 +16,12 @@ interface Props {
 function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
     const navigate = useNavigate();
 
+    // temp solution to focus on layout div so that skip-link can be selected.
+    // we should remove this if this component become a separate route.
+    useEffect(() => {
+        focusLayoutDiv();
+    }, []);
+
     const infectedUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.INFECTED;
     });
@@ -22,7 +29,9 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
     return (
         <div data-testid="failure-complete-page">
             <WarningCallout id="upload-stage-warning">
-                <WarningCallout.Label>The record did not upload</WarningCallout.Label>
+                <WarningCallout.Label headingLevel="h1">
+                    The record did not upload
+                </WarningCallout.Label>
                 <p>
                     <strong>Some of your files failed a virus scan:</strong>
                 </p>
