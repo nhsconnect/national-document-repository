@@ -8,7 +8,7 @@ describe('GP Workflow: Patient search and verify', () => {
 
     const workspace = Cypress.env('WORKSPACE');
     const activePatient =
-        workspace === 'ndr-dev' ? pdsPatients.activeUpload : stubPatients.activeNoUpload;
+        workspace === 'ndr-dev' ? pdsPatients.activeUpload : stubPatients.activeUpload;
     const homeUrl = '/home';
     const verifyPatientUrl = '/search/patient/verify';
     const lloydGeorgeUrl = '/patient/view/lloyd-george-record';

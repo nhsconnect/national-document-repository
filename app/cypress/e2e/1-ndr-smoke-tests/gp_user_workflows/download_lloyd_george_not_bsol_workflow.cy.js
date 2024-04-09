@@ -1,10 +1,11 @@
-import { pdsPatients } from '../../../support/patients';
+import { pdsPatients, stubPatients } from '../../../support/patients';
 import { Roles } from '../../../support/roles';
 import dbItem from '../../../fixtures/dynamo-db-items/active-patient.json';
 
 const workspace = Cypress.env('WORKSPACE');
 dbItem.FileLocation = dbItem.FileLocation.replace('{env}', workspace);
-const activePatient = pdsPatients.activeUpload;
+const activePatient =
+    workspace === 'ndr-dev' ? pdsPatients.activeUpload : stubPatients.activeUpload;
 const bucketName = `${workspace}-lloyd-george-store`;
 const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
 const fileName = `${activePatient}/e4a6d7f7-01f3-44be-8964-515b2c0ec180`;
