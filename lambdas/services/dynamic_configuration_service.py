@@ -19,4 +19,4 @@ class DynamicConfigurationService:
             request_context.auth_ssm_prefix = "/auth/smartcard/"
         else:
             request_context.auth_ssm_prefix = "/auth/password/"
-        logger.info("Setting auth ssm prefix to" + request_context.auth_ssm_prefix)
+        logger.info("Setting auth ssm prefix to " + request_context.auth_ssm_prefix)
