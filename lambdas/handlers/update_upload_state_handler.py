@@ -37,9 +37,7 @@ def lambda_handler(event, context):
         logger.info("Using update upload service...")
         update_upload_state_service = UpdateUploadStateService()
         update_upload_state_service.handle_update_state(event_body)
-        return ApiGatewayResponse(
-            200, "Update upload state successful", "POST"
-        ).create_api_gateway_response()
+        return ApiGatewayResponse(204, "", "POST").create_api_gateway_response()
 
     except (JSONDecodeError, AttributeError) as e:
         logger.error(

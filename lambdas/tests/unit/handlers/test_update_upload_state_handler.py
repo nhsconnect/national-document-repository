@@ -34,9 +34,7 @@ def mock_update_upload_state_service(mocker):
 def test_update_upload_state_handler_success_lg(
     set_env, context, mock_update_upload_state_service
 ):
-    expected = ApiGatewayResponse(
-        200, "Update upload state successful", "POST"
-    ).create_api_gateway_response()
+    expected = ApiGatewayResponse(204, "", "POST").create_api_gateway_response()
 
     actual = lambda_handler(MOCK_VALID_LG_EVENT, context)
 
@@ -46,9 +44,7 @@ def test_update_upload_state_handler_success_lg(
 def test_update_upload_state_handler_success_arf(
     set_env, context, mock_update_upload_state_service
 ):
-    expected = ApiGatewayResponse(
-        200, "Update upload state successful", "POST"
-    ).create_api_gateway_response()
+    expected = ApiGatewayResponse(204, "", "POST").create_api_gateway_response()
 
     actual = lambda_handler(MOCK_VALID_ARF_EVENT, context)
 
