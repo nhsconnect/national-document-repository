@@ -71,7 +71,7 @@ const ErrorBox = ({
                                 <div key={key}>
                                     <p>{errorItem.error.errorBox}</p>
                                     <ErrorSummary.Item href={'#' + errorItem.filename}>
-                                        <p>{errorItem.filename}</p>
+                                        {errorItem.filename}
                                     </ErrorSummary.Item>
                                 </div>
                             );

@@ -244,7 +244,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                     </Table.Body>
                 </Table>
             )}
-            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+            <div className="lloydgeorge_upload-submission">
                 <Button type="button" id="upload-button" onClick={onSubmit}>
                     Upload
                 </Button>
