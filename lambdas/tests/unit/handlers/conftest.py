@@ -1,4 +1,6 @@
 import pytest
+from enums.feature_flags import FeatureFlags
+from services.feature_flags_service import FeatureFlagService
 
 
 @pytest.fixture
@@ -82,3 +84,21 @@ def missing_id_event():
         "queryStringParameters": {"invalid": ""},
     }
     return api_gateway_proxy_event
+
+
+@pytest.fixture
+def mock_smartcard_auth_enabled(mocker):
+    mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
+    mock_upload_lambda_feature_flag = mock_function.return_value = {
+        FeatureFlags.USE_SMARTCARD_AUTH.value: True
+    }
+    yield mock_upload_lambda_feature_flag
+
+
+@pytest.fixture
+def mock_password_auth_enable(mocker):
+    mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
+    mock_upload_lambda_feature_flag = mock_function.return_value = {
+        FeatureFlags.USE_SMARTCARD_AUTH.value: False
+    }
+    yield mock_upload_lambda_feature_flag

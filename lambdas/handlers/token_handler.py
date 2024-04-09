@@ -2,6 +2,7 @@ import json
 
 from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
+from services.dynamic_configuration_service import DynamicConfigurationService
 from services.login_service import LoginService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
@@ -31,6 +32,8 @@ def lambda_handler(event, context):
         if not (auth_code and state):
             raise LoginException(400, LambdaError.LoginNoState)
 
+        configuration_service = DynamicConfigurationService()
+        configuration_service.set_auth_ssm_prefix()
         login_service = LoginService()
 
         response = login_service.generate_session(state, auth_code)

@@ -3,6 +3,7 @@ from urllib.parse import parse_qs
 
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.back_channel_logout_service import BackChannelLogoutService
+from services.dynamic_configuration_service import DynamicConfigurationService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -22,7 +23,8 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
     logger.info("Back channel logout handler triggered")
-
+    configuration_service = DynamicConfigurationService()
+    configuration_service.set_auth_ssm_prefix()
     back_channel_logout_service = BackChannelLogoutService()
 
     try:

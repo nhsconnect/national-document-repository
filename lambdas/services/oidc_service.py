@@ -7,6 +7,7 @@ from models.oidc_models import AccessToken, IdTokenClaimSet
 from requests import Response
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import AuthorisationException, OidcApiException
+from utils.request_context import request_context
 
 logger = LoggingService(__name__)
 
@@ -33,6 +34,7 @@ class OidcService:
         self._oidc_jwks_url = ""
         self.oidc_client = None
         self.environment = ""
+        self.ssm_prefix = getattr(request_context, "auth_ssm_prefix", "")
 
     def fetch_tokens(self, auth_code: str) -> Tuple[AccessToken, IdTokenClaimSet]:
         url, headers, body = self.oidc_client.prepare_token_request(
@@ -185,12 +187,15 @@ class OidcService:
     def fetch_oidc_parameters(self, ssm_service_class):
         ssm_service = ssm_service_class()
         parameters_names = [
-            "OIDC_CLIENT_ID",
-            "OIDC_CLIENT_SECRET",
-            "OIDC_ISSUER_URL",
-            "OIDC_TOKEN_URL",
-            "OIDC_USER_INFO_URL",
-            "OIDC_JWKS_URL",
+            self.ssm_prefix + param
+            for param in [
+                "OIDC_CLIENT_ID",
+                "OIDC_CLIENT_SECRET",
+                "OIDC_ISSUER_URL",
+                "OIDC_TOKEN_URL",
+                "OIDC_USER_INFO_URL",
+                "OIDC_JWKS_URL",
+            ]
         ]
 
         oidc_parameters = ssm_service.get_ssm_parameters(
@@ -206,13 +211,15 @@ class OidcService:
 
     def set_up_oidc_parameters(self, ssm_service_class, web_application_client_class):
         oidc_parameters = self.fetch_oidc_parameters(ssm_service_class)
-        self._client_id = oidc_parameters["OIDC_CLIENT_ID"]
-        self._client_secret = oidc_parameters["OIDC_CLIENT_SECRET"]
-        self._oidc_issuer_url = oidc_parameters["OIDC_ISSUER_URL"]
-        self._oidc_token_url = oidc_parameters["OIDC_TOKEN_URL"]
-        self._oidc_userinfo_url = oidc_parameters["OIDC_USER_INFO_URL"]
+        self._client_id = oidc_parameters[self.ssm_prefix + "OIDC_CLIENT_ID"]
+        self._client_secret = oidc_parameters[self.ssm_prefix + "OIDC_CLIENT_SECRET"]
+        self._oidc_issuer_url = oidc_parameters[self.ssm_prefix + "OIDC_ISSUER_URL"]
+        self._oidc_token_url = oidc_parameters[self.ssm_prefix + "OIDC_TOKEN_URL"]
+        self._oidc_userinfo_url = oidc_parameters[
+            self.ssm_prefix + "OIDC_USER_INFO_URL"
+        ]
         self._oidc_callback_uri = oidc_parameters["OIDC_CALLBACK_URL"]
-        self._oidc_jwks_url = oidc_parameters["OIDC_JWKS_URL"]
+        self._oidc_jwks_url = oidc_parameters[self.ssm_prefix + "OIDC_JWKS_URL"]
         self.oidc_client = web_application_client_class(client_id=self._client_id)
         self.environment = oidc_parameters["ENVIRONMENT"]
 
