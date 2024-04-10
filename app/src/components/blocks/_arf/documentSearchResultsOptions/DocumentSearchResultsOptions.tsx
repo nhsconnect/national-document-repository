@@ -57,7 +57,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
-                navigate(routes.START);
+                navigate(routes.SESSION_EXPIRED);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
             }

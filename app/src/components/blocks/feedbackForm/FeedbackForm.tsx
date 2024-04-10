@@ -37,12 +37,15 @@ function FeedbackForm({ stage, setStage }: Props) {
 
     const submit: SubmitHandler<FormData> = async (formData) => {
         setStage(SUBMISSION_STAGE.Submitting);
-        // add tests for failing and passing cases when real email service is implemented
         try {
             await sendEmail({ formData, baseUrl, baseHeaders });
             setStage(SUBMISSION_STAGE.Successful);
         } catch (e) {
             const error = e as AxiosError;
+            if (error.response?.status === 403) {
+                navigate(routes.SESSION_EXPIRED);
+                return;
+            }
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
     };

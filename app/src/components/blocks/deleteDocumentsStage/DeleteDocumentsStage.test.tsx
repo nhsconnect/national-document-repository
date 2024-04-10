@@ -197,7 +197,7 @@ describe('DeleteDocumentsStage', () => {
 });
 
 describe('Navigation', () => {
-    it('navigates to home page when API call returns 403', async () => {
+    it('navigates to session expire page when API call returns 403', async () => {
         const errorResponse = {
             response: {
                 status: 403,
@@ -218,7 +218,7 @@ describe('Navigation', () => {
         });
 
         await waitFor(() => {
-            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
         });
     });
 });
