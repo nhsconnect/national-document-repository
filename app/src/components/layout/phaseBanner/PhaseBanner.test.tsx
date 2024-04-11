@@ -32,7 +32,7 @@ describe('PhaseBanner', () => {
         it('renders a link to the feedback form page if user is logged in', () => {
             renderComponent({ isLoggedIn: true });
             const feedbackLink = screen.getByRole('link', {
-                name: 'feedback - this link will open in a new tab',
+                name: '(feedback - this link will open in a new tab)',
             });
 
             expect(feedbackLink).toHaveAttribute('href', routes.FEEDBACK);
