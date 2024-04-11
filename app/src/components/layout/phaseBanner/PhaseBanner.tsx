@@ -11,7 +11,7 @@ function PhaseBanner() {
             to={routes.FEEDBACK}
             target="_blank"
             rel="opener"
-            aria-label="feedback - this link will open in a new window"
+            aria-label="feedback - this link will open in a new tab"
         >
             feedback
         </Link>
