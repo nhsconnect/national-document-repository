@@ -33,7 +33,7 @@ describe('ServerErrorPage', () => {
                     name: 'Sorry, there is a problem with the service',
                 }),
             ).toBeInTheDocument();
-            expect(screen.getByText('An unknown error has occurred.')).toBeInTheDocument();
+            expect(screen.getByText('There was an unexplained error')).toBeInTheDocument();
             expect(
                 screen.getByText(
                     "Try again by returning to the previous page. You'll need to enter any information you submitted again.",
@@ -69,8 +69,24 @@ describe('ServerErrorPage', () => {
                     name: 'Sorry, there is a problem with the service',
                 }),
             ).toBeInTheDocument();
-            expect(screen.getByText('Internal error')).toBeInTheDocument();
-            expect(screen.queryByText('An unknown error has occurred.')).not.toBeInTheDocument();
+            expect(screen.getByText('There was an unexplained error')).toBeInTheDocument();
+            expect(screen.getByText(mockInteractionId)).toBeInTheDocument();
+        });
+
+        it('renders page content with non-default error message and id when there is a valid error code with interaction id', () => {
+            const mockErrorCode = 'CDR_5002';
+            const mockInteractionId = '000-000';
+            const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
+            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
+            render(<ServerErrorPage />);
+
+            expect(
+                screen.getByRole('heading', {
+                    name: 'Sorry, there is a problem with the service',
+                }),
+            ).toBeInTheDocument();
+            expect(screen.getByText('There is a technical issue on our side')).toBeInTheDocument();
+            expect(screen.queryByText('There was an unexplained error')).not.toBeInTheDocument();
             expect(screen.getByText(mockInteractionId)).toBeInTheDocument();
         });
 
@@ -86,7 +102,7 @@ describe('ServerErrorPage', () => {
                     name: 'Sorry, there is a problem with the service',
                 }),
             ).toBeInTheDocument();
-            expect(screen.getByText('An unknown error has occurred.')).toBeInTheDocument();
+            expect(screen.getByText('There was an unexplained error')).toBeInTheDocument();
             expect(screen.getByText(mockInteractionId)).toBeInTheDocument();
             expect(screen.queryByText(mockErrorCode)).not.toBeInTheDocument();
         });

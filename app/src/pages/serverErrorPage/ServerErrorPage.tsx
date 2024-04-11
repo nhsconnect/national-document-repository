@@ -14,7 +14,7 @@ const ServerErrorPage = () => {
     const error: ServerError = encodedError ? JSON.parse(atob(encodedError)) : [null, null];
     const [errorCode, interactionId] = error;
 
-    const defaultMessage = 'An unknown error has occurred.';
+    const defaultMessage = 'There was an unexplained error';
 
     const errorMessage =
         errorCode && !!errorCodes[errorCode] ? errorCodes[errorCode] : defaultMessage;
