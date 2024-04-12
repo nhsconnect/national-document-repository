@@ -51,7 +51,7 @@ describe('ServerErrorPage', () => {
             ).toBeInTheDocument();
             expect(
                 screen.getByRole('link', {
-                    name: 'Contact the NHS National Service Desk',
+                    name: '(Contact the NHS National Service Desk - this link will open in a new tab)',
                 }),
             ).toBeInTheDocument();
             expect(screen.getByText(mockInteractionId)).toBeInTheDocument();

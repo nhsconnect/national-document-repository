@@ -1,8 +1,9 @@
-import { MouseEvent, useState } from 'react';
+import React, { MouseEvent, useState } from 'react';
 import { endpoints } from '../../types/generic/endpoints';
 import Spinner from '../../components/generic/spinner/Spinner';
 import { Link } from 'react-router-dom';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
 
 const AuthErrorPage = () => {
     const baseAPIUrl = useBaseAPIUrl();
@@ -21,15 +22,7 @@ const AuthErrorPage = () => {
                 re-enter it.
             </p>
             <p>
-                If the issue persists please contact the{' '}
-                <a
-                    href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    NHS National Service Desk
-                </a>
-                .
+                If the issue persists please contact the <ServiceDeskLink />.
             </p>
             <Link to="" onClick={handleLogin}>
                 Log in

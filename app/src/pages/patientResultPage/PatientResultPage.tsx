@@ -9,6 +9,7 @@ import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
+import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
 
 function PatientResultPage() {
     const role = useRole();
@@ -86,14 +87,7 @@ function PatientResultPage() {
                 </Button>
             </form>
             <p>
-                If patient details are incorrect, please contact the{' '}
-                <a
-                    href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
-                    target="_blank"
-                    rel="noreferrer"
-                >
-                    NHS National Service Desk
-                </a>
+                If patient details are incorrect, please contact the <ServiceDeskLink />
             </p>
         </div>
     );
