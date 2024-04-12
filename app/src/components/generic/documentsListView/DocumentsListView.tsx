@@ -22,7 +22,7 @@ const DocumentsListView = ({ documentsList, ariaLabel }: Props) => {
                             <li
                                 key={document.id}
                                 data-ref={document.ref}
-                                data-testid={document.file.name}
+                                data-testid={document.file.name.split('_')[0]}
                             >
                                 {document.file.name}
                             </li>

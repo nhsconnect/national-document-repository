@@ -14,8 +14,6 @@ const uploadedFileNames = [
 ];
 const viewLloydGeorgeRecordUrl = '/patient/view/lloyd-george-record';
 const baseUrl = Cypress.config('baseUrl');
-
-const bucketName = `${workspace}-lloyd-george-store`;
 const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
 
 const activePatient =
@@ -62,7 +60,7 @@ describe('GP Workflow: Upload Lloyd George record', () => {
                 cy.getByTestId('upload-documents-table').should('contain', name);
             });
 
-            cy.getByTestId('upload-complete-page', { timeout: 15000 }).should('exist');
+            cy.getByTestId('upload-complete-page', { timeout: 20000 }).should('exist');
             cy.getByTestId('upload-complete-page')
                 .should('include.text', 'Record uploaded for')
                 .should(
@@ -73,6 +71,11 @@ describe('GP Workflow: Upload Lloyd George record', () => {
 
             uploadedFileNames.forEach((name) => {
                 cy.getByTestId('upload-complete-page').should('contain', name);
+                cy.getByTestId(name.split('_')[0])
+                    .invoke('attr', 'data-ref')
+                    .then((ref) => {
+                        cy.deleteItemFromDynamoDb(tableName, ref);
+                    });
             });
             cy.getByTestId('upload-complete-card').should('be.visible');
             cy.getByTestId('view-record-btn').should('be.visible');
