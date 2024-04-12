@@ -16,10 +16,10 @@ export default defineConfig({
     env: {
         USERNAME: process.env.CYPRESS_USERNAME,
         PASSWORD: process.env.CYPRESS_PASSWORD,
-        WORKSPACE: process.env.CYPRESS_WORKSPACE || 'local',
+        WORKSPACE: process.env.CYPRESS_WORKSPACE ?? 'local',
         AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
-        AWS_REGION: process.env.AWS_REGION || process.env.AWS_DEFAULT_REGION || 'eu-west-2',
+        AWS_REGION: process.env.AWS_REGION ?? 'eu-west-2',
         AWS_SESSION_TOKEN: process.env.AWS_SESSION_TOKEN,
     },
     component: {
