@@ -36,11 +36,12 @@ type UpdateDocumentArgs = {
     state: DOCUMENT_UPLOAD_STATE;
     progress?: number | 'scan';
     attempts?: number;
+    ref?: string;
 };
 
 export const setDocument = (
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>,
-    { id, state, progress, attempts }: UpdateDocumentArgs,
+    { id, state, progress, attempts, ref }: UpdateDocumentArgs,
 ) => {
     setDocuments((prevState) =>
         prevState.map((document) => {
@@ -52,6 +53,7 @@ export const setDocument = (
                 }
                 attempts = attempts ?? document.attempts;
                 state = state ?? document.state;
+                ref = ref ?? document.ref;
 
                 return { ...document, state, progress, attempts };
             }
@@ -96,7 +98,6 @@ function LloydGeorgeUploadPage() {
                             state: confirmDocumentState,
                         })),
                     );
-                    window.clearInterval(intervalTimer);
                     setStage(LG_UPLOAD_STAGE.COMPLETE);
                 } catch (e) {
                     const error = e as AxiosError;
@@ -141,12 +142,15 @@ function LloydGeorgeUploadPage() {
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
-        const updateStateInterval = startIntervalTimer(uploadDocuments, uploadSession);
-        setIntervalTimer(updateStateInterval);
         uploadDocuments.forEach(async (document) => {
             const documentMetadata = uploadSession[document.file.name];
             const documentReference = documentMetadata.fields.key;
             try {
+                setDocument(setDocuments, {
+                    id: document.id,
+                    state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                    ref: documentReference.split('/')[3],
+                });
                 await uploadDocumentToS3({ setDocuments, document, uploadSession });
                 setDocument(setDocuments, {
                     id: document.id,
@@ -164,7 +168,7 @@ function LloydGeorgeUploadPage() {
                     progress: 100,
                 });
             } catch (e) {
-                window.clearInterval(updateStateInterval);
+                window.clearInterval(intervalTimer);
                 setDocument(setDocuments, {
                     id: document.id,
                     state: DOCUMENT_UPLOAD_STATE.FAILED,
@@ -192,6 +196,8 @@ function LloydGeorgeUploadPage() {
                 baseHeaders,
             });
             setUploadSession(uploadSession);
+            const updateStateInterval = startIntervalTimer(documents, uploadSession);
+            setIntervalTimer(updateStateInterval);
             uploadAndScanDocuments(documents, uploadSession);
         } catch (e) {
             const error = e as AxiosError;

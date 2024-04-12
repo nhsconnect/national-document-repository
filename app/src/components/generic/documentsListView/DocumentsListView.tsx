@@ -18,7 +18,15 @@ const DocumentsListView = ({ documentsList, ariaLabel }: Props) => {
             <Details.Text>
                 <ul className="document-list-view-list">
                     {documentsList.map((document) => {
-                        return <li key={document.id}>{document.file.name}</li>;
+                        return (
+                            <li
+                                key={document.id}
+                                data-ref={document.ref}
+                                data-testid={document.file.name}
+                            >
+                                {document.file.name}
+                            </li>
+                        );
                     })}
                 </ul>
             </Details.Text>
