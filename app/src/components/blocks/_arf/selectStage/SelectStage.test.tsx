@@ -355,7 +355,7 @@ describe('<SelectStage />', () => {
         it('renders link to PCSE that opens in a new tab', () => {
             renderApp();
             const pcseLink = screen.getByRole('link', {
-                name: 'Primary Care Support England',
+                name: '(Primary Care Support England - this link will open in a new tab)',
             });
             expect(pcseLink).toHaveAttribute('href', 'https://secure.pcse.england.nhs.uk/');
             expect(pcseLink).toHaveAttribute('target', '_blank');

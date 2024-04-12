@@ -16,6 +16,7 @@ function PrivacyPage() {
                     target="_blank"
                     href="https://am.nhsidentity.spineservices.nhs.uk/openam/XUI/?realm=/#/"
                     rel="noreferrer"
+                    aria-label="(NHS Care Identity - this link will open in a new tab)"
                 >
                     NHS Care Identity
                 </a>{' '}
@@ -39,6 +40,7 @@ function PrivacyPage() {
                     target="_blank"
                     href="https://digital.nhs.uk/services/care-identity-service"
                     rel="noreferrer"
+                    aria-label="(NHS Care Identity Service - this link will open in a new tab)"
                 >
                     NHS Care Identity Service
                 </a>{' '}
@@ -68,6 +70,7 @@ function PrivacyPage() {
                     target="_blank"
                     href="https://digital.nhs.uk/data-and-information/keeping-data-safe-and-benefitting-the-public/gdpr#:~:text=The%20GDPR%20came%20into%20effect,in%20line%20with%20the%20regulations"
                     rel="noreferrer"
+                    aria-label="(UK General Data Protection Regulation (GDPR) 2018 - this link will open in a new tab)"
                 >
                     UK General Data Protection Regulation (GDPR) 2018
                 </a>{' '}
