@@ -35,6 +35,7 @@ export type UploadDocument = {
     docType: DOCUMENT_TYPE;
     attempts: number;
     ref?: string;
+    key?: string;
 };
 
 export type UploadFilesErrors = {

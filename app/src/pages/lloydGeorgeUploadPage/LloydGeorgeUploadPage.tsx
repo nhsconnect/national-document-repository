@@ -151,7 +151,7 @@ function LloydGeorgeUploadPage() {
                     progress: 'scan',
                 });
                 const virusDocumentState = await virusScanResult({
-                    documentReference: document.ref ?? '',
+                    documentReference: document.key ?? '',
                     baseUrl,
                     baseHeaders,
                 });
@@ -194,6 +194,7 @@ function LloydGeorgeUploadPage() {
                 return {
                     ...doc,
                     state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                    key: documentReference,
                     ref: documentReference.split('/')[3],
                 };
             });
