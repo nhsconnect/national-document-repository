@@ -94,9 +94,16 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                         ].includes(document.state);
 
                         const uploadFailed = !!document.attempts && notInProgress;
-
+                        const documentMetadata = uploadSession
+                            ? uploadSession[document.file.name]
+                            : null;
+                        const documentReference = documentMetadata?.fields.key;
                         return (
-                            <Table.Row key={document.id}>
+                            <Table.Row
+                                key={document.id}
+                                data-ref={documentReference}
+                                data-testid="uploading-item"
+                            >
                                 <Table.Cell>
                                     <div>{document.file.name}</div>
                                     {uploadFailed && (
