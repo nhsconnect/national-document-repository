@@ -194,7 +194,7 @@ function LloydGeorgeUploadPage() {
                 return {
                     ...doc,
                     state: DOCUMENT_UPLOAD_STATE.UPLOADING,
-                    ref: documentReference,
+                    ref: documentReference.split('/')[3],
                 };
             });
             console.log(uploadingDocuments);
