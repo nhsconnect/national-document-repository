@@ -197,7 +197,7 @@ function LloydGeorgeUploadPage() {
                     ref: documentReference,
                 };
             });
-
+            console.log(uploadingDocuments);
             const updateStateInterval = startIntervalTimer(uploadingDocuments);
             setIntervalTimer(updateStateInterval);
             setDocuments(uploadingDocuments);
