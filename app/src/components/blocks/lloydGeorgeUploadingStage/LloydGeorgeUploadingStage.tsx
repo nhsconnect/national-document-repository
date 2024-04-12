@@ -94,6 +94,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                         ].includes(document.state);
 
                         const uploadFailed = !!document.attempts && notInProgress;
+
                         return (
                             <Table.Row key={document.id}>
                                 <Table.Cell>

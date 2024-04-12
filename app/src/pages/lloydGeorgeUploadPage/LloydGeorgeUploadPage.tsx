@@ -82,7 +82,6 @@ function LloydGeorgeUploadPage() {
 
         const confirmUpload = async () => {
             if (uploadSession) {
-                window.clearInterval(intervalTimer);
                 setStage(LG_UPLOAD_STAGE.CONFIRMATION);
                 try {
                     const confirmDocumentState = await uploadConfirmation({
@@ -98,6 +97,7 @@ function LloydGeorgeUploadPage() {
                             state: confirmDocumentState,
                         })),
                     );
+                    window.clearInterval(intervalTimer);
                     setStage(LG_UPLOAD_STAGE.COMPLETE);
                 } catch (e) {
                     const error = e as AxiosError;
@@ -198,7 +198,6 @@ function LloydGeorgeUploadPage() {
                     ref: documentReference.split('/')[3],
                 };
             });
-            console.log(uploadingDocuments);
             const updateStateInterval = startIntervalTimer(uploadingDocuments);
             setIntervalTimer(updateStateInterval);
             setDocuments(uploadingDocuments);
