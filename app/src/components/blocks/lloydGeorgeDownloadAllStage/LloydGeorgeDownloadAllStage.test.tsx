@@ -159,6 +159,24 @@ describe('LloydGeorgeDownloadAllStage', () => {
             );
         });
     });
+
+    it('navigates to session expire page when zip lg record view return 403', async () => {
+        const errorResponse = {
+            response: {
+                status: 403,
+                data: { message: 'Unauthorised' },
+            },
+        };
+        mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+        jest.useFakeTimers();
+        renderComponent();
+        act(() => {
+            jest.advanceTimersByTime(500);
+        });
+        await waitFor(() => {
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
+        });
+    });
 });
 
 const renderComponent = (propsOverride?: Partial<Props>) => {

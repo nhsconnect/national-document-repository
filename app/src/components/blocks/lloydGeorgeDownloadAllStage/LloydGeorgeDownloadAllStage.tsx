@@ -97,6 +97,8 @@ function LloydGeorgeDownloadAllStage({
                         filename: 'testFile.pdf',
                     });
                 }
+            } else if (error.response?.status === 403) {
+                navigate(routes.SESSION_EXPIRED);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
             }
