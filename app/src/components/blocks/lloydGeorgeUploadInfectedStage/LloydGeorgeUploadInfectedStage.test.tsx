@@ -48,7 +48,11 @@ describe('LloydGeorgeUploadInfectedStage', () => {
             });
             expect(screen.getByText(uploadDocument.file.name)).toBeInTheDocument();
 
-            expect(screen.getByRole('link', { name: 'NHS National Service Desk' })).toHaveAttribute(
+            expect(
+                screen.getByRole('link', {
+                    name: '(NHS National Service Desk - this link will open in a new tab)',
+                }),
+            ).toHaveAttribute(
                 'href',
                 'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
             );

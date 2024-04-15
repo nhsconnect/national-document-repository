@@ -7,6 +7,7 @@ import {
 import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
+import ServiceDeskLink from '../../generic/serviceDeskLink/ServiceDeskLink';
 
 interface Props {
     documents: Array<UploadDocument>;
@@ -51,15 +52,7 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
                     it's completely uploaded to this storage.
                 </p>
                 <p>
-                    Contact the{' '}
-                    <a
-                        href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        NHS National Service Desk
-                    </a>{' '}
-                    if this issue continues.
+                    Contact the <ServiceDeskLink /> if this issue continues.
                 </p>{' '}
             </WarningCallout>
 
