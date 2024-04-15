@@ -84,6 +84,8 @@ function LloydGeorgeRecordPage() {
                         (error.response?.status === 400 && errorResponse?.err_code === 'LGL_400')
                     ) {
                         setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
+                    } else if (error.response?.status === 403) {
+                        navigate(routes.SESSION_EXPIRED);
                     } else if (error.response?.status && error.response?.status >= 500) {
                         navigate(routes.SERVER_ERROR + errorToParams(error));
                     } else if (error.response?.status === 423) {
