@@ -188,6 +188,7 @@ describe('LloydGeorgeRecordPage', () => {
         ).toBeInTheDocument();
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
     });
+
     it('navigates to Error page when call to lg record view return 500', async () => {
         mockAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
         const errorResponse = {
@@ -210,6 +211,29 @@ describe('LloydGeorgeRecordPage', () => {
             expect(mockNavigate).toHaveBeenCalledWith(
                 routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
             );
+        });
+    });
+
+    it('navigates to session expired page when call to lg record view return 403', async () => {
+        mockAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
+        const errorResponse = {
+            response: {
+                status: 403,
+                data: { message: 'Unauthorised' },
+            },
+        };
+        mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+        act(() => {
+            render(<LloydGeorgeRecordPage />);
+        });
+
+        await waitFor(() => {
+            expect(screen.queryByRole('link', { name: 'Start Again' })).not.toBeInTheDocument();
+        });
+
+        await waitFor(() => {
+            expect(mockNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
         });
     });
 });
