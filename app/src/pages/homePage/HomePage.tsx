@@ -6,6 +6,7 @@ import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import React, { useEffect } from 'react';
 import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
 
 type Props = {};
 
@@ -64,13 +65,7 @@ const HomePage = (props: Props) => {
 
             <h3>Get support with the service</h3>
             {'Contact the '}
-            <a
-                href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
-                target="_blank"
-                rel="noreferrer"
-            >
-                NHS National Service Desk
-            </a>
+            <ServiceDeskLink />
             {' if there is an issue with this service or call 0300 303 5678.'}
         </>
     );

@@ -27,7 +27,11 @@ describe('LloydGeorgeRetryUploadStage', () => {
                 const st = new RegExp(s, 'i');
                 expect(screen.getByText(st)).toBeInTheDocument();
             });
-            expect(screen.getByRole('link', { name: 'National Service Desk' })).toHaveAttribute(
+            expect(
+                screen.getByRole('link', {
+                    name: '(NHS National Service Desk - this link will open in a new tab)',
+                }),
+            ).toHaveAttribute(
                 'href',
                 'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
             );

@@ -11,6 +11,7 @@ function Footer() {
                     data-testid="privacy-link"
                     rel="opener"
                     target="_blank"
+                    aria-label="(Privacy notice - this link will open in a new tab)"
                 >
                     Privacy notice
                 </NHSFooter.ListItem>

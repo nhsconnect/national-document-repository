@@ -3,6 +3,7 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
 import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
+import ServiceDeskLink from '../../generic/serviceDeskLink/ServiceDeskLink';
 
 type Props = {
     setStage: Dispatch<SetStateAction<LG_UPLOAD_STAGE>>;
@@ -31,15 +32,7 @@ function LloydGeorgeRetryUploadStage({ setStage }: Props) {
                     it's completely uploaded to this storage.
                 </p>
                 <p>
-                    Contact the{' '}
-                    <a
-                        href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        National Service Desk
-                    </a>{' '}
-                    if this issue continues.
+                    Contact the <ServiceDeskLink /> if this issue continues.
                 </p>
             </WarningCallout>
             <div>

@@ -69,6 +69,7 @@ const DocumentInputForm = ({
                                     href="https://secure.pcse.england.nhs.uk/"
                                     target="_blank"
                                     rel="noreferrer"
+                                    aria-label="(Primary Care Support England - this link will open in a new tab)"
                                 >
                                     Primary Care Support England
                                 </a>

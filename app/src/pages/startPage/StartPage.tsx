@@ -8,6 +8,7 @@ import { endpoints } from '../../types/generic/endpoints';
 import { isLocal } from '../../helpers/utils/isLocal';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import TestPanel from '../../components/blocks/testPanel/TestPanel';
+import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
 
 type Props = {};
 
@@ -54,13 +55,7 @@ function StartPage(props: Props) {
             </ButtonLink>
             <h3>Get support with the service</h3>
             {'Contact the '}
-            <a
-                href="https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks"
-                target="_blank"
-                rel="noreferrer"
-            >
-                NHS National Service Desk
-            </a>
+            <ServiceDeskLink />
             {' if there is an issue with this service or call 0300 303 5678.'}
             {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
                 process.env.REACT_APP_ENVIRONMENT === 'development' ||
