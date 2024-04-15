@@ -160,7 +160,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         });
     });
 
-    it('navigates to session expire page when zip lg record view return 403', async () => {
+    it('navigates to session expire page when zip lg record return 403', async () => {
         const errorResponse = {
             response: {
                 status: 403,
