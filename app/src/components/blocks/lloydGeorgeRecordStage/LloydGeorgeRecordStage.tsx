@@ -25,6 +25,8 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../types/generic/inputRef';
 import BackButton from '../../generic/backButton/BackButton';
+import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
+import { Link, useNavigate } from 'react-router-dom';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -51,20 +53,19 @@ function LloydGeorgeRecordStage({
     const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
-
+    const navigate = useNavigate();
     const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
         reValidateMode: 'onSubmit',
     });
     const { ref: inputRef, ...checkboxProps } = register('confirmDownloadRemove', {
         required: true,
     });
-
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
-
     const role = useRole();
     const isBSOL = useIsBSOL();
     const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
+    const hasMenuAccess = actionLinks.some((l) => role && !l.unauthorised?.includes(role));
 
     const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.PENDING) {
@@ -94,6 +95,94 @@ function LloydGeorgeRecordStage({
         setDownloadRemoveButtonClicked(false);
         clearErrors('confirmDownloadRemove');
     };
+
+    const PdfCard = () => (
+        <Card className="lloydgeorge_record-stage_pdf">
+            <Card.Content data-testid="pdf-card" className="lloydgeorge_record-stage_pdf-content">
+                <Card.Heading
+                    className="lloydgeorge_record-stage_pdf-content-label"
+                    headingLevel="h1"
+                >
+                    Lloyd George record
+                </Card.Heading>
+                <PdfCardDescription />
+            </Card.Content>
+            {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
+                <Details expander open className="lloydgeorge_record-stage_pdf-expander">
+                    <Details.Summary
+                        style={{ display: 'inline-block' }}
+                        data-testid="view-record-bin"
+                    >
+                        View record
+                    </Details.Summary>
+                    <button
+                        className="lloydgeorge_record-stage_pdf-expander-button link-button clickable"
+                        data-testid="full-screen-btn"
+                        onClick={() => {
+                            setFullScreen(true);
+                        }}
+                    >
+                        View in full screen
+                    </button>
+                    <PdfViewer fileUrl={lloydGeorgeUrl} />
+                </Details>
+            )}
+        </Card>
+    );
+
+    const updateActions = actionLinks.filter(
+        (l) => !!l.href && role && !l.unauthorised?.includes(role),
+    );
+    const downloadActions = actionLinks.filter(
+        (l) => !!l.stage && role && !l.unauthorised?.includes(role),
+    );
+
+    const MenuCard = () => (
+        <Card className="lloydgeorge_record-stage_menu">
+            <Card.Content className="lloydgeorge_record-stage_menu-content">
+                {!!updateActions.length && (
+                    <>
+                        <h4>Update record</h4>
+                        <ol>
+                            {updateActions.map((link) => (
+                                <li key={link.key} data-testid={link.key}>
+                                    <Link
+                                        to="#placeholder"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (link.href) navigate(link.href);
+                                        }}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ol>
+                    </>
+                )}
+                {!!downloadActions.length && (
+                    <>
+                        <h4>Download record</h4>
+                        <ol>
+                            {downloadActions.map((link) => (
+                                <li key={link.key} data-testid={link.key}>
+                                    <Link
+                                        to="#placeholder"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            if (link.href) navigate(link.href);
+                                        }}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ol>
+                    </>
+                )}
+            </Card.Content>
+        </Card>
+    );
 
     return (
         <div className="lloydgeorge_record-stage">
@@ -207,41 +296,17 @@ function LloydGeorgeRecordStage({
             </div>
             {!fullScreen ? (
                 <>
-                    <Card className="lloydgeorge_record-stage_header">
-                        <Card.Content
-                            data-testid="pdf-card"
-                            className="lloydgeorge_record-stage_header-content"
-                        >
-                            <Card.Heading
-                                className="lloydgeorge_record-stage_header-content-label"
-                                headingLevel="h1"
-                            >
-                                Lloyd George record
-                            </Card.Heading>
-                            <PdfCardDescription />
-                        </Card.Content>
-                    </Card>
-                    {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
-                        <>
-                            <Details expander open className="lloydgeorge_record-stage_expander">
-                                <Details.Summary
-                                    style={{ display: 'inline-block' }}
-                                    data-testid="view-record-bin"
-                                >
-                                    View record
-                                </Details.Summary>
-                                <button
-                                    className="lloydgeorge_record-stage_expander-button link-button"
-                                    data-testid="full-screen-btn"
-                                    onClick={() => {
-                                        setFullScreen(true);
-                                    }}
-                                >
-                                    View in full screen
-                                </button>
-                                <PdfViewer fileUrl={lloydGeorgeUrl} />
-                            </Details>
-                        </>
+                    {hasMenuAccess ? (
+                        <div className="lloydgeorge_record-stage_flex">
+                            <div className="lloydgeorge_record-stage_flex-row">
+                                <MenuCard />
+                            </div>
+                            <div className="lloydgeorge_record-stage_flex-row">
+                                <PdfCard />
+                            </div>
+                        </div>
+                    ) : (
+                        <PdfCard />
                     )}
                 </>
             ) : (

@@ -132,6 +132,18 @@ $govuk-compatibility-govukelements: true;
 
 .lloydgeorge {
     &_record-stage {
+        &_flex {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            margin: 0 -15px;
+            &-row {
+                margin: 0 15px;
+            }
+            &-row:last-child {
+                flex-basis: calc(70% - 17px);
+            }
+        }
         &_patient-info {
             p {
                 font-size: 19px;
@@ -144,7 +156,20 @@ $govuk-compatibility-govukelements: true;
                 margin-bottom: 0;
             }
         }
-        &_header {
+        &_menu {
+            &-content {
+                padding: 24px;
+
+                ol {
+                    padding-left: 0;
+                    li {
+                        font-size: 16px;
+                        list-style-type: none;
+                    }
+                }
+            }
+        }
+        &_pdf {
             margin-bottom: 0;
             &-content {
                 position: relative;
@@ -162,15 +187,18 @@ $govuk-compatibility-govukelements: true;
                     }
                 }
             }
-        }
-        &_expander {
-            position: relative;
-            border-top: none;
-            &-button {
-                display: inline-block;
-                position: absolute;
-                right: 28px;
-                top: 30px;
+
+            &-expander {
+                position: relative;
+                margin-bottom: 0;
+                border-left: none;
+                border-right: none;
+                &-button {
+                    display: inline-block;
+                    position: absolute;
+                    right: 28px;
+                    top: 30px;
+                }
             }
         }
         &_gp-admin-non-bsol {
@@ -486,6 +514,9 @@ $govuk-compatibility-govukelements: true;
     &_item {
         a,
         a:hover {
+            color: $color_nhsuk-white;
+        }
+        a:visited {
             color: $color_nhsuk-white;
         }
         &--desktop {
