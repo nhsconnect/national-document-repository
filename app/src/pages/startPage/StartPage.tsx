@@ -9,6 +9,7 @@ import { isLocal } from '../../helpers/utils/isLocal';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import TestPanel from '../../components/blocks/testPanel/TestPanel';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
+import pageTitle from '../../components/layout/pageTitle/PageTitle';
 
 type Props = {};
 
@@ -25,10 +26,11 @@ function StartPage(props: Props) {
             window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
         }
     };
-
+    const pageHeader = 'Access and store digital GP records';
+    pageTitle({ pageTitle: pageHeader });
     return !isLoading ? (
         <>
-            <h1>Access and store digital GP records</h1>
+            <h1>{pageHeader}</h1>
             <p>
                 This service gives you access to Lloyd George digital health records. You may have
                 received a note within a patient record, stating that the record has been digitised.

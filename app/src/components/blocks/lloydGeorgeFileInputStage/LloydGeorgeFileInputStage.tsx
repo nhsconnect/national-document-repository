@@ -18,6 +18,7 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
 import LinkButton from '../../generic/linkButton/LinkButton';
+import pageTitle from '../../layout/pageTitle/PageTitle';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -100,6 +101,8 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
             return <div className="lloydgeorge_file_upload_error">{errorFile.error.message}</div>;
         }
     };
+    const pageHeader = 'Upload a Lloyd George record';
+    pageTitle({ pageTitle: pageHeader });
     return (
         <div>
             <BackButton />
@@ -119,7 +122,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                     errorInputLink={'#upload-lloyd-george'}
                 />
             )}
-            <h1>Upload a Lloyd George record</h1>
+            <h1>{pageHeader}</h1>
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
                 <p data-testid="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}

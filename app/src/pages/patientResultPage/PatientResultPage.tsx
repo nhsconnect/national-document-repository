@@ -10,6 +10,7 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
+import pageTitle from '../../components/layout/pageTitle/PageTitle';
 
 function PatientResultPage() {
     const role = useRole();
@@ -43,6 +44,8 @@ function PatientResultPage() {
     };
     const showWarning = patientDetails?.superseded || patientDetails?.restricted;
     const isGp = userIsGPAdmin || userIsGPClinical;
+    const pageHeader = 'Verify patient details';
+    pageTitle({ pageTitle: pageHeader });
     return (
         <div style={{ maxWidth: 730 }}>
             <BackButton />
@@ -54,7 +57,7 @@ function PatientResultPage() {
                     errorBoxSummaryId={'error-box-summary'}
                 />
             )}
-            <h1>Verify patient details</h1>
+            <h1>{pageHeader}</h1>
 
             {showWarning && (
                 <WarningCallout>

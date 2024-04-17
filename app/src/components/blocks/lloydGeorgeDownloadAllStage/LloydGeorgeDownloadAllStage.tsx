@@ -23,6 +23,7 @@ import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios/index';
 import { isMock } from '../../../helpers/utils/isLocal';
 import useConfig from '../../../helpers/hooks/useConfig';
+import pageTitle from '../../layout/pageTitle/PageTitle';
 
 const FakeProgress = require('fake-progress');
 
@@ -153,11 +154,12 @@ function LloydGeorgeDownloadAllStage({
         navigate,
         mockLocal,
     ]);
-
+    const pageHeader = 'Downloading documents';
+    pageTitle({ pageTitle: pageHeader });
     return inProgress ? (
         <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
             <div className="lloydgeorge_downloadall-stage_header">
-                <h1>Downloading documents</h1>
+                <h1>{pageHeader}</h1>
                 <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
                 <h4>NHS number: {patientDetails?.nhsNumber}</h4>
                 <div className="nhsuk-heading-xl" />

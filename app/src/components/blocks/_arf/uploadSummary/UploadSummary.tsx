@@ -8,6 +8,7 @@ import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import PageTitle from '../../../layout/pageTitle/PageTitle';
 
 export interface Props {
     documents: Array<UploadDocument>;
@@ -32,6 +33,9 @@ const UploadSummary = ({ documents }: Props) => {
             </span>
         </>
     );
+    const pageHeader = 'Upload Summary';
+    PageTitle({ pageTitle: pageHeader });
+
     return (
         <section>
             {failedUploads.length > 0 && (
@@ -45,7 +49,7 @@ const UploadSummary = ({ documents }: Props) => {
                     }
                 ></ErrorBox>
             )}
-            <h1 id="upload-summary-header">Upload Summary</h1>
+            <h1 id="upload-summary-header">{pageHeader}</h1>
             {failedUploads.length > 0 && (
                 <div className={'nhsuk-form-group--error'}>
                     <Table

@@ -18,6 +18,7 @@ import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { errorToParams } from '../../helpers/utils/errorToParams';
+import pageTitle from '../../components/layout/pageTitle/PageTitle';
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
@@ -75,10 +76,11 @@ function DocumentSearchResultsPage() {
         baseUrl,
         baseHeaders,
     ]);
-
+    const pageHeader = 'Download electronic health records and attachments';
+    pageTitle({ pageTitle: pageHeader });
     return !isDeletingDocuments ? (
         <>
-            <h1 id="download-page-title">Download electronic health records and attachments</h1>
+            <h1 id="download-page-title">{pageHeader}</h1>
 
             {(submissionState === SUBMISSION_STATE.FAILED ||
                 downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}

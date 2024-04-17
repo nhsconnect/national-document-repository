@@ -2,13 +2,16 @@ import React from 'react';
 import useRole from '../../helpers/hooks/useRole';
 import { routes } from '../../types/generic/routes';
 import { Link, useNavigate } from 'react-router-dom';
+import pageTitle from '../../components/layout/pageTitle/PageTitle';
 
 function PrivacyPage() {
     const isLoggedIn = !!useRole();
     const navigate = useNavigate();
+    const pageHeader = 'Privacy notice';
+    pageTitle({ pageTitle: pageHeader });
     return (
         <>
-            <h1>Privacy notice</h1>
+            <h1>{pageHeader}</h1>
             <p>
                 If you access the Lloyd George patient records digital service using your{' '}
                 <a

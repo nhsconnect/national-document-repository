@@ -3,13 +3,15 @@ import { useNavigate } from 'react-router';
 import { ButtonLink } from 'nhsuk-react-components';
 import React from 'react';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
+import pageTitle from '../../components/layout/pageTitle/PageTitle';
 
 const UnauthorisedLoginPage = () => {
     const navigate = useNavigate();
-
+    const pageHeader = 'Your account cannot access this service';
+    pageTitle({ pageTitle: pageHeader });
     return (
         <>
-            <h1>Your account cannot access this service</h1>
+            <h1>{pageHeader}</h1>
             <p>
                 Your account does not have authorisation to view or manage patient records using
                 this service.

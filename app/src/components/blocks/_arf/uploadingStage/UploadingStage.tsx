@@ -5,6 +5,7 @@ import {
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
+import PageTitle from '../../../layout/pageTitle/PageTitle';
 
 interface Props {
     documents: Array<UploadDocument>;
@@ -19,10 +20,12 @@ function UploadingStage({ documents }: Props) {
         else if (type === DOCUMENT_UPLOAD_STATE.INFECTED) return 'File has failed a virus scan';
         else if (type === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
     };
+    const pageHeader = 'Your documents are uploading';
+    PageTitle({ pageTitle: pageHeader });
 
     return (
         <>
-            <h1>Your documents are uploading</h1>
+            <h1>{pageHeader}</h1>
             <WarningCallout id="upload-stage-warning">
                 <WarningCallout.Label>Stay on this page</WarningCallout.Label>
                 <p>Do not close or navigate away from this browser until upload is complete.</p>

@@ -4,6 +4,7 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
+import pageTitle from '../../layout/pageTitle/PageTitle';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
@@ -24,7 +25,8 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
             setDownloadStage(DOWNLOAD_STAGE.REFRESH);
         }
     };
-
+    const pageHeader = 'Download complete';
+    pageTitle({ pageTitle: pageHeader });
     return (
         <div className="lloydgeorge_download-complete">
             <Card className="lloydgeorge_download-complete_details">
@@ -33,7 +35,7 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
                         className="lloydgeorge_download-complete_details-content_header"
                         headingLevel="h1"
                     >
-                        Download complete
+                        {pageHeader}
                     </Card.Heading>
                     <Card.Description className="lloydgeorge_download-complete_details-content_description">
                         You have successfully downloaded the{'\n'}

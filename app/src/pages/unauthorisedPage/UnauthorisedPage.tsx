@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router';
 import { endpoints } from '../../types/generic/endpoints';
 import Spinner from '../../components/generic/spinner/Spinner';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
+import pageTitle from '../../components/layout/pageTitle/PageTitle';
 
 const UnauthorisedPage = () => {
     const baseAPIUrl = useBaseAPIUrl();
@@ -15,9 +16,11 @@ const UnauthorisedPage = () => {
         e.preventDefault();
         window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
     };
+    const pageHeader = 'Unauthorised access';
+    pageTitle({ pageTitle: pageHeader });
     return !isLoading ? (
         <>
-            <h1>Unauthorised access</h1>
+            <h1>{pageHeader}</h1>
             <p>
                 The page you were looking for could not be accessed. If you have the permissions,{' '}
                 <Link to="" onClick={handleLogin}>
