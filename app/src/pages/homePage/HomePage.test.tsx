@@ -4,6 +4,7 @@ import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import { routes } from '../../types/generic/routes';
 import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
@@ -96,6 +97,13 @@ describe('HomePage', () => {
                 'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
             );
             expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
+        });
+
+        it('pass accessibility checks', async () => {
+            render(<HomePage />);
+            const results = await runAxeTest(document.body);
+
+            expect(results).toHaveNoViolations();
         });
     });
 

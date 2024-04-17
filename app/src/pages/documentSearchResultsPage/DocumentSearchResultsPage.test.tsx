@@ -7,6 +7,8 @@ import axios from 'axios';
 import usePatient from '../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { act } from 'react-dom/test-utils';
+import FeedbackPage from '../feedbackPage/FeedbackPage';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
@@ -161,6 +163,23 @@ describe('<DocumentSearchResultsPage />', () => {
                 screen.getByRole('button', { name: 'Delete All Documents' }),
             ).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            mockedAxios.get.mockResolvedValue(async () => {
+                return Promise.resolve({ data: [buildSearchResult()] });
+            });
+            render(<DocumentSearchResultsPage />);
+            await waitFor(() => {
+                expect(
+                    screen.queryByRole('progressbar', { name: 'Loading...' }),
+                ).not.toBeInTheDocument();
+            });
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 

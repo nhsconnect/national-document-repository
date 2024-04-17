@@ -3,11 +3,13 @@ import PatientDetailsProvider from '../../providers/patientProvider/PatientProvi
 import { PatientDetails } from '../../types/generic/patientDetails';
 import PatientSearchPage, { incorrectFormatMessage } from './PatientSearchPage';
 import userEvent from '@testing-library/user-event';
-import { buildPatientDetails } from '../../helpers/test/testBuilders';
+import { buildPatientDetails, buildSearchResult } from '../../helpers/test/testBuilders';
 import axios from 'axios';
 import { routes } from '../../types/generic/routes';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
+import DocumentSearchResultsPage from '../documentSearchResultsPage/DocumentSearchResultsPage';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
@@ -137,6 +139,15 @@ describe('PatientSearchPage', () => {
                     screen.getByText('Sorry, the service is currently unavailable.'),
                 ).toBeInTheDocument();
             });
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            renderPatientSearchPage();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 

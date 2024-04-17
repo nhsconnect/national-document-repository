@@ -7,6 +7,7 @@ import { act } from 'react-dom/test-utils';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
@@ -139,6 +140,28 @@ describe('PatientResultPage', () => {
                 });
             },
         );
+
+        describe('Accessibility', () => {
+            it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
+                'pass accessibility checks at page entry point',
+                async (role) => {
+                    const nhsNumber = '9000000000';
+                    const patientDetails = buildPatientDetails({ nhsNumber });
+
+                    mockedUseRole.mockReturnValue(role);
+                    mockedUsePatient.mockReturnValue(patientDetails);
+
+                    render(<PatientResultPage />);
+
+                    expect(
+                        screen.getByRole('heading', { name: 'Verify patient details' }),
+                    ).toBeInTheDocument();
+
+                    const results = await runAxeTest(document.body);
+                    expect(results).toHaveNoViolations();
+                },
+            );
+        });
 
         it('displays a message when NHS number is superseded', async () => {
             const nhsNumber = '9000000012';

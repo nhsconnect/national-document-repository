@@ -5,6 +5,8 @@ import { SATISFACTION_CHOICES } from '../../types/pages/feedbackPage/types';
 import FeedbackPage from './FeedbackPage';
 import sendEmail from '../../helpers/requests/sendEmail';
 import { fillInForm } from '../../helpers/test/formUtils';
+import HomePage from '../homePage/HomePage';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 
 jest.mock('../../helpers/requests/sendEmail');
@@ -39,6 +41,13 @@ describe('<FeedbackPage />', () => {
         });
 
         await screen.findByText('We’ve received your feedback');
+    });
+
+    it('pass accessibility checks', async () => {
+        render(<FeedbackPage />);
+        const results = await runAxeTest(document.body);
+
+        expect(results).toHaveNoViolations();
     });
 });
 

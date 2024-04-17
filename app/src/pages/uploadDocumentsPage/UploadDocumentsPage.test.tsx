@@ -5,6 +5,8 @@ import { UPLOAD_STAGE } from '../../types/pages/UploadDocumentsPage/types';
 import { useState } from 'react';
 import useConfig from '../../helpers/hooks/useConfig';
 import { routes } from '../../types/generic/routes';
+import UnauthorisedPage from '../unauthorisedPage/UnauthorisedPage';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockUseState = useState as jest.Mock;
 const mockConfigContext = useConfig as jest.Mock;
@@ -76,6 +78,13 @@ describe('UploadDocumentsPage', () => {
             await waitFor(() => {
                 expect(mockedUseNavigate).not.toHaveBeenCalledWith(routes.UNAUTHORISED);
             });
+        });
+
+        it('pass accessibility checks', async () => {
+            render(<UploadDocumentsPage />);
+            const results = await runAxeTest(document.body);
+
+            expect(results).toHaveNoViolations();
         });
     });
 
