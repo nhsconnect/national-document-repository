@@ -11,7 +11,7 @@ const SpinnerButton = ({ id, status, disabled }: Props) => {
     return (
         <Button
             id={id}
-            aria-label="SpinnerButton"
+            aria-label={status}
             className="spinner_button"
             role="SpinnerButton"
             disabled={disabled}
