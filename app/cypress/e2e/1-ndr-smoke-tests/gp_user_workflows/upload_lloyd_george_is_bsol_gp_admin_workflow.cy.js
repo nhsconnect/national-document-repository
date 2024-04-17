@@ -21,13 +21,6 @@ const activePatient =
 
 describe('GP Workflow: Upload Lloyd George record', () => {
     context('Upload a Lloyd George document', () => {
-        beforeEach(() => {
-            // cy.getItemFromDynamoDb(tableName, uploadedFileNames[0]);
-        });
-        afterEach(() => {
-            // cy.deleteDocRefFromDynamoDb(tableName, uploadedFileNames[0]);
-        });
-
         it(
             '[Smoke] BSOL GP ADMIN can upload and then view a Lloyd George record for an active patient with no record',
             { tags: 'smoke', defaultCommandTimeout: 20000 },
@@ -59,10 +52,6 @@ describe('GP Workflow: Upload Lloyd George record', () => {
                 uploadedFileNames.forEach((name) => {
                     cy.getByTestId('upload-documents-table').should('contain', name);
                 });
-                uploadedFileNames.forEach((name) => {
-                    cy.getByTestId('upload-documents-table').should('contain', name);
-                });
-
                 cy.getByTestId('upload-complete-page', { timeout: 20000 }).should('exist');
                 cy.getByTestId('upload-complete-page')
                     .should('include.text', 'Record uploaded for')
