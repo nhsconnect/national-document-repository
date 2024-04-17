@@ -1,14 +1,13 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import PatientDetailsProvider from '../../providers/patientProvider/PatientProvider';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import PatientSearchPage, { incorrectFormatMessage } from './PatientSearchPage';
 import userEvent from '@testing-library/user-event';
-import { buildPatientDetails, buildSearchResult } from '../../helpers/test/testBuilders';
+import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import axios from 'axios';
 import { routes } from '../../types/generic/routes';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
-import DocumentSearchResultsPage from '../documentSearchResultsPage/DocumentSearchResultsPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
@@ -145,6 +144,29 @@ describe('PatientSearchPage', () => {
     describe('Accessibility', () => {
         it('pass accessibility checks at page entry point', async () => {
             renderPatientSearchPage();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when ErrorBox appears', async () => {
+            const errorResponse = {
+                response: {
+                    status: 404,
+                    message: '404 Not found.',
+                },
+            };
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            renderPatientSearchPage();
+            act(() => {
+                userEvent.type(
+                    screen.getByRole('textbox', { name: 'Enter NHS number' }),
+                    '0987654321',
+                );
+                userEvent.click(screen.getByRole('button', { name: 'Search' }));
+            });
+            await screen.findByText('There is a problem');
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
