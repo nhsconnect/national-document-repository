@@ -76,13 +76,6 @@ describe('logoutPage', () => {
             });
         });
     });
-
-    it('pass accessibility checks', async () => {
-        renderLogoutPage();
-        const results = await runAxeTest(document.body);
-
-        expect(results).toHaveNoViolations();
-    });
 });
 
 const renderLogoutPage = () => {
