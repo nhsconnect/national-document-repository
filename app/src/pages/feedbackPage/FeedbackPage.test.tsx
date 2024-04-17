@@ -49,18 +49,18 @@ describe('<FeedbackPage />', () => {
 
             expect(results).toHaveNoViolations();
         });
-    });
 
-    it('pass accessibility checks at confirmation screen', async () => {
-        render(<FeedbackPage />);
-        act(() => {
-            fillInForm(mockInputData);
-            userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
+        it('pass accessibility checks at confirmation screen', async () => {
+            render(<FeedbackPage />);
+            act(() => {
+                fillInForm(mockInputData);
+                userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
+            });
+            await screen.findByText('We’ve received your feedback');
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
-        await screen.findByText('We’ve received your feedback');
-
-        const results = await runAxeTest(document.body);
-        expect(results).toHaveNoViolations();
     });
 });
 
