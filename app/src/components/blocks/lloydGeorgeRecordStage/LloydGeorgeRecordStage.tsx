@@ -75,7 +75,6 @@ function LloydGeorgeRecordStage({
                 numberOfFiles,
                 totalFileSizeInByte,
                 setStage,
-                userIsGpAdminNonBSOL,
                 setDownloadRemoveButtonClicked,
                 downloadRemoveButtonClicked,
                 setError,

@@ -1,23 +1,24 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import LgRecordDetails, { Props } from './LloydGeorgeRecordDetails';
 import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
-import userEvent from '@testing-library/user-event';
-import { act } from 'react-dom/test-utils';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useRole from '../../../helpers/hooks/useRole';
 import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
 import { LinkProps } from 'react-router-dom';
+import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 
 jest.mock('../../../helpers/hooks/useRole');
+jest.mock('../../../helpers/hooks/useIsBSOL');
 
 const mockedUseNavigate = jest.fn();
 const mockPdf = buildLgSearchResult();
-const mockSetStage = jest.fn();
 const mockSetDownloadRemoveButtonClicked = jest.fn();
 const mockSetError = jest.fn();
 const mockSetFocus = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
+const mockedUseIsBSOL = useIsBSOL as jest.Mock;
+
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
@@ -45,65 +46,6 @@ describe('LloydGeorgeRecordDetails', () => {
             ).toBeInTheDocument();
             expect(screen.getByText('File format: PDF')).toBeInTheDocument();
         });
-
-        it('renders record details actions menu', async () => {
-            renderComponent();
-
-            expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-            expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-            actionLinks.forEach((action) => {
-                expect(screen.queryByText(action.label)).not.toBeInTheDocument();
-            });
-
-            act(() => {
-                userEvent.click(screen.getByTestId('actions-menu'));
-            });
-            await waitFor(async () => {
-                actionLinks.forEach((action) => {
-                    expect(screen.getByText(action.label)).toBeInTheDocument();
-                });
-            });
-        });
-
-        it.each(actionLinks)("renders actionLink '$label'", async (action) => {
-            renderComponent();
-
-            expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-            expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-
-            act(() => {
-                userEvent.click(screen.getByTestId('actions-menu'));
-            });
-            await waitFor(async () => {
-                expect(screen.getByText(action.label)).toBeInTheDocument();
-            });
-        });
-    });
-
-    describe('Navigation', () => {
-        it.each(actionLinks)(
-            "navigates to '$stage' when action '$label' is clicked",
-            async (action) => {
-                renderComponent();
-
-                expect(screen.getByText(`Select an action...`)).toBeInTheDocument();
-                expect(screen.getByTestId('actions-menu')).toBeInTheDocument();
-
-                act(() => {
-                    userEvent.click(screen.getByTestId('actions-menu'));
-                });
-                await waitFor(async () => {
-                    expect(screen.getByText(action.label)).toBeInTheDocument();
-                });
-
-                act(() => {
-                    userEvent.click(screen.getByText(action.label));
-                });
-                await waitFor(async () => {
-                    expect(mockSetStage).toHaveBeenCalledWith(action.stage);
-                });
-            },
-        );
     });
 
     describe('Unauthorised', () => {
@@ -132,7 +74,9 @@ describe('LloydGeorgeRecordDetails', () => {
 
     describe('GP admin non BSOL user', () => {
         it('renders the record details component with button', () => {
-            renderComponent({ userIsGpAdminNonBSOL: true });
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            mockedUseIsBSOL.mockReturnValue(false);
+            renderComponent();
 
             expect(screen.getByText(`Last updated: ${mockPdf.last_updated}`)).toBeInTheDocument();
             expect(screen.getByText(`${mockPdf.number_of_files} files`)).toBeInTheDocument();
@@ -149,7 +93,9 @@ describe('LloydGeorgeRecordDetails', () => {
         });
 
         it('set downloadRemoveButtonClicked to true when button is clicked', () => {
-            renderComponent({ userIsGpAdminNonBSOL: true });
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            mockedUseIsBSOL.mockReturnValue(false);
+            renderComponent();
 
             const button = screen.getByRole('button', { name: 'Download and remove record' });
 
@@ -159,7 +105,9 @@ describe('LloydGeorgeRecordDetails', () => {
         });
 
         it('calls setFocus and setError when the button is clicked again after warning box shown up', () => {
-            renderComponent({ userIsGpAdminNonBSOL: true, downloadRemoveButtonClicked: true });
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            mockedUseIsBSOL.mockReturnValue(false);
+            renderComponent({ downloadRemoveButtonClicked: true });
 
             const button = screen.getByRole('button', { name: 'Download and remove record' });
 
@@ -182,7 +130,6 @@ const TestApp = (props: mockedProps) => {
     return (
         <LgRecordDetails
             {...props}
-            setStage={mockSetStage}
             setDownloadRemoveButtonClicked={mockSetDownloadRemoveButtonClicked}
             setError={mockSetError}
             setFocus={mockSetFocus}
