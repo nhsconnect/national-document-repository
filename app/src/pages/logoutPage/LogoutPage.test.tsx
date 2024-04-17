@@ -4,7 +4,6 @@ import SessionProvider, { Session } from '../../providers/sessionProvider/Sessio
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import axios from 'axios';
 import { routes } from '../../types/generic/routes';
-import NotFoundPage from '../notFoundPage/NotFoundPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 jest.mock('axios');
