@@ -72,10 +72,10 @@ const uploadedFilePathNames = {
         ],
     ],
     LG: [
-        'cypress/fixtures/lg-files/1of1_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+        'cypress/fixtures/lg-files/testy_test/1of1_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
         [
-            'cypress/fixtures/lg-files/1of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
-            'cypress/fixtures/lg-files/2of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+            'cypress/fixtures/lg-files/testy_test/1of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
+            'cypress/fixtures/lg-files/testy_test/2of2_Lloyd_George_Record_[Testy Test]_[0123456789]_[01-01-2011].pdf',
         ],
     ],
 };
