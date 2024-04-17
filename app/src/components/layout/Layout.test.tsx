@@ -1,10 +1,36 @@
 import { act, render, screen } from '@testing-library/react';
 import Layout from './Layout';
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
-import SessionProvider from '../../providers/sessionProvider/SessionProvider';
+import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
 import userEvent from '@testing-library/user-event';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { buildUserAuth } from '../../helpers/test/testBuilders';
 
 describe('Layout', () => {
+    describe('Accessibility', () => {
+        it('pass accessibility checks when not logged in', async () => {
+            renderTestApp();
+
+            const results = await runAxeTest(document.body, {
+                rules: {
+                    region: { enabled: true },
+                },
+            });
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when logged in', async () => {
+            renderTestApp('/testPage1', true);
+
+            const results = await runAxeTest(document.body, {
+                rules: {
+                    region: { enabled: true },
+                },
+            });
+            expect(results).toHaveNoViolations();
+        });
+    });
+
     describe('SkipLink', () => {
         it('renders a skip link element', () => {
             renderTestApp();
@@ -69,9 +95,13 @@ describe('Layout', () => {
     });
 });
 
-const renderTestApp = (initialUrl: string = '/testPage1') => {
+const renderTestApp = (initialUrl: string = '/testPage1', isLoggedIn: boolean = false) => {
+    const auth: Session = {
+        auth: buildUserAuth(),
+        isLoggedIn: true,
+    };
     render(
-        <SessionProvider>
+        <SessionProvider sessionOverride={isLoggedIn ? auth : undefined}>
             <MemoryRouter initialEntries={[initialUrl]}>
                 <Layout>
                     <Routes>
