@@ -24,6 +24,7 @@ import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
 import PrivacyPage from '../pages/privacyPage/PrivacyPage';
 import LloydGeorgeUploadPage from '../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import SessionExpiredErrorPage from '../pages/sessionExpiredErrorPage/SessionExpiredErrorPage';
+import SpikeGraphPage from '../pages/spikeGraphPage/SpikeGraphPage';
 
 const {
     START,
@@ -44,6 +45,7 @@ const {
     LLOYD_GEORGE_UPLOAD,
     ARF_DOWNLOAD_DOCUMENTS,
     ARF_UPLOAD_DOCUMENTS,
+    SPIKE_GRAPH,
 } = routes;
 
 type Routes = {
@@ -58,6 +60,10 @@ export const routeMap: Routes = {
     },
     [AUTH_CALLBACK]: {
         page: <AuthCallbackPage />,
+        type: ROUTE_TYPE.PUBLIC,
+    },
+    [SPIKE_GRAPH]: {
+        page: <SpikeGraphPage />,
         type: ROUTE_TYPE.PUBLIC,
     },
     [NOT_FOUND]: {

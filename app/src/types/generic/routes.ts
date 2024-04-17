@@ -19,6 +19,8 @@ export enum routes {
     LLOYD_GEORGE_UPLOAD = '/patient/upload/lloyd-george-record',
     ARF_DOWNLOAD_DOCUMENTS = '/patient/download',
     ARF_UPLOAD_DOCUMENTS = '/patient/upload',
+
+    SPIKE_GRAPH = '/spike-graph',
 }
 
 export enum ROUTE_TYPE {
