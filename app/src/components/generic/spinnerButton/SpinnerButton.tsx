@@ -9,13 +9,7 @@ export type Props = {
 
 const SpinnerButton = ({ id, status, disabled }: Props) => {
     return (
-        <Button
-            id={id}
-            aria-label={status}
-            className="spinner_button"
-            // role="SpinnerButton"
-            disabled={disabled}
-        >
+        <Button id={id} aria-label={status} className="spinner_button" disabled={disabled}>
             <div className="spinner_button-spinner"></div>
             <div role="status">{status}</div>
         </Button>
