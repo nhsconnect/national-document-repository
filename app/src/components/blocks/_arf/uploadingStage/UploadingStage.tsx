@@ -21,7 +21,7 @@ function UploadingStage({ documents }: Props) {
         else if (type === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
     };
     const pageHeader = 'Your documents are uploading';
-    PageTitle({ pageTitle: pageHeader });
+    PageTitle({ pageTitle: 'Uploading documents' });
 
     return (
         <>

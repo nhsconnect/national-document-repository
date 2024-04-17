@@ -1,5 +1,8 @@
+import pageTitle from '../../layout/pageTitle/PageTitle';
+
 function FeedbackConfirmation() {
     const pageHeader = 'We’ve received your feedback';
+    pageTitle({ pageTitle: 'Feedback sent' });
     return (
         <>
             <h1>{pageHeader}</h1>

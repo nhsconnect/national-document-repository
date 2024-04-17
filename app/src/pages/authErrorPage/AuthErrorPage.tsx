@@ -16,7 +16,7 @@ const AuthErrorPage = () => {
         window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
     };
     const pageHeader = 'You have been logged out';
-    pageTitle({ pageTitle: pageHeader });
+    pageTitle({ pageTitle: 'User logged out' });
     return !isLoading ? (
         <>
             <h1>{pageHeader}</h1>
