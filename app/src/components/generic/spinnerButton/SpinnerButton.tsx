@@ -16,7 +16,8 @@ const SpinnerButton = ({ id, status, disabled }: Props) => {
             role="SpinnerButton"
             disabled={disabled}
         >
-            <output>{status}</output>
+            <div className="spinner_button-spinner"></div>
+            <div role="status">{status}</div>
         </Button>
     );
 };
