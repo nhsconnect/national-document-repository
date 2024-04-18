@@ -8,7 +8,7 @@ import pageTitle from '../../components/layout/pageTitle/PageTitle';
 const UnauthorisedLoginPage = () => {
     const navigate = useNavigate();
     const pageHeader = 'Your account cannot access this service';
-    pageTitle({ pageTitle: pageHeader });
+    pageTitle({ pageTitle: 'Unauthorised account' });
     return (
         <>
             <h1>{pageHeader}</h1>

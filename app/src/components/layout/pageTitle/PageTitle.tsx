@@ -4,11 +4,12 @@ type Props = {
     pageTitle: string;
 };
 
-const PageTitle = ({ pageTitle }: Props) => {
+function PageTitle({ pageTitle }: Props) {
     const serviceName = 'Digital Lloyd George records';
     useEffect(() => {
+        console.log(document.title);
         document.title = pageTitle + ' - ' + serviceName;
     }, [pageTitle]);
-};
+}
 
 export default PageTitle;
