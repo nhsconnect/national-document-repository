@@ -283,6 +283,23 @@ describe('LloydGeorgeRecordStage', () => {
                 const results = await runAxeTest(document.body);
                 expect(results).toHaveNoViolations();
             });
+
+            it('pass accessibility test when error box is showing up', async () => {
+                renderComponentForNonBSOLGPAdmin();
+                await showConfirmationMessage();
+                const confirmButton = await screen.findByRole('button', {
+                    name: 'Yes, download and remove',
+                });
+                act(() => {
+                    userEvent.click(confirmButton);
+                });
+                await screen.findByText(
+                    'You must confirm if you want to download and remove this record',
+                );
+
+                const results = await runAxeTest(document.body);
+                expect(results).toHaveNoViolations();
+            });
         });
     });
 
