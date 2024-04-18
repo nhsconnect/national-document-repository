@@ -42,6 +42,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         mockUseConfig.mockReturnValue(buildConfig());
     });
     afterEach(() => {
+        jest.useRealTimers();
         jest.clearAllMocks();
     });
 

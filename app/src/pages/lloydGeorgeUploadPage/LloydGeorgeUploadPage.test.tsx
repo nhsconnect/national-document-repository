@@ -89,6 +89,7 @@ describe('LloydGeorgeUploadPage', () => {
     });
     afterEach(() => {
         jest.clearAllMocks();
+        jest.useRealTimers();
     });
     describe('Rendering', () => {
         it('renders initial file input stage', () => {
