@@ -7,7 +7,6 @@ import axios from 'axios';
 import usePatient from '../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { act } from 'react-dom/test-utils';
-import FeedbackPage from '../feedbackPage/FeedbackPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
@@ -167,16 +166,53 @@ describe('<DocumentSearchResultsPage />', () => {
     });
 
     describe('Accessibility', () => {
-        it('pass accessibility checks at page entry point', async () => {
-            mockedAxios.get.mockResolvedValue(async () => {
-                return Promise.resolve({ data: [buildSearchResult()] });
-            });
+        it('pass accessibility checks at loading screen', async () => {
+            mockedAxios.get.mockReturnValueOnce(
+                new Promise((resolve) => setTimeout(resolve, 100000)),
+            );
             render(<DocumentSearchResultsPage />);
-            await waitFor(() => {
-                expect(
-                    screen.queryByRole('progressbar', { name: 'Loading...' }),
-                ).not.toBeInTheDocument();
+
+            expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when displaying search result', async () => {
+            mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
+
+            render(<DocumentSearchResultsPage />);
+
+            expect(await screen.findByText('List of documents available')).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when error boxes are showing up', async () => {
+            mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
+            const errorResponse = {
+                response: {
+                    status: 400,
+                    data: { message: 'An error occurred', err_code: 'SP_1001' },
+                },
+            };
+            render(<DocumentSearchResultsPage />);
+
+            const downloadButton = await screen.findByRole('button', {
+                name: 'Download All Documents',
             });
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+            act(() => {
+                userEvent.click(downloadButton);
+            });
+
+            expect(
+                await screen.findByText('Sorry, the service is currently unavailable.'),
+            ).toBeInTheDocument();
+            expect(
+                await screen.findByText('An error has occurred while preparing your download'),
+            ).toBeInTheDocument();
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
