@@ -101,8 +101,14 @@ describe('HomePage', () => {
 
         it('pass accessibility checks', async () => {
             render(<HomePage />);
-            const results = await runAxeTest(document.body);
 
+            expect(
+                screen.getByRole('heading', {
+                    name: 'You’re outside of Birmingham and Solihull (BSOL)',
+                }),
+            ).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
         });
     });
