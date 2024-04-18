@@ -11,6 +11,7 @@ import { REPOSITORY_ROLE, authorisedRoles } from '../../../types/generic/authRol
 import { routes } from '../../../types/generic/routes';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
+import { runAxeTest } from '../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../helpers/hooks/useConfig');
 jest.mock('../deletionConfirmationStage/DeletionConfirmationStage', () => () => (
@@ -192,6 +193,39 @@ describe('DeleteDocumentsStage', () => {
                     routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
                 );
             });
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when error box appears', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+
+            const errorResponse = {
+                response: {
+                    status: 400,
+                    message: 'Forbidden',
+                },
+            };
+            mockedAxios.delete.mockRejectedValueOnce(errorResponse);
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await screen.findByText('Sorry, the service is currently unavailable.');
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 });
