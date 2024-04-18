@@ -220,8 +220,8 @@ describe('<FeedbackForm />', () => {
         it('show a spinner button when the form is being submitted', async () => {
             renderComponent({ stage: SUBMISSION_STAGE.Submitting });
 
-            expect(screen.getByRole('SpinnerButton')).toBeInTheDocument();
-            expect(screen.getByRole('SpinnerButton')).toHaveAttribute('disabled');
+            expect(screen.getByRole('button')).toBeInTheDocument();
+            expect(screen.getByRole('button')).toHaveAttribute('disabled');
         });
     });
     describe('Navigation', () => {

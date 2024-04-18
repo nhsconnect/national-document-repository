@@ -96,7 +96,9 @@ describe('DocumentSearchResultsOptions', () => {
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.PENDING);
 
             await waitFor(() => {
-                expect(screen.getByRole('SpinnerButton')).toBeInTheDocument();
+                expect(
+                    screen.getByRole('button', { name: 'Downloading documents' }),
+                ).toBeInTheDocument();
             });
 
             expect(

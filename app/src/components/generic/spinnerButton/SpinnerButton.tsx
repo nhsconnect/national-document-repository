@@ -14,7 +14,7 @@ const SpinnerButton = ({ id, status, disabled }: Props) => {
             aria-label={status}
             className="spinner_button"
             disabled={disabled}
-            role="SpinnerButton"
+            // role="SpinnerButton"
         >
             <div className="spinner_button-spinner"></div>
             <output>{status}</output>
