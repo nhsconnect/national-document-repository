@@ -7,9 +7,12 @@ import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 
 describe('Layout', () => {
+    beforeEach(() => {
+        window.sessionStorage.clear();
+    });
     describe('Accessibility', () => {
         it('pass accessibility checks when not logged in', async () => {
-            renderTestApp();
+            renderTestApp('/', false);
 
             const results = await runAxeTest(document.body, {
                 rules: {
@@ -20,7 +23,7 @@ describe('Layout', () => {
         });
 
         it('pass accessibility checks when logged in', async () => {
-            renderTestApp('/testPage1', true);
+            renderTestApp('/', true);
 
             const results = await runAxeTest(document.body, {
                 rules: {
@@ -105,6 +108,7 @@ const renderTestApp = (initialUrl: string = '/testPage1', isLoggedIn: boolean = 
             <MemoryRouter initialEntries={[initialUrl]}>
                 <Layout>
                     <Routes>
+                        <Route path="/" element={<></>}></Route>
                         <Route
                             path="/testPage1"
                             element={
