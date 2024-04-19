@@ -19,7 +19,7 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     response = {
         "message": "Key error",
-        "err_code": "FFL_5001",
+        "err_code": "FFL_5002",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
 
