@@ -9,6 +9,7 @@ import { routes } from '../../../types/generic/routes';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 import useConfig from '../../../helpers/hooks/useConfig';
 import { buildConfig } from '../../../helpers/test/testBuilders';
+import { runAxeTest } from '../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../helpers/hooks/useIsBSOL');
 jest.mock('../../../helpers/hooks/useRole');
@@ -134,6 +135,73 @@ describe('LloydGeorgeRecordError', () => {
             expect(
                 screen.queryByRole('button', { name: 'Upload patient record' }),
             ).not.toBeInTheDocument();
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks for DOWNLOAD_STAGE.TIMEOUT', async () => {
+            render(
+                <LloydGeorgeRecordError
+                    setStage={mockSetStage}
+                    downloadStage={DOWNLOAD_STAGE.TIMEOUT}
+                />,
+            );
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks for DOWNLOAD_STAGE.UPLOADING', async () => {
+            render(
+                <LloydGeorgeRecordError
+                    setStage={mockSetStage}
+                    downloadStage={DOWNLOAD_STAGE.UPLOADING}
+                />,
+            );
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks for DOWNLOAD_STAGE.NO_RECORDS when user is GP_ADMIN in BSOL', async () => {
+            mockIsBSOL.mockReturnValue(true);
+            mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            mockUseConfig.mockReturnValue(
+                buildConfig(
+                    {},
+                    {
+                        uploadLloydGeorgeWorkflowEnabled: true,
+                        uploadLambdaEnabled: true,
+                    },
+                ),
+            );
+            render(
+                <LloydGeorgeRecordError
+                    setStage={mockSetStage}
+                    downloadStage={DOWNLOAD_STAGE.NO_RECORDS}
+                />,
+            );
+
+            await screen.findByText(/You can upload full or part of a patient record./);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks for the last catch all failure case', async () => {
+            render(
+                <LloydGeorgeRecordError
+                    setStage={mockSetStage}
+                    downloadStage={DOWNLOAD_STAGE.FAILED}
+                />,
+            );
+
+            await screen.findByText(
+                'An error has occurred when creating the Lloyd George preview.',
+            );
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 
