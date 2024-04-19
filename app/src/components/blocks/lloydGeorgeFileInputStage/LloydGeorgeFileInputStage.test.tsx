@@ -9,8 +9,8 @@ import { UploadDocument } from '../../../types/pages/UploadDocumentsPage/types';
 import { useState } from 'react';
 import { MomentInput } from 'moment';
 
-import { LG_UPLOAD_STAGE } from '../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
+import { runAxeTest } from '../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../helpers/utils/toFileList', () => ({
     __esModule: true,
@@ -21,7 +21,6 @@ jest.mock('react-router');
 jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 window.scrollTo = jest.fn() as jest.Mock;
 
-const setStageMock = jest.fn();
 const submitDocumentsMock = jest.fn();
 
 const mockedUsePatient = usePatient as jest.Mock;
@@ -676,6 +675,39 @@ describe('<LloydGeorgeFileInputStage />', () => {
         });
     });
 
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            renderApp();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when error box appears (file name error)', async () => {
+            renderApp();
+            act(() => {
+                userEvent.upload(screen.getByTestId('button-input'), lgFilesThreeNames);
+            });
+
+            await screen.findByText('The patient’s name does not match this filename');
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when error box appears (no file selected)', async () => {
+            renderApp();
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+
+            await screen.findByText('You did not select any file to upload');
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+    });
+
     const TestApp = (props: Partial<Props>) => {
         const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
 
@@ -684,7 +716,6 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 documents={documents}
                 setDocuments={setDocuments}
                 submitDocuments={submitDocumentsMock}
-
                 {...props}
             />
         );
