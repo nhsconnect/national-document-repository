@@ -34,9 +34,6 @@ const errorCodes: { [key: string]: string } = {
     GWY_5001: technicalIssueMsg,
     SFB_5001: feedbackMsg,
     SFB_5002: feedbackMsg,
-    FFL_5001: technicalIssueMsg,
-    FFL_5002: technicalIssueMsg,
-    FFL_5003: technicalIssueMsg,
     LGL_423: 'Record is uploading. Wait a few minutes and try again',
 };
 
