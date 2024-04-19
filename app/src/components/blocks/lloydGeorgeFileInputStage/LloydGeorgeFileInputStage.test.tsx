@@ -689,7 +689,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 userEvent.upload(screen.getByTestId('button-input'), lgFilesThreeNames);
             });
 
-            await screen.findByText('The patient’s name does not match this filename');
+            await screen.findAllByText('The patient’s name does not match this filename');
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
