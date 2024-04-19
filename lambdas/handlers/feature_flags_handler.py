@@ -1,11 +1,14 @@
 import json
 
+from enums.logging_app_interaction import LoggingAppInteraction
+from services.feature_flags_service import FeatureFlagService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.lambda_response import ApiGatewayResponse
+from utils.request_context import request_context
 
 logger = LoggingService(__name__)
 
@@ -17,12 +20,18 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 @override_error_check
 def lambda_handler(event, context):
-    response = {
-        "message": "Key error",
-        "err_code": "FFL_5003",
-        "interaction_id": "88888888-4444-4444-4444-121212121212",
-    }
+    request_context.app_interaction = LoggingAppInteraction.FEATURE_FLAGS.value
+    logger.info("Starting feature flag retrieval process")
+
+    query_string_params = event.get("queryStringParameters")
+    feature_flag_service = FeatureFlagService()
+
+    if query_string_params and "flagName" in query_string_params:
+        flag_name = query_string_params["flagName"]
+        response = feature_flag_service.get_feature_flags_by_flag(flag_name)
+    else:
+        response = feature_flag_service.get_feature_flags()
 
     return ApiGatewayResponse(
-        500, json.dumps(response), "GET"
+        200, json.dumps(response), "GET"
     ).create_api_gateway_response()
