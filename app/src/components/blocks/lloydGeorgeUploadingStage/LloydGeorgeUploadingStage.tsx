@@ -10,6 +10,7 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import LinkButton from '../../generic/linkButton/LinkButton';
 import { UploadSession } from '../../../types/generic/uploadResult';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -46,7 +47,8 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
     useEffect(() => {
         focusLayoutDiv();
     }, []);
-
+    const pageHeader = 'Uploading record';
+    useTitle({ pageTitle: pageHeader });
     return (
         <>
             {hasFailedUploads && (
@@ -70,7 +72,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                     }}
                 />
             )}
-            <h1>Uploading record</h1>
+            <h1>{pageHeader}</h1>
             <WarningCallout>
                 <WarningCallout.Label headingLevel="h2">Stay on this page</WarningCallout.Label>
                 <p>

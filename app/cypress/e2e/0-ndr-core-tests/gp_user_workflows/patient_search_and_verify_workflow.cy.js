@@ -51,9 +51,11 @@ describe('GP Workflow: Patient search and verify', () => {
 
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(testPatient);
+                cy.title().should('eq', 'Search for patient - Digital Lloyd George records');
 
                 cy.get('#search-submit').click();
                 cy.wait('@search');
+                cy.title().should('eq', 'Verify patient details - Digital Lloyd George records');
 
                 cy.url().should('include', 'verify');
                 cy.url().should('eq', baseUrl + '/search/patient/verify');
@@ -140,6 +142,7 @@ describe('GP Workflow: Patient search and verify', () => {
 
                 cy.url().should('include', 'lloyd-george-record');
                 cy.url().should('eq', baseUrl + '/patient/view/lloyd-george-record');
+                cy.title().should('eq', 'Available records - Digital Lloyd George records');
             },
         );
 

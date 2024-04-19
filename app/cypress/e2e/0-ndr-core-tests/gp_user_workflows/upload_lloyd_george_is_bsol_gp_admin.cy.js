@@ -150,6 +150,10 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                         statusCode: 204,
                     });
                 }).as('upload_confirm');
+                cy.title().should(
+                    'eq',
+                    'Upload a Lloyd George record - Digital Lloyd George records',
+                );
 
                 cy.getByTestId('button-input').selectFile(
                     uploadedFilePathNames.LG[singleFileUsecaseIndex],
@@ -170,6 +174,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                     .should('contain', uploadedFileNames.LG[singleFileUsecaseIndex]);
 
                 testUploadCompletePageContent();
+                cy.title().should('eq', 'Record upload complete - Digital Lloyd George records');
 
                 testViewRecordButton();
             },
@@ -329,6 +334,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
 
                 cy.getByTestId('error-box-link').should('exist');
                 cy.getByTestId('error-box-link').click();
+
                 cy.wait('@s3_retry_upload');
 
                 cy.getByTestId('upload-complete-page')
@@ -533,6 +539,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 cy.getByTestId('failure-complete-page')
                     .should('include.text', 'Some of your files failed a virus scan')
                     .should('include.text', uploadedFileNames.LG[singleFileUsecaseIndex]);
+                cy.title().should('eq', 'The record did not upload - Digital Lloyd George records');
 
                 cy.getByTestId('retry-upload-btn').should('exist');
                 cy.getByTestId('retry-upload-btn').click();

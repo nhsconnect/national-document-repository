@@ -25,6 +25,7 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../types/generic/inputRef';
 import BackButton from '../../generic/backButton/BackButton';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -96,6 +97,8 @@ function LloydGeorgeRecordStage({
         clearErrors('confirmDownloadRemove');
     };
 
+    const pageHeader = 'Available records';
+    useTitle({ pageTitle: pageHeader });
     return (
         <div className="lloydgeorge_record-stage">
             {formState.errors.confirmDownloadRemove && (
@@ -196,7 +199,7 @@ function LloydGeorgeRecordStage({
                             </InsetText>
                         )}
                     </WarningCallout>
-                    <h1>Available records</h1>
+                    <h1>{pageHeader}</h1>
                 </div>
             )}
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">

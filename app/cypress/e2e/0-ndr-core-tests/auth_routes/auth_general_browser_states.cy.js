@@ -78,6 +78,7 @@ describe('Authentication & Authorisation', () => {
 
                 cy.contains('Your account cannot access this service').should('be.visible');
                 cy.url().should('include', 'unauthorised-login');
+                cy.title().should('eq', 'Unauthorised account - Digital Lloyd George records');
             },
         );
     });
