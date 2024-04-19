@@ -56,9 +56,11 @@ function StartPage(props: Props) {
                 Start now
             </ButtonLink>
             <h3>Get support with the service</h3>
-            {'Contact the '}
-            <ServiceDeskLink />
-            {' if there is an issue with this service or call 0300 303 5678.'}
+            <p>
+                {'Contact the '}
+                <ServiceDeskLink />
+                {' if there is an issue with this service or call 0300 303 5678.'}
+            </p>
             {(process.env.REACT_APP_ENVIRONMENT === 'local' ||
                 process.env.REACT_APP_ENVIRONMENT === 'development' ||
                 process.env.REACT_APP_ENVIRONMENT === 'test') && <TestPanel />}
