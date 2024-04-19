@@ -4,7 +4,7 @@ import React from 'react';
 import errorCodes from '../../helpers/utils/errorCodes';
 import { useSearchParams } from 'react-router-dom';
 import { unixTimestamp } from '../../helpers/utils/createTimestamp';
-import pageTitle from '../../helpers/hooks/useTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
 type ServerError = [errorCode: string | null, interactionId: string | null];
 
@@ -21,7 +21,7 @@ const ServerErrorPage = () => {
         errorCode && !!errorCodes[errorCode] ? errorCodes[errorCode] : defaultMessage;
 
     const interactionCode = interactionId ?? unixTimestamp();
-    pageTitle({ pageTitle: 'Service error' });
+    useTitle({ pageTitle: 'Service error' });
 
     return (
         <>

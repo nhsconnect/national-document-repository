@@ -18,7 +18,7 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
 import LinkButton from '../../generic/linkButton/LinkButton';
-import pageTitle from '../../../helpers/hooks/useTitle';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -102,7 +102,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
         }
     };
     const pageHeader = 'Upload a Lloyd George record';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return (
         <div>
             <BackButton />

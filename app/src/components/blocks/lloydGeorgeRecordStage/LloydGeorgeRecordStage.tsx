@@ -25,7 +25,7 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../types/generic/inputRef';
 import BackButton from '../../generic/backButton/BackButton';
-import pageTitle from '../../../helpers/hooks/useTitle';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -98,7 +98,7 @@ function LloydGeorgeRecordStage({
     };
 
     const pageHeader = 'Available records';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return (
         <div className="lloydgeorge_record-stage">
             {formState.errors.confirmDownloadRemove && (

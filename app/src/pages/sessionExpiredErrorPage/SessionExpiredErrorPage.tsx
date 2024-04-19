@@ -3,7 +3,7 @@ import React, { MouseEvent, useState } from 'react';
 import { endpoints } from '../../types/generic/endpoints';
 import Spinner from '../../components/generic/spinner/Spinner';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
-import pageTitle from '../../helpers/hooks/useTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
 const SessionExpiredErrorPage = () => {
     const baseAPIUrl = useBaseAPIUrl();
@@ -15,7 +15,7 @@ const SessionExpiredErrorPage = () => {
         window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
     };
     const pageHeader = 'We signed you out due to inactivity';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return !isLoading ? (
         <>
             <h1>{pageHeader}</h1>

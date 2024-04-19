@@ -9,7 +9,7 @@ import { isLocal } from '../../helpers/utils/isLocal';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import TestPanel from '../../components/blocks/testPanel/TestPanel';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
-import pageTitle from '../../helpers/hooks/useTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
 type Props = {};
 
@@ -27,7 +27,7 @@ function StartPage(props: Props) {
         }
     };
     const pageHeader = 'Access and store digital GP records';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return !isLoading ? (
         <>
             <h1>{pageHeader}</h1>

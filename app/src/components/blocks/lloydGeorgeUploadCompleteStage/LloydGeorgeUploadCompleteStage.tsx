@@ -10,7 +10,7 @@ import { routes } from '../../../types/generic/routes';
 import DocumentsListView from '../../generic/documentsListView/DocumentsListView';
 import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
-import pageTitle from '../../../helpers/hooks/useTitle';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 interface Props {
     documents: Array<UploadDocument>;
@@ -28,7 +28,7 @@ function LloydGeorgeUploadCompleteStage({ documents }: Props) {
     const successfulUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED;
     });
-    pageTitle({ pageTitle: 'Record upload complete' });
+    useTitle({ pageTitle: 'Record upload complete' });
 
     return (
         <div className="lloydgeorge_upload-complete" data-testid="upload-complete-page">

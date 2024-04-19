@@ -23,7 +23,7 @@ import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios/index';
 import { isMock } from '../../../helpers/utils/isLocal';
 import useConfig from '../../../helpers/hooks/useConfig';
-import pageTitle from '../../../helpers/hooks/useTitle';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 const FakeProgress = require('fake-progress');
 
@@ -155,7 +155,7 @@ function LloydGeorgeDownloadAllStage({
         mockLocal,
     ]);
     const pageHeader = 'Downloading documents';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return inProgress ? (
         <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
             <div className="lloydgeorge_downloadall-stage_header">

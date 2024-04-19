@@ -18,7 +18,7 @@ import { AxiosError } from 'axios';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { isMock } from '../../../helpers/utils/isLocal';
-import pageTitle from '../../../helpers/hooks/useTitle';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     stage: SUBMISSION_STAGE;
@@ -85,7 +85,7 @@ function FeedbackForm({ stage, setStage }: Props) {
         }),
         'inputRef',
     );
-    pageTitle({ pageTitle: 'Give feedback on this service' });
+    useTitle({ pageTitle: 'Give feedback on this service' });
 
     return (
         <div id="feedback-form">

@@ -1,11 +1,11 @@
 import React from 'react';
 import { routes } from '../../types/generic/routes';
 import { Link } from 'react-router-dom';
-import pageTitle from '../../helpers/hooks/useTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
 const NotFoundPage = () => {
     const pageHeader = 'Page not found';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return (
         <>
             <h1>{pageHeader}</h1>

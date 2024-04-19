@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
 import ServiceDeskLink from '../../generic/serviceDeskLink/ServiceDeskLink';
-import pageTitle from '../../../helpers/hooks/useTitle';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 interface Props {
     documents: Array<UploadDocument>;
@@ -28,7 +28,7 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
         return document.state === DOCUMENT_UPLOAD_STATE.INFECTED;
     });
     const pageHeader = 'The record did not upload';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return (
         <div data-testid="failure-complete-page">
             <WarningCallout id="upload-stage-warning">

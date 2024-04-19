@@ -7,7 +7,7 @@ import React, { useEffect } from 'react';
 import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
-import pageTitle from '../../helpers/hooks/useTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
 type Props = {};
 
@@ -41,7 +41,7 @@ const HomePage = (props: Props) => {
     );
 
     const NonBsolContent = () => {
-        pageTitle({ pageTitle: 'Access to this service outside of Birmingham and Solihull' });
+        useTitle({ pageTitle: 'Access to this service outside of Birmingham and Solihull' });
         return (
             <>
                 <h1>You’re outside of Birmingham and Solihull (BSOL)</h1>

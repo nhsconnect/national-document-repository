@@ -22,7 +22,7 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { isMock } from '../../../helpers/utils/isLocal';
 import useConfig from '../../../helpers/hooks/useConfig';
-import pageTitle from '../../../helpers/hooks/useTitle';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -123,7 +123,7 @@ function DeleteDocumentsStage({
             }
         }
     };
-    pageTitle({ pageTitle: 'Delete files' });
+    useTitle({ pageTitle: 'Delete files' });
 
     return deletionStage !== SUBMISSION_STATE.SUCCEEDED ? (
         <>

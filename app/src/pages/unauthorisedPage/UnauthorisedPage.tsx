@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 import { endpoints } from '../../types/generic/endpoints';
 import Spinner from '../../components/generic/spinner/Spinner';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
-import pageTitle from '../../helpers/hooks/useTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
 const UnauthorisedPage = () => {
     const baseAPIUrl = useBaseAPIUrl();
@@ -17,7 +17,7 @@ const UnauthorisedPage = () => {
         window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
     };
     const pageHeader = 'Unauthorised access';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return !isLoading ? (
         <>
             <h1>{pageHeader}</h1>

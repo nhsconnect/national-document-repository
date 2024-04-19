@@ -18,7 +18,7 @@ import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { errorToParams } from '../../helpers/utils/errorToParams';
-import pageTitle from '../../helpers/hooks/useTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
@@ -77,7 +77,7 @@ function DocumentSearchResultsPage() {
         baseHeaders,
     ]);
     const pageHeader = 'Download electronic health records and attachments';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return !isDeletingDocuments ? (
         <>
             <h1 id="download-page-title">{pageHeader}</h1>

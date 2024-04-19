@@ -4,7 +4,7 @@ import Spinner from '../../components/generic/spinner/Spinner';
 import { Link } from 'react-router-dom';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
-import pageTitle from '../../helpers/hooks/useTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
 const AuthErrorPage = () => {
     const baseAPIUrl = useBaseAPIUrl();
@@ -16,7 +16,7 @@ const AuthErrorPage = () => {
         window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
     };
     const pageHeader = 'You have been logged out';
-    pageTitle({ pageTitle: 'User logged out' });
+    useTitle({ pageTitle: 'User logged out' });
     return !isLoading ? (
         <>
             <h1>{pageHeader}</h1>

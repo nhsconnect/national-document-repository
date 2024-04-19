@@ -1,4 +1,4 @@
-import pageTitle from './useTitle';
+import useTitle from './useTitle';
 import { render } from '@testing-library/react';
 
 describe('useTitle', () => {
@@ -16,7 +16,7 @@ describe('useTitle', () => {
 
 const TestApp = () => {
     const newPageTitle: string = 'test title';
-    pageTitle({ pageTitle: newPageTitle });
+    useTitle({ pageTitle: newPageTitle });
 
     return <div></div>;
 };

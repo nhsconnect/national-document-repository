@@ -4,7 +4,7 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
-import pageTitle from '../../../helpers/hooks/useTitle';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
@@ -26,7 +26,7 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
         }
     };
     const pageHeader = 'Download complete';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return (
         <div className="lloydgeorge_download-complete">
             <Card className="lloydgeorge_download-complete_details">

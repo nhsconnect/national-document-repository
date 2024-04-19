@@ -9,7 +9,7 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
-import pageTitle from '../../../helpers/hooks/useTitle';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     numberOfFiles: number;
@@ -36,7 +36,7 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
     };
     const isGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
     const pageHeader = 'Deletion complete';
-    pageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
     return (
         <div className="deletion-complete">
             <Card className="deletion-complete_card">
