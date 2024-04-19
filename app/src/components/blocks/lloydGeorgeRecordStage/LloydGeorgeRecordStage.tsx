@@ -45,7 +45,6 @@ function LloydGeorgeRecordStage({
     numberOfFiles,
     totalFileSizeInByte,
     setStage,
-    stage,
 }: Props) {
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);

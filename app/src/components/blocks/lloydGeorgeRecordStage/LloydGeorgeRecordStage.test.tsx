@@ -16,6 +16,7 @@ import useRole from '../../../helpers/hooks/useRole';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useConfig from '../../../helpers/hooks/useConfig';
+import { LinkProps } from 'react-router-dom';
 
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
@@ -32,6 +33,11 @@ const mockSetStage = jest.fn();
 const mockUseConfig = useConfig as jest.Mock;
 
 jest.mock('react-router', () => ({
+    useNavigate: () => mockNavigate,
+}));
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} href={props.to as string} role="link" />,
     useNavigate: () => mockNavigate,
 }));
 
