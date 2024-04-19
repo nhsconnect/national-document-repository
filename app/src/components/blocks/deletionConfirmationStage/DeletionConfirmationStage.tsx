@@ -9,7 +9,7 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
-import pageTitle from '../../layout/pageTitle/PageTitle';
+import pageTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     numberOfFiles: number;

@@ -8,7 +8,7 @@ import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
-import PageTitle from '../../../layout/pageTitle/PageTitle';
+import useTitle from '../../../../helpers/hooks/useTitle';
 
 export interface Props {
     documents: Array<UploadDocument>;
@@ -34,7 +34,7 @@ const UploadSummary = ({ documents }: Props) => {
         </>
     );
     const pageHeader = 'Upload Summary';
-    PageTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: pageHeader });
 
     return (
         <section>

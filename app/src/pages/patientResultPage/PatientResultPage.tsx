@@ -10,7 +10,7 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
-import pageTitle from '../../components/layout/pageTitle/PageTitle';
+import pageTitle from '../../helpers/hooks/useTitle';
 
 function PatientResultPage() {
     const role = useRole();

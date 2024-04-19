@@ -22,7 +22,7 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { isMock } from '../../../helpers/utils/isLocal';
 import useConfig from '../../../helpers/hooks/useConfig';
-import pageTitle from '../../layout/pageTitle/PageTitle';
+import pageTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     docType: DOCUMENT_TYPE;

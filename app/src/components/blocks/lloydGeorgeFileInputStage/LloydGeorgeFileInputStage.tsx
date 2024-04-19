@@ -18,7 +18,7 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../helpers/utils/uploadDocumentValidation';
 import { fileUploadErrorMessages } from '../../../helpers/utils/fileUploadErrorMessages';
 import LinkButton from '../../generic/linkButton/LinkButton';
-import pageTitle from '../../layout/pageTitle/PageTitle';
+import pageTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     documents: Array<UploadDocument>;

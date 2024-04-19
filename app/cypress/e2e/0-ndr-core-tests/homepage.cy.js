@@ -77,7 +77,10 @@ describe('Home Page', () => {
                         'include.text',
                         'You’re outside of Birmingham and Solihull (BSOL)',
                     );
-
+                    cy.title().should(
+                        'eq',
+                        'Access to this service outside of Birmingham and Solihull - Digital Lloyd George records',
+                    );
                     cy.get('.govuk-warning-text__text').should('exist');
                     cy.get('.govuk-warning-text__text').should(
                         'include.text',
@@ -120,10 +123,7 @@ describe('Home Page', () => {
                     'not.include.text',
                     'You’re outside of Birmingham and Solihull (BSOL)',
                 );
-                cy.title().should(
-                    'eq',
-                    'Access to this service outside of Birmingham and Solihull - Digital Lloyd George records',
-                );
+
                 cy.get('.nhsuk-header__navigation').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
             },

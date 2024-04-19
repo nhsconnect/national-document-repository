@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router';
 import { ButtonLink } from 'nhsuk-react-components';
 import React from 'react';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
-import pageTitle from '../../components/layout/pageTitle/PageTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
 const UnauthorisedLoginPage = () => {
     const navigate = useNavigate();
     const pageHeader = 'Your account cannot access this service';
-    pageTitle({ pageTitle: 'Unauthorised account' });
+    useTitle({ pageTitle: 'Unauthorised account' });
     return (
         <>
             <h1>{pageHeader}</h1>

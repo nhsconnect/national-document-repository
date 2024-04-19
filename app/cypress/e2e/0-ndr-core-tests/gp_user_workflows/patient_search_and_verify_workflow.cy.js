@@ -65,7 +65,6 @@ describe('GP Workflow: Patient search and verify', () => {
                     'Check these patient details match the records or attachments you plan to use',
                 );
                 cy.get('#verify-submit').click();
-                cy.title().should('eq', 'Available records - Digital Lloyd George records');
 
                 cy.url().should('include', 'upload');
                 cy.url().should('eq', baseUrl + '/patient/upload');
@@ -143,6 +142,7 @@ describe('GP Workflow: Patient search and verify', () => {
 
                 cy.url().should('include', 'lloyd-george-record');
                 cy.url().should('eq', baseUrl + '/patient/view/lloyd-george-record');
+                cy.title().should('eq', 'Available records - Digital Lloyd George records');
             },
         );
 

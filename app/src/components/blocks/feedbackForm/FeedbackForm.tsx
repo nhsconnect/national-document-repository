@@ -18,7 +18,7 @@ import { AxiosError } from 'axios';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
 import { isMock } from '../../../helpers/utils/isLocal';
-import pageTitle from '../../layout/pageTitle/PageTitle';
+import pageTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     stage: SUBMISSION_STAGE;

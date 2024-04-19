@@ -4,7 +4,7 @@ import Spinner from '../../components/generic/spinner/Spinner';
 import { Link } from 'react-router-dom';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
-import pageTitle from '../../components/layout/pageTitle/PageTitle';
+import pageTitle from '../../helpers/hooks/useTitle';
 
 const AuthErrorPage = () => {
     const baseAPIUrl = useBaseAPIUrl();

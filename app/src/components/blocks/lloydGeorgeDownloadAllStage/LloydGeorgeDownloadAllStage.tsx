@@ -23,7 +23,7 @@ import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios/index';
 import { isMock } from '../../../helpers/utils/isLocal';
 import useConfig from '../../../helpers/hooks/useConfig';
-import pageTitle from '../../layout/pageTitle/PageTitle';
+import pageTitle from '../../../helpers/hooks/useTitle';
 
 const FakeProgress = require('fake-progress');
 

@@ -9,7 +9,7 @@ import { isLocal } from '../../helpers/utils/isLocal';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import TestPanel from '../../components/blocks/testPanel/TestPanel';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
-import pageTitle from '../../components/layout/pageTitle/PageTitle';
+import pageTitle from '../../helpers/hooks/useTitle';
 
 type Props = {};
 

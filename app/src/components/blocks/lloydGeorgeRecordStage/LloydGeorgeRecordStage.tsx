@@ -25,7 +25,7 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../types/generic/inputRef';
 import BackButton from '../../generic/backButton/BackButton';
-import pageTitle from '../../layout/pageTitle/PageTitle';
+import pageTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;

@@ -10,7 +10,7 @@ import { routes } from '../../../types/generic/routes';
 import DocumentsListView from '../../generic/documentsListView/DocumentsListView';
 import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
-import pageTitle from '../../layout/pageTitle/PageTitle';
+import pageTitle from '../../../helpers/hooks/useTitle';
 
 interface Props {
     documents: Array<UploadDocument>;

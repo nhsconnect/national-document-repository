@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router';
 import { routes } from '../../../types/generic/routes';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
 import ServiceDeskLink from '../../generic/serviceDeskLink/ServiceDeskLink';
-import pageTitle from '../../layout/pageTitle/PageTitle';
+import pageTitle from '../../../helpers/hooks/useTitle';
 
 interface Props {
     documents: Array<UploadDocument>;

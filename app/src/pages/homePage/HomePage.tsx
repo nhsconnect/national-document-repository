@@ -7,7 +7,7 @@ import React, { useEffect } from 'react';
 import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
-import pageTitle from '../../components/layout/pageTitle/PageTitle';
+import pageTitle from '../../helpers/hooks/useTitle';
 
 type Props = {};
 

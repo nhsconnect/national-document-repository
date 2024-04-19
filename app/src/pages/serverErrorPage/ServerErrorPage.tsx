@@ -4,7 +4,7 @@ import React from 'react';
 import errorCodes from '../../helpers/utils/errorCodes';
 import { useSearchParams } from 'react-router-dom';
 import { unixTimestamp } from '../../helpers/utils/createTimestamp';
-import pageTitle from '../../components/layout/pageTitle/PageTitle';
+import pageTitle from '../../helpers/hooks/useTitle';
 
 type ServerError = [errorCode: string | null, interactionId: string | null];
 

@@ -10,7 +10,7 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import LinkButton from '../../generic/linkButton/LinkButton';
 import { UploadSession } from '../../../types/generic/uploadResult';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
-import pageTitle from '../../layout/pageTitle/PageTitle';
+import pageTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     documents: Array<UploadDocument>;

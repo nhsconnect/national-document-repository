@@ -18,7 +18,7 @@ import { isMock } from '../../helpers/utils/isLocal';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { errorToParams } from '../../helpers/utils/errorToParams';
-import PageTitle from '../../components/layout/pageTitle/PageTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
@@ -47,7 +47,7 @@ function PatientSearchPage() {
         navigate(routes.VERIFY_PATIENT);
     };
     const pageTitle = 'Search for patient';
-    PageTitle({ pageTitle: pageTitle });
+    useTitle({ pageTitle: pageTitle });
 
     const handleSearch = async (data: FieldValues) => {
         setSubmissionState(SEARCH_STATES.SEARCHING);

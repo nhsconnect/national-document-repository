@@ -5,7 +5,7 @@ import {
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
-import PageTitle from '../../../layout/pageTitle/PageTitle';
+import useTitle from '../../../../helpers/hooks/useTitle';
 
 interface Props {
     documents: Array<UploadDocument>;
@@ -21,7 +21,7 @@ function UploadingStage({ documents }: Props) {
         else if (type === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
     };
     const pageHeader = 'Your documents are uploading';
-    PageTitle({ pageTitle: 'Uploading documents' });
+    useTitle({ pageTitle: 'Uploading documents' });
 
     return (
         <>

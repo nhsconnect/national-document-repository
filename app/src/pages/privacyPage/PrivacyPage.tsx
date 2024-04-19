@@ -2,7 +2,7 @@ import React from 'react';
 import useRole from '../../helpers/hooks/useRole';
 import { routes } from '../../types/generic/routes';
 import { Link, useNavigate } from 'react-router-dom';
-import pageTitle from '../../components/layout/pageTitle/PageTitle';
+import pageTitle from '../../helpers/hooks/useTitle';
 
 function PrivacyPage() {
     const isLoggedIn = !!useRole();

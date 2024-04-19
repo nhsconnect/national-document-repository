@@ -3,7 +3,7 @@ import React, { MouseEvent, useState } from 'react';
 import { endpoints } from '../../types/generic/endpoints';
 import Spinner from '../../components/generic/spinner/Spinner';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
-import pageTitle from '../../components/layout/pageTitle/PageTitle';
+import pageTitle from '../../helpers/hooks/useTitle';
 
 const SessionExpiredErrorPage = () => {
     const baseAPIUrl = useBaseAPIUrl();
