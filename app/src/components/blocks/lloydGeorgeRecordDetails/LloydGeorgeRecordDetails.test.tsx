@@ -4,7 +4,7 @@ import { buildLgSearchResult } from '../../../helpers/test/testBuilders';
 import formatFileSize from '../../../helpers/utils/formatFileSize';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import useRole from '../../../helpers/hooks/useRole';
-import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
+import { lloydGeorgeRecordLinks } from '../../../types/blocks/lloydGeorgeActions';
 import { LinkProps } from 'react-router-dom';
 import useIsBSOL from '../../../helpers/hooks/useIsBSOL';
 
@@ -49,7 +49,9 @@ describe('LloydGeorgeRecordDetails', () => {
     });
 
     describe('Unauthorised', () => {
-        const unauthorisedLinks = actionLinks.filter((a) => Array.isArray(a.unauthorised));
+        const unauthorisedLinks = lloydGeorgeRecordLinks.filter((a) =>
+            Array.isArray(a.unauthorised),
+        );
 
         it.each(unauthorisedLinks)(
             "does not render actionLink '$label' if role is unauthorised",

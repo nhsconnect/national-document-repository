@@ -2,9 +2,7 @@ import React, { Dispatch, SetStateAction, useState } from 'react';
 import {
     BackLink,
     Button,
-    Card,
     Checkboxes,
-    Details,
     Fieldset,
     InsetText,
     WarningCallout,
@@ -25,8 +23,9 @@ import ErrorBox from '../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../types/generic/inputRef';
 import BackButton from '../../generic/backButton/BackButton';
-import { actionLinks } from '../../../types/blocks/lloydGeorgeActions';
-import { Link, useNavigate } from 'react-router-dom';
+import { lloydGeorgeRecordLinks } from '../../../types/blocks/lloydGeorgeActions';
+import RecordCard from '../../generic/recordCard/RecordCard';
+import RecordMenuCard from '../../generic/recordMenuCard/RecordMenuCard';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -52,21 +51,33 @@ function LloydGeorgeRecordStage({
     const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
-    const navigate = useNavigate();
     const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
         reValidateMode: 'onSubmit',
     });
     const { ref: inputRef, ...checkboxProps } = register('confirmDownloadRemove', {
         required: true,
     });
+
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
+
     const role = useRole();
     const isBSOL = useIsBSOL();
     const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
-    const hasMenuAccess = actionLinks.some((l) => role && !l.unauthorised?.includes(role));
 
-    const PdfCardDescription = () => {
+    const hasMenuAccess = lloydGeorgeRecordLinks.some(
+        (l) => role && !l.unauthorised?.includes(role),
+    );
+
+    const handleConfirmDownloadAndRemoveButton = () => {
+        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+    };
+    const handleCancelButton = () => {
+        setDownloadRemoveButtonClicked(false);
+        clearErrors('confirmDownloadRemove');
+    };
+
+    const RecordMessage = () => {
         if (downloadStage === DOWNLOAD_STAGE.PENDING) {
             return <span> Loading...</span>;
         } else if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
@@ -85,103 +96,6 @@ function LloydGeorgeRecordStage({
             return <LloydGeorgeRecordError downloadStage={downloadStage} setStage={setStage} />;
         }
     };
-
-    const handleConfirmDownloadAndRemoveButton = () => {
-        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
-    };
-
-    const handleCancelButton = () => {
-        setDownloadRemoveButtonClicked(false);
-        clearErrors('confirmDownloadRemove');
-    };
-
-    const PdfCard = () => (
-        <Card className="lloydgeorge_record-stage_pdf">
-            <Card.Content data-testid="pdf-card" className="lloydgeorge_record-stage_pdf-content">
-                <Card.Heading
-                    className="lloydgeorge_record-stage_pdf-content-label"
-                    headingLevel="h1"
-                >
-                    Lloyd George record
-                </Card.Heading>
-                <PdfCardDescription />
-            </Card.Content>
-            {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
-                <Details expander open className="lloydgeorge_record-stage_pdf-expander">
-                    <Details.Summary
-                        style={{ display: 'inline-block' }}
-                        data-testid="view-record-bin"
-                    >
-                        View record
-                    </Details.Summary>
-                    <button
-                        className="lloydgeorge_record-stage_pdf-expander-button link-button clickable"
-                        data-testid="full-screen-btn"
-                        onClick={() => {
-                            setFullScreen(true);
-                        }}
-                    >
-                        View in full screen
-                    </button>
-                    <PdfViewer fileUrl={lloydGeorgeUrl} />
-                </Details>
-            )}
-        </Card>
-    );
-
-    const updateActions = actionLinks.filter(
-        (l) => !!l.href && role && !l.unauthorised?.includes(role),
-    );
-    const downloadActions = actionLinks.filter(
-        (l) => !!l.stage && role && !l.unauthorised?.includes(role),
-    );
-
-    const MenuCard = () => (
-        <Card className="lloydgeorge_record-stage_menu">
-            <Card.Content className="lloydgeorge_record-stage_menu-content">
-                {!!updateActions.length && (
-                    <>
-                        <h4>Update record</h4>
-                        <ol>
-                            {updateActions.map((link) => (
-                                <li key={link.key} data-testid={link.key}>
-                                    <Link
-                                        to="#placeholder"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            if (link.href) navigate(link.href);
-                                        }}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ol>
-                    </>
-                )}
-                {!!downloadActions.length && (
-                    <>
-                        <h4>Download record</h4>
-                        <ol>
-                            {downloadActions.map((link) => (
-                                <li key={link.key} data-testid={link.key}>
-                                    <Link
-                                        to="#placeholder"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            if (link.href) navigate(link.href);
-                                        }}
-                                    >
-                                        {link.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ol>
-                    </>
-                )}
-            </Card.Content>
-        </Card>
-    );
 
     return (
         <div className="lloydgeorge_record-stage">
@@ -298,14 +212,31 @@ function LloydGeorgeRecordStage({
                     {hasMenuAccess ? (
                         <div className="lloydgeorge_record-stage_flex">
                             <div className="lloydgeorge_record-stage_flex-row">
-                                <MenuCard />
+                                <RecordMenuCard
+                                    recordLinks={lloydGeorgeRecordLinks}
+                                    setStage={setStage}
+                                />
                             </div>
                             <div className="lloydgeorge_record-stage_flex-row">
-                                <PdfCard />
+                                <RecordCard
+                                    downloadStage={downloadStage}
+                                    recordUrl={lloydGeorgeUrl}
+                                    heading="Lloyd George record"
+                                    fullScreenHandler={setFullScreen}
+                                >
+                                    <RecordMessage />
+                                </RecordCard>
                             </div>
                         </div>
                     ) : (
-                        <PdfCard />
+                        <RecordCard
+                            downloadStage={downloadStage}
+                            recordUrl={lloydGeorgeUrl}
+                            heading="Lloyd George record"
+                            fullScreenHandler={setFullScreen}
+                        >
+                            <RecordMessage />
+                        </RecordCard>
                     )}
                 </>
             ) : (
