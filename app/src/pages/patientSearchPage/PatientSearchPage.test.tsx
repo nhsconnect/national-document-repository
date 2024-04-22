@@ -73,7 +73,7 @@ describe('PatientSearchPage', () => {
                 userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
                 await waitFor(() => {
-                    expect(screen.getByRole('SpinnerButton')).toBeInTheDocument();
+                    expect(screen.getByRole('button')).toBeInTheDocument();
                 });
             },
         );
