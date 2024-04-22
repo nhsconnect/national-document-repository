@@ -102,7 +102,7 @@ describe('LloydGeorgeDownloadComplete', () => {
 
     describe('Accessibility', () => {
         it.each([true, false])(
-            'pass accessibility checkswhen deleteAfterDownload is %s',
+            'pass accessibility checks when deleteAfterDownload is %s',
             async (deleteAfterDownload) => {
                 render(
                     <LgDownloadComplete

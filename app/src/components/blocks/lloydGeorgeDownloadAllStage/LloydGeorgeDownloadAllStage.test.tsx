@@ -108,7 +108,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
     });
 
-    it('pass accessibility test', async () => {
+    it('pass accessibility checks', async () => {
         renderComponent();
 
         const results = await runAxeTest(document.body);
