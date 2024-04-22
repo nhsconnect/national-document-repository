@@ -78,15 +78,11 @@ describe('<CompleteStage />', () => {
         });
     });
 
-    describe('Accessibility', () => {
-        it('pass accessibility checks', async () => {
-            render(<CompleteStage documents={[]} />);
-            expect(
-                await screen.findByRole('heading', { name: 'Upload Summary' }),
-            ).toBeInTheDocument();
+    it('pass accessibility checks', async () => {
+        render(<CompleteStage documents={[]} />);
+        expect(await screen.findByRole('heading', { name: 'Upload Summary' })).toBeInTheDocument();
 
-            const results = await runAxeTest(document.body);
-            expect(results).toHaveNoViolations();
-        });
+        const results = await runAxeTest(document.body);
+        expect(results).toHaveNoViolations();
     });
 });
