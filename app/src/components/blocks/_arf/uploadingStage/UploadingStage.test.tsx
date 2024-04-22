@@ -8,6 +8,7 @@ import {
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { buildTextFile } from '../../../../helpers/test/testBuilders';
 import UploadingStage from './UploadingStage';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 describe('<UploadDocumentsPage />', () => {
     describe('with NHS number', () => {
@@ -125,5 +126,22 @@ describe('<UploadDocumentsPage />', () => {
             expect(getProgressBarValue(documentOne)).toEqual(0);
             expect(getProgressText(documentOne)).toContain('Upload failed');
         });
+    });
+
+    it('pass accessibility check', async () => {
+        const documentOne = {
+            file: buildTextFile('one', 100),
+            state: documentUploadStates.UPLOADING,
+            id: '1',
+            progress: 10,
+            docType: DOCUMENT_TYPE.ARF,
+            attempts: 0,
+        };
+        render(<UploadingStage documents={[documentOne]} />);
+
+        await screen.findByText(documentOne.file.name);
+
+        const results = await runAxeTest(document.body);
+        expect(results).toHaveNoViolations();
     });
 });
