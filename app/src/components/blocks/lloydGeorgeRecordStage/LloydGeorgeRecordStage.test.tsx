@@ -269,14 +269,14 @@ describe('LloydGeorgeRecordStage', () => {
         });
 
         describe('Accessibility (non BSOL)', () => {
-            it('pass accessibility test at page entry point', async () => {
+            it('pass accessibility checksat page entry point', async () => {
                 renderComponentForNonBSOLGPAdmin();
 
                 const results = await runAxeTest(document.body);
                 expect(results).toHaveNoViolations();
             });
 
-            it('pass accessibility test when Download & Remove confirmation message is showing up', async () => {
+            it('pass accessibility checkswhen Download & Remove confirmation message is showing up', async () => {
                 renderComponentForNonBSOLGPAdmin();
                 await showConfirmationMessage();
 
@@ -284,7 +284,7 @@ describe('LloydGeorgeRecordStage', () => {
                 expect(results).toHaveNoViolations();
             });
 
-            it('pass accessibility test when error box is showing up', async () => {
+            it('pass accessibility checkswhen error box is showing up', async () => {
                 renderComponentForNonBSOLGPAdmin();
                 await showConfirmationMessage();
                 const confirmButton = await screen.findByRole('button', {
