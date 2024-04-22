@@ -369,7 +369,11 @@ describe('<SelectStage />', () => {
             const selectFilesLabel = screen.getByTestId(`ARF-input`);
             act(() => {
                 userEvent.upload(selectFilesLabel, documentOne);
-                userEvent.upload(selectFilesLabel, documentTwo);
+            });
+
+            const selectFilesLabelLG = screen.getByTestId(`LG-input`);
+            act(() => {
+                userEvent.upload(selectFilesLabelLG, documentTwo);
             });
 
             const results = await runAxeTest(document.body);
