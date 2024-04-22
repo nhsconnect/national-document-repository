@@ -6,7 +6,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
 
-jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/usePatient');
 
 const mockSetStage = jest.fn();
 const mockSetDownloadStage = jest.fn();

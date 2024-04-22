@@ -21,10 +21,10 @@ import { LinkProps } from 'react-router-dom';
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
 
-jest.mock('../../../helpers/hooks/useRole');
-jest.mock('../../../helpers/hooks/usePatient');
-jest.mock('../../../helpers/hooks/useIsBSOL');
-jest.mock('../../../helpers/hooks/useConfig');
+jest.mock('../../../../helpers/hooks/useRole');
+jest.mock('../../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/useIsBSOL');
+jest.mock('../../../../helpers/hooks/useConfig');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;

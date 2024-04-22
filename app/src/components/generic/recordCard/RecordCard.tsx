@@ -4,14 +4,20 @@ import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../pdfViewer/PdfViewer';
 
 type Props = {
-    downloadStage: DOWNLOAD_STAGE;
     recordUrl: string;
     heading: string;
     fullScreenHandler: (clicked: true) => void;
-    children: ReactNode;
+    detailsElement: ReactNode;
+    downloadStage: DOWNLOAD_STAGE;
 };
 
-function RecordCard({ downloadStage, recordUrl, heading, fullScreenHandler, children }: Props) {
+function RecordCard({
+    downloadStage,
+    recordUrl,
+    heading,
+    fullScreenHandler,
+    detailsElement,
+}: Props) {
     return (
         <Card className="lloydgeorge_record-stage_pdf">
             <Card.Content data-testid="pdf-card" className="lloydgeorge_record-stage_pdf-content">
@@ -19,10 +25,9 @@ function RecordCard({ downloadStage, recordUrl, heading, fullScreenHandler, chil
                     className="lloydgeorge_record-stage_pdf-content-label"
                     headingLevel="h1"
                 >
-                    {/* Lloyd George record */}
                     {heading}
                 </Card.Heading>
-                {children}
+                {detailsElement}
             </Card.Content>
             {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
                 <Details expander open className="lloydgeorge_record-stage_pdf-expander">

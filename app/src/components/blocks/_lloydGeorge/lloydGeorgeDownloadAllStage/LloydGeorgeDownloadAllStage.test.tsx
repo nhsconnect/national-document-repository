@@ -30,9 +30,9 @@ jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
 jest.mock('axios');
-jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../helpers/hooks/usePatient');
-jest.mock('../../../helpers/hooks/useConfig');
+jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/useConfig');
 
 describe('LloydGeorgeDownloadAllStage', () => {
     beforeEach(() => {

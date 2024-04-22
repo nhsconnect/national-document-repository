@@ -10,9 +10,9 @@ import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { buildConfig } from '../../../../helpers/test/testBuilders';
 
-jest.mock('../../../helpers/hooks/useIsBSOL');
-jest.mock('../../../helpers/hooks/useRole');
-jest.mock('../../../helpers/hooks/useConfig');
+jest.mock('../../../../helpers/hooks/useIsBSOL');
+jest.mock('../../../../helpers/hooks/useRole');
+jest.mock('../../../../helpers/hooks/useConfig');
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,

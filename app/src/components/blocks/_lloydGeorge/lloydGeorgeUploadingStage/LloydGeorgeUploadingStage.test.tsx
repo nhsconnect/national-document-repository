@@ -14,9 +14,9 @@ import LloydGeorgeUploadStage from './LloydGeorgeUploadingStage';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import userEvent from '@testing-library/user-event';
 
-jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../helpers/hooks/usePatient');
-jest.mock('../../../helpers/requests/uploadDocuments');
+jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/requests/uploadDocuments');
 
 const mockUploadAndScan = jest.fn();
 const mockedUsePatient = usePatient as jest.Mock;

@@ -77,7 +77,7 @@ function LloydGeorgeRecordStage({
         clearErrors('confirmDownloadRemove');
     };
 
-    const RecordMessage = () => {
+    const RecordDetails = () => {
         if (downloadStage === DOWNLOAD_STAGE.PENDING) {
             return <span> Loading...</span>;
         } else if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
@@ -223,9 +223,8 @@ function LloydGeorgeRecordStage({
                                     recordUrl={lloydGeorgeUrl}
                                     heading="Lloyd George record"
                                     fullScreenHandler={setFullScreen}
-                                >
-                                    <RecordMessage />
-                                </RecordCard>
+                                    detailsElement={<RecordDetails />}
+                                />
                             </div>
                         </div>
                     ) : (
@@ -234,9 +233,8 @@ function LloydGeorgeRecordStage({
                             recordUrl={lloydGeorgeUrl}
                             heading="Lloyd George record"
                             fullScreenHandler={setFullScreen}
-                        >
-                            <RecordMessage />
-                        </RecordCard>
+                            detailsElement={<RecordDetails />}
+                        />
                     )}
                 </>
             ) : (

@@ -9,16 +9,15 @@ import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/type
 import { useState } from 'react';
 import { MomentInput } from 'moment';
 
-import { LG_UPLOAD_STAGE } from '../../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
 
-jest.mock('../../../helpers/utils/toFileList', () => ({
+jest.mock('../../../../helpers/utils/toFileList', () => ({
     __esModule: true,
     default: () => [],
 }));
-jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('react-router');
-jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 window.scrollTo = jest.fn() as jest.Mock;
 
 const setStageMock = jest.fn();

@@ -8,8 +8,8 @@ import { lloydGeorgeRecordLinks } from '../../../../types/blocks/lloydGeorgeActi
 import { LinkProps } from 'react-router-dom';
 import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 
-jest.mock('../../../helpers/hooks/useRole');
-jest.mock('../../../helpers/hooks/useIsBSOL');
+jest.mock('../../../../helpers/hooks/useRole');
+jest.mock('../../../../helpers/hooks/useIsBSOL');
 
 const mockedUseNavigate = jest.fn();
 const mockPdf = buildLgSearchResult();
