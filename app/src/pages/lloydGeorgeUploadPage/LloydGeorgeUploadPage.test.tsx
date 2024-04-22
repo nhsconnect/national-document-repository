@@ -16,7 +16,7 @@ import uploadDocuments, {
 } from '../../helpers/requests/uploadDocuments';
 import { act } from 'react-dom/test-utils';
 import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
-import { Props } from '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
+import { Props } from '../../components/blocks/_lloydGeorge/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
 import { MomentInput } from 'moment/moment';
 
 jest.mock('../../helpers/requests/uploadDocuments');

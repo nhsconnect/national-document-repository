@@ -1,10 +1,10 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import LloydGeorgeUploadingStage from '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
+import LloydGeorgeUploadingStage from '../../components/blocks/_lloydGeorge/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
-import LloydGeorgeFileInputStage from '../../components/blocks/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage';
-import LloydGeorgeUploadInfectedStage from '../../components/blocks/lloydGeorgeUploadInfectedStage/LloydGeorgeUploadInfectedStage';
-import LloydGeorgeUploadCompleteStage from '../../components/blocks/lloydGeorgeUploadCompleteStage/LloydGeorgeUploadCompleteStage';
-import LloydGeorgeUploadFailedStage from '../../components/blocks/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage';
+import LloydGeorgeFileInputStage from '../../components/blocks/_lloydGeorge/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage';
+import LloydGeorgeUploadInfectedStage from '../../components/blocks/_lloydGeorge/lloydGeorgeUploadInfectedStage/LloydGeorgeUploadInfectedStage';
+import LloydGeorgeUploadCompleteStage from '../../components/blocks/_lloydGeorge/lloydGeorgeUploadCompleteStage/LloydGeorgeUploadCompleteStage';
+import LloydGeorgeUploadFailedStage from '../../components/blocks/_lloydGeorge/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage';
 import { UploadSession } from '../../types/generic/uploadResult';
 import uploadDocuments, {
     updateDocumentState,
