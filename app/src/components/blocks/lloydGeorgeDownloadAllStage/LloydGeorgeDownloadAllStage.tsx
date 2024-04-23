@@ -174,7 +174,7 @@ function LloydGeorgeDownloadAllStage({
 
                     <div className="lloydgeorge_downloadall-stage_details-content">
                         <div>
-                            <p>{`${linkAttributes.url ? 100 : progress}%`} downloaded...</p>
+                            <span>{`${linkAttributes.url ? 100 : progress}%`} downloaded...</span>
                             <a
                                 hidden
                                 id="download-link"
