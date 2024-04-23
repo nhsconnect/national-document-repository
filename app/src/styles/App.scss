@@ -147,6 +147,7 @@ $govuk-compatibility-govukelements: true;
         &_header {
             margin-bottom: 0;
             &-content {
+                @extend .nhsuk-body-s;
                 position: relative;
                 &-label {
                     font-weight: 700;

@@ -69,7 +69,7 @@ function LloydGeorgeRecordStage({
 
     const PdfCardDescription = () => {
         if (downloadStage === DOWNLOAD_STAGE.PENDING) {
-            return <p role="status">Loading...</p>;
+            return <output>Loading...</output>;
         } else if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
             const detailsProps = {
                 lastUpdated,
