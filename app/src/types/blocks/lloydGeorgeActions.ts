@@ -28,7 +28,6 @@ export const lloydGeorgeRecordLinks: Array<PdfActionLink> = [
         label: 'Remove a selection of files',
         key: 'delete-file-link',
         type: RECORD_ACTION.DOWNLOAD,
-
         stage: LG_RECORD_STAGE.DELETE_ALL,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
     },
