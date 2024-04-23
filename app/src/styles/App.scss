@@ -212,6 +212,8 @@ $govuk-compatibility-govukelements: true;
         }
     }
     &_record-details {
+        @extend .nhsuk-body-s;
+
         &_details {
             &--last-updated {
                 margin-bottom: 16px;

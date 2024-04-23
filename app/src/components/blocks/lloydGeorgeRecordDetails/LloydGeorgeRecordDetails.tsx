@@ -54,15 +54,15 @@ function LloydGeorgeRecordDetails({
     return (
         <div className="lloydgeorge_record-details">
             <div className="lloydgeorge_record-details_details">
-                <p className="lloydgeorge_record-details_details--last-updated">
+                <div className="lloydgeorge_record-details_details--last-updated">
                     Last updated: {lastUpdated}
-                </p>
+                </div>
                 <div className="lloydgeorge_record-details_details--num-files">
-                    <p>{numberOfFiles} files</p>
+                    <span>{numberOfFiles} files</span>
                     {' | '}
-                    <p>File size: {formatFileSize(totalFileSizeInByte)}</p>
+                    <span>File size: {formatFileSize(totalFileSizeInByte)}</span>
                     {' | '}
-                    <p>File format: PDF</p>
+                    <span>File format: PDF</span>
                     {' |'}
                 </div>
             </div>
