@@ -3,7 +3,7 @@ import Layout from './Layout';
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
 import userEvent from '@testing-library/user-event';
-import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { runAxeTest, runAxeTestForLayout } from '../../helpers/test/axeTestHelper';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 
 describe('Layout', () => {
@@ -14,22 +14,14 @@ describe('Layout', () => {
         it('pass accessibility checks when not logged in', async () => {
             renderTestApp('/', false);
 
-            const results = await runAxeTest(document.body, {
-                rules: {
-                    region: { enabled: true },
-                },
-            });
+            const results = await runAxeTestForLayout(document.body);
             expect(results).toHaveNoViolations();
         });
 
         it('pass accessibility checks when logged in', async () => {
             renderTestApp('/', true);
 
-            const results = await runAxeTest(document.body, {
-                rules: {
-                    region: { enabled: true },
-                },
-            });
+            const results = await runAxeTestForLayout(document.body);
             expect(results).toHaveNoViolations();
         });
     });
