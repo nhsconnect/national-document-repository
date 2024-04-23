@@ -26,9 +26,9 @@ function PhaseBanner() {
                     <strong className="govuk-tag govuk-phase-banner__content__tag">
                         New Service
                     </strong>
-                    <span className="govuk-phase-banner__text">
+                    <p className="govuk-phase-banner__text">
                         Your {linkToFeedbackPage} will help us to improve this service.
-                    </span>
+                    </p>
                 </p>
             </div>
         </div>

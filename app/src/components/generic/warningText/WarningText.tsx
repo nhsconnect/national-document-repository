@@ -10,7 +10,7 @@ const WarningText = ({ text, iconFallbackText = 'warning' }: Props) => {
             </span>
             <strong className="govuk-warning-text__text">
                 <span className="nhsuk-u-visually-hidden">{iconFallbackText}</span>
-                {text}
+                <p>{text}</p>
             </strong>
         </div>
     );

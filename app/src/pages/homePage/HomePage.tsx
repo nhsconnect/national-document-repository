@@ -67,9 +67,11 @@ const HomePage = (props: Props) => {
                 <SearchButton />
 
                 <h3>Get support with the service</h3>
-                {'Contact the '}
-                <ServiceDeskLink />
-                {' if there is an issue with this service or call 0300 303 5678.'}
+                <p>
+                    {'Contact the '}
+                    <ServiceDeskLink />
+                    {' if there is an issue with this service or call 0300 303 5678.'}
+                </p>
             </>
         );
     };
