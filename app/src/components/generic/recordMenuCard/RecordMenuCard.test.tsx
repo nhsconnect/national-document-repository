@@ -84,7 +84,7 @@ describe('RecordMenuCard', () => {
             expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
         });
 
-        it("does not render 'update record' if hasPdf", () => {
+        it("renders 'update record' if does not hasPdf only", () => {
             const { rerender } = render(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
             );
@@ -100,7 +100,7 @@ describe('RecordMenuCard', () => {
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
         });
 
-        it("does not render 'download record' if not hasPdf", () => {
+        it("renders 'download record' if hasPdf only", () => {
             const { rerender } = render(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
             );

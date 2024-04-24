@@ -21,10 +21,11 @@ function RecordMenuCard({ recordLinks, setStage, hasPdf }: Props) {
     const navigate = useNavigate();
 
     const updateActions = recordLinks.filter(
-        (l) => l.type === RECORD_ACTION.UPLOAD && role && !l.unauthorised?.includes(role),
+        (link) => link.type === RECORD_ACTION.UPLOAD && role && !link.unauthorised?.includes(role),
     );
     const downloadActions = recordLinks.filter(
-        (l) => l.type === RECORD_ACTION.DOWNLOAD && role && !l.unauthorised?.includes(role),
+        (link) =>
+            link.type === RECORD_ACTION.DOWNLOAD && role && !link.unauthorised?.includes(role),
     );
 
     const Links = ({ actionLinks, heading }: LinkProps) => (
