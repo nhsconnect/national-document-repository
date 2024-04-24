@@ -51,8 +51,12 @@ function RecordMenuCard({ recordLinks, setStage }: Props) {
     return (
         <Card className="lloydgeorge_record-stage_menu">
             <Card.Content className="lloydgeorge_record-stage_menu-content">
-                <Links actionLinks={updateActions} heading="Update record" />
-                <Links actionLinks={downloadActions} heading="Download record" />
+                {updateActions.length && (
+                    <Links actionLinks={updateActions} heading="Update record" />
+                )}
+                {downloadActions.length && (
+                    <Links actionLinks={downloadActions} heading="Download record" />
+                )}
             </Card.Content>
         </Card>
     );
