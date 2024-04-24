@@ -60,7 +60,9 @@ describe('Layout', () => {
                 name: 'Link to something in the same page',
             });
 
-            userEvent.click(linkToTheSamePage);
+            act(() => {
+                userEvent.click(linkToTheSamePage);
+            });
             const skipLink = screen.getByRole('link', { name: 'Skip to main content' });
 
             userEvent.tab();
