@@ -11,7 +11,10 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
     TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
 )
-from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
+from tests.unit.helpers.data.pds.pds_patient_response import (
+    PDS_PATIENT,
+    PDS_PATIENT_WITH_MIDDLE_NAME,
+)
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
 from utils.common_query_filters import NotDeleted
 from utils.exceptions import (
@@ -250,12 +253,38 @@ def test_mismatch_nhs_id(mocker):
 
 def test_mismatch_name_with_pds_service(mocker, mock_pds_patient_details):
     lg_file_list = [
-        "1of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[22-10-2010].pdf",
-        "2of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[22-10-2010].pdf",
+        "1of2_Lloyd_George_Record_[Jake Plain Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jake Plain Smith]_[9000000009]_[22-10-2010].pdf",
     ]
 
     with pytest.raises(LGInvalidFilesException):
         validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
+
+
+def test_order_names_with_pds_service(mocker):
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jake Jane Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jake Jane Smith]_[9000000009]_[22-10-2010].pdf",
+    ]
+    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    try:
+        validate_filename_with_patient_details(lg_file_list, patient_details)
+    except LGInvalidFilesException:
+        assert False
+
+
+def test_missing_middle_name_names_with_pds_service(mocker):
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+    ]
+    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    try:
+        validate_filename_with_patient_details(lg_file_list, patient_details)
+    except LGInvalidFilesException:
+        assert False
 
 
 def test_mismatch_dob_with_pds_service(mocker, mock_pds_patient_details):

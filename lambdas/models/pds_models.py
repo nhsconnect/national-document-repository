@@ -14,13 +14,13 @@ class Address(BaseModel):
     model_config = conf
 
     use: str
-    period: Period
+    period: Optional[Period] = None
     postal_code: Optional[str] = ""
 
 
 class Name(BaseModel):
     use: str
-    period: Period
+    period: Optional[Period] = None
     given: list[str]
     family: str
 
