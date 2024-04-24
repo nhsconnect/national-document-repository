@@ -78,12 +78,12 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
             </span>
         );
     } else if (renderNoRecords) {
-        return <span>No documents are available.</span>;
+        return <p>No documents are available.</p>;
     } else if (renderUploadInProgress) {
         return (
-            <span>
+            <p>
                 You can view this record once it’s finished uploading. This may take a few minutes.
-            </span>
+            </p>
         );
     }
     return <ServiceError message="An error has occurred when creating the Lloyd George preview." />;

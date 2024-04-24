@@ -66,8 +66,8 @@ function DeleteDocumentsStage({
                 {patientDetails?.givenName?.map((name: String) => `${name} `)}
                 {patientDetails?.familyName}
             </p>
-            <p style={{ fontSize: '16px', marginBottom: 5 }}>NHS number: {formattedNhsNumber}</p>
-            <p style={{ fontSize: '16px' }}>Date of birth: {dob}</p>
+            <p style={{ fontSize: '1rem', marginBottom: 5 }}>NHS number: {formattedNhsNumber}</p>
+            <p style={{ fontSize: '1rem' }}>Date of birth: {dob}</p>
         </>
     );
 
@@ -134,7 +134,7 @@ function DeleteDocumentsStage({
                     <Fieldset.Legend isPageHeading>
                         Are you sure you want to permanently delete files for:
                     </Fieldset.Legend>
-                    {patientInfo}
+                    <p>{patientInfo}</p>
                     <Radios id="delete-docs">
                         <Radios.Radio
                             value={DELETE_DOCUMENTS_OPTION.YES}
