@@ -8,6 +8,7 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 type Props = {
     recordLinks: Array<PdfActionLink>;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    hasPdf: boolean;
 };
 
 type LinkProps = {
@@ -15,7 +16,7 @@ type LinkProps = {
     heading: string;
 };
 
-function RecordMenuCard({ recordLinks, setStage }: Props) {
+function RecordMenuCard({ recordLinks, setStage, hasPdf }: Props) {
     const role = useRole();
     const navigate = useNavigate();
 
@@ -51,10 +52,10 @@ function RecordMenuCard({ recordLinks, setStage }: Props) {
     return (
         <Card className="lloydgeorge_record-stage_menu">
             <Card.Content className="lloydgeorge_record-stage_menu-content">
-                {updateActions.length && (
+                {updateActions.length && !hasPdf && (
                     <Links actionLinks={updateActions} heading="Update record" />
                 )}
-                {downloadActions.length && (
+                {downloadActions.length && hasPdf && (
                     <Links actionLinks={downloadActions} heading="Download record" />
                 )}
             </Card.Content>

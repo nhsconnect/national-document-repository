@@ -70,6 +70,10 @@ function LloydGeorgeRecordStage({
         (l) => role && !l.unauthorised?.includes(role),
     );
 
+    const showMenu =
+        hasMenuAccess &&
+        [DOWNLOAD_STAGE.NO_RECORDS, DOWNLOAD_STAGE.SUCCEEDED].includes(downloadStage);
+
     const handleConfirmDownloadAndRemoveButton = () => {
         setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
     };
@@ -213,12 +217,13 @@ function LloydGeorgeRecordStage({
             </div>
             {!fullScreen ? (
                 <>
-                    {hasMenuAccess ? (
+                    {showMenu ? (
                         <div className="lloydgeorge_record-stage_flex">
                             <div className="lloydgeorge_record-stage_flex-row">
                                 <RecordMenuCard
                                     recordLinks={lloydGeorgeRecordLinks}
                                     setStage={setStage}
+                                    hasPdf={downloadStage === DOWNLOAD_STAGE.SUCCEEDED}
                                 />
                             </div>
                             <div className="lloydgeorge_record-stage_flex-row">

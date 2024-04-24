@@ -49,7 +49,9 @@ describe('RecordMenuCard', () => {
 
     describe('Rendering', () => {
         it('renders menu', () => {
-            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
+            );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
@@ -61,9 +63,43 @@ describe('RecordMenuCard', () => {
         it('does not render menu item if unauthorised', () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
 
-            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
+            );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
+            expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
+            expect(
+                screen.getByRole('link', { name: 'Remove a selection of files' }),
+            ).toBeInTheDocument();
+        });
+
+        it("does not render 'update record' if not hasPdf", () => {
+            render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
+            );
+
+            expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
+
+            expect(
+                screen.queryByRole('heading', { name: 'Update record' }),
+            ).not.toBeInTheDocument();
+            expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
+            expect(
+                screen.getByRole('link', { name: 'Remove a selection of files' }),
+            ).toBeInTheDocument();
+        });
+
+        it('does not', () => {
+            render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
+            );
+
+            expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
+
+            expect(
+                screen.queryByRole('heading', { name: 'Update record' }),
+            ).not.toBeInTheDocument();
             expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
             expect(
                 screen.getByRole('link', { name: 'Remove a selection of files' }),
@@ -72,7 +108,9 @@ describe('RecordMenuCard', () => {
     });
     describe('Navigation', () => {
         it('navigagtes to href when clicked', () => {
-            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
+            );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
@@ -83,7 +121,9 @@ describe('RecordMenuCard', () => {
         });
 
         it('navigates to stage when clicked', () => {
-            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
+            );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(
