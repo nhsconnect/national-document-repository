@@ -9,6 +9,7 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import ReducedPatientInfo from '../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../helpers/utils/manageFocus';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     numberOfFiles: number;
@@ -34,6 +35,8 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
         }
     };
     const isGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
+    const pageHeader = 'Deletion complete';
+    useTitle({ pageTitle: pageHeader });
     return (
         <div className="deletion-complete">
             <Card className="deletion-complete_card">
@@ -42,7 +45,7 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
                         className="deletion-complete_card_content_header"
                         headingLevel="h1"
                     >
-                        Deletion complete
+                        {pageHeader}
                     </Card.Heading>
                     <Card.Description className="deletion-complete_card_content_description">
                         You have successfully deleted {numberOfFiles} file(s){'\n'}

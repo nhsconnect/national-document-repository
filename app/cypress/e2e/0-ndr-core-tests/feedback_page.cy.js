@@ -40,6 +40,10 @@ describe('Feedback Page', () => {
                         .invoke('removeAttr', 'target')
                         .click();
                     cy.url().should('eq', baseUrl + feedbackUrl);
+                    cy.title().should(
+                        'eq',
+                        'Give feedback on this service - Digital Lloyd George records',
+                    );
                 },
             );
 
@@ -88,6 +92,7 @@ describe('Feedback Page', () => {
                             'have.text',
                             'We’ve received your feedback',
                         );
+                        cy.title().should('eq', 'Feedback sent - Digital Lloyd George records');
                     },
                 );
 

@@ -1,7 +1,8 @@
 export const pdsPatients = {
     activeUpload: 9730153817,
+    activeNoUploadBsol: 9730787077,
 };
-
 export const stubPatients = {
-    activeNoUpload: 9000000002,
+    activeUpload: 9730153817,
+    activeNoUploadBsol: 9000000004,
 };

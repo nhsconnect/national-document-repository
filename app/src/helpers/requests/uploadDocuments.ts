@@ -35,7 +35,6 @@ type DocRefResponse = {
 type UpdateStateArgs = {
     document: UploadDocument;
     uploadingState: boolean;
-    documentReference: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
 };
@@ -191,16 +190,14 @@ const uploadDocuments = async ({
 export const updateDocumentState = async ({
     document,
     uploadingState,
-    documentReference,
     baseUrl,
     baseHeaders,
 }: UpdateStateArgs) => {
-    const fileKey = documentReference.split('/')[3];
     const updateUploadStateUrl = baseUrl + endpoints.UPLOAD_DOCUMENT_STATE;
     const body = {
         files: [
             {
-                reference: fileKey,
+                reference: document.ref,
                 type: document.docType,
                 fields: { Uploading: uploadingState },
             },

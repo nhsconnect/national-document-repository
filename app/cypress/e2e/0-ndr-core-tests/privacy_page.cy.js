@@ -19,6 +19,7 @@ describe('Privacy Page', () => {
             .and('have.attr', { target: '_blank' });
         cy.getByTestId('privacy-link').invoke('removeAttr', 'target').click();
         cy.url().should('eq', baseUrl + privacypolicyUrl);
+        cy.title().should('eq', 'Privacy notice - Digital Lloyd George records');
     });
 
     rolesToTest.forEach((role) => {

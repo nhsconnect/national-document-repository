@@ -1,7 +1,11 @@
+import useTitle from '../../../helpers/hooks/useTitle';
+
 function FeedbackConfirmation() {
+    const pageHeader = 'We’ve received your feedback';
+    useTitle({ pageTitle: 'Feedback sent' });
     return (
         <>
-            <h1>We’ve received your feedback</h1>
+            <h1>{pageHeader}</h1>
             <p>If you have left your details, our team will contact you soon.</p>
             <p>You can now close this window.</p>
         </>

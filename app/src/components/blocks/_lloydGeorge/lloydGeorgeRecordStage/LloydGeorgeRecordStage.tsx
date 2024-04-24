@@ -26,6 +26,7 @@ import BackButton from '../../../generic/backButton/BackButton';
 import { lloydGeorgeRecordLinks } from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
+import useTitle from '../../../../helpers/hooks/useTitle';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -79,7 +80,7 @@ function LloydGeorgeRecordStage({
 
     const RecordDetails = () => {
         if (downloadStage === DOWNLOAD_STAGE.PENDING) {
-            return <span> Loading...</span>;
+            return <output>Loading...</output>;
         } else if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
             const detailsProps = {
                 lastUpdated,
@@ -96,6 +97,9 @@ function LloydGeorgeRecordStage({
             return <LloydGeorgeRecordError downloadStage={downloadStage} setStage={setStage} />;
         }
     };
+
+    const pageHeader = 'Available records';
+    useTitle({ pageTitle: pageHeader });
 
     return (
         <div className="lloydgeorge_record-stage">
@@ -197,7 +201,7 @@ function LloydGeorgeRecordStage({
                             </InsetText>
                         )}
                     </WarningCallout>
-                    <h1>Available records</h1>
+                    <h1>{pageHeader}</h1>
                 </div>
             )}
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">

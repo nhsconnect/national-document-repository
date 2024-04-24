@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router';
 import { routes } from '../../../../types/generic/routes';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import ServiceDeskLink from '../../../generic/serviceDeskLink/ServiceDeskLink';
+import useTitle from '../../../../helpers/hooks/useTitle';
 
 interface Props {
     documents: Array<UploadDocument>;
@@ -26,13 +27,12 @@ function LloydGeorgeUploadInfectedStage({ documents, restartUpload }: Props) {
     const infectedUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.INFECTED;
     });
-
+    const pageHeader = 'The record did not upload';
+    useTitle({ pageTitle: pageHeader });
     return (
         <div data-testid="failure-complete-page">
             <WarningCallout id="upload-stage-warning">
-                <WarningCallout.Label headingLevel="h1">
-                    The record did not upload
-                </WarningCallout.Label>
+                <WarningCallout.Label headingLevel="h1">{pageHeader}</WarningCallout.Label>
                 <p>
                     <strong>Some of your files failed a virus scan:</strong>
                 </p>

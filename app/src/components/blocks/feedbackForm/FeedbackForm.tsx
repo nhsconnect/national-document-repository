@@ -17,6 +17,8 @@ import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios';
 import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
+import { isMock } from '../../../helpers/utils/isLocal';
+import useTitle from '../../../helpers/hooks/useTitle';
 
 export type Props = {
     stage: SUBMISSION_STAGE;
@@ -42,11 +44,14 @@ function FeedbackForm({ stage, setStage }: Props) {
             setStage(SUBMISSION_STAGE.Successful);
         } catch (e) {
             const error = e as AxiosError;
-            if (error.response?.status === 403) {
+            if (isMock(error)) {
+                setStage(SUBMISSION_STAGE.Successful);
+            } else if (error.response?.status === 403) {
                 navigate(routes.SESSION_EXPIRED);
                 return;
+            } else {
+                navigate(routes.SERVER_ERROR + errorToParams(error));
             }
-            navigate(routes.SERVER_ERROR + errorToParams(error));
         }
     };
 
@@ -80,6 +85,7 @@ function FeedbackForm({ stage, setStage }: Props) {
         }),
         'inputRef',
     );
+    useTitle({ pageTitle: 'Give feedback on this service' });
 
     return (
         <div id="feedback-form">

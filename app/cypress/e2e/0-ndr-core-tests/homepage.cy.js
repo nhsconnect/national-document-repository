@@ -11,6 +11,10 @@ describe('Home Page', () => {
     });
     it('should visit expected URL', { tags: 'regression' }, () => {
         cy.url().should('eq', baseUrl + startUrl);
+        cy.title().should(
+            'eq',
+            'Access and store digital GP records - Digital Lloyd George records',
+        );
     });
 
     it('displays correct page title on home page', { tags: 'regression' }, () => {
@@ -73,7 +77,10 @@ describe('Home Page', () => {
                         'include.text',
                         'You’re outside of Birmingham and Solihull (BSOL)',
                     );
-
+                    cy.title().should(
+                        'eq',
+                        'Access to this service outside of Birmingham and Solihull - Digital Lloyd George records',
+                    );
                     cy.get('.govuk-warning-text__text').should('exist');
                     cy.get('.govuk-warning-text__text').should(
                         'include.text',

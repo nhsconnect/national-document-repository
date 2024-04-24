@@ -36,11 +36,12 @@ type UpdateDocumentArgs = {
     state: DOCUMENT_UPLOAD_STATE;
     progress?: number | 'scan';
     attempts?: number;
+    ref?: string;
 };
 
 export const setDocument = (
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>,
-    { id, state, progress, attempts }: UpdateDocumentArgs,
+    { id, state, progress, attempts, ref }: UpdateDocumentArgs,
 ) => {
     setDocuments((prevState) =>
         prevState.map((document) => {
@@ -52,6 +53,7 @@ export const setDocument = (
                 }
                 attempts = attempts ?? document.attempts;
                 state = state ?? document.state;
+                ref = ref ?? document.ref;
 
                 return { ...document, state, progress, attempts };
             }
@@ -80,7 +82,6 @@ function LloydGeorgeUploadPage() {
 
         const confirmUpload = async () => {
             if (uploadSession) {
-                window.clearInterval(intervalTimer);
                 setStage(LG_UPLOAD_STAGE.CONFIRMATION);
                 try {
                     const confirmDocumentState = await uploadConfirmation({
@@ -141,11 +142,7 @@ function LloydGeorgeUploadPage() {
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
-        const updateStateInterval = startIntervalTimer(uploadDocuments, uploadSession);
-        setIntervalTimer(updateStateInterval);
         uploadDocuments.forEach(async (document) => {
-            const documentMetadata = uploadSession[document.file.name];
-            const documentReference = documentMetadata.fields.key;
             try {
                 await uploadDocumentToS3({ setDocuments, document, uploadSession });
                 setDocument(setDocuments, {
@@ -154,7 +151,7 @@ function LloydGeorgeUploadPage() {
                     progress: 'scan',
                 });
                 const virusDocumentState = await virusScanResult({
-                    documentReference,
+                    documentReference: document.key ?? '',
                     baseUrl,
                     baseHeaders,
                 });
@@ -164,7 +161,7 @@ function LloydGeorgeUploadPage() {
                     progress: 100,
                 });
             } catch (e) {
-                window.clearInterval(updateStateInterval);
+                window.clearInterval(intervalTimer);
                 setDocument(setDocuments, {
                     id: document.id,
                     state: DOCUMENT_UPLOAD_STATE.FAILED,
@@ -174,7 +171,6 @@ function LloydGeorgeUploadPage() {
                 await updateDocumentState({
                     document,
                     uploadingState: false,
-                    documentReference,
                     baseUrl,
                     baseHeaders,
                 });
@@ -192,7 +188,20 @@ function LloydGeorgeUploadPage() {
                 baseHeaders,
             });
             setUploadSession(uploadSession);
-            uploadAndScanDocuments(documents, uploadSession);
+            const uploadingDocuments = documents.map((doc) => {
+                const documentMetadata = uploadSession[doc.file.name];
+                const documentReference = documentMetadata.fields.key;
+                return {
+                    ...doc,
+                    state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                    key: documentReference,
+                    ref: documentReference.split('/')[3],
+                };
+            });
+            const updateStateInterval = startIntervalTimer(uploadingDocuments);
+            setIntervalTimer(updateStateInterval);
+            setDocuments(uploadingDocuments);
+            uploadAndScanDocuments(uploadingDocuments, uploadSession);
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
@@ -224,19 +233,13 @@ function LloydGeorgeUploadPage() {
         setDocuments([]);
         setStage(LG_UPLOAD_STAGE.SELECT);
     };
-    const startIntervalTimer = (
-        uploadDocuments: Array<UploadDocument>,
-        uploadSession: UploadSession,
-    ) => {
+    const startIntervalTimer = (uploadDocuments: Array<UploadDocument>) => {
         return window.setInterval(() => {
             uploadDocuments.forEach(async (document) => {
-                const documentMetadata = uploadSession[document.file.name];
-                const documentReference = documentMetadata.fields.key;
                 try {
                     await updateDocumentState({
                         document,
                         uploadingState: true,
-                        documentReference,
                         baseUrl,
                         baseHeaders,
                     });

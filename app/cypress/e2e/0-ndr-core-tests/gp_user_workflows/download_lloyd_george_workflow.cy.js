@@ -32,9 +32,11 @@ describe('GP Workflow: View Lloyd George record', () => {
                     statusCode: 200,
                     body: viewLloydGeorgePayload,
                 }).as('lloydGeorgeStitch');
+                cy.title().should('eq', 'Verify patient details - Digital Lloyd George records');
 
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
+                cy.title().should('eq', 'Available records - Digital Lloyd George records');
 
                 cy.intercept('GET', '/DocumentManifest*', {
                     statusCode: 200,
@@ -43,6 +45,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.getByTestId('actions-menu').click();
                 cy.getByTestId('download-all-files-link').click();
+                cy.title().should('eq', 'Downloading documents - Digital Lloyd George records');
 
                 cy.wait('@documentManifest');
 
@@ -55,6 +58,8 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.contains('Cancel').should('be.visible');
 
                 // Assert contents of page after download
+                cy.title().should('eq', 'Download complete - Digital Lloyd George records');
+
                 cy.contains('Download complete').should('be.visible');
                 cy.contains('You have successfully downloaded the Lloyd George record of:').should(
                     'be.visible',
