@@ -165,7 +165,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                     onDrop={onFileDrop}
                     className={'lloydgeorge_drag-and-drop'}
                 >
-                    <strong style={{ fontSize: '19px' }}>
+                    <strong style={{ fontSize: '1.2rem' }}>
                         Drag and drop a file or multiple files here
                     </strong>
                     <div style={{ margin: '0 2rem' }}>
