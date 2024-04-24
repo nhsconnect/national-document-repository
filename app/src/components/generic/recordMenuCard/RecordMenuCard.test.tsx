@@ -49,70 +49,83 @@ describe('RecordMenuCard', () => {
 
     describe('Rendering', () => {
         it('renders menu', () => {
-            render(
+            const { rerender } = render(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
             );
-            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
-            expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
             expect(
                 screen.getByRole('link', { name: 'Remove a selection of files' }),
             ).toBeInTheDocument();
+
+            rerender(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
+            );
+            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
         });
 
         it('does not render menu item if unauthorised', () => {
-            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
-            render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
+            const { rerender } = render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
             );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
-            expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
-            expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
-            expect(
-                screen.getByRole('link', { name: 'Remove a selection of files' }),
-            ).toBeInTheDocument();
-        });
+            expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
 
-        it("does not render 'update record' if not hasPdf", () => {
-            render(
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
+
+            rerender(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
             );
-
-            expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
-
             expect(
                 screen.queryByRole('heading', { name: 'Update record' }),
             ).not.toBeInTheDocument();
             expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
-            expect(
-                screen.getByRole('link', { name: 'Remove a selection of files' }),
-            ).toBeInTheDocument();
         });
 
-        it('does not', () => {
-            render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
+        it("does not render 'update record' if hasPdf", () => {
+            const { rerender } = render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
             );
-
-            expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
-
             expect(
                 screen.queryByRole('heading', { name: 'Update record' }),
             ).not.toBeInTheDocument();
             expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
+
+            rerender(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
+            );
+            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
+        });
+
+        it("does not render 'download record' if not hasPdf", () => {
+            const { rerender } = render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
+            );
+            expect(
+                screen.queryByRole('heading', { name: 'Download record' }),
+            ).not.toBeInTheDocument();
+            expect(
+                screen.queryByRole('link', { name: 'Remove a selection of files' }),
+            ).not.toBeInTheDocument();
+
+            rerender(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
+            );
+            expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(
                 screen.getByRole('link', { name: 'Remove a selection of files' }),
             ).toBeInTheDocument();
         });
     });
     describe('Navigation', () => {
-        it('navigagtes to href when clicked', () => {
+        it('navigates to href when clicked', () => {
             render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
             );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
-            expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
             act(() => {
                 userEvent.click(screen.getByRole('link', { name: 'Upload files' }));
@@ -124,7 +137,6 @@ describe('RecordMenuCard', () => {
             render(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
             );
-            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(
                 screen.getByRole('link', { name: 'Remove a selection of files' }),
