@@ -222,7 +222,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').click();
+                cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
 
                 // assert delete confirmation page is as expected
@@ -280,9 +280,8 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').click();
+                cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
-
                 // cancel delete
                 cy.getByTestId('no-radio-btn').click();
                 cy.getByTestId('delete-submit-btn').click();
@@ -308,7 +307,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').click();
+                cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
 
                 cy.intercept(
@@ -343,7 +342,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').should('not.exist');
+                cy.getByTestId('download-all-files-link').should('not.exist');
             },
         );
 
@@ -360,7 +359,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').should('not.exist');
+                cy.getByTestId('download-all-files-link').should('not.exist');
             },
         );
     });

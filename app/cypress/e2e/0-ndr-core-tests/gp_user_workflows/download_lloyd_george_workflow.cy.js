@@ -43,7 +43,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
                 }).as('documentManifest');
 
-                cy.getByTestId('actions-menu').click();
+                cy.getByTestId('download-all-files-link').should('exist');
                 cy.getByTestId('download-all-files-link').click();
                 cy.title().should('eq', 'Downloading documents - Digital Lloyd George records');
 
@@ -82,7 +82,7 @@ describe('GP Workflow: View Lloyd George record', () => {
         );
 
         it(
-            'No download option or menu exists when no Lloyd George record exists for a patient as a GP ADMIN role',
+            'No download option when no Lloyd George record exists for a patient as a GP ADMIN role',
             { tags: 'regression' },
             () => {
                 beforeEachConfiguration(Roles.GP_ADMIN);
@@ -94,7 +94,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').should('not.exist');
+                cy.getByTestId('download-all-files-link').should('not.exist');
             },
         );
 
@@ -112,7 +112,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').should('not.exist');
+                cy.getByTestId('download-all-files-link').should('not.exist');
             },
         );
 
@@ -132,7 +132,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
-                cy.getByTestId('actions-menu').click();
+                cy.getByTestId('download-all-files-link').should('exist');
                 cy.getByTestId('download-all-files-link').click();
 
                 cy.wait('@documentManifest');
