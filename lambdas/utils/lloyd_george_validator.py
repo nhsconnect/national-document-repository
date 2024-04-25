@@ -133,21 +133,27 @@ def validate_with_pds_service(
     try:
         file_name_info = extract_info_from_filename(file_name_list[0])
 
-        patient_name = file_name_info["patient_name"]
+        file_patient_name = file_name_info["patient_name"]
         date_of_birth = file_name_info["date_of_birth"]
 
         date_of_birth = datetime.datetime.strptime(date_of_birth, "%d-%m-%Y").date()
         if patient_details.birth_date != date_of_birth:
             raise LGInvalidFilesException("Patient DoB does not match our records")
-        patient_full_name = (
-            " ".join([name for name in patient_details.given_Name])
-            + " "
-            + patient_details.family_name
-        )
+        patient_name_split = file_patient_name.split(" ")
+        file_patient_first_name = patient_name_split[0]
+        file_patient_last_name = patient_name_split[-1]
+
         logger.info("Verifying patient name against the record in PDS...")
 
-        if not names_are_matching(patient_name, patient_full_name):
-            raise LGInvalidFilesException("Patient name does not match our records")
+        is_file_first_name_in_patient_details = False
+        for patient_name in patient_details.given_Name:
+            if names_are_matching(file_patient_first_name, patient_name):
+                is_file_first_name_in_patient_details = True
+                break
+
+        if not is_file_first_name_in_patient_details or not names_are_matching(
+                file_patient_last_name, patient_details.family_name
+        ):            raise LGInvalidFilesException("Patient name does not match our records")
 
         current_user_ods = get_user_ods_code()
         if patient_details.general_practice_ods != current_user_ods:

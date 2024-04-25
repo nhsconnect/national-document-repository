@@ -14,13 +14,13 @@ class Address(BaseModel):
     model_config = conf
 
     use: str
-    period: Period
+    period: Optional[Period] = None
     postal_code: Optional[str] = ""
 
 
 class Name(BaseModel):
     use: str
-    period: Period
+    period: Optional[Period] = None
     given: list[str]
     family: str
 
@@ -36,14 +36,14 @@ class Meta(BaseModel):
 
 
 class GPIdentifier(BaseModel):
-    system: Optional[str]
+    system: Optional[str] = ""
     value: str
-    period: Optional[Period]
+    period: Optional[Period] = None
 
 
 class GeneralPractitioner(BaseModel):
-    id: Optional[str]
-    type: Optional[str]
+    id: Optional[str] = ""
+    type: Optional[str] = ""
     identifier: GPIdentifier
 
 

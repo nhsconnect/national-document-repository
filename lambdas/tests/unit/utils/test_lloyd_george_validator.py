@@ -8,7 +8,7 @@ from requests import Response, HTTPError
 from models.pds_models import Patient
 from services.document_service import DocumentService
 from tests.unit.conftest import TEST_NHS_NUMBER
-from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
+from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT, PDS_PATIENT_WITH_MIDDLE_NAME
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
 from utils.exceptions import (
     PatientRecordAlreadyExistException,
@@ -259,11 +259,40 @@ def test_mismatch_nhs_id_no_pds_service(mocker):
     with pytest.raises(LGInvalidFilesException):
         validate_lg_file_names(lg_file_list, "9000000009")
 
+def test_order_names_with_pds_service(mocker):
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jake Jane Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jake Jane Smith]_[9000000009]_[22-10-2010].pdf",
+    ]
+    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
+    mock_odc_code.return_value = "Y12345"
+    try:
+        validate_with_pds_service(lg_file_list, patient_details)
+    except LGInvalidFilesException:
+        assert False
+
+
+def test_missing_middle_name_names_with_pds_service(mocker):
+    lg_file_list = [
+        "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+    ]
+    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
+    mock_odc_code.return_value = "Y12345"
+
+    try:
+        validate_with_pds_service(lg_file_list, patient_details)
+    except LGInvalidFilesException:
+        assert False
 
 def test_mismatch_name_with_pds_service(mocker, mock_pds_patient_details):
     lg_file_list = [
-        "1of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[22-10-2010].pdf",
-        "2of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[22-10-2010].pdf",
+        "1of2_Lloyd_George_Record_[Rob Plain Smith]_[9000000009]_[22-10-2010].pdf",
+        "2of2_Lloyd_George_Record_[Rob Plain Smith]_[9000000009]_[22-10-2010].pdf",
     ]
     mock_odc_code = mocker.patch("utils.lloyd_george_validator.get_user_ods_code")
 

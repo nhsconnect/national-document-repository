@@ -1,3 +1,5 @@
+import copy
+
 PDS_PATIENT = {
     "resourceType": "Patient",
     "id": "9000000009",
@@ -524,3 +526,6 @@ PDS_PATIENT_WITH_GP_END_DATE = {
         },
     },
 }
+
+PDS_PATIENT_WITH_MIDDLE_NAME = copy.deepcopy(PDS_PATIENT)
+PDS_PATIENT_WITH_MIDDLE_NAME["name"][0]["given"].append("Jake")
