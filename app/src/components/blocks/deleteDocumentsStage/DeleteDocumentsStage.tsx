@@ -56,7 +56,7 @@ function DeleteDocumentsStage({
     const config = useConfig();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
-    const [showNoOptionSelectedMessage, setShowNoOptionSelecteMessage] = useState<boolean>(false);
+    const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
 
     const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
@@ -123,7 +123,7 @@ function DeleteDocumentsStage({
             } else if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.NO) {
                 handleNoOption();
             } else {
-                setShowNoOptionSelecteMessage(true);
+                setShowNoOptionSelectedMessage(true);
             }
         }
     };
@@ -160,8 +160,8 @@ function DeleteDocumentsStage({
                             id="radio-error"
                             data-testid="delete-button-uncheck-message"
                         >
-                            <span className="nhsuk-u-visually-hidden">Error:</span>
                             Select whether you want to permanently delete these patient files
+                            <span className="nhsuk-u-visually-hidden">Error:</span>
                         </span>
                         <Radios id="delete-docs">
                             <Radios.Radio
