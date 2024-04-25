@@ -76,6 +76,9 @@ describe('DeleteDocumentsStage', () => {
                 expect(noButton).not.toBeChecked();
                 expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
                 expect(screen.queryByTestId('delete-error-box')).not.toBeInTheDocument();
+                expect(screen.queryByTestId('delete-button-uncheck-message')).toHaveClass(
+                    'nhsuk-error-message-hidden',
+                );
             },
         );
 
@@ -219,6 +222,9 @@ describe('DeleteDocumentsStage', () => {
             });
             expect(await screen.findByText('You must select an option')).toBeInTheDocument();
             expect(await screen.findByTestId('delete-button-uncheck-message')).toBeInTheDocument();
+            expect(screen.queryByTestId('delete-button-uncheck-message')).not.toHaveClass(
+                'nhsuk-error-message-hidden',
+            );
         });
     });
 });
