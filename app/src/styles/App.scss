@@ -125,16 +125,28 @@ $govuk-compatibility-govukelements: true;
 }
 
 .table-column-header {
-    font-size: 24px;
+    font-size: 1.5rem;
 }
 
 // Lloyd George
 
 .lloydgeorge {
     &_record-stage {
+        &_flex {
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
+            margin: 0 -15px;
+            &-row {
+                margin: 0 15px;
+            }
+            &-row:last-child {
+                flex-basis: calc(70% - 17px);
+            }
+        }
         &_patient-info {
             p {
-                font-size: 19px;
+                font-size: 1.2rem;
             }
             p:first-child {
                 margin-bottom: 5px;
@@ -144,13 +156,27 @@ $govuk-compatibility-govukelements: true;
                 margin-bottom: 0;
             }
         }
-        &_header {
+        &_menu {
+            &-content {
+                padding: 24px;
+
+                ol {
+                    padding-left: 0;
+                    li {
+                        font-size: 16px;
+                        list-style-type: none;
+                    }
+                }
+            }
+        }
+        &_pdf {
             margin-bottom: 0;
             &-content {
+                @extend .nhsuk-body-s;
                 position: relative;
                 &-label {
                     font-weight: 700;
-                    font-size: 24px;
+                    font-size: 1.5rem;
                 }
                 p {
                     margin-bottom: 0;
@@ -162,15 +188,18 @@ $govuk-compatibility-govukelements: true;
                     }
                 }
             }
-        }
-        &_expander {
-            position: relative;
-            border-top: none;
-            &-button {
-                display: inline-block;
-                position: absolute;
-                right: 28px;
-                top: 30px;
+
+            &-expander {
+                position: relative;
+                margin-bottom: 0;
+                border-left: none;
+                border-right: none;
+                &-button {
+                    display: inline-block;
+                    position: absolute;
+                    right: 28px;
+                    top: 30px;
+                }
             }
         }
         &_gp-admin-non-bsol {
@@ -204,6 +233,7 @@ $govuk-compatibility-govukelements: true;
             }
         }
         &_details {
+            @extend .nhsuk-body-s;
             &-content {
                 display: flex;
                 flex-flow: row nowrap;
@@ -212,6 +242,8 @@ $govuk-compatibility-govukelements: true;
         }
     }
     &_record-details {
+        @extend .nhsuk-body-s;
+
         &_details {
             &--last-updated {
                 margin-bottom: 16px;
@@ -287,7 +319,7 @@ $govuk-compatibility-govukelements: true;
                 ol {
                     padding-left: 0;
                     li {
-                        font-size: 16px;
+                        font-size: 1rem;
                         list-style-type: none;
                     }
                 }
@@ -302,11 +334,11 @@ $govuk-compatibility-govukelements: true;
                 text-align: center;
                 background-color: $color_nhsuk-blue;
                 color: #fff;
-                font-size: 24px;
+                font-size: 1.5rem;
                 white-space: pre-wrap;
                 &_header {
                     font-weight: 700;
-                    font-size: 48px;
+                    font-size: 3rem;
                     margin-bottom: 25px;
                 }
                 &_subheader {
@@ -314,13 +346,13 @@ $govuk-compatibility-govukelements: true;
                     margin-top: 25px;
                 }
                 &_description {
-                    font-size: 24px !important;
+                    font-size: 1.5rem !important;
                 }
             }
         }
         &_paragraph-headers {
             font-weight: 700;
-            font-size: 32px;
+            font-size: 2rem;
         }
     }
     &_upload-complete {
@@ -332,18 +364,18 @@ $govuk-compatibility-govukelements: true;
                 background-color: $color_nhsuk-blue;
                 color: #fff;
                 font-weight: 400;
-                font-size: 24px !important;
+                font-size: 1.5rem !important;
                 white-space: pre-wrap;
                 &_header {
                     font-weight: 700;
-                    font-size: 48px;
+                    font-size: 3rem;
                 }
                 &_subheader {
                     font-weight: 700;
                     margin-top: 25px;
                 }
                 &_description {
-                    font-size: 24px !important;
+                    font-size: 1.5rem !important;
                 }
             }
         }
@@ -362,7 +394,7 @@ $govuk-compatibility-govukelements: true;
         background: none;
         border: none;
         padding-left: 25px;
-        font-size: 16px;
+        font-size: 1rem;
         color: #005eb8;
         font-family: Arial, sans-serif;
         font-weight: 400;
@@ -378,7 +410,7 @@ $govuk-compatibility-govukelements: true;
     }
     &_file_upload_error {
         font-family: Arial, sans-serif;
-        font-size: 19px;
+        font-size: 1.2rem;
         font-weight: 700;
         line-height: 28px;
         letter-spacing: 0;
@@ -401,7 +433,7 @@ $govuk-compatibility-govukelements: true;
 }
 
 .document-list-view-list li {
-    font-size: 16px;
+    font-size: 1rem;
     list-style-type: none;
 }
 
@@ -426,11 +458,11 @@ $govuk-compatibility-govukelements: true;
             background-color: $color_nhsuk-blue;
             color: #fff;
             font-weight: 400;
-            font-size: 24px !important;
+            font-size: 1.5rem !important;
             white-space: pre-wrap;
             &_header {
                 font-weight: 700;
-                font-size: 48px;
+                font-size: 3rem;
                 margin-bottom: 25px;
             }
             &_subheader {
@@ -438,7 +470,7 @@ $govuk-compatibility-govukelements: true;
                 margin-top: 25px;
             }
             &_description {
-                font-size: 24px !important;
+                font-size: 1.5rem !important;
             }
         }
     }
@@ -486,6 +518,9 @@ $govuk-compatibility-govukelements: true;
     &_item {
         a,
         a:hover {
+            color: $color_nhsuk-white;
+        }
+        a:visited {
             color: $color_nhsuk-white;
         }
         &--desktop {

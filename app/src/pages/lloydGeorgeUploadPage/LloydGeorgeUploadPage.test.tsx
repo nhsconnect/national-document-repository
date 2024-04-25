@@ -16,7 +16,7 @@ import uploadDocuments, {
 } from '../../helpers/requests/uploadDocuments';
 import { act } from 'react-dom/test-utils';
 import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
-import { Props } from '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
+import { Props } from '../../components/blocks/_lloydGeorge/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
 import { MomentInput } from 'moment/moment';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
@@ -53,7 +53,7 @@ const uploadDocument = {
     attempts: 0,
 };
 jest.mock(
-    '../../components/blocks/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage',
+    '../../components/blocks/_lloydGeorge/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage',
     () =>
         ({ documents }: Props) => (
             <>
@@ -66,15 +66,15 @@ jest.mock(
 );
 
 jest.mock(
-    '../../components/blocks/lloydGeorgeUploadCompleteStage/LloydGeorgeUploadCompleteStage',
+    '../../components/blocks/_lloydGeorge/lloydGeorgeUploadCompleteStage/LloydGeorgeUploadCompleteStage',
     () => () => <h1>Mock complete stage</h1>,
 );
 jest.mock(
-    '../../components/blocks/lloydGeorgeUploadInfectedStage/LloydGeorgeUploadInfectedStage',
+    '../../components/blocks/_lloydGeorge/lloydGeorgeUploadInfectedStage/LloydGeorgeUploadInfectedStage',
     () => () => <h1>Mock virus infected stage</h1>,
 );
 jest.mock(
-    '../../components/blocks/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage',
+    '../../components/blocks/_lloydGeorge/lloydGeorgeUploadFailedStage/LloydGeorgeUploadFailedStage',
     () => () => <h1>Mock file failed stage</h1>,
 );
 jest.mock('react-router', () => ({
