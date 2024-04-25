@@ -146,10 +146,12 @@ def validate_with_pds_service(
         logger.info("Verifying patient name against the record in PDS...")
 
         is_file_first_name_in_patient_details = False
-        for patient_name in patient_details.given_Name:
-            if names_are_matching(file_patient_first_name, patient_name):
-                is_file_first_name_in_patient_details = True
-                break
+
+        if patient_details.given_Name is not None:
+            for patient_name in patient_details.given_Name:
+                if names_are_matching(file_patient_first_name, patient_name):
+                    is_file_first_name_in_patient_details = True
+                    break
 
         if not is_file_first_name_in_patient_details or not names_are_matching(
                 file_patient_last_name, patient_details.family_name
