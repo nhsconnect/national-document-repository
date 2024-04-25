@@ -23,6 +23,7 @@ import { errorToParams } from '../../../helpers/utils/errorToParams';
 import { isMock } from '../../../helpers/utils/isLocal';
 import useConfig from '../../../helpers/hooks/useConfig';
 import useTitle from '../../../helpers/hooks/useTitle';
+import ErrorBox from '../../layout/errorBox/ErrorBox';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -55,6 +56,7 @@ function DeleteDocumentsStage({
     const config = useConfig();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
+    const [showNoOptionSelectedMessage, setShowNoOptionSelecteMessage] = useState<boolean>(false);
 
     const dob: string = patientDetails?.birthDate
         ? getFormattedDate(new Date(patientDetails.birthDate))
@@ -120,6 +122,8 @@ function DeleteDocumentsStage({
                 await handleYesOption();
             } else if (fieldValues.deleteDocs === DELETE_DOCUMENTS_OPTION.NO) {
                 handleNoOption();
+            } else {
+                setShowNoOptionSelecteMessage(true);
             }
         }
     };
@@ -129,8 +133,16 @@ function DeleteDocumentsStage({
         <>
             <BackLink onClick={handleNoOption}>Go Back</BackLink>
             {deletionStage === SUBMISSION_STATE.FAILED && <ServiceError />}
+            {showNoOptionSelectedMessage && (
+                <ErrorBox
+                    messageTitle={'There is a problem '}
+                    messageLinkBody={'You must select an option'}
+                    errorBoxSummaryId={'error-box-summary'}
+                    errorInputLink={'#radio-selection'}
+                />
+            )}
             <form onSubmit={handleSubmit(submit)}>
-                <Fieldset>
+                <Fieldset id="radio-selection">
                     <Fieldset.Legend isPageHeading>
                         Are you sure you want to permanently delete files for:
                     </Fieldset.Legend>
@@ -142,7 +154,6 @@ function DeleteDocumentsStage({
                             {...radioProps}
                             id="yes-radio-button"
                             data-testid="yes-radio-btn"
-                            defaultChecked
                         >
                             Yes
                         </Radios.Radio>
