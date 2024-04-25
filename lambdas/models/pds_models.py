@@ -21,7 +21,7 @@ class Address(BaseModel):
 class Name(BaseModel):
     use: str
     period: Optional[Period] = None
-    given: list[str]
+    given: Optional[list[str]] = None
     family: str
 
 
