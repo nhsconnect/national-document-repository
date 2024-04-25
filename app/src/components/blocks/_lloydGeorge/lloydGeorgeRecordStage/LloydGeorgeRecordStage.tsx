@@ -119,7 +119,8 @@ function LloydGeorgeRecordStage({
                 <BackLink
                     data-testid="back-link"
                     href="#"
-                    onClick={() => {
+                    onClick={(e) => {
+                        e.preventDefault();
                         setFullScreen(false);
                     }}
                 >
@@ -205,9 +206,10 @@ function LloydGeorgeRecordStage({
                             </InsetText>
                         )}
                     </WarningCallout>
-                    <h1>{pageHeader}</h1>
                 </div>
             )}
+
+            <h1>{pageHeader}</h1>
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
                 <p data-testid="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
@@ -247,7 +249,9 @@ function LloydGeorgeRecordStage({
                     )}
                 </>
             ) : (
-                <PdfViewer fileUrl={lloydGeorgeUrl} />
+                <div style={{ borderTop: 'solid 1px', paddingTop: '48px' }}>
+                    <PdfViewer fileUrl={lloydGeorgeUrl} />
+                </div>
             )}
         </div>
     );
