@@ -138,7 +138,8 @@ function DeleteDocumentsStage({
                     messageTitle={'There is a problem '}
                     messageLinkBody={'You must select an option'}
                     errorBoxSummaryId={'error-box-summary'}
-                    errorInputLink={'#radio-selection'}
+                    errorInputLink={'#delete-docs'}
+                    dataTestId={'delete-error-box'}
                 />
             )}
             <form onSubmit={handleSubmit(submit)}>
@@ -146,7 +147,7 @@ function DeleteDocumentsStage({
                     <Fieldset.Legend isPageHeading>
                         Are you sure you want to permanently delete files for:
                     </Fieldset.Legend>
-                    <p>{patientInfo}</p>
+                    <div>{patientInfo}</div>
                     <div
                         className={`nhsuk-form-group nhsuk-form-group--error${
                             showNoOptionSelectedMessage ? '' : '-hidden'
@@ -157,6 +158,7 @@ function DeleteDocumentsStage({
                                 showNoOptionSelectedMessage ? '' : '-hidden'
                             }`}
                             id="radio-error"
+                            data-testid="delete-button-uncheck-message"
                         >
                             <span className="nhsuk-u-visually-hidden">Error:</span>
                             Select whether you want to permanently delete these patient files
