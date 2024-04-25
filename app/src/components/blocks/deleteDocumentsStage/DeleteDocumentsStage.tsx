@@ -147,26 +147,41 @@ function DeleteDocumentsStage({
                         Are you sure you want to permanently delete files for:
                     </Fieldset.Legend>
                     <p>{patientInfo}</p>
-                    <Radios id="delete-docs">
-                        <Radios.Radio
-                            value={DELETE_DOCUMENTS_OPTION.YES}
-                            inputRef={deleteDocsRef}
-                            {...radioProps}
-                            id="yes-radio-button"
-                            data-testid="yes-radio-btn"
+                    <div
+                        className={`nhsuk-form-group nhsuk-form-group--error${
+                            showNoOptionSelectedMessage ? '' : '-hidden'
+                        }`}
+                    >
+                        <span
+                            className={`nhsuk-error-message${
+                                showNoOptionSelectedMessage ? '' : '-hidden'
+                            }`}
+                            id="radio-error"
                         >
-                            Yes
-                        </Radios.Radio>
-                        <Radios.Radio
-                            value={DELETE_DOCUMENTS_OPTION.NO}
-                            inputRef={deleteDocsRef}
-                            {...radioProps}
-                            id="no-radio-button"
-                            data-testid="no-radio-btn"
-                        >
-                            No
-                        </Radios.Radio>
-                    </Radios>
+                            <span className="nhsuk-u-visually-hidden">Error:</span>
+                            Select whether you want to permanently delete these patient files
+                        </span>
+                        <Radios id="delete-docs">
+                            <Radios.Radio
+                                value={DELETE_DOCUMENTS_OPTION.YES}
+                                inputRef={deleteDocsRef}
+                                {...radioProps}
+                                id="yes-radio-button"
+                                data-testid="yes-radio-btn"
+                            >
+                                Yes
+                            </Radios.Radio>
+                            <Radios.Radio
+                                value={DELETE_DOCUMENTS_OPTION.NO}
+                                inputRef={deleteDocsRef}
+                                {...radioProps}
+                                id="no-radio-button"
+                                data-testid="no-radio-btn"
+                            >
+                                No
+                            </Radios.Radio>
+                        </Radios>
+                    </div>
                 </Fieldset>
                 {deletionStage === SUBMISSION_STATE.PENDING ? (
                     <SpinnerButton id="delete-docs-spinner" status="Deleting..." disabled={true} />
