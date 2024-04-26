@@ -1,4 +1,4 @@
-import { Card } from 'nhsuk-react-components';
+import { Card, Label } from 'nhsuk-react-components';
 import React, { Dispatch, SetStateAction } from 'react';
 import { PdfActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
 import useRole from '../../../helpers/hooks/useRole';
@@ -24,7 +24,9 @@ function RecordMenuCard({ recordLinks, setStage }: Props) {
 
     const Links = ({ actionLinks, heading }: LinkProps) => (
         <>
-            <h4>{heading}</h4>
+            <Label bold={true} size={'m'}>
+                {heading}
+            </Label>
             <ol>
                 {actionLinks.map((link) => (
                     <li key={link.key} data-testid={link.key}>
