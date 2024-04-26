@@ -42,13 +42,11 @@ type Args = {
 };
 
 export function getAllowedRecordLinks({ role, hasRecordInRepo }: Args): Array<PdfActionLink> {
-    return lloydGeorgeRecordLinks.filter((link) => {
+    const allowedLinks = lloydGeorgeRecordLinks.filter((link) => {
         if (!role || link.unauthorised?.includes(role)) {
             return false;
         }
-        if (hasRecordInRepo) {
-            return link.showIfRecordInRepo;
-        }
-        return false;
+        return hasRecordInRepo === link.showIfRecordInRepo;
     });
+    return allowedLinks;
 }
