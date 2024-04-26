@@ -1,7 +1,6 @@
-import { Card, Label } from 'nhsuk-react-components';
+import { Card } from 'nhsuk-react-components';
 import React, { Dispatch, SetStateAction } from 'react';
 import { PdfActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
-import useRole from '../../../helpers/hooks/useRole';
 import { Link, useNavigate } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
@@ -10,23 +9,43 @@ type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-type LinkProps = {
+type SubSectionProps = {
     actionLinks: Array<PdfActionLink>;
     heading: string;
+    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
 function RecordMenuCard({ recordLinks, setStage }: Props) {
-    const role = useRole();
-    const navigate = useNavigate();
-
     const updateActions = recordLinks.filter((link) => link.type === RECORD_ACTION.UPDATE);
     const downloadActions = recordLinks.filter((link) => link.type === RECORD_ACTION.DOWNLOAD);
 
-    const Links = ({ actionLinks, heading }: LinkProps) => (
+    return (
+        <Card className="lloydgeorge_record-stage_menu">
+            <Card.Content className="lloydgeorge_record-stage_menu-content">
+                {updateActions.length > 0 && (
+                    <SideMenuSubSection
+                        actionLinks={updateActions}
+                        heading="Update record"
+                        setStage={setStage}
+                    />
+                )}
+                {downloadActions.length > 0 && (
+                    <SideMenuSubSection
+                        actionLinks={downloadActions}
+                        heading="Download record"
+                        setStage={setStage}
+                    />
+                )}
+            </Card.Content>
+        </Card>
+    );
+}
+
+const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps) => {
+    const navigate = useNavigate();
+    return (
         <>
-            <Label bold={true} size={'m'}>
-                {heading}
-            </Label>
+            <h2 className="nhsuk-heading-m">{heading}</h2>
             <ol>
                 {actionLinks.map((link) => (
                     <li key={link.key} data-testid={link.key}>
@@ -45,19 +64,5 @@ function RecordMenuCard({ recordLinks, setStage }: Props) {
             </ol>
         </>
     );
-
-    return (
-        <Card className="lloydgeorge_record-stage_menu">
-            <Card.Content className="lloydgeorge_record-stage_menu-content">
-                {updateActions.length > 0 && (
-                    <Links actionLinks={updateActions} heading="Update record" />
-                )}
-                {downloadActions.length > 0 && (
-                    <Links actionLinks={downloadActions} heading="Download record" />
-                )}
-            </Card.Content>
-        </Card>
-    );
-}
-
+};
 export default RecordMenuCard;
