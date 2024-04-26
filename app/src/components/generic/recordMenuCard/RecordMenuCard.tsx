@@ -19,6 +19,10 @@ function RecordMenuCard({ recordLinks, setStage }: Props) {
     const updateActions = recordLinks.filter((link) => link.type === RECORD_ACTION.UPDATE);
     const downloadActions = recordLinks.filter((link) => link.type === RECORD_ACTION.DOWNLOAD);
 
+    if (recordLinks.length === 0) {
+        return <></>;
+    }
+
     return (
         <Card className="lloydgeorge_record-stage_menu">
             <Card.Content className="lloydgeorge_record-stage_menu-content">

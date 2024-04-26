@@ -99,6 +99,13 @@ describe('RecordMenuCard', () => {
             expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
             expect(screen.queryByRole('link', { name: 'Remove files' })).not.toBeInTheDocument();
         });
+
+        it('does not render anything if the given record links array is empty', () => {
+            const { container } = render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={[]} />,
+            );
+            expect(container).toBeEmptyDOMElement();
+        });
     });
 
     describe('Navigation', () => {
