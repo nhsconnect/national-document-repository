@@ -75,10 +75,11 @@ describe('DeleteDocumentsStage', () => {
                 expect(noButton).toBeInTheDocument();
                 expect(noButton).not.toBeChecked();
                 expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
-                expect(screen.queryByTestId('delete-error-box')).not.toBeInTheDocument();
-                expect(screen.queryByTestId('delete-button-uncheck-message')).toHaveClass(
-                    'nhsuk-error-message-hidden',
-                );
+                expect(
+                    screen.queryByText(
+                        'Select whether you want to permanently delete these patient files',
+                    ),
+                ).not.toBeInTheDocument();
             },
         );
 
@@ -221,10 +222,11 @@ describe('DeleteDocumentsStage', () => {
                 userEvent.click(screen.getByRole('button', { name: 'Continue' }));
             });
             expect(await screen.findByText('You must select an option')).toBeInTheDocument();
-            expect(await screen.findByTestId('delete-button-uncheck-message')).toBeInTheDocument();
-            expect(screen.queryByTestId('delete-button-uncheck-message')).not.toHaveClass(
-                'nhsuk-error-message-hidden',
-            );
+            expect(
+                screen.getByText(
+                    'Select whether you want to permanently delete these patient files',
+                ),
+            ).toBeInTheDocument();
         });
     });
 });
