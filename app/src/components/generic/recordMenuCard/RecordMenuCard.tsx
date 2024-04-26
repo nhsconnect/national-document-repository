@@ -52,7 +52,7 @@ const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps)
             <h2 className="nhsuk-heading-m">{heading}</h2>
             <ol>
                 {actionLinks.map((link) => (
-                    <li key={link.key} data-testid={link.key}>
+                    <li key={link.key}>
                         <Link
                             to="#placeholder"
                             onClick={(e) => {
@@ -60,6 +60,7 @@ const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps)
                                 if (link.href) navigate(link.href);
                                 else if (link.stage) setStage(link.stage);
                             }}
+                            data-testid={link.key}
                         >
                             {link.label}
                         </Link>
