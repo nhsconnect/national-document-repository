@@ -67,7 +67,7 @@ describe('RecordMenuCard', () => {
             expect(screen.getByRole('link', { name: 'Download files' })).toBeInTheDocument();
         });
 
-        it('does not render sub-session if no record links are allowed', () => {
+        it('does not render a sub-section if no record links were under that section', () => {
             const mockLinksUpdateOnly = mockLinks.filter(
                 (link) => link.type === RECORD_ACTION.UPDATE,
             );
@@ -86,7 +86,6 @@ describe('RecordMenuCard', () => {
             const mockLinksDownloadOnly = mockLinks.filter(
                 (link) => link.type === RECORD_ACTION.DOWNLOAD,
             );
-
             rerender(
                 <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinksDownloadOnly} />,
             );
