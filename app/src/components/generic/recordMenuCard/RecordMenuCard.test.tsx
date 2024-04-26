@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import RecordMenuCard from './RecordMenuCard';
 import useRole from '../../../helpers/hooks/useRole';
-import { RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
+import { PdfActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LinkProps } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
@@ -14,13 +14,14 @@ const mockSetStage = jest.fn();
 const mockedUseNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
 
-const mockLinks = [
+const mockLinks: Array<PdfActionLink> = [
     {
         label: 'Upload files',
         key: 'upload-files-link',
-        type: RECORD_ACTION.UPLOAD,
+        type: RECORD_ACTION.UPDATE,
         href: routes.HOME,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        showIfRecordInRepo: false,
     },
     {
         label: 'Remove a selection of files',
@@ -28,6 +29,7 @@ const mockLinks = [
         type: RECORD_ACTION.DOWNLOAD,
         stage: LG_RECORD_STAGE.DELETE_ALL,
         unauthorised: [],
+        showIfRecordInRepo: true,
     },
 ];
 
@@ -50,16 +52,14 @@ describe('RecordMenuCard', () => {
     describe('Rendering', () => {
         it('renders menu', () => {
             const { rerender } = render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />,
             );
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(
                 screen.getByRole('link', { name: 'Remove a selection of files' }),
             ).toBeInTheDocument();
 
-            rerender(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
-            );
+            rerender(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
         });
@@ -68,16 +68,14 @@ describe('RecordMenuCard', () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
             const { rerender } = render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />,
             );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
 
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
 
-            rerender(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
-            );
+            rerender(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
             expect(
                 screen.queryByRole('heading', { name: 'Update record' }),
             ).not.toBeInTheDocument();
@@ -86,23 +84,21 @@ describe('RecordMenuCard', () => {
 
         it("renders 'update record' if does not hasPdf only", () => {
             const { rerender } = render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />,
             );
             expect(
                 screen.queryByRole('heading', { name: 'Update record' }),
             ).not.toBeInTheDocument();
             expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
 
-            rerender(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
-            );
+            rerender(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
         });
 
         it("renders 'download record' if hasPdf only", () => {
             const { rerender } = render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />,
             );
             expect(
                 screen.queryByRole('heading', { name: 'Download record' }),
@@ -111,9 +107,7 @@ describe('RecordMenuCard', () => {
                 screen.queryByRole('link', { name: 'Remove a selection of files' }),
             ).not.toBeInTheDocument();
 
-            rerender(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
-            );
+            rerender(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(
                 screen.getByRole('link', { name: 'Remove a selection of files' }),
@@ -122,9 +116,7 @@ describe('RecordMenuCard', () => {
     });
     describe('Navigation', () => {
         it('navigates to href when clicked', () => {
-            render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
-            );
+            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
             act(() => {
@@ -134,9 +126,7 @@ describe('RecordMenuCard', () => {
         });
 
         it('navigates to stage when clicked', () => {
-            render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
-            );
+            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
             expect(
                 screen.getByRole('link', { name: 'Remove a selection of files' }),

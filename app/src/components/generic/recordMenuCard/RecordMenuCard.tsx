@@ -8,7 +8,6 @@ import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 type Props = {
     recordLinks: Array<PdfActionLink>;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    hasPdf: boolean;
 };
 
 type LinkProps = {
@@ -16,17 +15,12 @@ type LinkProps = {
     heading: string;
 };
 
-function RecordMenuCard({ recordLinks, setStage, hasPdf }: Props) {
+function RecordMenuCard({ recordLinks, setStage }: Props) {
     const role = useRole();
     const navigate = useNavigate();
 
-    const updateActions = recordLinks.filter(
-        (link) => link.type === RECORD_ACTION.UPLOAD && role && !link.unauthorised?.includes(role),
-    );
-    const downloadActions = recordLinks.filter(
-        (link) =>
-            link.type === RECORD_ACTION.DOWNLOAD && role && !link.unauthorised?.includes(role),
-    );
+    const updateActions = recordLinks.filter((link) => link.type === RECORD_ACTION.UPDATE);
+    const downloadActions = recordLinks.filter((link) => link.type === RECORD_ACTION.DOWNLOAD);
 
     const Links = ({ actionLinks, heading }: LinkProps) => (
         <>
@@ -53,10 +47,10 @@ function RecordMenuCard({ recordLinks, setStage, hasPdf }: Props) {
     return (
         <Card className="lloydgeorge_record-stage_menu">
             <Card.Content className="lloydgeorge_record-stage_menu-content">
-                {updateActions.length && !hasPdf && (
+                {updateActions.length > 0 && (
                     <Links actionLinks={updateActions} heading="Update record" />
                 )}
-                {downloadActions.length && hasPdf && (
+                {downloadActions.length > 0 && (
                     <Links actionLinks={downloadActions} heading="Download record" />
                 )}
             </Card.Content>

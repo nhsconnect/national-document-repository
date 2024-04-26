@@ -23,7 +23,7 @@ import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../../types/generic/inputRef';
 import BackButton from '../../../generic/backButton/BackButton';
-import { lloydGeorgeRecordLinks } from '../../../../types/blocks/lloydGeorgeActions';
+import { getAllowedRecordLinks } from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
@@ -66,13 +66,12 @@ function LloydGeorgeRecordStage({
     const isBSOL = useIsBSOL();
     const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
-    const hasMenuAccess = lloydGeorgeRecordLinks.some(
-        (l) => role && !l.unauthorised?.includes(role),
-    );
-
-    const showMenu =
-        hasMenuAccess &&
-        [DOWNLOAD_STAGE.NO_RECORDS, DOWNLOAD_STAGE.SUCCEEDED].includes(downloadStage);
+    const hasRecordInRepo = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
+    const recordLinksToShow = getAllowedRecordLinks({
+        role,
+        hasRecordInRepo,
+    });
+    const showMenu = recordLinksToShow.length > 0;
 
     const handleConfirmDownloadAndRemoveButton = () => {
         setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
@@ -128,6 +127,7 @@ function LloydGeorgeRecordStage({
             ) : (
                 <BackButton />
             )}
+            <h1>Available Records</h1>
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
                     <WarningCallout
@@ -221,9 +221,8 @@ function LloydGeorgeRecordStage({
                         <div className="lloydgeorge_record-stage_flex">
                             <div className="lloydgeorge_record-stage_flex-row">
                                 <RecordMenuCard
-                                    recordLinks={lloydGeorgeRecordLinks}
+                                    recordLinks={recordLinksToShow}
                                     setStage={setStage}
-                                    hasPdf={downloadStage === DOWNLOAD_STAGE.SUCCEEDED}
                                 />
                             </div>
                             <div className="lloydgeorge_record-stage_flex-row">

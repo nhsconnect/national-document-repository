@@ -3,7 +3,7 @@ import { routes } from '../generic/routes';
 import { LG_RECORD_STAGE } from './lloydGeorgeStages';
 
 export enum RECORD_ACTION {
-    UPLOAD = 0,
+    UPDATE = 0,
     DOWNLOAD = 1,
 }
 
@@ -14,35 +14,41 @@ export type PdfActionLink = {
     href?: routes;
     type: RECORD_ACTION;
     unauthorised?: Array<REPOSITORY_ROLE>;
+    showIfRecordInRepo: boolean;
 };
 
 export const lloydGeorgeRecordLinks: Array<PdfActionLink> = [
     {
-        label: 'Upload files',
-        key: 'upload-files-link',
-        type: RECORD_ACTION.UPLOAD,
-        href: routes.LLOYD_GEORGE_UPLOAD,
-        unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-    },
-    {
-        label: 'Remove a selection of files',
-        key: 'delete-file-link',
-        type: RECORD_ACTION.DOWNLOAD,
-        stage: LG_RECORD_STAGE.DELETE_ALL,
-        unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-    },
-    {
-        label: 'Remove all files',
+        label: 'Remove files',
         key: 'delete-all-files-link',
-        type: RECORD_ACTION.DOWNLOAD,
+        type: RECORD_ACTION.UPDATE,
         stage: LG_RECORD_STAGE.DELETE_ALL,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        showIfRecordInRepo: true,
     },
     {
-        label: 'Download all files',
+        label: 'Download files',
         key: 'download-all-files-link',
         type: RECORD_ACTION.DOWNLOAD,
         stage: LG_RECORD_STAGE.DOWNLOAD_ALL,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        showIfRecordInRepo: true,
     },
 ];
+
+type Args = {
+    role: REPOSITORY_ROLE | null;
+    hasRecordInRepo: boolean;
+};
+
+export function getAllowedRecordLinks({ role, hasRecordInRepo }: Args): Array<PdfActionLink> {
+    return lloydGeorgeRecordLinks.filter((link) => {
+        if (!role || link.unauthorised?.includes(role)) {
+            return false;
+        }
+        if (hasRecordInRepo) {
+            return link.showIfRecordInRepo;
+        }
+        return false;
+    });
+}
