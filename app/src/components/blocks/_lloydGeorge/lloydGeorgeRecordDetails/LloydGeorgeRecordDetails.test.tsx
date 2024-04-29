@@ -90,34 +90,6 @@ describe('LloydGeorgeRecordDetails', () => {
             expect(screen.queryByText(`Select an action...`)).not.toBeInTheDocument();
             expect(screen.queryByTestId('actions-menu')).not.toBeInTheDocument();
         });
-        //
-        // it('set downloadRemoveButtonClicked to true when button is clicked', () => {
-        //     mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-        //     mockedUseIsBSOL.mockReturnValue(false);
-        //     renderComponent();
-        //
-        //     const button = screen.getByRole('button', { name: 'Download and remove record' });
-        //
-        //     button.click();
-        //
-        //     expect(mockSetDownloadRemoveButtonClicked).toHaveBeenCalledWith(true);
-        // });
-        //
-        // it('calls setFocus and setError when the button is clicked again after warning box shown up', () => {
-        //     mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-        //     mockedUseIsBSOL.mockReturnValue(false);
-        //     renderComponent({ downloadRemoveButtonClicked: true });
-        //
-        //     const button = screen.getByRole('button', { name: 'Download and remove record' });
-        //
-        //     button.click();
-        //
-        //     expect(mockSetError).toHaveBeenCalledWith('confirmDownloadRemove', {
-        //         type: 'custom',
-        //         message: 'true',
-        //     });
-        //     expect(mockSetFocus).toHaveBeenCalledWith('confirmDownloadRemove');
-        // });
     });
 });
 

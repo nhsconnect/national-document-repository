@@ -13,6 +13,7 @@ jest.mock('../../../helpers/hooks/useRole');
 const mockSetStage = jest.fn();
 const mockedUseNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
+const mockShowDownloadAndRemoveConfirmation = jest.fn();
 
 const mockLinks: Array<PdfActionLink> = [
     {
@@ -38,6 +39,14 @@ const mockLinks: Array<PdfActionLink> = [
         stage: LG_RECORD_STAGE.DOWNLOAD_ALL,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
         showIfRecordInRepo: true,
+    },
+    {
+        label: 'Download and remove files',
+        key: 'download-and-remove-all-files-link',
+        type: RECORD_ACTION.DOWNLOAD,
+        unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        showIfRecordInRepo: true,
+        onClick: mockShowDownloadAndRemoveConfirmation,
     },
 ];
 
@@ -104,6 +113,19 @@ describe('RecordMenuCard', () => {
                 <RecordMenuCard setStage={mockSetStage} recordLinks={[]} />,
             );
             expect(container).toBeEmptyDOMElement();
+        });
+
+        it('render menu item as a <button> if link item does not have stage or href', () => {
+            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            expect(
+                screen.getByRole('button', { name: 'Download and remove files' }),
+            ).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Download and remove files' }));
+            });
+
+            expect(mockShowDownloadAndRemoveConfirmation).toBeCalledTimes(1);
         });
     });
 

@@ -74,7 +74,7 @@ export function getAllowedRecordLinksForNonBSOL({
     const lloydGeorgeRecordLinksNonBSOL: Array<PdfActionLink> = [
         {
             label: 'Download and remove files',
-            key: 'download-and-delete-all-files-link',
+            key: 'download-and-remove-record-btn',
             type: RECORD_ACTION.DOWNLOAD,
             unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
             showIfRecordInRepo: true,
