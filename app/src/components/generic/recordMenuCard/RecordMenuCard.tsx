@@ -68,7 +68,7 @@ type LinkItemProps = {
 const LinkItem = ({ link, setStage }: LinkItemProps) => {
     const navigate = useNavigate();
 
-    if (link.href && link.stage) {
+    if (link.href || link.stage) {
         return (
             <Link
                 to="#placeholder"

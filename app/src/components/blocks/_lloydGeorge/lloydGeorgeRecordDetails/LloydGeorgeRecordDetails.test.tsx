@@ -75,7 +75,7 @@ describe('LloydGeorgeRecordDetails', () => {
     });
 
     describe('GP admin non BSOL user', () => {
-        it('renders the record details component with button', () => {
+        it('renders the record details component', () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
             mockedUseIsBSOL.mockReturnValue(false);
             renderComponent();
@@ -86,41 +86,38 @@ describe('LloydGeorgeRecordDetails', () => {
                 screen.getByText(`File size: ${formatFileSize(mockPdf.total_file_size_in_byte)}`),
             ).toBeInTheDocument();
             expect(screen.getByText('File format: PDF')).toBeInTheDocument();
-            expect(
-                screen.getByRole('button', { name: 'Download and remove record' }),
-            ).toBeInTheDocument();
 
             expect(screen.queryByText(`Select an action...`)).not.toBeInTheDocument();
             expect(screen.queryByTestId('actions-menu')).not.toBeInTheDocument();
         });
-
-        it('set downloadRemoveButtonClicked to true when button is clicked', () => {
-            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-            mockedUseIsBSOL.mockReturnValue(false);
-            renderComponent();
-
-            const button = screen.getByRole('button', { name: 'Download and remove record' });
-
-            button.click();
-
-            expect(mockSetDownloadRemoveButtonClicked).toHaveBeenCalledWith(true);
-        });
-
-        it('calls setFocus and setError when the button is clicked again after warning box shown up', () => {
-            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-            mockedUseIsBSOL.mockReturnValue(false);
-            renderComponent({ downloadRemoveButtonClicked: true });
-
-            const button = screen.getByRole('button', { name: 'Download and remove record' });
-
-            button.click();
-
-            expect(mockSetError).toHaveBeenCalledWith('confirmDownloadRemove', {
-                type: 'custom',
-                message: 'true',
-            });
-            expect(mockSetFocus).toHaveBeenCalledWith('confirmDownloadRemove');
-        });
+        //
+        // it('set downloadRemoveButtonClicked to true when button is clicked', () => {
+        //     mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+        //     mockedUseIsBSOL.mockReturnValue(false);
+        //     renderComponent();
+        //
+        //     const button = screen.getByRole('button', { name: 'Download and remove record' });
+        //
+        //     button.click();
+        //
+        //     expect(mockSetDownloadRemoveButtonClicked).toHaveBeenCalledWith(true);
+        // });
+        //
+        // it('calls setFocus and setError when the button is clicked again after warning box shown up', () => {
+        //     mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+        //     mockedUseIsBSOL.mockReturnValue(false);
+        //     renderComponent({ downloadRemoveButtonClicked: true });
+        //
+        //     const button = screen.getByRole('button', { name: 'Download and remove record' });
+        //
+        //     button.click();
+        //
+        //     expect(mockSetError).toHaveBeenCalledWith('confirmDownloadRemove', {
+        //         type: 'custom',
+        //         message: 'true',
+        //     });
+        //     expect(mockSetFocus).toHaveBeenCalledWith('confirmDownloadRemove');
+        // });
     });
 });
 
