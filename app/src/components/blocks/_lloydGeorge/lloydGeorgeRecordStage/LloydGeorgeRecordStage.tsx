@@ -23,7 +23,10 @@ import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../../types/generic/inputRef';
 import BackButton from '../../../generic/backButton/BackButton';
-import { getAllowedRecordLinks } from '../../../../types/blocks/lloydGeorgeActions';
+import {
+    getAllowedRecordLinks,
+    getAllowedRecordLinksForNonBSOL,
+} from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
@@ -59,6 +62,14 @@ function LloydGeorgeRecordStage({
         required: true,
     });
 
+    const handleDownloadAndRemoveRecordButton = () => {
+        if (downloadRemoveButtonClicked) {
+            setError('confirmDownloadRemove', { type: 'custom', message: 'true' });
+        }
+        setFocus('confirmDownloadRemove');
+        setDownloadRemoveButtonClicked(true);
+    };
+
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
@@ -67,10 +78,16 @@ function LloydGeorgeRecordStage({
     const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
     const hasRecordInRepo = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
-    const recordLinksToShow = getAllowedRecordLinks({
-        role,
-        hasRecordInRepo,
-    });
+    const recordLinksToShow = isBSOL
+        ? getAllowedRecordLinks({
+              role,
+              hasRecordInRepo,
+          })
+        : getAllowedRecordLinksForNonBSOL({
+              role,
+              hasRecordInRepo,
+              downloadAndRemoveOnClick: handleDownloadAndRemoveRecordButton,
+          });
     const showMenu = recordLinksToShow.length > 0;
 
     const handleConfirmDownloadAndRemoveButton = () => {

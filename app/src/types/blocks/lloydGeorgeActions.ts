@@ -12,6 +12,7 @@ export type PdfActionLink = {
     key: string;
     stage?: LG_RECORD_STAGE;
     href?: routes;
+    onClick?: () => void;
     type: RECORD_ACTION;
     unauthorised?: Array<REPOSITORY_ROLE>;
     showIfRecordInRepo: boolean;
@@ -35,18 +36,56 @@ export const lloydGeorgeRecordLinks: Array<PdfActionLink> = [
         showIfRecordInRepo: true,
     },
 ];
-
 type Args = {
     role: REPOSITORY_ROLE | null;
     hasRecordInRepo: boolean;
+    inputLinks?: Array<PdfActionLink>;
 };
 
-export function getAllowedRecordLinks({ role, hasRecordInRepo }: Args): Array<PdfActionLink> {
-    const allowedLinks = lloydGeorgeRecordLinks.filter((link) => {
+export function getAllowedRecordLinks({
+    role,
+    hasRecordInRepo,
+    inputLinks,
+}: Args): Array<PdfActionLink> {
+    if (!inputLinks) {
+        inputLinks = lloydGeorgeRecordLinks;
+    }
+
+    const allowedLinks = inputLinks.filter((link) => {
         if (!role || link.unauthorised?.includes(role)) {
             return false;
         }
         return hasRecordInRepo === link.showIfRecordInRepo;
     });
+    return allowedLinks;
+}
+
+type ArgsNonBsol = {
+    role: REPOSITORY_ROLE | null;
+    hasRecordInRepo: boolean;
+    downloadAndRemoveOnClick: () => void;
+};
+
+export function getAllowedRecordLinksForNonBSOL({
+    role,
+    hasRecordInRepo,
+    downloadAndRemoveOnClick,
+}: ArgsNonBsol): Array<PdfActionLink> {
+    const lloydGeorgeRecordLinksNonBSOL: Array<PdfActionLink> = [
+        {
+            label: 'Download and remove files',
+            key: 'download-and-delete-all-files-link',
+            type: RECORD_ACTION.DOWNLOAD,
+            unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+            showIfRecordInRepo: true,
+            onClick: downloadAndRemoveOnClick,
+        },
+    ];
+    const allowedLinks = getAllowedRecordLinks({
+        role,
+        hasRecordInRepo,
+        inputLinks: lloydGeorgeRecordLinksNonBSOL,
+    });
+
     return allowedLinks;
 }
