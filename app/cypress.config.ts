@@ -38,9 +38,7 @@ export default defineConfig({
     video: process.env.CYPRESS_OUTPUT_VIDEO ? true : false,
     videoCompression: 15,
     retries: {
-        // Configure retry attempts for `cypress run`
         runMode: 5,
-        // Configure retry attempts for `cypress open`
         openMode: 0,
     },
 });
