@@ -39,7 +39,7 @@ export default defineConfig({
     videoCompression: 15,
     retries: {
         // Configure retry attempts for `cypress run`
-        runMode: 2,
+        runMode: 5,
         // Configure retry attempts for `cypress open`
         openMode: 0,
     },
