@@ -80,6 +80,15 @@ function LloydGeorgeUploadPage() {
         const hasNoVirus =
             documents.length && documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
 
+        const setUploadStateFailed = async () => {
+            await updateDocumentState({
+                documents: documents,
+                uploadingState: false,
+                baseUrl,
+                baseHeaders,
+            });
+        };
+
         const confirmUpload = async () => {
             if (uploadSession) {
                 setStage(LG_UPLOAD_STAGE.CONFIRMATION);
@@ -105,6 +114,7 @@ function LloydGeorgeUploadPage() {
                         navigate(routes.SESSION_EXPIRED);
                         return;
                     }
+                    await setUploadStateFailed();
                     setStage(LG_UPLOAD_STAGE.FAILED);
                 }
             }
@@ -112,9 +122,13 @@ function LloydGeorgeUploadPage() {
 
         if (hasExceededUploadAttempts) {
             window.clearInterval(intervalTimer);
+            // noinspection JSIgnoredPromiseFromCall
+            setUploadStateFailed();
             setStage(LG_UPLOAD_STAGE.FAILED);
         } else if (hasVirus) {
             window.clearInterval(intervalTimer);
+            // noinspection JSIgnoredPromiseFromCall
+            setUploadStateFailed();
             setStage(LG_UPLOAD_STAGE.INFECTED);
         } else if (hasNoVirus && !confirmed.current) {
             confirmed.current = true;
@@ -161,18 +175,11 @@ function LloydGeorgeUploadPage() {
                     progress: 100,
                 });
             } catch (e) {
-                window.clearInterval(intervalTimer);
                 setDocument(setDocuments, {
                     id: document.id,
                     state: DOCUMENT_UPLOAD_STATE.FAILED,
                     attempts: document.attempts + 1,
                     progress: 0,
-                });
-                await updateDocumentState({
-                    document,
-                    uploadingState: false,
-                    baseUrl,
-                    baseHeaders,
                 });
             }
         });
@@ -233,19 +240,23 @@ function LloydGeorgeUploadPage() {
         setDocuments([]);
         setStage(LG_UPLOAD_STAGE.SELECT);
     };
+
     const startIntervalTimer = (uploadDocuments: Array<UploadDocument>) => {
-        return window.setInterval(() => {
-            uploadDocuments.forEach(async (document) => {
-                try {
-                    await updateDocumentState({
-                        document,
-                        uploadingState: true,
-                        baseUrl,
-                        baseHeaders,
-                    });
-                } catch (e) {}
-            });
+        return window.setInterval(async () => {
+            await setDocumentUploadingState(uploadDocuments, true);
         }, 120000);
+    };
+
+    const setDocumentUploadingState = async (
+        uploadDocuments: Array<UploadDocument>,
+        uploadingState: boolean,
+    ) => {
+        await updateDocumentState({
+            documents: uploadDocuments,
+            uploadingState: uploadingState,
+            baseUrl,
+            baseHeaders,
+        });
     };
 
     switch (stage) {
