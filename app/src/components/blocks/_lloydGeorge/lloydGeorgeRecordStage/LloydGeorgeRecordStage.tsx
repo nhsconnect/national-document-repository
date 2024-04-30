@@ -144,7 +144,7 @@ function LloydGeorgeRecordStage({
             ) : (
                 <BackButton />
             )}
-            <h1>Available Records</h1>
+            <h1>{pageHeader}</h1>
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
                     <WarningCallout
@@ -222,7 +222,6 @@ function LloydGeorgeRecordStage({
                             </InsetText>
                         )}
                     </WarningCallout>
-                    <h1>{pageHeader}</h1>
                 </div>
             )}
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
