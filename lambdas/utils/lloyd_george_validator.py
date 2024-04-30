@@ -142,38 +142,51 @@ def validate_filename_with_patient_details(
         file_name_info = extract_info_from_filename(file_name_list[0])
         file_patient_name = file_name_info["patient_name"]
         file_date_of_birth = file_name_info["date_of_birth"]
-
-        date_of_birth = datetime.datetime.strptime(
-            file_date_of_birth, "%d-%m-%Y"
-        ).date()
-        if patient_details.birth_date != date_of_birth:
-            raise LGInvalidFilesException("Patient DoB does not match our records")
-
-        patient_name_split = file_patient_name.split(" ")
-        file_patient_first_name = patient_name_split[0]
-        file_patient_last_name = patient_name_split[-1]
-
-        logger.info("Verifying patient name against the record in PDS...")
-        is_file_first_name_in_patient_details = False
-        for patient_name in patient_details.given_Name:
-            if names_are_matching(file_patient_first_name, patient_name):
-                is_file_first_name_in_patient_details = True
-                break
-
-        if not is_file_first_name_in_patient_details or not names_are_matching(
-            file_patient_last_name, patient_details.family_name
-        ):
-            raise LGInvalidFilesException("Patient name does not match our records")
+        validate_patient_date_of_birth(file_date_of_birth, patient_details)
+        validate_patient_name(file_patient_name, patient_details)
 
     except (ClientError, ValueError) as e:
         logger.error(e)
         raise LGInvalidFilesException(e)
 
 
+def validate_patient_name(file_patient_name, pds_patient_details):
+    logger.info("Verifying patient name against the record in PDS...")
+    patient_name_split = file_patient_name.split(" ")
+    file_patient_first_name = patient_name_split[0]
+    file_patient_last_name = patient_name_split[-1]
+    is_file_first_name_in_patient_details = False
+    for patient_name in pds_patient_details.given_Name:
+        if names_are_matching(file_patient_first_name, patient_name):
+            is_file_first_name_in_patient_details = True
+            break
+
+    if not is_file_first_name_in_patient_details or not names_are_matching(
+        file_patient_last_name, pds_patient_details.family_name
+    ):
+        raise LGInvalidFilesException("Patient name does not match our records")
+
+
+def validate_patient_date_of_birth(file_date_of_birth, pds_patient_details):
+    date_of_birth = datetime.datetime.strptime(file_date_of_birth, "%d-%m-%Y").date()
+    if (
+        not pds_patient_details.birth_date
+        or pds_patient_details.birth_date != date_of_birth
+    ):
+        raise LGInvalidFilesException("Patient DoB does not match our records")
+
+
 def getting_patient_info_from_pds(nhs_number: str) -> PatientDetails:
     pds_service_class = get_pds_service()
     pds_service = pds_service_class(SSMService())
     pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)
+    check_pds_response_status(pds_response)
+    patient = Patient.model_validate(pds_response.json())
+    patient_details = patient.get_minimum_patient_details(nhs_number)
+    return patient_details
+
+
+def check_pds_response_status(pds_response):
     if pds_response.status_code == 429:
         logger.error("Got 429 Too Many Requests error from PDS.")
         raise PdsTooManyRequestsException(
@@ -187,9 +200,6 @@ def getting_patient_info_from_pds(nhs_number: str) -> PatientDetails:
     except HTTPError as e:
         logger.error(e)
         raise LGInvalidFilesException("Failed to retrieve patient data from PDS")
-    patient = Patient.model_validate(pds_response.json())
-    patient_details = patient.get_minimum_patient_details(nhs_number)
-    return patient_details
 
 
 def get_allowed_ods_codes() -> list[str]:

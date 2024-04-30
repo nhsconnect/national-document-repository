@@ -21,7 +21,7 @@ class Address(BaseModel):
 class Name(BaseModel):
     use: str
     period: Optional[Period] = None
-    given: list[str]
+    given: Optional[list[str]] = None
     family: str
 
 
@@ -36,21 +36,21 @@ class Meta(BaseModel):
 
 
 class GPIdentifier(BaseModel):
-    system: Optional[str]
+    system: Optional[str] = ""
     value: str
-    period: Optional[Period]
+    period: Optional[Period] = None
 
 
 class GeneralPractitioner(BaseModel):
-    id: Optional[str]
-    type: Optional[str]
+    id: Optional[str] = ""
+    type: Optional[str] = ""
     identifier: GPIdentifier
 
 
 class PatientDetails(BaseModel):
     model_config = conf
 
-    given_Name: Optional[list[str]] = []
+    given_Name: Optional[list[str]] = [""]
     family_name: Optional[str] = ""
     birth_date: Optional[date] = None
     postal_code: Optional[str] = ""
@@ -66,10 +66,10 @@ class Patient(BaseModel):
 
     id: str
     birth_date: date
-    address: Optional[list[Address]] = []
+    address: Optional[list[Address]] = None
     name: list[Name]
     meta: Meta
-    general_practitioner: Optional[list[GeneralPractitioner]] = []
+    general_practitioner: Optional[list[GeneralPractitioner]] = None
 
     def get_security(self) -> Security:
         security = self.meta.security[0] if self.meta.security[0] else None
@@ -96,11 +96,12 @@ class Patient(BaseModel):
                     return entry
 
     def get_active_ods_code_for_gp(self) -> str:
-        for entry in self.general_practitioner:
-            gp_end_date = entry.identifier.period.end
-            if not gp_end_date or gp_end_date >= date.today():
-                return entry.identifier.value
-        return ""
+        if self.general_practitioner:
+            for entry in self.general_practitioner:
+                gp_end_date = entry.identifier.period.end
+                if not gp_end_date or gp_end_date >= date.today():
+                    return entry.identifier.value
+            return ""
 
     def get_is_active_status(self) -> bool:
         gp_ods = self.get_active_ods_code_for_gp()

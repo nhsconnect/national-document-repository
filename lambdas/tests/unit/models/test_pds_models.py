@@ -49,7 +49,7 @@ def test_get_restricted_patient_details():
         nhsNumber="9000000025",
         superseded=False,
         restricted=True,
-        generalPracticeOds="",
+        generalPracticeOds=None,
         active=False,
     )
 
@@ -90,7 +90,7 @@ def test_raise_error_when_no_gp_in_response():
 
     response = patient.get_minimum_patient_details(patient.id)
 
-    assert response.general_practice_ods == ""
+    assert response.general_practice_ods is None
 
 
 @freeze_time("2021-12-31")

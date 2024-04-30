@@ -36,6 +36,8 @@ from utils.lloyd_george_validator import (
     validate_lg_file_names,
     validate_lg_file_type,
     validate_lg_files,
+    validate_patient_date_of_birth,
+    validate_patient_name,
 )
 
 
@@ -232,7 +234,10 @@ def test_validate_nhs_id_with_pds_service(mocker, mock_pds_patient_details):
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
     ]
-    validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
+    try:
+        validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
+    except LGInvalidFilesException:
+        assert False
 
 
 def test_mismatch_nhs_id(mocker):
@@ -274,6 +279,75 @@ def test_order_names_with_pds_service(mocker):
         assert False
 
 
+def test_validate_name_with_correct_name(mock_pds_patient_details):
+    lg_file_patient_name = "Jane Smith"
+    try:
+        validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
+    except LGInvalidFilesException:
+        assert False
+
+
+def test_validate_name_with_file_missing_middle_name():
+    lg_file_patient_name = "Jane Smith"
+    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    try:
+        validate_patient_name(lg_file_patient_name, patient_details)
+    except LGInvalidFilesException:
+        assert False
+
+
+def test_validate_name_with_additional_middle_name_in_file_mismatching_pds():
+    lg_file_patient_name = "Jane David Smith"
+    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    try:
+        validate_patient_name(lg_file_patient_name, patient_details)
+    except LGInvalidFilesException:
+        assert False
+
+
+def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
+    mock_pds_patient_details,
+):
+    lg_file_patient_name = "Jane David Smith"
+    try:
+        validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
+    except LGInvalidFilesException:
+        assert False
+
+
+def test_validate_name_with_wrong_order():
+    lg_file_patient_name = "Jake Jane Smith"
+    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    try:
+        validate_patient_name(lg_file_patient_name, patient_details)
+    except LGInvalidFilesException:
+        assert False
+
+
+def test_validate_name_with_wrong_first_name(mock_pds_patient_details):
+    lg_file_patient_name = "John Smith"
+    with pytest.raises(LGInvalidFilesException):
+        validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
+
+
+def test_validate_name_with_wrong_family_name(mock_pds_patient_details):
+    lg_file_patient_name = "Jane Johnson"
+    with pytest.raises(LGInvalidFilesException):
+        validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
+
+
+def test_validate_name_with_none_given_name(mock_pds_patient_details):
+    lg_file_patient_name = "Jane Smith"
+    mock_pds_patient_details.given_Name = [""]
+    try:
+        validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
+    except LGInvalidFilesException:
+        assert False
+
+
 def test_missing_middle_name_names_with_pds_service(mocker):
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
@@ -295,6 +369,32 @@ def test_mismatch_dob_with_pds_service(mocker, mock_pds_patient_details):
 
     with pytest.raises(LGInvalidFilesException):
         validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
+
+
+def test_validate_date_of_birth_when_mismatch_dob_with_pds_service(
+    mocker, mock_pds_patient_details
+):
+    file_date_of_birth = "14-01-2000"
+
+    with pytest.raises(LGInvalidFilesException):
+        validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient_details)
+
+
+def test_validate_date_of_birth_valid_with_pds_service(
+    mocker, mock_pds_patient_details
+):
+    file_date_of_birth = "22-10-2010"
+    try:
+        validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient_details)
+    except LGInvalidFilesException:
+        assert False
+
+
+def test_validate_date_of_birth_none_with_pds_service(mocker, mock_pds_patient_details):
+    file_date_of_birth = "22-10-2010"
+    mock_pds_patient_details.birth_date = None
+    with pytest.raises(LGInvalidFilesException):
+        validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient_details)
 
 
 def test_patient_not_found_with_pds_service(mocker, mock_pds_call):
