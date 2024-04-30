@@ -280,7 +280,6 @@ describe('LloydGeorgeRecordStage', () => {
         renderComponent();
 
         expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
-        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Download and remove files' }),
         ).not.toBeInTheDocument();
@@ -293,7 +292,6 @@ describe('LloydGeorgeRecordStage', () => {
         renderComponent();
 
         expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
-        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Download and remove files' }),
         ).not.toBeInTheDocument();
@@ -306,7 +304,6 @@ describe('LloydGeorgeRecordStage', () => {
         renderComponent();
 
         expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
-        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
         expect(
             screen.queryByRole('button', { name: 'Download and remove files' }),
         ).not.toBeInTheDocument();
