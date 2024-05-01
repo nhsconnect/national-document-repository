@@ -11,13 +11,13 @@ charset-normalizer==3.2.0
 cryptography==42.0.4
 email-validator==2.1.0.post1
 fhir.resources[xml]==7.1.0
-idna==3.4
+idna==3.7
 inflection==0.5.1
 jmespath==1.0.1
 oauthlib==3.2.2
 packaging==23.0.0
 pycparser==2.21
-pydantic==2.3.0
+pydantic==2.4.0
 pypdf==3.17.2
 python-dateutil==2.8.2
 requests==2.31.0

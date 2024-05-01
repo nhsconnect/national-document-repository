@@ -230,7 +230,7 @@ def test_files_for_different_patients():
     assert str(e.value) == "File names does not match with each other"
 
 
-def test_validate_nhs_id_with_pds_service(mocker, mock_pds_patient_details):
+def test_validate_nhs_id_with_pds_service(mock_pds_patient_details):
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
@@ -257,7 +257,7 @@ def test_mismatch_nhs_id(mocker):
         validate_lg_file_names(lg_file_list, "9000000009")
 
 
-def test_mismatch_name_with_pds_service(mocker, mock_pds_patient_details):
+def test_mismatch_name_with_pds_service(mock_pds_patient_details):
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jake Plain Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jake Plain Smith]_[9000000009]_[22-10-2010].pdf",
@@ -267,7 +267,7 @@ def test_mismatch_name_with_pds_service(mocker, mock_pds_patient_details):
         validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
 
 
-def test_order_names_with_pds_service(mocker):
+def test_order_names_with_pds_service():
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jake Jane Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jake Jane Smith]_[9000000009]_[22-10-2010].pdf",
@@ -349,7 +349,7 @@ def test_validate_name_without_given_name(mock_pds_patient_details):
         assert False
 
 
-def test_missing_middle_name_names_with_pds_service(mocker):
+def test_missing_middle_name_names_with_pds_service():
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
@@ -362,7 +362,7 @@ def test_missing_middle_name_names_with_pds_service(mocker):
         assert False
 
 
-def test_mismatch_dob_with_pds_service(mocker, mock_pds_patient_details):
+def test_mismatch_dob_with_pds_service(mock_pds_patient_details):
     lg_file_list = [
         "1of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[14-01-2000].pdf",
         "2of2_Lloyd_George_Record_[Jane Plain Smith]_[9000000009]_[14-01-2000].pdf",
@@ -373,7 +373,7 @@ def test_mismatch_dob_with_pds_service(mocker, mock_pds_patient_details):
 
 
 def test_validate_date_of_birth_when_mismatch_dob_with_pds_service(
-    mocker, mock_pds_patient_details
+    mock_pds_patient_details,
 ):
     file_date_of_birth = "14-01-2000"
 
@@ -381,9 +381,7 @@ def test_validate_date_of_birth_when_mismatch_dob_with_pds_service(
         validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient_details)
 
 
-def test_validate_date_of_birth_valid_with_pds_service(
-    mocker, mock_pds_patient_details
-):
+def test_validate_date_of_birth_valid_with_pds_service(mock_pds_patient_details):
     file_date_of_birth = "22-10-2010"
     try:
         validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient_details)
@@ -391,14 +389,14 @@ def test_validate_date_of_birth_valid_with_pds_service(
         assert False
 
 
-def test_validate_date_of_birth_none_with_pds_service(mocker, mock_pds_patient_details):
+def test_validate_date_of_birth_none_with_pds_service(mock_pds_patient_details):
     file_date_of_birth = "22-10-2010"
     mock_pds_patient_details.birth_date = None
     with pytest.raises(LGInvalidFilesException):
         validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient_details)
 
 
-def test_patient_not_found_with_pds_service(mocker, mock_pds_call):
+def test_patient_not_found_with_pds_service(mock_pds_call):
     response = Response()
     response.status_code = 404
 
@@ -411,7 +409,7 @@ def test_patient_not_found_with_pds_service(mocker, mock_pds_call):
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
 
 
-def test_bad_request_with_pds_service(mocker, mock_pds_call):
+def test_bad_request_with_pds_service(mock_pds_call):
     response = Response()
     response.status_code = 400
 
@@ -424,9 +422,7 @@ def test_bad_request_with_pds_service(mocker, mock_pds_call):
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
 
 
-def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
-    mocker, mock_pds_call
-):
+def test_validate_with_pds_service_raise_pds_too_many_requests_exception(mock_pds_call):
     response = Response()
     response.status_code = 429
     response._content = b"Too Many Requests"
@@ -438,7 +434,7 @@ def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
 
 
-def test_check_pds_response_429_status_raise_PdsTooManyRequestsException():
+def test_check_pds_response_429_status_raise_too_many_requests_exception():
     response = Response()
     response.status_code = 429
 
@@ -446,7 +442,7 @@ def test_check_pds_response_429_status_raise_PdsTooManyRequestsException():
         check_pds_response_status(response)
 
 
-def test_check_pds_response_404_status_raise_LGInvalidFilesException():
+def test_check_pds_response_404_status_raise_lg_invalid_files_exception():
     response = Response()
     response.status_code = 404
 
@@ -454,7 +450,7 @@ def test_check_pds_response_404_status_raise_LGInvalidFilesException():
         check_pds_response_status(response)
 
 
-def test_check_pds_response_4XX_or_5XX_status_raise_LGInvalidFilesException():
+def test_check_pds_response_4xx_or_5xx_status_raise_lg_invalid_files_exception():
     response = Response()
     response.status_code = 500
 
@@ -505,7 +501,7 @@ def test_check_check_for_patient_already_exist_in_repo_raise_exception_when_pati
     )
 
 
-def test_validate_bulk_files_raises_PatientRecordAlreadyExistException_when_patient_record_already_exists(
+def test_validate_bulk_files_raises_patient_record_already_exist_exception_when_patient_record_already_exists(
     set_env, mocker
 ):
     mocker.patch(
@@ -528,7 +524,7 @@ def test_get_allowed_ods_codes_return_a_list_of_ods_codes(mock_get_ssm_parameter
     assert actual == expected
 
 
-def test_get_allowed_ods_codes_can_handle_the_ALL_option(mock_get_ssm_parameter):
+def test_get_allowed_ods_codes_can_handle_the_all_option(mock_get_ssm_parameter):
     mock_get_ssm_parameter.return_value = "ALL"
 
     expected = ["ALL"]
