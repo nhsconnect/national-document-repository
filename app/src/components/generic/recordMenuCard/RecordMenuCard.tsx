@@ -1,16 +1,16 @@
 import { Card } from 'nhsuk-react-components';
 import React, { Dispatch, SetStateAction } from 'react';
-import { PdfActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
+import { LGRecordActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
 import { Link, useNavigate } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
 type Props = {
-    recordLinks: Array<PdfActionLink>;
+    recordLinks: Array<LGRecordActionLink>;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
 type SubSectionProps = {
-    actionLinks: Array<PdfActionLink>;
+    actionLinks: Array<LGRecordActionLink>;
     heading: string;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
@@ -45,7 +45,6 @@ function RecordMenuCard({ recordLinks, setStage }: Props) {
     );
 }
 
-
 const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps) => {
     return (
         <>
@@ -62,7 +61,7 @@ const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps)
 };
 
 type LinkItemProps = {
-    link: PdfActionLink;
+    link: LGRecordActionLink;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 

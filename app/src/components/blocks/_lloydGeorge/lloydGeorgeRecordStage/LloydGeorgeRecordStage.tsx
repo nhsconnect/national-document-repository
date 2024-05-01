@@ -24,8 +24,8 @@ import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../../types/generic/inputRef';
 import BackButton from '../../../generic/backButton/BackButton';
 import {
-    getRecordActionLinksAllowedForRole,
-    getAllowedRecordLinksForNonBSOL,
+    getBSOLUserRecordActionLinks,
+    getNonBSOLUserRecordActionLinks,
 } from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
@@ -80,14 +80,11 @@ function LloydGeorgeRecordStage({
     const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
 
     const recordLinksToShow = isBSOL
-        ? getRecordActionLinksAllowedForRole({
+        ? getBSOLUserRecordActionLinks({ role, hasRecordInStorage })
+        : getNonBSOLUserRecordActionLinks({
               role,
-              hasRecordInRepo: hasRecordInStorage,
-          })
-        : getAllowedRecordLinksForNonBSOL({
-              role,
-              hasRecordInRepo: hasRecordInStorage,
-              downloadAndRemoveOnClick: handleDownloadAndRemoveRecordButton,
+              hasRecordInStorage,
+              onClickFunctionForDownloadAndRemove: handleDownloadAndRemoveRecordButton,
           });
     const showMenu = recordLinksToShow.length > 0;
 

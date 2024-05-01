@@ -4,7 +4,7 @@ import { buildLgSearchResult } from '../../../../helpers/test/testBuilders';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import useRole from '../../../../helpers/hooks/useRole';
-import { lloydGeorgeRecordLinks } from '../../../../types/blocks/lloydGeorgeActions';
+import { lloydGeorgeRecordLinksInBSOL } from '../../../../types/blocks/lloydGeorgeActions';
 import { LinkProps } from 'react-router-dom';
 import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 
@@ -49,7 +49,7 @@ describe('LloydGeorgeRecordDetails', () => {
     });
 
     describe('Unauthorised', () => {
-        const unauthorisedLinks = lloydGeorgeRecordLinks.filter((a) =>
+        const unauthorisedLinks = lloydGeorgeRecordLinksInBSOL.filter((a) =>
             Array.isArray(a.unauthorised),
         );
 
