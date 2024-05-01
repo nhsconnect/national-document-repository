@@ -41,7 +41,10 @@ type Args = {
     hasRecordInRepo: boolean;
 };
 
-export function getAllowedRecordLinks({ role, hasRecordInRepo }: Args): Array<PdfActionLink> {
+export function getRecordActionLinksAllowedForRole({
+    role,
+    hasRecordInRepo,
+}: Args): Array<PdfActionLink> {
     const allowedLinks = lloydGeorgeRecordLinks.filter((link) => {
         if (!role || link.unauthorised?.includes(role)) {
             return false;

@@ -23,7 +23,7 @@ import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../../types/generic/inputRef';
 import BackButton from '../../../generic/backButton/BackButton';
-import { getAllowedRecordLinks } from '../../../../types/blocks/lloydGeorgeActions';
+import { getRecordActionLinksAllowedForRole } from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
@@ -66,10 +66,10 @@ function LloydGeorgeRecordStage({
     const isBSOL = useIsBSOL();
     const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
-    const hasRecordInRepo = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
-    const recordLinksToShow = getAllowedRecordLinks({
+    const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
+    const recordLinksToShow = getRecordActionLinksAllowedForRole({
         role,
-        hasRecordInRepo,
+        hasRecordInRepo: hasRecordInStorage,
     });
     const showMenu = recordLinksToShow.length > 0;
 

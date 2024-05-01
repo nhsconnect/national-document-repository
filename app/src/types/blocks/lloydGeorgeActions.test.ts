@@ -1,5 +1,9 @@
 import { REPOSITORY_ROLE } from '../generic/authRole';
-import { getAllowedRecordLinks, PdfActionLink, RECORD_ACTION } from './lloydGeorgeActions';
+import {
+    getRecordActionLinksAllowedForRole,
+    PdfActionLink,
+    RECORD_ACTION,
+} from './lloydGeorgeActions';
 
 describe('getAllowedRecordLinks', () => {
     describe('When role = GP_ADMIN, isBSOL = true', () => {
@@ -19,7 +23,7 @@ describe('getAllowedRecordLinks', () => {
                 }),
             ]);
 
-            const actual = getAllowedRecordLinks({ role, hasRecordInRepo });
+            const actual = getRecordActionLinksAllowedForRole({ role, hasRecordInRepo });
 
             expect(actual).toEqual(expectedOutput);
         });
@@ -27,7 +31,7 @@ describe('getAllowedRecordLinks', () => {
             const role = REPOSITORY_ROLE.GP_ADMIN;
             const hasRecordInRepo = false;
             const expectedOutput: Array<PdfActionLink> = [];
-            const actual = getAllowedRecordLinks({ role, hasRecordInRepo });
+            const actual = getRecordActionLinksAllowedForRole({ role, hasRecordInRepo });
 
             expect(actual).toEqual(expectedOutput);
         });
@@ -37,8 +41,10 @@ describe('getAllowedRecordLinks', () => {
         it('returns an empty array in any case', () => {
             const role = REPOSITORY_ROLE.GP_CLINICAL;
 
-            expect(getAllowedRecordLinks({ role, hasRecordInRepo: true })).toEqual([]);
-            expect(getAllowedRecordLinks({ role, hasRecordInRepo: false })).toEqual([]);
+            expect(getRecordActionLinksAllowedForRole({ role, hasRecordInRepo: true })).toEqual([]);
+            expect(getRecordActionLinksAllowedForRole({ role, hasRecordInRepo: false })).toEqual(
+                [],
+            );
         });
     });
 });
