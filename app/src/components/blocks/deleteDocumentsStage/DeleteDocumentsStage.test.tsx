@@ -69,9 +69,18 @@ describe('DeleteDocumentsStage', () => {
                 expect(screen.getByText(patientName)).toBeInTheDocument();
                 expect(screen.getByText(`Date of birth: ${dob}`)).toBeInTheDocument();
                 expect(screen.getByText(/NHS number/)).toBeInTheDocument();
-                expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
-                expect(screen.getByRole('radio', { name: 'No' })).toBeInTheDocument();
+                const yesButton = screen.getByRole('radio', { name: 'Yes' });
+                expect(yesButton).toBeInTheDocument();
+                expect(yesButton).not.toBeChecked();
+                const noButton = screen.getByRole('radio', { name: 'No' });
+                expect(noButton).toBeInTheDocument();
+                expect(noButton).not.toBeChecked();
                 expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+                expect(
+                    screen.queryByText(
+                        'Select whether you want to permanently delete these patient files',
+                    ),
+                ).not.toBeInTheDocument();
             },
         );
 
@@ -79,11 +88,16 @@ describe('DeleteDocumentsStage', () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
             renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+            const noButton = screen.getByRole('radio', { name: 'No' });
+
+            expect(noButton).not.toBeChecked();
 
             act(() => {
-                userEvent.click(screen.getByRole('radio', { name: 'No' }));
+                userEvent.click(noButton);
+                expect(noButton).toBeChecked();
                 userEvent.click(screen.getByRole('button', { name: 'Continue' }));
             });
+            expect(screen.queryByTestId('delete-error-box')).not.toBeInTheDocument();
 
             await waitFor(() => {
                 expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
@@ -193,6 +207,27 @@ describe('DeleteDocumentsStage', () => {
                     routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
                 );
             });
+        });
+
+        it('renders a error box when none of the options are checked', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+            const noButton = screen.getByRole('radio', { name: 'No' });
+            const yesButton = screen.getByRole('radio', { name: 'Yes' });
+
+            expect(noButton).not.toBeChecked();
+            expect(yesButton).not.toBeChecked();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+            expect(await screen.findByText('You must select an option')).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    'Select whether you want to permanently delete these patient files',
+                ),
+            ).toBeInTheDocument();
         });
     });
 
