@@ -47,7 +47,7 @@ const mockLinks: Array<PdfActionLink> = [
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
         showIfRecordInRepo: true,
         onClick: mockShowDownloadAndRemoveConfirmation,
-    },
+    }
 ];
 
 jest.mock('react-router-dom', () => ({

@@ -24,7 +24,7 @@ import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../../types/generic/inputRef';
 import BackButton from '../../../generic/backButton/BackButton';
 import {
-    getAllowedRecordLinks,
+    getRecordActionLinksAllowedForRole,
     getAllowedRecordLinksForNonBSOL,
 } from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
@@ -77,15 +77,16 @@ function LloydGeorgeRecordStage({
     const isBSOL = useIsBSOL();
     const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
-    const hasRecordInRepo = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
+    const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
+
     const recordLinksToShow = isBSOL
-        ? getAllowedRecordLinks({
+        ? getRecordActionLinksAllowedForRole({
               role,
-              hasRecordInRepo,
+              hasRecordInRepo: hasRecordInStorage,
           })
         : getAllowedRecordLinksForNonBSOL({
               role,
-              hasRecordInRepo,
+              hasRecordInRepo: hasRecordInStorage,
               downloadAndRemoveOnClick: handleDownloadAndRemoveRecordButton,
           });
     const showMenu = recordLinksToShow.length > 0;

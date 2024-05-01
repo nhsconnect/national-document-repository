@@ -36,13 +36,14 @@ export const lloydGeorgeRecordLinks: Array<PdfActionLink> = [
         showIfRecordInRepo: true,
     },
 ];
+
 type Args = {
     role: REPOSITORY_ROLE | null;
     hasRecordInRepo: boolean;
     inputLinks?: Array<PdfActionLink>;
 };
 
-export function getAllowedRecordLinks({
+export function getRecordActionLinksAllowedForRole({
     role,
     hasRecordInRepo,
     inputLinks,
@@ -81,7 +82,7 @@ export function getAllowedRecordLinksForNonBSOL({
             onClick: downloadAndRemoveOnClick,
         },
     ];
-    const allowedLinks = getAllowedRecordLinks({
+    const allowedLinks = getRecordActionLinksAllowedForRole({
         role,
         hasRecordInRepo,
         inputLinks: lloydGeorgeRecordLinksNonBSOL,

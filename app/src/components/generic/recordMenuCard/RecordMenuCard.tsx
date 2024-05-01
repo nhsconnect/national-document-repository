@@ -45,6 +45,7 @@ function RecordMenuCard({ recordLinks, setStage }: Props) {
     );
 }
 
+
 const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps) => {
     return (
         <>
