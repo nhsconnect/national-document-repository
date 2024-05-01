@@ -156,7 +156,7 @@ def validate_patient_name(file_patient_name, pds_patient_details):
     file_patient_first_name = patient_name_split[0]
     file_patient_last_name = patient_name_split[-1]
     is_file_first_name_in_patient_details = False
-    for patient_name in pds_patient_details.given_Name:
+    for patient_name in pds_patient_details.given_name:
         if (
             names_are_matching(file_patient_first_name, patient_name)
             or not patient_name

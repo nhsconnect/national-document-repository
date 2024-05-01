@@ -342,7 +342,7 @@ def test_validate_name_with_wrong_family_name(mock_pds_patient_details):
 
 def test_validate_name_without_given_name(mock_pds_patient_details):
     lg_file_patient_name = "Jane Smith"
-    mock_pds_patient_details.given_Name = [""]
+    mock_pds_patient_details.given_name = [""]
     try:
         validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
     except LGInvalidFilesException:

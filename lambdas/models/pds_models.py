@@ -50,7 +50,7 @@ class GeneralPractitioner(BaseModel):
 class PatientDetails(BaseModel):
     model_config = conf
 
-    given_Name: Optional[list[str]] = [""]
+    given_name: Optional[list[str]] = [""]
     family_name: Optional[str] = ""
     birth_date: Optional[date] = None
     postal_code: Optional[str] = ""
