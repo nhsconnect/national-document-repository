@@ -49,7 +49,7 @@ def test_get_restricted_patient_details():
         nhsNumber="9000000025",
         superseded=False,
         restricted=True,
-        generalPracticeOds=None,
+        generalPracticeOds="",
         active=False,
     )
 
