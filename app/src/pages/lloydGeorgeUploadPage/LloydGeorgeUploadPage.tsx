@@ -122,13 +122,11 @@ function LloydGeorgeUploadPage() {
 
         if (hasExceededUploadAttempts) {
             window.clearInterval(intervalTimer);
-            // noinspection JSIgnoredPromiseFromCall
-            setUploadStateFailed();
+            void setUploadStateFailed();
             setStage(LG_UPLOAD_STAGE.FAILED);
         } else if (hasVirus) {
             window.clearInterval(intervalTimer);
-            // noinspection JSIgnoredPromiseFromCall
-            setUploadStateFailed();
+            void setUploadStateFailed();
             setStage(LG_UPLOAD_STAGE.INFECTED);
         } else if (hasNoVirus && !confirmed.current) {
             confirmed.current = true;
@@ -242,8 +240,8 @@ function LloydGeorgeUploadPage() {
     };
 
     const startIntervalTimer = (uploadDocuments: Array<UploadDocument>) => {
-        return window.setInterval(async () => {
-            await setDocumentUploadingState(uploadDocuments, true);
+        return window.setInterval(() => {
+            void setDocumentUploadingState(uploadDocuments, true);
         }, 120000);
     };
 
