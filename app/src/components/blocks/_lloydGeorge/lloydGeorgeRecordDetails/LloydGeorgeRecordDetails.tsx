@@ -1,15 +1,10 @@
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
-import { FieldValues, UseFormSetError, UseFormSetFocus } from 'react-hook-form';
 
 export type Props = {
     lastUpdated: string;
     numberOfFiles: number;
     totalFileSizeInByte: number;
-    setDownloadRemoveButtonClicked: Dispatch<SetStateAction<boolean>>;
-    downloadRemoveButtonClicked: boolean;
-    setError: UseFormSetError<FieldValues>;
-    setFocus: UseFormSetFocus<FieldValues>;
 };
 
 function LloydGeorgeRecordDetails({ lastUpdated, numberOfFiles, totalFileSizeInByte }: Props) {

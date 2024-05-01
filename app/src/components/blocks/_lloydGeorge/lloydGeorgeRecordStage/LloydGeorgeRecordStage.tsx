@@ -104,11 +104,6 @@ function LloydGeorgeRecordStage({
                 lastUpdated,
                 numberOfFiles,
                 totalFileSizeInByte,
-                setStage,
-                setDownloadRemoveButtonClicked,
-                downloadRemoveButtonClicked,
-                setError,
-                setFocus,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         } else {
