@@ -90,7 +90,7 @@ def test_raise_error_when_no_gp_in_response():
 
     response = patient.get_minimum_patient_details(patient.id)
 
-    assert response.general_practice_ods is None
+    assert response.general_practice_ods == ""
 
 
 @freeze_time("2021-12-31")

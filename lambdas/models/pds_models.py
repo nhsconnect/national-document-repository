@@ -101,7 +101,7 @@ class Patient(BaseModel):
                 gp_end_date = entry.identifier.period.end
                 if not gp_end_date or gp_end_date >= date.today():
                     return entry.identifier.value
-            return ""
+        return ""
 
     def get_is_active_status(self) -> bool:
         gp_ods = self.get_active_ods_code_for_gp()
