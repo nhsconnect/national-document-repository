@@ -17,7 +17,7 @@ const baseURL = 'http://test';
 jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
-const mockSetStage = jest.fn();
+
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
@@ -111,7 +111,8 @@ describe('<FeedbackPage />', () => {
                     headers: {},
                 }),
             );
-            expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
+            expect(screen.getByText('Submitting...')).toBeInTheDocument();
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.FEEDBACK_CONFIRMATION);
         });
 
         it("on submit, if feedback content is empty, display an error message and don't send email", async () => {
@@ -132,7 +133,7 @@ describe('<FeedbackPage />', () => {
                 expect(screen.getByText('Please enter your feedback')).toBeInTheDocument();
             });
             expect(mockedAxios).not.toBeCalled();
-            expect(mockSetStage).not.toBeCalled();
+            expect(screen.queryByText('Submitting...')).not.toBeInTheDocument();
         });
 
         it("on submit, if user haven't chosen an option for howSatisfied, display an error message and don't send email", async () => {
@@ -153,7 +154,7 @@ describe('<FeedbackPage />', () => {
                 expect(screen.getByText('Please select an option')).toBeInTheDocument();
             });
             expect(mockedAxios).not.toBeCalled();
-            expect(mockSetStage).not.toBeCalled();
+            expect(screen.queryByText('Submitting...')).not.toBeInTheDocument();
         });
 
         it("on submit, if user filled in an invalid email address, display an error message and don't send email", async () => {
@@ -175,7 +176,7 @@ describe('<FeedbackPage />', () => {
                 expect(screen.getByText('Enter a valid email address')).toBeInTheDocument();
             });
             expect(mockedAxios).not.toBeCalled();
-            expect(mockSetStage).not.toBeCalled();
+            expect(screen.queryByText('Submitting...')).not.toBeInTheDocument();
         });
 
         it('on submit, allows the respondent name and email to be blank', async () => {
@@ -208,16 +209,12 @@ describe('<FeedbackPage />', () => {
                     },
                 ),
             );
-            expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
-        });
-
-        it('show a spinner button when the form is being submitted', async () => {
-            renderComponent();
-
-            expect(screen.getByRole('button')).toBeInTheDocument();
+            expect(screen.getByText('Submitting...')).toBeInTheDocument();
             expect(screen.getByRole('button')).toHaveAttribute('disabled');
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.FEEDBACK_CONFIRMATION);
         });
     });
+
     describe('Navigation', () => {
         it('navigates to Error page when call to feedback endpoint return 500', async () => {
             const errorResponse = {
@@ -246,8 +243,7 @@ describe('<FeedbackPage />', () => {
                     headers: {},
                 }),
             );
-            expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
-
+            expect(screen.getByText('Submitting...')).toBeInTheDocument();
             expect(mockedUseNavigate).toHaveBeenCalledWith(
                 routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
             );
@@ -281,45 +277,8 @@ describe('<FeedbackPage />', () => {
                     headers: {},
                 }),
             );
-            expect(mockSetStage).toBeCalledWith(SUBMISSION_STAGE.Submitting);
+            expect(screen.getByText('Submitting...')).toBeInTheDocument();
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
         });
     });
 });
-
-// describe('<FeedbackPage />', () => {
-//     beforeEach(() => {
-//         process.env.REACT_APP_ENVIRONMENT = 'jest';
-//         mockSendEmail.mockReturnValueOnce(Promise.resolve());
-//     });
-//
-//     afterEach(() => {
-//         jest.clearAllMocks();
-//     });
-//
-//     it('renders the feedback form initially', () => {
-//         render(<FeedbackPage />);
-//
-//         expect(
-//             screen.getByText('Give feedback on accessing Lloyd George digital patient records'),
-//         ).toBeInTheDocument();
-//     });
-//
-//     it('renders the confirmation page when the feedback form was submitted', async () => {
-//         render(<FeedbackPage />);
-//
-//         act(() => {
-//             fillInForm(mockInputData);
-//             userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
-//         });
-//
-//         await screen.findByText('We’ve received your feedback');
-//     });
-// });
-//
-// const mockInputData = {
-//     feedbackContent: 'Mock feedback content',
-//     howSatisfied: SATISFACTION_CHOICES.VerySatisfied,
-//     respondentName: 'Jane Smith',
-//     respondentEmail: 'jane_smith@testing.com',
-// };

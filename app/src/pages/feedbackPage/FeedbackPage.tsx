@@ -36,12 +36,11 @@ function FeedbackPage() {
         setStage(SUBMISSION_STAGE.Submitting);
         try {
             await sendEmail({ formData, baseUrl, baseHeaders });
-            setStage(SUBMISSION_STAGE.Successful);
             navigate(routes.FEEDBACK_CONFIRMATION);
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error)) {
-                setStage(SUBMISSION_STAGE.Successful);
+                navigate(routes.FEEDBACK_CONFIRMATION);
             } else if (error.response?.status === 403) {
                 navigate(routes.SESSION_EXPIRED);
                 return;
