@@ -28,6 +28,7 @@ from utils.lloyd_george_validator import (
     check_for_file_names_agrees_with_each_other,
     check_for_number_of_files_match_expected,
     check_for_patient_already_exist_in_repo,
+    check_pds_response_status,
     extract_info_from_filename,
     get_allowed_ods_codes,
     getting_patient_info_from_pds,
@@ -339,7 +340,7 @@ def test_validate_name_with_wrong_family_name(mock_pds_patient_details):
         validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
 
 
-def test_validate_name_with_none_given_name(mock_pds_patient_details):
+def test_validate_name_without_given_name(mock_pds_patient_details):
     lg_file_patient_name = "Jane Smith"
     mock_pds_patient_details.given_Name = [""]
     try:
@@ -435,6 +436,40 @@ def test_validate_with_pds_service_raise_PdsTooManyRequestsException(
         getting_patient_info_from_pds("9000000009")
 
     mock_pds_call.assert_called_with(nhs_number="9000000009", retry_on_expired=True)
+
+
+def test_check_pds_response_429_status_raise_PdsTooManyRequestsException():
+    response = Response()
+    response.status_code = 429
+
+    with pytest.raises(PdsTooManyRequestsException):
+        check_pds_response_status(response)
+
+
+def test_check_pds_response_404_status_raise_LGInvalidFilesException():
+    response = Response()
+    response.status_code = 404
+
+    with pytest.raises(LGInvalidFilesException):
+        check_pds_response_status(response)
+
+
+def test_check_pds_response_4XX_or_5XX_status_raise_LGInvalidFilesException():
+    response = Response()
+    response.status_code = 500
+
+    with pytest.raises(LGInvalidFilesException):
+        check_pds_response_status(response)
+
+
+def test_check_pds_response_200_status_not_raise_exception():
+    response = Response()
+    response.status_code = 200
+
+    try:
+        check_pds_response_status(response)
+    except LGInvalidFilesException:
+        assert False
 
 
 def test_check_for_patient_already_exist_in_repo_return_none_when_patient_record_not_exist(
