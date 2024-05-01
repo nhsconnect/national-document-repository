@@ -98,8 +98,6 @@ describe('getNonBSOLUserRecordActionLinks', () => {
             onClickFunctionForDownloadAndRemove: mockDownloadAndRemoveOnClick,
         };
         it('returns an empty array in any case', () => {
-            const role = REPOSITORY_ROLE.GP_CLINICAL;
-
             expect(getNonBSOLUserRecordActionLinks({ ...args, hasRecordInStorage: true })).toEqual(
                 [],
             );
