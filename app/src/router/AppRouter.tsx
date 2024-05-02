@@ -61,7 +61,7 @@ export const childRoutes = [
         parent: LLOYD_GEORGE_UPLOAD,
     },
     {
-        route: routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETE,
+        route: routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED,
         parent: LLOYD_GEORGE_UPLOAD,
     },
     {

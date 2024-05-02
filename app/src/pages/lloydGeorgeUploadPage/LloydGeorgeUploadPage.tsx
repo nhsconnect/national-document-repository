@@ -99,7 +99,7 @@ function LloydGeorgeUploadPage() {
                         })),
                     );
                     window.clearInterval(intervalTimer);
-                    navigate(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETE);
+                    navigate(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED);
                 } catch (e) {
                     const error = e as AxiosError;
                     if (error.response?.status === 403) {
@@ -217,7 +217,7 @@ function LloydGeorgeUploadPage() {
                         state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
                     })),
                 );
-                navigate(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETE);
+                navigate(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED);
             } else {
                 setDocuments((prevState) =>
                     prevState.map((doc) => ({
@@ -255,7 +255,7 @@ function LloydGeorgeUploadPage() {
             <nav>
                 <Link to="upload">Upload</Link>
                 <Link to="confirmation">Confirmation</Link>
-                <Link to="complete">Completed</Link>
+                <Link to="completed">Completed</Link>
                 <Link to="infected">Infected</Link>
                 <Link to="failed">Failed</Link>
             </nav>

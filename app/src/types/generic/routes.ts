@@ -25,7 +25,7 @@ export enum routes {
 export enum routeChildren {
     LLOYD_GEORGE_UPLOAD_SELECTION = '/patient/upload/lloyd-george-record/selection',
     LLOYD_GEORGE_UPLOAD_UPLOAD = '/patient/upload/lloyd-george-record/upload',
-    LLOYD_GEORGE_UPLOAD_COMPLETE = '/patient/upload/lloyd-george-record/complete',
+    LLOYD_GEORGE_UPLOAD_COMPLETED = '/patient/upload/lloyd-george-record/completed',
     LLOYD_GEORGE_UPLOAD_FAILED = '/patient/upload/lloyd-george-record/failed',
     LLOYD_GEORGE_UPLOAD_INFECTED = '/patient/upload/lloyd-george-record/infected',
     LLOYD_GEORGE_UPLOAD_CONFIRMATION = '/patient/upload/lloyd-george-record/confirmation',
