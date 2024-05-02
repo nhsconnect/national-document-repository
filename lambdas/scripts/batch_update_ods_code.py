@@ -192,9 +192,9 @@ class BatchUpdate:
                 progress_dict[nhs_number].doc_ref_ids.append(doc_ref_id)
                 pds_code_at_current_row = ods_code
                 if progress_dict[nhs_number].prev_ods_code != pds_code_at_current_row:
-                    progress_dict[nhs_number].prev_ods_code = (
-                        "[multiple ods codes in records]"
-                    )
+                    progress_dict[
+                        nhs_number
+                    ].prev_ods_code = "[multiple ods codes in records]"
 
         self.logger.info(f"Totally {len(progress_dict)} patients found in record.")
         return progress_dict
