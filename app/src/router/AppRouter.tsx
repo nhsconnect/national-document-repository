@@ -180,7 +180,6 @@ const AppRoutes = () => {
     const privateRoutes = createRoutesFromType(ROUTE_TYPE.PRIVATE);
     const patientRoutes = createRoutesFromType(ROUTE_TYPE.PATIENT);
 
-    console.log(patientRoutes);
     return (
         <Switch>
             {publicRoutes}

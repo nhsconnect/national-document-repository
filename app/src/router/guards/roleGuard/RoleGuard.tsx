@@ -16,7 +16,6 @@ function RoleGuard({ children }: Props) {
     useEffect(() => {
         let routeKey = location.pathname;
 
-        console.log(routeKey);
         childRoutes.forEach((childRoute) => {
             if (childRoute.route === routeKey) {
                 routeKey = childRoute.parent;
