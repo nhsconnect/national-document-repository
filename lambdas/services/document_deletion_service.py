@@ -51,7 +51,7 @@ class DocumentDeletionService:
                 return []
 
             self.document_service.delete_documents(
-                table_name=doc_type.get_dynamodb_table_name(),
+                table_name=doc_type.get_dynamodb_table_name()[doc_type],
                 document_references=results,
                 type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
             )

@@ -64,7 +64,7 @@ def test_fetch_available_document_references_by_type_lg_returns_list_of_doc_refe
 
     results = mock_service.fetch_available_document_references_by_type(
         TEST_NHS_NUMBER, SupportedDocumentTypes.LG, mock_filter_expression
-    )
+    )[SupportedDocumentTypes.LG]
 
     assert len(results) == 3
     for result in results:
@@ -113,7 +113,7 @@ def test_fetch_available_document_references_by_type_all_returns_list_of_doc_ref
     )
 
     assert len(results) == 6
-    for result in results:
+    for result in results.values():
         assert isinstance(result, DocumentReference)
 
     expected_calls = [
@@ -150,7 +150,7 @@ def test_fetch_available_document_references_by_type_all_only_one_result_is_retu
 
     results = mock_service.fetch_available_document_references_by_type(
         TEST_NHS_NUMBER, SupportedDocumentTypes.ALL, mock_filter_expression
-    )
+    )[SupportedDocumentTypes.LG]
 
     assert len(results) == 3
     for result in results:
@@ -187,8 +187,8 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
 
     result = mock_service.fetch_available_document_references_by_type(
         TEST_NHS_NUMBER, SupportedDocumentTypes.LG, mock_filter_expression
-    )
-
+    )[SupportedDocumentTypes.LG]
+    print(result)
     assert len(result) == 0
     mock_dynamo_service.query_with_requested_fields.assert_called_once_with(
         table_name=MOCK_LG_TABLE_NAME,

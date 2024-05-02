@@ -140,7 +140,7 @@ def test_format_update_throws_error(patched_service):
 
 
 def test_update_document_success(patched_service):
-    patched_service.update_document("111222", SupportedDocumentTypes.LG.value, True)
+    patched_service.update_document("111222", SupportedDocumentTypes.LG, True)
     patched_service.dynamo_service.update_item.assert_called_once()
 
 
@@ -149,4 +149,4 @@ def test_update_document_when_dynamo_throws_error(patched_service):
         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
     )
     with pytest.raises(UpdateUploadStateException):
-        patched_service.update_document("111222", SupportedDocumentTypes.LG.value, True)
+        patched_service.update_document("111222", SupportedDocumentTypes.LG, True)
