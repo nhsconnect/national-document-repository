@@ -66,7 +66,7 @@ class Patient(BaseModel):
 
     id: str
     birth_date: date
-    address: Optional[list[Address]] = None
+    address: Optional[list[Address]] = []
     name: list[Name]
     meta: Meta
     general_practitioner: Optional[list[GeneralPractitioner]] = None
@@ -113,7 +113,7 @@ class Patient(BaseModel):
             familyName=self.get_current_usual_name().family,
             birthDate=self.birth_date,
             postalCode=self.get_current_home_address().postal_code
-            if self.is_unrestricted()
+            if self.is_unrestricted() and self.get_current_home_address()
             else "",
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
