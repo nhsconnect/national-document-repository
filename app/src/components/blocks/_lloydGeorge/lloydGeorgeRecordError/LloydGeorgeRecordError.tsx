@@ -56,15 +56,15 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
     } else if (renderUploadPath) {
         return (
             <span>
-                <h5 data-testid="no-records-title">No records available for this patient.</h5>
+                <h3 data-testid="no-records-title">No records available for this patient.</h3>
                 <p data-testid="upload-patient-record-text">
                     You can upload full or part of a patient record. You can upload supporting files
                     once the record is uploaded.
                 </p>
 
-                <div className="lloydgeorge_record-stage_header-content-no_record">
+                <div className="lloydgeorge_record-stage_pdf-content-no_record">
                     <ButtonLink
-                        className="lloydgeorge_record-stage_header-content-no_record-upload"
+                        className="lloydgeorge_record-stage_pdf-content-no_record-upload"
                         data-testid="upload-patient-record-button"
                         href="#"
                         onClick={(e: MouseEvent<HTMLAnchorElement>) => {

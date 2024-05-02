@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field, FieldValidationInfo, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
 from pydantic_core import PydanticCustomError
 
 METADATA_FILENAME = "metadata.csv"
@@ -36,7 +36,7 @@ class MetadataFile(BaseModel):
     @field_validator("gp_practice_code")
     @classmethod
     def ensure_gp_practice_code_non_empty(
-        cls, gp_practice_code: str, info: FieldValidationInfo
+        cls, gp_practice_code: str, info: ValidationInfo
     ) -> str:
         if not gp_practice_code:
             patient_nhs_number = info.data.get("nhs_number", "")

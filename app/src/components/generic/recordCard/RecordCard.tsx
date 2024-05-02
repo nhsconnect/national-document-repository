@@ -23,7 +23,7 @@ function RecordCard({
             <Card.Content data-testid="pdf-card" className="lloydgeorge_record-stage_pdf-content">
                 <Card.Heading
                     className="lloydgeorge_record-stage_pdf-content-label"
-                    headingLevel="h1"
+                    headingLevel="h2"
                 >
                     {heading}
                 </Card.Heading>

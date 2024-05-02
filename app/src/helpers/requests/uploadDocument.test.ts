@@ -12,7 +12,7 @@ describe('[POST] updateDocumentState', () => {
         const document = buildDocument(buildTextFile('test1'), documentUploadStates.SUCCEEDED);
         mockedAxios.post.mockImplementation(() => Promise.resolve({ status: 200 }));
         const args = {
-            document,
+            documents: [document],
             uploadingState: true,
             documentReference: 'test/test/test/key',
             baseUrl: '/test',

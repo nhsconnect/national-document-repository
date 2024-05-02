@@ -1,39 +1,58 @@
 import { Card } from 'nhsuk-react-components';
 import React, { Dispatch, SetStateAction } from 'react';
 import { PdfActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
-import useRole from '../../../helpers/hooks/useRole';
 import { Link, useNavigate } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
 type Props = {
     recordLinks: Array<PdfActionLink>;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    hasPdf: boolean;
 };
 
-type LinkProps = {
+type SubSectionProps = {
     actionLinks: Array<PdfActionLink>;
     heading: string;
+    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-function RecordMenuCard({ recordLinks, setStage, hasPdf }: Props) {
-    const role = useRole();
+function RecordMenuCard({ recordLinks, setStage }: Props) {
+    const updateActions = recordLinks.filter((link) => link.type === RECORD_ACTION.UPDATE);
+    const downloadActions = recordLinks.filter((link) => link.type === RECORD_ACTION.DOWNLOAD);
+
+    if (recordLinks.length === 0) {
+        return <></>;
+    }
+
+    return (
+        <Card className="lloydgeorge_record-stage_menu">
+            <Card.Content className="lloydgeorge_record-stage_menu-content">
+                {updateActions.length > 0 && (
+                    <SideMenuSubSection
+                        actionLinks={updateActions}
+                        heading="Update record"
+                        setStage={setStage}
+                    />
+                )}
+                {downloadActions.length > 0 && (
+                    <SideMenuSubSection
+                        actionLinks={downloadActions}
+                        heading="Download record"
+                        setStage={setStage}
+                    />
+                )}
+            </Card.Content>
+        </Card>
+    );
+}
+
+const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps) => {
     const navigate = useNavigate();
-
-    const updateActions = recordLinks.filter(
-        (link) => link.type === RECORD_ACTION.UPLOAD && role && !link.unauthorised?.includes(role),
-    );
-    const downloadActions = recordLinks.filter(
-        (link) =>
-            link.type === RECORD_ACTION.DOWNLOAD && role && !link.unauthorised?.includes(role),
-    );
-
-    const Links = ({ actionLinks, heading }: LinkProps) => (
+    return (
         <>
-            <h4>{heading}</h4>
+            <h2 className="nhsuk-heading-m">{heading}</h2>
             <ol>
                 {actionLinks.map((link) => (
-                    <li key={link.key} data-testid={link.key}>
+                    <li key={link.key}>
                         <Link
                             to="#placeholder"
                             onClick={(e) => {
@@ -41,6 +60,7 @@ function RecordMenuCard({ recordLinks, setStage, hasPdf }: Props) {
                                 if (link.href) navigate(link.href);
                                 else if (link.stage) setStage(link.stage);
                             }}
+                            data-testid={link.key}
                         >
                             {link.label}
                         </Link>
@@ -49,19 +69,5 @@ function RecordMenuCard({ recordLinks, setStage, hasPdf }: Props) {
             </ol>
         </>
     );
-
-    return (
-        <Card className="lloydgeorge_record-stage_menu">
-            <Card.Content className="lloydgeorge_record-stage_menu-content">
-                {updateActions.length && !hasPdf && (
-                    <Links actionLinks={updateActions} heading="Update record" />
-                )}
-                {downloadActions.length && hasPdf && (
-                    <Links actionLinks={downloadActions} heading="Download record" />
-                )}
-            </Card.Content>
-        </Card>
-    );
-}
-
+};
 export default RecordMenuCard;

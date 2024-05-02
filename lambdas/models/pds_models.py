@@ -112,9 +112,11 @@ class Patient(BaseModel):
             givenName=self.get_current_usual_name().given,
             familyName=self.get_current_usual_name().family,
             birthDate=self.birth_date,
-            postalCode=self.get_current_home_address().postal_code
-            if self.is_unrestricted() and self.address
-            else "",
+            postalCode=(
+                self.get_current_home_address().postal_code
+                if self.is_unrestricted() and self.address
+                else ""
+            ),
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
@@ -129,9 +131,9 @@ class Patient(BaseModel):
             givenName=self.get_current_usual_name().given,
             familyName=self.get_current_usual_name().family,
             birthDate=self.birth_date,
-            generalPracticeOds=self.get_active_ods_code_for_gp()
-            if self.is_unrestricted()
-            else "",
+            generalPracticeOds=(
+                self.get_active_ods_code_for_gp() if self.is_unrestricted() else ""
+            ),
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
