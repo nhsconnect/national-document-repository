@@ -90,7 +90,7 @@ class Patient(BaseModel):
                 return entry
 
     def get_current_home_address(self) -> Optional[Address]:
-        if self.is_unrestricted():
+        if self.is_unrestricted() and self.address:
             for entry in self.address:
                 if entry.use.lower() == "home":
                     return entry
@@ -113,7 +113,7 @@ class Patient(BaseModel):
             familyName=self.get_current_usual_name().family,
             birthDate=self.birth_date,
             postalCode=self.get_current_home_address().postal_code
-            if self.is_unrestricted() and self.get_current_home_address()
+            if self.is_unrestricted() and self.address
             else "",
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
