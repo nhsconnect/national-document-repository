@@ -17,8 +17,18 @@ export enum routes {
     VERIFY_PATIENT = '/search/patient/verify',
     LLOYD_GEORGE = '/patient/view/lloyd-george-record',
     LLOYD_GEORGE_UPLOAD = '/patient/upload/lloyd-george-record',
+    LLOYD_GEORGE_UPLOAD_WILDCARD = '/patient/upload/lloyd-george-record/*',
     ARF_DOWNLOAD_DOCUMENTS = '/patient/download',
     ARF_UPLOAD_DOCUMENTS = '/patient/upload',
+}
+
+export enum routeChildren {
+    LLOYD_GEORGE_UPLOAD_SELECTION = '/patient/upload/lloyd-george-record/selection',
+    LLOYD_GEORGE_UPLOAD_UPLOAD = '/patient/upload/lloyd-george-record/upload',
+    LLOYD_GEORGE_UPLOAD_COMPLETE = '/patient/upload/lloyd-george-record/complete',
+    LLOYD_GEORGE_UPLOAD_FAILED = '/patient/upload/lloyd-george-record/failed',
+    LLOYD_GEORGE_UPLOAD_INFECTED = '/patient/upload/lloyd-george-record/infected',
+    LLOYD_GEORGE_UPLOAD_CONFIRMATION = '/patient/upload/lloyd-george-record/confirmation',
 }
 
 export enum ROUTE_TYPE {
@@ -34,4 +44,5 @@ export type route = {
     page: JSX.Element;
     type: ROUTE_TYPE;
     unauthorized?: Array<REPOSITORY_ROLE>;
+    children?: React.ReactNode;
 };

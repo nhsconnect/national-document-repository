@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Outlet, Route, Routes as Switch } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
-import { route, ROUTE_TYPE, routes } from '../types/generic/routes';
+import { route, ROUTE_TYPE, routes, routeChildren } from '../types/generic/routes';
 import StartPage from '../pages/startPage/StartPage';
 import AuthCallbackPage from '../pages/authCallbackPage/AuthCallbackPage';
 import NotFoundPage from '../pages/notFoundPage/NotFoundPage';
@@ -42,6 +42,7 @@ const {
     PRIVACY_POLICY,
     LLOYD_GEORGE,
     LLOYD_GEORGE_UPLOAD,
+    LLOYD_GEORGE_UPLOAD_WILDCARD,
     ARF_DOWNLOAD_DOCUMENTS,
     ARF_UPLOAD_DOCUMENTS,
 } = routes;
@@ -49,6 +50,33 @@ const {
 type Routes = {
     [key in routes]: route;
 };
+
+export const childRoutes = [
+    {
+        route: routeChildren.LLOYD_GEORGE_UPLOAD_SELECTION,
+        parent: LLOYD_GEORGE_UPLOAD,
+    },
+    {
+        route: routeChildren.LLOYD_GEORGE_UPLOAD_UPLOAD,
+        parent: LLOYD_GEORGE_UPLOAD,
+    },
+    {
+        route: routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETE,
+        parent: LLOYD_GEORGE_UPLOAD,
+    },
+    {
+        route: routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION,
+        parent: LLOYD_GEORGE_UPLOAD,
+    },
+    {
+        route: routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED,
+        parent: LLOYD_GEORGE_UPLOAD,
+    },
+    {
+        route: routeChildren.LLOYD_GEORGE_UPLOAD_FAILED,
+        parent: LLOYD_GEORGE_UPLOAD,
+    },
+];
 
 export const routeMap: Routes = {
     // Public routes
@@ -121,6 +149,11 @@ export const routeMap: Routes = {
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.PCSE],
     },
+    [LLOYD_GEORGE_UPLOAD_WILDCARD]: {
+        page: <LloydGeorgeUploadPage />,
+        type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.PCSE],
+    },
     [ARF_DOWNLOAD_DOCUMENTS]: {
         page: <ArfSearchResultsPage />,
         type: ROUTE_TYPE.PATIENT,
@@ -147,6 +180,7 @@ const AppRoutes = () => {
     const privateRoutes = createRoutesFromType(ROUTE_TYPE.PRIVATE);
     const patientRoutes = createRoutesFromType(ROUTE_TYPE.PATIENT);
 
+    console.log(patientRoutes);
     return (
         <Switch>
             {publicRoutes}

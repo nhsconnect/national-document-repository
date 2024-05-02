@@ -18,9 +18,10 @@ import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { AxiosError } from 'axios';
 import { isMock } from '../../helpers/utils/isLocal';
 import Spinner from '../../components/generic/spinner/Spinner';
-import { routes } from '../../types/generic/routes';
-import { useNavigate } from 'react-router';
+import { routes, routeChildren } from '../../types/generic/routes';
+import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
+import { Link } from 'react-router-dom';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
@@ -67,7 +68,7 @@ function LloydGeorgeUploadPage() {
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-    const [stage, setStage] = useState<LG_UPLOAD_STAGE>(LG_UPLOAD_STAGE.SELECT);
+    // const [stage, setStage] = useState<LG_UPLOAD_STAGE>(LG_UPLOAD_STAGE.SELECT);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
     const confirmed = useRef(false);
@@ -82,7 +83,7 @@ function LloydGeorgeUploadPage() {
 
         const confirmUpload = async () => {
             if (uploadSession) {
-                setStage(LG_UPLOAD_STAGE.CONFIRMATION);
+                navigate(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION);
                 try {
                     const confirmDocumentState = await uploadConfirmation({
                         baseUrl,
@@ -98,24 +99,24 @@ function LloydGeorgeUploadPage() {
                         })),
                     );
                     window.clearInterval(intervalTimer);
-                    setStage(LG_UPLOAD_STAGE.COMPLETE);
+                    navigate(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETE);
                 } catch (e) {
                     const error = e as AxiosError;
                     if (error.response?.status === 403) {
                         navigate(routes.SESSION_EXPIRED);
                         return;
                     }
-                    setStage(LG_UPLOAD_STAGE.FAILED);
+                    navigate(routeChildren.LLOYD_GEORGE_UPLOAD_FAILED);
                 }
             }
         };
 
         if (hasExceededUploadAttempts) {
             window.clearInterval(intervalTimer);
-            setStage(LG_UPLOAD_STAGE.FAILED);
+            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_FAILED);
         } else if (hasVirus) {
             window.clearInterval(intervalTimer);
-            setStage(LG_UPLOAD_STAGE.INFECTED);
+            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED);
         } else if (hasNoVirus && !confirmed.current) {
             confirmed.current = true;
             void confirmUpload();
@@ -127,7 +128,6 @@ function LloydGeorgeUploadPage() {
         navigate,
         nhsNumber,
         setDocuments,
-        setStage,
         uploadSession,
         intervalTimer,
     ]);
@@ -180,7 +180,7 @@ function LloydGeorgeUploadPage() {
 
     const submitDocuments = async () => {
         try {
-            setStage(LG_UPLOAD_STAGE.UPLOAD);
+            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOAD);
             const uploadSession = await uploadDocuments({
                 nhsNumber,
                 documents,
@@ -191,6 +191,7 @@ function LloydGeorgeUploadPage() {
             const uploadingDocuments = documents.map((doc) => {
                 const documentMetadata = uploadSession[doc.file.name];
                 const documentReference = documentMetadata.fields.key;
+                // const documentReference = "test123"
                 return {
                     ...doc,
                     state: DOCUMENT_UPLOAD_STATE.UPLOADING,
@@ -202,6 +203,7 @@ function LloydGeorgeUploadPage() {
             setIntervalTimer(updateStateInterval);
             setDocuments(uploadingDocuments);
             uploadAndScanDocuments(uploadingDocuments, uploadSession);
+            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOAD);
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
@@ -215,7 +217,7 @@ function LloydGeorgeUploadPage() {
                         state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
                     })),
                 );
-                setStage(LG_UPLOAD_STAGE.COMPLETE);
+                navigate(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETE);
             } else {
                 setDocuments((prevState) =>
                     prevState.map((doc) => ({
@@ -231,7 +233,7 @@ function LloydGeorgeUploadPage() {
 
     const restartUpload = () => {
         setDocuments([]);
-        setStage(LG_UPLOAD_STAGE.SELECT);
+        navigate(routeChildren.LLOYD_GEORGE_UPLOAD_SELECTION);
     };
     const startIntervalTimer = (uploadDocuments: Array<UploadDocument>) => {
         return window.setInterval(() => {
@@ -248,39 +250,73 @@ function LloydGeorgeUploadPage() {
         }, 120000);
     };
 
-    switch (stage) {
-        case LG_UPLOAD_STAGE.SELECT:
-            return (
-                <LloydGeorgeFileInputStage
-                    documents={documents}
-                    setDocuments={setDocuments}
-                    submitDocuments={submitDocuments}
+    return (
+        <>
+            <nav>
+                <Link to="upload">Upload</Link>
+                <Link to="confirmation">Confirmation</Link>
+                <Link to="complete">Completed</Link>
+                <Link to="infected">Infected</Link>
+                <Link to="failed">Failed</Link>
+            </nav>
+
+            <Routes>
+                <Route
+                    index
+                    element={
+                        <LloydGeorgeFileInputStage
+                            documents={documents}
+                            setDocuments={setDocuments}
+                            submitDocuments={submitDocuments}
+                        />
+                    }
                 />
-            );
-        case LG_UPLOAD_STAGE.UPLOAD:
-            return (
-                <LloydGeorgeUploadingStage
-                    documents={documents}
-                    uploadSession={uploadSession}
-                    uploadAndScanDocuments={uploadAndScanDocuments}
+                <Route
+                    path="selection"
+                    element={
+                        <LloydGeorgeFileInputStage
+                            documents={documents}
+                            setDocuments={setDocuments}
+                            submitDocuments={submitDocuments}
+                        />
+                    }
                 />
-            );
-        case LG_UPLOAD_STAGE.COMPLETE:
-            return <LloydGeorgeUploadCompleteStage documents={documents} />;
-        case LG_UPLOAD_STAGE.INFECTED:
-            return (
-                <LloydGeorgeUploadInfectedStage
-                    documents={documents}
-                    restartUpload={restartUpload}
+                <Route
+                    path="upload"
+                    element={
+                        <LloydGeorgeUploadingStage
+                            documents={documents}
+                            uploadSession={uploadSession}
+                            uploadAndScanDocuments={uploadAndScanDocuments}
+                        />
+                    }
                 />
-            );
-        case LG_UPLOAD_STAGE.FAILED:
-            return <LloydGeorgeUploadFailedStage restartUpload={restartUpload} />;
-        case LG_UPLOAD_STAGE.CONFIRMATION:
-            return <Spinner status="Checking uploads..." />;
-        default:
-            return null;
-    }
+                <Route path="confirmation" element={<Spinner status="Checking uploads..." />} />
+                <Route
+                    path="completed"
+                    element={<LloydGeorgeUploadCompleteStage documents={documents} />}
+                />
+                <Route
+                    path="infected"
+                    element={
+                        <LloydGeorgeUploadInfectedStage
+                            documents={documents}
+                            restartUpload={restartUpload}
+                        />
+                    }
+                />
+                <Route
+                    path="failed"
+                    element={<LloydGeorgeUploadFailedStage restartUpload={restartUpload} />}
+                />
+            </Routes>
+
+            <Outlet />
+        </>
+    );
 }
 
 export default LloydGeorgeUploadPage;
+function componentDidMount() {
+    throw new Error('Function not implemented.');
+}
