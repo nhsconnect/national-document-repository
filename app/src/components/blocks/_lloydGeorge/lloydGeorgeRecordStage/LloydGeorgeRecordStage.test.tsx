@@ -136,12 +136,12 @@ describe('LloydGeorgeRecordStage', () => {
         };
 
         const showConfirmationMessage = async () => {
-            const greenDownloadButton = screen.getByRole('button', {
-                name: 'Download and remove record',
+            const sideMenuDownloadButton = screen.getByRole('button', {
+                name: 'Download and remove files',
             });
 
             act(() => {
-                userEvent.click(greenDownloadButton);
+                userEvent.click(sideMenuDownloadButton);
             });
             await waitFor(() => {
                 expect(
@@ -166,15 +166,15 @@ describe('LloydGeorgeRecordStage', () => {
             expect(screen.getByText('Before downloading')).toBeInTheDocument();
             expect(screen.getByText('Available records')).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Download and remove record' }),
+                screen.getByRole('button', { name: 'Download and remove files' }),
             ).toBeInTheDocument();
         });
 
-        it('clicking the green download button should show confirmation message, checkbox, red download button and cancel button', async () => {
+        it('clicking the side menu download button should show confirmation message, checkbox, red download button and cancel button', async () => {
             renderComponentForNonBSOLGPAdmin();
 
             const downloadButton = screen.getByRole('button', {
-                name: 'Download and remove record',
+                name: 'Download and remove files',
             });
 
             act(() => {
@@ -213,6 +213,27 @@ describe('LloydGeorgeRecordStage', () => {
                     screen.getByRole('alert', { name: 'There is a problem' }),
                 ).toBeInTheDocument();
             });
+            expect(
+                screen.getByText('You must confirm if you want to download and remove this record'),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText('Confirm if you want to download and remove this record'),
+            ).toBeInTheDocument();
+            expect(mockSetStage).not.toBeCalled();
+        });
+
+        it('when checkbox is unchecked, clicking "Download and remove" button twice will bring up a warning callout message', async () => {
+            renderComponentForNonBSOLGPAdmin();
+            await showConfirmationMessage();
+
+            act(() => {
+                userEvent.click(
+                    screen.getByRole('button', {
+                        name: 'Download and remove files',
+                    }),
+                );
+            });
+
             expect(
                 screen.getByText('You must confirm if you want to download and remove this record'),
             ).toBeInTheDocument();
@@ -280,9 +301,8 @@ describe('LloydGeorgeRecordStage', () => {
         renderComponent();
 
         expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
-        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Download and remove record' }),
+            screen.queryByRole('button', { name: 'Download and remove files' }),
         ).not.toBeInTheDocument();
     });
 
@@ -293,9 +313,8 @@ describe('LloydGeorgeRecordStage', () => {
         renderComponent();
 
         expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
-        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Download and remove record' }),
+            screen.queryByRole('button', { name: 'Download and remove files' }),
         ).not.toBeInTheDocument();
     });
 
@@ -306,9 +325,8 @@ describe('LloydGeorgeRecordStage', () => {
         renderComponent();
 
         expect(screen.queryByText('Before downloading')).not.toBeInTheDocument();
-        expect(screen.queryByText('Available records')).not.toBeInTheDocument();
         expect(
-            screen.queryByRole('button', { name: 'Download and remove record' }),
+            screen.queryByRole('button', { name: 'Download and remove files' }),
         ).not.toBeInTheDocument();
     });
 });
