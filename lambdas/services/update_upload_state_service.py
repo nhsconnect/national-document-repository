@@ -1,12 +1,17 @@
-import os
 from datetime import datetime, timezone
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
+from models.document_reference import UploadDocumentReferences
+from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.validate_document_type import (
+    doc_type_is_valid,
+    extract_document_type_as_enum,
+)
 from utils.lambda_exceptions import UpdateUploadStateException
 
 logger = LoggingService(__name__)
@@ -18,50 +23,41 @@ Fields = DocumentReferenceMetadataFields
 class UpdateUploadStateService:
     def __init__(self):
         self.dynamo_service = DynamoDBService()
-        self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
-        self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
 
     def handle_update_state(self, event_body: dict):
         try:
-            files = event_body["files"]
-            for file in files:
-                doc_ref = file["reference"]
-                doc_type = file["type"]
-                uploaded = file["fields"][Fields.UPLOADING.value]
-                not_valid = (
-                    not doc_type
-                    or not doc_ref
-                    or not uploaded
-                    or not isinstance(uploaded, bool)
-                )
-                if not_valid:
-                    raise UpdateUploadStateException(
-                        400, LambdaError.UpdateUploadStateValidation
-                    )
-                elif doc_type not in [
-                    SupportedDocumentTypes.ARF.value,
-                    SupportedDocumentTypes.LG.value,
-                ]:
+            upload_document_references = UploadDocumentReferences.model_validate(
+                event_body
+            )
+            for file in upload_document_references.files:
+                if not doc_type_is_valid(file.doc_type):
                     raise UpdateUploadStateException(
                         400, LambdaError.UpdateUploadStateDocType
                     )
-                else:
-                    self.update_document(doc_ref, doc_type, uploaded)
+
+                self.update_document(
+                    file.reference,
+                    extract_document_type_as_enum(file.doc_type),
+                    file.fields[str(Fields.UPLOADING.value)],
+                )
         except (KeyError, TypeError) as e:
             logger.error(
                 f"{LambdaError.UpdateUploadStateKey.to_str()} :{str(e)}",
             )
             raise UpdateUploadStateException(400, LambdaError.UpdateUploadStateKey)
+        except ValidationError as e:
+            logger.error(
+                f"{LambdaError.UpdateUploadStateValidation.to_str()} :{str(e)}",
+            )
+            raise UpdateUploadStateException(
+                400, LambdaError.UpdateUploadStateValidation
+            )
 
     def update_document(
         self, doc_ref: str, doc_type: SupportedDocumentTypes, uploaded: bool
     ):
         updated_fields = self.format_update({Fields.UPLOADING.value: uploaded})
-        table = (
-            self.lg_dynamo_table
-            if doc_type == SupportedDocumentTypes.LG.value
-            else self.arf_dynamo_table
-        )
+        table = SupportedDocumentTypes.get_dynamodb_table_name(doc_type)
         try:
             self.dynamo_service.update_item(
                 table_name=table,

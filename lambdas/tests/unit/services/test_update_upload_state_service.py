@@ -6,11 +6,9 @@ from enums.supported_document_types import SupportedDocumentTypes
 from services.update_upload_state_service import UpdateUploadStateService
 from tests.unit.helpers.data.update_upload_state import (
     MOCK_ALL_DOCUMENTS_REQUEST,
-    MOCK_ARF_DOCTYPE,
     MOCK_ARF_DOCUMENTS_REQUEST,
     MOCK_DOCUMENT_REFERENCE,
     MOCK_EMPTY_LIST,
-    MOCK_LG_DOCTYPE,
     MOCK_LG_DOCUMENTS_REQUEST,
     MOCK_NO_DOCTYPE_REQUEST,
     MOCK_NO_FIELDS_REQUEST,
@@ -46,7 +44,7 @@ def test_handle_update_state_with_lg_document_references(
     patched_service.handle_update_state(MOCK_LG_DOCUMENTS_REQUEST)
 
     mock_update_document.assert_called_with(
-        MOCK_DOCUMENT_REFERENCE, MOCK_LG_DOCTYPE, True
+        MOCK_DOCUMENT_REFERENCE, SupportedDocumentTypes.LG, True
     )
 
 
@@ -56,7 +54,7 @@ def test_handle_update_state_with_arf_document_references(
     patched_service.handle_update_state(MOCK_ARF_DOCUMENTS_REQUEST)
 
     mock_update_document.assert_called_with(
-        MOCK_DOCUMENT_REFERENCE, MOCK_ARF_DOCTYPE, True
+        MOCK_DOCUMENT_REFERENCE, SupportedDocumentTypes.ARF, True
     )
 
 

@@ -8,23 +8,21 @@ Fields = DocumentReferenceMetadataFields
 
 MOCK_DOCUMENT_REFERENCE = TEST_FILE_KEY
 
-MOCK_LG_DOCTYPE = SupportedDocumentTypes.LG.value
 MOCK_LG_DOCUMENTS_REQUEST = {
     "files": [
         {
             "reference": TEST_FILE_KEY,
-            "type": SupportedDocumentTypes.LG.value,
+            "type": str(SupportedDocumentTypes.LG.value),
             "fields": {Fields.UPLOADING.value: True},
         }
     ]
 }
 
-MOCK_ARF_DOCTYPE = SupportedDocumentTypes.ARF.value
 MOCK_ARF_DOCUMENTS_REQUEST = {
     "files": [
         {
             "reference": TEST_FILE_KEY,
-            "type": SupportedDocumentTypes.ARF.value,
+            "type": str(SupportedDocumentTypes.ARF.value),
             "fields": {Fields.UPLOADING.value: True},
         }
     ]
@@ -34,7 +32,7 @@ MOCK_ALL_DOCUMENTS_REQUEST = {
     "files": [
         {
             "reference": TEST_FILE_KEY,
-            "type": SupportedDocumentTypes.ALL.value,
+            "type": str(SupportedDocumentTypes.ALL.value),
             "fields": {Fields.UPLOADING.value: True},
         }
     ]
