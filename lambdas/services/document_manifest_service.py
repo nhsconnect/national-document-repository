@@ -38,16 +38,23 @@ class DocumentManifestService:
         self.zip_trace_table = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
 
     def create_document_manifest_presigned_url(
-        self, doc_type: SupportedDocumentTypes
+        self, doc_types: list[SupportedDocumentTypes]
     ) -> str:
         try:
-            documents = (
-                self.document_service.fetch_available_document_references_by_type(
-                    nhs_number=self.nhs_number,
-                    doc_type=doc_type,
-                    query_filter=UploadCompleted,
+            documents = []
+            for doc_type in doc_types:
+                documents_for_doc_type = (
+                    self.document_service.fetch_available_document_references_by_type(
+                        nhs_number=self.nhs_number,
+                        doc_type=doc_type,
+                        query_filter=UploadCompleted,
+                    )
                 )
-            )
+                if documents_for_doc_type and doc_type == SupportedDocumentTypes.LG:
+                    check_for_number_of_files_match_expected(
+                        documents_for_doc_type[0].file_name, len(documents_for_doc_type)
+                    )
+                documents += documents_for_doc_type
 
             if not documents:
                 logger.error(
@@ -56,10 +63,6 @@ class DocumentManifestService:
                 )
                 raise DocumentManifestServiceException(
                     status_code=404, error=LambdaError.ManifestNoDocs
-                )
-            if doc_type == SupportedDocumentTypes.LG:
-                check_for_number_of_files_match_expected(
-                    documents[0].file_name, len(documents)
                 )
 
         except ValidationError as e:

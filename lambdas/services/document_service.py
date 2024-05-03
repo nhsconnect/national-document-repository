@@ -22,15 +22,11 @@ class DocumentService:
         nhs_number: str,
         doc_type: SupportedDocumentTypes,
         query_filter: Attr | ConditionBase,
-    ) -> dict[SupportedDocumentTypes, list[DocumentReference]]:
-        results = {}
-
-        doc_type_table = doc_type.get_dynamodb_table_name()
-        for document_type, table_name in doc_type_table.items():
-            results[document_type] = self.fetch_documents_from_table_with_filter(
-                nhs_number, table_name, query_filter=query_filter
-            )
-        return results
+    ) -> list[DocumentReference]:
+        table_name = doc_type.get_dynamodb_table_name()
+        return self.fetch_documents_from_table_with_filter(
+            nhs_number, table_name, query_filter=query_filter
+        )
 
     def fetch_documents_from_table(
         self, nhs_number: str, table: str

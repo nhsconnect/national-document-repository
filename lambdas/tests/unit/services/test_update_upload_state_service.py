@@ -5,10 +5,10 @@ from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
 from services.update_upload_state_service import UpdateUploadStateService
 from tests.unit.helpers.data.update_upload_state import (
-    MOCK_ALL_DOCUMENTS_REQUEST,
     MOCK_ARF_DOCUMENTS_REQUEST,
     MOCK_DOCUMENT_REFERENCE,
     MOCK_EMPTY_LIST,
+    MOCK_INVALID_TYPE_DOCUMENTS_REQUEST,
     MOCK_LG_DOCUMENTS_REQUEST,
     MOCK_NO_DOCTYPE_REQUEST,
     MOCK_NO_FIELDS_REQUEST,
@@ -112,7 +112,7 @@ def test_handle_update_state_when_doctype_ALL_and_raises_exception(
     mock_format_update,
 ):
     with pytest.raises(UpdateUploadStateException):
-        patched_service.handle_update_state(MOCK_ALL_DOCUMENTS_REQUEST)
+        patched_service.handle_update_state(MOCK_INVALID_TYPE_DOCUMENTS_REQUEST)
 
     mock_update_document.assert_not_called()
     mock_format_update.assert_not_called()

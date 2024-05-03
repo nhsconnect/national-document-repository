@@ -110,17 +110,6 @@ class CreateDocumentReferenceService:
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
 
-        document_type = SupportedDocumentTypes.get_from_field_name(
-            validated_doc.docType
-        )
-
-        if document_type is None:
-            logger.error(
-                f"{LambdaError.CreateDocNoType.to_str()}",
-                {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
-            )
-            raise CreateDocumentRefException(400, LambdaError.CreateDocNoType)
-
         logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
         s3_object_key = create_reference_id()
@@ -132,7 +121,7 @@ class CreateDocumentReferenceService:
             reference_id=s3_object_key,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
-            doc_type=document_type,
+            doc_type=validated_doc.docType,
             uploading=True,
         )
 

@@ -2,7 +2,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from freezegun import freeze_time
-from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
+from models.nhs_document_reference import NHSDocumentReference
 from services.create_document_reference_service import CreateDocumentReferenceService
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
@@ -382,7 +382,6 @@ def test_prepare_doc_object_raise_error_when_no_type(
     mocker, mock_create_doc_ref_service
 ):
     document = {}
-    mocker.patch.object(UploadRequestDocument, "model_validate")
 
     with pytest.raises(CreateDocumentRefException):
         mock_create_doc_ref_service.prepare_doc_object(TEST_NHS_NUMBER, document)
@@ -391,9 +390,7 @@ def test_prepare_doc_object_raise_error_when_no_type(
 def test_prepare_doc_object_raise_error_when_invalid_type(
     mocker, mock_create_doc_ref_service
 ):
-    document = {}
-    mock_model = mocker.patch.object(UploadRequestDocument, "model_validate")
-    mock_model.return_value.docType = "Invalid"
+    document = {"fileName": "test1.txt", "contentType": "text/plain", "docType": "AR"}
 
     with pytest.raises(CreateDocumentRefException):
         mock_create_doc_ref_service.prepare_doc_object(TEST_NHS_NUMBER, document)
@@ -401,7 +398,7 @@ def test_prepare_doc_object_raise_error_when_invalid_type(
 
 def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
     document = ARF_FILE_LIST[0]
-    nhs_number = 1234567890
+    nhs_number = "1234567890"
     reference_id = 12341234
 
     mocker.patch(
@@ -434,7 +431,7 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
 
 def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
     document = LG_FILE_LIST[0]
-    nhs_number = 1234567890
+    nhs_number = "1234567890"
     reference_id = 12341234
 
     mocker.patch(

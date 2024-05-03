@@ -28,11 +28,11 @@ MOCK_ARF_DOCUMENTS_REQUEST = {
     ]
 }
 
-MOCK_ALL_DOCUMENTS_REQUEST = {
+MOCK_INVALID_TYPE_DOCUMENTS_REQUEST = {
     "files": [
         {
             "reference": TEST_FILE_KEY,
-            "type": str(SupportedDocumentTypes.ALL.value),
+            "type": "INVALID_TYPE",
             "fields": {Fields.UPLOADING.value: True},
         }
     ]
@@ -85,9 +85,9 @@ MOCK_VALID_ARF_EVENT = {
     "body": json.dumps(MOCK_ARF_DOCUMENTS_REQUEST),
 }
 
-MOCK_INVALID_ALL_EVENT = {
+MOCK_INVALID_TYPE_EVENT = {
     "httpMethod": "POST",
-    "body": json.dumps(MOCK_ALL_DOCUMENTS_REQUEST),
+    "body": json.dumps(MOCK_INVALID_TYPE_DOCUMENTS_REQUEST),
 }
 
 MOCK_INVALID_BODY_EVENT = {"httpMethod": "POST", "body": "test"}

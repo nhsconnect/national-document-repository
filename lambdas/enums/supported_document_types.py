@@ -9,7 +9,7 @@ from utils.lambda_exceptions import InvalidDocTypeException
 logger = LoggingService(__name__)
 
 
-class SupportedDocumentTypes(Enum):
+class SupportedDocumentTypes(str, Enum):
     ARF = "ARF"
     LG = "LG"
     ALL = "ALL"
@@ -22,7 +22,7 @@ class SupportedDocumentTypes(Enum):
     def list_names() -> List[str]:
         return [doc_type.value for doc_type in SupportedDocumentTypes.list()]
 
-    def get_dynamodb_table_name(self) -> dict:
+    def get_dynamodb_table_name(self) -> str:
         """
         Get the dynamodb table name related to a specific doc_type
 
@@ -42,10 +42,7 @@ class SupportedDocumentTypes(Enum):
                 SupportedDocumentTypes.ARF: os.environ["DOCUMENT_STORE_DYNAMODB_NAME"],
                 SupportedDocumentTypes.LG: os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
             }
-            if self == SupportedDocumentTypes.ALL:
-                return document_type_to_table_name
-            else:
-                return {self: document_type_to_table_name[self]}
+            return document_type_to_table_name[self]
         except KeyError as e:
             logger.error(
                 str(e),

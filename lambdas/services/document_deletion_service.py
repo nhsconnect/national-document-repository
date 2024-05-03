@@ -19,23 +19,24 @@ class DocumentDeletionService:
         self.document_service = DocumentService()
 
     def handle_delete(
-        self, nhs_number: str, doc_type: SupportedDocumentTypes
+        self, nhs_number: str, doc_types: list[SupportedDocumentTypes]
     ) -> list[DocumentReference]:
         files_deleted = []
-
-        match doc_type:
-            case SupportedDocumentTypes.ALL:
-                arf_deleted = self.delete_specific_doc_type(
-                    nhs_number, SupportedDocumentTypes.ARF
-                )
-                lg_deleted = self.delete_specific_doc_type(
-                    nhs_number, SupportedDocumentTypes.LG
-                )
-                files_deleted = arf_deleted + lg_deleted
-            case SupportedDocumentTypes.ARF | SupportedDocumentTypes.LG:
-                files_deleted = self.delete_specific_doc_type(nhs_number, doc_type)
-
+        for doc_type in doc_types:
+            files_deleted += self.delete_specific_doc_type(nhs_number, doc_type)
         return files_deleted
+
+    def get_documents_references_in_storage(
+        self,
+        nhs_number: str,
+        doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
+    ) -> list[DocumentReference]:
+        results = self.document_service.fetch_available_document_references_by_type(
+            nhs_number, doc_type, NotDeleted
+        )
+
+        if not results:
+            return []
 
     def delete_specific_doc_type(
         self,
@@ -43,18 +44,13 @@ class DocumentDeletionService:
         doc_type: Literal[SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG],
     ) -> list[DocumentReference]:
         try:
-            results = self.document_service.fetch_available_document_references_by_type(
-                nhs_number, doc_type, NotDeleted
-            )
-
-            if not results:
-                return []
-
-            self.document_service.delete_documents(
-                table_name=doc_type.get_dynamodb_table_name()[doc_type],
-                document_references=results,
-                type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
-            )
+            results = self.get_documents_references_in_storage(nhs_number, doc_type)
+            if results:
+                self.document_service.delete_documents(
+                    table_name=doc_type.get_dynamodb_table_name(),
+                    document_references=results,
+                    type_of_delete=str(S3LifecycleTags.SOFT_DELETE.value),
+                )
 
             logger.info(
                 f"Deleted document of type {doc_type.value}",
