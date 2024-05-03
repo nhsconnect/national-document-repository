@@ -33,11 +33,15 @@ def lambda_handler(event, context):
 
     nhs_number = event["queryStringParameters"]["patientId"]
     doc_types = extract_document_type_to_enum(event["queryStringParameters"]["docType"])
+    document_references = (
+        event["queryStringParameters"].get("docReferences", "").split(",")
+    )
+
     request_context.patient_nhs_no = nhs_number
 
     document_manifest_service = DocumentManifestService(nhs_number)
     response = document_manifest_service.create_document_manifest_presigned_url(
-        doc_types
+        doc_types, document_references
     )
 
     logger.audit_splunk_info(

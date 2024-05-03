@@ -2,6 +2,8 @@ import os
 from unittest.mock import call
 
 import pytest
+from enums.dynamo_filter import AttributeOperator
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from services.document_manifest_service import DocumentManifestService
 from tests.unit.conftest import MOCK_BUCKET, MOCK_ZIP_OUTPUT_BUCKET, TEST_NHS_NUMBER
@@ -11,6 +13,7 @@ from tests.unit.helpers.data.test_documents import (
     create_test_lloyd_george_doc_store_refs,
 )
 from utils.common_query_filters import UploadCompleted
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.lambda_exceptions import DocumentManifestServiceException
 
 TEST_DOC_STORE_DOCUMENT_REFS = create_test_doc_store_refs()
@@ -92,6 +95,38 @@ def test_create_document_manifest_presigned_url_lloyd_george(
         nhs_number=TEST_NHS_NUMBER,
         doc_type=SupportedDocumentTypes.LG,
         query_filter=UploadCompleted,
+    )
+    mock_s3_service.create_download_presigned_url.assert_called_once_with(
+        s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
+    )
+
+
+def test_create_document_manifest_presigned_url_lloyd_george_with_file_ref(
+    mock_service, mock_s3_service, mock_document_service
+):
+    mock_service.document_service.fetch_available_document_references_by_type.return_value = (
+        TEST_LLOYD_GEORGE_DOCUMENT_REFS
+    )
+
+    response = mock_service.create_document_manifest_presigned_url(
+        [SupportedDocumentTypes.LG], ["test_file_ref"]
+    )
+    mock_filter_doc_by_ref = (
+        UploadCompleted
+        & DynamoQueryFilterBuilder()
+        .add_condition(
+            attribute=str(DocumentReferenceMetadataFields.ID.value),
+            attr_operator=AttributeOperator.EQUAL,
+            filter_value="test_file_ref",
+        )
+        .build()
+    )
+    assert mock_service.zip_file_name == f"patient-record-{TEST_NHS_NUMBER}.zip"
+    assert response == MOCK_PRESIGNED_URL_RESPONSE
+    mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
+        nhs_number=TEST_NHS_NUMBER,
+        doc_type=SupportedDocumentTypes.LG,
+        query_filter=mock_filter_doc_by_ref,
     )
     mock_s3_service.create_download_presigned_url.assert_called_once_with(
         s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name

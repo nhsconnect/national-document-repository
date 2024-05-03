@@ -4,7 +4,9 @@ import tempfile
 import zipfile
 
 from botocore.exceptions import ClientError
+from enums.dynamo_filter import AttributeOperator, ConditionOperator
 from enums.lambda_error import LambdaError
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.zip_trace import ZipTrace
@@ -14,6 +16,7 @@ from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
+from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.exceptions import DynamoServiceException
 from utils.lambda_exceptions import DocumentManifestServiceException
 from utils.lloyd_george_validator import (
@@ -38,16 +41,32 @@ class DocumentManifestService:
         self.zip_trace_table = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
 
     def create_document_manifest_presigned_url(
-        self, doc_types: list[SupportedDocumentTypes]
+        self,
+        doc_types: list[SupportedDocumentTypes],
+        document_references: list[str] = None,
     ) -> str:
         try:
             documents = []
+            dynamo_filter_document_by_references = (
+                DynamoQueryFilterBuilder().set_combination_operator(
+                    operator=ConditionOperator.OR
+                )
+            )
+            if document_references:
+                for document_reference in document_references:
+                    dynamo_filter_document_by_references.add_condition(
+                        attribute=str(DocumentReferenceMetadataFields.ID.value),
+                        attr_operator=AttributeOperator.EQUAL,
+                        filter_value=document_reference,
+                    )
+
             for doc_type in doc_types:
                 documents_for_doc_type = (
                     self.document_service.fetch_available_document_references_by_type(
                         nhs_number=self.nhs_number,
                         doc_type=doc_type,
-                        query_filter=UploadCompleted,
+                        query_filter=UploadCompleted
+                        & dynamo_filter_document_by_references.build(),
                     )
                 )
                 if documents_for_doc_type and doc_type == SupportedDocumentTypes.LG:
