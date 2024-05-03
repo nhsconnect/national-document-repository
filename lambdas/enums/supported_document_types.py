@@ -12,7 +12,6 @@ logger = LoggingService(__name__)
 class SupportedDocumentTypes(str, Enum):
     ARF = "ARF"
     LG = "LG"
-    ALL = "ALL"
 
     @staticmethod
     def list():

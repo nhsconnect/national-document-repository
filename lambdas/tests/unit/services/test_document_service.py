@@ -111,7 +111,6 @@ def test_fetch_available_document_references_by_type_lg_returns_empty_list_of_do
     result = mock_service.fetch_available_document_references_by_type(
         TEST_NHS_NUMBER, SupportedDocumentTypes.LG, mock_filter_expression
     )
-    print(result)
     assert len(result) == 0
     mock_dynamo_service.query_with_requested_fields.assert_called_once_with(
         table_name=MOCK_LG_TABLE_NAME,

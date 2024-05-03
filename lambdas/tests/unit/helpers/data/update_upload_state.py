@@ -73,8 +73,6 @@ MOCK_NO_FILES_REQUEST = {"test": "test"}
 
 MOCK_EMPTY_LIST = []
 
-MOCK_BOTH_DOCTYPES = SupportedDocumentTypes.ALL.value
-
 MOCK_VALID_LG_EVENT = {
     "httpMethod": "POST",
     "body": json.dumps(MOCK_LG_DOCUMENTS_REQUEST),

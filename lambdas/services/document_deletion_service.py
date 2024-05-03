@@ -34,9 +34,7 @@ class DocumentDeletionService:
         results = self.document_service.fetch_available_document_references_by_type(
             nhs_number, doc_type, NotDeleted
         )
-
-        if not results:
-            return []
+        return results
 
     def delete_specific_doc_type(
         self,

@@ -3,6 +3,7 @@ from enum import Enum
 
 import pytest
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from handlers.document_manifest_by_nhs_number_handler import lambda_handler
@@ -42,15 +43,15 @@ def manifest_service_side_effect(nhs_number, doc_type):
         return create_test_doc_store_refs()
     if doc_type == SupportedDocumentTypes.LG.value:
         return create_test_lloyd_george_doc_store_refs()
-    if doc_type == SupportedDocumentTypes.ALL.value:
-        return create_test_doc_store_refs() + create_test_lloyd_george_doc_store_refs()
     return []
 
 
 def test_lambda_handler_when_service_raises_document_manifest_exception_returns_correct_response(
     mock_service, valid_id_and_arf_doctype_event, context
 ):
-    exception = DocumentManifestServiceException(status_code=404, error=MockError.Error)
+    exception = DocumentManifestServiceException(
+        status_code=404, error=LambdaError.MockError
+    )
     mock_service.create_document_manifest_presigned_url.side_effect = exception
 
     expected = ApiGatewayResponse(
