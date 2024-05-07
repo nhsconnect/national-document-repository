@@ -138,7 +138,6 @@ function LloydGeorgeRecordStage({
             ) : (
                 <BackButton />
             )}
-            <h1>{pageHeader}</h1>
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
                     <WarningCallout
