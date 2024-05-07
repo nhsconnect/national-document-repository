@@ -2,9 +2,7 @@ import os
 from enum import Enum
 from typing import List
 
-from enums.lambda_error import LambdaError
 from utils.audit_logging_setup import LoggingService
-from utils.lambda_exceptions import InvalidDocTypeException
 
 logger = LoggingService(__name__)
 
@@ -36,17 +34,8 @@ class SupportedDocumentTypes(str, Enum):
         so that the logic of resolving table names are controlled in one place.
         """
 
-        try:
-            document_type_to_table_name = {
-                SupportedDocumentTypes.ARF: os.getenv("DOCUMENT_STORE_DYNAMODB_NAME"),
-                SupportedDocumentTypes.LG: os.getenv("LLOYD_GEORGE_DYNAMODB_NAME"),
-            }
-            return document_type_to_table_name[self]
-        except KeyError as e:
-            logger.error(
-                str(e),
-                {
-                    "Result": "An error occurred due to missing environment variable for doc_type"
-                },
-            )
-            raise InvalidDocTypeException(status_code=500, error=LambdaError.DocTypeDB)
+        document_type_to_table_name = {
+            SupportedDocumentTypes.ARF: os.getenv("DOCUMENT_STORE_DYNAMODB_NAME"),
+            SupportedDocumentTypes.LG: os.getenv("LLOYD_GEORGE_DYNAMODB_NAME"),
+        }
+        return document_type_to_table_name[self]
