@@ -38,8 +38,8 @@ class SupportedDocumentTypes(str, Enum):
 
         try:
             document_type_to_table_name = {
-                SupportedDocumentTypes.ARF: os.environ["DOCUMENT_STORE_DYNAMODB_NAME"],
-                SupportedDocumentTypes.LG: os.environ["LLOYD_GEORGE_DYNAMODB_NAME"],
+                SupportedDocumentTypes.ARF: os.getenv("DOCUMENT_STORE_DYNAMODB_NAME"),
+                SupportedDocumentTypes.LG: os.getenv("LLOYD_GEORGE_DYNAMODB_NAME"),
             }
             return document_type_to_table_name[self]
         except KeyError as e:
