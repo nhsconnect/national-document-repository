@@ -128,7 +128,8 @@ function LloydGeorgeRecordStage({
                 <BackLink
                     data-testid="back-link"
                     href="#"
-                    onClick={() => {
+                    onClick={(e) => {
+                        e.preventDefault();
                         setFullScreen(false);
                     }}
                 >
@@ -137,7 +138,6 @@ function LloydGeorgeRecordStage({
             ) : (
                 <BackButton />
             )}
-            <h1>{pageHeader}</h1>
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
                     <WarningCallout
@@ -217,6 +217,8 @@ function LloydGeorgeRecordStage({
                     </WarningCallout>
                 </div>
             )}
+
+            <h1>{pageHeader}</h1>
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
                 <p data-testid="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
@@ -255,7 +257,9 @@ function LloydGeorgeRecordStage({
                     )}
                 </>
             ) : (
-                <PdfViewer fileUrl={lloydGeorgeUrl} />
+                <div className="lloydgeorge_record-stage_fs">
+                    <PdfViewer fileUrl={lloydGeorgeUrl} />
+                </div>
             )}
         </div>
     );
