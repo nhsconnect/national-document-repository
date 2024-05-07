@@ -5,6 +5,7 @@ from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT_RESTRICTED,
     PDS_PATIENT_WITH_GP_END_DATE,
     PDS_PATIENT_WITHOUT_ACTIVE_GP,
+    PDS_PATIENT_WITHOUT_ADDRESS,
 )
 from tests.unit.helpers.data.pds.utils import create_patient
 from utils.utilities import validate_nhs_number
@@ -109,3 +110,23 @@ def test_not_raise_error_when_gp_end_date_is_in_the_future():
         patient.get_minimum_patient_details(patient.id)
     except ValueError:
         assert False, "No active GP practice for the patient"
+
+
+def test_get_minimum_patient_details_missing_address():
+    patient = create_patient(PDS_PATIENT_WITHOUT_ADDRESS)
+
+    expected_patient_details = PatientDetails(
+        givenName=["Jane"],
+        familyName="Smith",
+        birthDate="2010-10-22",
+        postalCode="",
+        nhsNumber="9000000009",
+        superseded=False,
+        restricted=False,
+        generalPracticeOds="Y12345",
+        active=True,
+    )
+
+    result = patient.get_patient_details(patient.id)
+
+    assert expected_patient_details == result

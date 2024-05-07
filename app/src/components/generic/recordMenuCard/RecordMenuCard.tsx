@@ -1,67 +1,93 @@
 import { Card } from 'nhsuk-react-components';
 import React, { Dispatch, SetStateAction } from 'react';
-import { PdfActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
-import useRole from '../../../helpers/hooks/useRole';
+import { LGRecordActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
 import { Link, useNavigate } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
 type Props = {
-    recordLinks: Array<PdfActionLink>;
+    recordLinks: Array<LGRecordActionLink>;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    hasPdf: boolean;
 };
 
-type LinkProps = {
-    actionLinks: Array<PdfActionLink>;
+type SubSectionProps = {
+    actionLinks: Array<LGRecordActionLink>;
     heading: string;
+    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-function RecordMenuCard({ recordLinks, setStage, hasPdf }: Props) {
-    const role = useRole();
-    const navigate = useNavigate();
+function RecordMenuCard({ recordLinks, setStage }: Props) {
+    const updateActions = recordLinks.filter((link) => link.type === RECORD_ACTION.UPDATE);
+    const downloadActions = recordLinks.filter((link) => link.type === RECORD_ACTION.DOWNLOAD);
 
-    const updateActions = recordLinks.filter(
-        (link) => link.type === RECORD_ACTION.UPLOAD && role && !link.unauthorised?.includes(role),
-    );
-    const downloadActions = recordLinks.filter(
-        (link) =>
-            link.type === RECORD_ACTION.DOWNLOAD && role && !link.unauthorised?.includes(role),
-    );
-
-    const Links = ({ actionLinks, heading }: LinkProps) => (
-        <>
-            <h4>{heading}</h4>
-            <ol>
-                {actionLinks.map((link) => (
-                    <li key={link.key} data-testid={link.key}>
-                        <Link
-                            to="#placeholder"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (link.href) navigate(link.href);
-                                else if (link.stage) setStage(link.stage);
-                            }}
-                        >
-                            {link.label}
-                        </Link>
-                    </li>
-                ))}
-            </ol>
-        </>
-    );
+    if (recordLinks.length === 0) {
+        return <></>;
+    }
 
     return (
         <Card className="lloydgeorge_record-stage_menu">
             <Card.Content className="lloydgeorge_record-stage_menu-content">
-                {updateActions.length && !hasPdf && (
-                    <Links actionLinks={updateActions} heading="Update record" />
+                {updateActions.length > 0 && (
+                    <SideMenuSubSection
+                        actionLinks={updateActions}
+                        heading="Update record"
+                        setStage={setStage}
+                    />
                 )}
-                {downloadActions.length && hasPdf && (
-                    <Links actionLinks={downloadActions} heading="Download record" />
+                {downloadActions.length > 0 && (
+                    <SideMenuSubSection
+                        actionLinks={downloadActions}
+                        heading="Download record"
+                        setStage={setStage}
+                    />
                 )}
             </Card.Content>
         </Card>
     );
 }
 
+const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps) => {
+    return (
+        <>
+            <h2 className="nhsuk-heading-m">{heading}</h2>
+            <ol>
+                {actionLinks.map((link) => (
+                    <li key={link.key}>
+                        <LinkItem link={link} setStage={setStage} />
+                    </li>
+                ))}
+            </ol>
+        </>
+    );
+};
+
+type LinkItemProps = {
+    link: LGRecordActionLink;
+    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+};
+
+const LinkItem = ({ link, setStage }: LinkItemProps) => {
+    const navigate = useNavigate();
+
+    if (link.href || link.stage) {
+        return (
+            <Link
+                to="#placeholder"
+                onClick={(e) => {
+                    e.preventDefault();
+                    if (link.href) navigate(link.href);
+                    else if (link.stage) setStage(link.stage);
+                }}
+                data-testid={link.key}
+            >
+                {link.label}
+            </Link>
+        );
+    } else {
+        return (
+            <button className="link-button" onClick={link.onClick} data-testid={link.key}>
+                {link.label}
+            </button>
+        );
+    }
+};
 export default RecordMenuCard;

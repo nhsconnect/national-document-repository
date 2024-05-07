@@ -23,7 +23,10 @@ import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../../types/generic/inputRef';
 import BackButton from '../../../generic/backButton/BackButton';
-import { lloydGeorgeRecordLinks } from '../../../../types/blocks/lloydGeorgeActions';
+import {
+    getBSOLUserRecordActionLinks,
+    getNonBSOLUserRecordActionLinks,
+} from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
@@ -59,6 +62,14 @@ function LloydGeorgeRecordStage({
         required: true,
     });
 
+    const handleDownloadAndRemoveRecordButton = () => {
+        if (downloadRemoveButtonClicked) {
+            setError('confirmDownloadRemove', { type: 'custom', message: 'true' });
+        }
+        setFocus('confirmDownloadRemove');
+        setDownloadRemoveButtonClicked(true);
+    };
+
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
@@ -66,13 +77,16 @@ function LloydGeorgeRecordStage({
     const isBSOL = useIsBSOL();
     const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
-    const hasMenuAccess = lloydGeorgeRecordLinks.some(
-        (l) => role && !l.unauthorised?.includes(role),
-    );
+    const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
 
-    const showMenu =
-        hasMenuAccess &&
-        [DOWNLOAD_STAGE.NO_RECORDS, DOWNLOAD_STAGE.SUCCEEDED].includes(downloadStage);
+    const recordLinksToShow = isBSOL
+        ? getBSOLUserRecordActionLinks({ role, hasRecordInStorage })
+        : getNonBSOLUserRecordActionLinks({
+              role,
+              hasRecordInStorage,
+              onClickFunctionForDownloadAndRemove: handleDownloadAndRemoveRecordButton,
+          });
+    const showMenu = recordLinksToShow.length > 0;
 
     const handleConfirmDownloadAndRemoveButton = () => {
         setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
@@ -90,11 +104,6 @@ function LloydGeorgeRecordStage({
                 lastUpdated,
                 numberOfFiles,
                 totalFileSizeInByte,
-                setStage,
-                setDownloadRemoveButtonClicked,
-                downloadRemoveButtonClicked,
-                setError,
-                setFocus,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         } else {
@@ -129,6 +138,7 @@ function LloydGeorgeRecordStage({
             ) : (
                 <BackButton />
             )}
+            <h1>{pageHeader}</h1>
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
                     <WarningCallout
@@ -223,9 +233,8 @@ function LloydGeorgeRecordStage({
                         <div className="lloydgeorge_record-stage_flex">
                             <div className="lloydgeorge_record-stage_flex-row">
                                 <RecordMenuCard
-                                    recordLinks={lloydGeorgeRecordLinks}
+                                    recordLinks={recordLinksToShow}
                                     setStage={setStage}
-                                    hasPdf={downloadStage === DOWNLOAD_STAGE.SUCCEEDED}
                                 />
                             </div>
                             <div className="lloydgeorge_record-stage_flex-row">

@@ -14,14 +14,14 @@ class Address(BaseModel):
     model_config = conf
 
     use: str
-    period: Period
+    period: Optional[Period] = None
     postal_code: Optional[str] = ""
 
 
 class Name(BaseModel):
     use: str
-    period: Period
-    given: list[str]
+    period: Optional[Period] = None
+    given: Optional[list[str]] = None
     family: str
 
 
@@ -36,21 +36,21 @@ class Meta(BaseModel):
 
 
 class GPIdentifier(BaseModel):
-    system: Optional[str]
+    system: Optional[str] = ""
     value: str
-    period: Optional[Period]
+    period: Optional[Period] = None
 
 
 class GeneralPractitioner(BaseModel):
-    id: Optional[str]
-    type: Optional[str]
+    id: Optional[str] = ""
+    type: Optional[str] = ""
     identifier: GPIdentifier
 
 
 class PatientDetails(BaseModel):
     model_config = conf
 
-    given_Name: Optional[list[str]] = []
+    given_name: Optional[list[str]] = [""]
     family_name: Optional[str] = ""
     birth_date: Optional[date] = None
     postal_code: Optional[str] = ""
@@ -69,7 +69,7 @@ class Patient(BaseModel):
     address: Optional[list[Address]] = []
     name: list[Name]
     meta: Meta
-    general_practitioner: Optional[list[GeneralPractitioner]] = []
+    general_practitioner: Optional[list[GeneralPractitioner]] = None
 
     def get_security(self) -> Security:
         security = self.meta.security[0] if self.meta.security[0] else None
@@ -90,16 +90,17 @@ class Patient(BaseModel):
                 return entry
 
     def get_current_home_address(self) -> Optional[Address]:
-        if self.is_unrestricted():
+        if self.is_unrestricted() and self.address:
             for entry in self.address:
                 if entry.use.lower() == "home":
                     return entry
 
     def get_active_ods_code_for_gp(self) -> str:
-        for entry in self.general_practitioner:
-            gp_end_date = entry.identifier.period.end
-            if not gp_end_date or gp_end_date >= date.today():
-                return entry.identifier.value
+        if self.general_practitioner:
+            for entry in self.general_practitioner:
+                gp_end_date = entry.identifier.period.end
+                if not gp_end_date or gp_end_date >= date.today():
+                    return entry.identifier.value
         return ""
 
     def get_is_active_status(self) -> bool:
@@ -111,9 +112,11 @@ class Patient(BaseModel):
             givenName=self.get_current_usual_name().given,
             familyName=self.get_current_usual_name().family,
             birthDate=self.birth_date,
-            postalCode=self.get_current_home_address().postal_code
-            if self.is_unrestricted()
-            else "",
+            postalCode=(
+                self.get_current_home_address().postal_code
+                if self.is_unrestricted() and self.address
+                else ""
+            ),
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
@@ -128,9 +131,9 @@ class Patient(BaseModel):
             givenName=self.get_current_usual_name().given,
             familyName=self.get_current_usual_name().family,
             birthDate=self.birth_date,
-            generalPracticeOds=self.get_active_ods_code_for_gp()
-            if self.is_unrestricted()
-            else "",
+            generalPracticeOds=(
+                self.get_active_ods_code_for_gp() if self.is_unrestricted() else ""
+            ),
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
