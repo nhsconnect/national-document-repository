@@ -131,7 +131,7 @@ class DocumentManifestService:
                 attr_operator=AttributeOperator.EQUAL,
                 filter_value=document_reference,
             )
-        return dynamo_filter_document_by_references.build_query()
+        return dynamo_filter_document_by_references.build()
 
     def retrieve_document_metadata_from_dynamo(self, doc_type, query_filter):
         return self.document_service.fetch_available_document_references_by_type(
