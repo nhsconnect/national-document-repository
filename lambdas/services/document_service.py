@@ -47,8 +47,6 @@ class DocumentService:
         for item in response["Items"]:
             document = DocumentReference.model_validate(item)
             documents.append(document)
-        logger.info(f"Fetched {len(documents)} documents")
-        logger.info(f"Response: {response}")
         return documents
 
     def fetch_documents_from_table_with_filter(
@@ -68,6 +66,8 @@ class DocumentService:
         for item in response["Items"]:
             document = DocumentReference.model_validate(item)
             documents.append(document)
+        logger.info(f"Fetched {len(documents)} documents")
+        logger.info(f"Response: {response}")
         return documents
 
     def delete_documents(
