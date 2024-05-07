@@ -249,7 +249,7 @@ function LloydGeorgeRecordStage({
                     )}
                 </>
             ) : (
-                <div style={{ borderTop: 'solid 1px', paddingTop: '48px' }}>
+                <div className="lloydgeorge_record-stage_fs">
                     <PdfViewer fileUrl={lloydGeorgeUrl} />
                 </div>
             )}
