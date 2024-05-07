@@ -280,5 +280,39 @@ describe('<FeedbackPage />', () => {
             expect(screen.getByText('Submitting...')).toBeInTheDocument();
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
         });
+
+        it('navigates to feedback confirmation page when call to feedback endpoint returns 200', async () => {
+            mockedAxios.post.mockImplementation(() =>
+                Promise.resolve({ status: 200, data: 'Success' }),
+            );
+            const mockInputData = {
+                feedbackContent: 'Mock feedback content',
+                howSatisfied: SATISFACTION_CHOICES.VeryDissatisfied,
+            };
+            const expectedEmailContent = {
+                ...mockInputData,
+                respondentName: '',
+                respondentEmail: '',
+            };
+
+            renderComponent();
+
+            act(() => {
+                fillInForm(mockInputData);
+                clickSubmitButton();
+            });
+
+            await waitFor(() =>
+                expect(mockedAxios.post).toBeCalledWith(
+                    baseURL + '/Feedback',
+                    expectedEmailContent,
+                    {
+                        headers: {},
+                    },
+                ),
+            );
+            expect(screen.getByText('Submitting...')).toBeInTheDocument();
+            expect(mockedUseNavigate).toHaveBeenCalledWith(routes.FEEDBACK_CONFIRMATION);
+        });
     });
 });
