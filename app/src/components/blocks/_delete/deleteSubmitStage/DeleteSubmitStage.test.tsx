@@ -1,24 +1,24 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
-import DeleteDocumentsStage, { Props } from './DeleteDocumentsStage';
-import { getFormattedDate } from '../../../helpers/utils/formatDate';
+import { buildLgSearchResult, buildPatientDetails } from '../../../../helpers/test/testBuilders';
+import DeleteSubmitStage, { Props } from './DeleteSubmitStage';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
+import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
 import axios from 'axios/index';
-import useRole from '../../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE, authorisedRoles } from '../../../types/generic/authRole';
-import { routes } from '../../../types/generic/routes';
-import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
-import usePatient from '../../../helpers/hooks/usePatient';
+import useRole from '../../../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE, authorisedRoles } from '../../../../types/generic/authRole';
+import { routes } from '../../../../types/generic/routes';
+import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
+import usePatient from '../../../../helpers/hooks/usePatient';
 
-jest.mock('../../../helpers/hooks/useConfig');
-jest.mock('../deletionConfirmationStage/DeletionConfirmationStage', () => () => (
+jest.mock('../../../../helpers/hooks/useConfig');
+jest.mock('../deletionConfirmationStage/DeleteResultStage', () => () => (
     <div>Deletion complete</div>
 ));
-jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../helpers/hooks/useRole');
-jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../../helpers/hooks/useRole');
+jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('axios');
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
@@ -39,7 +39,7 @@ const mockSetStage = jest.fn();
 const mockSetIsDeletingDocuments = jest.fn();
 const mockSetDownloadStage = jest.fn();
 
-describe('DeleteDocumentsStage', () => {
+describe('DeleteSubmitStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
@@ -61,7 +61,9 @@ describe('DeleteDocumentsStage', () => {
 
                 await waitFor(async () => {
                     expect(
-                        screen.getByText('Are you sure you want to permanently delete files for:'),
+                        screen.getByText(
+                            'Are you sure you want to permanently remove this record?',
+                        ),
                     ).toBeInTheDocument();
                 });
 
@@ -134,7 +136,7 @@ describe('DeleteDocumentsStage', () => {
         });
 
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE])(
-            "renders DeletionConfirmationStage when the Yes is selected and Continue clicked, when user role is '%s'",
+            "renders DeleteResultStage when the Yes is selected and Continue clicked, when user role is '%s'",
             async (role) => {
                 mockedAxios.delete.mockReturnValue(
                     Promise.resolve({ status: 200, data: 'Success' }),
@@ -157,7 +159,7 @@ describe('DeleteDocumentsStage', () => {
             },
         );
 
-        it('does not render DeletionConfirmationStage when the Yes is selected, Continue clicked, and user role is GP Clinical', async () => {
+        it('does not render DeleteResultStage when the Yes is selected, Continue clicked, and user role is GP Clinical', async () => {
             mockedAxios.delete.mockReturnValue(Promise.resolve({ status: 200, data: 'Success' }));
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
 
@@ -262,10 +264,11 @@ const renderComponent = (docType: DOCUMENT_TYPE) => {
     const props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'> = {
         numberOfFiles: mockLgSearchResult.number_of_files,
         docType,
+        recordType: docType.toString(),
     };
 
     render(
-        <DeleteDocumentsStage
+        <DeleteSubmitStage
             {...props}
             setStage={mockSetStage}
             setIsDeletingDocuments={mockSetIsDeletingDocuments}

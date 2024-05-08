@@ -1,4 +1,4 @@
-import useTitle from '../../../helpers/hooks/useTitle';
+import useTitle from '../../../../helpers/hooks/useTitle';
 
 function FeedbackConfirmation() {
     const pageHeader = 'We’ve received your feedback';

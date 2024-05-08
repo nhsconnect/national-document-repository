@@ -1,19 +1,19 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
-import DeletionConfirmationStage from './DeletionConfirmationStage';
+import { buildLgSearchResult, buildPatientDetails } from '../../../../helpers/test/testBuilders';
+import DeleteResultStage from './DeleteResultStage';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import { routes } from '../../../types/generic/routes';
-import useRole from '../../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
-import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import { routes } from '../../../../types/generic/routes';
+import useRole from '../../../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
+import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import { LinkProps } from 'react-router-dom';
-import usePatient from '../../../helpers/hooks/usePatient';
-import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
+import usePatient from '../../../../helpers/hooks/usePatient';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 const mockedUseNavigate = jest.fn();
-jest.mock('../../../helpers/hooks/useRole');
-jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/useRole');
+jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
@@ -30,7 +30,7 @@ const mockLgSearchResult = buildLgSearchResult();
 const mockSetStage = jest.fn();
 const mockSetDownloadStage = jest.fn();
 
-describe('DeletionConfirmationStage', () => {
+describe('DeleteResultStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
@@ -47,12 +47,7 @@ describe('DeletionConfirmationStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
 
                 mockedUseRole.mockReturnValue(role);
-                render(
-                    <DeletionConfirmationStage
-                        numberOfFiles={numberOfFiles}
-                        setStage={mockSetStage}
-                    />,
-                );
+                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
                 await waitFor(async () => {
                     expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -77,9 +72,7 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = 1;
 
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
-            render(
-                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
-            );
+            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -105,12 +98,7 @@ describe('DeletionConfirmationStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
 
-                render(
-                    <DeletionConfirmationStage
-                        numberOfFiles={numberOfFiles}
-                        setStage={mockSetStage}
-                    />,
-                );
+                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
                 await waitFor(async () => {
                     expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -128,9 +116,7 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = mockLgSearchResult.number_of_files;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(
-                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
-            );
+            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -147,9 +133,7 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(
-                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
-            );
+            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -168,12 +152,7 @@ describe('DeletionConfirmationStage', () => {
                 const numberOfFiles = 7;
                 mockedUseRole.mockReturnValue(role);
 
-                render(
-                    <DeletionConfirmationStage
-                        numberOfFiles={numberOfFiles}
-                        setStage={mockSetStage}
-                    />,
-                );
+                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
                 await waitFor(async () => {
                     expect(screen.getByText('Deletion complete')).toBeInTheDocument();
@@ -194,7 +173,7 @@ describe('DeletionConfirmationStage', () => {
                 mockedUseRole.mockReturnValue(role);
 
                 render(
-                    <DeletionConfirmationStage
+                    <DeleteResultStage
                         numberOfFiles={numberOfFiles}
                         setStage={mockSetStage}
                         setDownloadStage={mockSetDownloadStage}
@@ -226,9 +205,7 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(
-                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
-            );
+            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
                 expect(screen.getByText('Deletion complete')).toBeInTheDocument();

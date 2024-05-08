@@ -23,7 +23,7 @@ export const lloydGeorgeRecordLinksInBSOL: Array<LGRecordActionLink> = [
         label: 'Remove files',
         key: 'delete-all-files-link',
         type: RECORD_ACTION.UPDATE,
-        stage: LG_RECORD_STAGE.DELETE_ALL,
+        stage: LG_RECORD_STAGE.REMOVE,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
         showIfRecordInStorage: true,
     },

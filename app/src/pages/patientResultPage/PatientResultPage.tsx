@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
-import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
+import PatientDetails from '../../components/generic/patientDetails/PatientDetails';
 import BackButton from '../../components/generic/backButton/BackButton';
 import { useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
@@ -74,7 +74,7 @@ function PatientResultPage() {
                 </WarningCallout>
             )}
 
-            <PatientSummary />
+            <PatientDetails />
 
             <form onSubmit={handleSubmit(submit)} style={{ marginTop: 60 }}>
                 {isGp && (

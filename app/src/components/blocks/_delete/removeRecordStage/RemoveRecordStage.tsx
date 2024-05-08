@@ -2,12 +2,13 @@ import React, { Dispatch, SetStateAction } from 'react';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { BackLink, Button, Table, WarningCallout } from 'nhsuk-react-components';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import PatientDetails from '../../../generic/patientDetails/PatientDetails';
 import moment, { Moment } from 'moment';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    recordType: string;
 };
 
 type DownloadDocument = {
@@ -15,7 +16,7 @@ type DownloadDocument = {
     uploaded: Moment;
 };
 
-function LloydGeorgeRemoveRecordStage({ setStage }: Props) {
+function RemoveRecordStage({ setStage, recordType }: Props) {
     useTitle({ pageTitle: 'Remove record' });
     const nameTest = 'of4_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010]';
     const documents = Array.apply(null, Array(4)).map((x, i) => ({
@@ -35,7 +36,7 @@ function LloydGeorgeRemoveRecordStage({ setStage }: Props) {
             >
                 Go back
             </BackLink>
-            <h1>Remove this Lloyd George record</h1>
+            <h1>Remove this {recordType}</h1>
             <WarningCallout>
                 <WarningCallout.Label>Before removing</WarningCallout.Label>
                 <p>
@@ -44,7 +45,7 @@ function LloydGeorgeRemoveRecordStage({ setStage }: Props) {
                     period.
                 </p>
             </WarningCallout>
-            <PatientSummary />
+            <PatientDetails />
             {documents && documents.length > 0 && (
                 <Table caption="List of files in record" id="current-documents-table">
                     <Table.Head>
@@ -68,7 +69,13 @@ function LloydGeorgeRemoveRecordStage({ setStage }: Props) {
                     </Table.Body>
                 </Table>
             )}
-            <Button>Remove all files</Button>
+            <Button
+                onClick={() => {
+                    setStage(LG_RECORD_STAGE.DELETE_ALL);
+                }}
+            >
+                Remove all files
+            </Button>
             <LinkButton
                 type="button"
                 onClick={() => {
@@ -80,4 +87,4 @@ function LloydGeorgeRemoveRecordStage({ setStage }: Props) {
         </>
     );
 }
-export default LloydGeorgeRemoveRecordStage;
+export default RemoveRecordStage;

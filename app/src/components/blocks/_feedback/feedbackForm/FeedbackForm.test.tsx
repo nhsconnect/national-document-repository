@@ -1,15 +1,15 @@
 import { act, render, screen, waitFor } from '@testing-library/react';
-import { SATISFACTION_CHOICES, SUBMISSION_STAGE } from '../../../types/pages/feedbackPage/types';
+import { SATISFACTION_CHOICES, SUBMISSION_STAGE } from '../../../../types/pages/feedbackPage/types';
 import userEvent from '@testing-library/user-event';
 import FeedbackForm, { Props } from './FeedbackForm';
-import { fillInForm } from '../../../helpers/test/formUtils';
+import { fillInForm } from '../../../../helpers/test/formUtils';
 import axios from 'axios';
-import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
-import { routes } from '../../../types/generic/routes';
+import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
+import { routes } from '../../../../types/generic/routes';
 
 jest.mock('axios');
-jest.mock('../../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
+jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedBaseURL = useBaseAPIUrl as jest.Mock;

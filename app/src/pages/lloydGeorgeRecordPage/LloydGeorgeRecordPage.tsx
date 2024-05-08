@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
+import DeleteSubmitStage from '../../components/blocks/_delete/deleteSubmitStage/DeleteSubmitStage';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 import LloydGeorgeViewRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeViewRecordStage/LloydGeorgeViewRecordStage';
@@ -21,7 +21,7 @@ import { isMock } from '../../helpers/utils/isLocal';
 import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
-import LloydGeorgeRemoveRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRemoveRecordStage/LloydGeorgeRemoveRecordStage';
+import RemoveRecordStage from '../../components/blocks/_delete/removeRecordStage/RemoveRecordStage';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -33,7 +33,7 @@ function LloydGeorgeRecordPage() {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const mounted = useRef(false);
-    const [stage, setStage] = useState(LG_RECORD_STAGE.REMOVE);
+    const [stage, setStage] = useState(LG_RECORD_STAGE.RECORD);
     const navigate = useNavigate();
     const config = useConfig();
     const role = useRole();
@@ -131,7 +131,7 @@ function LloydGeorgeRecordPage() {
                 />
             );
         case LG_RECORD_STAGE.REMOVE:
-            return <LloydGeorgeRemoveRecordStage setStage={setStage} />;
+            return <RemoveRecordStage setStage={setStage} recordType="Lloyd George" />;
 
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
             return (
@@ -144,9 +144,10 @@ function LloydGeorgeRecordPage() {
             );
         case LG_RECORD_STAGE.DELETE_ALL:
             return (
-                <DeleteDocumentsStage
+                <DeleteSubmitStage
                     docType={DOCUMENT_TYPE.LLOYD_GEORGE}
                     numberOfFiles={numberOfFiles}
+                    recordType="Lloyd George"
                     setStage={setStage}
                     setDownloadStage={setDownloadStage}
                 />

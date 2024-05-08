@@ -7,7 +7,7 @@ import {
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import PatientDetails from '../../../generic/patientDetails/PatientDetails';
 import useTitle from '../../../../helpers/hooks/useTitle';
 
 export interface Props {
@@ -117,7 +117,7 @@ const UploadSummary = ({ documents }: Props) => {
                     </Details.Text>
                 </Details>
             )}
-            <PatientSummary />
+            <PatientDetails />
 
             <WarningCallout style={{ marginTop: 75 }} id="close-page-warning">
                 <WarningCallout.Label>Before you close this page</WarningCallout.Label>

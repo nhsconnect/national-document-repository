@@ -3,22 +3,22 @@ import {
     FormData,
     SATISFACTION_CHOICES,
     SUBMISSION_STAGE,
-} from '../../../types/pages/feedbackPage/types';
+} from '../../../../types/pages/feedbackPage/types';
 import React, { Dispatch } from 'react';
 import { SubmitHandler, useForm, UseFormRegisterReturn } from 'react-hook-form';
 import isEmail from 'validator/lib/isEmail';
 
-import sendEmail from '../../../helpers/requests/sendEmail';
+import sendEmail from '../../../../helpers/requests/sendEmail';
 import { Button, Fieldset, Input, Radios, Textarea } from 'nhsuk-react-components';
-import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
-import { routes } from '../../../types/generic/routes';
+import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
+import { routes } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
-import { errorToParams } from '../../../helpers/utils/errorToParams';
+import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios';
-import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
-import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
-import { isMock } from '../../../helpers/utils/isLocal';
-import useTitle from '../../../helpers/hooks/useTitle';
+import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
+import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
+import { isMock } from '../../../../helpers/utils/isLocal';
+import useTitle from '../../../../helpers/hooks/useTitle';
 
 export type Props = {
     stage: SUBMISSION_STAGE;

@@ -30,6 +30,7 @@ import {
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -219,13 +220,7 @@ function LloydGeorgeViewRecordStage({
             )}
 
             <h1>{pageHeader}</h1>
-            <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
-                <p data-testid="patient-name">
-                    {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
-                </p>
-                <p data-testid="patient-nhs-number">NHS number: {formattedNhsNumber}</p>
-                <p data-testid="patient-dob">Date of birth: {dob}</p>
-            </div>
+            <PatientSummary />
             {!fullScreen ? (
                 <>
                     {showMenu ? (
