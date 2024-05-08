@@ -16,7 +16,6 @@ const DocumentSearchResults = (props: Props) => {
         <Table id="available-files-table-title" caption={tableCaption}>
             <Table.Head>
                 <Table.Row>
-                    <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
                     <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
                     <Table.Cell className={'table-column-header'}>Uploaded date</Table.Cell>
                 </Table.Row>
