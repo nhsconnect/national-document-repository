@@ -15,12 +15,12 @@ NotDeleted = (
 UploadCompleted = (
     DynamoQueryFilterBuilder()
     .add_condition(
-        attribute=str(DocumentReferenceMetadataFields.DELETED.value),
+        attribute="Deleted",
         attr_operator=AttributeOperator.EQUAL,
         filter_value="",
     )
     .add_condition(
-        attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
+        attribute="Uploaded",
         attr_operator=AttributeOperator.EQUAL,
         filter_value=True,
     )
