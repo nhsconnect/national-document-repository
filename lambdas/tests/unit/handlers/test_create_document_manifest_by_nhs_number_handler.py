@@ -223,3 +223,21 @@ def test_lambda_handler_returns_400_when_doc_type_not_supplied(
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_event_without_auth_header, context)
     assert expected == actual
+
+
+def test_lambda_handler_sets_document_references_to_none_when_no_document_reference_params(
+    mock_service, valid_id_and_lg_doctype_event, context
+):
+    lambda_handler(valid_id_and_lg_doctype_event, context)
+    mock_service.create_document_manifest_presigned_url.assert_called_once_with(
+        [SupportedDocumentTypes.LG], None
+    )
+
+
+def test_lambda_handler_sets_document_references_when_event_contains_document_reference_params(
+    mock_service, valid_id_and_lg_doctype_event_with_doc_references, context
+):
+    lambda_handler(valid_id_and_lg_doctype_event_with_doc_references, context)
+    mock_service.create_document_manifest_presigned_url.assert_called_once_with(
+        [SupportedDocumentTypes.LG], ["test-doc-ref", "test-doc-ref2"]
+    )
