@@ -102,6 +102,7 @@ class DocumentManifestService:
         logger.info(f"first assignment of query filter: {query_filter}")
         logger.info(f"doc types: {doc_types}")
         if document_references:
+            logger.info(f"document references: {document_references}")
             query_filter = (
                 query_filter
                 & self.create_filter_expression_for_document_references(
@@ -137,7 +138,6 @@ class DocumentManifestService:
         return dynamo_filter_document_by_references.build()
 
     def retrieve_document_metadata_from_dynamo(self, doc_type, query_filter):
-
         return self.document_service.fetch_available_document_references_by_type(
             nhs_number=self.nhs_number,
             doc_type=doc_type,
