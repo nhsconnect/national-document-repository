@@ -24,10 +24,7 @@ class DocumentService:
         query_filter: Attr | ConditionBase,
     ) -> list[DocumentReference]:
         table_name = doc_type.get_dynamodb_table_name()
-        logger.info(
-            f"Fetching available document references for document type {doc_type}"
-        )
-        logger.info(f"table name {table_name}")
+
         return self.fetch_documents_from_table_with_filter(
             nhs_number, table_name, query_filter=query_filter
         )
@@ -66,8 +63,6 @@ class DocumentService:
         for item in response["Items"]:
             document = DocumentReference.model_validate(item)
             documents.append(document)
-        logger.info(f"Fetched {len(documents)} documents")
-        logger.info(f"Response: {response}")
         return documents
 
     def delete_documents(
