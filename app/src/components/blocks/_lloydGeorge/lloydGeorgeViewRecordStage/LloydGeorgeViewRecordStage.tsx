@@ -41,7 +41,7 @@ export type Props = {
     stage: LG_RECORD_STAGE;
 };
 
-function LloydGeorgeRecordStage({
+function LloydGeorgeViewRecordStage({
     downloadStage,
     lloydGeorgeUrl,
     lastUpdated,
@@ -265,4 +265,4 @@ function LloydGeorgeRecordStage({
     );
 }
 
-export default LloydGeorgeRecordStage;
+export default LloydGeorgeViewRecordStage;

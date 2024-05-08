@@ -5,7 +5,7 @@ import {
     buildPatientDetails,
 } from '../../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
-import LgRecordStage, { Props } from './LloydGeorgeRecordStage';
+import LgRecordStage, { Props } from './LloydGeorgeViewRecordStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
@@ -41,7 +41,7 @@ jest.mock('react-router-dom', () => ({
     useNavigate: () => mockNavigate,
 }));
 
-describe('LloydGeorgeRecordStage', () => {
+describe('LloydGeorgeViewRecordStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
