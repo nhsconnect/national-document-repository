@@ -99,6 +99,8 @@ class DocumentManifestService:
     ):
         documents = []
         query_filter = UploadCompleted
+        logger.info(f"first assignment of query filter: {query_filter}")
+        logger.info(f"doc types: {doc_types}")
         if document_references:
             query_filter = (
                 query_filter
@@ -111,6 +113,7 @@ class DocumentManifestService:
             documents_for_doc_type = self.retrieve_document_metadata_from_dynamo(
                 doc_type, query_filter
             )
+            logger.info(f"documents for doc type: {documents_for_doc_type}")
 
             if documents_for_doc_type and doc_type == SupportedDocumentTypes.LG:
                 check_for_number_of_files_match_expected(
@@ -134,6 +137,7 @@ class DocumentManifestService:
         return dynamo_filter_document_by_references.build()
 
     def retrieve_document_metadata_from_dynamo(self, doc_type, query_filter):
+
         return self.document_service.fetch_available_document_references_by_type(
             nhs_number=self.nhs_number,
             doc_type=doc_type,
