@@ -8,7 +8,7 @@ type Args = {
     baseUrl: string;
     baseHeaders: AuthHeaders;
     docType?: DOCUMENT_TYPE;
-    docReferences?: string[] | null;
+    docReferences?: Array<string> | null;
 };
 
 type GetPresignedUrl = {
@@ -31,8 +31,9 @@ const getPresignedUrlForZip = async ({
         params: {
             patientId: nhsNumber,
             docType: docType,
-            ...(!!docReferences && { docReferences: docReferences }),
+            ...(!!docReferences && { docReference: docReferences }),
         },
+        paramsSerializer: { indexes: null },
     });
     return data;
 };

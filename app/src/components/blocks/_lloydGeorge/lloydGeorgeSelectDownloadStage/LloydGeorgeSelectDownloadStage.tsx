@@ -103,11 +103,12 @@ function LloydGeorgeSelectDownloadStage({
 
     return (
         <>
-            <h1 id="download-page-title">{pageHeader}</h1>
-            <PatientSummary />
-
             {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.SEARCH_PENDING && (
-                <ProgressBar status="Loading..."></ProgressBar>
+                <>
+                    <h1 id="download-page-title">{pageHeader}</h1>
+                    <PatientSummary />
+                    <ProgressBar status="Loading..."></ProgressBar>
+                </>
             )}
 
             {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED &&

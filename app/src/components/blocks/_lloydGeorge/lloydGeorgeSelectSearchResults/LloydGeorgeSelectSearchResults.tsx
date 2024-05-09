@@ -1,15 +1,17 @@
-import { Button, ButtonLink, Checkboxes, Table } from 'nhsuk-react-components';
+import { Button, Checkboxes, Table } from 'nhsuk-react-components';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
 import { Link, useNavigate } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
-import React, { Dispatch, FormEventHandler, SetStateAction, SyntheticEvent } from 'react';
+import React, { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
+import ErrorBox from '../../../layout/errorBox/ErrorBox';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 type Props = {
     searchResults: Array<SearchResult>;
     setSubmissionSearchState: Dispatch<SetStateAction<SEARCH_AND_DOWNLOAD_STATE>>;
-    setSelectedDocuments: Dispatch<React.SetStateAction<string[]>>;
+    setSelectedDocuments: Dispatch<React.SetStateAction<Array<string>>>;
     selectedDocuments: string[];
 };
 
@@ -18,9 +20,12 @@ const LloydGeorgeSelectSearchResults = (props: Props) => {
         new Date(a.created) < new Date(b.created) ? 1 : -1;
     const navigate = useNavigate();
     const orderedResults = [...props.searchResults].sort(sortMethod);
-    const tableCaption = <h2 style={{ fontSize: 32 }}>List of documents available</h2>;
+    const tableCaption = <h2 style={{ fontSize: 32 }}>List of files in record</h2>;
+    const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
+    const noOptionSelectedError = 'You must select a file to download or download all files';
+    const pageHeader = 'Download the Lloyd George record for this patient';
+
     const onChangeHandler = (e: SyntheticEvent<HTMLInputElement>) => {
-        console.log('before ' + props.selectedDocuments);
         const target = e.target as HTMLInputElement;
 
         if (target.checked) {
@@ -28,12 +33,32 @@ const LloydGeorgeSelectSearchResults = (props: Props) => {
         } else {
             props.setSelectedDocuments(props.selectedDocuments.filter((e) => e !== target.value));
         }
-        console.log('after ' + props.selectedDocuments);
     };
-    console.log('outside ' + props.selectedDocuments);
-
+    const onSubmitSelectedDownload = () => {
+        if (props.selectedDocuments.length) {
+            onSubmitDownload();
+        } else {
+            setShowNoOptionSelectedMessage(true);
+            window.scrollTo(0, 0);
+        }
+    };
+    const onSubmitDownload = () => {
+        props.setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
+    };
     return (
         <>
+            {showNoOptionSelectedMessage && (
+                <ErrorBox
+                    messageTitle={'There is a problem '}
+                    messageLinkBody={noOptionSelectedError}
+                    errorBoxSummaryId={'error-box-summary'}
+                    errorInputLink={'#available-files-table-title'}
+                    dataTestId={'download-selection-error-box'}
+                />
+            )}
+            <h1 id="download-page-title">{pageHeader}</h1>
+            <PatientSummary />
+
             <Table id="available-files-table-title" caption={tableCaption}>
                 <Table.Head>
                     <Table.Row>
@@ -75,15 +100,14 @@ const LloydGeorgeSelectSearchResults = (props: Props) => {
                 </Table.Body>
             </Table>
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <Button type="submit" id="verify-submit">
-                    Download selected files
-                </Button>
-                <ButtonLink
+                <Button onClick={onSubmitSelectedDownload}>Download selected files</Button>
+                <Button
+                    onClick={onSubmitDownload}
                     className={'nhsuk-button nhsuk-button--secondary'}
                     style={{ marginLeft: 18 }}
                 >
                     Download all files
-                </ButtonLink>
+                </Button>
                 <Link
                     id="start-again-link"
                     to=""
