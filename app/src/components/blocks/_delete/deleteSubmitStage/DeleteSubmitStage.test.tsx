@@ -13,9 +13,7 @@ import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../../helpers/hooks/usePatient';
 
 jest.mock('../../../../helpers/hooks/useConfig');
-jest.mock('../deletionConfirmationStage/DeleteResultStage', () => () => (
-    <div>Deletion complete</div>
-));
+jest.mock('../deleteResultStage/DeleteResultStage', () => () => <div>Deletion complete</div>);
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useRole');
 jest.mock('../../../../helpers/hooks/usePatient');
