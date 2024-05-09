@@ -3,7 +3,6 @@ import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { BackLink, Button, Table, WarningCallout } from 'nhsuk-react-components';
 import PatientDetails from '../../../generic/patientDetails/PatientDetails';
-import moment, { Moment } from 'moment';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import getDocumentSearchResults from '../../../../helpers/requests/getDocumentSearchResults';
@@ -16,15 +15,12 @@ import { useNavigate } from 'react-router';
 import { routes } from '../../../../types/generic/routes';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import ServiceError from '../../../layout/serviceErrorBox/ServiceErrorBox';
+import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
+import Spinner from '../../../generic/spinner/Spinner';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     recordType: string;
-};
-
-type DownloadDocument = {
-    filename: string;
-    uploaded: Moment;
 };
 
 function RemoveRecordStage({ setStage, recordType }: Props) {
@@ -36,8 +32,6 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
     const baseHeaders = useBaseAPIHeaders();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const navigate = useNavigate();
-
-    const nameTest = 'of4_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010]';
 
     const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
 
@@ -81,12 +75,7 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
         baseHeaders,
     ]);
 
-    const documents = Array.apply(null, Array(4)).map((x, i) => ({
-        filename: i + 1 + nameTest,
-        uploaded: moment(),
-    }));
-
-    const hasDocuments = searchResults.length && patientDetails;
+    const hasDocuments = !!searchResults.length && !!patientDetails;
 
     return (
         <>
@@ -111,6 +100,8 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
             </WarningCallout>
             <PatientDetails />
 
+            {submissionState === SUBMISSION_STATE.PENDING && <Spinner status="Loading..." />}
+
             {submissionState === SUBMISSION_STATE.FAILED && <ServiceError />}
 
             {submissionState === SUBMISSION_STATE.SUCCEEDED && (
@@ -125,13 +116,15 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
                             </Table.Head>
 
                             <Table.Body>
-                                {documents.map(({ filename, uploaded }: DownloadDocument) => {
+                                {searchResults.map(({ fileName, created }: SearchResult) => {
                                     return (
-                                        <Table.Row key={filename}>
+                                        <Table.Row key={fileName}>
                                             <Table.Cell>
-                                                <div>{filename}</div>
+                                                <div>{fileName}</div>
                                             </Table.Cell>
-                                            <Table.Cell>{uploaded.format()}</Table.Cell>
+                                            <Table.Cell>
+                                                {getFormattedDatetime(new Date(created))}
+                                            </Table.Cell>
                                         </Table.Row>
                                     );
                                 })}
