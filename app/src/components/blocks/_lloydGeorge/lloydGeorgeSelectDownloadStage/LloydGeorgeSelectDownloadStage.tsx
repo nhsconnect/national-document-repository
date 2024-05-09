@@ -41,6 +41,7 @@ function LloydGeorgeSelectDownloadStage({
     const [submissionSearchState, setSubmissionSearchState] = useState(
         SEARCH_AND_DOWNLOAD_STATE.INITIAL,
     );
+    const [selectedDocuments, setSelectedDocuments] = useState<Array<string>>([]);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     useTitle({ pageTitle: pageHeader });
@@ -67,11 +68,13 @@ function LloydGeorgeSelectDownloadStage({
                             fileName: 'testy_test.pdf',
                             created: '2024-05-07T14:52:00.827602Z',
                             virusScannerResult: 'Clean',
+                            id: 'test-id',
                         },
                         {
                             fileName: 'testy_test2.pdf',
                             created: '2024-05-07T14:52:00.827602Z',
                             virusScannerResult: 'Clean',
+                            id: 'test-id-2',
                         },
                     ]);
                     setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
@@ -112,6 +115,8 @@ function LloydGeorgeSelectDownloadStage({
                     <LloydGeorgeSelectSearchResults
                         searchResults={searchResults}
                         setSubmissionSearchState={setSubmissionSearchState}
+                        setSelectedDocuments={setSelectedDocuments}
+                        selectedDocuments={selectedDocuments}
                     />
                 )}
             {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED && (
@@ -120,6 +125,7 @@ function LloydGeorgeSelectDownloadStage({
                     setStage={setStage}
                     deleteAfterDownload={deleteAfterDownload}
                     setDownloadStage={setDownloadStage}
+                    selectedDocuments={selectedDocuments}
                 />
             )}
         </>

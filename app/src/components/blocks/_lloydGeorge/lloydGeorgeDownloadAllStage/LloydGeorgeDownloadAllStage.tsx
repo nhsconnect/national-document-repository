@@ -32,7 +32,7 @@ export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     deleteAfterDownload: boolean;
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
-    docReferences?: string[];
+    selectedDocuments?: string[];
 };
 
 type DownloadLinkAttributes = {
@@ -45,7 +45,7 @@ function LloydGeorgeDownloadAllStage({
     setStage,
     deleteAfterDownload = false,
     setDownloadStage,
-    docReferences,
+    selectedDocuments,
 }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
@@ -115,7 +115,7 @@ function LloydGeorgeDownloadAllStage({
                     baseHeaders,
                     nhsNumber,
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-                    ...(!!docReferences && { docReferences: docReferences }),
+                    ...(!!selectedDocuments && { docReferences: selectedDocuments }),
                 });
 
                 const filename = `patient-record-${nhsNumber}`;
