@@ -1,8 +1,9 @@
 import uuid
 from decimal import Decimal
+from typing import NamedTuple
 
 from models.config import to_capitalized_camel
-from pydantic import BaseModel, ConfigDict, Field, field_serializer
+from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
 
 class StatisticData(BaseModel):
@@ -17,6 +18,21 @@ class StatisticData(BaseModel):
     @field_serializer("statistic_id")
     def serialise_id(self, statistic_id) -> str:
         return f"{self.__class__.__name__}#{statistic_id}"
+
+    # noinspection PyNestedDecorators
+    @field_validator("statistic_id")
+    @classmethod
+    def deserialize_id(cls, raw_statistic_id: str) -> str:
+        if "#" in raw_statistic_id:
+            record_type, uuid_part = raw_statistic_id.split("#")
+            class_name = cls.__name__
+            assert (
+                record_type == class_name
+            ), f"StatisticID must be in the form of `{class_name}#uuid`"
+        else:
+            uuid_part = raw_statistic_id
+
+        return uuid_part
 
 
 class RecordStoreData(StatisticData):
@@ -39,3 +55,27 @@ class OrganisationData(StatisticData):
 class ApplicationData(StatisticData):
     ods_code: str
     active_user_ids_hashed: list[str]
+
+
+class LoadedStatisticData(NamedTuple):
+    record_store_data: list[RecordStoreData]
+    organisation_data: list[OrganisationData]
+    application_data: list[ApplicationData]
+
+
+def load_from_dynamodb_items(dynamodb_items: list[dict]) -> LoadedStatisticData:
+    output = LoadedStatisticData([], [], [])
+
+    for item in dynamodb_items:
+        data_type = item["StatisticID"].split("#")[0]
+        match data_type:
+            case "RecordStoreData":
+                output.record_store_data.append(RecordStoreData.model_validate(item))
+            case "OrganisationData":
+                output.organisation_data.append(OrganisationData.model_validate(item))
+            case "ApplicationData":
+                output.application_data.append(ApplicationData.model_validate(item))
+            case _:
+                raise ValueError(f"unknown type of statistic data: {data_type}")
+
+    return output
