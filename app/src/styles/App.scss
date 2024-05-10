@@ -29,6 +29,32 @@ $sunit: 'px';
     }
 }
 
+@mixin x-axis-mixin($className, $styleName) {
+    $i: 0;
+    $x: 0;
+    @while $i <= $smax {
+        $x: $x + 1;
+        #{$className + $x} {
+            #{$styleName + '-left'}: #{$i + $sunit};
+            #{$styleName + '-right'}: #{$i + $sunit};
+        }
+        $i: $i + $soffset;
+    }
+}
+
+@mixin y-axis-mixin($className, $styleName) {
+    $i: 0;
+    $x: 0;
+    @while $i <= $smax {
+        $x: $x + 1;
+        #{$className + $x} {
+            #{$styleName + '-top'}: #{$i + $sunit};
+            #{$styleName + '-bottom'}: #{$i + $sunit};
+        }
+        $i: $i + $soffset;
+    }
+}
+
 $hmax: 100;
 $hoffset: 10;
 $hunit: '%';
@@ -39,30 +65,6 @@ $hunit: '%';
         $x: $x + 1;
         #{$className + $x} {
             #{$styleName}: #{$i + $hunit};
-        }
-        $i: $i + $hoffset;
-    }
-}
-@mixin x-axis-mixin($className, $styleName) {
-    $i: 0;
-    $x: 0;
-    @while $i <= $hmax {
-        $x: $x + 1;
-        #{$className + $x} {
-            #{$styleName + '-left'}: #{$i + $hunit};
-            #{$styleName + '-right'}: #{$i + $hunit};
-        }
-        $i: $i + $hoffset;
-    }
-}
-@mixin y-axis-mixin($className, $styleName) {
-    $i: 0;
-    $x: 0;
-    @while $i <= $hmax {
-        $x: $x + 1;
-        #{$className + $x} {
-            #{$styleName + '-top'}: #{$i + $hunit};
-            #{$styleName + '-bottom'}: #{$i + $hunit};
         }
         $i: $i + $hoffset;
     }
@@ -81,7 +83,7 @@ $hunit: '%';
 @include x-axis-mixin('.mx-', 'margin');
 
 @include y-axis-mixin('.py-', 'padding');
-@include y-axis-mixin('.py-', 'margin');
+@include y-axis-mixin('.my-', 'margin');
 
 @include size-mixin('.h-', 'height');
 @include size-mixin('.w-', 'width');
