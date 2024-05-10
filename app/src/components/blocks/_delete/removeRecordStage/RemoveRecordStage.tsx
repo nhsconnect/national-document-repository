@@ -26,7 +26,7 @@ export type Props = {
 function RemoveRecordStage({ setStage, recordType }: Props) {
     useTitle({ pageTitle: 'Remove record' });
     const patientDetails = usePatient();
-    const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.INITIAL);
+    const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.PENDING);
 
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
@@ -38,8 +38,6 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
     const mounted = useRef(false);
     useEffect(() => {
         const onPageLoad = async () => {
-            setSubmissionState(SUBMISSION_STATE.PENDING);
-
             try {
                 const results = await getDocumentSearchResults({
                     nhsNumber,
@@ -107,29 +105,38 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
             {submissionState === SUBMISSION_STATE.SUCCEEDED && (
                 <>
                     {hasDocuments ? (
-                        <Table caption="List of files in record" id="current-documents-table">
-                            <Table.Head>
-                                <Table.Row>
-                                    <Table.Cell>Filename</Table.Cell>
-                                    <Table.Cell>Upload date</Table.Cell>
-                                </Table.Row>
-                            </Table.Head>
+                        <>
+                            <Table caption="List of files in record" id="current-documents-table">
+                                <Table.Head>
+                                    <Table.Row>
+                                        <Table.Cell>Filename</Table.Cell>
+                                        <Table.Cell>Upload date</Table.Cell>
+                                    </Table.Row>
+                                </Table.Head>
 
-                            <Table.Body>
-                                {searchResults.map(({ fileName, created }: SearchResult) => {
-                                    return (
-                                        <Table.Row key={fileName}>
-                                            <Table.Cell>
-                                                <div>{fileName}</div>
-                                            </Table.Cell>
-                                            <Table.Cell>
-                                                {getFormattedDatetime(new Date(created))}
-                                            </Table.Cell>
-                                        </Table.Row>
-                                    );
-                                })}
-                            </Table.Body>
-                        </Table>
+                                <Table.Body>
+                                    {searchResults.map(({ fileName, created }: SearchResult) => {
+                                        return (
+                                            <Table.Row key={fileName}>
+                                                <Table.Cell>
+                                                    <div>{fileName}</div>
+                                                </Table.Cell>
+                                                <Table.Cell>
+                                                    {getFormattedDatetime(new Date(created))}
+                                                </Table.Cell>
+                                            </Table.Row>
+                                        );
+                                    })}
+                                </Table.Body>
+                            </Table>
+                            <Button
+                                onClick={() => {
+                                    setStage(LG_RECORD_STAGE.DELETE_ALL);
+                                }}
+                            >
+                                Remove all files
+                            </Button>
+                        </>
                     ) : (
                         <p>
                             <strong id="no-files-message">
@@ -138,16 +145,6 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
                         </p>
                     )}
                 </>
-            )}
-
-            {hasDocuments && (
-                <Button
-                    onClick={() => {
-                        setStage(LG_RECORD_STAGE.DELETE_ALL);
-                    }}
-                >
-                    Remove all files
-                </Button>
             )}
 
             {(submissionState === SUBMISSION_STATE.FAILED ||
