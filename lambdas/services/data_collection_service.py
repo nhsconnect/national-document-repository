@@ -51,6 +51,7 @@ class DataCollectionService:
 
         self.collection_start_time = time_now - one_day
         self.collection_end_time = time_now
+        self.date = datetime.today().strftime("%Y%m%d")
 
     def collect_all_data_and_write_to_dynamodb(self):
         all_statistic_data = self.collect_all_data()
@@ -121,7 +122,7 @@ class DataCollectionService:
 
         record_store_data_for_all_ods_code = [
             RecordStoreData(
-                date=self.date_string_today_yyyymmdd(),
+                date=self.date,
                 number_of_document_types=1,  # placeholder as not sure what this metric should mean
                 **record_store_data_properties,
             )
@@ -156,9 +157,7 @@ class DataCollectionService:
         )
 
         organisation_data_for_all_ods_code = [
-            OrganisationData(
-                date=self.date_string_today_yyyymmdd(), **organisation_data_properties
-            )
+            OrganisationData(date=self.date, **organisation_data_properties)
             for organisation_data_properties in joined_query_result
         ]
 
@@ -168,7 +167,7 @@ class DataCollectionService:
         user_id_per_ods_code = self.get_active_user_list()
         application_data_for_all_ods_code = [
             ApplicationData(
-                date=self.date_string_today_yyyymmdd(),
+                date=self.date,
                 active_user_ids_hashed=active_user_ids_hashed,
                 ods_code=ods_code,
             )
@@ -302,10 +301,6 @@ class DataCollectionService:
             for ods_code, list_of_number_of_files_of_each_patient in counter_dict_by_ods_code.items()
         ]
         return average_by_ods_code
-
-    @staticmethod
-    def date_string_today_yyyymmdd() -> str:
-        return datetime.today().strftime("%Y%m%d")
 
     @staticmethod
     def join_results_by_ods_code(results: list[list[dict]]) -> list[dict]:
