@@ -13,6 +13,7 @@ from models.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
     LloydGeorgeRecordsDeleted,
     LloydGeorgeRecordsDownloaded,
+    LloydGeorgeRecordsStored,
     LloydGeorgeRecordsViewed,
     UniqueActiveUserIds,
 )
@@ -141,8 +142,7 @@ class DataCollectionService:
         daily_count_deleted = self.get_cloud_watch_query_result(
             LloydGeorgeRecordsDeleted
         )
-        # TODO: add a query to retrieve the daily stored count
-        # For now that is not doable as create doc ref dont have a log to indicate successful run.
+        daily_count_stored = self.get_cloud_watch_query_result(LloydGeorgeRecordsStored)
 
         joined_query_result = self.join_results_by_ods_code(
             [
@@ -151,6 +151,7 @@ class DataCollectionService:
                 daily_count_viewed,
                 daily_count_downloaded,
                 daily_count_deleted,
+                daily_count_stored,
             ]
         )
 
