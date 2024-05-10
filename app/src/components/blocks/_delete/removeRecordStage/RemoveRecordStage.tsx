@@ -17,6 +17,8 @@ import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import ServiceError from '../../../layout/serviceErrorBox/ServiceErrorBox';
 import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
+import { isMock } from '../../../../helpers/utils/isLocal';
+import { buildSearchResult } from '../../../../helpers/test/testBuilders';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
@@ -37,6 +39,11 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
 
     const mounted = useRef(false);
     useEffect(() => {
+        const onSuccess = (result: Array<SearchResult>) => {
+            setSearchResults(result);
+            setSubmissionState(SUBMISSION_STATE.SUCCEEDED);
+        };
+
         const onPageLoad = async () => {
             try {
                 const results = await getDocumentSearchResults({
@@ -44,12 +51,12 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
                     baseUrl,
                     baseHeaders,
                 });
-                setSearchResults(results ?? []);
-
-                setSubmissionState(SUBMISSION_STATE.SUCCEEDED);
+                onSuccess(results ?? []);
             } catch (e) {
                 const error = e as AxiosError;
-                if (error.response?.status === 403) {
+                if (isMock(error)) {
+                    onSuccess([buildSearchResult(), buildSearchResult()]);
+                } else if (error.response?.status === 403) {
                     navigate(routes.SESSION_EXPIRED);
                 } else if (error.response?.status && error.response?.status >= 500) {
                     navigate(routes.SERVER_ERROR + errorToParams(error));
@@ -129,13 +136,6 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
                                     })}
                                 </Table.Body>
                             </Table>
-                            <Button
-                                onClick={() => {
-                                    setStage(LG_RECORD_STAGE.DELETE_ALL);
-                                }}
-                            >
-                                Remove all files
-                            </Button>
                         </>
                     ) : (
                         <p>
@@ -149,15 +149,27 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
 
             {(submissionState === SUBMISSION_STATE.FAILED ||
                 submissionState === SUBMISSION_STATE.SUCCEEDED) && (
-                <LinkButton
-                    id="start-again-link"
-                    type="button"
-                    onClick={() => {
-                        setStage(LG_RECORD_STAGE.RECORD);
-                    }}
-                >
-                    Start again
-                </LinkButton>
+                <div className="align-bottom h-100">
+                    {submissionState === SUBMISSION_STATE.SUCCEEDED && (
+                        <Button
+                            onClick={() => {
+                                setStage(LG_RECORD_STAGE.DELETE_ALL);
+                            }}
+                        >
+                            Remove all files
+                        </Button>
+                    )}
+                    <LinkButton
+                        id="start-again-link"
+                        type="button"
+                        className="mb-7 ml-3"
+                        onClick={() => {
+                            setStage(LG_RECORD_STAGE.RECORD);
+                        }}
+                    >
+                        Start again
+                    </LinkButton>
+                </div>
             )}
         </>
     );
