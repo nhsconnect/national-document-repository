@@ -6,7 +6,7 @@ import usePatient from '../../../helpers/hooks/usePatient';
 const PatientSummary = () => {
     const patientDetails = usePatient();
     return (
-        <SummaryList id="patient-summary">
+        <SummaryList id="patient-summary" data-testid="patient-summary">
             <SummaryList.Row>
                 <SummaryList.Key>NHS Number</SummaryList.Key>
                 <SummaryList.Value id="patient-summary-nhs-number">

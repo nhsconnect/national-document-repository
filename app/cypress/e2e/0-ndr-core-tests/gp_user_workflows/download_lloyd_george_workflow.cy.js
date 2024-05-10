@@ -23,7 +23,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
     context('Download Lloyd George document', () => {
         it(
-            'GP ADMIN user can download the Lloyd George document of an active patient',
+            'GP ADMIN user can download the entire Lloyd George document of an active patient',
             { tags: 'regression' },
             () => {
                 beforeEachConfiguration(Roles.GP_ADMIN);
@@ -45,6 +45,19 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.getByTestId('download-all-files-link').should('exist');
                 cy.getByTestId('download-all-files-link').click();
+
+                // Select documents page section
+                cy.title().should(
+                    'eq',
+                    'Download the Lloyd George record for this patient - Digital Lloyd George records',
+                );
+                cy.getByTestId('patient-summary').should('exist');
+                cy.getByTestId('available-files-table-title').should('exist');
+                cy.getByTestId('download-selected-files-btn').should('exist');
+                cy.getByTestId('download-all-files-btn').should('exist');
+                cy.getByTestId('start-again-link').should('exist');
+
+                cy.getByTestId('download-all-files-btn').click();
                 cy.title().should('eq', 'Downloading documents - Digital Lloyd George records');
 
                 cy.wait('@documentManifest');

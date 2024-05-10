@@ -59,7 +59,11 @@ const LloydGeorgeSelectSearchResults = (props: Props) => {
             <h1 id="download-page-title">{pageHeader}</h1>
             <PatientSummary />
 
-            <Table id="available-files-table-title" caption={tableCaption}>
+            <Table
+                id="available-files-table-title"
+                data-testid="available-files-table-title"
+                caption={tableCaption}
+            >
                 <Table.Head>
                     <Table.Row>
                         <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
@@ -100,16 +104,23 @@ const LloydGeorgeSelectSearchResults = (props: Props) => {
                 </Table.Body>
             </Table>
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <Button onClick={onSubmitSelectedDownload}>Download selected files</Button>
+                <Button
+                    onClick={onSubmitSelectedDownload}
+                    data-testid="download-selected-files-btn"
+                >
+                    Download selected files
+                </Button>
                 <Button
                     onClick={onSubmitDownload}
                     className={'nhsuk-button nhsuk-button--secondary'}
                     style={{ marginLeft: 18 }}
+                    data-testid="download-all-files-btn"
                 >
                     Download all files
                 </Button>
                 <Link
                     id="start-again-link"
+                    data-testid="start-again-link"
                     to=""
                     onClick={(e) => {
                         e.preventDefault();
