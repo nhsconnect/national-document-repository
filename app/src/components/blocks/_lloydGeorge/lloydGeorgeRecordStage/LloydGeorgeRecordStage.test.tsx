@@ -294,7 +294,7 @@ describe('LloydGeorgeRecordStage', () => {
         });
     });
 
-    it('does not render warning callout, header and button when user is GP admin and BSOL', async () => {
+    it('does not render warning callout or button when user is GP admin and BSOL', async () => {
         mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
         mockedIsBSOL.mockReturnValue(true);
 
@@ -306,7 +306,7 @@ describe('LloydGeorgeRecordStage', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('does not render warning callout, header and button when user is GP clinical and non BSOL', async () => {
+    it('does not render warning callout or button when user is GP clinical and non BSOL', async () => {
         mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
         mockedIsBSOL.mockReturnValue(false);
 
@@ -318,7 +318,7 @@ describe('LloydGeorgeRecordStage', () => {
         ).not.toBeInTheDocument();
     });
 
-    it('does not render warning callout, header and button when user is GP clinical and BSOL', async () => {
+    it('does not render warning callout or button when user is GP clinical and BSOL', async () => {
         mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
         mockedIsBSOL.mockReturnValue(true);
 
