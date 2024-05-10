@@ -21,6 +21,7 @@ import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
 import LloydGeorgeSelectDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeSelectDownloadStage/LloydGeorgeSelectDownloadStage';
+import LloydGeorgeDownloadAllStage from '../../components/blocks/_lloydGeorge/lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -130,8 +131,15 @@ function LloydGeorgeRecordPage() {
                 />
             );
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
-            return (
+            return isBSOL ? (
                 <LloydGeorgeSelectDownloadStage
+                    numberOfFiles={numberOfFiles}
+                    setStage={setStage}
+                    deleteAfterDownload={deleteAfterDownload}
+                    setDownloadStage={setDownloadStage}
+                />
+            ) : (
+                <LloydGeorgeDownloadAllStage
                     numberOfFiles={numberOfFiles}
                     setStage={setStage}
                     deleteAfterDownload={deleteAfterDownload}
