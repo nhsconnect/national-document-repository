@@ -31,6 +31,7 @@ import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import ProgressBar from '../../../generic/progressBar/ProgressBar';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -99,7 +100,7 @@ function LloydGeorgeViewRecordStage({
 
     const RecordDetails = () => {
         if (downloadStage === DOWNLOAD_STAGE.PENDING) {
-            return <output>Loading...</output>;
+            return <ProgressBar status="Loading..." />;
         } else if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
             const detailsProps = {
                 lastUpdated,

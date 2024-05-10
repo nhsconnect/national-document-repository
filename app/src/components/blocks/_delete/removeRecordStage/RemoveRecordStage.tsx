@@ -16,7 +16,7 @@ import { routes } from '../../../../types/generic/routes';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import ServiceError from '../../../layout/serviceErrorBox/ServiceErrorBox';
 import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
-import Spinner from '../../../generic/spinner/Spinner';
+import ProgressBar from '../../../generic/progressBar/ProgressBar';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
@@ -100,7 +100,7 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
             </WarningCallout>
             <PatientDetails />
 
-            {submissionState === SUBMISSION_STATE.PENDING && <Spinner status="Loading..." />}
+            {submissionState === SUBMISSION_STATE.PENDING && <ProgressBar status="loading..." />}
 
             {submissionState === SUBMISSION_STATE.FAILED && <ServiceError />}
 
