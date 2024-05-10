@@ -133,7 +133,6 @@ function LloydGeorgeRecordPage() {
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
             return isBSOL ? (
                 <LloydGeorgeSelectDownloadStage
-                    numberOfFiles={numberOfFiles}
                     setStage={setStage}
                     deleteAfterDownload={deleteAfterDownload}
                     setDownloadStage={setDownloadStage}

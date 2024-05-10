@@ -8,7 +8,7 @@ type Args = {
     baseUrl: string;
     baseHeaders: AuthHeaders;
     docType?: DOCUMENT_TYPE;
-    docReferences?: Array<string> | null;
+    docReferences?: Array<string> | undefined;
 };
 
 type GetPresignedUrl = {
@@ -20,7 +20,7 @@ const getPresignedUrlForZip = async ({
     baseUrl,
     baseHeaders,
     docType = DOCUMENT_TYPE.ALL,
-    docReferences = null,
+    docReferences,
 }: Args) => {
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
 

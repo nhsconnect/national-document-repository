@@ -24,15 +24,16 @@ import { AxiosError } from 'axios/index';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { SearchResult } from '../../../../types/generic/searchResult';
 
 const FakeProgress = require('fake-progress');
 
 export type Props = {
-    numberOfFiles: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     deleteAfterDownload: boolean;
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     selectedDocuments?: Array<string>;
+    searchResults: Array<SearchResult>;
 };
 
 type DownloadLinkAttributes = {
@@ -41,11 +42,11 @@ type DownloadLinkAttributes = {
 };
 
 function LloydGeorgeDownloadAllStage({
-    numberOfFiles,
     setStage,
     deleteAfterDownload = false,
     setDownloadStage,
     selectedDocuments,
+    searchResults,
 }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
@@ -167,7 +168,9 @@ function LloydGeorgeDownloadAllStage({
                 <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
                 <h4>NHS number: {patientDetails?.nhsNumber}</h4>
                 <div className="nhsuk-heading-xl" />
-                <h4>Preparing download for {numberOfFiles} files</h4>
+                <h4>
+                    Preparing download for {selectedDocuments?.length ?? searchResults.length} files
+                </h4>
             </div>
 
             <Card className="lloydgeorge_downloadall-stage_details">
@@ -211,6 +214,9 @@ function LloydGeorgeDownloadAllStage({
             setStage={setStage}
             setDownloadStage={setDownloadStage}
             deleteAfterDownload={deleteAfterDownload}
+            numberOfFiles={selectedDocuments?.length ?? searchResults.length}
+            selectedDocuments={selectedDocuments}
+            searchResults={searchResults}
         />
     );
 }

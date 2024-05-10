@@ -5,14 +5,27 @@ import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import DocumentsListView from '../../../generic/documentsListView/DocumentsListView';
+import { SearchResult } from '../../../../types/generic/searchResult';
+import { GenericDocument } from '../../../../types/generic/genericDocument';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     deleteAfterDownload: boolean;
+    numberOfFiles: number;
+    selectedDocuments?: Array<string>;
+    searchResults: Array<SearchResult>;
 };
 
-function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDownload }: Props) {
+function LloydGeorgeDownloadComplete({
+    setStage,
+    setDownloadStage,
+    deleteAfterDownload,
+    numberOfFiles,
+    selectedDocuments,
+    searchResults,
+}: Props) {
     // temp solution to focus on layout div so that skip-link can be selected.
     // we should remove this when this component become a separate route.
     useEffect(() => {
@@ -23,6 +36,27 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
         setStage(LG_RECORD_STAGE.RECORD);
         if (deleteAfterDownload) {
             setDownloadStage(DOWNLOAD_STAGE.REFRESH);
+        }
+    };
+    const displayDocuments = () => {
+        if (!selectedDocuments?.length) {
+            return searchResults.map((document) => {
+                return {
+                    ref: document.id,
+                    id: document.id,
+                    fileName: document.fileName,
+                };
+            }) as GenericDocument[];
+        } else {
+            return searchResults
+                .filter((document) => selectedDocuments?.includes(document.id))
+                .map((document) => {
+                    return {
+                        ref: document.id,
+                        id: document.id,
+                        fileName: document.fileName,
+                    };
+                }) as GenericDocument[];
         }
     };
     const pageHeader = 'Download complete';
@@ -46,6 +80,11 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
                     />
                 </Card.Content>
             </Card>
+            <p>You have successfully downloaded {numberOfFiles} files</p>
+            <DocumentsListView
+                documentsList={displayDocuments()}
+                ariaLabel={'selected-document-list'}
+            />
             {deleteAfterDownload ? (
                 <>
                     <p>This record has been removed from our storage.</p>

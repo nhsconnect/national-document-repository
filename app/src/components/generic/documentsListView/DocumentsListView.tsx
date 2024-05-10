@@ -1,9 +1,9 @@
-import { UploadDocument } from '../../../types/pages/UploadDocumentsPage/types';
 import { Details } from 'nhsuk-react-components';
 import React, { useState } from 'react';
+import { GenericDocument } from '../../../types/generic/genericDocument';
 
 interface Props {
-    documentsList: Array<UploadDocument>;
+    documentsList: Array<GenericDocument>;
     ariaLabel: string;
 }
 
@@ -22,9 +22,9 @@ const DocumentsListView = ({ documentsList, ariaLabel }: Props) => {
                             <li
                                 key={document.id}
                                 data-ref={document.ref}
-                                data-testid={document.file.name.split('_')[0]}
+                                data-testid={document.fileName.split('_')[0]}
                             >
-                                {document.file.name}
+                                {document.fileName}
                             </li>
                         );
                     })}

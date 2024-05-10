@@ -17,7 +17,7 @@ const DocumentSearchResults = (props: Props) => {
             <Table.Head>
                 <Table.Row>
                     <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
-                    <Table.Cell className={'table-column-header'}>Uploaded date</Table.Cell>
+                    <Table.Cell className={'table-column-header'}>Uploaded At</Table.Cell>
                 </Table.Row>
             </Table.Head>
             <Table.Body>

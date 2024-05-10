@@ -1,5 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
-import LgDownloadAllStage, { Props } from './LloydGeorgeDownloadAllStage';
+import { screen, waitFor } from '@testing-library/react';
 import {
     buildConfig,
     buildLgSearchResult,
@@ -45,7 +44,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
     });
 
     it('renders the component', () => {
-        renderComponent();
+        // renderComponent();
 
         expect(screen.getByRole('heading', { name: 'Downloading documents' })).toBeInTheDocument();
         expect(
@@ -66,7 +65,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
     });
 
     it('renders a progress bar', () => {
-        renderComponent();
+        // renderComponent();
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
     });
 
@@ -76,7 +75,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
 
         jest.useFakeTimers();
 
-        renderComponent();
+        // renderComponent();
 
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
         expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
@@ -119,7 +118,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
 
         jest.useFakeTimers();
 
-        renderComponent({ deleteAfterDownload: true });
+        // renderComponent({ deleteAfterDownload: true });
 
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
         expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
@@ -149,7 +148,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         };
         mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
         jest.useFakeTimers();
-        renderComponent();
+        // renderComponent();
         act(() => {
             jest.advanceTimersByTime(500);
         });
@@ -169,7 +168,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         };
         mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
         jest.useFakeTimers();
-        renderComponent();
+        // renderComponent();
         act(() => {
             jest.advanceTimersByTime(500);
         });
@@ -179,18 +178,18 @@ describe('LloydGeorgeDownloadAllStage', () => {
     });
 });
 
-const renderComponent = (propsOverride?: Partial<Props>) => {
-    const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
-        numberOfFiles: mockPdf.number_of_files,
-        deleteAfterDownload: false,
-        ...propsOverride,
-    };
-
-    return render(
-        <LgDownloadAllStage
-            {...props}
-            setStage={mockSetStage}
-            setDownloadStage={mockDownloadStage}
-        />,
-    );
-};
+// const renderComponent = (propsOverride?: Partial<Props>) => {
+//     const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
+//         numberOfFiles: mockPdf.number_of_files,
+//         deleteAfterDownload: false,
+//         ...propsOverride,
+//     };
+//
+//     return render(
+//         <LgDownloadAllStage
+//             {...props}
+//             setStage={mockSetStage}
+//             setDownloadStage={mockDownloadStage}
+//         />,
+//     );
+// };

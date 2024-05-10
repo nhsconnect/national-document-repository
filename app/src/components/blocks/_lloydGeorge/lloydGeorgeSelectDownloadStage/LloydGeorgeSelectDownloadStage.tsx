@@ -20,14 +20,12 @@ import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import LloydGeorgeDownloadAllStage from '../lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
 
 export type Props = {
-    numberOfFiles: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     deleteAfterDownload: boolean;
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
 function LloydGeorgeSelectDownloadStage({
-    numberOfFiles,
     setStage,
     deleteAfterDownload = false,
     setDownloadStage,
@@ -122,11 +120,11 @@ function LloydGeorgeSelectDownloadStage({
                 )}
             {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED && (
                 <LloydGeorgeDownloadAllStage
-                    numberOfFiles={numberOfFiles}
                     setStage={setStage}
                     deleteAfterDownload={deleteAfterDownload}
                     setDownloadStage={setDownloadStage}
                     selectedDocuments={selectedDocuments}
+                    searchResults={searchResults}
                 />
             )}
         </>
