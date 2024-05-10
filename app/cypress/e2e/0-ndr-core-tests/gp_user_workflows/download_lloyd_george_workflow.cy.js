@@ -52,6 +52,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     'Download the Lloyd George record for this patient - Digital Lloyd George records',
                 );
                 cy.getByTestId('patient-summary').should('exist');
+                cy.wait('40');
                 cy.getByTestId('available-files-table-title').should('exist');
                 cy.getByTestId('download-selected-files-btn').should('exist');
                 cy.getByTestId('download-all-files-btn').should('exist');
