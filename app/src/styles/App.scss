@@ -8,52 +8,6 @@ $govuk-compatibility-govukelements: true;
 @import 'node_modules/nhsuk-frontend/packages/components/input/input';
 @import 'node_modules/nhsuk-frontend/packages/components/tables/tables';
 
-$smax: 50;
-$soffset: 6;
-$sunit: 'px';
-@mixin spacing-mixin($className, $styleName) {
-    $i: 0;
-    $x: 0;
-    @while $i <= $smax {
-        $x: $x + 1;
-        #{$className + $x} {
-            #{$styleName}: #{$i + $sunit};
-        }
-        $i: $i + $soffset;
-    }
-}
-
-$hmax: 100;
-$hoffset: 10;
-$hunit: '%';
-@mixin size-mixin($className, $styleName) {
-    $i: 0;
-    $x: 0;
-    @while $i <= $hmax {
-        $x: $x + 1;
-        #{$className + $x} {
-            #{$styleName}: #{$i + $hunit};
-        }
-        $i: $i + $hoffset;
-    }
-}
-// Margins
-@include spacing-mixin('.mt-', 'margin-top');
-@include spacing-mixin('.mr-', 'margin-right');
-@include spacing-mixin('.mb-', 'margin-bottom');
-@include spacing-mixin('.ml-', 'margin-left');
-@include spacing-mixin('.m-', 'margin');
-// Paddings
-@include spacing-mixin('.pt-', 'padding-top');
-@include spacing-mixin('.pr-', 'padding-right');
-@include spacing-mixin('.pb-', 'padding-bottom');
-@include spacing-mixin('.pl-', 'padding-left');
-@include spacing-mixin('.p-', 'padding');
-
-@include size-mixin('.h-', 'height');
-@include size-mixin('.w-', 'width');
-// Terrible name for mixin by the way.
-
 /**
 *   Styleguide:  Blocks, Elements and Modifiers
 *   Docs: https://getbem.com/
@@ -550,6 +504,83 @@ $hunit: '%';
 }
 
 // Helper
+$smax: 50;
+$soffset: 6;
+$sunit: 'px';
+@mixin spacing-mixin($className, $styleName) {
+    $i: 0;
+    $x: 0;
+    @while $i <= $smax {
+        $x: $x + 1;
+        #{$className + $x} {
+            #{$styleName}: #{$i + $sunit};
+        }
+        $i: $i + $soffset;
+    }
+}
+
+$hmax: 100;
+$hoffset: 10;
+$hunit: '%';
+@mixin size-mixin($className, $styleName) {
+    $i: 0;
+    $x: 0;
+    @while $i <= $hmax {
+        $x: $x + 1;
+        #{$className + $x} {
+            #{$styleName}: #{$i + $hunit};
+        }
+        $i: $i + $hoffset;
+    }
+}
+@mixin x-axis-mixin($className, $styleName) {
+    $i: 0;
+    $x: 0;
+    @while $i <= $hmax {
+        $x: $x + 1;
+        #{$className + $x} {
+            #{$styleName + '-left'}: #{$i + $hunit};
+            #{$styleName + '-right'}: #{$i + $hunit};
+        }
+        $i: $i + $hoffset;
+    }
+}
+@mixin y-axis-mixin($className, $styleName) {
+    $i: 0;
+    $x: 0;
+    @while $i <= $hmax {
+        $x: $x + 1;
+        #{$className + $x} {
+            #{$styleName + '-top'}: #{$i + $hunit};
+            #{$styleName + '-bottom'}: #{$i + $hunit};
+        }
+        $i: $i + $hoffset;
+    }
+}
+
+@include spacing-mixin('.mt-', 'margin-top');
+@include spacing-mixin('.mr-', 'margin-right');
+@include spacing-mixin('.mb-', 'margin-bottom');
+@include spacing-mixin('.ml-', 'margin-left');
+@include spacing-mixin('.pt-', 'padding-top');
+@include spacing-mixin('.pr-', 'padding-right');
+@include spacing-mixin('.pb-', 'padding-bottom');
+@include spacing-mixin('.pl-', 'padding-left');
+
+@include x-axis-mixin('.px-', 'padding');
+@include x-axis-mixin('.mx-', 'margin');
+
+@include y-axis-mixin('.py-', 'padding');
+@include y-axis-mixin('.py-', 'margin');
+
+@include size-mixin('.h-', 'height');
+@include size-mixin('.w-', 'width');
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
 .align-center {
     height: 100%;
     display: inline-flex;
