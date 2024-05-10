@@ -156,6 +156,7 @@ function LloydGeorgeDownloadAllStage({
         deleteAfterDownload,
         navigate,
         mockLocal,
+        selectedDocuments,
     ]);
     const pageHeader = 'Downloading documents';
     useTitle({ pageTitle: pageHeader });
