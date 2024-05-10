@@ -9,7 +9,9 @@ class StatisticData(BaseModel):
     model_config = ConfigDict(
         alias_generator=to_capitalized_camel, populate_by_name=True
     )
-    statistic_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    statistic_id: str = Field(
+        default_factory=lambda: str(uuid.uuid4()), alias="StatisticID"
+    )
     date: str
 
     @field_serializer("statistic_id")

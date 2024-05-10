@@ -79,7 +79,10 @@ class DataCollectionService:
 
         for entry in all_statistic_data:
             dynamodb_item = entry.model_dump(by_alias=True)
+            logger.info(f"writing item: {dynamodb_item}")
             self.output_table.put_item(Item=dynamodb_item)
+
+        logger.info("Finish writing all data to dynamodb table")
 
     def scan_dynamodb_table(self, table_name: str) -> list[dict]:
         table = self.dynamodb.Table(table_name)
