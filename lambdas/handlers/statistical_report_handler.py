@@ -19,4 +19,4 @@ logger = LoggingService(__name__)
 def lambda_handler(event, context):
     logger.info("Starting creating statistical report")
     service = StatisticalReportService()
-    service.make_weekly_summary()
+    service.make_weekly_summary_and_output_to_bucket()
