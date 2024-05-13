@@ -10,8 +10,6 @@ import { SearchResult } from '../../../../types/generic/searchResult';
 import { GenericDocument } from '../../../../types/generic/genericDocument';
 
 export type Props = {
-    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     deleteAfterDownload: boolean;
     numberOfFiles: number;
     selectedDocuments?: Array<string>;
@@ -19,8 +17,6 @@ export type Props = {
 };
 
 function LloydGeorgeDownloadComplete({
-    setStage,
-    setDownloadStage,
     deleteAfterDownload,
     numberOfFiles,
     selectedDocuments,

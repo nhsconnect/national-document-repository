@@ -216,8 +216,6 @@ function LloydGeorgeDownloadStage({
         </div>
     ) : (
         <LgDownloadComplete
-            setStage={setStage}
-            setDownloadStage={setDownloadStage}
             deleteAfterDownload={deleteAfterDownload}
             numberOfFiles={numberOfFilesForDownload}
             selectedDocuments={selectedDocuments}
