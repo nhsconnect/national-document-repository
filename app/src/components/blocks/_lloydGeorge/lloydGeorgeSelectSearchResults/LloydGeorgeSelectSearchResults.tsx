@@ -30,7 +30,7 @@ const LloydGeorgeSelectSearchResults = ({
     const noOptionSelectedError = 'You must select a file to download or download all files';
     const pageHeader = 'Download the Lloyd George record for this patient';
 
-    const onChangeHandler = (e: SyntheticEvent<HTMLInputElement>) => {
+    const handleChangeCheckboxes = (e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
 
         if (target.checked) {
@@ -39,18 +39,21 @@ const LloydGeorgeSelectSearchResults = ({
             setSelectedDocuments(selectedDocuments.filter((e) => e !== target.value));
         }
     };
-    const onSubmitSelectedDownload = () => {
-        if (selectedDocuments.length) {
+    const handleClickSelectedDownload = () => {
+        if (selectedDocuments.length === searchResults.length) {
+            handleClickDownloadAll();
+        } else if (selectedDocuments.length) {
             setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
         } else {
             setShowNoOptionSelectedMessage(true);
             window.scrollTo(0, 0);
         }
     };
-    const onSubmitDownloadAll = () => {
+    const handleClickDownloadAll = () => {
         setSelectedDocuments([]);
         setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
     };
+
     return (
         <>
             {showNoOptionSelectedMessage && (
@@ -89,7 +92,7 @@ const LloydGeorgeSelectSearchResults = ({
                                 id={'selected-files-row-' + index + ''}
                                 data-testid="select"
                             >
-                                <Checkboxes onChange={onChangeHandler}>
+                                <Checkboxes onChange={handleChangeCheckboxes}>
                                     <Checkboxes.Box value={result.id}> </Checkboxes.Box>
                                 </Checkboxes>{' '}
                             </Table.Cell>
@@ -111,13 +114,13 @@ const LloydGeorgeSelectSearchResults = ({
             </Table>
             <div style={{ display: 'flex', alignItems: 'baseline' }}>
                 <Button
-                    onClick={onSubmitSelectedDownload}
+                    onClick={handleClickSelectedDownload}
                     data-testid="download-selected-files-btn"
                 >
                     Download selected files
                 </Button>
                 <Button
-                    onClick={onSubmitDownloadAll}
+                    onClick={handleClickDownloadAll}
                     className={'nhsuk-button nhsuk-button--secondary'}
                     style={{ marginLeft: 18 }}
                     data-testid="download-all-files-btn"

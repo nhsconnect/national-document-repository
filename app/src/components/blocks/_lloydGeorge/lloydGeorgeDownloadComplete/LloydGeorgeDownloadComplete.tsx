@@ -43,7 +43,7 @@ function LloydGeorgeDownloadComplete({
         }
     };
     const createDocumentsList = () => {
-        if (searchResults) {
+        if (searchResults && selectedDocuments) {
             return searchResults
                 .filter((document) => selectedDocuments?.includes(document.id))
                 .map((document) => {
