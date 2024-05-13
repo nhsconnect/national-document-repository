@@ -13,7 +13,7 @@ jest.mock('react-router', () => ({
 describe('LloydGeorgeRetryUploadStage', () => {
     describe('Rendering', () => {
         it('renders component', () => {
-            render(<LloydGeorgeRetryUploadStage setStage={mockSetStage} />);
+            render(<LloydGeorgeRetryUploadStage />);
 
             const contentStrings = [
                 'The record did not upload',
@@ -40,7 +40,7 @@ describe('LloydGeorgeRetryUploadStage', () => {
 
     describe('Navigation', () => {
         it('navigates to file input stage when try again is clicked', () => {
-            render(<LloydGeorgeRetryUploadStage setStage={mockSetStage} />);
+            render(<LloydGeorgeRetryUploadStage />);
 
             expect(screen.getByRole('button', { name: 'Try upload again' })).toBeInTheDocument();
             userEvent.click(screen.getByRole('button', { name: 'Try upload again' }));
@@ -48,7 +48,7 @@ describe('LloydGeorgeRetryUploadStage', () => {
         });
 
         it('navigates to patient search when search patient is clicked', () => {
-            render(<LloydGeorgeRetryUploadStage setStage={mockSetStage} />);
+            render(<LloydGeorgeRetryUploadStage />);
 
             expect(
                 screen.getByRole('button', { name: 'Search for a patient' }),

@@ -23,13 +23,7 @@ describe('LloydGeorgeDownloadComplete', () => {
     });
 
     it('renders the component', () => {
-        render(
-            <LgDownloadComplete
-                setStage={mockSetStage}
-                setDownloadStage={mockSetDownloadStage}
-                deleteAfterDownload={false}
-            />,
-        );
+        render(<LgDownloadComplete deleteAfterDownload={false} />);
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
         expect(
@@ -44,13 +38,7 @@ describe('LloydGeorgeDownloadComplete', () => {
     });
 
     it('updates the download stage view when return to medical records is clicked', async () => {
-        render(
-            <LgDownloadComplete
-                setStage={mockSetStage}
-                setDownloadStage={mockSetDownloadStage}
-                deleteAfterDownload={false}
-            />,
-        );
+        render(<LgDownloadComplete deleteAfterDownload={false} />);
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
         expect(
@@ -78,13 +66,7 @@ describe('LloydGeorgeDownloadComplete', () => {
     });
 
     it('display record removed text if deleteAfterDownload is true', async () => {
-        render(
-            <LgDownloadComplete
-                setStage={mockSetStage}
-                setDownloadStage={mockSetDownloadStage}
-                deleteAfterDownload={true}
-            />,
-        );
+        render(<LgDownloadComplete deleteAfterDownload={true} />);
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
         expect(

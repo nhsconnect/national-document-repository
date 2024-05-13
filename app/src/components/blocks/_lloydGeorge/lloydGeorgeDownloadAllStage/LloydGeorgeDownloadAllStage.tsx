@@ -17,8 +17,8 @@ import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import deleteAllDocuments from '../../../../helpers/requests/deleteAllDocuments';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
-import { routes } from '../../../../types/generic/routes';
-import { useNavigate, Link } from 'react-router-dom';
+import { routeChildren, routes } from '../../../../types/generic/routes';
+import { useNavigate, Link, Routes, Route, Outlet } from 'react-router-dom';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios/index';
 import { isMock } from '../../../../helpers/utils/isLocal';
@@ -83,7 +83,7 @@ function LloydGeorgeDownloadAllStage({
         if (linkRef.current && linkAttributes.url) {
             linkRef?.current?.click();
             setTimeout(() => {
-                setInProgress(false);
+                navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE);
             }, 600);
         }
     }, [linkAttributes]);
@@ -156,58 +156,75 @@ function LloydGeorgeDownloadAllStage({
     ]);
     const pageHeader = 'Downloading documents';
     useTitle({ pageTitle: pageHeader });
-    return inProgress ? (
-        <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
-            <div className="lloydgeorge_downloadall-stage_header">
-                <h1>{pageHeader}</h1>
-                <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
-                <h4>NHS number: {patientDetails?.nhsNumber}</h4>
-                <div className="nhsuk-heading-xl" />
-                <h4>Preparing download for {numberOfFiles} files</h4>
-            </div>
+    return (
+        <>
+            <Routes>
+                <Route
+                    index
+                    element={
+                        <div
+                            className="lloydgeorge_downloadall-stage"
+                            data-testid="lloydgeorge_downloadall-stage"
+                        >
+                            <div className="lloydgeorge_downloadall-stage_header">
+                                <h1>{pageHeader}</h1>
+                                <h2>
+                                    {patientDetails?.givenName + ' ' + patientDetails?.familyName}
+                                </h2>
+                                <h4>NHS number: {patientDetails?.nhsNumber}</h4>
+                                <div className="nhsuk-heading-xl" />
+                                <h4>Preparing download for {numberOfFiles} files</h4>
+                            </div>
 
-            <Card className="lloydgeorge_downloadall-stage_details">
-                <Card.Content>
-                    <strong>
-                        <p>Compressing record into a zip file</p>
-                    </strong>
+                            <Card className="lloydgeorge_downloadall-stage_details">
+                                <Card.Content>
+                                    <strong>
+                                        <p>Compressing record into a zip file</p>
+                                    </strong>
 
-                    <div className="lloydgeorge_downloadall-stage_details-content">
-                        <div>
-                            <span>{`${linkAttributes.url ? 100 : progress}%`} downloaded...</span>
-                            <a
-                                hidden
-                                id="download-link"
-                                data-testid={linkAttributes.url}
-                                ref={linkRef}
-                                href={linkAttributes.url}
-                                download
-                            >
-                                Download Lloyd George Documents URL
-                            </a>
+                                    <div className="lloydgeorge_downloadall-stage_details-content">
+                                        <div>
+                                            <span>
+                                                {`${linkAttributes.url ? 100 : progress}%`}{' '}
+                                                downloaded...
+                                            </span>
+                                            <a
+                                                hidden
+                                                id="download-link"
+                                                data-testid={linkAttributes.url}
+                                                ref={linkRef}
+                                                href={linkAttributes.url}
+                                                download
+                                            >
+                                                Download Lloyd George Documents URL
+                                            </a>
+                                        </div>
+                                        <div>
+                                            <Link
+                                                to="#"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    handlePageExit();
+                                                    navigate(routes.LLOYD_GEORGE);
+                                                }}
+                                            >
+                                                Cancel
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </Card.Content>
+                            </Card>
                         </div>
-                        <div>
-                            <Link
-                                to="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handlePageExit();
-                                    setStage(LG_RECORD_STAGE.RECORD);
-                                }}
-                            >
-                                Cancel
-                            </Link>
-                        </div>
-                    </div>
-                </Card.Content>
-            </Card>
-        </div>
-    ) : (
-        <LgDownloadComplete
-            setStage={setStage}
-            setDownloadStage={setDownloadStage}
-            deleteAfterDownload={deleteAfterDownload}
-        />
+                    }
+                />
+                <Route
+                    path="complete"
+                    element={<LgDownloadComplete deleteAfterDownload={deleteAfterDownload} />}
+                />
+            </Routes>
+
+            <Outlet />
+        </>
     );
 }
 

@@ -41,9 +41,10 @@ const {
     VERIFY_PATIENT,
     PRIVACY_POLICY,
     LLOYD_GEORGE,
+    LLOYD_GEORGE_WILDCARD,
     LLOYD_GEORGE_UPLOAD,
     LLOYD_GEORGE_UPLOAD_WILDCARD,
-    ARF_DOWNLOAD_DOCUMENTS,
+    DOWNLOAD_DOCUMENTS: ARF_DOWNLOAD_DOCUMENTS,
     ARF_UPLOAD_DOCUMENTS,
 } = routes;
 
@@ -53,11 +54,23 @@ type Routes = {
 
 export const childRoutes = [
     {
-        route: routeChildren.LLOYD_GEORGE_UPLOAD_SELECTION,
-        parent: LLOYD_GEORGE_UPLOAD,
+        route: routeChildren.LLOYD_GEORGE_DOWNLOAD,
+        parent: LLOYD_GEORGE,
     },
     {
-        route: routeChildren.LLOYD_GEORGE_UPLOAD_UPLOAD,
+        route: routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE,
+        parent: LLOYD_GEORGE,
+    },
+    {
+        route: routeChildren.LLOYD_GEORGE_DELETE,
+        parent: LLOYD_GEORGE,
+    },
+    {
+        route: routeChildren.LLOYD_GEORGE_DELETE_COMPLETE,
+        parent: LLOYD_GEORGE,
+    },
+    {
+        route: routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING,
         parent: LLOYD_GEORGE_UPLOAD,
     },
     {
@@ -74,6 +87,10 @@ export const childRoutes = [
     },
     {
         route: routeChildren.LLOYD_GEORGE_UPLOAD_FAILED,
+        parent: LLOYD_GEORGE_UPLOAD,
+    },
+    {
+        route: routeChildren.LLOYD_GEORGE_UPLOAD_RETRY,
         parent: LLOYD_GEORGE_UPLOAD,
     },
 ];
@@ -140,6 +157,11 @@ export const routeMap: Routes = {
         type: ROUTE_TYPE.PATIENT,
     },
     [LLOYD_GEORGE]: {
+        page: <LloydGeorgeRecordPage />,
+        type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.PCSE],
+    },
+    [LLOYD_GEORGE_WILDCARD]: {
         page: <LloydGeorgeRecordPage />,
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.PCSE],

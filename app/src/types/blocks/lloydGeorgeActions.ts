@@ -1,5 +1,5 @@
 import { REPOSITORY_ROLE } from '../generic/authRole';
-import { routes } from '../generic/routes';
+import { routeChildren } from '../generic/routes';
 import { LG_RECORD_STAGE } from './lloydGeorgeStages';
 
 export enum RECORD_ACTION {
@@ -11,7 +11,7 @@ export type PdfActionLink = {
     label: string;
     key: string;
     stage?: LG_RECORD_STAGE;
-    href?: routes;
+    href?: unknown;
     type: RECORD_ACTION;
     unauthorised?: Array<REPOSITORY_ROLE>;
     showIfRecordInRepo: boolean;
@@ -22,17 +22,17 @@ export const lloydGeorgeRecordLinks: Array<PdfActionLink> = [
         label: 'Remove files',
         key: 'delete-all-files-link',
         type: RECORD_ACTION.UPDATE,
-        stage: LG_RECORD_STAGE.DELETE_ALL,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
         showIfRecordInRepo: true,
+        href: routeChildren.LLOYD_GEORGE_DELETE,
     },
     {
         label: 'Download files',
         key: 'download-all-files-link',
         type: RECORD_ACTION.DOWNLOAD,
-        stage: LG_RECORD_STAGE.DOWNLOAD_ALL,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
         showIfRecordInRepo: true,
+        href: routeChildren.LLOYD_GEORGE_DOWNLOAD,
     },
 ];
 

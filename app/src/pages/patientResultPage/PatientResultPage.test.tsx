@@ -230,7 +230,7 @@ describe('PatientResultPage', () => {
             userEvent.click(screen.getByRole('button', { name: 'Accept details are correct' }));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_DOWNLOAD_DOCUMENTS);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.DOWNLOAD_DOCUMENTS);
             });
         });
     });

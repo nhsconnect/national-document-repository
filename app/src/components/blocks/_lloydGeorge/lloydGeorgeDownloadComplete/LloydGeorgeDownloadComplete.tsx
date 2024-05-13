@@ -1,30 +1,28 @@
-import React, { Dispatch, SetStateAction, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Button, Card } from 'nhsuk-react-components';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
-import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { useNavigate } from 'react-router-dom';
+import { routes } from '../../../../types/generic/routes';
 
 export type Props = {
-    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     deleteAfterDownload: boolean;
 };
 
-function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDownload }: Props) {
+function LloydGeorgeDownloadComplete({ deleteAfterDownload }: Props) {
     // temp solution to focus on layout div so that skip-link can be selected.
     // we should remove this when this component become a separate route.
+
+    const navigate = useNavigate();
     useEffect(() => {
         focusLayoutDiv();
     }, []);
 
     const handleReturnButtonClick = () => {
-        setStage(LG_RECORD_STAGE.RECORD);
-        if (deleteAfterDownload) {
-            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
-        }
+        navigate(routes.LLOYD_GEORGE);
     };
+
     const pageHeader = 'Download complete';
     useTitle({ pageTitle: pageHeader });
     return (

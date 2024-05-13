@@ -1,6 +1,6 @@
 import React, { Dispatch, MouseEvent, SetStateAction, useEffect } from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
-import { routes } from '../../../types/generic/routes';
+import { routeChildren, routes } from '../../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import useRole from '../../../helpers/hooks/useRole';
@@ -31,7 +31,7 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
         e.preventDefault();
         if (setStage && setDownloadStage) {
             setDownloadStage(DOWNLOAD_STAGE.REFRESH);
-            setStage(LG_RECORD_STAGE.RECORD);
+            navigate(routes.LLOYD_GEORGE);
         }
     };
     const isGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;

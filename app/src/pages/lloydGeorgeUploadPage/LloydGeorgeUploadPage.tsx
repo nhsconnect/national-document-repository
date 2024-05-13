@@ -22,6 +22,7 @@ import { routes, routeChildren } from '../../types/generic/routes';
 import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import { Link } from 'react-router-dom';
+import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
@@ -113,7 +114,8 @@ function LloydGeorgeUploadPage() {
 
         if (hasExceededUploadAttempts) {
             window.clearInterval(intervalTimer);
-            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_FAILED);
+            // TODO : CHANGE TO RETRY ERROR PAGE
+            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_RETRY);
         } else if (hasVirus) {
             window.clearInterval(intervalTimer);
             navigate(routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED);
@@ -180,7 +182,7 @@ function LloydGeorgeUploadPage() {
 
     const submitDocuments = async () => {
         try {
-            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOAD);
+            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING);
             const uploadSession = await uploadDocuments({
                 nhsNumber,
                 documents,
@@ -203,7 +205,7 @@ function LloydGeorgeUploadPage() {
             setIntervalTimer(updateStateInterval);
             setDocuments(uploadingDocuments);
             uploadAndScanDocuments(uploadingDocuments, uploadSession);
-            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOAD);
+            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING);
         } catch (e) {
             const error = e as AxiosError;
             if (error.response?.status === 403) {
@@ -233,7 +235,7 @@ function LloydGeorgeUploadPage() {
 
     const restartUpload = () => {
         setDocuments([]);
-        navigate(routeChildren.LLOYD_GEORGE_UPLOAD_SELECTION);
+        navigate(routes.LLOYD_GEORGE_UPLOAD);
     };
     const startIntervalTimer = (uploadDocuments: Array<UploadDocument>) => {
         return window.setInterval(() => {
@@ -253,10 +255,11 @@ function LloydGeorgeUploadPage() {
     return (
         <>
             <nav>
-                <Link to="upload">Upload</Link>
+                <Link to="uploading">Upload</Link>
                 <Link to="confirmation">Confirmation</Link>
                 <Link to="completed">Completed</Link>
                 <Link to="infected">Infected</Link>
+                <Link to="retry">Retry</Link>
                 <Link to="failed">Failed</Link>
             </nav>
 
@@ -272,17 +275,7 @@ function LloydGeorgeUploadPage() {
                     }
                 />
                 <Route
-                    path="selection"
-                    element={
-                        <LloydGeorgeFileInputStage
-                            documents={documents}
-                            setDocuments={setDocuments}
-                            submitDocuments={submitDocuments}
-                        />
-                    }
-                />
-                <Route
-                    path="upload"
+                    path="uploading"
                     element={
                         <LloydGeorgeUploadingStage
                             documents={documents}
@@ -305,6 +298,7 @@ function LloydGeorgeUploadPage() {
                         />
                     }
                 />
+                <Route path="retry" element={<LloydGeorgeRetryUploadStage />} />
                 <Route
                     path="failed"
                     element={<LloydGeorgeUploadFailedStage restartUpload={restartUpload} />}

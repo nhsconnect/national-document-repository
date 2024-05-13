@@ -15,12 +15,13 @@ import useRole from '../../helpers/hooks/useRole';
 import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { routes } from '../../types/generic/routes';
-import { useNavigate } from 'react-router';
+import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import { isMock } from '../../helpers/utils/isLocal';
 import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
+import { Link } from 'react-router-dom';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -116,40 +117,64 @@ function LloydGeorgeRecordPage() {
         config,
     ]);
 
-    switch (stage) {
-        case LG_RECORD_STAGE.RECORD:
-            return (
-                <LloydGeorgeRecordStage
-                    numberOfFiles={numberOfFiles}
-                    totalFileSizeInByte={totalFileSizeInByte}
-                    lastUpdated={lastUpdated}
-                    lloydGeorgeUrl={lloydGeorgeUrl}
-                    downloadStage={downloadStage}
-                    setStage={setStage}
-                    stage={stage}
+    return (
+        <>
+            <Routes>
+                <Route
+                    index
+                    element={
+                        <LloydGeorgeRecordStage
+                            numberOfFiles={numberOfFiles}
+                            totalFileSizeInByte={totalFileSizeInByte}
+                            lastUpdated={lastUpdated}
+                            lloydGeorgeUrl={lloydGeorgeUrl}
+                            downloadStage={downloadStage}
+                            setStage={setStage}
+                            stage={stage}
+                        />
+                    }
                 />
-            );
-        case LG_RECORD_STAGE.DOWNLOAD_ALL:
-            return (
-                <LloydGeorgeDownloadAllStage
-                    numberOfFiles={numberOfFiles}
-                    setStage={setStage}
-                    deleteAfterDownload={deleteAfterDownload}
-                    setDownloadStage={setDownloadStage}
+                {/* <Route
+                    path="view"
+                    element={
+                        <LloydGeorgeRecordStage
+                            numberOfFiles={numberOfFiles}
+                            totalFileSizeInByte={totalFileSizeInByte}
+                            lastUpdated={lastUpdated}
+                            lloydGeorgeUrl={lloydGeorgeUrl}
+                            downloadStage={downloadStage}
+                            setStage={setStage}
+                            stage={stage}
+                        />
+                    }
+                /> */}
+                <Route
+                    path="download/*"
+                    element={
+                        <LloydGeorgeDownloadAllStage
+                            numberOfFiles={numberOfFiles}
+                            setStage={setStage}
+                            deleteAfterDownload={deleteAfterDownload}
+                            setDownloadStage={setDownloadStage}
+                        />
+                    }
                 />
-            );
-        case LG_RECORD_STAGE.DELETE_ALL:
-            return (
-                <DeleteDocumentsStage
-                    docType={DOCUMENT_TYPE.LLOYD_GEORGE}
-                    numberOfFiles={numberOfFiles}
-                    setStage={setStage}
-                    setDownloadStage={setDownloadStage}
+                <Route
+                    path="delete/*"
+                    element={
+                        <DeleteDocumentsStage
+                            docType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                            numberOfFiles={numberOfFiles}
+                            setStage={setStage}
+                            setDownloadStage={setDownloadStage}
+                        />
+                    }
                 />
-            );
-        default:
-            return <div></div>;
-    }
+            </Routes>
+
+            <Outlet />
+        </>
+    );
 }
 
 export default LloydGeorgeRecordPage;
