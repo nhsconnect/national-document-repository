@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { GenericDocument } from '../../../types/generic/genericDocument';
 
 interface Props {
-    documentsList?: Array<GenericDocument>;
+    documentsList: Array<GenericDocument>;
     ariaLabel: string;
 }
 

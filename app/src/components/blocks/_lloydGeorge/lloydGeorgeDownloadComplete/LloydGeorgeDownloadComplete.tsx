@@ -36,12 +36,6 @@ function LloydGeorgeDownloadComplete({
     const pageHeader = 'Download complete';
     useTitle({ pageTitle: pageHeader });
 
-    const handleReturnButtonClick = () => {
-        setStage(LG_RECORD_STAGE.RECORD);
-        if (deleteAfterDownload) {
-            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
-        }
-    };
     const createDocumentsList = () => {
         if (searchResults && selectedDocuments) {
             return searchResults
@@ -53,6 +47,8 @@ function LloydGeorgeDownloadComplete({
                         fileName: document.fileName,
                     };
                 }) as GenericDocument[];
+        } else {
+            return [];
         }
     };
 
@@ -139,9 +135,6 @@ function LloydGeorgeDownloadComplete({
                 provides a framework for consistent and effective records management, based on
                 established standards.
             </p>
-            {/*<Button onClick={handleReturnButtonClick} data-testid="return-btn">*/}
-            {/*    Return to patient's available medical records*/}
-            {/*</Button>*/}
         </div>
     );
 }

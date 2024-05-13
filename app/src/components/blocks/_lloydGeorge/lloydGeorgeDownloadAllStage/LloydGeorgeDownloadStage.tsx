@@ -42,7 +42,7 @@ type DownloadLinkAttributes = {
     filename: string;
 };
 
-function LloydGeorgeDownloadAllStage({
+function LloydGeorgeDownloadStage({
     setStage,
     deleteAfterDownload = false,
     setDownloadStage,
@@ -66,6 +66,8 @@ function LloydGeorgeDownloadAllStage({
     const patientDetails = usePatient();
     const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
+    const pageHeader = 'Downloading documents';
+    useTitle({ pageTitle: pageHeader });
     const numberOfFilesForDownload = !!selectedDocuments?.length
         ? selectedDocuments.length
         : numberOfFiles;
@@ -76,6 +78,7 @@ function LloydGeorgeDownloadAllStage({
             autoStart: true,
         });
     }, []);
+
     const intervalTimer = window.setInterval(() => {
         setProgress(parseInt((progressTimer.progress * 100).toFixed(1)));
     }, 100);
@@ -164,8 +167,7 @@ function LloydGeorgeDownloadAllStage({
         mockLocal,
         selectedDocuments,
     ]);
-    const pageHeader = 'Downloading documents';
-    useTitle({ pageTitle: pageHeader });
+
     return inProgress ? (
         <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
             <div className="lloydgeorge_downloadall-stage_header">
@@ -224,4 +226,4 @@ function LloydGeorgeDownloadAllStage({
     );
 }
 
-export default LloydGeorgeDownloadAllStage;
+export default LloydGeorgeDownloadStage;

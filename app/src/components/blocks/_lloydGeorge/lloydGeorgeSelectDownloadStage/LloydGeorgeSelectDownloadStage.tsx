@@ -17,7 +17,7 @@ import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types
 import { isMock } from '../../../../helpers/utils/isLocal';
 import LloydGeorgeSelectSearchResults from '../lloydGeorgeSelectSearchResults/LloydGeorgeSelectSearchResults';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
-import LloydGeorgeDownloadAllStage from '../lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
+import LloydGeorgeDownloadStage from '../lloydGeorgeDownloadAllStage/LloydGeorgeDownloadStage';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
@@ -63,13 +63,13 @@ function LloydGeorgeSelectDownloadStage({
                 if (isMock(error)) {
                     setSearchResults([
                         {
-                            fileName: 'testy_test.pdf',
+                            fileName: '1of2_testy_test.pdf',
                             created: '2024-05-07T14:52:00.827602Z',
                             virusScannerResult: 'Clean',
                             id: 'test-id',
                         },
                         {
-                            fileName: 'testy_test2.pdf',
+                            fileName: '2of2_testy_test.pdf',
                             created: '2024-05-07T14:52:00.827602Z',
                             virusScannerResult: 'Clean',
                             id: 'test-id-2',
@@ -108,7 +108,6 @@ function LloydGeorgeSelectDownloadStage({
                     <ProgressBar status="Loading..."></ProgressBar>
                 </>
             )}
-
             {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED &&
                 searchResults.length && (
                     <LloydGeorgeSelectSearchResults
@@ -119,7 +118,7 @@ function LloydGeorgeSelectDownloadStage({
                     />
                 )}
             {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED && (
-                <LloydGeorgeDownloadAllStage
+                <LloydGeorgeDownloadStage
                     setStage={setStage}
                     deleteAfterDownload={deleteAfterDownload}
                     setDownloadStage={setDownloadStage}
