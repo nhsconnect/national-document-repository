@@ -43,41 +43,61 @@ describe('GP Workflow: View Lloyd George record', () => {
                     body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
                 }).as('documentManifest');
 
+                cy.intercept('GET', '/SearchDocumentReferences*', {
+                    statusCode: 200,
+                    body: [
+                        {
+                            fileName: '1of2_testy_test.pdf',
+                            created: '2024-05-07T14:52:00.827602Z',
+                            virusScannerResult: 'Clean',
+                            id: 'test-id',
+                        },
+                        {
+                            fileName: '2of2_testy_test.pdf',
+                            created: '2024-05-07T14:52:00.827602Z',
+                            virusScannerResult: 'Clean',
+                            id: 'test-id-2',
+                        },
+                        {
+                            fileName: '3of2_testy_test.pdf',
+                            created: '2024-05-07T14:52:00.827602Z',
+                            virusScannerResult: 'Clean',
+                            id: 'test-id-3',
+                        },
+                    ],
+                }).as('searchDocumentReferences');
+
                 cy.getByTestId('download-all-files-link').should('exist');
                 cy.getByTestId('download-all-files-link').click();
 
-                // Select documents page section
+                // Select documents page
                 cy.title().should(
                     'eq',
                     'Download the Lloyd George record for this patient - Digital Lloyd George records',
                 );
+                cy.wait('@searchDocumentReferences');
+
                 cy.getByTestId('patient-summary').should('exist');
-                cy.wait(40);
+
                 cy.getByTestId('available-files-table-title').should('exist');
                 cy.getByTestId('download-selected-files-btn').should('exist');
                 cy.getByTestId('download-all-files-btn').should('exist');
+
                 cy.getByTestId('start-again-link').should('exist');
-
                 cy.getByTestId('download-all-files-btn').click();
-                cy.title().should('eq', 'Downloading documents - Digital Lloyd George records');
 
-                cy.wait('@documentManifest');
+                cy.title().should('eq', 'Downloading documents - Digital Lloyd George records');
 
                 // Assert contents of page when downloading
                 cy.contains('Downloading documents').should('be.visible');
-                cy.contains(
-                    `Preparing download for ${viewLloydGeorgePayload.number_of_files} files`,
-                ).should('be.visible');
+                cy.contains(`Preparing download for 3 file(s)`).should('be.visible');
                 cy.contains('Compressing record into a zip file').should('be.visible');
                 cy.contains('Cancel').should('be.visible');
 
                 // Assert contents of page after download
                 cy.title().should('eq', 'Download complete - Digital Lloyd George records');
 
-                cy.contains('Download complete').should('be.visible');
-                cy.contains('You have successfully downloaded the Lloyd George record of:').should(
-                    'be.visible',
-                );
+                cy.contains('You have downloaded the record of:').should('be.visible');
                 cy.contains(
                     `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
                 ).should('be.visible');
