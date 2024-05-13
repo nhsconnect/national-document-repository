@@ -221,10 +221,10 @@ class DataCollectionService:
 
     def get_s3_files_info(self, bucket_name: str) -> list[S3ListObjectsResult]:
         # TODO: move this to s3 service
-        s3_paginator = self.s3_client.get_paginator("list_objects_v2")
+        s3_paginator = self.s3_client.get_paginator("list_object_versions")
         s3_list_objects_result = []
         for paginated_result in s3_paginator.paginate(Bucket=bucket_name):
-            s3_list_objects_result += paginated_result["Contents"]
+            s3_list_objects_result += paginated_result["Versions"]
         for s3_info in s3_list_objects_result:
             s3_info["NhsNumber"] = s3_info["Key"].split("/")[0]
         return s3_list_objects_result
