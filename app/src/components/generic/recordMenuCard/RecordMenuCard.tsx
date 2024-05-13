@@ -1,16 +1,16 @@
 import { Card } from 'nhsuk-react-components';
 import React, { Dispatch, SetStateAction } from 'react';
-import { PdfActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
+import { LGRecordActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
 import { Link, useNavigate } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 
 type Props = {
-    recordLinks: Array<PdfActionLink>;
+    recordLinks: Array<LGRecordActionLink>;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
 type SubSectionProps = {
-    actionLinks: Array<PdfActionLink>;
+    actionLinks: Array<LGRecordActionLink>;
     heading: string;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
@@ -46,28 +46,48 @@ function RecordMenuCard({ recordLinks, setStage }: Props) {
 }
 
 const SideMenuSubSection = ({ actionLinks, heading, setStage }: SubSectionProps) => {
-    const navigate = useNavigate();
     return (
         <>
             <h2 className="nhsuk-heading-m">{heading}</h2>
             <ol>
                 {actionLinks.map((link) => (
                     <li key={link.key}>
-                        <Link
-                            to="#placeholder"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                if (link.href) navigate(link.href);
-                                else if (link.stage) setStage(link.stage);
-                            }}
-                            data-testid={link.key}
-                        >
-                            {link.label}
-                        </Link>
+                        <LinkItem link={link} setStage={setStage} />
                     </li>
                 ))}
             </ol>
         </>
     );
+};
+
+type LinkItemProps = {
+    link: LGRecordActionLink;
+    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+};
+
+const LinkItem = ({ link, setStage }: LinkItemProps) => {
+    const navigate = useNavigate();
+
+    if (link.href || link.stage) {
+        return (
+            <Link
+                to="#placeholder"
+                onClick={(e) => {
+                    e.preventDefault();
+                    if (link.href) navigate(link.href);
+                    else if (link.stage) setStage(link.stage);
+                }}
+                data-testid={link.key}
+            >
+                {link.label}
+            </Link>
+        );
+    } else {
+        return (
+            <button className="link-button" onClick={link.onClick} data-testid={link.key}>
+                {link.label}
+            </button>
+        );
+    }
 };
 export default RecordMenuCard;

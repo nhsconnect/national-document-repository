@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import RecordMenuCard from './RecordMenuCard';
 import useRole from '../../../helpers/hooks/useRole';
-import { PdfActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
+import { LGRecordActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LinkProps } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
@@ -13,15 +13,16 @@ jest.mock('../../../helpers/hooks/useRole');
 const mockSetStage = jest.fn();
 const mockedUseNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
+const mockShowDownloadAndRemoveConfirmation = jest.fn();
 
-const mockLinks: Array<PdfActionLink> = [
+const mockLinks: Array<LGRecordActionLink> = [
     {
         label: 'Upload files',
         key: 'upload-files-link',
         type: RECORD_ACTION.UPDATE,
         href: routes.HOME,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-        showIfRecordInRepo: false,
+        showIfRecordInStorage: false,
     },
     {
         label: 'Remove files',
@@ -29,7 +30,7 @@ const mockLinks: Array<PdfActionLink> = [
         type: RECORD_ACTION.UPDATE,
         stage: LG_RECORD_STAGE.DELETE_ALL,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-        showIfRecordInRepo: true,
+        showIfRecordInStorage: true,
     },
     {
         label: 'Download files',
@@ -37,7 +38,15 @@ const mockLinks: Array<PdfActionLink> = [
         type: RECORD_ACTION.DOWNLOAD,
         stage: LG_RECORD_STAGE.DOWNLOAD_ALL,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-        showIfRecordInRepo: true,
+        showIfRecordInStorage: true,
+    },
+    {
+        label: 'Download and remove files',
+        key: 'download-and-remove-all-files-link',
+        type: RECORD_ACTION.DOWNLOAD,
+        unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        showIfRecordInStorage: true,
+        onClick: mockShowDownloadAndRemoveConfirmation,
     },
 ];
 
@@ -104,6 +113,19 @@ describe('RecordMenuCard', () => {
                 <RecordMenuCard setStage={mockSetStage} recordLinks={[]} />,
             );
             expect(container).toBeEmptyDOMElement();
+        });
+
+        it('render menu item as a <button> if link item does not have stage or href', () => {
+            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            expect(
+                screen.getByRole('button', { name: 'Download and remove files' }),
+            ).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Download and remove files' }));
+            });
+
+            expect(mockShowDownloadAndRemoveConfirmation).toBeCalledTimes(1);
         });
     });
 

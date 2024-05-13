@@ -7,6 +7,16 @@ from pydantic import BaseModel, Field
 from utils.exceptions import InvalidDocumentReferenceException
 
 
+class UploadDocumentReference(BaseModel):
+    reference: str = Field(...)
+    doc_type: str = Field(..., alias="type")
+    fields: dict[str, bool] = Field(...)
+
+
+class UploadDocumentReferences(BaseModel):
+    files: list[UploadDocumentReference] = Field(...)
+
+
 class DocumentReference(BaseModel):
     id: str = Field(..., alias=str(DocumentReferenceMetadataFields.ID.value))
     content_type: str = Field(
