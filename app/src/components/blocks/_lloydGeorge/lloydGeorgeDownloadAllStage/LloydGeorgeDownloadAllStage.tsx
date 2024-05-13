@@ -39,12 +39,7 @@ type DownloadLinkAttributes = {
     filename: string;
 };
 
-function LloydGeorgeDownloadAllStage({
-    numberOfFiles,
-    setStage,
-    deleteAfterDownload = false,
-    setDownloadStage,
-}: Props) {
+function LloydGeorgeDownloadAllStage({ numberOfFiles, deleteAfterDownload = false }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     const baseUrl = useBaseAPIUrl();
@@ -53,7 +48,6 @@ function LloydGeorgeDownloadAllStage({
         url: '',
         filename: '',
     });
-    const [inProgress, setInProgress] = useState(true);
     const linkRef = useRef<HTMLAnchorElement | null>(null);
     const mounted = useRef(false);
     const navigate = useNavigate();
@@ -86,7 +80,7 @@ function LloydGeorgeDownloadAllStage({
                 navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE);
             }, 600);
         }
-    }, [linkAttributes]);
+    }, [linkAttributes, navigate]);
 
     useEffect(() => {
         const onFail = (error: AxiosError) => {

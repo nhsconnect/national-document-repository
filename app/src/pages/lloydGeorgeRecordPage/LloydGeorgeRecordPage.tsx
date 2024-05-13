@@ -21,7 +21,6 @@ import { isMock } from '../../helpers/utils/isLocal';
 import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
-import { Link } from 'react-router-dom';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();

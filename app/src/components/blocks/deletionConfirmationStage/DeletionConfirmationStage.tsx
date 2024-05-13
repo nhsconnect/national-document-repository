@@ -1,6 +1,6 @@
 import React, { Dispatch, MouseEvent, SetStateAction, useEffect } from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
-import { routeChildren, routes } from '../../../types/generic/routes';
+import { routes } from '../../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import useRole from '../../../helpers/hooks/useRole';
