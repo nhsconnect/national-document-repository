@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { GenericDocument } from '../../../types/generic/genericDocument';
 
 interface Props {
-    documentsList: Array<GenericDocument>;
+    documentsList?: Array<GenericDocument>;
     ariaLabel: string;
 }
 
@@ -17,7 +17,7 @@ const DocumentsListView = ({ documentsList, ariaLabel }: Props) => {
             </Details.Summary>
             <Details.Text>
                 <ul className="document-list-view-list">
-                    {documentsList.map((document) => {
+                    {documentsList?.map((document) => {
                         return (
                             <li
                                 key={document.id}

@@ -15,7 +15,7 @@ export type Props = {
     deleteAfterDownload: boolean;
     numberOfFiles: number;
     selectedDocuments?: Array<string>;
-    searchResults: Array<SearchResult>;
+    searchResults?: Array<SearchResult>;
 };
 
 function LloydGeorgeDownloadComplete({
@@ -32,22 +32,18 @@ function LloydGeorgeDownloadComplete({
         focusLayoutDiv();
     }, []);
 
+    const selectedFilesDownload = !!selectedDocuments?.length;
+    const pageHeader = 'Download complete';
+    useTitle({ pageTitle: pageHeader });
+
     const handleReturnButtonClick = () => {
         setStage(LG_RECORD_STAGE.RECORD);
         if (deleteAfterDownload) {
             setDownloadStage(DOWNLOAD_STAGE.REFRESH);
         }
     };
-    const displayDocuments = () => {
-        if (!selectedDocuments?.length) {
-            return searchResults.map((document) => {
-                return {
-                    ref: document.id,
-                    id: document.id,
-                    fileName: document.fileName,
-                };
-            }) as GenericDocument[];
-        } else {
+    const createDocumentsList = () => {
+        if (searchResults) {
             return searchResults
                 .filter((document) => selectedDocuments?.includes(document.id))
                 .map((document) => {
@@ -59,8 +55,13 @@ function LloydGeorgeDownloadComplete({
                 }) as GenericDocument[];
         }
     };
-    const pageHeader = 'Download complete';
-    useTitle({ pageTitle: pageHeader });
+
+    const cardHeader = selectedFilesDownload
+        ? 'You have downloaded files from the record of:'
+        : selectedDocuments
+        ? 'You have downloaded the record of:'
+        : 'Download complete';
+
     return (
         <div className="lloydgeorge_download-complete">
             <Card className="lloydgeorge_download-complete_details">
@@ -69,23 +70,29 @@ function LloydGeorgeDownloadComplete({
                         className="lloydgeorge_download-complete_details-content_header"
                         headingLevel="h1"
                     >
-                        {pageHeader}
+                        {cardHeader}
                     </Card.Heading>
-                    <Card.Description className="lloydgeorge_download-complete_details-content_description">
-                        You have successfully downloaded the{'\n'}
-                        Lloyd George record of:
-                    </Card.Description>
+                    {!selectedDocuments && (
+                        <Card.Description className="lloydgeorge_download-complete_details-content_description">
+                            You have successfully downloaded the{'\n'}
+                            Lloyd George record of:
+                        </Card.Description>
+                    )}
                     <ReducedPatientInfo
                         className={'lloydgeorge_download-complete_details-content_subheader'}
                     />
                 </Card.Content>
             </Card>
-            <p>You have successfully downloaded {numberOfFiles} files</p>
-            <DocumentsListView
-                documentsList={displayDocuments()}
-                ariaLabel={'selected-document-list'}
-            />
-            {deleteAfterDownload ? (
+            {selectedFilesDownload && (
+                <>
+                    <p>You have successfully downloaded {numberOfFiles} file(s)</p>
+                    <DocumentsListView
+                        documentsList={createDocumentsList()}
+                        ariaLabel={'selected-document-list'}
+                    />
+                </>
+            )}
+            {deleteAfterDownload && (
                 <>
                     <p>This record has been removed from our storage.</p>
                     <p className="lloydgeorge_download-complete_paragraph-headers">
@@ -111,32 +118,30 @@ function LloydGeorgeDownloadComplete({
                             </a>
                         </li>
                     </ol>
-                    <p className="lloydgeorge_download-complete_paragraph-headers">
-                        Your responsibilities with this record
-                    </p>
-                    <p>
-                        Everyone in a health and care organisation is responsible for managing
-                        records appropriately. It is important all general practice staff understand
-                        their responsibilities for creating, maintaining, and disposing of records
-                        appropriately.
-                    </p>
-                    <p className="lloydgeorge_download-complete_paragraph-headers">
-                        Follow the Record Management Code of Practice
-                    </p>
-                    <p>
-                        The{' '}
-                        <a href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code">
-                            Record Management Code of Practice
-                        </a>{' '}
-                        provides a framework for consistent and effective records management, based
-                        on established standards.
-                    </p>
                 </>
-            ) : (
-                <Button onClick={handleReturnButtonClick} data-testid="return-btn">
-                    Return to patient's available medical records
-                </Button>
             )}
+            <p className="lloydgeorge_download-complete_paragraph-headers">
+                Your responsibilities with this record
+            </p>
+            <p>
+                Everyone in a health and care organisation is responsible for managing records
+                appropriately. It is important all general practice staff understand their
+                responsibilities for creating, maintaining, and disposing of records appropriately.
+            </p>
+            <p className="lloydgeorge_download-complete_paragraph-headers">
+                Follow the Record Management Code of Practice
+            </p>
+            <p>
+                The{' '}
+                <a href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code">
+                    Record Management Code of Practice
+                </a>{' '}
+                provides a framework for consistent and effective records management, based on
+                established standards.
+            </p>
+            {/*<Button onClick={handleReturnButtonClick} data-testid="return-btn">*/}
+            {/*    Return to patient's available medical records*/}
+            {/*</Button>*/}
         </div>
     );
 }

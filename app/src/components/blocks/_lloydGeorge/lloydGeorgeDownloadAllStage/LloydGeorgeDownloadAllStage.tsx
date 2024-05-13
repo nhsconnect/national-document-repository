@@ -33,7 +33,8 @@ export type Props = {
     deleteAfterDownload: boolean;
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     selectedDocuments?: Array<string>;
-    searchResults: Array<SearchResult>;
+    searchResults?: Array<SearchResult>;
+    numberOfFiles: number;
 };
 
 type DownloadLinkAttributes = {
@@ -47,6 +48,7 @@ function LloydGeorgeDownloadAllStage({
     setDownloadStage,
     selectedDocuments,
     searchResults,
+    numberOfFiles,
 }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
@@ -64,6 +66,9 @@ function LloydGeorgeDownloadAllStage({
     const patientDetails = usePatient();
     const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
+    const numberOfFilesForDownload = !!selectedDocuments?.length
+        ? selectedDocuments.length
+        : numberOfFiles;
 
     const progressTimer = useMemo(() => {
         return new FakeProgress({
@@ -168,9 +173,7 @@ function LloydGeorgeDownloadAllStage({
                 <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
                 <h4>NHS number: {patientDetails?.nhsNumber}</h4>
                 <div className="nhsuk-heading-xl" />
-                <h4>
-                    Preparing download for {selectedDocuments?.length ?? searchResults.length} files
-                </h4>
+                <h4>Preparing download for {numberOfFilesForDownload} file(s)</h4>
             </div>
 
             <Card className="lloydgeorge_downloadall-stage_details">
@@ -214,7 +217,7 @@ function LloydGeorgeDownloadAllStage({
             setStage={setStage}
             setDownloadStage={setDownloadStage}
             deleteAfterDownload={deleteAfterDownload}
-            numberOfFiles={selectedDocuments?.length ?? searchResults.length}
+            numberOfFiles={numberOfFilesForDownload}
             selectedDocuments={selectedDocuments}
             searchResults={searchResults}
         />

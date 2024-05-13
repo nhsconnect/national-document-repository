@@ -15,11 +15,16 @@ type Props = {
     selectedDocuments: string[];
 };
 
-const LloydGeorgeSelectSearchResults = (props: Props) => {
+const LloydGeorgeSelectSearchResults = ({
+    searchResults,
+    setSubmissionSearchState,
+    setSelectedDocuments,
+    selectedDocuments,
+}: Props) => {
     const sortMethod = (a: SearchResult, b: SearchResult) =>
         new Date(a.created) < new Date(b.created) ? 1 : -1;
     const navigate = useNavigate();
-    const orderedResults = [...props.searchResults].sort(sortMethod);
+    const orderedResults = [...searchResults].sort(sortMethod);
     const tableCaption = <h2 style={{ fontSize: 32 }}>List of files in record</h2>;
     const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
     const noOptionSelectedError = 'You must select a file to download or download all files';
@@ -29,21 +34,22 @@ const LloydGeorgeSelectSearchResults = (props: Props) => {
         const target = e.target as HTMLInputElement;
 
         if (target.checked) {
-            props.setSelectedDocuments([...props.selectedDocuments, target.value]);
+            setSelectedDocuments([...selectedDocuments, target.value]);
         } else {
-            props.setSelectedDocuments(props.selectedDocuments.filter((e) => e !== target.value));
+            setSelectedDocuments(selectedDocuments.filter((e) => e !== target.value));
         }
     };
     const onSubmitSelectedDownload = () => {
-        if (props.selectedDocuments.length) {
-            onSubmitDownload();
+        if (selectedDocuments.length) {
+            setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
         } else {
             setShowNoOptionSelectedMessage(true);
             window.scrollTo(0, 0);
         }
     };
-    const onSubmitDownload = () => {
-        props.setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
+    const onSubmitDownloadAll = () => {
+        setSelectedDocuments([]);
+        setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
     };
     return (
         <>
@@ -111,7 +117,7 @@ const LloydGeorgeSelectSearchResults = (props: Props) => {
                     Download selected files
                 </Button>
                 <Button
-                    onClick={onSubmitDownload}
+                    onClick={onSubmitDownloadAll}
                     className={'nhsuk-button nhsuk-button--secondary'}
                     style={{ marginLeft: 18 }}
                     data-testid="download-all-files-btn"
