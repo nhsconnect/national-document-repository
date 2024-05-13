@@ -6,6 +6,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 from decimal import Decimal
 from typing import TypedDict
+from urllib.parse import urlparse
 
 import boto3
 from boto3.dynamodb.conditions import Attr
@@ -29,8 +30,8 @@ logger = LoggingService(__name__)
 
 
 class S3ListObjectsResult(TypedDict):
+    Key: str
     Size: int
-    NhsNumber: str
 
 
 class DataCollectionService:
@@ -45,6 +46,9 @@ class DataCollectionService:
 
         statistic_table_name = os.environ["STATISTICS_TABLE"]
         self.output_table = self.dynamodb.Table(statistic_table_name)
+
+        self.lloyd_george_dynamodb_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
+        self.lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
 
         one_day = 60 * 60 * 24
         time_now = int(datetime.now().timestamp())
@@ -61,12 +65,8 @@ class DataCollectionService:
         self.write_to_local_dynamodb_table(all_statistic_data)
 
     def collect_all_data(self) -> list[StatisticData]:
-        dynamodb_scan_result = self.scan_dynamodb_table(
-            f"{self.workspace}_LloydGeorgeReferenceMetadata"
-        )
-        s3_list_objects_result = self.get_s3_files_info(
-            f"{self.workspace}-lloyd-george-store"
-        )
+        dynamodb_scan_result = self.scan_dynamodb_table(self.lloyd_george_dynamodb_name)
+        s3_list_objects_result = self.get_s3_files_info(self.lloyd_george_bucket_name)
 
         record_store_data = self.get_record_store_data(
             dynamodb_scan_result, s3_list_objects_result
@@ -88,16 +88,19 @@ class DataCollectionService:
 
     def scan_dynamodb_table(self, table_name: str) -> list[dict]:
         table = self.dynamodb.Table(table_name)
+        project_expression = "CurrentGpOds,NhsNumber,FileLocation"
+        filter_expression = Attr("Uploaded").eq(True) & Attr("Deleted").eq("")
+
         paginated_result = table.scan(
-            ProjectionExpression="CurrentGpOds,NhsNumber",
-            FilterExpression=Attr("Uploaded").eq(True) & Attr("Deleted").eq(""),
+            ProjectionExpression=project_expression,
+            FilterExpression=filter_expression,
         )
         dynamodb_scan_result = paginated_result["Items"]
         while "LastEvaluatedKey" in paginated_result:
             start_key_for_next_page = paginated_result["LastEvaluatedKey"]
             paginated_result = table.scan(
-                ProjectionExpression="CurrentGpOds,NhsNumber",
-                FilterExpression=Attr("Uploaded").eq(True) & Attr("Deleted").eq(""),
+                ProjectionExpression=project_expression,
+                FilterExpression=filter_expression,
                 ExclusiveStartKey=start_key_for_next_page,
             )
             dynamodb_scan_result += paginated_result["Items"]
@@ -221,12 +224,10 @@ class DataCollectionService:
 
     def get_s3_files_info(self, bucket_name: str) -> list[S3ListObjectsResult]:
         # TODO: move this to s3 service
-        s3_paginator = self.s3_client.get_paginator("list_object_versions")
+        s3_paginator = self.s3_client.get_paginator("list_objects_v2")
         s3_list_objects_result = []
         for paginated_result in s3_paginator.paginate(Bucket=bucket_name):
-            s3_list_objects_result += paginated_result["Versions"]
-        for s3_info in s3_list_objects_result:
-            s3_info["NhsNumber"] = s3_info["Key"].split("/")[0]
+            s3_list_objects_result += paginated_result["Contents"]
         return s3_list_objects_result
 
     def get_total_number_of_records_by_ods_code(
@@ -256,15 +257,18 @@ class DataCollectionService:
     def get_total_size_of_records_in_megabytes(
         self, dynamodb_scan_result, s3_list_objects_result: list[S3ListObjectsResult]
     ) -> list[dict]:
-        lookup_table = {
-            item["NhsNumber"]: item["CurrentGpOds"] for item in dynamodb_scan_result
+        file_size_lookup_table = {
+            s3_object["Key"]: s3_object["Size"] for s3_object in s3_list_objects_result
         }
 
         total_file_size_by_ods_code = defaultdict(lambda: 0)
-        for s3_info in s3_list_objects_result:
-            nhs_number = s3_info["NhsNumber"]
-            ods_code = lookup_table.get(nhs_number, "ODS_CODE_NOT_FOUND")
-            total_file_size_by_ods_code[ods_code] += s3_info["Size"]
+
+        for document_reference in dynamodb_scan_result:
+            file_location = document_reference["FileLocation"]
+            s3_file_key = urlparse(file_location).path.lstrip("/")
+            file_size = file_size_lookup_table.get(s3_file_key, 0)
+            ods_code = document_reference["CurrentGpOds"] or "ODS_CODE_NOT_FOUND"
+            total_file_size_by_ods_code[ods_code] += file_size
 
         return [
             {
