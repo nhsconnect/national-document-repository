@@ -1,7 +1,5 @@
-import React, { Dispatch, SetStateAction, useEffect } from 'react';
-import { Button, Card } from 'nhsuk-react-components';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
-import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
+import React, { useEffect } from 'react';
+import { Card } from 'nhsuk-react-components';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';

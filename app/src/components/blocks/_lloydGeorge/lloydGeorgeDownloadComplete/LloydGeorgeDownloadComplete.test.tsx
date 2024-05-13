@@ -1,14 +1,10 @@
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { act } from 'react-dom/test-utils';
 import LloydGeorgeDownloadComplete from './LloydGeorgeDownloadComplete';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 
-const mockSetStage = jest.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNumberOfFiles = 7;
