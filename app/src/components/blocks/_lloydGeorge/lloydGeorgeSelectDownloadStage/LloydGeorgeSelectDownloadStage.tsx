@@ -121,7 +121,6 @@ function LloydGeorgeSelectDownloadStage({
                 <LloydGeorgeDownloadStage
                     setStage={setStage}
                     deleteAfterDownload={deleteAfterDownload}
-                    setDownloadStage={setDownloadStage}
                     selectedDocuments={selectedDocuments}
                     searchResults={searchResults}
                     numberOfFiles={searchResults.length}

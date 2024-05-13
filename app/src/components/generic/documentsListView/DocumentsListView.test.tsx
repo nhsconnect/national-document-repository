@@ -4,8 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
 
 const mockDocuments = [
-    { fileName: 'test1', id: '1', ref: 'testref1' },
-    { fileName: 'test2', id: '2', ref: 'testref2' },
+    { fileName: 'test1.txt', id: '1', ref: 'testref1' },
+    { fileName: 'test2.txt', id: '2', ref: 'testref2' },
 ];
 
 describe('DocumentsListView', () => {

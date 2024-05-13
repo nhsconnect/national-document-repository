@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import {
     buildConfig,
     buildLgSearchResult,
@@ -11,6 +11,7 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 import useConfig from '../../../../helpers/hooks/useConfig';
+import LloydGeorgeDownloadStage, { Props } from './LloydGeorgeDownloadStage';
 
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -19,7 +20,7 @@ const mockUseConfig = useConfig as jest.Mock;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
 const mockSetStage = jest.fn();
-const mockDownloadStage = jest.fn();
+
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
@@ -33,7 +34,7 @@ jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useConfig');
 
-describe('LloydGeorgeDownloadAllStage', () => {
+describe('LloydGeorgeDownloadStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
@@ -44,7 +45,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
     });
 
     it('renders the component', () => {
-        // renderComponent();
+        renderComponent();
 
         expect(screen.getByRole('heading', { name: 'Downloading documents' })).toBeInTheDocument();
         expect(
@@ -59,13 +60,13 @@ describe('LloydGeorgeDownloadAllStage', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByRole('heading', {
-                name: `Preparing download for ${mockPdf.number_of_files} files`,
+                name: `Preparing download for ${mockPdf.number_of_files} file(s)`,
             }),
         ).toBeInTheDocument();
     });
 
     it('renders a progress bar', () => {
-        // renderComponent();
+        renderComponent();
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
     });
 
@@ -75,7 +76,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
 
         jest.useFakeTimers();
 
-        // renderComponent();
+        renderComponent();
 
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
         expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
@@ -118,7 +119,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
 
         jest.useFakeTimers();
 
-        // renderComponent({ deleteAfterDownload: true });
+        renderComponent({ deleteAfterDownload: true });
 
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
         expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
@@ -148,7 +149,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         };
         mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
         jest.useFakeTimers();
-        // renderComponent();
+        renderComponent();
         act(() => {
             jest.advanceTimersByTime(500);
         });
@@ -168,7 +169,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         };
         mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
         jest.useFakeTimers();
-        // renderComponent();
+        renderComponent();
         act(() => {
             jest.advanceTimersByTime(500);
         });
@@ -178,18 +179,12 @@ describe('LloydGeorgeDownloadAllStage', () => {
     });
 });
 
-// const renderComponent = (propsOverride?: Partial<Props>) => {
-//     const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
-//         numberOfFiles: mockPdf.number_of_files,
-//         deleteAfterDownload: false,
-//         ...propsOverride,
-//     };
-//
-//     return render(
-//         <LgDownloadAllStage
-//             {...props}
-//             setStage={mockSetStage}
-//             setDownloadStage={mockDownloadStage}
-//         />,
-//     );
-// };
+const renderComponent = (propsOverride?: Partial<Props>) => {
+    const props: Omit<Props, 'setStage'> = {
+        numberOfFiles: mockPdf.number_of_files,
+        deleteAfterDownload: false,
+        ...propsOverride,
+    };
+
+    return render(<LloydGeorgeDownloadStage {...props} setStage={mockSetStage} />);
+};
