@@ -41,8 +41,14 @@ const LloydGeorgeSelectSearchResults = ({
     };
     const handleClickSelectedDownload = () => {
         if (selectedDocuments.length === searchResults.length) {
+            console.log(
+                'inside selected documents length equals search results length if statement',
+            );
+            console.log(searchResults);
+            console.log(selectedDocuments);
             handleClickDownloadAll();
         } else if (selectedDocuments.length) {
+            console.log('inside selected documents if statement ' + selectedDocuments);
             setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
         } else {
             setShowNoOptionSelectedMessage(true);

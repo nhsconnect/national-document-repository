@@ -47,7 +47,7 @@ function LloydGeorgeDownloadComplete({
         console.log('in create docs list function');
         console.log('in create docs list function search results:' + searchResults);
         console.log('selected docs:' + selectedDocuments);
-        if (searchResults && selectedDocuments) {
+        if (searchResults) {
             console.log('in create docs list function');
             return searchResults
                 .filter((document) => selectedDocuments?.includes(document.id))
