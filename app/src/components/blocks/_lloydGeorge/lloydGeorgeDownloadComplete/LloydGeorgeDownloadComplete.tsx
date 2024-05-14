@@ -43,25 +43,32 @@ function LloydGeorgeDownloadComplete({
         }
     };
 
-    const createDocumentsList = () => {
-        console.log('in create docs list function');
-        console.log('in create docs list function search results:' + searchResults);
-        console.log('selected docs:' + selectedDocuments);
-        if (searchResults) {
-            console.log('in create docs list function');
-            return searchResults
-                .filter((document) => selectedDocuments?.includes(document.id))
-                .map((document) => {
-                    return {
-                        ref: document.id,
-                        id: document.id,
-                        fileName: document.fileName,
-                    };
-                }) as GenericDocument[];
-        } else {
-            return [];
-        }
-    };
+    // const createDocumentsList = () => {
+    //     console.log('in create docs list function');
+    //     console.log('in create docs list function search results:' + searchResults);
+    //     console.log('selected docs:' + selectedDocuments);
+    //     if (searchResults) {
+    //         console.log('in create docs list function');
+    //         return searchResults
+    //             .filter((document) => selectedDocuments?.includes(document.id))
+    //             .map((document) => {
+    //                 return {
+    //                     ref: document.id,
+    //                     id: document.id,
+    //                     fileName: document.fileName,
+    //                 };
+    //             }) as GenericDocument[];
+    //     }
+    // };
+    const documentsList = searchResults
+        ?.filter((document) => selectedDocuments?.includes(document.id))
+        .map((document) => {
+            return {
+                ref: document.id,
+                id: document.id,
+                fileName: document.fileName,
+            };
+        }) as GenericDocument[];
 
     const cardHeader = selectedFilesDownload
         ? 'You have downloaded files from the record of:'
@@ -93,8 +100,9 @@ function LloydGeorgeDownloadComplete({
             {selectedFilesDownload && (
                 <>
                     <p>You have successfully downloaded {numberOfFiles} file(s)</p>
+                    <p>test- {selectedDocuments}</p>
                     <DocumentsListView
-                        documentsList={createDocumentsList()}
+                        documentsList={documentsList}
                         ariaLabel={'selected-document-list'}
                     />
                 </>
