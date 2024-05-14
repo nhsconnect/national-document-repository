@@ -2,7 +2,7 @@ from enum import Enum
 
 
 class DocumentReferenceMetadataFields(Enum):
-    ID = "id"
+    ID = "ID"
     CONTENT_TYPE = "ContentType"
     CREATED = "Created"
     DELETED = "Deleted"

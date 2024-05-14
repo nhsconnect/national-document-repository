@@ -61,11 +61,11 @@ function LloydGeorgeDownloadComplete({
     //     }
     // };
     const documentsList = searchResults
-        ?.filter((document) => selectedDocuments?.includes(document.id))
+        ?.filter((document) => selectedDocuments?.includes(document.ID))
         .map((document) => {
             return {
-                ref: document.id,
-                id: document.id,
+                ref: document.ID,
+                id: document.ID,
                 fileName: document.fileName,
             };
         }) as GenericDocument[];

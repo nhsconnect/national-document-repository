@@ -103,7 +103,7 @@ const LloydGeorgeSelectSearchResults = ({
                                 data-testid="select"
                             >
                                 <Checkboxes onChange={handleChangeCheckboxes}>
-                                    <Checkboxes.Box value={result.id}> </Checkboxes.Box>
+                                    <Checkboxes.Box value={result.ID}> </Checkboxes.Box>
                                 </Checkboxes>{' '}
                             </Table.Cell>
                             <Table.Cell
