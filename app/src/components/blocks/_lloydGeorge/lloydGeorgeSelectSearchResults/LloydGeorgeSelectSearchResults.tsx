@@ -12,7 +12,7 @@ type Props = {
     searchResults: Array<SearchResult>;
     setSubmissionSearchState: Dispatch<SetStateAction<SEARCH_AND_DOWNLOAD_STATE>>;
     setSelectedDocuments: Dispatch<React.SetStateAction<Array<string>>>;
-    selectedDocuments: string[];
+    selectedDocuments: Array<string>;
 };
 
 const LloydGeorgeSelectSearchResults = ({
