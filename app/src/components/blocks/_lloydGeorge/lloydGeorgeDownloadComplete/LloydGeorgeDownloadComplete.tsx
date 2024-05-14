@@ -38,6 +38,9 @@ function LloydGeorgeDownloadComplete({
 
     const handleReturnButtonClick = () => {
         setStage(LG_RECORD_STAGE.RECORD);
+        if (deleteAfterDownload) {
+            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
+        }
     };
 
     const documentsList = searchResults
@@ -133,11 +136,9 @@ function LloydGeorgeDownloadComplete({
                 provides a framework for consistent and effective records management, based on
                 established standards.
             </p>
-            {!deleteAfterDownload && (
-                <Button onClick={handleReturnButtonClick} data-testid="return-btn">
-                    Return to patient's available medical records
-                </Button>
-            )}
+            <Button onClick={handleReturnButtonClick} data-testid="return-btn">
+                Return to patient's available medical records
+            </Button>
         </div>
     );
 }
