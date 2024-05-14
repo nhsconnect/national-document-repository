@@ -9,7 +9,7 @@ interface Props {
 
 const DocumentsListView = ({ documentsList, ariaLabel }: Props) => {
     const [isExpanded, setIsExpanded] = useState(true);
-
+    console.log(documentsList);
     return (
         <Details open>
             <Details.Summary aria-label={ariaLabel} onClick={() => setIsExpanded(!isExpanded)}>
@@ -17,7 +17,7 @@ const DocumentsListView = ({ documentsList, ariaLabel }: Props) => {
             </Details.Summary>
             <Details.Text>
                 <ul className="document-list-view-list">
-                    {documentsList?.map((document) => {
+                    {documentsList.map((document) => {
                         return (
                             <li
                                 key={document.id}
