@@ -6,6 +6,8 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from decimal import Decimal
 
+import polars as pl
+import polars.selectors as column_select
 from boto3.dynamodb.conditions import Key
 from models.statistics import (
     ApplicationData,
@@ -36,7 +38,7 @@ class StatisticalReportService:
         self.report_period: list[str] = [
             date.strftime("%Y%m%d") for date in last_seven_days
         ]
-        self.most_recent_date = self.report_period[-1]
+        self.most_recent_date = self.report_period[0]
 
     def make_weekly_summary_and_output_to_bucket(self):
         weekly_summary = self.make_weekly_summary()
@@ -99,6 +101,22 @@ class StatisticalReportService:
         return all_results
 
     @staticmethod
+    def load_data_to_polars(data: list[StatisticData]) -> pl.DataFrame:
+        return pl.DataFrame(data).with_columns(
+            column_select.by_dtype(pl.datatypes.Decimal).cast(pl.Float64)
+        )
+
+    def summarise_record_store_data_polars(
+        self, record_store_data: list[RecordStoreData]
+    ) -> pl.DataFrame:
+        df = self.load_data_to_polars(record_store_data)
+
+        get_most_recent_records = pl.all().sort_by("date").last()
+        summarised_data = df.group_by("ods_code").agg(get_most_recent_records)
+
+        return summarised_data
+
+    @staticmethod
     def summarise_record_store_data(record_store_data: list[RecordStoreData]) -> dict:
         latest_record = max(record_store_data, key=lambda record: record.date)
         return {
@@ -107,14 +125,29 @@ class StatisticalReportService:
             "Total size of records (in MB)": latest_record.total_size_of_records_in_megabytes,
         }
 
+    def summarise_organisation_data_polars(
+        self, organisation_data: list[RecordStoreData]
+    ) -> pl.DataFrame:
+        df = self.load_data_to_polars(organisation_data)
+
+        sum_daily_count_to_weekly = (
+            column_select.matches("daily")
+            .sum()
+            .name.map(lambda column_name: column_name.replace("daily", "weekly"))
+        )
+        take_average_for_patient_record = pl.col("average_records_per_patient").mean()
+        get_most_recent_number_of_patients = (
+            pl.col("number_of_patients").sort_by("date").last()
+        )
+        summarised_data = df.group_by("ods_code").agg(
+            sum_daily_count_to_weekly,
+            take_average_for_patient_record,
+            get_most_recent_number_of_patients,
+        )
+        return summarised_data
+
     @staticmethod
     def summarise_organisation_data(organisation_data: list[OrganisationData]) -> dict:
-        def take_average(list_of_number: list[Decimal]) -> float:
-            # TODO: move this to helper utils file
-            if list_of_number:
-                return sum(list_of_number) / (len(list_of_number))
-            return 0
-
         aggregated_data = {
             "Weekly documents stored": sum(
                 data.daily_count_stored for data in organisation_data
@@ -138,6 +171,20 @@ class StatisticalReportService:
         }
 
         return aggregated_data
+
+    def summarise_application_data_polars(
+        self, application_data: list[ApplicationData]
+    ) -> pl.DataFrame:
+        df = self.load_data_to_polars(application_data)
+        count_unique_ids = (
+            pl.concat_list("active_user_ids_hashed")
+            .flatten()
+            .unique()
+            .len()
+            .alias("Active users count")
+        )
+        summarised_data = df.group_by("ods_code").agg(count_unique_ids)
+        return summarised_data
 
     @staticmethod
     def summarise_application_data(application_data: list[ApplicationData]) -> dict:
@@ -206,3 +253,9 @@ class StatisticalReportService:
         self.s3_service.upload_file(local_file_path, self.reports_bucket, file_name)
 
         logger.info("The weekly report is stored in s3 bucket")
+
+
+def take_average(list_of_number: list[Decimal]) -> float:
+    if list_of_number:
+        return sum(list_of_number) / (len(list_of_number))
+    return 0
