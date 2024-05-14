@@ -1,14 +1,11 @@
-import csv
-import itertools
 import os
 import tempfile
-from collections import defaultdict
 from datetime import datetime, timedelta
-from decimal import Decimal
 
 import polars as pl
 import polars.selectors as column_select
 from boto3.dynamodb.conditions import Key
+from inflection import humanize
 from models.statistics import (
     ApplicationData,
     LoadedStatisticData,
@@ -32,9 +29,7 @@ class StatisticalReportService:
         self.s3_service = S3Service()
         self.reports_bucket = os.environ["STATISTICAL_REPORTS_BUCKET"]
 
-        last_seven_days = [
-            datetime.today() - timedelta(days=i) for i in range(1, 7 + 1)
-        ]
+        last_seven_days = [datetime.today() - timedelta(days=i + 1) for i in range(7)]
         self.report_period: list[str] = [
             date.strftime("%Y%m%d") for date in last_seven_days
         ]
@@ -44,39 +39,35 @@ class StatisticalReportService:
         weekly_summary = self.make_weekly_summary()
         self.store_report_to_s3(weekly_summary)
 
-    def make_weekly_summary(self) -> list[dict]:
+    def make_weekly_summary(self) -> pl.DataFrame:
         (record_store_data, organisation_data, application_data) = (
             self.get_statistic_data()
         )
 
-        logger.info("Aggregating the data...")
-        weekly_record_store_data = self.process_data_by_ods_code(
-            record_store_data, self.summarise_record_store_data
-        )
-        weekly_organisation_data = self.process_data_by_ods_code(
-            organisation_data, self.summarise_organisation_data
-        )
-        weekly_application_data = self.process_data_by_ods_code(
-            application_data, self.summarise_application_data
-        )
+        weekly_record_store_data = self.summarise_record_store_data(record_store_data)
+        weekly_organisation_data = self.summarise_organisation_data(organisation_data)
+        weekly_application_data = self.summarise_application_data(application_data)
 
         logger.info("Data summarised by week:")
-        logger.info(f"Record store data: {weekly_record_store_data}")
-        logger.info(f"Organisation data: {weekly_organisation_data}")
-        logger.info(f"Application data: {weekly_application_data}")
+        logger.info(f"Record store data: {weekly_record_store_data.to_dicts()}")
+        logger.info(f"Organisation data: {weekly_organisation_data.to_dicts()}")
+        logger.info(f"Application data: {weekly_application_data.to_dicts()}")
 
-        weekly_summary_combined = self.join_data_by_ods_code_and_add_date(
+        combined_data = self.join_data_by_ods_code(
             [
                 weekly_record_store_data,
                 weekly_organisation_data,
                 weekly_application_data,
             ]
         )
-        logger.info(f"Weekly summary by ODS code: {weekly_summary_combined}")
-        return weekly_summary_combined
+        weekly_summary = self.tidy_up_data(combined_data)
+        logger.info(f"Weekly summary by ODS code: {weekly_summary.to_dicts()}")
+
+        return weekly_summary
 
     def get_statistic_data(self) -> LoadedStatisticData:
         logger.info("Loading statistic data of previous week from dynamodb...")
+        logger.info(f"The period to report: {self.report_period}")
         dynamodb_items = []
         for date in self.report_period:
             response = self.dynamo_service.simple_query(
@@ -87,47 +78,33 @@ class StatisticalReportService:
 
         return load_from_dynamodb_items(dynamodb_items)
 
-    def process_data_by_ods_code(
-        self, loaded_data: list[StatisticData], summarising_function
-    ) -> list[dict]:
-        grouped_by_ods_code = self.group_data_by_ods_code(loaded_data)
-
-        all_results = []
-        for ods_code, data in grouped_by_ods_code.items():
-            summarised_result = summarising_function(data)
-            summarised_result["Ods Code"] = ods_code
-            all_results.append(summarised_result)
-
-        return all_results
-
     @staticmethod
     def load_data_to_polars(data: list[StatisticData]) -> pl.DataFrame:
         return pl.DataFrame(data).with_columns(
             column_select.by_dtype(pl.datatypes.Decimal).cast(pl.Float64)
         )
 
-    def summarise_record_store_data_polars(
+    def summarise_record_store_data(
         self, record_store_data: list[RecordStoreData]
     ) -> pl.DataFrame:
+        logger.info("Summarising RecordStoreData...")
+
         df = self.load_data_to_polars(record_store_data)
 
-        get_most_recent_records = pl.all().sort_by("date").last()
-        summarised_data = df.group_by("ods_code").agg(get_most_recent_records)
+        select_most_recent_records = pl.all().sort_by("date").last()
+        summarised_data = (
+            df.group_by("ods_code")
+            .agg(select_most_recent_records)
+            .drop("date", "statistic_id")
+        )
 
         return summarised_data
 
-    @staticmethod
-    def summarise_record_store_data(record_store_data: list[RecordStoreData]) -> dict:
-        latest_record = max(record_store_data, key=lambda record: record.date)
-        return {
-            "Total number of records": latest_record.total_number_of_records,
-            "Number of document types": latest_record.total_number_of_records,
-            "Total size of records (in MB)": latest_record.total_size_of_records_in_megabytes,
-        }
-
-    def summarise_organisation_data_polars(
-        self, organisation_data: list[RecordStoreData]
+    def summarise_organisation_data(
+        self, organisation_data: list[OrganisationData]
     ) -> pl.DataFrame:
+        logger.info("Summarising OrganisationData...")
+
         df = self.load_data_to_polars(organisation_data)
 
         sum_daily_count_to_weekly = (
@@ -136,46 +113,23 @@ class StatisticalReportService:
             .name.map(lambda column_name: column_name.replace("daily", "weekly"))
         )
         take_average_for_patient_record = pl.col("average_records_per_patient").mean()
-        get_most_recent_number_of_patients = (
+        select_most_recent_number_of_patients = (
             pl.col("number_of_patients").sort_by("date").last()
         )
         summarised_data = df.group_by("ods_code").agg(
             sum_daily_count_to_weekly,
             take_average_for_patient_record,
-            get_most_recent_number_of_patients,
+            select_most_recent_number_of_patients,
         )
         return summarised_data
 
-    @staticmethod
-    def summarise_organisation_data(organisation_data: list[OrganisationData]) -> dict:
-        aggregated_data = {
-            "Weekly documents stored": sum(
-                data.daily_count_stored for data in organisation_data
-            ),
-            "Weekly documents viewed": sum(
-                data.daily_count_viewed for data in organisation_data
-            ),
-            "Weekly documents downloaded": sum(
-                data.daily_count_downloaded for data in organisation_data
-            ),
-            "Weekly documents deleted": sum(
-                data.daily_count_deleted for data in organisation_data
-            ),
-            "Average record per patient": take_average(
-                [data.average_records_per_patient for data in organisation_data]
-            ),
-            # TODO: replace this with a unique count when we change this data to a list of hashed id
-            "Number of patients": next(
-                data.number_of_patients for data in organisation_data
-            ),
-        }
-
-        return aggregated_data
-
-    def summarise_application_data_polars(
+    def summarise_application_data(
         self, application_data: list[ApplicationData]
     ) -> pl.DataFrame:
+        logger.info("Summarising ApplicationData...")
+
         df = self.load_data_to_polars(application_data)
+
         count_unique_ids = (
             pl.concat_list("active_user_ids_hashed")
             .flatten()
@@ -186,76 +140,57 @@ class StatisticalReportService:
         summarised_data = df.group_by("ods_code").agg(count_unique_ids)
         return summarised_data
 
-    @staticmethod
-    def summarise_application_data(application_data: list[ApplicationData]) -> dict:
-        all_hashed_ids_in_week = itertools.chain(
-            *(data.active_user_ids_hashed for data in application_data)
-        )
-        all_unique_ids = set(all_hashed_ids_in_week)
+    def join_data_by_ods_code(
+        self, summarised_data: list[pl.DataFrame]
+    ) -> pl.DataFrame:
+        joined_data = summarised_data[0]
+        for other_df in summarised_data[1:]:
+            joined_data = joined_data.join(
+                other_df, on="ods_code", how="outer_coalesce"
+            )
 
-        return {"Active users count": len(all_unique_ids)}
-
-    @staticmethod
-    def group_data_by_ods_code(
-        data: list[StatisticData],
-    ) -> dict[str, list[StatisticData]]:
-        result = defaultdict(list)
-        for item in data:
-            ods_code = item.ods_code
-            result[ods_code].append(item)
-
-        return result
-
-    def join_data_by_ods_code_and_add_date(
-        self, results: list[list[dict]]
-    ) -> list[dict]:
-        joined_data = self.join_data_by_ods_code(results)
-        with_date_column_added = self.add_date_column_to_results(joined_data)
-
-        return with_date_column_added
-
-    @staticmethod
-    def join_data_by_ods_code(results: list[list[dict]]) -> list[dict]:
-        all_data_flatten = itertools.chain(*results)
-
-        joined_by_ods_code = defaultdict(dict)
-        for entry in all_data_flatten:
-            ods_code = entry["Ods Code"]
-            joined_by_ods_code[ods_code].update(entry)
-
-        return list(joined_by_ods_code.values())
-
-    def add_date_column_to_results(self, joined_data: list[dict]) -> list[dict]:
-        for data in joined_data:
-            data["Date"] = self.most_recent_date
         return joined_data
 
-    def store_report_to_s3(self, weekly_summary: list[dict]):
-        logger.info("Saving the report in S3 bucket...")
+    def tidy_up_data(self, joined_data: pl.DataFrame) -> pl.DataFrame:
+        with_date_column_updated = self.update_date_column(joined_data)
+        with_columns_reordered = self.reorder_columns(with_date_column_updated)
+        with_columns_renamed = with_columns_reordered.rename(
+            self.rename_snakecase_columns
+        )
 
+        return with_columns_renamed
+
+    def update_date_column(self, joined_data: pl.DataFrame) -> pl.DataFrame:
+        report_period_as_string = f"{self.report_period[-1]} ~ {self.report_period[0]}"
+        date_column_filled_with_report_period = joined_data.with_columns(
+            pl.lit(report_period_as_string).alias("date")
+        )
+        return date_column_filled_with_report_period
+
+    def reorder_columns(self, joined_data: pl.DataFrame) -> pl.DataFrame:
+        all_columns_names = joined_data.columns
+        columns_to_go_first = ["date", "ods_code"]
+        other_columns = sorted(set(all_columns_names) - set(columns_to_go_first))
+        with_columns_reordered = joined_data.select(
+            *columns_to_go_first, *other_columns
+        )
+        return with_columns_reordered
+
+    @staticmethod
+    def rename_snakecase_columns(column_name: str) -> str:
+        if column_name == "ods_code":
+            return "ODS code"
+        else:
+            return humanize(column_name)
+
+    def store_report_to_s3(self, weekly_summary: pl.DataFrame):
+        logger.info("Saving the weekly report as .csv")
         file_name = f"statistical_report_{self.most_recent_date}.csv"
         local_file_path = f"{tempfile.mkdtemp()}/{file_name}"
-        all_field_names = {field for row in weekly_summary for field in row.keys()}
-        field_names_in_order = [
-            "Date",
-            "Ods Code",
-            *sorted(all_field_names - {"Date", "Ods Code"}),
-        ]
+        weekly_summary.write_csv(local_file_path)
 
-        with open(local_file_path, "w") as output_file:
-            dict_writer_object = csv.DictWriter(
-                output_file, fieldnames=field_names_in_order
-            )
-            dict_writer_object.writeheader()
-            for item in weekly_summary:
-                dict_writer_object.writerow(item)
-
+        logger.info("Uploading the csv report to S3 bucket...")
         self.s3_service.upload_file(local_file_path, self.reports_bucket, file_name)
 
-        logger.info("The weekly report is stored in s3 bucket")
-
-
-def take_average(list_of_number: list[Decimal]) -> float:
-    if list_of_number:
-        return sum(list_of_number) / (len(list_of_number))
-    return 0
+        logger.info("The weekly report is stored in s3 bucket.")
+        logger.info(f"File name: {file_name}")
