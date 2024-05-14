@@ -100,7 +100,6 @@ function LloydGeorgeDownloadComplete({
             {selectedFilesDownload && (
                 <>
                     <p>You have successfully downloaded {numberOfFiles} file(s)</p>
-                    <p>test- {selectedDocuments}</p>
                     <DocumentsListView
                         documentsList={documentsList}
                         ariaLabel={'selected-document-list'}

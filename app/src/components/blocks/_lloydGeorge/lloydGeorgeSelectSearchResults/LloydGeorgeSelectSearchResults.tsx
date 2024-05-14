@@ -30,6 +30,8 @@ const LloydGeorgeSelectSearchResults = ({
     const noOptionSelectedError = 'You must select a file to download or download all files';
     const pageHeader = 'Download the Lloyd George record for this patient';
 
+    console.log('search results: ' + searchResults);
+    console.log('selected docs: ' + selectedDocuments);
     const handleChangeCheckboxes = (e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
 
