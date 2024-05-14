@@ -48,6 +48,8 @@ const LloydGeorgeSelectSearchResults = ({
             console.log(selectedDocuments);
             handleClickDownloadAll();
         } else if (selectedDocuments.length) {
+            console.log('selected docs length: ' + selectedDocuments.length);
+            console.log('selected docs length bool: ' + !!selectedDocuments.length);
             console.log('inside selected documents if statement ' + selectedDocuments);
             setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
         } else {
