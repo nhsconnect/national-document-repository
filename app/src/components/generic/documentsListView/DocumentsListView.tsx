@@ -3,13 +3,13 @@ import React, { useState } from 'react';
 import { GenericDocument } from '../../../types/generic/genericDocument';
 
 interface Props {
-    documentsList?: Array<GenericDocument>;
+    documentsList: Array<GenericDocument>;
     ariaLabel: string;
 }
 
 const DocumentsListView = ({ documentsList, ariaLabel }: Props) => {
     const [isExpanded, setIsExpanded] = useState(true);
-    console.log(documentsList);
+
     return (
         <Details open>
             <Details.Summary aria-label={ariaLabel} onClick={() => setIsExpanded(!isExpanded)}>

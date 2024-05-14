@@ -22,7 +22,7 @@ const LloydGeorgeSelectSearchResults = ({
     selectedDocuments,
 }: Props) => {
     const sortMethod = (a: SearchResult, b: SearchResult) =>
-        new Date(a.created) < new Date(b.created) ? 1 : -1;
+        new Date(a.created) <= new Date(b.created) ? 1 : -1;
     const navigate = useNavigate();
     const orderedResults = [...searchResults].sort(sortMethod);
     const tableCaption = <h2 style={{ fontSize: 32 }}>List of files in record</h2>;
@@ -30,8 +30,6 @@ const LloydGeorgeSelectSearchResults = ({
     const noOptionSelectedError = 'You must select a file to download or download all files';
     const pageHeader = 'Download the Lloyd George record for this patient';
 
-    console.log('search results: ' + searchResults);
-    console.log('selected docs: ' + selectedDocuments);
     const handleChangeCheckboxes = (e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
 
@@ -43,16 +41,8 @@ const LloydGeorgeSelectSearchResults = ({
     };
     const handleClickSelectedDownload = () => {
         if (selectedDocuments.length === searchResults.length) {
-            console.log(
-                'inside selected documents length equals search results length if statement',
-            );
-            console.log(searchResults);
-            console.log(selectedDocuments);
             handleClickDownloadAll();
         } else if (selectedDocuments.length) {
-            console.log('selected docs length: ' + selectedDocuments.length);
-            console.log('selected docs length bool: ' + !!selectedDocuments.length);
-            console.log('inside selected documents if statement ' + selectedDocuments);
             setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
         } else {
             setShowNoOptionSelectedMessage(true);

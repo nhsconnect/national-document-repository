@@ -38,28 +38,8 @@ function LloydGeorgeDownloadComplete({
 
     const handleReturnButtonClick = () => {
         setStage(LG_RECORD_STAGE.RECORD);
-        if (deleteAfterDownload) {
-            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
-        }
     };
 
-    // const createDocumentsList = () => {
-    //     console.log('in create docs list function');
-    //     console.log('in create docs list function search results:' + searchResults);
-    //     console.log('selected docs:' + selectedDocuments);
-    //     if (searchResults) {
-    //         console.log('in create docs list function');
-    //         return searchResults
-    //             .filter((document) => selectedDocuments?.includes(document.id))
-    //             .map((document) => {
-    //                 return {
-    //                     ref: document.id,
-    //                     id: document.id,
-    //                     fileName: document.fileName,
-    //                 };
-    //             }) as GenericDocument[];
-    //     }
-    // };
     const documentsList = searchResults
         ?.filter((document) => selectedDocuments?.includes(document.ID))
         .map((document) => {
