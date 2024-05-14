@@ -124,6 +124,7 @@ function LloydGeorgeSelectDownloadStage({
                     selectedDocuments={selectedDocuments}
                     searchResults={searchResults}
                     numberOfFiles={searchResults.length}
+                    setDownloadStage={setDownloadStage}
                 />
             )}
         </>

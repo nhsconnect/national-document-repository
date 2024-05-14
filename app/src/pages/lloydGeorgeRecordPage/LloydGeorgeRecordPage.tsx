@@ -142,6 +142,7 @@ function LloydGeorgeRecordPage() {
                     numberOfFiles={numberOfFiles}
                     setStage={setStage}
                     deleteAfterDownload={deleteAfterDownload}
+                    setDownloadStage={setDownloadStage}
                 />
             );
         case LG_RECORD_STAGE.DELETE_ALL:

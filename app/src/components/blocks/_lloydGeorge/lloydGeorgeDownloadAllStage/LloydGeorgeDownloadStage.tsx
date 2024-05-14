@@ -16,6 +16,7 @@ import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import deleteAllDocuments from '../../../../helpers/requests/deleteAllDocuments';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { routes } from '../../../../types/generic/routes';
 import { useNavigate, Link } from 'react-router-dom';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
@@ -30,6 +31,7 @@ const FakeProgress = require('fake-progress');
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     deleteAfterDownload: boolean;
+    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     selectedDocuments?: Array<string>;
     searchResults?: Array<SearchResult>;
     numberOfFiles: number;
@@ -43,6 +45,7 @@ type DownloadLinkAttributes = {
 function LloydGeorgeDownloadStage({
     setStage,
     deleteAfterDownload = false,
+    setDownloadStage,
     selectedDocuments,
     searchResults,
     numberOfFiles,
@@ -213,6 +216,8 @@ function LloydGeorgeDownloadStage({
         </div>
     ) : (
         <LgDownloadComplete
+            setStage={setStage}
+            setDownloadStage={setDownloadStage}
             deleteAfterDownload={deleteAfterDownload}
             numberOfFiles={numberOfFilesForDownload}
             selectedDocuments={selectedDocuments}

@@ -1,13 +1,17 @@
-import React, { useEffect } from 'react';
-import { Card } from 'nhsuk-react-components';
+import React, { Dispatch, SetStateAction, useEffect } from 'react';
+import { Button, Card } from 'nhsuk-react-components';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import DocumentsListView from '../../../generic/documentsListView/DocumentsListView';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import { GenericDocument } from '../../../../types/generic/genericDocument';
+import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 export type Props = {
+    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     deleteAfterDownload: boolean;
     numberOfFiles: number;
     selectedDocuments?: Array<string>;
@@ -15,6 +19,8 @@ export type Props = {
 };
 
 function LloydGeorgeDownloadComplete({
+    setStage,
+    setDownloadStage,
     deleteAfterDownload,
     numberOfFiles,
     selectedDocuments,
@@ -29,6 +35,13 @@ function LloydGeorgeDownloadComplete({
     const selectedFilesDownload = !!selectedDocuments?.length;
     const pageHeader = 'Download complete';
     useTitle({ pageTitle: pageHeader });
+
+    const handleReturnButtonClick = () => {
+        setStage(LG_RECORD_STAGE.RECORD);
+        if (deleteAfterDownload) {
+            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
+        }
+    };
 
     const createDocumentsList = () => {
         if (searchResults && selectedDocuments) {
@@ -129,6 +142,11 @@ function LloydGeorgeDownloadComplete({
                 provides a framework for consistent and effective records management, based on
                 established standards.
             </p>
+            {!deleteAfterDownload && (
+                <Button onClick={handleReturnButtonClick} data-testid="return-btn">
+                    Return to patient's available medical records
+                </Button>
+            )}
         </div>
     );
 }

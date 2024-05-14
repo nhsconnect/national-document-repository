@@ -20,7 +20,7 @@ const mockUseConfig = useConfig as jest.Mock;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
 const mockSetStage = jest.fn();
-
+const mockDownloadStage = jest.fn();
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
@@ -180,11 +180,17 @@ describe('LloydGeorgeDownloadStage', () => {
 });
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
-    const props: Omit<Props, 'setStage'> = {
+    const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
         numberOfFiles: mockPdf.number_of_files,
         deleteAfterDownload: false,
         ...propsOverride,
     };
 
-    return render(<LloydGeorgeDownloadStage {...props} setStage={mockSetStage} />);
+    return render(
+        <LloydGeorgeDownloadStage
+            {...props}
+            setStage={mockSetStage}
+            setDownloadStage={mockDownloadStage}
+        />,
+    );
 };

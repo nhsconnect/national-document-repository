@@ -5,6 +5,8 @@ import LloydGeorgeDownloadComplete from './LloydGeorgeDownloadComplete';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 
+const mockSetStage = jest.fn();
+const mockSetDownloadStage = jest.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNumberOfFiles = 7;
@@ -22,6 +24,8 @@ describe('LloydGeorgeDownloadComplete', () => {
         it('renders the component', () => {
             render(
                 <LloydGeorgeDownloadComplete
+                    setStage={mockSetStage}
+                    setDownloadStage={mockSetDownloadStage}
                     deleteAfterDownload={false}
                     numberOfFiles={mockNumberOfFiles}
                 />,
@@ -39,6 +43,8 @@ describe('LloydGeorgeDownloadComplete', () => {
         it('display record removed text if deleteAfterDownload is true', async () => {
             render(
                 <LloydGeorgeDownloadComplete
+                    setStage={mockSetStage}
+                    setDownloadStage={mockSetDownloadStage}
                     deleteAfterDownload={true}
                     numberOfFiles={mockNumberOfFiles}
                 />,
