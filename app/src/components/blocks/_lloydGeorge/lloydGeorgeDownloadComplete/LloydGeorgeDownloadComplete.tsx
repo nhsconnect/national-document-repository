@@ -53,11 +53,15 @@ function LloydGeorgeDownloadComplete({
             };
         }) as GenericDocument[];
 
-    const cardHeader = selectedFilesDownload
-        ? 'You have downloaded files from the record of:'
-        : selectedDocuments
-        ? 'You have downloaded the record of:'
-        : 'Download complete';
+    const getCardHeader = () => {
+        if (selectedFilesDownload) {
+            return 'You have downloaded files from the record of:';
+        } else if (selectedDocuments) {
+            return 'You have downloaded the record of:';
+        } else {
+            return 'Download complete';
+        }
+    };
 
     return (
         <div className="lloydgeorge_download-complete">
@@ -67,7 +71,7 @@ function LloydGeorgeDownloadComplete({
                         className="lloydgeorge_download-complete_details-content_header"
                         headingLevel="h1"
                     >
-                        {cardHeader}
+                        {getCardHeader()}
                     </Card.Heading>
                     {!selectedDocuments && (
                         <Card.Description className="lloydgeorge_download-complete_details-content_description">
