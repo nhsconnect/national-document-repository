@@ -1,7 +1,6 @@
 import hashlib
 import itertools
 import os
-import time
 from collections import Counter, defaultdict
 from datetime import datetime
 from decimal import Decimal
@@ -9,6 +8,7 @@ from typing import TypedDict
 from urllib.parse import urlparse
 
 import boto3
+import polars as pl
 from boto3.dynamodb.conditions import Attr
 from models.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
@@ -24,6 +24,7 @@ from models.statistics import (
     RecordStoreData,
     StatisticData,
 )
+from services.logs_query_service import CloudwatchLogsQueryService
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
@@ -38,7 +39,7 @@ class DataCollectionService:
     def __init__(self):
         self.workspace = os.environ["WORKSPACE"]
 
-        self.logs_client = boto3.client("logs")
+        self.logs_query_service = CloudwatchLogsQueryService()
 
         # TODO: integrate with existing services
         self.dynamodb = boto3.resource("dynamodb")
@@ -88,7 +89,7 @@ class DataCollectionService:
 
     def scan_dynamodb_table(self, table_name: str) -> list[dict]:
         table = self.dynamodb.Table(table_name)
-        project_expression = "CurrentGpOds,NhsNumber,FileLocation"
+        project_expression = "CurrentGpOds,NhsNumber,FileLocation,ContentType"
         filter_expression = Attr("Uploaded").eq(True) & Attr("Deleted").eq("")
 
         paginated_result = table.scan(
@@ -107,26 +108,35 @@ class DataCollectionService:
         return dynamodb_scan_result
 
     def get_record_store_data(
-        self, dynamodb_scan_result, s3_list_objects_result: list[S3ListObjectsResult]
+        self,
+        dynamodb_scan_result: list[dict],
+        s3_list_objects_result: list[S3ListObjectsResult],
     ) -> list[RecordStoreData]:
         total_number_of_records_by_ods_code = (
             self.get_total_number_of_records_by_ods_code(dynamodb_scan_result)
         )
 
-        total_size_of_records_in_megabytes = (
-            self.get_total_size_of_records_in_megabytes(
+        total_and_average_file_sizes = (
+            self.get_metrics_for_total_and_average_file_sizes(
                 dynamodb_scan_result, s3_list_objects_result
             )
         )
 
+        number_of_document_types = self.get_number_of_document_types(
+            dynamodb_scan_result
+        )
+
         joined_query_result = self.join_results_by_ods_code(
-            [total_number_of_records_by_ods_code, total_size_of_records_in_megabytes]
+            [
+                total_number_of_records_by_ods_code,
+                total_and_average_file_sizes,
+                number_of_document_types,
+            ]
         )
 
         record_store_data_for_all_ods_code = [
             RecordStoreData(
                 date=self.date,
-                number_of_document_types=1,  # placeholder as not sure what this metric should mean
                 **record_store_data_properties,
             )
             for record_store_data_properties in joined_query_result
@@ -194,32 +204,10 @@ class DataCollectionService:
     def get_cloud_watch_query_result(
         self, query_params: CloudwatchLogsQueryParams
     ) -> list[dict]:
-        # TODO: move this to a cloudwatch logs query service
-        response = self.logs_client.start_query(
-            logGroupName=f"/aws/lambda/{self.workspace}_{query_params.lambda_name}",
-            startTime=self.collection_start_time,
-            endTime=self.collection_end_time,
-            queryString=query_params.query_string,
-        )
-        query_id = response["queryId"]
-
-        raw_query_result = self.poll_query_result(query_id)
-        query_result = [
-            {column["field"]: column["value"] for column in row}
-            for row in raw_query_result
-        ]
-        return query_result
-
-    def poll_query_result(self, query_id: str, max_retries=20) -> list[list]:
-        # TODO: move this to a cloudwatch logs query service
-        for _ in range(max_retries):
-            response = self.logs_client.get_query_results(queryId=query_id)
-            if response["status"] == "Complete":
-                return response["results"]
-            time.sleep(1)
-
-        raise RuntimeError(
-            f"Failed to get query result within max retries of {max_retries} times"
+        return self.logs_query_service.query_logs(
+            query_params=query_params,
+            start_time=self.collection_start_time,
+            end_time=self.collection_end_time,
         )
 
     def get_s3_files_info(self, bucket_name: str) -> list[S3ListObjectsResult]:
@@ -231,7 +219,7 @@ class DataCollectionService:
         return s3_list_objects_result
 
     def get_total_number_of_records_by_ods_code(
-        self, dynamodb_scan_result
+        self, dynamodb_scan_result: list[dict]
     ) -> list[dict]:
         ods_code_for_every_document = [
             item["CurrentGpOds"] for item in dynamodb_scan_result
@@ -243,7 +231,7 @@ class DataCollectionService:
         ]
         return count_result_in_list_of_dict
 
-    def get_number_of_patients(self, dynamodb_scan_result) -> list[dict]:
+    def get_number_of_patients(self, dynamodb_scan_result: list[dict]) -> list[dict]:
         patients_grouped_by_ods_code = defaultdict(set)
         for item in dynamodb_scan_result:
             ods_code = item["CurrentGpOds"]
@@ -254,33 +242,71 @@ class DataCollectionService:
             for ods_code, patients in patients_grouped_by_ods_code.items()
         ]
 
-    def get_total_size_of_records_in_megabytes(
-        self, dynamodb_scan_result, s3_list_objects_result: list[S3ListObjectsResult]
+    @staticmethod
+    def get_file_key(file_location: str) -> str:
+        return str(urlparse(file_location).path.lstrip("/"))
+
+    def get_metrics_for_total_and_average_file_sizes(
+        self,
+        dynamodb_scan_result: list[dict],
+        s3_list_objects_result: list[S3ListObjectsResult],
     ) -> list[dict]:
-        file_size_lookup_table = {
-            s3_object["Key"]: s3_object["Size"] for s3_object in s3_list_objects_result
-        }
+        dynamodb_df = pl.DataFrame(dynamodb_scan_result)
+        s3_df = pl.DataFrame(s3_list_objects_result)
 
-        total_file_size_by_ods_code = defaultdict(lambda: 0)
+        dynamodb_df_with_file_key = dynamodb_df.with_columns(
+            pl.col("FileLocation")
+            .map_elements(self.get_file_key, return_dtype=pl.String)
+            .alias("FileKey")
+        )
 
-        for document_reference in dynamodb_scan_result:
-            file_location = document_reference["FileLocation"]
-            s3_file_key = urlparse(file_location).path.lstrip("/")
-            file_size = file_size_lookup_table.get(s3_file_key, 0)
-            ods_code = document_reference["CurrentGpOds"] or "ODS_CODE_NOT_FOUND"
-            total_file_size_by_ods_code[ods_code] += file_size
+        joined_df = dynamodb_df_with_file_key.join(
+            s3_df, how="left", left_on="FileKey", right_on="Key"
+        )
+        get_total_size = (pl.col("Size").sum() / 1024 / 1024).alias(
+            "TotalFileSizeForPatientInMegabytes"
+        )
+        df_with_total_file_size_per_patient = joined_df.group_by(
+            "CurrentGpOds", "NhsNumber"
+        ).agg(get_total_size)
+
+        get_average_file_size_per_patient = (
+            pl.col("TotalFileSizeForPatientInMegabytes")
+            .mean()
+            .alias("average_size_of_documents_per_patient_in_megabytes")
+        )
+
+        get_total_file_size_for_ods_code = (
+            pl.col("TotalFileSizeForPatientInMegabytes")
+            .sum()
+            .alias("total_size_of_records_in_megabytes")
+        )
+
+        result = (
+            df_with_total_file_size_per_patient.group_by("CurrentGpOds")
+            .agg(get_average_file_size_per_patient, get_total_file_size_for_ods_code)
+            .rename({"CurrentGpOds": "ods_code"})
+        )
+
+        return result.to_dicts()
+
+    def get_number_of_document_types(
+        self, dynamodb_scan_result: list[dict]
+    ) -> list[dict]:
+        file_types_grouped_by_ods_code = defaultdict(set)
+        for item in dynamodb_scan_result:
+            ods_code = item["CurrentGpOds"]
+            file_type = item["ContentType"]
+            file_types_grouped_by_ods_code[ods_code].add(file_type)
 
         return [
-            {
-                "ods_code": ods_code,
-                "total_size_of_records_in_megabytes": self.to_megabyte(total_file_size),
-            }
-            for ods_code, total_file_size in total_file_size_by_ods_code.items()
+            {"ods_code": ods_code, "number_of_document_types": len(file_types)}
+            for ods_code, file_types in file_types_grouped_by_ods_code.items()
         ]
 
     def get_average_number_of_file_per_patient(
         self,
-        dynamodb_scan_result,
+        dynamodb_scan_result: list[dict],
     ) -> list[dict]:
         # we should consider to use pandas / polars for this kind of aggregation
         ods_code_and_patient_number_tuple_for_every_document = [
@@ -305,6 +331,35 @@ class DataCollectionService:
             for ods_code, list_of_number_of_files_of_each_patient in counter_dict_by_ods_code.items()
         ]
         return average_by_ods_code
+
+    # def get_average_document_size_per_patient(
+    #     self,
+    #     dynamodb_scan_result: list[dict],
+    #     s3_list_objects_result: list[S3ListObjectsResult]
+    # ) -> list[dict]:
+    #     # we should consider to use pandas / polars for this kind of aggregation
+    #     ods_code_and_patient_number_tuple_for_every_document = [
+    #         (item.current_gp_ods, item.nhs_number) for item in dynamodb_scan_result
+    #     ]
+    #     counter_dict = Counter(ods_code_and_patient_number_tuple_for_every_document)
+    #     counter_dict_by_ods_code = defaultdict(list)
+    #
+    #     for (
+    #         ods_code,
+    #         _nhs_number,
+    #     ), number_of_file_of_single_patient in counter_dict.items():
+    #         counter_dict_by_ods_code[ods_code].append(number_of_file_of_single_patient)
+    #
+    #     average_by_ods_code = [
+    #         {
+    #             "ods_code": ods_code,
+    #             "average_records_per_patient": self.take_average(
+    #                 list_of_number_of_files_of_each_patient
+    #             ),
+    #         }
+    #         for ods_code, list_of_number_of_files_of_each_patient in counter_dict_by_ods_code.items()
+    #     ]
+    #     return average_by_ods_cod
 
     @staticmethod
     def join_results_by_ods_code(results: list[list[dict]]) -> list[dict]:

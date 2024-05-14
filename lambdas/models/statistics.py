@@ -40,6 +40,7 @@ class RecordStoreData(StatisticData):
     total_number_of_records: int = 0
     number_of_document_types: int = 0
     total_size_of_records_in_megabytes: Decimal = Decimal(0)
+    average_size_of_documents_per_patient_in_megabytes: Decimal = Decimal(0)
 
 
 class OrganisationData(StatisticData):
