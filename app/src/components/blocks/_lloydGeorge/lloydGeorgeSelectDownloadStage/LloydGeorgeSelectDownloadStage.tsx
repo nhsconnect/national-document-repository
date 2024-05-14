@@ -74,6 +74,12 @@ function LloydGeorgeSelectDownloadStage({
                             virusScannerResult: 'Clean',
                             id: 'test-id-2',
                         },
+                        {
+                            fileName: '3of2_testy_test.pdf',
+                            created: '2024-05-07T14:52:00.827602Z',
+                            virusScannerResult: 'Clean',
+                            id: 'test-id-3',
+                        },
                     ]);
                     setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
                 } else if (error.response?.status === 403) {
