@@ -68,7 +68,7 @@ function LloydGeorgeDownloadStage({
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
     const pageHeader = 'Downloading documents';
     useTitle({ pageTitle: pageHeader });
-    const numberOfFilesForDownload = !!selectedDocuments?.length
+    const numberOfFilesForDownload = selectedDocuments?.length
         ? selectedDocuments.length
         : numberOfFiles;
 

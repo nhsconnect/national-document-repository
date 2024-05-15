@@ -84,19 +84,19 @@ function LloydGeorgeSelectDownloadStage({
                             fileName: '2of3_earlier_creation_date.pdf',
                             created: '2024-05-07T13:52:00.827602Z',
                             virusScannerResult: 'Clean',
-                            ID: 'test-id-2',
+                            ID: 'earlier-test-id-2',
                         },
                         {
                             fileName: '1of3_earlier_creation_date.pdf',
                             created: '2024-05-07T13:52:00.827602Z',
                             virusScannerResult: 'Clean',
-                            ID: 'test-id',
+                            ID: 'earlier-test-id',
                         },
                         {
                             fileName: '3of3_earlier_creation_date.pdf',
                             created: '2024-05-07T13:52:00.827602Z',
                             virusScannerResult: 'Clean',
-                            ID: 'test-id-3',
+                            ID: 'earlier-test-id-3',
                         },
                     ]);
                     setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
@@ -133,7 +133,7 @@ function LloydGeorgeSelectDownloadStage({
                 </>
             )}
             {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED &&
-                searchResults.length && (
+                !!searchResults.length && (
                     <LloydGeorgeSelectSearchResults
                         searchResults={searchResults}
                         setSubmissionSearchState={setSubmissionSearchState}

@@ -8,7 +8,7 @@ type Args = {
     baseUrl: string;
     baseHeaders: AuthHeaders;
     docType?: DOCUMENT_TYPE;
-    docReferences?: Array<string> | undefined;
+    docReferences?: Array<string>;
 };
 
 type GetPresignedUrl = {
