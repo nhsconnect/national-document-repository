@@ -133,28 +133,12 @@ function LloydGeorgeRecordPage() {
                         />
                     }
                 />
-                {/* <Route
-                    path="view"
-                    element={
-                        <LloydGeorgeRecordStage
-                            numberOfFiles={numberOfFiles}
-                            totalFileSizeInByte={totalFileSizeInByte}
-                            lastUpdated={lastUpdated}
-                            lloydGeorgeUrl={lloydGeorgeUrl}
-                            downloadStage={downloadStage}
-                            setStage={setStage}
-                            stage={stage}
-                        />
-                    }
-                /> */}
                 <Route
                     path="download/*"
                     element={
                         <LloydGeorgeDownloadAllStage
                             numberOfFiles={numberOfFiles}
-                            setStage={setStage}
                             deleteAfterDownload={deleteAfterDownload}
-                            setDownloadStage={setDownloadStage}
                         />
                     }
                 />

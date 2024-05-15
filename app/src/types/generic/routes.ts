@@ -15,12 +15,13 @@ export enum routes {
     FEEDBACK = '/feedback',
     SEARCH_PATIENT = '/patient/search',
     VERIFY_PATIENT = '/patient/verify',
-    LLOYD_GEORGE = '/patient/lloyd-george-record/',
+    LLOYD_GEORGE = '/patient/lloyd-george-record',
     LLOYD_GEORGE_WILDCARD = '/patient/lloyd-george-record/*',
     LLOYD_GEORGE_UPLOAD = '/patient/lloyd-george-record/upload',
     LLOYD_GEORGE_UPLOAD_WILDCARD = '/patient/lloyd-george-record/upload/*',
-    DOWNLOAD_DOCUMENTS = '/patient/download',
-    ARF_UPLOAD_DOCUMENTS = '/patient/upload',
+    ARF_OVERVIEW = '/patient/arf',
+    ARF_OVERVIEW_WILDCARD = '/patient/arf/*',
+    ARF_UPLOAD_DOCUMENTS = '/patient/arf/upload',
 }
 
 export enum routeChildren {
@@ -34,6 +35,8 @@ export enum routeChildren {
     LLOYD_GEORGE_UPLOAD_INFECTED = '/patient/lloyd-george-record/upload/infected',
     LLOYD_GEORGE_UPLOAD_RETRY = '/patient/lloyd-george-record/upload/retry',
     LLOYD_GEORGE_UPLOAD_CONFIRMATION = '/patient/lloyd-george-record/upload/confirmation',
+    ARF_DELETE = '/patient/arf/delete',
+    ARF_DELETE_COMPLETE = '/patient/arf/delete/complete',
 }
 
 export enum ROUTE_TYPE {

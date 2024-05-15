@@ -12,14 +12,17 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 
 const mockedUseNavigate = jest.fn();
+const mockNavigate = jest.fn();
+
 jest.mock('../../../helpers/hooks/useRole');
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
 }));
+
 jest.mock('react-router', () => ({
-    useNavigate: () => mockedUseNavigate,
+    useNavigate: () => mockNavigate,
 }));
 
 const mockedUseRole = useRole as jest.Mock;
@@ -186,9 +189,11 @@ describe('DeletionConfirmationStage', () => {
                 ).not.toBeInTheDocument();
             },
         );
+    });
 
+    describe('Navigation', () => {
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
-            "displays the LgRecordStage when return button is clicked, when user role is '%s'",
+            "navigates to the Lloyd George view page when return button is clicked, when user role is '%s'",
             async (role) => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
@@ -214,14 +219,12 @@ describe('DeletionConfirmationStage', () => {
                 });
 
                 await waitFor(() => {
-                    expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
+                    expect(mockNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE);
                 });
                 expect(mockSetDownloadStage).toHaveBeenCalledWith(DOWNLOAD_STAGE.REFRESH);
             },
         );
-    });
 
-    describe('Navigation', () => {
         it('navigates to Home page when link is clicked when user role is PCSE', async () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
@@ -239,7 +242,7 @@ describe('DeletionConfirmationStage', () => {
             });
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+                expect(mockNavigate).toHaveBeenCalledWith(routes.START);
             });
         });
     });

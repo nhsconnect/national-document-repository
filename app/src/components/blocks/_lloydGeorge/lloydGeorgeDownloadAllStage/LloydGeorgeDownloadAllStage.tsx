@@ -29,9 +29,9 @@ const FakeProgress = require('fake-progress');
 
 export type Props = {
     numberOfFiles: number;
-    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    // setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     deleteAfterDownload: boolean;
-    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
+    // setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
 type DownloadLinkAttributes = {

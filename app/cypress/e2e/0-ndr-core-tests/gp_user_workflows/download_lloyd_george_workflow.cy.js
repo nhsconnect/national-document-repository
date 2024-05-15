@@ -4,12 +4,12 @@ import { Roles } from '../../../support/roles';
 import { formatNhsNumber } from '../../../../src/helpers/utils/formatNhsNumber';
 
 const baseUrl = Cypress.config('baseUrl');
-const searchPatientUrl = '/search/patient';
+const patientSearchUrl = '/patient/search';
 
 describe('GP Workflow: View Lloyd George record', () => {
     const beforeEachConfiguration = (role) => {
         cy.login(role);
-        cy.visit(searchPatientUrl);
+        cy.visit(patientSearchUrl);
 
         // search patient
         cy.intercept('GET', '/SearchPatient*', {
@@ -128,6 +128,8 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.intercept('GET', '/DocumentManifest*', {
                     statusCode: 500,
                 }).as('documentManifest');
+
+                beforeEachConfiguration(Roles.GP_CLINICAL);
 
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');

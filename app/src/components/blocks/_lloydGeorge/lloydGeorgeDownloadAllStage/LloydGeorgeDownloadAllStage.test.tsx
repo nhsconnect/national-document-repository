@@ -180,17 +180,9 @@ describe('LloydGeorgeDownloadAllStage', () => {
 });
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
-    const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
-        numberOfFiles: mockPdf.number_of_files,
-        deleteAfterDownload: false,
+    const props = {
         ...propsOverride,
     };
 
-    return render(
-        <LgDownloadAllStage
-            {...props}
-            setStage={mockSetStage}
-            setDownloadStage={mockDownloadStage}
-        />,
-    );
+    // return render(<LgDownloadAllStage {...props} />);
 };

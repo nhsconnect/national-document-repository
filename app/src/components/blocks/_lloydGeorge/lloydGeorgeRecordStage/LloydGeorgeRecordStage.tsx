@@ -27,6 +27,8 @@ import { getRecordActionLinksAllowedForRole } from '../../../../types/blocks/llo
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { routeChildren } from '../../../../types/generic/routes';
+import { useNavigate } from 'react-router';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -46,6 +48,8 @@ function LloydGeorgeRecordStage({
     totalFileSizeInByte,
     setStage,
 }: Props) {
+    const navigate = useNavigate();
+
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
     const patientDetails = usePatient();
@@ -74,7 +78,7 @@ function LloydGeorgeRecordStage({
     const showMenu = recordLinksToShow.length > 0;
 
     const handleConfirmDownloadAndRemoveButton = () => {
-        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+        navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD);
     };
     const handleCancelButton = () => {
         setDownloadRemoveButtonClicked(false);

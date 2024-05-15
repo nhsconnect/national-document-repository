@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/_arf/documentSearchResults/DocumentSearchResults';
-import { useNavigate } from 'react-router';
+import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';
@@ -78,71 +78,89 @@ function DocumentSearchResultsPage() {
     ]);
     const pageHeader = 'Download electronic health records and attachments';
     useTitle({ pageTitle: pageHeader });
-    return !isDeletingDocuments ? (
+
+    return (
         <>
-            <h1 id="download-page-title">{pageHeader}</h1>
-
-            {(submissionState === SUBMISSION_STATE.FAILED ||
-                downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
-
-            <PatientSummary />
-
-            {submissionState === SUBMISSION_STATE.PENDING && (
-                <ProgressBar status="Loading..."></ProgressBar>
-            )}
-
-            {submissionState === SUBMISSION_STATE.SUCCEEDED && (
-                <>
-                    {searchResults.length && patientDetails ? (
+            <Routes>
+                <Route
+                    index
+                    element={
                         <>
-                            <DocumentSearchResults searchResults={searchResults} />
-                            <DocumentSearchResultsOptions
-                                nhsNumber={nhsNumber}
-                                downloadState={downloadState}
-                                updateDownloadState={handleUpdateDownloadState}
-                                setIsDeletingDocuments={setIsDeletingDocuments}
-                            />
+                            <h1 id="download-page-title">{pageHeader}</h1>
+
+                            {(submissionState === SUBMISSION_STATE.FAILED ||
+                                downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
+
+                            <PatientSummary />
+
+                            {submissionState === SUBMISSION_STATE.PENDING && (
+                                <ProgressBar status="Loading..."></ProgressBar>
+                            )}
+
+                            {submissionState === SUBMISSION_STATE.SUCCEEDED && (
+                                <>
+                                    {searchResults.length && patientDetails ? (
+                                        <>
+                                            <DocumentSearchResults searchResults={searchResults} />
+                                            <DocumentSearchResultsOptions
+                                                nhsNumber={nhsNumber}
+                                                downloadState={downloadState}
+                                                updateDownloadState={handleUpdateDownloadState}
+                                                setIsDeletingDocuments={setIsDeletingDocuments}
+                                            />
+                                        </>
+                                    ) : (
+                                        <p>
+                                            <strong id="no-files-message">
+                                                There are no documents available for this patient.
+                                            </strong>
+                                        </p>
+                                    )}
+                                </>
+                            )}
+
+                            {downloadState === SUBMISSION_STATE.FAILED && (
+                                <ErrorBox
+                                    messageTitle={'There is a problem with the documents'}
+                                    messageBody={
+                                        'An error has occurred while preparing your download'
+                                    }
+                                    errorBoxSummaryId={'error-box-summary'}
+                                />
+                            )}
+
+                            {(submissionState === SUBMISSION_STATE.FAILED ||
+                                submissionState === SUBMISSION_STATE.SUCCEEDED) && (
+                                <p>
+                                    <Link
+                                        id="start-again-link"
+                                        to=""
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            navigate(routes.START);
+                                        }}
+                                    >
+                                        Start Again
+                                    </Link>
+                                </p>
+                            )}
                         </>
-                    ) : (
-                        <p>
-                            <strong id="no-files-message">
-                                There are no documents available for this patient.
-                            </strong>
-                        </p>
-                    )}
-                </>
-            )}
-
-            {downloadState === SUBMISSION_STATE.FAILED && (
-                <ErrorBox
-                    messageTitle={'There is a problem with the documents'}
-                    messageBody={'An error has occurred while preparing your download'}
-                    errorBoxSummaryId={'error-box-summary'}
+                    }
                 />
-            )}
+                <Route
+                    path="delete/*"
+                    element={
+                        <DeleteDocumentsStage
+                            numberOfFiles={searchResults.length}
+                            setIsDeletingDocuments={setIsDeletingDocuments}
+                            docType={DOCUMENT_TYPE.ALL}
+                        />
+                    }
+                />
+            </Routes>
 
-            {(submissionState === SUBMISSION_STATE.FAILED ||
-                submissionState === SUBMISSION_STATE.SUCCEEDED) && (
-                <p>
-                    <Link
-                        id="start-again-link"
-                        to=""
-                        onClick={(e) => {
-                            e.preventDefault();
-                            navigate(routes.START);
-                        }}
-                    >
-                        Start Again
-                    </Link>
-                </p>
-            )}
+            <Outlet />
         </>
-    ) : (
-        <DeleteDocumentsStage
-            numberOfFiles={searchResults.length}
-            setIsDeletingDocuments={setIsDeletingDocuments}
-            docType={DOCUMENT_TYPE.ALL}
-        />
     );
 }
 

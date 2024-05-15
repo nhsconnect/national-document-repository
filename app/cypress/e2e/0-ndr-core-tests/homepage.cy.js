@@ -2,13 +2,18 @@ const { Roles } = require('../../support/roles');
 
 describe('Home Page', () => {
     const baseUrl = Cypress.config('baseUrl');
+
     const startUrl = '/';
     const homeUrl = '/home';
-    const searchPatientUrl = '/search/patient';
+    const patientSearchUrl = '/patient/search';
+    const patientVerifyUrl = '/patient/verify';
+    const lloydGeorgeViewUrl = '/patient/lloyd-george-record/';
+    const arfDownloadUrl = '/patient/download';
 
     beforeEach(() => {
-        cy.visit(startUrl);
+        cy.visit(baseUrl + startUrl);
     });
+
     it('should visit expected URL', { tags: 'regression' }, () => {
         cy.url().should('eq', baseUrl + startUrl);
         cy.title().should(
@@ -58,7 +63,7 @@ describe('Home Page', () => {
 
                 cy.login(Roles.GP_CLINICAL, true);
 
-                cy.url().should('eq', baseUrl + searchPatientUrl);
+                cy.url().should('eq', baseUrl + patientSearchUrl);
                 cy.get('.nhsuk-header__navigation').should('exist');
                 cy.get('.nhsuk-header__navigation-list').should('exist');
             },
@@ -100,7 +105,7 @@ describe('Home Page', () => {
                 () => {
                     cy.login(role, true);
 
-                    cy.url().should('eq', baseUrl + searchPatientUrl);
+                    cy.url().should('eq', baseUrl + patientSearchUrl);
                     cy.get('h1').should(
                         'not.include.text',
                         'You’re outside of Birmingham and Solihull (BSOL)',
@@ -118,7 +123,7 @@ describe('Home Page', () => {
             () => {
                 cy.login(Roles.PCSE);
 
-                cy.url().should('eq', baseUrl + searchPatientUrl);
+                cy.url().should('eq', baseUrl + patientSearchUrl);
                 cy.get('h1').should(
                     'not.include.text',
                     'You’re outside of Birmingham and Solihull (BSOL)',

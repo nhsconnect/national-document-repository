@@ -23,6 +23,7 @@ import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import { Link } from 'react-router-dom';
 import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
+import { childRoutes } from '../../router/AppRouter';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
@@ -72,7 +73,9 @@ function LloydGeorgeUploadPage() {
     // const [stage, setStage] = useState<LG_UPLOAD_STAGE>(LG_UPLOAD_STAGE.SELECT);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
-    const confirmed = useRef(false);
+    const confirmedReference = useRef(false);
+    const exceededReference = useRef(false);
+    const virusReference = useRef(false);
     const navigate = useNavigate();
     const [intervalTimer, setIntervalTimer] = useState(0);
 
@@ -82,8 +85,20 @@ function LloydGeorgeUploadPage() {
         const hasNoVirus =
             documents.length && documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
 
+        const setUploadStateFailed = async (stage: LG_UPLOAD_STAGE) => {
+            await updateDocumentState({
+                documents: documents,
+                uploadingState: false,
+                baseUrl,
+                baseHeaders,
+            });
+            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_FAILED);
+        };
+
         const confirmUpload = async () => {
+            console.log('AAA');
             if (uploadSession) {
+                console.log('AAB');
                 navigate(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION);
                 try {
                     const confirmDocumentState = await uploadConfirmation({
@@ -107,20 +122,22 @@ function LloydGeorgeUploadPage() {
                         navigate(routes.SESSION_EXPIRED);
                         return;
                     }
+
                     navigate(routeChildren.LLOYD_GEORGE_UPLOAD_FAILED);
                 }
             }
         };
 
-        if (hasExceededUploadAttempts) {
+        if (hasExceededUploadAttempts && !exceededReference.current) {
+            exceededReference.current = true;
             window.clearInterval(intervalTimer);
-            // TODO : CHANGE TO RETRY ERROR PAGE
-            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_RETRY);
-        } else if (hasVirus) {
+            void setUploadStateFailed(LG_UPLOAD_STAGE.FAILED);
+        } else if (hasVirus && !virusReference.current) {
+            virusReference.current = true;
             window.clearInterval(intervalTimer);
             navigate(routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED);
-        } else if (hasNoVirus && !confirmed.current) {
-            confirmed.current = true;
+        } else if (hasNoVirus && !confirmedReference.current) {
+            confirmedReference.current = true;
             void confirmUpload();
         }
     }, [
@@ -164,6 +181,7 @@ function LloydGeorgeUploadPage() {
                 });
             } catch (e) {
                 window.clearInterval(intervalTimer);
+                console.log('Increaisng Attempts on upload catch');
                 setDocument(setDocuments, {
                     id: document.id,
                     state: DOCUMENT_UPLOAD_STATE.FAILED,
@@ -171,7 +189,7 @@ function LloydGeorgeUploadPage() {
                     progress: 0,
                 });
                 await updateDocumentState({
-                    document,
+                    documents,
                     uploadingState: false,
                     baseUrl,
                     baseHeaders,
@@ -221,6 +239,7 @@ function LloydGeorgeUploadPage() {
                 );
                 navigate(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED);
             } else {
+                console.log('Increaisng Attempts on submit catch');
                 setDocuments((prevState) =>
                     prevState.map((doc) => ({
                         ...doc,
@@ -234,15 +253,17 @@ function LloydGeorgeUploadPage() {
     };
 
     const restartUpload = () => {
+        console.log('Restarting');
         setDocuments([]);
         navigate(routes.LLOYD_GEORGE_UPLOAD);
     };
+
     const startIntervalTimer = (uploadDocuments: Array<UploadDocument>) => {
         return window.setInterval(() => {
             uploadDocuments.forEach(async (document) => {
                 try {
                     await updateDocumentState({
-                        document,
+                        documents,
                         uploadingState: true,
                         baseUrl,
                         baseHeaders,
@@ -254,58 +275,61 @@ function LloydGeorgeUploadPage() {
 
     return (
         <>
-            <nav>
-                <Link to="uploading">Upload</Link>
-                <Link to="confirmation">Confirmation</Link>
-                <Link to="completed">Completed</Link>
-                <Link to="infected">Infected</Link>
-                <Link to="retry">Retry</Link>
-                <Link to="failed">Failed</Link>
-            </nav>
+            <div>
+                <Routes>
+                    <Route
+                        index
+                        element={
+                            <LloydGeorgeFileInputStage
+                                documents={documents}
+                                setDocuments={setDocuments}
+                                submitDocuments={submitDocuments}
+                            />
+                        }
+                    />
+                    <Route
+                        path="selection"
+                        element={
+                            <LloydGeorgeFileInputStage
+                                documents={documents}
+                                setDocuments={setDocuments}
+                                submitDocuments={submitDocuments}
+                            />
+                        }
+                    />
+                    <Route
+                        path="uploading"
+                        element={
+                            <LloydGeorgeUploadingStage
+                                documents={documents}
+                                uploadSession={uploadSession}
+                                uploadAndScanDocuments={uploadAndScanDocuments}
+                            />
+                        }
+                    />
+                    <Route path="confirmation" element={<Spinner status="Checking uploads..." />} />
+                    <Route
+                        path="completed"
+                        element={<LloydGeorgeUploadCompleteStage documents={documents} />}
+                    />
+                    <Route
+                        path="infected"
+                        element={
+                            <LloydGeorgeUploadInfectedStage
+                                documents={documents}
+                                restartUpload={restartUpload}
+                            />
+                        }
+                    />
+                    <Route path="retry" element={<LloydGeorgeRetryUploadStage />} />
+                    <Route
+                        path="failed"
+                        element={<LloydGeorgeUploadFailedStage restartUpload={restartUpload} />}
+                    />
+                </Routes>
 
-            <Routes>
-                <Route
-                    index
-                    element={
-                        <LloydGeorgeFileInputStage
-                            documents={documents}
-                            setDocuments={setDocuments}
-                            submitDocuments={submitDocuments}
-                        />
-                    }
-                />
-                <Route
-                    path="uploading"
-                    element={
-                        <LloydGeorgeUploadingStage
-                            documents={documents}
-                            uploadSession={uploadSession}
-                            uploadAndScanDocuments={uploadAndScanDocuments}
-                        />
-                    }
-                />
-                <Route path="confirmation" element={<Spinner status="Checking uploads..." />} />
-                <Route
-                    path="completed"
-                    element={<LloydGeorgeUploadCompleteStage documents={documents} />}
-                />
-                <Route
-                    path="infected"
-                    element={
-                        <LloydGeorgeUploadInfectedStage
-                            documents={documents}
-                            restartUpload={restartUpload}
-                        />
-                    }
-                />
-                <Route path="retry" element={<LloydGeorgeRetryUploadStage />} />
-                <Route
-                    path="failed"
-                    element={<LloydGeorgeUploadFailedStage restartUpload={restartUpload} />}
-                />
-            </Routes>
-
-            <Outlet />
+                <Outlet />
+            </div>
         </>
     );
 }

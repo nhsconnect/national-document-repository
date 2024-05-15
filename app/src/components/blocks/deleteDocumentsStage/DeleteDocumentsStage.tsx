@@ -29,7 +29,7 @@ export type Props = {
     docType: DOCUMENT_TYPE;
     numberOfFiles: number;
     setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    setIsDeletingDocuments?: Dispatch<SetStateAction<boolean>>;
+    setIsDeletingDocuments?: Dispatch<boolean>;
     setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
@@ -73,10 +73,9 @@ function DeleteDocumentsStage({
             <p style={{ fontSize: '1rem' }}>Date of birth: {dob}</p>
         </>
     );
+    const userIsGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
 
     const handleYesOption = async () => {
-        navigate(routeChildren.LLOYD_GEORGE_DELETE_COMPLETE);
-
         const onSuccess = () => {
             setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
             if (setDownloadStage) {
@@ -93,6 +92,11 @@ function DeleteDocumentsStage({
 
             if (response.status === 200) {
                 onSuccess();
+                if (userIsGP) {
+                    navigate(routeChildren.LLOYD_GEORGE_DELETE_COMPLETE);
+                } else {
+                    navigate(routeChildren.ARF_DELETE_COMPLETE);
+                }
             }
         } catch (e) {
             const error = e as AxiosError;
@@ -113,7 +117,7 @@ function DeleteDocumentsStage({
         if (role === REPOSITORY_ROLE.GP_ADMIN) {
             navigate(routes.LLOYD_GEORGE);
         } else if (role === REPOSITORY_ROLE.PCSE && setIsDeletingDocuments) {
-            setIsDeletingDocuments(false);
+            navigate(routes.ARF_OVERVIEW);
         }
     };
 
@@ -200,7 +204,6 @@ function DeleteDocumentsStage({
                         </>
                     }
                 />
-
                 <Route
                     path="complete"
                     element={

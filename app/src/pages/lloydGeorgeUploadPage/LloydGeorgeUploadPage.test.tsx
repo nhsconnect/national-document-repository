@@ -78,6 +78,7 @@ jest.mock(
 );
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
+    Outlet: () => <h1>outlet test</h1>,
 }));
 
 describe('LloydGeorgeUploadPage', () => {
@@ -92,9 +93,7 @@ describe('LloydGeorgeUploadPage', () => {
     describe('Rendering', () => {
         it('renders initial file input stage', () => {
             render(<LloydGeorgeUploadPage />);
-            expect(
-                screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
-            ).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: 'outlet test' })).toBeInTheDocument();
             act(() => {
                 userEvent.upload(screen.getByTestId(`button-input`), [lgFile]);
             });

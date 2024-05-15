@@ -44,7 +44,8 @@ const {
     LLOYD_GEORGE_WILDCARD,
     LLOYD_GEORGE_UPLOAD,
     LLOYD_GEORGE_UPLOAD_WILDCARD,
-    DOWNLOAD_DOCUMENTS: ARF_DOWNLOAD_DOCUMENTS,
+    ARF_OVERVIEW,
+    ARF_OVERVIEW_WILDCARD,
     ARF_UPLOAD_DOCUMENTS,
 } = routes;
 
@@ -92,6 +93,14 @@ export const childRoutes = [
     {
         route: routeChildren.LLOYD_GEORGE_UPLOAD_RETRY,
         parent: LLOYD_GEORGE_UPLOAD,
+    },
+    {
+        route: routeChildren.ARF_DELETE,
+        parent: ARF_OVERVIEW,
+    },
+    {
+        route: routeChildren.ARF_DELETE_COMPLETE,
+        parent: ARF_OVERVIEW,
     },
 ];
 
@@ -176,7 +185,12 @@ export const routeMap: Routes = {
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.PCSE],
     },
-    [ARF_DOWNLOAD_DOCUMENTS]: {
+    [ARF_OVERVIEW]: {
+        page: <ArfSearchResultsPage />,
+        type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
+    },
+    [ARF_OVERVIEW_WILDCARD]: {
         page: <ArfSearchResultsPage />,
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],

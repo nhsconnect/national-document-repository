@@ -1,6 +1,6 @@
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
+import { routes } from '../../../../types/generic/routes';
 import LgDownloadComplete from './LloydGeorgeDownloadComplete';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -8,10 +8,13 @@ import { act } from 'react-dom/test-utils';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 
-const mockSetStage = jest.fn();
-const mockSetDownloadStage = jest.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
+const mockNavigate = jest.fn();
+
+jest.mock('react-router', () => ({
+    useNavigate: () => mockNavigate,
+}));
 
 describe('LloydGeorgeDownloadComplete', () => {
     beforeEach(() => {
@@ -37,7 +40,7 @@ describe('LloydGeorgeDownloadComplete', () => {
         ).toBeInTheDocument();
     });
 
-    it('updates the download stage view when return to medical records is clicked', async () => {
+    it('navigates to the view Lloyd George page when back to medical records is clicked', async () => {
         render(<LgDownloadComplete deleteAfterDownload={false} />);
 
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
@@ -61,7 +64,7 @@ describe('LloydGeorgeDownloadComplete', () => {
         });
 
         await waitFor(async () => {
-            expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
+            expect(mockNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE);
         });
     });
 

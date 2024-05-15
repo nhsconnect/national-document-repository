@@ -33,7 +33,7 @@ type DocRefResponse = {
 };
 
 type UpdateStateArgs = {
-    document: UploadDocument;
+    documents: UploadDocument[];
     uploadingState: boolean;
     baseUrl: string;
     baseHeaders: AuthHeaders;
@@ -188,20 +188,18 @@ const uploadDocuments = async ({
     }
 };
 export const updateDocumentState = async ({
-    document,
+    documents,
     uploadingState,
     baseUrl,
     baseHeaders,
 }: UpdateStateArgs) => {
     const updateUploadStateUrl = baseUrl + endpoints.UPLOAD_DOCUMENT_STATE;
     const body = {
-        files: [
-            {
-                reference: document.ref,
-                type: document.docType,
-                fields: { Uploading: uploadingState },
-            },
-        ],
+        files: documents.map((document) => ({
+            reference: document.ref,
+            type: document.docType,
+            fields: { Uploading: uploadingState },
+        })),
     };
     try {
         return await axios.post(updateUploadStateUrl, body, {

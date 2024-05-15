@@ -44,7 +44,7 @@ describe('LloydGeorgeRetryUploadStage', () => {
 
             expect(screen.getByRole('button', { name: 'Try upload again' })).toBeInTheDocument();
             userEvent.click(screen.getByRole('button', { name: 'Try upload again' }));
-            expect(mockSetStage).toHaveBeenCalledWith(LG_UPLOAD_STAGE.SELECT);
+            expect(mockUseNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE_UPLOAD);
         });
 
         it('navigates to patient search when search patient is clicked', () => {

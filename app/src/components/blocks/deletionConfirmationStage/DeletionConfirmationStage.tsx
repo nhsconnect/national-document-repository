@@ -31,9 +31,15 @@ function DeletionConfirmationStage({ numberOfFiles, setStage, setDownloadStage }
         e.preventDefault();
         if (setStage && setDownloadStage) {
             setDownloadStage(DOWNLOAD_STAGE.REFRESH);
-            navigate(routes.LLOYD_GEORGE);
+
+            if (isGP) {
+                navigate(routes.LLOYD_GEORGE);
+            } else {
+                navigate(routes.START);
+            }
         }
     };
+
     const isGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
     const pageHeader = 'Deletion complete';
     useTitle({ pageTitle: pageHeader });

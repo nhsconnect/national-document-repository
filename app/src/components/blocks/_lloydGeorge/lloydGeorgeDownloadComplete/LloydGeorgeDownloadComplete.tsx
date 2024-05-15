@@ -3,7 +3,7 @@ import { Button, Card } from 'nhsuk-react-components';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { routes } from '../../../../types/generic/routes';
 
 export type Props = {
@@ -15,6 +15,7 @@ function LloydGeorgeDownloadComplete({ deleteAfterDownload }: Props) {
     // we should remove this when this component become a separate route.
 
     const navigate = useNavigate();
+
     useEffect(() => {
         focusLayoutDiv();
     }, []);

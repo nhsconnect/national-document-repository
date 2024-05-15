@@ -11,6 +11,7 @@ import { REPOSITORY_ROLE, authorisedRoles } from '../../../types/generic/authRol
 import { routes } from '../../../types/generic/routes';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
+import { BrowserRouter, MemoryRouter } from 'react-router-dom';
 
 jest.mock('../../../helpers/hooks/useConfig');
 jest.mock('../deletionConfirmationStage/DeletionConfirmationStage', () => () => (
@@ -20,9 +21,12 @@ jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../helpers/hooks/useRole');
 jest.mock('../../../helpers/hooks/usePatient');
 jest.mock('axios');
+
 const mockedUseNavigate = jest.fn();
+
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
+    // Routes:
 }));
 jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
