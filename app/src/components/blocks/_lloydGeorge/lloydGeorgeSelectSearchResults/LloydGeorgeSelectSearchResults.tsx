@@ -21,10 +21,12 @@ const LloydGeorgeSelectSearchResults = ({
     setSelectedDocuments,
     selectedDocuments,
 }: Props) => {
-    const sortMethod = (a: SearchResult, b: SearchResult) =>
+    const sortByFileName = (a: SearchResult, b: SearchResult) =>
+        a.fileName >= b.fileName ? 1 : -1;
+    const sortByDate = (a: SearchResult, b: SearchResult) =>
         new Date(a.created) <= new Date(b.created) ? 1 : -1;
     const navigate = useNavigate();
-    const orderedResults = [...searchResults].sort(sortMethod);
+    const orderedResults = [...searchResults].sort(sortByFileName).sort(sortByDate);
     const tableCaption = <h2 style={{ fontSize: 32 }}>List of files in record</h2>;
     const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
     const noOptionSelectedError = 'You must select a file to download or download all files';

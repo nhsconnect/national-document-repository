@@ -63,20 +63,38 @@ function LloydGeorgeSelectDownloadStage({
                 if (isMock(error)) {
                     setSearchResults([
                         {
-                            fileName: '1of2_testy_test.pdf',
-                            created: '2024-05-07T14:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            ID: 'test-id',
-                        },
-                        {
-                            fileName: '2of2_testy_test.pdf',
+                            fileName: '2of3_testy_test.pdf',
                             created: '2024-05-07T14:52:00.827602Z',
                             virusScannerResult: 'Clean',
                             ID: 'test-id-2',
                         },
                         {
-                            fileName: '3of2_testy_test.pdf',
+                            fileName: '1of3_testy_test.pdf',
                             created: '2024-05-07T14:52:00.827602Z',
+                            virusScannerResult: 'Clean',
+                            ID: 'test-id',
+                        },
+                        {
+                            fileName: '3of3_testy_test.pdf',
+                            created: '2024-05-07T14:52:00.827602Z',
+                            virusScannerResult: 'Clean',
+                            ID: 'test-id-3',
+                        },
+                        {
+                            fileName: '2of3_earlier_creation_date.pdf',
+                            created: '2024-05-07T13:52:00.827602Z',
+                            virusScannerResult: 'Clean',
+                            ID: 'test-id-2',
+                        },
+                        {
+                            fileName: '1of3_earlier_creation_date.pdf',
+                            created: '2024-05-07T13:52:00.827602Z',
+                            virusScannerResult: 'Clean',
+                            ID: 'test-id',
+                        },
+                        {
+                            fileName: '3of3_earlier_creation_date.pdf',
+                            created: '2024-05-07T13:52:00.827602Z',
                             virusScannerResult: 'Clean',
                             ID: 'test-id-3',
                         },
