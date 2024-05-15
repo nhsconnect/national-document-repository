@@ -21,8 +21,7 @@ const LloydGeorgeSelectSearchResults = ({
     setSelectedDocuments,
     selectedDocuments,
 }: Props) => {
-    const sortByFileName = (a: SearchResult, b: SearchResult) =>
-        a.fileName >= b.fileName ? 1 : -1;
+    const sortByFileName = (a: SearchResult, b: SearchResult) => (a.fileName > b.fileName ? 1 : -1);
     const sortByDate = (a: SearchResult, b: SearchResult) =>
         new Date(a.created) <= new Date(b.created) ? 1 : -1;
     const navigate = useNavigate();
