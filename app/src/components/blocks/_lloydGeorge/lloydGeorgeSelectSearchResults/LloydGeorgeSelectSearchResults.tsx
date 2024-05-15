@@ -65,7 +65,7 @@ const LloydGeorgeSelectSearchResults = ({
         <>
             {showNoOptionSelectedMessage && (
                 <ErrorBox
-                    messageTitle={'There is a problem '}
+                    messageTitle={'There is a problem'}
                     messageLinkBody={noOptionSelectedError}
                     errorBoxSummaryId={'error-box-summary'}
                     errorInputLink={'#available-files-table-title'}
@@ -93,14 +93,14 @@ const LloydGeorgeSelectSearchResults = ({
                             className={'available-files-row'}
                             id={'available-files-row-' + index}
                             key={`document-${result.fileName + result.created}`}
-                            data-testid="search-result"
+                            data-testid={`search-result-${index}`}
                         >
-                            <Table.Cell
-                                id={'selected-files-row-' + index + ''}
-                                data-testid="select"
-                            >
+                            <Table.Cell id={'selected-files-row-' + index + ''}>
                                 <Checkboxes onChange={handleChangeCheckboxes}>
-                                    <Checkboxes.Box value={result.ID}>
+                                    <Checkboxes.Box
+                                        value={result.ID}
+                                        data-testid={`checkbox-${index}`}
+                                    >
                                         <span className="nhsuk-u-visually-hidden">
                                             {result.fileName}
                                         </span>
