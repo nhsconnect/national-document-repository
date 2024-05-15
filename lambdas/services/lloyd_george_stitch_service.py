@@ -55,17 +55,15 @@ class LloydGeorgeStitchService:
             )
 
         try:
-            filename_for_stitched_file = self.make_filename_for_stitched_file(
-                lg_records
-            )
             stitched_lg_record = stitch_pdf(all_lg_parts, self.temp_folder)
+            filename_for_stitched_file = os.path.basename(stitched_lg_record)
             number_of_files = len(all_lg_parts)
             last_updated = self.get_most_recent_created_date(lg_records)
             total_file_size = self.get_total_file_size(all_lg_parts)
 
             presign_url = self.upload_stitched_lg_record_and_retrieve_presign_url(
                 stitched_lg_record=stitched_lg_record,
-                filename_on_bucket=f"{nhs_number}/{filename_for_stitched_file}",
+                filename_on_bucket=f"combined_files/{filename_for_stitched_file}",
             )
             response = {
                 "number_of_files": number_of_files,
@@ -175,14 +173,6 @@ class LloydGeorgeStitchService:
             all_lg_parts.append(local_file_name)
 
         return all_lg_parts
-
-    @staticmethod
-    def make_filename_for_stitched_file(documents: list[DocumentReference]) -> str:
-        sample_doc = documents[0]
-        base_filename = sample_doc.file_name
-        end_of_total_page_numbers = base_filename.index("_")
-
-        return "Combined" + base_filename[end_of_total_page_numbers:]
 
     def upload_stitched_lg_record_and_retrieve_presign_url(
         self,
