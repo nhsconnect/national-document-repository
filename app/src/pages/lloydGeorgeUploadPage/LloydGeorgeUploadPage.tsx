@@ -21,10 +21,8 @@ import Spinner from '../../components/generic/spinner/Spinner';
 import { routes, routeChildren } from '../../types/generic/routes';
 import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
-import { Link } from 'react-router-dom';
 import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
 import { childRoutes } from '../../router/AppRouter';
-
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
     UPLOAD = 1,
@@ -64,6 +62,8 @@ export const setDocument = (
         }),
     );
 };
+
+const getSubRoute = (childRoute: typeof childRoutes) => null;
 
 function LloydGeorgeUploadPage() {
     const patientDetails = usePatient();
