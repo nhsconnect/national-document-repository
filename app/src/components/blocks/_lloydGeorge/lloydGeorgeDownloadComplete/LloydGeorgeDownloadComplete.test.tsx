@@ -2,6 +2,9 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import { render, screen, waitFor } from '@testing-library/react';
 import LloydGeorgeDownloadComplete from './LloydGeorgeDownloadComplete';
+import userEvent from '@testing-library/user-event';
+import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 
@@ -26,7 +29,7 @@ describe('LloydGeorgeDownloadComplete', () => {
                 <LloydGeorgeDownloadComplete
                     setStage={mockSetStage}
                     setDownloadStage={mockSetDownloadStage}
-                    deleteAfterDownload={false}
+                    deleteAfterDownload={true}
                     numberOfFiles={mockNumberOfFiles}
                 />,
             );
@@ -37,6 +40,11 @@ describe('LloydGeorgeDownloadComplete', () => {
             ).toBeInTheDocument();
             expect(
                 screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', {
+                    name: "Return to patient's available medical records",
+                }),
             ).toBeInTheDocument();
         });
 
@@ -61,6 +69,26 @@ describe('LloydGeorgeDownloadComplete', () => {
             expect(
                 screen.getByText('This record has been removed from our storage.'),
             ).toBeInTheDocument();
+        });
+
+        it('calls set stage AND set download stage when delete after download is true', () => {
+            render(
+                <LloydGeorgeDownloadComplete
+                    setStage={mockSetStage}
+                    setDownloadStage={mockSetDownloadStage}
+                    deleteAfterDownload={true}
+                    numberOfFiles={mockNumberOfFiles}
+                />,
+            );
+
+            userEvent.click(
+                screen.getByRole('button', {
+                    name: "Return to patient's available medical records",
+                }),
+            );
+
+            expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
+            expect(mockSetDownloadStage).toHaveBeenCalledWith(DOWNLOAD_STAGE.REFRESH);
         });
     });
 
