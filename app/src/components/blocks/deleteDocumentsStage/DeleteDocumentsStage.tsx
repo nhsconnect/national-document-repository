@@ -137,86 +137,90 @@ function DeleteDocumentsStage({
 
     return (
         <>
-            <Routes>
-                <Route
-                    index
-                    element={
-                        <>
-                            <BackLink onClick={handleNoOption} href="#">
-                                Back
-                            </BackLink>
-                            {deletionStage === SUBMISSION_STATE.FAILED && <ServiceError />}
-                            {showNoOptionSelectedMessage && (
-                                <ErrorBox
-                                    messageTitle={'There is a problem '}
-                                    messageLinkBody={'You must select an option'}
-                                    errorBoxSummaryId={'error-box-summary'}
-                                    errorInputLink={'#delete-docs'}
-                                    dataTestId={'delete-error-box'}
-                                />
-                            )}
-                            <form onSubmit={handleSubmit(submit)}>
-                                <Fieldset id="radio-selection">
-                                    <Fieldset.Legend isPageHeading>
-                                        Are you sure you want to permanently delete files for:
-                                    </Fieldset.Legend>
-                                    <div>{patientInfo}</div>
-                                    <Radios
-                                        id="delete-docs"
-                                        error={showNoOptionSelectedMessage && noOptionSelectedError}
-                                    >
-                                        <Radios.Radio
-                                            value={DELETE_DOCUMENTS_OPTION.YES}
-                                            inputRef={deleteDocsRef}
-                                            {...radioProps}
-                                            id="yes-radio-button"
-                                            data-testid="yes-radio-btn"
-                                        >
-                                            Yes
-                                        </Radios.Radio>
-                                        <Radios.Radio
-                                            value={DELETE_DOCUMENTS_OPTION.NO}
-                                            inputRef={deleteDocsRef}
-                                            {...radioProps}
-                                            id="no-radio-button"
-                                            data-testid="no-radio-btn"
-                                        >
-                                            No
-                                        </Radios.Radio>
-                                    </Radios>
-                                </Fieldset>
-                                {deletionStage === SUBMISSION_STATE.PENDING ? (
-                                    <SpinnerButton
-                                        id="delete-docs-spinner"
-                                        status="Deleting..."
-                                        disabled={true}
+            <div>
+                <Routes>
+                    <Route
+                        index
+                        element={
+                            <>
+                                <BackLink onClick={handleNoOption} href="#">
+                                    Back
+                                </BackLink>
+                                {deletionStage === SUBMISSION_STATE.FAILED && <ServiceError />}
+                                {showNoOptionSelectedMessage && (
+                                    <ErrorBox
+                                        messageTitle={'There is a problem '}
+                                        messageLinkBody={'You must select an option'}
+                                        errorBoxSummaryId={'error-box-summary'}
+                                        errorInputLink={'#delete-docs'}
+                                        dataTestId={'delete-error-box'}
                                     />
-                                ) : (
-                                    <Button
-                                        type="submit"
-                                        id="delete-submit-button"
-                                        data-testid="delete-submit-btn"
-                                    >
-                                        Continue
-                                    </Button>
                                 )}
-                            </form>
-                        </>
-                    }
-                />
-                <Route
-                    path="complete"
-                    element={
-                        <DeletionConfirmationStage
-                            numberOfFiles={numberOfFiles}
-                            setStage={setStage}
-                            setDownloadStage={setDownloadStage}
-                        />
-                    }
-                />
-            </Routes>
+                                <form onSubmit={handleSubmit(submit)}>
+                                    <Fieldset id="radio-selection">
+                                        <Fieldset.Legend isPageHeading>
+                                            Are you sure you want to permanently delete files for:
+                                        </Fieldset.Legend>
+                                        <div>{patientInfo}</div>
+                                        <Radios
+                                            id="delete-docs"
+                                            error={
+                                                showNoOptionSelectedMessage && noOptionSelectedError
+                                            }
+                                        >
+                                            <Radios.Radio
+                                                value={DELETE_DOCUMENTS_OPTION.YES}
+                                                inputRef={deleteDocsRef}
+                                                {...radioProps}
+                                                id="yes-radio-button"
+                                                data-testid="yes-radio-btn"
+                                            >
+                                                Yes
+                                            </Radios.Radio>
+                                            <Radios.Radio
+                                                value={DELETE_DOCUMENTS_OPTION.NO}
+                                                inputRef={deleteDocsRef}
+                                                {...radioProps}
+                                                id="no-radio-button"
+                                                data-testid="no-radio-btn"
+                                            >
+                                                No
+                                            </Radios.Radio>
+                                        </Radios>
+                                    </Fieldset>
+                                    {deletionStage === SUBMISSION_STATE.PENDING ? (
+                                        <SpinnerButton
+                                            id="delete-docs-spinner"
+                                            status="Deleting..."
+                                            disabled={true}
+                                        />
+                                    ) : (
+                                        <Button
+                                            type="submit"
+                                            id="delete-submit-button"
+                                            data-testid="delete-submit-btn"
+                                        >
+                                            Continue
+                                        </Button>
+                                    )}
+                                </form>
+                            </>
+                        }
+                    />
+                    <Route
+                        path="complete"
+                        element={
+                            <DeletionConfirmationStage
+                                numberOfFiles={numberOfFiles}
+                                setStage={setStage}
+                                setDownloadStage={setDownloadStage}
+                            />
+                        }
+                    />
+                </Routes>
 
-            <Outlet />
+                <Outlet />
+            </div>
         </>
     );
 }

@@ -16,6 +16,8 @@ import useConfig from '../../helpers/hooks/useConfig';
 import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { LinkProps } from 'react-router-dom';
+import * as ReactRouter from 'react-router';
+import { History, createMemoryHistory } from 'history';
 
 jest.mock('../../helpers/hooks/useConfig');
 jest.mock('axios');
@@ -36,14 +38,25 @@ jest.mock('react-router-dom', () => ({
     useNavigate: () => mockNavigate,
 }));
 jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
     useNavigate: () => mockNavigate,
 }));
 jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
 
+let history = createMemoryHistory({
+    initialEntries: ['/'],
+    initialIndex: 0,
+});
+
 describe('LloydGeorgeRecordPage', () => {
     beforeEach(() => {
+        history = createMemoryHistory({
+            initialEntries: ['/'],
+            initialIndex: 0,
+        });
+
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
         mockUseConfig.mockReturnValue(buildConfig());
@@ -58,7 +71,7 @@ describe('LloydGeorgeRecordPage', () => {
         const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
-        render(<LloydGeorgeRecordPage />);
+        renderPage(history);
 
         await waitFor(async () => {
             expect(screen.getByText(patientName)).toBeInTheDocument();
@@ -68,7 +81,7 @@ describe('LloydGeorgeRecordPage', () => {
     });
 
     it('renders initial lg record view', async () => {
-        render(<LloydGeorgeRecordPage />);
+        renderPage(history);
         await waitFor(async () => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
@@ -84,7 +97,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-        render(<LloydGeorgeRecordPage />);
+        renderPage(history);
 
         await waitFor(async () => {
             expect(screen.getByText('No documents are available.')).toBeInTheDocument();
@@ -103,7 +116,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-        render(<LloydGeorgeRecordPage />);
+        renderPage(history);
 
         await waitFor(async () => {
             expect(screen.getByText('No documents are available.')).toBeInTheDocument();
@@ -122,7 +135,7 @@ describe('LloydGeorgeRecordPage', () => {
 
         mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-        render(<LloydGeorgeRecordPage />);
+        renderPage(history);
 
         await waitFor(async () => {
             expect(
@@ -145,7 +158,7 @@ describe('LloydGeorgeRecordPage', () => {
         mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
         mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
 
-        render(<LloydGeorgeRecordPage />);
+        renderPage(history);
 
         await waitFor(async () => {
             expect(
@@ -160,7 +173,7 @@ describe('LloydGeorgeRecordPage', () => {
     it('displays Loading... until the pdf is fetched', async () => {
         mockAxios.get.mockReturnValue(Promise.resolve({ data: buildLgSearchResult() }));
 
-        render(<LloydGeorgeRecordPage />);
+        renderPage(history);
 
         await waitFor(async () => {
             expect(screen.getByText('Loading...')).toBeInTheDocument();
@@ -171,7 +184,7 @@ describe('LloydGeorgeRecordPage', () => {
         const lgResult = buildLgSearchResult();
         mockAxios.get.mockReturnValue(Promise.resolve({ data: lgResult }));
 
-        render(<LloydGeorgeRecordPage />);
+        renderPage(history);
 
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
@@ -200,7 +213,7 @@ describe('LloydGeorgeRecordPage', () => {
         mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
         act(() => {
-            render(<LloydGeorgeRecordPage />);
+            renderPage(history);
         });
 
         await waitFor(() => {
@@ -225,7 +238,7 @@ describe('LloydGeorgeRecordPage', () => {
         mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
         act(() => {
-            render(<LloydGeorgeRecordPage />);
+            renderPage(history);
         });
 
         await waitFor(() => {
@@ -236,4 +249,12 @@ describe('LloydGeorgeRecordPage', () => {
             expect(mockNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
         });
     });
+
+    const renderPage = (history: History) => {
+        return render(
+            <ReactRouter.Router navigator={history} location={history.location}>
+                <LloydGeorgeRecordPage />
+            </ReactRouter.Router>,
+        );
+    };
 });

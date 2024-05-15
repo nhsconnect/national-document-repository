@@ -81,85 +81,90 @@ function DocumentSearchResultsPage() {
 
     return (
         <>
-            <Routes>
-                <Route
-                    index
-                    element={
-                        <>
-                            <h1 id="download-page-title">{pageHeader}</h1>
+            <div>
+                <Routes>
+                    <Route
+                        index
+                        element={
+                            <>
+                                <h1 id="download-page-title">{pageHeader}</h1>
 
-                            {(submissionState === SUBMISSION_STATE.FAILED ||
-                                downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
+                                {(submissionState === SUBMISSION_STATE.FAILED ||
+                                    downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
 
-                            <PatientSummary />
+                                <PatientSummary />
 
-                            {submissionState === SUBMISSION_STATE.PENDING && (
-                                <ProgressBar status="Loading..."></ProgressBar>
-                            )}
+                                {submissionState === SUBMISSION_STATE.PENDING && (
+                                    <ProgressBar status="Loading..."></ProgressBar>
+                                )}
 
-                            {submissionState === SUBMISSION_STATE.SUCCEEDED && (
-                                <>
-                                    {searchResults.length && patientDetails ? (
-                                        <>
-                                            <DocumentSearchResults searchResults={searchResults} />
-                                            <DocumentSearchResultsOptions
-                                                nhsNumber={nhsNumber}
-                                                downloadState={downloadState}
-                                                updateDownloadState={handleUpdateDownloadState}
-                                                setIsDeletingDocuments={setIsDeletingDocuments}
-                                            />
-                                        </>
-                                    ) : (
-                                        <p>
-                                            <strong id="no-files-message">
-                                                There are no documents available for this patient.
-                                            </strong>
-                                        </p>
-                                    )}
-                                </>
-                            )}
+                                {submissionState === SUBMISSION_STATE.SUCCEEDED && (
+                                    <>
+                                        {searchResults.length && patientDetails ? (
+                                            <>
+                                                <DocumentSearchResults
+                                                    searchResults={searchResults}
+                                                />
+                                                <DocumentSearchResultsOptions
+                                                    nhsNumber={nhsNumber}
+                                                    downloadState={downloadState}
+                                                    updateDownloadState={handleUpdateDownloadState}
+                                                    setIsDeletingDocuments={setIsDeletingDocuments}
+                                                />
+                                            </>
+                                        ) : (
+                                            <p>
+                                                <strong id="no-files-message">
+                                                    There are no documents available for this
+                                                    patient.
+                                                </strong>
+                                            </p>
+                                        )}
+                                    </>
+                                )}
 
-                            {downloadState === SUBMISSION_STATE.FAILED && (
-                                <ErrorBox
-                                    messageTitle={'There is a problem with the documents'}
-                                    messageBody={
-                                        'An error has occurred while preparing your download'
-                                    }
-                                    errorBoxSummaryId={'error-box-summary'}
-                                />
-                            )}
+                                {downloadState === SUBMISSION_STATE.FAILED && (
+                                    <ErrorBox
+                                        messageTitle={'There is a problem with the documents'}
+                                        messageBody={
+                                            'An error has occurred while preparing your download'
+                                        }
+                                        errorBoxSummaryId={'error-box-summary'}
+                                    />
+                                )}
 
-                            {(submissionState === SUBMISSION_STATE.FAILED ||
-                                submissionState === SUBMISSION_STATE.SUCCEEDED) && (
-                                <p>
-                                    <Link
-                                        id="start-again-link"
-                                        to=""
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            navigate(routes.START);
-                                        }}
-                                    >
-                                        Start Again
-                                    </Link>
-                                </p>
-                            )}
-                        </>
-                    }
-                />
-                <Route
-                    path="delete/*"
-                    element={
-                        <DeleteDocumentsStage
-                            numberOfFiles={searchResults.length}
-                            setIsDeletingDocuments={setIsDeletingDocuments}
-                            docType={DOCUMENT_TYPE.ALL}
-                        />
-                    }
-                />
-            </Routes>
+                                {(submissionState === SUBMISSION_STATE.FAILED ||
+                                    submissionState === SUBMISSION_STATE.SUCCEEDED) && (
+                                    <p>
+                                        <Link
+                                            id="start-again-link"
+                                            to=""
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                navigate(routes.START);
+                                            }}
+                                        >
+                                            Start Again
+                                        </Link>
+                                    </p>
+                                )}
+                            </>
+                        }
+                    />
+                    <Route
+                        path="delete/*"
+                        element={
+                            <DeleteDocumentsStage
+                                numberOfFiles={searchResults.length}
+                                setIsDeletingDocuments={setIsDeletingDocuments}
+                                docType={DOCUMENT_TYPE.ALL}
+                            />
+                        }
+                    />
+                </Routes>
 
-            <Outlet />
+                <Outlet />
+            </div>
         </>
     );
 }

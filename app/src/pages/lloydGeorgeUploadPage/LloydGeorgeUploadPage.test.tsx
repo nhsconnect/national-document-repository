@@ -114,12 +114,15 @@ describe('LloydGeorgeUploadPage', () => {
             act(() => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
+
+            expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING);
             expect(mockUploadDocuments).toHaveBeenCalled();
             await waitFor(() => {
                 expect(mockS3Upload).toHaveBeenCalled();
             });
             expect(mockVirusScan).toHaveBeenCalled();
-            expect(screen.getByText('Mock virus infected stage')).toBeInTheDocument();
+            expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED);
+            // expect(screen.getByText('Some of your files failed a virus scan')).toBeInTheDocument();
         });
 
         it('renders file upload failed stage when file upload fails', async () => {
@@ -149,6 +152,8 @@ describe('LloydGeorgeUploadPage', () => {
             act(() => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
+
+            expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING);
             expect(mockUploadDocuments).toHaveBeenCalled();
             await waitFor(() => {
                 expect(mockS3Upload).toHaveBeenCalled();
@@ -158,7 +163,8 @@ describe('LloydGeorgeUploadPage', () => {
                 expect(mockUploadConfirmation).toHaveBeenCalled();
             });
             await waitFor(() => {
-                expect(screen.getByText('Mock file failed stage')).toBeInTheDocument();
+                // expect(screen.getByText('Mock file failed stage')).toBeInTheDocument();
+                expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_FAILED);
             });
         });
 
@@ -194,7 +200,9 @@ describe('LloydGeorgeUploadPage', () => {
                 expect(mockUpdateDocumentState).toHaveBeenCalledTimes(numberOfTimes);
                 expect(mockVirusScan).toHaveBeenCalled();
                 expect(mockUploadConfirmation).toHaveBeenCalled();
-                expect(screen.getByText('Mock complete stage')).toBeInTheDocument();
+                expect(mockNavigate).toHaveBeenCalledWith(
+                    routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED,
+                );
             },
         );
     });
@@ -268,7 +276,9 @@ describe('LloydGeorgeUploadPage', () => {
             await waitFor(() => {
                 expect(mockS3Upload).toHaveBeenCalled();
             });
-            expect(mockVirusScan).toHaveBeenCalled();
+            await waitFor(() => {
+                expect(mockVirusScan).toHaveBeenCalled();
+            });
             await waitFor(() => {
                 expect(mockUploadConfirmation).toHaveBeenCalled();
             });
@@ -373,9 +383,6 @@ describe('LloydGeorgeUploadPage', () => {
         });
     });
 
-    /**
-     * Replace the render(LloydGeorge) in each test with this
-     */
     const renderPage = (history: History) => {
         return render(
             <ReactRouter.Router navigator={history} location={history.location}>

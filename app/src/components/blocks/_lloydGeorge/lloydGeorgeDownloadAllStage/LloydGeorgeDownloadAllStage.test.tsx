@@ -10,8 +10,10 @@ import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import useConfig from '../../../../helpers/hooks/useConfig';
+import { MemoryHistory, createMemoryHistory } from 'history';
+import * as ReactRouter from 'react-router';
 
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -19,11 +21,11 @@ const mockedUsePatient = usePatient as jest.Mock;
 const mockUseConfig = useConfig as jest.Mock;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
-const mockSetStage = jest.fn();
-const mockDownloadStage = jest.fn();
+
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
+    ...jest.requireActual('react-router'),
     useNavigate: () => mockedUseNavigate,
 }));
 jest.mock('moment', () => {
@@ -34,8 +36,18 @@ jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useConfig');
 
+let history = createMemoryHistory({
+    initialEntries: ['/'],
+    initialIndex: 0,
+});
+
 describe('LloydGeorgeDownloadAllStage', () => {
     beforeEach(() => {
+        history = createMemoryHistory({
+            initialEntries: ['/'],
+            initialIndex: 0,
+        });
+
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
         mockUseConfig.mockReturnValue(buildConfig());
@@ -45,7 +57,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
     });
 
     it('renders the component', () => {
-        renderComponent();
+        renderComponent(history);
 
         expect(screen.getByRole('heading', { name: 'Downloading documents' })).toBeInTheDocument();
         expect(
@@ -66,7 +78,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
     });
 
     it('renders a progress bar', () => {
-        renderComponent();
+        renderComponent(history);
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
     });
 
@@ -76,7 +88,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
 
         jest.useFakeTimers();
 
-        renderComponent();
+        renderComponent(history);
 
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
         expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
@@ -101,9 +113,10 @@ describe('LloydGeorgeDownloadAllStage', () => {
         });
 
         await waitFor(async () => {
-            expect(screen.queryByText('Downloading documents')).not.toBeInTheDocument();
+            expect(mockedUseNavigate).toHaveBeenCalledWith(
+                routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE,
+            );
         });
-        expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
     });
 
     it('navigates to Error page when zip lg record view complete but fail on delete', async () => {
@@ -119,7 +132,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
 
         jest.useFakeTimers();
 
-        renderComponent({ deleteAfterDownload: true });
+        renderComponent(history, { deleteAfterDownload: true });
 
         expect(screen.getByText('0% downloaded...')).toBeInTheDocument();
         expect(screen.queryByText('100% downloaded...')).not.toBeInTheDocument();
@@ -149,7 +162,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         };
         mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
         jest.useFakeTimers();
-        renderComponent();
+        renderComponent(history);
         act(() => {
             jest.advanceTimersByTime(500);
         });
@@ -169,7 +182,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         };
         mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
         jest.useFakeTimers();
-        renderComponent();
+        renderComponent(history);
         act(() => {
             jest.advanceTimersByTime(500);
         });
@@ -179,10 +192,16 @@ describe('LloydGeorgeDownloadAllStage', () => {
     });
 });
 
-const renderComponent = (propsOverride?: Partial<Props>) => {
-    const props = {
+const renderComponent = (history: MemoryHistory, propsOverride?: Partial<Props>) => {
+    const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
+        numberOfFiles: mockPdf.number_of_files,
+        deleteAfterDownload: false,
         ...propsOverride,
     };
 
-    // return render(<LgDownloadAllStage {...props} />);
+    return render(
+        <ReactRouter.Router navigator={history} location={history.location}>
+            <LgDownloadAllStage {...props} />
+        </ReactRouter.Router>,
+    );
 };

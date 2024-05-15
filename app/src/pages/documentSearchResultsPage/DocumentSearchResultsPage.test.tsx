@@ -7,17 +7,18 @@ import axios from 'axios';
 import usePatient from '../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { act } from 'react-dom/test-utils';
+import * as ReactRouter from 'react-router';
+import { History, createMemoryHistory } from 'history';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
     useNavigate: () => mockedUseNavigate,
 }));
 
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
-    useNavigate: () => jest.fn(),
-    useLocation: () => jest.fn(),
 }));
 jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
@@ -30,8 +31,18 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 
+let history = createMemoryHistory({
+    initialEntries: ['/'],
+    initialIndex: 0,
+});
+
 describe('<DocumentSearchResultsPage />', () => {
     beforeEach(() => {
+        history = createMemoryHistory({
+            initialEntries: ['/'],
+            initialIndex: 0,
+        });
+
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
     });
@@ -45,7 +56,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 return Promise.resolve({ data: [buildSearchResult()] });
             });
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             expect(
                 screen.getByRole('heading', {
@@ -73,7 +84,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 return Promise.resolve({ data: [buildSearchResult()] });
             });
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
         });
@@ -83,7 +94,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 return Promise.resolve({ data: [] });
             });
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             await waitFor(() => {
                 expect(
@@ -109,7 +120,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 },
             };
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
@@ -141,7 +152,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 },
             };
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
@@ -170,7 +181,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 Promise.resolve({ data: [buildSearchResult()] }),
             );
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             await waitFor(() => {
                 expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
@@ -193,7 +204,7 @@ describe('<DocumentSearchResultsPage />', () => {
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             act(() => {
-                render(<DocumentSearchResultsPage />);
+                renderPage(history);
             });
 
             await waitFor(() => {
@@ -215,11 +226,19 @@ describe('<DocumentSearchResultsPage />', () => {
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });
         });
     });
+
+    const renderPage = (history: History) => {
+        return render(
+            <ReactRouter.Router navigator={history} location={history.location}>
+                <DocumentSearchResultsPage />
+            </ReactRouter.Router>,
+        );
+    };
 });

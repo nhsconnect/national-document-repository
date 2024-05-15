@@ -8,10 +8,11 @@ import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
 import axios from 'axios/index';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../../types/generic/authRole';
-import { routes } from '../../../types/generic/routes';
+import { routeChildren, routes } from '../../../types/generic/routes';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../helpers/hooks/usePatient';
-import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import { MemoryHistory, createMemoryHistory } from 'history';
+import * as ReactRouter from 'react-router';
 
 jest.mock('../../../helpers/hooks/useConfig');
 jest.mock('../deletionConfirmationStage/DeletionConfirmationStage', () => () => (
@@ -25,11 +26,16 @@ jest.mock('axios');
 const mockedUseNavigate = jest.fn();
 
 jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
     useNavigate: () => mockedUseNavigate,
-    // Routes:
 }));
 jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
+
+let history: MemoryHistory = createMemoryHistory({
+    initialEntries: ['/'],
+    initialIndex: 0,
 });
 
 const mockedUseRole = useRole as jest.Mock;
@@ -45,6 +51,11 @@ const mockSetDownloadStage = jest.fn();
 
 describe('DeleteDocumentsStage', () => {
     beforeEach(() => {
+        history = createMemoryHistory({
+            initialEntries: ['/'],
+            initialIndex: 0,
+        });
+
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
     });
@@ -61,7 +72,7 @@ describe('DeleteDocumentsStage', () => {
                 const dob = getFormattedDate(new Date(mockPatientDetails.birthDate));
                 mockedUseRole.mockReturnValue(role);
 
-                renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+                renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
 
                 await waitFor(async () => {
                     expect(
@@ -90,7 +101,7 @@ describe('DeleteDocumentsStage', () => {
         it('renders DocumentSearchResults when No is selected and Continue clicked, when user role is GP Admin', async () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
-            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
             const noButton = screen.getByRole('radio', { name: 'No' });
 
             expect(noButton).not.toBeChecked();
@@ -103,14 +114,14 @@ describe('DeleteDocumentsStage', () => {
             expect(screen.queryByTestId('delete-error-box')).not.toBeInTheDocument();
 
             await waitFor(() => {
-                expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE);
             });
         });
 
         it('renders DocumentSearchResults when No is selected and Continue clicked, when user role is PCSE', async () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            renderComponent(DOCUMENT_TYPE.ALL);
+            renderComponent(DOCUMENT_TYPE.ALL, history);
 
             act(() => {
                 userEvent.click(screen.getByRole('radio', { name: 'No' }));
@@ -118,14 +129,14 @@ describe('DeleteDocumentsStage', () => {
             });
 
             await waitFor(() => {
-                expect(mockSetIsDeletingDocuments).toHaveBeenCalledWith(false);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.ARF_OVERVIEW);
             });
         });
 
         it('does not render a view DocumentSearchResults when No is selected and Continue clicked, when user role is GP Clinical', async () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
-            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
 
             act(() => {
                 userEvent.click(screen.getByRole('radio', { name: 'No' }));
@@ -137,35 +148,54 @@ describe('DeleteDocumentsStage', () => {
             });
         });
 
-        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE])(
-            "renders DeletionConfirmationStage when the Yes is selected and Continue clicked, when user role is '%s'",
-            async (role) => {
-                mockedAxios.delete.mockReturnValue(
-                    Promise.resolve({ status: 200, data: 'Success' }),
+        it('renders DeletionConfirmationStage when the Yes is selected and Continue clicked, when user role is GP_ADMIN', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+
+            mockedAxios.delete.mockReturnValue(Promise.resolve({ status: 200, data: 'Success' }));
+
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
+
+            expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routeChildren.LLOYD_GEORGE_DELETE_COMPLETE,
                 );
-                mockedUseRole.mockReturnValue(role);
+            });
+        });
 
-                renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+        it('renders DeletionConfirmationStage when the Yes is selected and Continue clicked, when user role is PCSE', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-                expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
-                expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+            mockedAxios.delete.mockReturnValue(Promise.resolve({ status: 200, data: 'Success' }));
 
-                act(() => {
-                    userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
-                    userEvent.click(screen.getByRole('button', { name: 'Continue' }));
-                });
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
 
-                await waitFor(() => {
-                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
-                });
-            },
-        );
+            expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
+            expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_DELETE_COMPLETE);
+                // expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+            });
+        });
 
         it('does not render DeletionConfirmationStage when the Yes is selected, Continue clicked, and user role is GP Clinical', async () => {
             mockedAxios.delete.mockReturnValue(Promise.resolve({ status: 200, data: 'Success' }));
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
 
-            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
 
             expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
@@ -189,7 +219,7 @@ describe('DeleteDocumentsStage', () => {
             };
             mockedAxios.delete.mockImplementation(() => Promise.reject(errorResponse));
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
-            renderComponent(DOCUMENT_TYPE.ALL);
+            renderComponent(DOCUMENT_TYPE.ALL, history);
 
             expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
             expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
@@ -215,7 +245,7 @@ describe('DeleteDocumentsStage', () => {
         it('renders a error box when none of the options are checked', async () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
-            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE);
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
             const noButton = screen.getByRole('radio', { name: 'No' });
             const yesButton = screen.getByRole('radio', { name: 'Yes' });
 
@@ -246,7 +276,7 @@ describe('Navigation', () => {
         mockedAxios.delete.mockImplementation(() => Promise.reject(errorResponse));
         mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-        renderComponent(DOCUMENT_TYPE.ALL);
+        renderComponent(DOCUMENT_TYPE.ALL, history);
 
         expect(screen.getByRole('radio', { name: 'Yes' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Continue' })).toBeInTheDocument();
@@ -262,18 +292,21 @@ describe('Navigation', () => {
     });
 });
 
-const renderComponent = (docType: DOCUMENT_TYPE) => {
+const renderComponent = (docType: DOCUMENT_TYPE, history: MemoryHistory) => {
     const props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'> = {
         numberOfFiles: mockLgSearchResult.number_of_files,
         docType,
     };
 
-    render(
-        <DeleteDocumentsStage
-            {...props}
-            setStage={mockSetStage}
-            setIsDeletingDocuments={mockSetIsDeletingDocuments}
-            setDownloadStage={mockSetDownloadStage}
-        />,
+    return render(
+        <ReactRouter.Router navigator={history} location={history.location}>
+            <DeleteDocumentsStage
+                {...props}
+                setStage={mockSetStage}
+                setIsDeletingDocuments={mockSetIsDeletingDocuments}
+                setDownloadStage={mockSetDownloadStage}
+            />
+            ,
+        </ReactRouter.Router>,
     );
 };

@@ -17,6 +17,7 @@ import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { LinkProps } from 'react-router-dom';
+import { routeChildren } from '../../../../types/generic/routes';
 
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
@@ -233,7 +234,7 @@ describe('LloydGeorgeRecordStage', () => {
             clickRedDownloadButton();
 
             await waitFor(() => {
-                expect(mockSetStage).toBeCalledWith(LG_RECORD_STAGE.DOWNLOAD_ALL);
+                expect(mockNavigate).toBeCalledWith(routeChildren.LLOYD_GEORGE_DOWNLOAD);
             });
         });
 

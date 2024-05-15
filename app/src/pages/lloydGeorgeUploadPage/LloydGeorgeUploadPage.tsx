@@ -253,7 +253,6 @@ function LloydGeorgeUploadPage() {
     };
 
     const restartUpload = () => {
-        console.log('Restarting');
         setDocuments([]);
         navigate(routes.LLOYD_GEORGE_UPLOAD);
     };
