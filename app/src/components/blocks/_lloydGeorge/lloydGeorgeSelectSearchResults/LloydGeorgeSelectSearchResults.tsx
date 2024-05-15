@@ -21,12 +21,18 @@ const LloydGeorgeSelectSearchResults = ({
     setSelectedDocuments,
     selectedDocuments,
 }: Props) => {
-    const sortByFileName = (a: SearchResult, b: SearchResult) => (a.fileName > b.fileName ? 1 : -1);
-    const sortByDate = (a: SearchResult, b: SearchResult) =>
-        new Date(a.created) <= new Date(b.created) ? 1 : -1;
+    const sortByFileName = (a: SearchResult, b: SearchResult) => {
+        const fileNumberOfA = parseInt(a.fileName.substring(0, a.fileName.indexOf('of')));
+        const fileNumberOfB = parseInt(b.fileName.substring(0, a.fileName.indexOf('of')));
+        if (fileNumberOfA && fileNumberOfB) {
+            return fileNumberOfA > fileNumberOfB ? 1 : -1;
+        } else {
+            return a.fileName > b.fileName ? 1 : -1;
+        }
+    };
     const navigate = useNavigate();
-    const orderedResults = [...searchResults].sort(sortByFileName).sort(sortByDate);
-    const tableCaption = <h2 style={{ fontSize: 32 }}>List of files in record</h2>;
+    const orderedResults = [...searchResults].sort(sortByFileName);
+    const tableCaption = <h2 className="nhsuk-heading-l">List of files in record</h2>;
     const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
     const noOptionSelectedError = 'You must select a file to download or download all files';
     const pageHeader = 'Download the Lloyd George record for this patient';
@@ -94,7 +100,11 @@ const LloydGeorgeSelectSearchResults = ({
                                 data-testid="select"
                             >
                                 <Checkboxes onChange={handleChangeCheckboxes}>
-                                    <Checkboxes.Box value={result.ID}> </Checkboxes.Box>
+                                    <Checkboxes.Box value={result.ID}>
+                                        <span className="nhsuk-u-visually-hidden">
+                                            {result.fileName}
+                                        </span>
+                                    </Checkboxes.Box>
                                 </Checkboxes>{' '}
                             </Table.Cell>
                             <Table.Cell
