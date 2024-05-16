@@ -97,9 +97,7 @@ function LloydGeorgeUploadPage() {
         };
 
         const confirmUpload = async () => {
-            console.log('AAA');
             if (uploadSession) {
-                console.log('AAB');
                 navigate(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION);
                 try {
                     const confirmDocumentState = await uploadConfirmation({
@@ -238,7 +236,6 @@ function LloydGeorgeUploadPage() {
                 );
                 navigate(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED);
             } else {
-                console.log('Increaisng Attempts on submit catch');
                 setDocuments((prevState) =>
                     prevState.map((doc) => ({
                         ...doc,
