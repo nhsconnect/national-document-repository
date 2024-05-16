@@ -14,6 +14,7 @@ class StatisticData(BaseModel):
         default_factory=lambda: str(uuid.uuid4()), alias="StatisticID"
     )
     date: str
+    ods_code: str
 
     @field_serializer("statistic_id")
     def serialise_id(self, statistic_id) -> str:
@@ -34,9 +35,14 @@ class StatisticData(BaseModel):
 
         return uuid_part
 
+    # noinspection PyNestedDecorators
+    @field_validator("ods_code")
+    @classmethod
+    def fill_empty_ods_code(cls, ods_code: str) -> str:
+        return ods_code or "NO_ODS_CODE"
+
 
 class RecordStoreData(StatisticData):
-    ods_code: str
     total_number_of_records: int = 0
     number_of_document_types: int = 0
     total_size_of_records_in_megabytes: Decimal = Decimal(0)
@@ -44,7 +50,6 @@ class RecordStoreData(StatisticData):
 
 
 class OrganisationData(StatisticData):
-    ods_code: str
     number_of_patients: int = 0
     average_records_per_patient: Decimal = Decimal(0)
     daily_count_stored: int = 0
@@ -54,7 +59,6 @@ class OrganisationData(StatisticData):
 
 
 class ApplicationData(StatisticData):
-    ods_code: str
     active_user_ids_hashed: list[str]
 
 

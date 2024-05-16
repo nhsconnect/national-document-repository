@@ -26,6 +26,11 @@ def test_serialise_and_deserialise_record_store_data(mocker):
     assert test_data == load_from_deserialised
 
 
+def test_empty_ods_code_will_be_filled_with_an_empty_value(mocker):
+    data = RecordStoreData(date="20240516", ods_code="")
+    assert data.ods_code == "NO_ODS_CODE"
+
+
 def test_validation_error_raised_when_try_to_deserialise_to_wrong_type():
     test_data = serialised_record_store_data[0]
 
