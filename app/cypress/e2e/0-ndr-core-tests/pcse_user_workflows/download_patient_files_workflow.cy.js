@@ -279,9 +279,7 @@ describe('PCSE Workflow: Access and download found files', () => {
             () => {
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                // cancel delete
-                cy.getByTestId('no-radio-btn').click();
-                cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('start-again-btn').click();
 
                 // assert user is returned to download documents page
                 cy.contains('Download electronic health records and attachments').should(

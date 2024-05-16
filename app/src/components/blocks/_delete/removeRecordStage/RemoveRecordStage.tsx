@@ -162,6 +162,7 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
                     )}
                     <LinkButton
                         id="start-again-link"
+                        data-testid="start-again-btn"
                         type="button"
                         className="mb-7 ml-3"
                         onClick={() => {

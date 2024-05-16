@@ -226,7 +226,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('delete-all-files-link').click();
 
                 // assert delete confirmation page is as expected
-                cy.contains('Are you sure you want to permanently remove this record?:').should(
+                cy.contains('Are you sure you want to permanently remove this record?').should(
                     'be.visible',
                 );
                 cy.contains('GivenName Surname').should('be.visible');
@@ -282,8 +282,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
                 // cancel delete
-                cy.getByTestId('no-radio-btn').click();
-                cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('start-again-btn').click();
 
                 // assert user is returned to view Lloyd George page
                 cy.contains('Lloyd George record').should('be.visible');
@@ -317,8 +316,6 @@ describe('GP Workflow: View Lloyd George record', () => {
                         body: 'Failed to delete documents',
                     },
                 ).as('documentDelete');
-
-                cy.getByTestId('remove-btn').click();
 
                 cy.wait('@documentDelete');
 
