@@ -35,9 +35,10 @@ class MockPdsApiService(PatientSearch):
         pds_patient: dict = {}
 
         for result in mock_pds_results:
-            for k, v in result.items():
-                if v == nhs_number:
-                    pds_patient = result.copy()
+            mock_patient_nhs_number = result.get("id")
+            if mock_patient_nhs_number == nhs_number:
+                pds_patient = result
+                break
 
         response = Response()
 
