@@ -62,35 +62,16 @@ describe('LloydGeorgeDownloadComplete', () => {
             expect(
                 screen.getByText('This record has been removed from our storage.'),
             ).toBeInTheDocument();
+            expect(screen.getByText('Your responsibilities with this record')).toBeInTheDocument();
+            expect(
+                screen.getByText('Follow the Record Management Code of Practice'),
+            ).toBeInTheDocument();
             expect(
                 screen.getByRole('button', {
                     name: 'Return to patient record',
                 }),
             ).toBeInTheDocument();
             expect(screen.queryByText('Hide files')).not.toBeInTheDocument();
-        });
-
-        it('display record removed text if deleteAfterDownload is true', async () => {
-            render(
-                <LloydGeorgeDownloadComplete
-                    setStage={mockSetStage}
-                    setDownloadStage={mockSetDownloadStage}
-                    deleteAfterDownload={true}
-                    numberOfFiles={numberOfFiles}
-                />,
-            );
-
-            expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
-            expect(
-                screen.getByText('You have successfully downloaded the Lloyd George record of:'),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
-            ).toBeInTheDocument();
-
-            expect(
-                screen.getByText('This record has been removed from our storage.'),
-            ).toBeInTheDocument();
         });
 
         it('calls set stage AND set download stage when delete after download is true', () => {
@@ -133,6 +114,10 @@ describe('LloydGeorgeDownloadComplete', () => {
             expect(
                 screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
             ).toBeInTheDocument();
+            expect(screen.getByText('Your responsibilities with this record')).toBeInTheDocument();
+            expect(
+                screen.getByText('Follow the Record Management Code of Practice'),
+            ).toBeInTheDocument();
             expect(
                 screen.getByRole('button', {
                     name: 'Return to patient record',
@@ -163,6 +148,46 @@ describe('LloydGeorgeDownloadComplete', () => {
 
             expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
             expect(mockSetDownloadStage).not.toBeCalled();
+        });
+
+        it('renders the download complete screen for download selected files journey', () => {
+            render(
+                <LgDownloadComplete
+                    setStage={mockSetStage}
+                    setDownloadStage={mockSetDownloadStage}
+                    deleteAfterDownload={false}
+                    numberOfFiles={selectedDocuments.length}
+                    selectedDocuments={selectedDocuments}
+                    searchResults={searchResults}
+                />,
+            );
+
+            expect(
+                screen.getByRole('heading', {
+                    name: 'You have downloaded files from the record of:',
+                }),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(
+                    `You have successfully downloaded ${selectedDocuments.length} file(s)`,
+                ),
+            ).toBeInTheDocument();
+            expect(screen.getByText('Hide files')).toBeInTheDocument();
+            expect(screen.getByText('Your responsibilities with this record')).toBeInTheDocument();
+            expect(
+                screen.getByText('Follow the Record Management Code of Practice'),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', {
+                    name: 'Return to patient record',
+                }),
+            ).toBeInTheDocument();
+            expect(
+                screen.queryByText('This record has been removed from our storage.'),
+            ).not.toBeInTheDocument();
         });
     });
 });
