@@ -32,7 +32,7 @@ type DocRefResponse = {
     data: UploadSession;
 };
 
-type UpdateStateArgs = {
+export type UpdateStateArgs = {
     documents: UploadDocument[];
     uploadingState: boolean;
     baseUrl: string;

@@ -24,17 +24,14 @@ export const lloydGeorgeRecordLinksInBSOL: Array<LGRecordActionLink> = [
         key: 'delete-all-files-link',
         type: RECORD_ACTION.UPDATE,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-        showIfRecordInRepo: true,
         href: routeChildren.LLOYD_GEORGE_DELETE,
         showIfRecordInStorage: true,
-
     },
     {
         label: 'Download files',
         key: 'download-all-files-link',
         type: RECORD_ACTION.DOWNLOAD,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-        showIfRecordInRepo: true,
         href: routeChildren.LLOYD_GEORGE_DOWNLOAD,
         showIfRecordInStorage: true,
     },

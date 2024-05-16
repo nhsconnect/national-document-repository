@@ -129,7 +129,7 @@ function LloydGeorgeUploadPage() {
         if (hasExceededUploadAttempts && !exceededReference.current) {
             exceededReference.current = true;
             window.clearInterval(intervalTimer);
-            void setUploadStateFailed(LG_UPLOAD_STAGE.FAILED);
+            void setUploadStateFailed();
         } else if (hasVirus && !virusReference.current) {
             virusReference.current = true;
             window.clearInterval(intervalTimer);
