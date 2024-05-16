@@ -14,7 +14,23 @@ const mockSetStage = jest.fn();
 const mockSetDownloadStage = jest.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
-const mockNumberOfFiles = 7;
+const numberOfFiles = 7;
+const selectedDocuments = ['selected-doc-id-1', 'selected-doc-id-2'];
+const downloadAllSelectedDocuments: Array<string> = [];
+const searchResults = [
+    {
+        fileName: '1of2_test.pdf',
+        created: '2024-01-01T14:52:00.827602Z',
+        virusScannerResult: 'Clean',
+        ID: 'test-id-1',
+    },
+    {
+        fileName: '2of2_test.pdf',
+        created: '2024-01-01T14:52:00.827602Z',
+        virusScannerResult: 'Clean',
+        ID: 'test-id-2',
+    },
+];
 
 describe('LloydGeorgeDownloadComplete', () => {
     beforeEach(() => {
@@ -32,7 +48,7 @@ describe('LloydGeorgeDownloadComplete', () => {
                     setStage={mockSetStage}
                     setDownloadStage={mockSetDownloadStage}
                     deleteAfterDownload={true}
-                    numberOfFiles={mockNumberOfFiles}
+                    numberOfFiles={numberOfFiles}
                 />,
             );
 
@@ -44,10 +60,14 @@ describe('LloydGeorgeDownloadComplete', () => {
                 screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
             ).toBeInTheDocument();
             expect(
+                screen.getByText('This record has been removed from our storage.'),
+            ).toBeInTheDocument();
+            expect(
                 screen.getByRole('button', {
                     name: 'Return to patient record',
                 }),
             ).toBeInTheDocument();
+            expect(screen.queryByText('Hide files')).not.toBeInTheDocument();
         });
 
         it('display record removed text if deleteAfterDownload is true', async () => {
@@ -56,7 +76,7 @@ describe('LloydGeorgeDownloadComplete', () => {
                     setStage={mockSetStage}
                     setDownloadStage={mockSetDownloadStage}
                     deleteAfterDownload={true}
-                    numberOfFiles={mockNumberOfFiles}
+                    numberOfFiles={numberOfFiles}
                 />,
             );
 
@@ -79,7 +99,7 @@ describe('LloydGeorgeDownloadComplete', () => {
                     setStage={mockSetStage}
                     setDownloadStage={mockSetDownloadStage}
                     deleteAfterDownload={true}
-                    numberOfFiles={mockNumberOfFiles}
+                    numberOfFiles={numberOfFiles}
                 />,
             );
 
@@ -95,21 +115,20 @@ describe('LloydGeorgeDownloadComplete', () => {
     });
 
     describe('LloydGeorgeDownloadComplete BSOL journeys', () => {
-        xit('renders the component', () => {
-            // render(
-            //     <LgDownloadComplete
-            //         setStage={mockSetStage}
-            //         setDownloadStage={mockSetDownloadStageStage}
-            //         deleteAfterDownload={false}
-            //         numberOfFiles={mockNumberOfFiles}
-            //         selectedDocuments={selectedDocuments}
-            //         searchResults={searchResults}
-            //     />
-            // );
+        it('renders the download complete screen for download all journey', () => {
+            render(
+                <LgDownloadComplete
+                    setStage={mockSetStage}
+                    setDownloadStage={mockSetDownloadStage}
+                    deleteAfterDownload={false}
+                    numberOfFiles={downloadAllSelectedDocuments.length}
+                    selectedDocuments={downloadAllSelectedDocuments}
+                    searchResults={searchResults}
+                />,
+            );
 
-            expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
             expect(
-                screen.getByText('You have successfully downloaded the Lloyd George record of:'),
+                screen.getByRole('heading', { name: 'You have downloaded the record of:' }),
             ).toBeInTheDocument();
             expect(
                 screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
@@ -119,6 +138,31 @@ describe('LloydGeorgeDownloadComplete', () => {
                     name: 'Return to patient record',
                 }),
             ).toBeInTheDocument();
+            expect(
+                screen.queryByText('This record has been removed from our storage.'),
+            ).not.toBeInTheDocument();
+        });
+
+        it('calls set stage when delete after download is false', () => {
+            render(
+                <LloydGeorgeDownloadComplete
+                    setStage={mockSetStage}
+                    setDownloadStage={mockSetDownloadStage}
+                    deleteAfterDownload={false}
+                    numberOfFiles={downloadAllSelectedDocuments.length}
+                    selectedDocuments={downloadAllSelectedDocuments}
+                    searchResults={searchResults}
+                />,
+            );
+
+            userEvent.click(
+                screen.getByRole('button', {
+                    name: 'Return to patient record',
+                }),
+            );
+
+            expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
+            expect(mockSetDownloadStage).not.toBeCalled();
         });
     });
 });
