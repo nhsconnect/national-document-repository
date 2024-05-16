@@ -105,7 +105,7 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
             </WarningCallout>
             <PatientDetails />
 
-            {submissionState === SUBMISSION_STATE.PENDING && <ProgressBar status="loading..." />}
+            {submissionState === SUBMISSION_STATE.PENDING && <ProgressBar status="Loading..." />}
 
             {submissionState === SUBMISSION_STATE.FAILED && <ServiceError />}
 
