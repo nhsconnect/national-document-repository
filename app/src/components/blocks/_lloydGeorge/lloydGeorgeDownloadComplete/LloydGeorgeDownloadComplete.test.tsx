@@ -15,7 +15,7 @@ const mockSetDownloadStage = jest.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
 const numberOfFiles = 7;
-const selectedDocuments = ['selected-doc-id-1', 'selected-doc-id-2'];
+const selectedDocuments = ['test-id-1', 'test-id-2'];
 const downloadAllSelectedDocuments: Array<string> = [];
 const searchResults = [
     {
@@ -29,6 +29,12 @@ const searchResults = [
         created: '2024-01-01T14:52:00.827602Z',
         virusScannerResult: 'Clean',
         ID: 'test-id-2',
+    },
+    {
+        fileName: '1of1_test.pdf',
+        created: '2024-02-01T14:52:00.827602Z',
+        virusScannerResult: 'Clean',
+        ID: 'test-id-3',
     },
 ];
 
@@ -176,6 +182,8 @@ describe('LloydGeorgeDownloadComplete', () => {
                 ),
             ).toBeInTheDocument();
             expect(screen.getByText('Hide files')).toBeInTheDocument();
+            expect(screen.getByText('1of2_test.pdf')).toBeInTheDocument();
+            expect(screen.getByText('2of2_test.pdf')).toBeInTheDocument();
             expect(screen.getByText('Your responsibilities with this record')).toBeInTheDocument();
             expect(
                 screen.getByText('Follow the Record Management Code of Practice'),
