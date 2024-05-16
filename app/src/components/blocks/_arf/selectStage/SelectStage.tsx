@@ -14,11 +14,13 @@ import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
-import uploadDocuments from '../../../../helpers/requests/uploadDocuments';
+import uploadDocuments, { uploadDocumentToS3 } from '../../../../helpers/requests/uploadDocuments';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import BackButton from '../../../generic/backButton/BackButton';
+import { setDocument } from '../../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
+import { UploadSession } from '../../../../types/generic/uploadResult';
 
 interface Props {
     setDocuments: SetUploadDocuments;
@@ -40,6 +42,30 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
     const { handleSubmit, control, formState, setError } = useForm();
 
     const arfController = useController(ARFFormConfig(control));
+
+    const markDocumentAsFailed = (document: UploadDocument) => {
+        setDocuments((prevState) =>
+            prevState.map((prevStateDocument) => {
+                if (prevStateDocument.id !== document.id) {
+                    return prevStateDocument;
+                }
+                return { ...prevStateDocument, state: DOCUMENT_UPLOAD_STATE.FAILED, progress: 0 };
+            }),
+        );
+    };
+
+    const uploadAllDocumentsToS3 = (
+        uploadingDocuments: UploadDocument[],
+        uploadSession: UploadSession,
+    ) => {
+        const allUploadPromises = uploadingDocuments.map((document) =>
+            uploadDocumentToS3({ setDocuments, document, uploadSession }).catch(() =>
+                markDocumentAsFailed(document),
+            ),
+        );
+        return Promise.all(allUploadPromises);
+    };
+
     const submitDocuments = async () => {
         if (!hasFileInput) {
             setError('arf-documents', { type: 'custom', message: 'Select a file to upload' });
@@ -48,12 +74,25 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
 
         setStage(UPLOAD_STAGE.Uploading);
         try {
-            await uploadDocuments({
+            const uploadSession = await uploadDocuments({
                 nhsNumber,
                 documents,
                 baseUrl,
                 baseHeaders,
             });
+            const uploadingDocuments: UploadDocument[] = documents.map((doc) => {
+                const documentMetadata = uploadSession[doc.file.name];
+                const documentReference = documentMetadata.fields.key;
+                return {
+                    ...doc,
+                    state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                    key: documentReference,
+                    ref: documentReference.split('/')[3],
+                };
+            });
+            setDocuments(uploadingDocuments);
+
+            await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
         } catch (e) {}
         setStage(UPLOAD_STAGE.Complete);
     };
