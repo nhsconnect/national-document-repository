@@ -148,7 +148,7 @@ const LloydGeorgeSelectSearchResults = ({
                     }}
                     style={{ marginLeft: 18 }}
                 >
-                    Start Again
+                    Start again
                 </Link>
             </div>
         </>

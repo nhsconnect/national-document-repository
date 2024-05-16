@@ -141,7 +141,7 @@ function LloydGeorgeDownloadComplete({
                 established standards.
             </p>
             <Button onClick={handleReturnButtonClick} data-testid="return-btn">
-                Return to patient's available medical records
+                Return to patient record
             </Button>
         </div>
     );
