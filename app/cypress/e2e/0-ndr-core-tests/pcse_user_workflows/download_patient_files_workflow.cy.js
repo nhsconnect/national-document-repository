@@ -257,8 +257,7 @@ describe('PCSE Workflow: Access and download found files', () => {
 
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                cy.getByTestId('yes-radio-btn').click();
-                cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('remove-btn').click();
 
                 cy.wait('@documentDelete');
 
@@ -306,8 +305,7 @@ describe('PCSE Workflow: Access and download found files', () => {
 
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                cy.getByTestId('yes-radio-btn').click();
-                cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('remove-btn').click();
 
                 // assert
                 cy.contains('Sorry, there is a problem with the service').should('be.visible');
@@ -329,8 +327,7 @@ describe('PCSE Workflow: Access and download found files', () => {
 
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                cy.getByTestId('yes-radio-btn').click();
-                cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('remove-btn').click();
 
                 // assert
                 cy.contains('Sorry, there is a problem with the service').should('be.visible');

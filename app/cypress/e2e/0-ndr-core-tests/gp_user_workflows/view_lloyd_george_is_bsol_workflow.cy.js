@@ -226,7 +226,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('delete-all-files-link').click();
 
                 // assert delete confirmation page is as expected
-                cy.contains('Are you sure you want to permanently delete files for:').should(
+                cy.contains('Are you sure you want to permanently remove this record?:').should(
                     'be.visible',
                 );
                 cy.contains('GivenName Surname').should('be.visible');
@@ -242,8 +242,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     },
                 ).as('documentDelete');
 
-                cy.getByTestId('yes-radio-btn').click();
-                cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('remove-btn').click();
 
                 cy.wait('@documentDelete');
 
@@ -319,8 +318,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     },
                 ).as('documentDelete');
 
-                cy.getByTestId('yes-radio-btn').click();
-                cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('remove-btn').click();
 
                 cy.wait('@documentDelete');
 

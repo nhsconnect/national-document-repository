@@ -152,6 +152,7 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
                 <div className="align-bottom h-100">
                     {submissionState === SUBMISSION_STATE.SUCCEEDED && (
                         <Button
+                            data-testid="remove-btn"
                             onClick={() => {
                                 setStage(LG_RECORD_STAGE.DELETE_ALL);
                             }}
