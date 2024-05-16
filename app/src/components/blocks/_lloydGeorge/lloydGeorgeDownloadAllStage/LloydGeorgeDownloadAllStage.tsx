@@ -24,6 +24,7 @@ import { AxiosError } from 'axios/index';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
 
 const FakeProgress = require('fake-progress');
 
@@ -212,7 +213,7 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, deleteAfterDownload = fals
                     }
                 />
                 <Route
-                    path="complete"
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE)}
                     element={<LgDownloadComplete deleteAfterDownload={deleteAfterDownload} />}
                 />
             </Routes>

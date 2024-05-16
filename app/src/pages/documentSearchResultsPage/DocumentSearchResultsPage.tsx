@@ -3,7 +3,7 @@ import PatientSummary from '../../components/generic/patientSummary/PatientSumma
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/_arf/documentSearchResults/DocumentSearchResults';
 import { Outlet, Route, Routes, useNavigate } from 'react-router';
-import { routes } from '../../types/generic/routes';
+import { routeChildren, routes } from '../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';
 import ProgressBar from '../../components/generic/progressBar/ProgressBar';
@@ -19,6 +19,7 @@ import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import useTitle from '../../helpers/hooks/useTitle';
+import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
@@ -152,7 +153,7 @@ function DocumentSearchResultsPage() {
                         }
                     />
                     <Route
-                        path="delete/*"
+                        path={getLastURLPath(routeChildren.ARF_DELETE) + '/*'}
                         element={
                             <DeleteDocumentsStage
                                 numberOfFiles={searchResults.length}

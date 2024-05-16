@@ -23,6 +23,7 @@ import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
 import { childRoutes } from '../../router/AppRouter';
+import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
     UPLOAD = 1,
@@ -287,17 +288,7 @@ function LloydGeorgeUploadPage() {
                         }
                     />
                     <Route
-                        path="selection"
-                        element={
-                            <LloydGeorgeFileInputStage
-                                documents={documents}
-                                setDocuments={setDocuments}
-                                submitDocuments={submitDocuments}
-                            />
-                        }
-                    />
-                    <Route
-                        path="uploading"
+                        path={getLastURLPath(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING) + '/*'}
                         element={
                             <LloydGeorgeUploadingStage
                                 documents={documents}
@@ -306,13 +297,16 @@ function LloydGeorgeUploadPage() {
                             />
                         }
                     />
-                    <Route path="confirmation" element={<Spinner status="Checking uploads..." />} />
                     <Route
-                        path="completed"
+                        path={getLastURLPath(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION) + '/*'}
+                        element={<Spinner status="Checking uploads..." />}
+                    />
+                    <Route
+                        path={getLastURLPath(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED) + '/*'}
                         element={<LloydGeorgeUploadCompleteStage documents={documents} />}
                     />
                     <Route
-                        path="infected"
+                        path={getLastURLPath(routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED) + '/*'}
                         element={
                             <LloydGeorgeUploadInfectedStage
                                 documents={documents}
@@ -320,9 +314,12 @@ function LloydGeorgeUploadPage() {
                             />
                         }
                     />
-                    <Route path="retry" element={<LloydGeorgeRetryUploadStage />} />
                     <Route
-                        path="failed"
+                        path={getLastURLPath(routeChildren.LLOYD_GEORGE_UPLOAD_RETRY) + '/*'}
+                        element={<LloydGeorgeRetryUploadStage />}
+                    />
+                    <Route
+                        path={getLastURLPath(routeChildren.LLOYD_GEORGE_UPLOAD_FAILED) + '/*'}
                         element={<LloydGeorgeUploadFailedStage restartUpload={restartUpload} />}
                     />
                 </Routes>

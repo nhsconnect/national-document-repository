@@ -24,6 +24,7 @@ import { isMock } from '../../../helpers/utils/isLocal';
 import useConfig from '../../../helpers/hooks/useConfig';
 import useTitle from '../../../helpers/hooks/useTitle';
 import ErrorBox from '../../layout/errorBox/ErrorBox';
+import { getLastURLPath } from '../../../helpers/utils/urlManipulations';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -208,7 +209,7 @@ function DeleteDocumentsStage({
                         }
                     />
                     <Route
-                        path="complete"
+                        path={getLastURLPath(routeChildren.ARF_DELETE_COMPLETE)}
                         element={
                             <DeletionConfirmationStage
                                 numberOfFiles={numberOfFiles}

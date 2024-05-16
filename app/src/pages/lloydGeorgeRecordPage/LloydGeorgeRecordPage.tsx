@@ -14,13 +14,14 @@ import { AxiosError } from 'axios';
 import useRole from '../../helpers/hooks/useRole';
 import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-import { routes } from '../../types/generic/routes';
+import { routeChildren, routes } from '../../types/generic/routes';
 import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import { isMock } from '../../helpers/utils/isLocal';
 import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
+import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -134,7 +135,7 @@ function LloydGeorgeRecordPage() {
                     }
                 />
                 <Route
-                    path="download/*"
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD) + '/*'}
                     element={
                         <LloydGeorgeDownloadAllStage
                             numberOfFiles={numberOfFiles}
@@ -143,7 +144,7 @@ function LloydGeorgeRecordPage() {
                     }
                 />
                 <Route
-                    path="delete/*"
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DELETE) + '/*'}
                     element={
                         <DeleteDocumentsStage
                             docType={DOCUMENT_TYPE.LLOYD_GEORGE}

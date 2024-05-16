@@ -142,6 +142,7 @@ describe('<DocumentSearchResultsPage />', () => {
             ).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
         });
+
         it('displays a error messages when the call to document manifest return 400', async () => {
             mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
 
