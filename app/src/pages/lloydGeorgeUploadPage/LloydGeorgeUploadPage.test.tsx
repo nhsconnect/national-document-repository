@@ -121,8 +121,11 @@ describe('LloydGeorgeUploadPage', () => {
                 expect(mockS3Upload).toHaveBeenCalled();
             });
             expect(mockVirusScan).toHaveBeenCalled();
-            expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED);
-            // expect(screen.getByText('Some of your files failed a virus scan')).toBeInTheDocument();
+            await waitFor(() => {
+                expect(mockNavigate).toHaveBeenCalledWith(
+                    routeChildren.LLOYD_GEORGE_UPLOAD_INFECTED,
+                );
+            });
         });
 
         it('renders file upload failed stage when file upload fails', async () => {

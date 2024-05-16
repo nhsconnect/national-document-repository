@@ -97,9 +97,7 @@ function LloydGeorgeUploadPage() {
         };
 
         const confirmUpload = async () => {
-            console.log('AAA');
             if (uploadSession) {
-                console.log('AAB');
                 navigate(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION);
                 try {
                     const confirmDocumentState = await uploadConfirmation({
@@ -131,7 +129,7 @@ function LloydGeorgeUploadPage() {
         if (hasExceededUploadAttempts && !exceededReference.current) {
             exceededReference.current = true;
             window.clearInterval(intervalTimer);
-            void setUploadStateFailed(LG_UPLOAD_STAGE.FAILED);
+            void setUploadStateFailed();
         } else if (hasVirus && !virusReference.current) {
             virusReference.current = true;
             window.clearInterval(intervalTimer);
