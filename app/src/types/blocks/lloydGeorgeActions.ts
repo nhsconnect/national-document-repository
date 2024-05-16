@@ -1,5 +1,5 @@
 import { REPOSITORY_ROLE } from '../generic/authRole';
-import { routeChildren } from '../generic/routes';
+import { routeChildren, routes } from '../generic/routes';
 import { LG_RECORD_STAGE } from './lloydGeorgeStages';
 
 export enum RECORD_ACTION {
@@ -7,11 +7,13 @@ export enum RECORD_ACTION {
     DOWNLOAD = 1,
 }
 
+type ActionRoute = routeChildren | routes;
+
 export type LGRecordActionLink = {
     label: string;
     key: string;
     stage?: LG_RECORD_STAGE;
-    href?: unknown;
+    href?: ActionRoute;
     onClick?: () => void;
     type: RECORD_ACTION;
     unauthorised?: Array<REPOSITORY_ROLE>;

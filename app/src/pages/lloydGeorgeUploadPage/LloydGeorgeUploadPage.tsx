@@ -205,7 +205,6 @@ function LloydGeorgeUploadPage() {
             const uploadingDocuments = documents.map((doc) => {
                 const documentMetadata = uploadSession[doc.file.name];
                 const documentReference = documentMetadata.fields.key;
-                // const documentReference = "test123"
                 return {
                     ...doc,
                     state: DOCUMENT_UPLOAD_STATE.UPLOADING,
