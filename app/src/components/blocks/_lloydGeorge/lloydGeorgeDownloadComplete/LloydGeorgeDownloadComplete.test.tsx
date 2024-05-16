@@ -1,5 +1,5 @@
 import usePatient from '../../../../helpers/hooks/usePatient';
-import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
+import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import { render, screen, waitFor } from '@testing-library/react';
 import LloydGeorgeDownloadComplete from './LloydGeorgeDownloadComplete';
 import userEvent from '@testing-library/user-event';
@@ -18,24 +18,9 @@ const numberOfFiles = 7;
 const selectedDocuments = ['test-id-1', 'test-id-2'];
 const downloadAllSelectedDocuments: Array<string> = [];
 const searchResults = [
-    {
-        fileName: '1of2_test.pdf',
-        created: '2024-01-01T14:52:00.827602Z',
-        virusScannerResult: 'Clean',
-        ID: 'test-id-1',
-    },
-    {
-        fileName: '2of2_test.pdf',
-        created: '2024-01-01T14:52:00.827602Z',
-        virusScannerResult: 'Clean',
-        ID: 'test-id-2',
-    },
-    {
-        fileName: '1of1_test.pdf',
-        created: '2024-02-01T14:52:00.827602Z',
-        virusScannerResult: 'Clean',
-        ID: 'test-id-3',
-    },
+    buildSearchResult({ fileName: '1of2_test.pdf', ID: 'test-id-1' }),
+    buildSearchResult({ fileName: '2of2_test.pdf', ID: 'test-id-2' }),
+    buildSearchResult({ fileName: '1of1_test.pdf', ID: 'test-id-3' }),
 ];
 
 describe('LloydGeorgeDownloadComplete', () => {

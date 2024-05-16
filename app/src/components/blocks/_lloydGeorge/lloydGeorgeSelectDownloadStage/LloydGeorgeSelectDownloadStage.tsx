@@ -18,6 +18,7 @@ import { isMock } from '../../../../helpers/utils/isLocal';
 import LloydGeorgeSelectSearchResults from '../lloydGeorgeSelectSearchResults/LloydGeorgeSelectSearchResults';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import LloydGeorgeDownloadStage from '../lloydGeorgeDownloadAllStage/LloydGeorgeDownloadStage';
+import { buildSearchResult } from '../../../../helpers/test/testBuilders';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
@@ -62,48 +63,8 @@ function LloydGeorgeSelectDownloadStage({
                 const error = e as AxiosError;
                 if (isMock(error)) {
                     setSearchResults([
-                        {
-                            fileName: '2of3_testy_test.pdf',
-                            created: '2024-05-07T14:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            ID: 'test-id-2',
-                        },
-                        {
-                            fileName: '1of3_testy_test.pdf',
-                            created: '2024-05-07T14:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            ID: 'test-id',
-                        },
-                        {
-                            fileName: '3of3_testy_test.pdf',
-                            created: '2024-05-07T14:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            ID: 'test-id-3',
-                        },
-                        {
-                            fileName: '2of3_earlier_creation_date.pdf',
-                            created: '2024-05-07T13:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            ID: 'earlier-test-id-2',
-                        },
-                        {
-                            fileName: '1of3_earlier_creation_date.pdf',
-                            created: '2024-05-07T13:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            ID: 'earlier-test-id',
-                        },
-                        {
-                            fileName: '3of3_earlier_creation_date.pdf',
-                            created: '2024-05-07T13:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            ID: 'earlier-test-id-3',
-                        },
-                        {
-                            fileName: '11of20_earlier_creation_date.pdf',
-                            created: '2024-05-07T13:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            ID: 'test-id-3',
-                        },
+                        buildSearchResult(),
+                        buildSearchResult({ fileName: 'fileName2.pdf', ID: '1234qwer-241ewewr-2' }),
                     ]);
                     setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
                 } else if (error.response?.status === 403) {
