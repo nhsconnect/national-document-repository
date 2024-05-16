@@ -7,17 +7,18 @@ export enum RECORD_ACTION {
     DOWNLOAD = 1,
 }
 
-export type PdfActionLink = {
+export type LGRecordActionLink = {
     label: string;
     key: string;
     stage?: LG_RECORD_STAGE;
     href?: unknown;
+    onClick?: () => void;
     type: RECORD_ACTION;
     unauthorised?: Array<REPOSITORY_ROLE>;
-    showIfRecordInRepo: boolean;
+    showIfRecordInStorage: boolean;
 };
 
-export const lloydGeorgeRecordLinks: Array<PdfActionLink> = [
+export const lloydGeorgeRecordLinksInBSOL: Array<LGRecordActionLink> = [
     {
         label: 'Remove files',
         key: 'delete-all-files-link',
@@ -25,6 +26,8 @@ export const lloydGeorgeRecordLinks: Array<PdfActionLink> = [
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
         showIfRecordInRepo: true,
         href: routeChildren.LLOYD_GEORGE_DELETE,
+        showIfRecordInStorage: true,
+
     },
     {
         label: 'Download files',
@@ -33,23 +36,69 @@ export const lloydGeorgeRecordLinks: Array<PdfActionLink> = [
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
         showIfRecordInRepo: true,
         href: routeChildren.LLOYD_GEORGE_DOWNLOAD,
+        showIfRecordInStorage: true,
     },
 ];
 
 type Args = {
     role: REPOSITORY_ROLE | null;
-    hasRecordInRepo: boolean;
+    hasRecordInStorage: boolean;
+    inputLinks: Array<LGRecordActionLink>;
 };
 
 export function getRecordActionLinksAllowedForRole({
     role,
-    hasRecordInRepo,
-}: Args): Array<PdfActionLink> {
-    const allowedLinks = lloydGeorgeRecordLinks.filter((link) => {
+    hasRecordInStorage,
+    inputLinks,
+}: Args): Array<LGRecordActionLink> {
+    const allowedLinks = inputLinks.filter((link) => {
         if (!role || link.unauthorised?.includes(role)) {
             return false;
         }
-        return hasRecordInRepo === link.showIfRecordInRepo;
+        return hasRecordInStorage === link.showIfRecordInStorage;
     });
+    return allowedLinks;
+}
+
+type ArgsInBsol = Omit<Args, 'inputLinks'>;
+
+export function getBSOLUserRecordActionLinks({
+    role,
+    hasRecordInStorage,
+}: ArgsInBsol): Array<LGRecordActionLink> {
+    const allowedLinks = getRecordActionLinksAllowedForRole({
+        role,
+        hasRecordInStorage,
+        inputLinks: lloydGeorgeRecordLinksInBSOL,
+    });
+
+    return allowedLinks;
+}
+
+type ArgsNonBsol = {
+    onClickFunctionForDownloadAndRemove: () => void;
+} & Omit<Args, 'inputLinks'>;
+
+export function getNonBSOLUserRecordActionLinks({
+    role,
+    hasRecordInStorage,
+    onClickFunctionForDownloadAndRemove,
+}: ArgsNonBsol): Array<LGRecordActionLink> {
+    const lloydGeorgeRecordLinksNonBSOL: Array<LGRecordActionLink> = [
+        {
+            label: 'Download and remove files',
+            key: 'download-and-remove-record-btn',
+            type: RECORD_ACTION.DOWNLOAD,
+            unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+            showIfRecordInStorage: true,
+            onClick: onClickFunctionForDownloadAndRemove,
+        },
+    ];
+    const allowedLinks = getRecordActionLinksAllowedForRole({
+        role,
+        hasRecordInStorage,
+        inputLinks: lloydGeorgeRecordLinksNonBSOL,
+    });
+
     return allowedLinks;
 }

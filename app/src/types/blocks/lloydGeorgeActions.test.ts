@@ -1,12 +1,13 @@
 import { REPOSITORY_ROLE } from '../generic/authRole';
 import {
-    getRecordActionLinksAllowedForRole,
-    PdfActionLink,
+    getBSOLUserRecordActionLinks,
+    getNonBSOLUserRecordActionLinks,
+    LGRecordActionLink,
     RECORD_ACTION,
 } from './lloydGeorgeActions';
 
-describe('getAllowedRecordLinks', () => {
-    describe('When role = GP_ADMIN, isBSOL = true', () => {
+describe('getBSOLUserRecordActionLinks', () => {
+    describe('When role = GP_ADMIN', () => {
         it('returns record links for remove record and download record', () => {
             const role = REPOSITORY_ROLE.GP_ADMIN;
             const hasRecordInRepo = true;
@@ -23,15 +24,21 @@ describe('getAllowedRecordLinks', () => {
                 }),
             ]);
 
-            const actual = getRecordActionLinksAllowedForRole({ role, hasRecordInRepo });
+            const actual = getBSOLUserRecordActionLinks({
+                role,
+                hasRecordInStorage: hasRecordInRepo,
+            });
 
             expect(actual).toEqual(expectedOutput);
         });
         it('returns an empty array if no record in repo (aka nothing to download or remove)', () => {
             const role = REPOSITORY_ROLE.GP_ADMIN;
             const hasRecordInRepo = false;
-            const expectedOutput: Array<PdfActionLink> = [];
-            const actual = getRecordActionLinksAllowedForRole({ role, hasRecordInRepo });
+            const expectedOutput: Array<LGRecordActionLink> = [];
+            const actual = getBSOLUserRecordActionLinks({
+                role,
+                hasRecordInStorage: hasRecordInRepo,
+            });
 
             expect(actual).toEqual(expectedOutput);
         });
@@ -41,10 +48,65 @@ describe('getAllowedRecordLinks', () => {
         it('returns an empty array in any case', () => {
             const role = REPOSITORY_ROLE.GP_CLINICAL;
 
-            expect(getRecordActionLinksAllowedForRole({ role, hasRecordInRepo: true })).toEqual([]);
-            expect(getRecordActionLinksAllowedForRole({ role, hasRecordInRepo: false })).toEqual(
+            expect(getBSOLUserRecordActionLinks({ role, hasRecordInStorage: true })).toEqual([]);
+            expect(getBSOLUserRecordActionLinks({ role, hasRecordInStorage: false })).toEqual([]);
+        });
+    });
+});
+
+describe('getNonBSOLUserRecordActionLinks', () => {
+    const mockDownloadAndRemoveOnClick = jest.fn();
+    describe('When role = GP_ADMIN', () => {
+        it('returns record links for "download and remove"', () => {
+            const role = REPOSITORY_ROLE.GP_ADMIN;
+            const hasRecordInRepo = true;
+            const expectedOutput = expect.arrayContaining([
+                expect.objectContaining({
+                    label: 'Download and remove files',
+                    key: 'download-and-remove-record-btn',
+                    type: RECORD_ACTION.DOWNLOAD,
+                    onClick: mockDownloadAndRemoveOnClick,
+                }),
+            ]);
+
+            const actual = getNonBSOLUserRecordActionLinks({
+                role,
+                hasRecordInStorage: hasRecordInRepo,
+                onClickFunctionForDownloadAndRemove: mockDownloadAndRemoveOnClick,
+            });
+
+            expect(actual).toEqual(expectedOutput);
+        });
+
+        it('returns an empty array if no record in repo (aka nothing to download or remove)', () => {
+            const role = REPOSITORY_ROLE.GP_ADMIN;
+            const hasRecordInRepo = false;
+            const expectedOutput: Array<LGRecordActionLink> = [];
+            const actual = getNonBSOLUserRecordActionLinks({
+                role,
+                hasRecordInStorage: hasRecordInRepo,
+                onClickFunctionForDownloadAndRemove: mockDownloadAndRemoveOnClick,
+            });
+
+            expect(actual).toEqual(expectedOutput);
+        });
+    });
+
+    describe('When role = GP_CLINICAL', () => {
+        const args = {
+            role: REPOSITORY_ROLE.GP_CLINICAL,
+            onClickFunctionForDownloadAndRemove: mockDownloadAndRemoveOnClick,
+        };
+        it('returns an empty array in any case', () => {
+            expect(getNonBSOLUserRecordActionLinks({ ...args, hasRecordInStorage: true })).toEqual(
                 [],
             );
+            expect(
+                getNonBSOLUserRecordActionLinks({
+                    ...args,
+                    hasRecordInStorage: false,
+                }),
+            ).toEqual([]);
         });
     });
 });

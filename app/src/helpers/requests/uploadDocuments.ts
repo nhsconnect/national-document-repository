@@ -187,6 +187,7 @@ const uploadDocuments = async ({
         throw error;
     }
 };
+
 export const updateDocumentState = async ({
     documents,
     uploadingState,

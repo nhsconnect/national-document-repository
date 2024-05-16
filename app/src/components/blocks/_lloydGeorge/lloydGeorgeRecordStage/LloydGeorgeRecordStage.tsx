@@ -23,7 +23,10 @@ import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { useForm } from 'react-hook-form';
 import { InputRef } from '../../../../types/generic/inputRef';
 import BackButton from '../../../generic/backButton/BackButton';
-import { getRecordActionLinksAllowedForRole } from '../../../../types/blocks/lloydGeorgeActions';
+import {
+    getBSOLUserRecordActionLinks,
+    getNonBSOLUserRecordActionLinks,
+} from '../../../../types/blocks/lloydGeorgeActions';
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
@@ -63,6 +66,14 @@ function LloydGeorgeRecordStage({
         required: true,
     });
 
+    const handleDownloadAndRemoveRecordButton = () => {
+        if (downloadRemoveButtonClicked) {
+            setError('confirmDownloadRemove', { type: 'custom', message: 'true' });
+        }
+        setFocus('confirmDownloadRemove');
+        setDownloadRemoveButtonClicked(true);
+    };
+
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const formattedNhsNumber = formatNhsNumber(nhsNumber);
 
@@ -71,10 +82,14 @@ function LloydGeorgeRecordStage({
     const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
     const hasRecordInStorage = downloadStage === DOWNLOAD_STAGE.SUCCEEDED;
-    const recordLinksToShow = getRecordActionLinksAllowedForRole({
-        role,
-        hasRecordInRepo: hasRecordInStorage,
-    });
+
+    const recordLinksToShow = isBSOL
+        ? getBSOLUserRecordActionLinks({ role, hasRecordInStorage })
+        : getNonBSOLUserRecordActionLinks({
+              role,
+              hasRecordInStorage,
+              onClickFunctionForDownloadAndRemove: handleDownloadAndRemoveRecordButton,
+          });
     const showMenu = recordLinksToShow.length > 0;
 
     const handleConfirmDownloadAndRemoveButton = () => {
@@ -93,11 +108,6 @@ function LloydGeorgeRecordStage({
                 lastUpdated,
                 numberOfFiles,
                 totalFileSizeInByte,
-                setStage,
-                setDownloadRemoveButtonClicked,
-                downloadRemoveButtonClicked,
-                setError,
-                setFocus,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         } else {
@@ -122,7 +132,8 @@ function LloydGeorgeRecordStage({
                 <BackLink
                     data-testid="back-link"
                     href="#"
-                    onClick={() => {
+                    onClick={(e) => {
+                        e.preventDefault();
                         setFullScreen(false);
                     }}
                 >
@@ -131,7 +142,6 @@ function LloydGeorgeRecordStage({
             ) : (
                 <BackButton />
             )}
-            <h1>Available Records</h1>
             {!fullScreen && userIsGpAdminNonBSOL && (
                 <div className="lloydgeorge_record-stage_gp-admin-non-bsol">
                     <WarningCallout
@@ -209,9 +219,10 @@ function LloydGeorgeRecordStage({
                             </InsetText>
                         )}
                     </WarningCallout>
-                    <h1>{pageHeader}</h1>
                 </div>
             )}
+
+            <h1>{pageHeader}</h1>
             <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
                 <p data-testid="patient-name">
                     {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
@@ -250,7 +261,9 @@ function LloydGeorgeRecordStage({
                     )}
                 </>
             ) : (
-                <PdfViewer fileUrl={lloydGeorgeUrl} />
+                <div className="lloydgeorge_record-stage_fs">
+                    <PdfViewer fileUrl={lloydGeorgeUrl} />
+                </div>
             )}
         </div>
     );
