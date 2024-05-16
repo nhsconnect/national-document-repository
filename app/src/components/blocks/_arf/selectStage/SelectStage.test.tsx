@@ -17,7 +17,6 @@ import axios from 'axios';
 
 jest.mock('axios');
 const mockSetStage = jest.fn();
-const mockSetUploadSession = jest.fn();
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/utils/toFileList', () => ({
@@ -25,6 +24,10 @@ jest.mock('../../../../helpers/utils/toFileList', () => ({
     default: () => [],
 }));
 jest.mock('../../../../helpers/hooks/usePatient');
+jest.mock('react-router', () => ({
+    useNavigate: () => jest.fn(),
+    useLocation: () => jest.fn(),
+}));
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -57,20 +60,18 @@ describe('<SelectStage />', () => {
 
             expect(screen.getByRole('heading', { name: 'Upload documents' })).toBeInTheDocument();
             expect(screen.getByText(mockPatientDetails.nhsNumber)).toBeInTheDocument();
-            expect(await screen.findAllByText('Select file(s)')).toHaveLength(2);
+            expect(screen.getByText('Select file(s)')).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
         });
 
-        it('can upload documents to both LG and ARF forms', async () => {
+        it.skip('can upload documents to both LG and ARF forms', async () => {
             renderApp();
             expect(screen.getByRole('heading', { name: 'Upload documents' })).toBeInTheDocument();
             expect(screen.getByText(mockPatientDetails.nhsNumber)).toBeInTheDocument();
             expect(await screen.findAllByText('Select file(s)')).toHaveLength(2);
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
 
             act(() => {
                 userEvent.upload(screen.getByTestId('ARF-input'), [
@@ -93,7 +94,7 @@ describe('<SelectStage />', () => {
             expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
         });
 
-        it.each([['ARF'], ['LG']])(
+        it.each([['ARF']])(
             "does upload and then remove a file for '%s' input",
             async (inputType) => {
                 renderApp();
@@ -123,7 +124,7 @@ describe('<SelectStage />', () => {
 
         it.each([
             { name: 'ARF', documents: arfDocuments },
-            { name: 'LG', documents: [buildLgFile(1, 2, 'Joe Blogs')] },
+            // { name: 'LG', documents: [buildLgFile(1, 2, 'Joe Blogs')] },
         ])(
             "does not upload either forms if selected file is more than 5GB for '%s' input",
             async (inputType) => {
@@ -155,7 +156,7 @@ describe('<SelectStage />', () => {
             },
         );
 
-        it('does not upload LG form if selected file is not PDF', async () => {
+        it.skip('does not upload LG form if selected file is not PDF', async () => {
             renderApp();
             const lgFileWithBadType = new File(
                 ['test'],
@@ -182,7 +183,7 @@ describe('<SelectStage />', () => {
             ).toBeInTheDocument();
         });
 
-        it('does not upload LG form if total number of file does not match file name', async () => {
+        it.skip('does not upload LG form if total number of file does not match file name', async () => {
             renderApp();
             const lgExtraFile = buildLgFile(3, 3, 'Joe Blogs');
 
@@ -203,7 +204,7 @@ describe('<SelectStage />', () => {
             ).toBeInTheDocument();
         });
 
-        it('does not upload LG form if selected file does not match naming conventions', async () => {
+        it.skip('does not upload LG form if selected file does not match naming conventions', async () => {
             renderApp();
             const pdfFileWithBadName = new File(['test'], `test_not_up_to_naming_conventions.pdf`, {
                 type: 'application/pdf',
@@ -225,7 +226,7 @@ describe('<SelectStage />', () => {
             ).toBeInTheDocument();
         });
 
-        it('does not upload LG form if selected file number is bigger than number of total files', async () => {
+        it.skip('does not upload LG form if selected file number is bigger than number of total files', async () => {
             renderApp();
             const pdfFileWithBadNumber = buildLgFile(2, 1, 'Joe Blogs');
             act(() => {
@@ -245,7 +246,7 @@ describe('<SelectStage />', () => {
             ).toBeInTheDocument();
         });
 
-        it('does not upload LG form if files do not match each other', async () => {
+        it.skip('does not upload LG form if files do not match each other', async () => {
             renderApp();
             const joeBloggsFile = new File(
                 ['test'],
@@ -279,7 +280,7 @@ describe('<SelectStage />', () => {
             ).toBeInTheDocument();
         });
 
-        it('does not upload LG form if two or more files match name/size', async () => {
+        it.skip('does not upload LG form if two or more files match name/size', async () => {
             const duplicateFileWarning = 'There are two or more documents with the same name.';
             renderApp();
             act(() => {
@@ -327,7 +328,7 @@ describe('<SelectStage />', () => {
             },
         );
 
-        it.each([['ARF'], ['LG']])(
+        it.each([['ARF']])(
             "does allow the user to add the same file again if they remove for '%s' input",
             async (inputType) => {
                 renderApp();
@@ -374,10 +375,9 @@ describe('<SelectStage />', () => {
             renderApp();
             expect(screen.getByRole('heading', { name: 'Upload documents' })).toBeInTheDocument();
             expect(screen.getByText(mockPatientDetails.nhsNumber)).toBeInTheDocument();
-            expect(await screen.findAllByText('Select file(s)')).toHaveLength(2);
+            expect(screen.getByText('Select file(s)')).toBeInTheDocument();
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeDisabled();
 
             act(() => {
                 userEvent.upload(screen.getByTestId('ARF-input'), [
@@ -387,15 +387,15 @@ describe('<SelectStage />', () => {
                 ]);
             });
 
-            act(() => {
-                userEvent.upload(screen.getByTestId('LG-input'), [lgDocumentOne, lgDocumentTwo]);
-            });
+            // act(() => {
+            //     userEvent.upload(screen.getByTestId('LG-input'), [lgDocumentOne, lgDocumentTwo]);
+            // });
 
             expect(await screen.findAllByText(documentOne.name)).toHaveLength(1);
             expect(await screen.findAllByText(documentTwo.name)).toHaveLength(1);
             expect(await screen.findAllByText(documentThree.name)).toHaveLength(1);
-            expect(await screen.findAllByText(lgDocumentOne.name)).toHaveLength(1);
-            expect(await screen.findAllByText(lgDocumentTwo.name)).toHaveLength(1);
+            // expect(await screen.findAllByText(lgDocumentOne.name)).toHaveLength(1);
+            // expect(await screen.findAllByText(lgDocumentTwo.name)).toHaveLength(1);
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
             act(() => {

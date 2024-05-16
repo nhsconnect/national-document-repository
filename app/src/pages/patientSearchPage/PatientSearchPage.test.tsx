@@ -8,6 +8,7 @@ import axios from 'axios';
 import { routes } from '../../types/generic/routes';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
+import ConfigProvider from '../../providers/configProvider/ConfigProvider';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
@@ -279,8 +280,10 @@ describe('PatientSearchPage', () => {
 const renderPatientSearchPage = () => {
     const patient: PatientDetails = buildPatientDetails();
     render(
-        <PatientDetailsProvider patientDetails={patient}>
-            <PatientSearchPage />
-        </PatientDetailsProvider>,
+        <ConfigProvider>
+            <PatientDetailsProvider patientDetails={patient}>
+                <PatientSearchPage />
+            </PatientDetailsProvider>
+        </ConfigProvider>,
     );
 };

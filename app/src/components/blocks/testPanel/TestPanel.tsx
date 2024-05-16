@@ -7,7 +7,7 @@ import TestToggle, { ToggleProps } from './TestToggle';
 
 function TestPanel() {
     const [config, setConfig] = useConfigContext();
-    const { isBsol, recordUploaded, userRole } = config.mockLocal;
+    const { isBsol, recordUploaded, userRole, patientIsActive } = config.mockLocal;
 
     const updateLocalFlag = (key: keyof LocalFlags, value: boolean | REPOSITORY_ROLE) => {
         setConfig({
@@ -56,6 +56,13 @@ function TestPanel() {
             checked: !!recordUploaded,
             onChange: () => {
                 updateLocalFlag('recordUploaded', !recordUploaded);
+            },
+        },
+        'patient-active-toggle': {
+            label: 'Patient is active (turn off to visit ARF workflow)',
+            checked: !!patientIsActive,
+            onChange: () => {
+                updateLocalFlag('patientIsActive', !patientIsActive);
             },
         },
     };
