@@ -67,7 +67,7 @@ class SearchPatientDetailsService:
             case RepositoryRole.GP_ADMIN.value:
                 # If the GP Admin ods code is null then the patient is not registered.
                 # The patient must be registered and registered to the users ODS practise
-                if gp_ods == "" or gp_ods != self.user_ods_code:
+                if gp_ods and gp_ods != self.user_ods_code:
                     raise UserNotAuthorisedException
 
             case RepositoryRole.GP_CLINICAL.value:
