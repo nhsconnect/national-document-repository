@@ -11,7 +11,7 @@ from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
-from utils.dynamo_utils import filter_expression_for_available_docs
+from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.lambda_exceptions import LGStitchServiceException
 
 
@@ -133,10 +133,10 @@ def mock_stitch_pdf(mocker):
 
 
 @pytest.fixture
-def mock_get_total_file_size(mocker):
+def mock_get_total_file_size_in_bytes(mocker):
     yield mocker.patch.object(
         LloydGeorgeStitchService,
-        "get_total_file_size",
+        "get_total_file_size_in_bytes",
         return_value=MOCK_TOTAL_FILE_SIZE,
     )
 
@@ -144,7 +144,7 @@ def mock_get_total_file_size(mocker):
 def test_stitch_lloyd_george_record_happy_path(
     mock_tempfile,
     mock_stitch_pdf,
-    mock_get_total_file_size,
+    mock_get_total_file_size_in_bytes,
     patched_stitch_service,
 ):
     expected = json.dumps(
@@ -290,7 +290,7 @@ def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_upload_stitched
 def test_get_lloyd_george_record_for_patient(
     stitch_service, mock_fetch_doc_ref_by_type
 ):
-    mock_filters = filter_expression_for_available_docs()
+    mock_filters = filter_uploaded_docs_and_recently_uploading_docs()
 
     expected = MOCK_LLOYD_GEORGE_DOCUMENT_REFS
     actual = stitch_service.get_lloyd_george_record_for_patient(TEST_NHS_NUMBER)
@@ -363,7 +363,9 @@ def test_get_total_file_size(mocker, stitch_service):
     mocker.patch("os.path.getsize", side_effect=[19000, 20000, 21000])
 
     expected = 60000
-    actual = stitch_service.get_total_file_size(["file1.pdf", "file2.pdf", "file3.pdf"])
+    actual = stitch_service.get_total_file_size_in_bytes(
+        ["file1.pdf", "file2.pdf", "file3.pdf"]
+    )
 
     assert actual == expected
 

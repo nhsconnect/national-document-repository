@@ -14,7 +14,7 @@ from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from services.pdf_stitch_service import stitch_pdf
 from utils.audit_logging_setup import LoggingService
-from utils.dynamo_utils import filter_expression_for_available_docs
+from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.exceptions import FileUploadInProgress
 from utils.filename_utils import extract_page_number
 from utils.lambda_exceptions import LGStitchServiceException
@@ -59,7 +59,7 @@ class LloydGeorgeStitchService:
             filename_for_stitched_file = os.path.basename(stitched_lg_record)
             number_of_files = len(all_lg_parts)
             last_updated = self.get_most_recent_created_date(lg_records)
-            total_file_size = self.get_total_file_size(all_lg_parts)
+            total_file_size_in_byte = self.get_total_file_size_in_bytes(all_lg_parts)
 
             presign_url = self.upload_stitched_lg_record_and_retrieve_presign_url(
                 stitched_lg_record=stitched_lg_record,
@@ -69,7 +69,7 @@ class LloydGeorgeStitchService:
                 "number_of_files": number_of_files,
                 "last_updated": last_updated,
                 "presign_url": presign_url,
-                "total_file_size_in_byte": total_file_size,
+                "total_file_size_in_byte": total_file_size_in_byte,
             }
             logger.audit_splunk_info(
                 "User has viewed Lloyd George records",
@@ -90,7 +90,7 @@ class LloydGeorgeStitchService:
         self, nhs_number: str
     ) -> list[DocumentReference]:
         try:
-            filter_expression = filter_expression_for_available_docs()
+            filter_expression = filter_uploaded_docs_and_recently_uploading_docs()
             available_docs = (
                 self.document_service.fetch_available_document_references_by_type(
                     nhs_number,
@@ -150,7 +150,6 @@ class LloydGeorgeStitchService:
         try:
             return sorted(documents, key=lambda doc: extract_page_number(doc.file_name))
         except (KeyError, ValueError) as e:
-            documents[0].nhs_number
             logger.error(
                 f"{LambdaError.StitchValidation.to_str()}: {str(e)}",
                 {"Result": "Lloyd George stitching failed"},
@@ -200,6 +199,5 @@ class LloydGeorgeStitchService:
         return max(doc.created for doc in documents)
 
     @staticmethod
-    def get_total_file_size(filepaths: list[str]) -> int:
-        # Return the sum of a list of files (unit: byte)
+    def get_total_file_size_in_bytes(filepaths: list[str]) -> int:
         return sum(os.path.getsize(filepath) for filepath in filepaths)
