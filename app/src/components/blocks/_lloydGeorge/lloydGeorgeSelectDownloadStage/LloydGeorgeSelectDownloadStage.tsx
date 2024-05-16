@@ -22,7 +22,7 @@ import { buildSearchResult } from '../../../../helpers/test/testBuilders';
 
 export type Props = {
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    deleteAfterDownload: boolean;
+    deleteAfterDownload?: boolean;
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 

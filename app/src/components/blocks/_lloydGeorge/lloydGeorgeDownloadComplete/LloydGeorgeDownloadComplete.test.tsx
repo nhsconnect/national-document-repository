@@ -1,6 +1,6 @@
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import LloydGeorgeDownloadComplete from './LloydGeorgeDownloadComplete';
 import userEvent from '@testing-library/user-event';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
