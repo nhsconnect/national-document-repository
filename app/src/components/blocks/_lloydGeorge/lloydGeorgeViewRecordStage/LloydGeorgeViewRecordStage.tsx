@@ -7,13 +7,10 @@ import {
     InsetText,
     WarningCallout,
 } from 'nhsuk-react-components';
-import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import PdfViewer from '../../../generic/pdfViewer/PdfViewer';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
-import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
-import usePatient from '../../../../helpers/hooks/usePatient';
 import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordError';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
@@ -53,10 +50,6 @@ function LloydGeorgeViewRecordStage({
 }: Props) {
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
-    const patientDetails = usePatient();
-    const dob: string = patientDetails?.birthDate
-        ? getFormattedDate(new Date(patientDetails.birthDate))
-        : '';
     const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
         reValidateMode: 'onSubmit',
     });
@@ -71,10 +64,6 @@ function LloydGeorgeViewRecordStage({
         setFocus('confirmDownloadRemove');
         setDownloadRemoveButtonClicked(true);
     };
-
-    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
-    const formattedNhsNumber = formatNhsNumber(nhsNumber);
-
     const role = useRole();
     const isBSOL = useIsBSOL();
     const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
