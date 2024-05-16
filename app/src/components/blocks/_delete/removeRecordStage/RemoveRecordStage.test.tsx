@@ -4,8 +4,12 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import axios from 'axios';
 import { act } from 'react-dom/test-utils';
+import { routes } from '../../../../types/generic/routes';
 
 jest.mock('axios');
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
@@ -107,8 +111,43 @@ describe('RemoveRecordStage', () => {
     });
 
     describe('Navigate', () => {
-        it('navigates to server error page when search 500', () => {});
+        it('navigates to server error page when search 500', async () => {
+            const recordType = 'Test Record';
+            const errorResponse = {
+                response: {
+                    status: 500,
+                    data: { message: 'Error', err_code: 'SP_1001' },
+                },
+            };
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-        it('navigates to session expired page when search 403', () => {});
+            act(() => {
+                render(<RemoveRecordStage setStage={mockSetStage} recordType={recordType} />);
+            });
+            expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
+            const mockedShortcode = '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd';
+            await waitFor(() => {
+                expect(mockUseNavigate).toBeCalledWith(routes.SERVER_ERROR + mockedShortcode);
+            });
+        });
+
+        it('navigates to session expired page when search 403', async () => {
+            const recordType = 'Test Record';
+            const errorResponse = {
+                response: {
+                    status: 403,
+                    data: { message: 'Error', err_code: 'SP_1001' },
+                },
+            };
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            act(() => {
+                render(<RemoveRecordStage setStage={mockSetStage} recordType={recordType} />);
+            });
+            expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
+            await waitFor(() => {
+                expect(mockUseNavigate).toBeCalledWith(routes.SESSION_EXPIRED);
+            });
+        });
     });
 });
