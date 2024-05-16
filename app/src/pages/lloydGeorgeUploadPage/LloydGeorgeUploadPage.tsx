@@ -22,7 +22,6 @@ import { routes, routeChildren } from '../../types/generic/routes';
 import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
-import { childRoutes } from '../../router/AppRouter';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
@@ -63,8 +62,6 @@ export const setDocument = (
         }),
     );
 };
-
-const getSubRoute = (childRoute: typeof childRoutes) => null;
 
 function LloydGeorgeUploadPage() {
     const patientDetails = usePatient();

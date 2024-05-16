@@ -1,22 +1,12 @@
-import React, {
-    Dispatch,
-    SetStateAction,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card } from 'nhsuk-react-components';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
 import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
 import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownloadComplete';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import deleteAllDocuments from '../../../../helpers/requests/deleteAllDocuments';
-import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import { useNavigate, Link, Routes, Route, Outlet } from 'react-router-dom';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
@@ -30,9 +20,7 @@ const FakeProgress = require('fake-progress');
 
 export type Props = {
     numberOfFiles: number;
-    // setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     deleteAfterDownload: boolean;
-    // setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
 type DownloadLinkAttributes = {
