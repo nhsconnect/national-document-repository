@@ -5,6 +5,8 @@ import LloydGeorgeDownloadComplete from './LloydGeorgeDownloadComplete';
 import userEvent from '@testing-library/user-event';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
+import LgDownloadComplete from './LloydGeorgeDownloadComplete';
+import React from 'react';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 
@@ -43,7 +45,7 @@ describe('LloydGeorgeDownloadComplete', () => {
             ).toBeInTheDocument();
             expect(
                 screen.getByRole('button', {
-                    name: "Return to patient's available medical records",
+                    name: 'Return to patient record',
                 }),
             ).toBeInTheDocument();
         });
@@ -83,7 +85,7 @@ describe('LloydGeorgeDownloadComplete', () => {
 
             userEvent.click(
                 screen.getByRole('button', {
-                    name: "Return to patient's available medical records",
+                    name: 'Return to patient record',
                 }),
             );
 
@@ -92,5 +94,31 @@ describe('LloydGeorgeDownloadComplete', () => {
         });
     });
 
-    describe('LloydGeorgeDownloadComplete BSOL journeys', () => {});
+    describe('LloydGeorgeDownloadComplete BSOL journeys', () => {
+        xit('renders the component', () => {
+            // render(
+            //     <LgDownloadComplete
+            //         setStage={mockSetStage}
+            //         setDownloadStage={mockSetDownloadStageStage}
+            //         deleteAfterDownload={false}
+            //         numberOfFiles={mockNumberOfFiles}
+            //         selectedDocuments={selectedDocuments}
+            //         searchResults={searchResults}
+            //     />
+            // );
+
+            expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
+            expect(
+                screen.getByText('You have successfully downloaded the Lloyd George record of:'),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByText(mockPatient.givenName + ' ' + mockPatient.familyName),
+            ).toBeInTheDocument();
+            expect(
+                screen.getByRole('button', {
+                    name: 'Return to patient record',
+                }),
+            ).toBeInTheDocument();
+        });
+    });
 });
