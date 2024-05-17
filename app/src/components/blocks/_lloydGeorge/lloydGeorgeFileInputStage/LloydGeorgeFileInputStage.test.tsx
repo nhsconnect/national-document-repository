@@ -20,7 +20,6 @@ jest.mock('react-router');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 window.scrollTo = jest.fn() as jest.Mock;
 
-const setStageMock = jest.fn();
 const submitDocumentsMock = jest.fn();
 
 const mockedUsePatient = usePatient as jest.Mock;
