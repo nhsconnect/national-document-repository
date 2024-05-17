@@ -34,24 +34,52 @@ interface Props {
 
 function SelectStage({ setDocuments, setStage, documents }: Props) {
     const [arfDocuments, setArfDocuments] = useState<Array<UploadDocument>>([]);
-    const [lgDocuments, setLgDocuments] = useState<Array<UploadDocument>>([]);
+    const [lgDocuments] = useState<Array<UploadDocument>>([]);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
     const arfInputRef = useRef<HTMLInputElement | null>(null);
+    // const lgInputRef = useRef<HTMLInputElement | null>(null);
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const mergedDocuments = [...arfDocuments, ...lgDocuments];
-    const hasFileInput = mergedDocuments.length;
+    const hasFileInput = mergedDocuments.length > 0;
 
     const { handleSubmit, control, formState, setError } = useForm();
 
+    // const lgController = useController(lloydGeorgeFormConfig(control));
     const arfController = useController(ARFFormConfig(control));
 
-    const markDocumentAsFailed = (document: UploadDocument) => {
+    const submitDocuments = async () => {
+        if (!hasFileInput) {
+            setError('arf-documents', { type: 'custom', message: 'Select a file to upload' });
+            return;
+        }
+
+        setStage(UPLOAD_STAGE.Uploading);
+        try {
+            const uploadSession = await uploadDocuments({
+                nhsNumber,
+                documents,
+                baseUrl,
+                baseHeaders,
+            });
+            const uploadingDocuments: UploadDocument[] =
+                addMetadataAndMarkDocumentAsUploading(uploadSession);
+            setDocuments(uploadingDocuments);
+
+            await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
+
+            setStage(UPLOAD_STAGE.Complete);
+        } catch (error) {
+            handleUploadError(error as AxiosError);
+        }
+    };
+
+    const markDocumentAsFailed = (failedDocument: UploadDocument) => {
         setDocuments((prevState) =>
             prevState.map((prevStateDocument) => {
-                if (prevStateDocument.id !== document.id) {
+                if (prevStateDocument.id !== failedDocument.id) {
                     return prevStateDocument;
                 }
                 return { ...prevStateDocument, state: DOCUMENT_UPLOAD_STATE.FAILED, progress: 0 };
@@ -71,53 +99,38 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
         return Promise.all(allUploadPromises);
     };
 
-    const submitDocuments = async () => {
-        if (!hasFileInput) {
-            setError('arf-documents', { type: 'custom', message: 'Select a file to upload' });
-            return;
-        }
-
-        setStage(UPLOAD_STAGE.Uploading);
-        try {
-            const uploadSession = await uploadDocuments({
-                nhsNumber,
-                documents,
-                baseUrl,
-                baseHeaders,
-            });
-            const uploadingDocuments: UploadDocument[] = documents.map((doc) => {
-                const documentMetadata = uploadSession[doc.file.name];
-                const documentReference = documentMetadata.fields.key;
-                return {
+    const handleUploadError = (error: AxiosError) => {
+        if (error.response?.status === 403) {
+            navigate(routes.SESSION_EXPIRED);
+        } else if (isMock(error)) {
+            setDocuments((prevState) =>
+                prevState.map((doc) => ({
                     ...doc,
-                    state: DOCUMENT_UPLOAD_STATE.UPLOADING,
-                    key: documentReference,
-                    ref: documentReference.split('/')[3],
-                };
-            });
-            setDocuments(uploadingDocuments);
-
-            await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
+                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                })),
+            );
             setStage(UPLOAD_STAGE.Complete);
-        } catch (e) {
-            const error = e as AxiosError;
-            if (error.response?.status === 403) {
-                navigate(routes.SESSION_EXPIRED);
-            } else if (isMock(error)) {
-                setDocuments((prevState) =>
-                    prevState.map((doc) => ({
-                        ...doc,
-                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                    })),
-                );
-                setStage(UPLOAD_STAGE.Complete);
-            }
+        } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
     };
+
+    const addMetadataAndMarkDocumentAsUploading = (uploadSession: UploadSession) => {
+        return documents.map((doc) => {
+            const documentMetadata = uploadSession[doc.file.name];
+            const documentReference = documentMetadata.fields.key;
+            return {
+                ...doc,
+                state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                key: documentReference,
+                ref: documentReference.split('/')[3],
+            };
+        });
+    };
+
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {
         const fileArray = Array.from(e.target.files ?? new FileList());
-        const documentMap: Array<UploadDocument> = fileArray.map((file) => ({
+        const newlyAddedDocuments: Array<UploadDocument> = fileArray.map((file) => ({
             id: uuidv4(),
             file,
             state: DOCUMENT_UPLOAD_STATE.SELECTED,
@@ -126,20 +139,23 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             attempts: 0,
         }));
         const isArfDoc = docType === DOCUMENT_TYPE.ARF;
-        const mergeList = isArfDoc ? lgDocuments : arfDocuments;
-        const docTypeList = isArfDoc ? arfDocuments : lgDocuments;
-        const updatedDocList = [...documentMap, ...docTypeList];
+        const unchangedDocuments = isArfDoc ? lgDocuments : arfDocuments;
+        const documentsOfSameType = isArfDoc ? arfDocuments : lgDocuments;
+        const updatedDocList = [...newlyAddedDocuments, ...documentsOfSameType];
         if (isArfDoc) {
             setArfDocuments(updatedDocList);
             arfController.field.onChange(updatedDocList);
+            // } else {
+            //     setLgDocuments(updatedDocList);
+            //     lgController.field.onChange(updatedDocList);
         }
-        const updatedFileList = [...mergeList, ...updatedDocList];
+        const updatedFileList = [...unchangedDocuments, ...updatedDocList];
         setDocuments(updatedFileList);
     };
 
     const onRemove = (index: number, docType: DOCUMENT_TYPE) => {
         const isArfDoc = docType === DOCUMENT_TYPE.ARF;
-        const mergeList = isArfDoc ? lgDocuments : arfDocuments;
+        const unchangedDocuments = isArfDoc ? lgDocuments : arfDocuments;
         const docTypeList = isArfDoc ? arfDocuments : lgDocuments;
         const updatedDocList = [...docTypeList.slice(0, index), ...docTypeList.slice(index + 1)];
         if (isArfDoc) {
@@ -148,8 +164,13 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                 arfInputRef.current.files = toFileList(updatedDocList);
                 arfController.field.onChange(updatedDocList);
             }
-
-            const updatedFileList = [...mergeList, ...updatedDocList];
+            // } else {
+            //     setLgDocuments(updatedDocList);
+            //     if (lgInputRef.current) {
+            //         lgInputRef.current.files = toFileList(updatedDocList);
+            //         lgController.field.onChange(updatedDocList);
+            //     }
+            const updatedFileList = [...unchangedDocuments, ...updatedDocList];
             setDocuments(updatedFileList);
         }
     };
@@ -179,6 +200,17 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                         formType={DOCUMENT_TYPE.ARF}
                     />
                 </Fieldset>
+                {/*<Fieldset>*/}
+                {/*    <h2>Lloyd George records</h2>*/}
+                {/*    <DocumentInputForm*/}
+                {/*        documents={lgDocuments}*/}
+                {/*        onDocumentRemove={onRemove}*/}
+                {/*        onDocumentInput={onInput}*/}
+                {/*        formController={lgController}*/}
+                {/*        inputRef={lgInputRef}*/}
+                {/*        formType={DOCUMENT_TYPE.LLOYD_GEORGE}*/}
+                {/*    />*/}
+                {/*</Fieldset>*/}
                 <Button type="submit" id="upload-button" disabled={formState.isSubmitting}>
                     Upload
                 </Button>
