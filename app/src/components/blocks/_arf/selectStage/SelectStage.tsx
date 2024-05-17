@@ -39,7 +39,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
     const arfInputRef = useRef<HTMLInputElement | null>(null);
-    // const lgInputRef = useRef<HTMLInputElement | null>(null);
+    // const lgInputRef = useRef<HTMLInputElement | null>(null);  // NO SONAR
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const mergedDocuments = [...arfDocuments, ...lgDocuments];
@@ -47,7 +47,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
 
     const { handleSubmit, control, formState, setError } = useForm();
 
-    // const lgController = useController(lloydGeorgeFormConfig(control));
+    // const lgController = useController(lloydGeorgeFormConfig(control));   // NO SONAR
     const arfController = useController(ARFFormConfig(control));
 
     const submitDocuments = async () => {

@@ -20,9 +20,12 @@ import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import uploadDocuments, { uploadDocumentToS3 } from '../../../../helpers/requests/uploadDocuments';
 import { useState } from 'react';
-// import axios from 'axios';
+import { createMemoryHistory } from 'history';
+import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
+import { routes } from '../../../../types/generic/routes';
 
-// jest.mock('axios');
+const mockedUseNavigate = jest.fn();
+
 jest.mock('../../../../helpers/requests/uploadDocuments');
 const mockSetStage = jest.fn();
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
@@ -32,8 +35,9 @@ jest.mock('../../../../helpers/utils/toFileList', () => ({
     default: () => [],
 }));
 jest.mock('../../../../helpers/hooks/usePatient');
+
 jest.mock('react-router', () => ({
-    useNavigate: () => jest.fn(),
+    useNavigate: () => mockedUseNavigate,
     useLocation: () => jest.fn(),
 }));
 const mockedUsePatient = usePatient as jest.Mock;
@@ -425,6 +429,47 @@ describe('<SelectStage />', () => {
             });
             await waitFor(() => {
                 expect(mockSetStage).toHaveBeenCalledWith(UPLOAD_STAGE.Complete);
+            });
+        });
+
+        it('navigates to session expire page when API returns 403', async () => {
+            const errorResponse = {
+                response: {
+                    status: 403,
+                    message: 'Forbidden',
+                },
+            };
+            mockUploadDocument.mockRejectedValue(errorResponse);
+
+            renderApp();
+            act(() => {
+                userEvent.upload(screen.getByTestId('ARF-input'), [documentOne]);
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
+            });
+        });
+
+        it('navigates to error page when API returns other error', async () => {
+            const errorResponse = {
+                response: {
+                    status: 502,
+                },
+            };
+            mockUploadDocument.mockRejectedValue(errorResponse);
+
+            renderApp();
+            act(() => {
+                userEvent.upload(screen.getByTestId('ARF-input'), [documentOne]);
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    expect.stringContaining('/server-error?encodedError='),
+                );
             });
         });
     });
