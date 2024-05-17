@@ -40,7 +40,9 @@ describe('LloydGeorgeUploadComplete', () => {
         expect(screen.getByText('John Doe')).toBeInTheDocument();
         expect(screen.getByText('NHS number: 900 000 0009')).toBeInTheDocument();
         expect(screen.getByText(`Date uploaded: ${dateToday}`)).toBeInTheDocument();
-        expect(screen.queryByText('View successfully uploaded documents')).not.toBeInTheDocument();
+        expect(
+            screen.queryByTestId('View successfully uploaded documents'),
+        ).not.toBeInTheDocument();
     });
 
     it('renders the successfully uploaded files section', async () => {

@@ -12,7 +12,11 @@ const DocumentsListView = ({ documentsList, ariaLabel }: Props) => {
 
     return (
         <Details open>
-            <Details.Summary aria-label={ariaLabel} onClick={() => setIsExpanded(!isExpanded)}>
+            <Details.Summary
+                aria-label={ariaLabel}
+                data-testid={ariaLabel}
+                onClick={() => setIsExpanded(!isExpanded)}
+            >
                 {isExpanded ? 'Hide files' : 'View files'}
             </Details.Summary>
             <Details.Text>
