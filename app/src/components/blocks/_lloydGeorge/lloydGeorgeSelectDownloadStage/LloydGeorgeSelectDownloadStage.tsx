@@ -17,7 +17,7 @@ import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types
 import { isMock } from '../../../../helpers/utils/isLocal';
 import LloydGeorgeSelectSearchResults from '../lloydGeorgeSelectSearchResults/LloydGeorgeSelectSearchResults';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
-import LloydGeorgeDownloadStage from '../lloydGeorgeDownloadAllStage/LloydGeorgeDownloadStage';
+import LloydGeorgeDownloadStage from '../lloydGeorgeDownloadStage/LloydGeorgeDownloadStage';
 import { buildSearchResult } from '../../../../helpers/test/testBuilders';
 
 export type Props = {

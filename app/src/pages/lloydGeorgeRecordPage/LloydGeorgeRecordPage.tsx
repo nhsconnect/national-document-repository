@@ -21,7 +21,7 @@ import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
 import LloydGeorgeSelectDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeSelectDownloadStage/LloydGeorgeSelectDownloadStage';
-import LloydGeorgeDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeDownloadAllStage/LloydGeorgeDownloadStage';
+import LloydGeorgeDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeDownloadStage/LloydGeorgeDownloadStage';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
