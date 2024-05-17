@@ -65,8 +65,7 @@ class SearchPatientDetailsService:
     def check_if_user_authorise(self, gp_ods):
         match self.user_role:
             case RepositoryRole.GP_ADMIN.value:
-                # If the GP Admin ods code is null then the patient is not registered.
-                # The patient must be registered and registered to the users ODS practise
+                # Not raising error here if gp_ods is null / empty
                 if gp_ods and gp_ods != self.user_ods_code:
                     raise UserNotAuthorisedException
 

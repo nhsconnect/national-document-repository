@@ -156,8 +156,11 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
     const onRemove = (index: number, docType: DOCUMENT_TYPE) => {
         const isArfDoc = docType === DOCUMENT_TYPE.ARF;
         const unchangedDocuments = isArfDoc ? lgDocuments : arfDocuments;
-        const docTypeList = isArfDoc ? arfDocuments : lgDocuments;
-        const updatedDocList = [...docTypeList.slice(0, index), ...docTypeList.slice(index + 1)];
+        const documentsOfSameType = isArfDoc ? arfDocuments : lgDocuments;
+        const updatedDocList = [
+            ...documentsOfSameType.slice(0, index),
+            ...documentsOfSameType.slice(index + 1),
+        ];
         if (isArfDoc) {
             setArfDocuments(updatedDocList);
             if (arfInputRef.current) {
@@ -170,9 +173,9 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             //         lgInputRef.current.files = toFileList(updatedDocList);
             //         lgController.field.onChange(updatedDocList);
             //     }
-            const updatedFileList = [...unchangedDocuments, ...updatedDocList];
-            setDocuments(updatedFileList);
         }
+        const updatedFileList = [...unchangedDocuments, ...updatedDocList];
+        setDocuments(updatedFileList);
     };
 
     return (
