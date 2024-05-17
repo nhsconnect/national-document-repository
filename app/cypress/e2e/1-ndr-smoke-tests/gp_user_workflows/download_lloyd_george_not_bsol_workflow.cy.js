@@ -10,6 +10,9 @@ const bucketName = `${workspace}-lloyd-george-store`;
 const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
 const fileName = `${activePatient}/e4a6d7f7-01f3-44be-8964-515b2c0ec180`;
 
+const patientVerifyUrl = '/patient/verify';
+const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
+
 describe('GP Workflow: View Lloyd George record', () => {
     context('Download Lloyd George document', () => {
         beforeEach(() => {
@@ -36,10 +39,10 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.get('#nhs-number-input').type(activePatient);
                 cy.get('#search-submit').click();
 
-                cy.url().should('contain', '/search/patient/verify');
+                cy.url().should('contain', patientVerifyUrl);
                 cy.get('#verify-submit').click();
 
-                cy.url().should('contain', '/patient/view/lloyd-george-record');
+                cy.url().should('contain', lloydGeorgeRecordUrl);
 
                 cy.getByTestId('pdf-viewer').should('be.visible');
 
