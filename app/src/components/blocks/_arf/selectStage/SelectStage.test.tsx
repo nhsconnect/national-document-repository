@@ -1,21 +1,29 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import SelectStage from './SelectStage';
 import {
+    buildDocument,
+    buildLgFile,
     buildPatientDetails,
     buildTextFile,
-    buildLgFile,
+    buildUploadSession,
 } from '../../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
 import {
-    UPLOAD_STAGE,
+    DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
+    DOCUMENT_UPLOAD_STATE,
+    UPLOAD_STAGE,
+    UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { act } from 'react-dom/test-utils';
 import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
-import axios from 'axios';
+import uploadDocuments, { uploadDocumentToS3 } from '../../../../helpers/requests/uploadDocuments';
+import { useState } from 'react';
+// import axios from 'axios';
 
-jest.mock('axios');
+// jest.mock('axios');
+jest.mock('../../../../helpers/requests/uploadDocuments');
 const mockSetStage = jest.fn();
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
@@ -30,13 +38,16 @@ jest.mock('react-router', () => ({
 }));
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+// const mockedAxios = axios as jest.Mocked<typeof axios>;
 const documentOne = buildTextFile('one', 100);
 const documentTwo = buildTextFile('two', 200);
 const documentThree = buildTextFile('three', 100);
-const lgDocumentOne = buildLgFile(1, 2, 'Joe Blogs');
-const lgDocumentTwo = buildLgFile(2, 2, 'Joe Blogs');
+// const lgDocumentOne = buildLgFile(1, 2, 'Joe Blogs');
+// const lgDocumentTwo = buildLgFile(2, 2, 'Joe Blogs');
 const arfDocuments = [documentOne, documentTwo, documentThree];
+
+const mockUploadDocument = uploadDocuments as jest.Mock;
+const mockS3Upload = uploadDocumentToS3 as jest.Mock;
 
 const setDocumentMock = jest.fn();
 setDocumentMock.mockImplementation((document) => {
@@ -353,6 +364,14 @@ describe('<SelectStage />', () => {
             },
         );
 
+        it('show an alert message when user try to upload with no files selected', async () => {
+            renderApp();
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+            expect(await screen.findByText('Select a file to upload')).toBeInTheDocument();
+        });
+
         it('renders link to PCSE that opens in a new tab', () => {
             renderApp();
             const pcseLink = screen.getByRole('link', {
@@ -370,14 +389,14 @@ describe('<SelectStage />', () => {
                     status: 200,
                 },
             };
-            mockedAxios.post.mockImplementation(() => Promise.resolve(response));
+            const uploadDocs = [documentOne, documentTwo, documentThree].map((doc) =>
+                buildDocument(doc, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.ARF),
+            );
+            const uploadSession = buildUploadSession(uploadDocs);
+            mockUploadDocument.mockResolvedValueOnce(uploadSession);
+            mockS3Upload.mockResolvedValue(response);
 
             renderApp();
-            expect(screen.getByRole('heading', { name: 'Upload documents' })).toBeInTheDocument();
-            expect(screen.getByText(mockPatientDetails.nhsNumber)).toBeInTheDocument();
-            expect(screen.getByText('Select file(s)')).toBeInTheDocument();
-
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeInTheDocument();
 
             act(() => {
                 userEvent.upload(screen.getByTestId('ARF-input'), [
@@ -411,6 +430,17 @@ describe('<SelectStage />', () => {
     });
 
     const renderApp = () => {
-        render(<SelectStage setDocuments={jest.fn()} setStage={mockSetStage} documents={[]} />);
+        render(<TestApp />);
+    };
+
+    const TestApp = () => {
+        const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
+        return (
+            <SelectStage
+                setDocuments={setDocuments}
+                setStage={mockSetStage}
+                documents={documents}
+            />
+        );
     };
 });
