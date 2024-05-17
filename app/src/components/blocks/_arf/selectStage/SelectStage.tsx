@@ -19,8 +19,12 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import BackButton from '../../../generic/backButton/BackButton';
-import { setDocument } from '../../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { UploadSession } from '../../../../types/generic/uploadResult';
+import { AxiosError } from 'axios';
+import { routes } from '../../../../types/generic/routes';
+import { errorToParams } from '../../../../helpers/utils/errorToParams';
+import { isMock } from '../../../../helpers/utils/isLocal';
+import { useNavigate } from 'react-router';
 
 interface Props {
     setDocuments: SetUploadDocuments;
@@ -33,6 +37,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
     const [lgDocuments, setLgDocuments] = useState<Array<UploadDocument>>([]);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
+    const navigate = useNavigate();
     const arfInputRef = useRef<HTMLInputElement | null>(null);
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
@@ -93,8 +98,22 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             setDocuments(uploadingDocuments);
 
             await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
-        } catch (e) {}
-        setStage(UPLOAD_STAGE.Complete);
+            setStage(UPLOAD_STAGE.Complete);
+        } catch (e) {
+            const error = e as AxiosError;
+            if (error.response?.status === 403) {
+                navigate(routes.SESSION_EXPIRED);
+            } else if (isMock(error)) {
+                setDocuments((prevState) =>
+                    prevState.map((doc) => ({
+                        ...doc,
+                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                    })),
+                );
+                setStage(UPLOAD_STAGE.Complete);
+            }
+            navigate(routes.SERVER_ERROR + errorToParams(error));
+        }
     };
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {
         const fileArray = Array.from(e.target.files ?? new FileList());
