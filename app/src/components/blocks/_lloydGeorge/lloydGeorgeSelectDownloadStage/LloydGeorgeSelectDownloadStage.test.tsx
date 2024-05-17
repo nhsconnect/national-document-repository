@@ -1,16 +1,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
-import {
-    buildLgSearchResult,
-    buildPatientDetails,
-    buildSearchResult,
-} from '../../../../helpers/test/testBuilders';
+import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import LloydGeorgeSelectDownloadStage from './LloydGeorgeSelectDownloadStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
-import LloydGeorgeRecordPage from '../../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import { LinkProps } from 'react-router-dom';
 import axios from 'axios';
-import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
+import { act } from 'react-dom/test-utils';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
@@ -18,7 +14,13 @@ jest.mock('axios');
 jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
 }));
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    Link: (props: LinkProps) => <a {...props} role="link" />,
+    useNavigate: () => mockNavigate,
+}));
 
+const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockSetStage = jest.fn();
 const mockSetDownloadStage = jest.fn();
 const mockPatient = buildPatientDetails();
@@ -26,7 +28,7 @@ const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 const mockSetSearchResults = jest.fn();
 const mockSetSubmissionSearchState = jest.fn();
-const mockAxios = axios as jest.Mocked<typeof axios>;
+
 const searchResults = [
     buildSearchResult({ fileName: '1of2_test.pdf', ID: 'test-id-1' }),
     buildSearchResult({ fileName: '2of2_test.pdf', ID: 'test-id-2' }),
@@ -42,19 +44,22 @@ describe('LloydGeorgeSelectDownloadStage', () => {
         jest.clearAllMocks();
     });
 
-    it('renders the page header, patient details and loading text', () => {
-        render(
-            <LloydGeorgeSelectDownloadStage
-                setStage={mockSetStage}
-                setDownloadStage={mockSetDownloadStage}
-            />,
-        );
+    it('renders the page header, patient details and loading text on page load', () => {
+        act(() => {
+            render(
+                <LloydGeorgeSelectDownloadStage
+                    setStage={mockSetStage}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
+        });
 
         expect(
             screen.getByRole('heading', {
                 name: 'Download the Lloyd George record for this patient',
             }),
         ).toBeInTheDocument();
+
         expect(screen.getByText('NHS number')).toBeInTheDocument();
         expect(screen.getByText(`${mockPatient.nhsNumber}`)).toBeInTheDocument();
         expect(screen.getByText('Surname')).toBeInTheDocument();
@@ -69,24 +74,27 @@ describe('LloydGeorgeSelectDownloadStage', () => {
         expect(screen.getByText(`${mockPatient.postalCode}`)).toBeInTheDocument();
 
         expect(screen.getByText('Loading...')).toBeInTheDocument();
+        expect(screen.queryByTestId('available-files-table-title')).not.toBeInTheDocument();
     });
 
-    it('renders initial lg record view with file info when LG record is returned by search', async () => {
-        // mockAxios.get.mockImplementation(() => Promise.resolve());
-        // mockAxios.get.mockReturnValue(Promise.resolve({data: searchResults}));
-        render(
-            <LloydGeorgeSelectDownloadStage
-                setStage={mockSetStage}
-                setDownloadStage={mockSetDownloadStage}
-            />,
-        );
-        await waitFor(async () => {
-            expect(
-                screen.getByText('Download the Lloyd George record for this patient'),
-            ).toBeInTheDocument();
+    it('calls set search results and set submission search state when axios get request is successful', async () => {
+        mockAxios.get.mockReturnValue(Promise.resolve({ data: searchResults }));
+
+        act(() => {
+            render(
+                <LloydGeorgeSelectDownloadStage
+                    setStage={mockSetStage}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
         });
 
-        // expect(mockSetSearchResults).toBeCalled();
-        // expect(mockSetSubmissionSearchState).toBeCalledWith(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
+        await waitFor(async () => {
+            expect(screen.getByTestId('available-files-table-title')).toBeInTheDocument();
+        });
+        expect(screen.getByTestId('search-result-0')).toBeInTheDocument();
+        expect(screen.getByTestId('download-selected-files-btn')).toBeInTheDocument();
+        expect(screen.getByTestId('download-all-files-btn')).toBeInTheDocument();
+        expect(screen.getByTestId('start-again-link')).toBeInTheDocument();
     });
 });

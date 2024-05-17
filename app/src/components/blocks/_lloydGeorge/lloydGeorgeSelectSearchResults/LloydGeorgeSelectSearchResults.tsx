@@ -91,7 +91,7 @@ const LloydGeorgeSelectSearchResults = ({
                     {orderedResults.map((result, index) => (
                         <Table.Row
                             className={'available-files-row'}
-                            id={'available-files-row-' + index}
+                            id={`search-result-${index}`}
                             key={`document-${result.fileName + result.created}`}
                             data-testid={`search-result-${index}`}
                         >
