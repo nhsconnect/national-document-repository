@@ -7,6 +7,8 @@ import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { LinkProps } from 'react-router-dom';
 import axios from 'axios';
 import { act } from 'react-dom/test-utils';
+import LloydGeorgeRecordPage from '../../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
+import { routes } from '../../../../types/generic/routes';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
@@ -96,5 +98,28 @@ describe('LloydGeorgeSelectDownloadStage', () => {
         expect(screen.getByTestId('download-selected-files-btn')).toBeInTheDocument();
         expect(screen.getByTestId('download-all-files-btn')).toBeInTheDocument();
         expect(screen.getByTestId('start-again-link')).toBeInTheDocument();
+    });
+
+    it('navigates to session expired page when get request returns 403', async () => {
+        const errorResponse = {
+            response: {
+                status: 403,
+                data: { message: 'Unauthorised' },
+            },
+        };
+        mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+        act(() => {
+            render(
+                <LloydGeorgeSelectDownloadStage
+                    setStage={mockSetStage}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
+        });
+
+        await waitFor(() => {
+            expect(mockNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
+        });
     });
 });
