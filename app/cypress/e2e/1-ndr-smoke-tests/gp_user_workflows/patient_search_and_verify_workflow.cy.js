@@ -10,8 +10,8 @@ describe('GP Workflow: Patient search and verify', () => {
     const activePatient =
         workspace === 'ndr-dev' ? pdsPatients.activeUpload : stubPatients.activeUpload;
     const homeUrl = '/home';
-    const verifyPatientUrl = '/search/patient/verify';
-    const lloydGeorgeUrl = '/patient/view/lloyd-george-record';
+    const patientVerifyUrl = '/patient/verify';
+    const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
 
     gpRoles.forEach((role) => {
         it(
@@ -30,10 +30,10 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#nhs-number-input').type(activePatient);
                 cy.get('#search-submit').click();
 
-                cy.url({ timeout: 20000 }).should('eq', baseUrl + verifyPatientUrl);
+                cy.url({ timeout: 20000 }).should('eq', baseUrl + patientVerifyUrl);
                 cy.get('#verify-submit').click();
 
-                cy.url({ timeout: 10000 }).should('eq', baseUrl + lloydGeorgeUrl);
+                cy.url({ timeout: 10000 }).should('eq', baseUrl + lloydGeorgeRecordUrl);
             },
         );
     });
