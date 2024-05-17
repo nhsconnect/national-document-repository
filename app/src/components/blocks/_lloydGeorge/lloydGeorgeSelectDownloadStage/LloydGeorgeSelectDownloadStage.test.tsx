@@ -83,7 +83,7 @@ describe('LloydGeorgeSelectDownloadStage', () => {
         expect(screen.queryByTestId('available-files-table-title')).not.toBeInTheDocument();
     });
 
-    it('calls set search results and set submission search state when axios get request is successful', async () => {
+    it('renders list of files in record when axios get request is successful', async () => {
         mockAxios.get.mockReturnValue(Promise.resolve({ data: searchResults }));
 
         act(() => {
