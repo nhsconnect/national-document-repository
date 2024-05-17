@@ -7,9 +7,7 @@ import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { LinkProps } from 'react-router-dom';
 import axios from 'axios';
 import { act } from 'react-dom/test-utils';
-import LloydGeorgeRecordPage from '../../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { routes } from '../../../../types/generic/routes';
-import { errorToParams } from '../../../../helpers/utils/errorToParams';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
