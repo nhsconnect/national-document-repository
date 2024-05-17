@@ -48,9 +48,8 @@ class NHSDocumentReference:
 
         if self.sub_folder != "":
             file_location += f"/{self.sub_folder}"
-
-        if self.doc_type != "":
-            file_location += f"/{self.doc_type}"
+            if self.doc_type != "":
+                file_location += f"/{self.doc_type}"
 
         file_location += f"/{self.s3_file_key}"
         return file_location
