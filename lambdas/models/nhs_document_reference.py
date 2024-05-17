@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from pydantic import BaseModel
+from utils.utilities import get_file_key_from_s3_url
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
@@ -85,7 +86,7 @@ class NHSDocumentReference:
 
     @property
     def s3_file_key(self):
-        return f"{self.nhs_number}/{self.id}"
+        return get_file_key_from_s3_url(self.file_location)
 
     def __eq__(self, other):
         if isinstance(other, NHSDocumentReference):

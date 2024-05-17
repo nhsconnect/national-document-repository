@@ -182,14 +182,7 @@ class CreateDocumentReferenceService:
     def prepare_pre_signed_url(self, document_reference: NHSDocumentReference):
         try:
             s3_response = self.s3_service.create_upload_presigned_url(
-                document_reference.s3_bucket_name,
-                self.upload_sub_folder
-                + "/"
-                + document_reference.doc_type
-                + "/"
-                + document_reference.nhs_number
-                + "/"
-                + document_reference.id,
+                document_reference.s3_bucket_name, document_reference.s3_file_key
             )
 
             return s3_response
