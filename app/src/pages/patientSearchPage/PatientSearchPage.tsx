@@ -66,6 +66,7 @@ function PatientSearchPage() {
             handleSuccess(patientDetails);
         } catch (e) {
             const error = e as AxiosError;
+            /* istanbul ignore if */
             if (isMock(error)) {
                 handleSuccess(
                     buildPatientDetails({ nhsNumber, active: mockLocal.patientIsActive }),
