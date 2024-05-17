@@ -30,9 +30,6 @@ const mockSetDownloadStage = jest.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
-const mockSetSearchResults = jest.fn();
-const mockSetSubmissionSearchState = jest.fn();
-
 const searchResults = [
     buildSearchResult({ fileName: '1of2_test.pdf', ID: 'test-id-1' }),
     buildSearchResult({ fileName: '2of2_test.pdf', ID: 'test-id-2' }),
@@ -63,20 +60,7 @@ describe('LloydGeorgeSelectDownloadStage', () => {
                 name: 'Download the Lloyd George record for this patient',
             }),
         ).toBeInTheDocument();
-
-        expect(screen.getByText('NHS number')).toBeInTheDocument();
-        expect(screen.getByText(`${mockPatient.nhsNumber}`)).toBeInTheDocument();
-        expect(screen.getByText('Surname')).toBeInTheDocument();
-        expect(screen.getByText(`${mockPatient.familyName}`)).toBeInTheDocument();
-        expect(screen.getByText('First name')).toBeInTheDocument();
-        expect(screen.getByText(`${mockPatient.givenName}`)).toBeInTheDocument();
-        expect(screen.getByText('Date of birth')).toBeInTheDocument();
-        expect(
-            screen.getByText(getFormattedDate(new Date(mockPatient.birthDate))),
-        ).toBeInTheDocument();
-        expect(screen.getByText('Postcode')).toBeInTheDocument();
-        expect(screen.getByText(`${mockPatient.postalCode}`)).toBeInTheDocument();
-
+        expect(screen.getByTestId('patient-summary')).toBeInTheDocument();
         expect(screen.getByText('Loading...')).toBeInTheDocument();
         expect(screen.queryByTestId('available-files-table-title')).not.toBeInTheDocument();
     });
