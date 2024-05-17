@@ -9,6 +9,7 @@ import axios from 'axios';
 import { act } from 'react-dom/test-utils';
 import LloydGeorgeRecordPage from '../../../../pages/lloydGeorgeRecordPage/LloydGeorgeRecordPage';
 import { routes } from '../../../../types/generic/routes';
+import { errorToParams } from '../../../../helpers/utils/errorToParams';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
@@ -21,6 +22,9 @@ jest.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
 }));
+jest.mock('moment', () => {
+    return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
+});
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockSetStage = jest.fn();
@@ -120,6 +124,31 @@ describe('LloydGeorgeSelectDownloadStage', () => {
 
         await waitFor(() => {
             expect(mockNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
+        });
+    });
+
+    it('navigates to server error page when get request returns 5XX', async () => {
+        const errorResponse = {
+            response: {
+                status: 500,
+                data: { message: 'Server error', err_code: 'SP_1001' },
+            },
+        };
+        mockAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+        act(() => {
+            render(
+                <LloydGeorgeSelectDownloadStage
+                    setStage={mockSetStage}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
+        });
+
+        await waitFor(() => {
+            expect(mockNavigate).toHaveBeenCalledWith(
+                routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+            );
         });
     });
 });
