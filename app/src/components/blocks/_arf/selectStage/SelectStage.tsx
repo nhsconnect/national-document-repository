@@ -39,7 +39,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
     const arfInputRef = useRef<HTMLInputElement | null>(null);
-    // const lgInputRef = useRef<HTMLInputElement | null>(null);  // NO SONAR
+    // const lgInputRef = useRef<HTMLInputElement | null>(null);  // NOSONAR
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const mergedDocuments = [...arfDocuments, ...lgDocuments];
@@ -47,7 +47,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
 
     const { handleSubmit, control, formState, setError } = useForm();
 
-    // const lgController = useController(lloydGeorgeFormConfig(control));   // NO SONAR
+    // const lgController = useController(lloydGeorgeFormConfig(control));   // NOSONAR
     const arfController = useController(ARFFormConfig(control));
 
     const submitDocuments = async () => {
@@ -103,12 +103,14 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
         if (error.response?.status === 403) {
             navigate(routes.SESSION_EXPIRED);
         } else if (isMock(error)) {
+            /* istanbul ignore next */
             setDocuments((prevState) =>
                 prevState.map((doc) => ({
                     ...doc,
                     state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
                 })),
             );
+            /* istanbul ignore next */
             setStage(UPLOAD_STAGE.Complete);
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));

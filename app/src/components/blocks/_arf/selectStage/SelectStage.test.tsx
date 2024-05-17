@@ -20,8 +20,6 @@ import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import uploadDocuments, { uploadDocumentToS3 } from '../../../../helpers/requests/uploadDocuments';
 import { useState } from 'react';
-import { createMemoryHistory } from 'history';
-import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import { routes } from '../../../../types/generic/routes';
 
 const mockedUseNavigate = jest.fn();
