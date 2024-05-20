@@ -17,6 +17,7 @@ import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { LinkProps } from 'react-router-dom';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
@@ -128,6 +129,7 @@ describe('LloydGeorgeViewRecordStage', () => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
     });
+
     describe('User is GP admin and non BSOL', () => {
         const renderComponentForNonBSOLGPAdmin = () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
@@ -292,6 +294,40 @@ describe('LloydGeorgeViewRecordStage', () => {
                 ).not.toBeInTheDocument();
             });
         });
+
+        describe('Accessibility (non BSOL)', () => {
+            it('pass accessibility checks at page entry point', async () => {
+                renderComponentForNonBSOLGPAdmin();
+
+                const results = await runAxeTest(document.body);
+                expect(results).toHaveNoViolations();
+            });
+
+            it('pass accessibility checks when Download & Remove confirmation message is showing up', async () => {
+                renderComponentForNonBSOLGPAdmin();
+                await showConfirmationMessage();
+
+                const results = await runAxeTest(document.body);
+                expect(results).toHaveNoViolations();
+            });
+
+            it('pass accessibility checks when error box is showing up', async () => {
+                renderComponentForNonBSOLGPAdmin();
+                await showConfirmationMessage();
+                const confirmButton = await screen.findByRole('button', {
+                    name: 'Yes, download and remove',
+                });
+                act(() => {
+                    userEvent.click(confirmButton);
+                });
+                await screen.findByText(
+                    'You must confirm if you want to download and remove this record',
+                );
+
+                const results = await runAxeTest(document.body);
+                expect(results).toHaveNoViolations();
+            });
+        });
     });
 
     it('does not render warning callout or button when user is GP admin and BSOL', async () => {
@@ -328,6 +364,42 @@ describe('LloydGeorgeViewRecordStage', () => {
         expect(
             screen.queryByRole('button', { name: 'Download and remove files' }),
         ).not.toBeInTheDocument();
+    });
+
+    describe('Accessibility (in BSOL)', () => {
+        it('pass accessibility checks when no LG record are displayed', async () => {
+            renderComponent({
+                downloadStage: DOWNLOAD_STAGE.NO_RECORDS,
+            });
+
+            expect(await screen.findByText(/No documents are available/)).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when displaying LG record', async () => {
+            renderComponent();
+
+            expect(await screen.findByTitle('Embedded PDF')).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks in full screen mode', async () => {
+            renderComponent();
+            const fullScreenButton = await screen.findByRole('button', {
+                name: 'View in full screen',
+            });
+            act(() => {
+                userEvent.click(fullScreenButton);
+            });
+            expect(screen.getByText('Exit full screen')).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
     });
 });
 const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {

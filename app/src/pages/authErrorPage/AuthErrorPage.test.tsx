@@ -1,6 +1,8 @@
 import { render, screen } from '@testing-library/react';
 import AuthErrorPage from './AuthErrorPage';
 import { LinkProps } from 'react-router-dom';
+import FeedbackPage from '../feedbackPage/FeedbackPage';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 jest.mock('react-router-dom', () => ({
     __esModule: true,
@@ -10,5 +12,12 @@ describe('AuthErrorPage', () => {
     it('renders unauthorised message', () => {
         render(<AuthErrorPage />);
         expect(screen.getByText('You have been logged out')).toBeInTheDocument();
+    });
+
+    it('pass accessibility checks', async () => {
+        render(<AuthErrorPage />);
+        const results = await runAxeTest(document.body);
+
+        expect(results).toHaveNoViolations();
     });
 });

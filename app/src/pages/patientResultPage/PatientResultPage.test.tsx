@@ -7,6 +7,7 @@ import { act } from 'react-dom/test-utils';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
@@ -174,6 +175,54 @@ describe('PatientResultPage', () => {
                     'Certain details about this patient cannot be displayed without the necessary access.',
                 ),
             ).toBeInTheDocument();
+        });
+    });
+
+    describe('Accessibility', () => {
+        it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL, REPOSITORY_ROLE.PCSE])(
+            'pass accessibility checks, role: %s',
+            async (role) => {
+                const nhsNumber = '9000000000';
+                const patientDetails = buildPatientDetails({ nhsNumber });
+
+                mockedUseRole.mockReturnValue(role);
+                mockedUsePatient.mockReturnValue(patientDetails);
+
+                render(<PatientResultPage />);
+
+                expect(
+                    screen.getByRole('heading', { name: 'Verify patient details' }),
+                ).toBeInTheDocument();
+
+                const results = await runAxeTest(document.body);
+                expect(results).toHaveNoViolations();
+            },
+        );
+
+        it('pass accessibility checks when displaying superseded patient', async () => {
+            const nhsNumber = '9000000012';
+            const patientDetails = buildPatientDetails({ superseded: true, nhsNumber });
+            mockedUsePatient.mockReturnValue(patientDetails);
+
+            render(<PatientResultPage />);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when displaying sensitive patient', async () => {
+            const nhsNumber = '9124038456';
+            const patientDetails = buildPatientDetails({
+                nhsNumber,
+                postalCode: null,
+                restricted: true,
+            });
+            mockedUsePatient.mockReturnValue(patientDetails);
+
+            render(<PatientResultPage />);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 

@@ -3,6 +3,8 @@ import { act } from 'react-dom/test-utils';
 import SessionExpiredErrorPage from './SessionExpiredErrorPage';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { endpoints } from '../../types/generic/endpoints';
+import UploadDocumentsPage from '../uploadDocumentsPage/UploadDocumentsPage';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 
@@ -29,6 +31,13 @@ describe('SessionExpiredErrorPage', () => {
                 "This is to protect your information. You'll need to enter any information you submitted again.",
             ),
         ).toBeInTheDocument();
+    });
+
+    it('pass accessibility checks', async () => {
+        render(<SessionExpiredErrorPage />);
+        const results = await runAxeTest(document.body);
+
+        expect(results).toHaveNoViolations();
     });
 
     it('move to login endpoint when user click the button', async () => {

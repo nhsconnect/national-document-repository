@@ -1,6 +1,6 @@
-import useTitle from '../../../../helpers/hooks/useTitle';
+import useTitle from '../../helpers/hooks/useTitle';
 
-function FeedbackConfirmation() {
+function FeedbackConfirmationPage() {
     const pageHeader = 'We’ve received your feedback';
     useTitle({ pageTitle: 'Feedback sent' });
     return (
@@ -12,4 +12,4 @@ function FeedbackConfirmation() {
     );
 }
 
-export default FeedbackConfirmation;
+export default FeedbackConfirmationPage;

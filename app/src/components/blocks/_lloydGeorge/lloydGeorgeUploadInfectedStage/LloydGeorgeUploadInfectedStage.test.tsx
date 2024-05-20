@@ -7,6 +7,7 @@ import {
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 const restartJourneyMock = jest.fn();
@@ -61,6 +62,19 @@ describe('LloydGeorgeUploadInfectedStage', () => {
             expect(
                 screen.getByRole('button', { name: 'Search for a patient' }),
             ).toBeInTheDocument();
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks', async () => {
+            render(
+                <LloydGeorgeUploadInfectedStage
+                    documents={[uploadDocument]}
+                    restartUpload={restartJourneyMock}
+                />,
+            );
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 

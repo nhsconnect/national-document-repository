@@ -3,6 +3,7 @@ import ServerErrorPage from './ServerErrorPage';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { unixTimestamp } from '../../helpers/utils/createTimestamp';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 
@@ -105,6 +106,16 @@ describe('ServerErrorPage', () => {
             expect(screen.getByText('There was an unexplained error')).toBeInTheDocument();
             expect(screen.getByText(mockInteractionId)).toBeInTheDocument();
             expect(screen.queryByText(mockErrorCode)).not.toBeInTheDocument();
+        });
+
+        it('pass accessibility checks', async () => {
+            const mockEncoded = btoa(JSON.stringify(['mockErrorCode', 'mockInteractionid']));
+            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
+
+            render(<ServerErrorPage />);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 

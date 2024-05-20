@@ -83,15 +83,6 @@ def joe_bloggs_event():
     return api_gateway_proxy_event
 
 
-@pytest.fixture
-def mock_get_total_file_size(mocker):
-    yield mocker.patch.object(
-        LloydGeorgeStitchService,
-        "get_total_file_size",
-        return_value=MOCK_TOTAL_FILE_SIZE,
-    )
-
-
 def test_lambda_handler_respond_with_200_and_presign_url(
     valid_id_event_without_auth_header, context, set_env, mock_stitch_service
 ):
