@@ -170,7 +170,10 @@ function LloydGeorgeDownloadStage({
 
     return inProgress ? (
         <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
-            <div className="lloydgeorge_downloadall-stage_header">
+            <div
+                className="lloydgeorge_downloadall-stage_header"
+                data-testid="lloyd-george-download-header"
+            >
                 <h1>{pageHeader}</h1>
                 <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
                 <h4>NHS number: {patientDetails?.nhsNumber}</h4>
@@ -179,7 +182,7 @@ function LloydGeorgeDownloadStage({
             </div>
 
             <Card className="lloydgeorge_downloadall-stage_details">
-                <Card.Content>
+                <Card.Content data-testid="lloyd-george-download-card-content">
                     <strong>
                         <p>Compressing record into a zip file</p>
                     </strong>
@@ -206,6 +209,7 @@ function LloydGeorgeDownloadStage({
                                     handlePageExit();
                                     setStage(LG_RECORD_STAGE.RECORD);
                                 }}
+                                data-testid="cancel-download-link"
                             >
                                 Cancel
                             </Link>

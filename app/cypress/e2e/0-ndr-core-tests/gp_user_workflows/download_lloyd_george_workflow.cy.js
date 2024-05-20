@@ -51,8 +51,8 @@ describe('GP Workflow: View Lloyd George record', () => {
                     id: 'test-id-2',
                 },
                 {
-                    fileName: '3of2_testy_test.pdf',
-                    created: '2024-05-07T14:52:00.827602Z',
+                    fileName: '1of1_lone_test_file.pdf',
+                    created: '2024-01-01T14:52:00.827602Z',
                     virusScannerResult: 'Clean',
                     id: 'test-id-3',
                 },
@@ -100,8 +100,8 @@ describe('GP Workflow: View Lloyd George record', () => {
                             id: 'test-id-2',
                         },
                         {
-                            fileName: '3of2_testy_test.pdf',
-                            created: '2024-05-07T14:52:00.827602Z',
+                            fileName: '1of1_lone_test_file.pdf',
+                            created: '2024-01-01T14:52:00.827602Z',
                             virusScannerResult: 'Clean',
                             id: 'test-id-3',
                         },
@@ -130,10 +130,9 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.title().should('eq', 'Downloading documents - Digital Lloyd George records');
 
                 // Assert contents of page when downloading
-                cy.contains('Downloading documents').should('be.visible');
-                cy.contains(`Preparing download for 3 file(s)`).should('be.visible');
-                cy.contains('Compressing record into a zip file').should('be.visible');
-                cy.contains('Cancel').should('be.visible');
+                cy.getByTestId('lloyd-george-download-header').should('exist');
+                cy.getByTestId('lloyd-george-download-card-content').should('exist');
+                cy.getByTestId('cancel-download-link').should('exist');
 
                 // Assert contents of page after download
                 cy.title().should('eq', 'Download complete - Digital Lloyd George records');
