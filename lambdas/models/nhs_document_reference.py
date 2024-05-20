@@ -45,10 +45,17 @@ class NHSDocumentReference:
         self.last_updated = int(date_now.timestamp())
 
     def set_file_location(self):
+        file_location = f"s3://{self.s3_bucket_name}"
+
         if self.sub_folder != "":
-            return f"s3://{self.s3_bucket_name}/{self.sub_folder}/{self.doc_type}/{self.nhs_number}/{self.id}"
-        else:
-            return f"s3://{self.s3_bucket_name}/{self.nhs_number}/{self.id}"
+            file_location += f"/{self.sub_folder}"
+
+        if self.sub_folder and self.doc_type != "":
+            file_location += f"/{self.doc_type}"
+
+        file_location += f"/{self.nhs_number}/{self.id}"
+
+        return file_location
 
     def set_deleted(self) -> None:
         self.deleted = datetime.now(timezone.utc).strftime(DATE_FORMAT)
