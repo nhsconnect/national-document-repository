@@ -69,10 +69,8 @@ function LloydGeorgeSelectDownloadStage({
                     setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
                 } else if (error.response?.status === 403) {
                     navigate(routes.SESSION_EXPIRED);
-                } else if (error.response?.status && error.response?.status >= 500) {
-                    navigate(routes.SERVER_ERROR + errorToParams(error));
                 } else {
-                    setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_FAILED);
+                    navigate(routes.SERVER_ERROR + errorToParams(error));
                 }
             }
         };
