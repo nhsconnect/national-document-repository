@@ -257,7 +257,9 @@ describe('PCSE Workflow: Access and download found files', () => {
 
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                cy.getByTestId('remove-btn').click();
+                cy.get('#delete-docs').should('be.visible');
+                cy.get('#yes-radio-button').click();
+                cy.getByTestId('delete-submit-btn').click();
 
                 cy.wait('@documentDelete');
 
@@ -279,7 +281,9 @@ describe('PCSE Workflow: Access and download found files', () => {
             () => {
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                cy.getByTestId('start-again-btn').click();
+                cy.get('#delete-docs').should('be.visible');
+                cy.get('#no-radio-button').click();
+                cy.getByTestId('delete-submit-btn').click();
 
                 // assert user is returned to download documents page
                 cy.contains('Download electronic health records and attachments').should(
@@ -303,7 +307,9 @@ describe('PCSE Workflow: Access and download found files', () => {
 
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                cy.getByTestId('remove-btn').click();
+                cy.get('#delete-docs').should('be.visible');
+                cy.get('#yes-radio-button').click();
+                cy.getByTestId('delete-submit-btn').click();
 
                 // assert
                 cy.contains('Sorry, there is a problem with the service').should('be.visible');
@@ -325,7 +331,9 @@ describe('PCSE Workflow: Access and download found files', () => {
 
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                cy.getByTestId('remove-btn').click();
+                cy.get('#delete-docs').should('be.visible');
+                cy.get('#yes-radio-button').click();
+                cy.getByTestId('delete-submit-btn').click();
 
                 // assert
                 cy.contains('Sorry, there is a problem with the service').should('be.visible');

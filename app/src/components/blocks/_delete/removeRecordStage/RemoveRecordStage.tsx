@@ -97,7 +97,7 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
             <h1>Remove this {recordType}</h1>
             <WarningCallout>
                 <WarningCallout.Label>Before removing</WarningCallout.Label>
-                <p>
+                <p data-testid="remove-record-warning-text">
                     Only permanently remove this patient record if you have a valid reason to. For
                     example, you confirmed these files have reached the end of their retention
                     period.
