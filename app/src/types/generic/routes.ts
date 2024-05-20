@@ -13,6 +13,7 @@ export enum routes {
     PRIVACY_POLICY = '/privacy-policy',
     LOGOUT = '/logout',
     FEEDBACK = '/feedback',
+    FEEDBACK_CONFIRMATION = '/feedback/confirmation',
     SEARCH_PATIENT = '/search/patient',
     VERIFY_PATIENT = '/search/patient/verify',
     LLOYD_GEORGE = '/patient/view/lloyd-george-record',

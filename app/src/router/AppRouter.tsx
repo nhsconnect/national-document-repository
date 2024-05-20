@@ -24,6 +24,7 @@ import ServerErrorPage from '../pages/serverErrorPage/ServerErrorPage';
 import PrivacyPage from '../pages/privacyPage/PrivacyPage';
 import LloydGeorgeUploadPage from '../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import SessionExpiredErrorPage from '../pages/sessionExpiredErrorPage/SessionExpiredErrorPage';
+import FeedbackConfirmationPage from '../pages/feedbackConfirmationPage/FeedbackConfirmationPage';
 
 const {
     START,
@@ -36,6 +37,7 @@ const {
     SERVER_ERROR,
     SESSION_EXPIRED,
     FEEDBACK,
+    FEEDBACK_CONFIRMATION,
     LOGOUT,
     SEARCH_PATIENT,
     VERIFY_PATIENT,
@@ -104,6 +106,10 @@ export const routeMap: Routes = {
     },
     [FEEDBACK]: {
         page: <FeedbackPage />,
+        type: ROUTE_TYPE.PRIVATE,
+    },
+    [FEEDBACK_CONFIRMATION]: {
+        page: <FeedbackConfirmationPage />,
         type: ROUTE_TYPE.PRIVATE,
     },
     // App guard routes
