@@ -6,6 +6,7 @@ import DocumentSearchResultsOptions from './DocumentSearchResultsOptions';
 import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import { routes } from '../../../../types/generic/routes';
 import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
@@ -132,6 +133,23 @@ describe('DocumentSearchResultsOptions', () => {
             await waitFor(() => {
                 expect(mockSetIsDeletingDocuments).toHaveBeenCalledWith(true);
             });
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when download was successful', async () => {
+            renderDocumentSearchResultsOptions(SUBMISSION_STATE.SUCCEEDED);
+
+            await screen.findByText('All documents have been successfully downloaded.');
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 

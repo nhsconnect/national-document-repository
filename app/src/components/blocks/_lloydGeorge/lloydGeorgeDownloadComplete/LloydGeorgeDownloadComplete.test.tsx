@@ -5,6 +5,7 @@ import LgDownloadComplete from './LloydGeorgeDownloadComplete';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 
@@ -97,5 +98,23 @@ describe('LloydGeorgeDownloadComplete', () => {
         expect(
             screen.getByText('This record has been removed from our storage.'),
         ).toBeInTheDocument();
+    });
+
+    describe('Accessibility', () => {
+        it.each([true, false])(
+            'pass accessibility checks when deleteAfterDownload is %s',
+            async (deleteAfterDownload) => {
+                render(
+                    <LgDownloadComplete
+                        setStage={mockSetStage}
+                        setDownloadStage={mockSetDownloadStage}
+                        deleteAfterDownload={deleteAfterDownload}
+                    />,
+                );
+
+                const results = await runAxeTest(document.body);
+                expect(results).toHaveNoViolations();
+            },
+        );
     });
 });
