@@ -2,14 +2,14 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
-import { SATISFACTION_CHOICES, SUBMISSION_STAGE } from '../../types/pages/feedbackPage/types';
+import { SATISFACTION_CHOICES } from '../../types/pages/feedbackPage/types';
 import FeedbackPage from './FeedbackPage';
 import { fillInForm } from '../../helpers/test/formUtils';
 import { routes } from '../../types/generic/routes';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 jest.mock('axios');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
-import { runAxeTest } from '../../helpers/test/axeTestHelper';
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -88,20 +88,7 @@ describe('<FeedbackPage />', () => {
 
             expect(results).toHaveNoViolations();
         });
-
-        it('pass accessibility checks at confirmation screen', async () => {
-            render(<FeedbackPage />);
-            act(() => {
-                fillInForm(mockInputData);
-                userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
-            });
-            await screen.findByText('We’ve received your feedback');
-
-            const results = await runAxeTest(document.body);
-            expect(results).toHaveNoViolations();
-        });
     });
-});
 
     it('renders a primary button for submit', () => {
         renderComponent();
