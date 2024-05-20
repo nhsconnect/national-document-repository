@@ -33,21 +33,16 @@ interface Props {
 }
 
 function SelectStage({ setDocuments, setStage, documents }: Props) {
-    const [arfDocuments, setArfDocuments] = useState<Array<UploadDocument>>([]);
-    const [lgDocuments] = useState<Array<UploadDocument>>([]);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
     const arfInputRef = useRef<HTMLInputElement | null>(null);
-    // const lgInputRef = useRef<HTMLInputElement | null>(null);  // NOSONAR
     const patientDetails = usePatient();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
-    const mergedDocuments = [...arfDocuments, ...lgDocuments];
-    const hasFileInput = mergedDocuments.length > 0;
+    const hasFileInput = documents.length > 0;
 
     const { handleSubmit, control, formState, setError } = useForm();
 
-    // const lgController = useController(lloydGeorgeFormConfig(control));   // NOSONAR
     const arfController = useController(ARFFormConfig(control));
 
     const submitDocuments = async () => {
@@ -125,7 +120,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                 ...doc,
                 state: DOCUMENT_UPLOAD_STATE.UPLOADING,
                 key: documentReference,
-                ref: documentReference.split('/')[3],
+                ref: documentReference.split('/').at(-1),
             };
         });
     };
@@ -140,44 +135,23 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             docType: docType,
             attempts: 0,
         }));
-        const isArfDoc = docType === DOCUMENT_TYPE.ARF;
-        const unchangedDocuments = isArfDoc ? lgDocuments : arfDocuments;
-        const documentsOfSameType = isArfDoc ? arfDocuments : lgDocuments;
-        const updatedDocList = [...newlyAddedDocuments, ...documentsOfSameType];
-        if (isArfDoc) {
-            setArfDocuments(updatedDocList);
-            arfController.field.onChange(updatedDocList);
-            // } else {
-            //     setLgDocuments(updatedDocList);
-            //     lgController.field.onChange(updatedDocList);
-        }
-        const updatedFileList = [...unchangedDocuments, ...updatedDocList];
-        setDocuments(updatedFileList);
+        const updatedDocList = [...newlyAddedDocuments, ...documents];
+        arfController.field.onChange(updatedDocList);
+        setDocuments(updatedDocList);
     };
 
-    const onRemove = (index: number, docType: DOCUMENT_TYPE) => {
-        const isArfDoc = docType === DOCUMENT_TYPE.ARF;
-        const unchangedDocuments = isArfDoc ? lgDocuments : arfDocuments;
-        const documentsOfSameType = isArfDoc ? arfDocuments : lgDocuments;
-        const updatedDocList = [
-            ...documentsOfSameType.slice(0, index),
-            ...documentsOfSameType.slice(index + 1),
+    const onRemove = (index: number, _docType: DOCUMENT_TYPE) => {
+        const updatedDocList: UploadDocument[] = [
+            ...documents.slice(0, index),
+            ...documents.slice(index + 1),
         ];
-        if (isArfDoc) {
-            setArfDocuments(updatedDocList);
-            if (arfInputRef.current) {
-                arfInputRef.current.files = toFileList(updatedDocList);
-                arfController.field.onChange(updatedDocList);
-            }
-            // } else {
-            //     setLgDocuments(updatedDocList);
-            //     if (lgInputRef.current) {
-            //         lgInputRef.current.files = toFileList(updatedDocList);
-            //         lgController.field.onChange(updatedDocList);
-            //     }
+
+        if (arfInputRef.current) {
+            arfInputRef.current.files = toFileList(updatedDocList);
+            arfController.field.onChange(updatedDocList);
         }
-        const updatedFileList = [...unchangedDocuments, ...updatedDocList];
-        setDocuments(updatedFileList);
+
+        setDocuments(updatedDocList);
     };
 
     return (
@@ -197,7 +171,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                     <h2>Electronic health records</h2>
                     <DocumentInputForm
                         showHelp
-                        documents={arfDocuments}
+                        documents={documents}
                         onDocumentRemove={onRemove}
                         onDocumentInput={onInput}
                         formController={arfController}
@@ -205,17 +179,6 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                         formType={DOCUMENT_TYPE.ARF}
                     />
                 </Fieldset>
-                {/*<Fieldset>*/}
-                {/*    <h2>Lloyd George records</h2>*/}
-                {/*    <DocumentInputForm*/}
-                {/*        documents={lgDocuments}*/}
-                {/*        onDocumentRemove={onRemove}*/}
-                {/*        onDocumentInput={onInput}*/}
-                {/*        formController={lgController}*/}
-                {/*        inputRef={lgInputRef}*/}
-                {/*        formType={DOCUMENT_TYPE.LLOYD_GEORGE}*/}
-                {/*    />*/}
-                {/*</Fieldset>*/}
                 <Button type="submit" id="upload-button" disabled={formState.isSubmitting}>
                     Upload
                 </Button>
