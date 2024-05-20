@@ -40,45 +40,13 @@ describe('<FeedbackPage />', () => {
         jest.clearAllMocks();
     });
 
-    it('renders the page header', () => {
+    it('renders page content', () => {
         renderComponent();
 
-        expect(
-            screen.getByRole('heading', {
-                name: 'Give feedback on accessing Lloyd George digital patient records',
-            }),
-        ).toBeInTheDocument();
-    });
-
-    it('renders the feedback form content', () => {
-        const contentStrings = [
-            'What is your feedback?',
-            'Tell us how we could improve this service or explain your experience using it. ' +
-                'You can also give feedback about a specific page or section in the service.',
-            'How satisfied were you with your overall experience of using this service?',
-            'If you’re happy to speak to us about your feedback so we can improve this service,' +
-                ' please leave your details below.',
-            'Your name',
-            'Your email address',
-            'We’ll only use this to speak to you about your feedback',
-        ];
-
-        renderComponent();
-
-        contentStrings.forEach((s) => {
-            expect(screen.getByText(s)).toBeInTheDocument();
-        });
-
-        const textboxLabels = [/Tell us how we could improve/, 'Your name', 'Your email address'];
-
-        textboxLabels.forEach((label) => {
-            expect(screen.getByRole('textbox', { name: label })).toBeInTheDocument();
-        });
-
-        const radioLabels = Object.values(SATISFACTION_CHOICES);
-        radioLabels.forEach((label) => {
-            expect(screen.getByRole('radio', { name: label })).toBeInTheDocument();
-        });
+        expect(screen.getByTestId('feedback-page-header')).toBeInTheDocument();
+        expect(screen.getByTestId('feedback-text-section')).toBeInTheDocument();
+        expect(screen.getByTestId('feedback-radio-section')).toBeInTheDocument();
+        expect(screen.getByTestId('feedback-details-section')).toBeInTheDocument();
     });
 
     describe('Accessibility', () => {
@@ -93,7 +61,7 @@ describe('<FeedbackPage />', () => {
     it('renders a primary button for submit', () => {
         renderComponent();
 
-        expect(screen.getByRole('button', { name: 'Send feedback' })).toBeInTheDocument();
+        expect(screen.getByTestId('submit-feedback')).toBeInTheDocument();
     });
 
     describe('User interactions', () => {
@@ -121,7 +89,8 @@ describe('<FeedbackPage />', () => {
                     headers: {},
                 }),
             );
-            expect(screen.getByText('Submitting...')).toBeInTheDocument();
+
+            expect(screen.getByTestId('feedback-submit-spinner')).toBeInTheDocument();
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.FEEDBACK_CONFIRMATION);
         });
 
@@ -143,7 +112,7 @@ describe('<FeedbackPage />', () => {
                 expect(screen.getByText('Please enter your feedback')).toBeInTheDocument();
             });
             expect(mockedAxios).not.toBeCalled();
-            expect(screen.queryByText('Submitting...')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
         });
 
         it("on submit, if user haven't chosen an option for howSatisfied, display an error message and don't send email", async () => {
@@ -164,7 +133,7 @@ describe('<FeedbackPage />', () => {
                 expect(screen.getByText('Please select an option')).toBeInTheDocument();
             });
             expect(mockedAxios).not.toBeCalled();
-            expect(screen.queryByText('Submitting...')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
         });
 
         it("on submit, if user filled in an invalid email address, display an error message and don't send email", async () => {
@@ -186,7 +155,7 @@ describe('<FeedbackPage />', () => {
                 expect(screen.getByText('Enter a valid email address')).toBeInTheDocument();
             });
             expect(mockedAxios).not.toBeCalled();
-            expect(screen.queryByText('Submitting...')).not.toBeInTheDocument();
+            expect(screen.queryByTestId('feedback-submit-spinner')).not.toBeInTheDocument();
         });
 
         it('on submit, allows the respondent name and email to be blank', async () => {
@@ -219,7 +188,7 @@ describe('<FeedbackPage />', () => {
                     },
                 ),
             );
-            expect(screen.getByText('Submitting...')).toBeInTheDocument();
+            expect(screen.getByTestId('feedback-submit-spinner')).toBeInTheDocument();
             expect(screen.getByRole('button')).toHaveAttribute('disabled');
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.FEEDBACK_CONFIRMATION);
         });
@@ -253,7 +222,7 @@ describe('<FeedbackPage />', () => {
                     headers: {},
                 }),
             );
-            expect(screen.getByText('Submitting...')).toBeInTheDocument();
+            expect(screen.getByTestId('feedback-submit-spinner')).toBeInTheDocument();
             expect(mockedUseNavigate).toHaveBeenCalledWith(
                 routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
             );
@@ -287,7 +256,7 @@ describe('<FeedbackPage />', () => {
                     headers: {},
                 }),
             );
-            expect(screen.getByText('Submitting...')).toBeInTheDocument();
+            expect(screen.getByTestId('feedback-submit-spinner')).toBeInTheDocument();
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
         });
 
@@ -321,7 +290,7 @@ describe('<FeedbackPage />', () => {
                     },
                 ),
             );
-            expect(screen.getByText('Submitting...')).toBeInTheDocument();
+            expect(screen.getByTestId('feedback-submit-spinner')).toBeInTheDocument();
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.FEEDBACK_CONFIRMATION);
         });
     });

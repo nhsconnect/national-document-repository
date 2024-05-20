@@ -84,10 +84,12 @@ function FeedbackPage() {
 
     return (
         <div id="feedback-form">
-            <h1>Give feedback on accessing Lloyd George digital patient records</h1>
+            <h1 data-testid="feedback-page-header">
+                Give feedback on accessing Lloyd George digital patient records
+            </h1>
 
             <form onSubmit={handleSubmit(submit)}>
-                <Fieldset>
+                <Fieldset data-testid="feedback-text-section">
                     <Fieldset.Legend size="m">What is your feedback?</Fieldset.Legend>
                     <Textarea
                         data-testid={FORM_FIELDS.FeedbackContent}
@@ -99,7 +101,7 @@ function FeedbackPage() {
                     />
                 </Fieldset>
 
-                <Fieldset>
+                <Fieldset data-testid="feedback-radio-section">
                     <Fieldset.Legend size="m">
                         How satisfied were you with your overall experience of using this service?
                     </Fieldset.Legend>
@@ -112,7 +114,7 @@ function FeedbackPage() {
                     </Radios>
                 </Fieldset>
 
-                <Fieldset>
+                <Fieldset data-testid="feedback-details-section">
                     <Fieldset.Legend size="m">Leave your details (optional)</Fieldset.Legend>
 
                     <p>
@@ -149,12 +151,13 @@ function FeedbackPage() {
                     />
                 </Fieldset>
                 {stage !== SUBMISSION_STAGE.Submitting ? (
-                    <Button type="submit" id="submit-feedback">
+                    <Button type="submit" id="submit-feedback" data-testid="submit-feedback">
                         Send feedback
                     </Button>
                 ) : (
                     <SpinnerButton
                         id="feedback-submit-spinner"
+                        dataTestId="feedback-submit-spinner"
                         status="Submitting..."
                         disabled={true}
                     />
