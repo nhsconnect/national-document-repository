@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import StartPage from './StartPage';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 jest.mock('react-router');
 describe('StartPage', () => {
     beforeEach(() => {
@@ -70,5 +71,12 @@ describe('StartPage', () => {
             'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
         );
         expect(nationalServiceDeskLink).toHaveAttribute('target', '_blank');
+    });
+
+    it('pass accessibility checks', async () => {
+        render(<StartPage />);
+        const results = await runAxeTest(document.body);
+
+        expect(results).toHaveNoViolations();
     });
 });

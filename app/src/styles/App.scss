@@ -144,6 +144,10 @@ $govuk-compatibility-govukelements: true;
                 flex-basis: calc(70% - 17px);
             }
         }
+        &_fs {
+            border-top: 'solid 1px';
+            padding-top: '48px';
+        }
         &_patient-info {
             p {
                 font-size: 1.2rem;
@@ -163,7 +167,7 @@ $govuk-compatibility-govukelements: true;
                 ol {
                     padding-left: 0;
                     li {
-                        font-size: 16px;
+                        font-size: 1rem;
                         list-style-type: none;
                     }
                 }

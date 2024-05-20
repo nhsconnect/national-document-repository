@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import RecordMenuCard from './RecordMenuCard';
 import useRole from '../../../helpers/hooks/useRole';
-import { RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
+import { LGRecordActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LinkProps } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
@@ -13,21 +13,40 @@ jest.mock('../../../helpers/hooks/useRole');
 const mockSetStage = jest.fn();
 const mockedUseNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
+const mockShowDownloadAndRemoveConfirmation = jest.fn();
 
-const mockLinks = [
+const mockLinks: Array<LGRecordActionLink> = [
     {
         label: 'Upload files',
         key: 'upload-files-link',
-        type: RECORD_ACTION.UPLOAD,
+        type: RECORD_ACTION.UPDATE,
         href: routes.HOME,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        showIfRecordInStorage: false,
     },
     {
-        label: 'Remove a selection of files',
-        key: 'delete-file-link',
-        type: RECORD_ACTION.DOWNLOAD,
+        label: 'Remove files',
+        key: 'delete-all-files-link',
+        type: RECORD_ACTION.UPDATE,
         stage: LG_RECORD_STAGE.DELETE_ALL,
-        unauthorised: [],
+        unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        showIfRecordInStorage: true,
+    },
+    {
+        label: 'Download files',
+        key: 'download-all-files-link',
+        type: RECORD_ACTION.DOWNLOAD,
+        stage: LG_RECORD_STAGE.DOWNLOAD_ALL,
+        unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        showIfRecordInStorage: true,
+    },
+    {
+        label: 'Download and remove files',
+        key: 'download-and-remove-all-files-link',
+        type: RECORD_ACTION.DOWNLOAD,
+        unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        showIfRecordInStorage: true,
+        onClick: mockShowDownloadAndRemoveConfirmation,
     },
 ];
 
@@ -49,82 +68,70 @@ describe('RecordMenuCard', () => {
 
     describe('Rendering', () => {
         it('renders menu', () => {
-            const { rerender } = render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
-            );
+            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
-            expect(
-                screen.getByRole('link', { name: 'Remove a selection of files' }),
-            ).toBeInTheDocument();
+            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Remove files' })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Download files' })).toBeInTheDocument();
+        });
 
-            rerender(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
+        it('does not render a sub-section if no record links were under that section', () => {
+            const mockLinksUpdateOnly = mockLinks.filter(
+                (link) => link.type === RECORD_ACTION.UPDATE,
+            );
+
+            const { rerender } = render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinksUpdateOnly} />,
             );
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
-        });
-
-        it('does not render menu item if unauthorised', () => {
-            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
-
-            const { rerender } = render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
-            );
-            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
-            expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
-
-            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
-
-            rerender(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
-            );
-            expect(
-                screen.queryByRole('heading', { name: 'Update record' }),
-            ).not.toBeInTheDocument();
-            expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
-        });
-
-        it("renders 'update record' if does not hasPdf only", () => {
-            const { rerender } = render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
-            );
-            expect(
-                screen.queryByRole('heading', { name: 'Update record' }),
-            ).not.toBeInTheDocument();
-            expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
-
-            rerender(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
-            );
-            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
-            expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
-        });
-
-        it("renders 'download record' if hasPdf only", () => {
-            const { rerender } = render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
-            );
+            expect(screen.getByRole('link', { name: 'Remove files' })).toBeInTheDocument();
             expect(
                 screen.queryByRole('heading', { name: 'Download record' }),
             ).not.toBeInTheDocument();
-            expect(
-                screen.queryByRole('link', { name: 'Remove a selection of files' }),
-            ).not.toBeInTheDocument();
+            expect(screen.queryByRole('link', { name: 'Download files' })).not.toBeInTheDocument();
 
+            const mockLinksDownloadOnly = mockLinks.filter(
+                (link) => link.type === RECORD_ACTION.DOWNLOAD,
+            );
             rerender(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
+                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinksDownloadOnly} />,
             );
             expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Download files' })).toBeInTheDocument();
+
             expect(
-                screen.getByRole('link', { name: 'Remove a selection of files' }),
+                screen.queryByRole('heading', { name: 'Update record' }),
+            ).not.toBeInTheDocument();
+            expect(screen.queryByRole('link', { name: 'Upload files' })).not.toBeInTheDocument();
+            expect(screen.queryByRole('link', { name: 'Remove files' })).not.toBeInTheDocument();
+        });
+
+        it('does not render anything if the given record links array is empty', () => {
+            const { container } = render(
+                <RecordMenuCard setStage={mockSetStage} recordLinks={[]} />,
+            );
+            expect(container).toBeEmptyDOMElement();
+        });
+
+        it('render menu item as a <button> if link item does not have stage or href', () => {
+            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            expect(
+                screen.getByRole('button', { name: 'Download and remove files' }),
             ).toBeInTheDocument();
+
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Download and remove files' }));
+            });
+
+            expect(mockShowDownloadAndRemoveConfirmation).toBeCalledTimes(1);
         });
     });
+
     describe('Navigation', () => {
         it('navigates to href when clicked', () => {
-            render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={false} />,
-            );
+            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
             expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Upload files' })).toBeInTheDocument();
             act(() => {
@@ -133,17 +140,13 @@ describe('RecordMenuCard', () => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
         });
 
-        it('navigates to stage when clicked', () => {
-            render(
-                <RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} hasPdf={true} />,
-            );
-            expect(screen.getByRole('heading', { name: 'Download record' })).toBeInTheDocument();
-            expect(
-                screen.getByRole('link', { name: 'Remove a selection of files' }),
-            ).toBeInTheDocument();
+        it('change stage when clicked', () => {
+            render(<RecordMenuCard setStage={mockSetStage} recordLinks={mockLinks} />);
+            expect(screen.getByRole('heading', { name: 'Update record' })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Remove files' })).toBeInTheDocument();
 
             act(() => {
-                userEvent.click(screen.getByRole('link', { name: 'Remove a selection of files' }));
+                userEvent.click(screen.getByRole('link', { name: 'Remove files' }));
             });
             expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.DELETE_ALL);
         });

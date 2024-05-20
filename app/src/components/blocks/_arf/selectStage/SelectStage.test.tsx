@@ -14,10 +14,10 @@ import { act } from 'react-dom/test-utils';
 import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import axios from 'axios';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 jest.mock('axios');
 const mockSetStage = jest.fn();
-const mockSetUploadSession = jest.fn();
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/utils/toFileList', () => ({
@@ -359,6 +359,25 @@ describe('<SelectStage />', () => {
             });
             expect(pcseLink).toHaveAttribute('href', 'https://secure.pcse.england.nhs.uk/');
             expect(pcseLink).toHaveAttribute('target', '_blank');
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility check when some files are selected', async () => {
+            renderApp();
+
+            const selectFilesLabel = screen.getByTestId(`ARF-input`);
+            act(() => {
+                userEvent.upload(selectFilesLabel, documentOne);
+            });
+
+            const selectFilesLabelLG = screen.getByTestId(`LG-input`);
+            act(() => {
+                userEvent.upload(selectFilesLabelLG, documentTwo);
+            });
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 

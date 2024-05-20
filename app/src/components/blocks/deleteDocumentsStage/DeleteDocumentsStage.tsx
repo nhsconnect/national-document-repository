@@ -132,7 +132,9 @@ function DeleteDocumentsStage({
 
     return deletionStage !== SUBMISSION_STATE.SUCCEEDED ? (
         <>
-            <BackLink onClick={handleNoOption}>Go Back</BackLink>
+            <BackLink onClick={handleNoOption} href="#">
+                Back
+            </BackLink>
             {deletionStage === SUBMISSION_STATE.FAILED && <ServiceError />}
             {showNoOptionSelectedMessage && (
                 <ErrorBox

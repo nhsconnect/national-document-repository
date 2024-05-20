@@ -9,6 +9,7 @@ import { routes } from '../../types/generic/routes';
 
 jest.mock('axios');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -79,6 +80,28 @@ describe('<FeedbackPage />', () => {
             expect(screen.getByRole('radio', { name: label })).toBeInTheDocument();
         });
     });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            render(<FeedbackPage />);
+            const results = await runAxeTest(document.body);
+
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks at confirmation screen', async () => {
+            render(<FeedbackPage />);
+            act(() => {
+                fillInForm(mockInputData);
+                userEvent.click(screen.getByRole('button', { name: 'Send feedback' }));
+            });
+            await screen.findByText('We’ve received your feedback');
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+    });
+});
 
     it('renders a primary button for submit', () => {
         renderComponent();

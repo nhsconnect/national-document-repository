@@ -11,6 +11,7 @@ import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 const mockedUsePatient = usePatient as jest.Mock;
@@ -77,6 +78,18 @@ describe('LloydGeorgeUploadComplete', () => {
         expect(screen.getByText('What happens next')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'View record' })).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Search for a patient' })).toBeInTheDocument();
+    });
+
+    it('pass accessibility checks', async () => {
+        const mockDocuments = [
+            buildDocument(buildTextFile('test1'), documentUploadStates.SUCCEEDED),
+            buildDocument(buildTextFile('test2'), documentUploadStates.SUCCEEDED),
+        ];
+
+        render(<LloydGeorgeUploadComplete documents={mockDocuments} />);
+
+        const results = await runAxeTest(document.body);
+        expect(results).toHaveNoViolations();
     });
 
     it('navigates to LG record page when "View record" button is clicked', async () => {
