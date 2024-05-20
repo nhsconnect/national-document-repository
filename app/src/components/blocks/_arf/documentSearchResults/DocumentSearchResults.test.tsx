@@ -3,6 +3,7 @@ import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import DocumentSearchResults from './DocumentSearchResults';
 import { render, screen, within } from '@testing-library/react';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 describe('DocumentSearchResults', () => {
     const mockDetails = buildSearchResult();
@@ -54,5 +55,13 @@ describe('DocumentSearchResults', () => {
             { created: getFormattedDatetime(new Date(secondOldestDate)) },
             { created: getFormattedDatetime(new Date(oldestDate)) },
         ]);
+    });
+
+    it('pass accessibility checks', async () => {
+        render(<DocumentSearchResults searchResults={mockSearchResults} />);
+        await screen.findByText(mockDetails.fileName);
+
+        const results = await runAxeTest(document.body);
+        expect(results).toHaveNoViolations();
     });
 });

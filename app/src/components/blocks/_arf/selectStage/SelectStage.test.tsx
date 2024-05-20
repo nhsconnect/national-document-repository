@@ -21,6 +21,7 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import uploadDocuments, { uploadDocumentToS3 } from '../../../../helpers/requests/uploadDocuments';
 import { useState } from 'react';
 import { routes } from '../../../../types/generic/routes';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 
@@ -381,6 +382,25 @@ describe('<SelectStage />', () => {
             });
             expect(pcseLink).toHaveAttribute('href', 'https://secure.pcse.england.nhs.uk/');
             expect(pcseLink).toHaveAttribute('target', '_blank');
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility check when some files are selected', async () => {
+            renderApp();
+
+            const selectFilesLabel = screen.getByTestId(`ARF-input`);
+            act(() => {
+                userEvent.upload(selectFilesLabel, documentOne);
+            });
+
+            // const selectFilesLabelLG = screen.getByTestId(`LG-input`);
+            // act(() => {
+            //     userEvent.upload(selectFilesLabelLG, documentTwo);
+            // });
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 

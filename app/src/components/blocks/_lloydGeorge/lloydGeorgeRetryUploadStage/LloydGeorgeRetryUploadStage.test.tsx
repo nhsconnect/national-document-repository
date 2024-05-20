@@ -3,6 +3,7 @@ import LloydGeorgeRetryUploadStage from './LloydGeorgeRetryUploadStage';
 import userEvent from '@testing-library/user-event';
 import { LG_UPLOAD_STAGE } from '../../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { routes } from '../../../../types/generic/routes';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockSetStage = jest.fn();
 const mockUseNavigate = jest.fn();
@@ -35,6 +36,15 @@ describe('LloydGeorgeRetryUploadStage', () => {
                 'href',
                 'https://digital.nhs.uk/about-nhs-digital/contact-us#nhs-digital-service-desks',
             );
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks', async () => {
+            render(<LloydGeorgeRetryUploadStage setStage={mockSetStage} />);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 
