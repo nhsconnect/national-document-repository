@@ -25,6 +25,7 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
+import WarningText from '../../../generic/warningText/WarningText';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -146,7 +147,7 @@ function DeleteSubmitStage({
                     </p>
                     <h2>Are you sure you want to permanently remove this record?</h2>
                     <div>
-                        <p>This can not be undone</p>
+                        <WarningText text="This can not be undone" />
                     </div>
                     <Radios
                         id="delete-docs"
