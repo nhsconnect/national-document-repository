@@ -49,7 +49,7 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
             {deleteAfterDownload ? (
                 <>
                     <p>This record has been removed from our storage.</p>
-                    <p className="lloydgeorge_download-complete_paragraph-headers">
+                    <p className="lloydgeorge_delete-complete_paragraph-headers">
                         Keep this patient's record safe
                     </p>
                     <ol>
@@ -72,7 +72,7 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
                             </a>
                         </li>
                     </ol>
-                    <p className="lloydgeorge_download-complete_paragraph-headers">
+                    <p className="lloydgeorge_download-complete_paragraph-subheaders">
                         Your responsibilities with this record
                     </p>
                     <p>
@@ -86,7 +86,11 @@ function LloydGeorgeDownloadComplete({ setStage, setDownloadStage, deleteAfterDo
                     </p>
                     <p>
                         The{' '}
-                        <a href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code">
+                        <a
+                            href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code"
+                            target="_blank"
+                            rel="noreferrer"
+                        >
                             Record Management Code of Practice
                         </a>{' '}
                         provides a framework for consistent and effective records management, based

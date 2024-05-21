@@ -35,7 +35,7 @@ function DeleteResultStage({ numberOfFiles, setStage, setDownloadStage }: Props)
         }
     };
     const isGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
-    const pageHeader = 'Deletion complete';
+    const pageHeader = 'You have permanently removed the record of:';
     useTitle({ pageTitle: pageHeader });
     return (
         <div className="deletion-complete">
@@ -43,35 +43,51 @@ function DeleteResultStage({ numberOfFiles, setStage, setDownloadStage }: Props)
                 <Card.Content className="deletion-complete_card_content">
                     <Card.Heading
                         className="deletion-complete_card_content_header"
+                        data-testid="deletion-complete_card_content_header"
                         headingLevel="h1"
                     >
                         {pageHeader}
                     </Card.Heading>
-                    <Card.Description className="deletion-complete_card_content_description">
-                        You have successfully deleted {numberOfFiles} file(s){'\n'}
-                        from the {isGP && 'Lloyd George '}
-                        record of:{' '}
-                    </Card.Description>
                     <ReducedPatientInfo className={'deletion-complete_card_content_subheader'} />
                 </Card.Content>
             </Card>
-            <p style={{ marginTop: 40 }}>
-                {isGP ? (
-                    <ButtonLink onClick={handleClick} data-testid="lg-return-btn" href="#">
-                        Return to patient's Lloyd George record page
-                    </ButtonLink>
-                ) : (
-                    <Link
-                        id="start-again-link"
-                        to=""
-                        onClick={(e) => {
-                            e.preventDefault();
-                            navigate(routes.START);
-                        }}
-                    >
-                        Start Again
-                    </Link>
-                )}
+            <p>You can no longer access this record using our storage.</p>
+            <p className="lloydgeorge_delete-complete_paragraph-headers">What happens next</p>
+            <ol>
+                <li>
+                    Make sure you safely store the paper version of this record, as it may be the
+                    only copy
+                </li>
+                <li>
+                    If you removed this record due to its retention period ending, you do not need
+                    to store the paper copy
+                </li>
+                <li>
+                    If you think you’ve made a mistake, you will need to upload this record again
+                </li>
+            </ol>
+            <p className="lloydgeorge_delete-complete_paragraph-subheaders">
+                Your responsibilities after removing this record
+            </p>
+            <p>
+                Everyone in a health and care organisation is responsible for managing records
+                appropriately. It is important all general practice staff understand their
+                responsibilities for creating, and disposing of records appropriately.
+            </p>
+            <p className="lloydgeorge_delete-complete_paragraph-subheaders">
+                Follow the Record Management Code of Practice
+            </p>
+            <p>
+                The{' '}
+                <a
+                    href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code"
+                    target="_blank"
+                    rel="noreferrer"
+                >
+                    Record Management Code of Practice
+                </a>{' '}
+                provides a framework for consistent and effective records management, based on
+                established standards.
             </p>
         </div>
     );

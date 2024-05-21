@@ -449,6 +449,40 @@ $hunit: '%';
             font-size: 2rem;
         }
     }
+    &_delete-complete {
+        width: 711px;
+        &_details {
+            &-content {
+                padding: 95px 76px;
+                text-align: center;
+                background-color: $color_nhsuk-blue;
+                color: #fff;
+                font-size: 1.5rem;
+                white-space: pre-wrap;
+                &_header {
+                    font-weight: 700;
+                    font-size: 3rem;
+                    margin-bottom: 25px;
+                }
+                &_subheader {
+                    font-weight: 700;
+                    margin-top: 25px;
+                }
+                &_description {
+                    font-size: 1.5rem !important;
+                }
+            }
+        }
+        &_paragraph-headers {
+            font-weight: 700;
+            font-size: 2rem;
+        }
+        &_paragraph-subheaders {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: 2.4rem;
+        }
+    }
     &_upload-complete {
         max-width: 711px;
         &_card {
