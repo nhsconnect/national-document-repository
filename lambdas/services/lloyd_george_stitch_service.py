@@ -3,7 +3,6 @@ import os
 import shutil
 import tempfile
 from urllib import parse
-from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -22,7 +21,7 @@ from utils.lloyd_george_validator import (
     LGInvalidFilesException,
     check_for_number_of_files_match_expected,
 )
-from utils.utilities import create_reference_id
+from utils.utilities import create_reference_id, get_file_key_from_s3_url
 
 logger = LoggingService(__name__)
 
@@ -164,7 +163,7 @@ class LloydGeorgeStitchService:
 
         for lg_part in ordered_lg_records:
             file_location_on_s3 = lg_part.file_location
-            s3_file_path = urlparse(file_location_on_s3).path.lstrip("/")
+            s3_file_path = get_file_key_from_s3_url(file_location_on_s3)
             local_file_name = os.path.join(self.temp_folder, create_reference_id())
             self.s3_service.download_file(
                 self.lloyd_george_bucket_name, s3_file_path, local_file_name

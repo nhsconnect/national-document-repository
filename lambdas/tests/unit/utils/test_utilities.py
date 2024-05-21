@@ -2,6 +2,7 @@ import pytest
 from utils.exceptions import InvalidResourceIdException
 from utils.utilities import (
     camelize_dict,
+    get_file_key_from_s3_url,
     redact_id_to_last_4_chars,
     validate_nhs_number,
 )
@@ -39,3 +40,11 @@ def test_redact_id():
     actual = redact_id_to_last_4_chars(mock_session_id)
 
     assert expected == actual
+
+
+def test_get_file_key_from_s3_url():
+    test_url = "s3://test-s3-bucket/9000000009/user-upload/arf/3575f1ab-e7ae-4edf-958b-410ac0d42461"
+    expected = "9000000009/user-upload/arf/3575f1ab-e7ae-4edf-958b-410ac0d42461"
+    actual = get_file_key_from_s3_url(test_url)
+
+    assert actual == expected
