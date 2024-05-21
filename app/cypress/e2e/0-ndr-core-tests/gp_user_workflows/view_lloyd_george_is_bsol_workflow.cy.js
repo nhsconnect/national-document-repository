@@ -219,12 +219,24 @@ describe('GP Workflow: View Lloyd George record', () => {
                     request = request + 1;
                 }).as('lloydGeorgeStitch');
 
+                cy.intercept('GET', '/SearchDocumentReferences*', {
+                    statusCode: 200,
+                    body: [
+                        {
+                            fileName: 'testName',
+                            created: 'testCreated',
+                            virusScannerResult: 'Clean',
+                        },
+                    ],
+                }).as('searchDocs');
+
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
 
+                cy.wait('@searchDocs');
                 // assert delete confirmation page is as expected
                 cy.getByTestId('remove-record-warning-text').should('be.visible');
 
@@ -302,11 +314,16 @@ describe('GP Workflow: View Lloyd George record', () => {
                     body: viewLloydGeorgePayload,
                 }).as('lloydGeorgeStitch');
 
-                cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
-
-                cy.getByTestId('delete-all-files-link').should('exist');
-                cy.getByTestId('delete-all-files-link').click();
+                cy.intercept('GET', '/SearchDocumentReferences*', {
+                    statusCode: 200,
+                    body: [
+                        {
+                            fileName: 'testName',
+                            created: 'testCreated',
+                            virusScannerResult: 'Clean',
+                        },
+                    ],
+                }).as('searchDocs');
 
                 cy.intercept(
                     'DELETE',
@@ -316,6 +333,14 @@ describe('GP Workflow: View Lloyd George record', () => {
                         body: 'Failed to delete documents',
                     },
                 ).as('documentDelete');
+
+                cy.get('#verify-submit').click();
+                cy.wait('@lloydGeorgeStitch');
+
+                cy.getByTestId('delete-all-files-link').should('exist');
+                cy.getByTestId('delete-all-files-link').click();
+
+                cy.wait('@searchDocs');
 
                 cy.getByTestId('remove-btn').click();
                 cy.get('#delete-docs').should('be.visible');
