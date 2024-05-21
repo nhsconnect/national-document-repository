@@ -60,6 +60,7 @@ class DocumentManifestService:
             self.download_documents_to_be_zipped(documents)
             self.upload_zip_file()
 
+            # Removes the parent of each removed directory until the parent does not exist or the parent is not empty
             shutil.rmtree(self.temp_downloads_dir)
             shutil.rmtree(self.temp_output_dir)
 
