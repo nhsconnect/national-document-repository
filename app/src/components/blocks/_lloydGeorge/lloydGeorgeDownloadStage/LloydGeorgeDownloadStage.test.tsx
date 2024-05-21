@@ -12,6 +12,7 @@ import { LinkProps } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import LloydGeorgeDownloadStage, { Props } from './LloydGeorgeDownloadStage';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -41,6 +42,7 @@ describe('LloydGeorgeDownloadStage', () => {
         mockUseConfig.mockReturnValue(buildConfig());
     });
     afterEach(() => {
+        jest.useRealTimers();
         jest.clearAllMocks();
     });
 
@@ -104,6 +106,13 @@ describe('LloydGeorgeDownloadStage', () => {
             expect(screen.queryByText('Downloading documents')).not.toBeInTheDocument();
         });
         expect(screen.getByRole('heading', { name: 'Download complete' })).toBeInTheDocument();
+    });
+
+    it('pass accessibility checks', async () => {
+        renderComponent();
+
+        const results = await runAxeTest(document.body);
+        expect(results).toHaveNoViolations();
     });
 
     it('navigates to Error page when zip lg record view complete but fail on delete', async () => {

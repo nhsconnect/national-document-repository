@@ -2,10 +2,11 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import { render, screen } from '@testing-library/react';
 import LloydGeorgeDownloadComplete from './LloydGeorgeDownloadComplete';
-import userEvent from '@testing-library/user-event';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import LgDownloadComplete from './LloydGeorgeDownloadComplete';
+import userEvent from '@testing-library/user-event';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import React from 'react';
 
 jest.mock('../../../../helpers/hooks/usePatient');
@@ -182,5 +183,24 @@ describe('LloydGeorgeDownloadComplete', () => {
                 screen.queryByText('This record has been removed from our storage.'),
             ).not.toBeInTheDocument();
         });
+    });
+
+    describe('Accessibility', () => {
+        it.each([true, false])(
+            'pass accessibility checks when deleteAfterDownload is %s',
+            async (deleteAfterDownload) => {
+                render(
+                    <LloydGeorgeDownloadComplete
+                        numberOfFiles={numberOfFiles}
+                        setStage={mockSetStage}
+                        setDownloadStage={mockSetDownloadStage}
+                        deleteAfterDownload={deleteAfterDownload}
+                    />,
+                );
+
+                const results = await runAxeTest(document.body);
+                expect(results).toHaveNoViolations();
+            },
+        );
     });
 });

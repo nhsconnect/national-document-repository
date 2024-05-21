@@ -38,6 +38,7 @@ class CreateDocumentReferenceService:
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
         self.staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
+        self.arf_bucket_name = os.getenv("DOCUMENT_STORE_BUCKET_NAME")
         self.upload_sub_folder = "user_upload"
 
     def create_document_reference_request(
@@ -112,32 +113,53 @@ class CreateDocumentReferenceService:
 
         logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
+        if validated_doc.docType == SupportedDocumentTypes.LG.value:
+            document_reference = self.create_document_reference(
+                nhs_number,
+                validated_doc,
+                s3_bucket_name=self.staging_bucket_name,
+                sub_folder=self.upload_sub_folder,
+            )
+        elif validated_doc.docType == SupportedDocumentTypes.ARF.value:
+            document_reference = self.create_document_reference(
+                nhs_number,
+                validated_doc,
+                s3_bucket_name=self.arf_bucket_name,
+            )
+        else:
+            logger.error(
+                f"{LambdaError.CreateDocNoType.to_str()}",
+                {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
+            )
+            raise CreateDocumentRefException(400, LambdaError.CreateDocNoType)
+
+        return document_reference
+
+    def create_document_reference(
+        self,
+        nhs_number: str,
+        validated_doc: UploadRequestDocument,
+        s3_bucket_name,
+        sub_folder="",
+    ) -> NHSDocumentReference:
         s3_object_key = create_reference_id()
 
         document_reference = NHSDocumentReference(
             nhs_number=nhs_number,
-            s3_bucket_name=self.staging_bucket_name,
-            sub_folder=self.upload_sub_folder,
+            s3_bucket_name=s3_bucket_name,
+            sub_folder=sub_folder,
             reference_id=s3_object_key,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
             doc_type=validated_doc.docType,
             uploading=True,
         )
-
         return document_reference
 
     def prepare_pre_signed_url(self, document_reference: NHSDocumentReference):
         try:
             s3_response = self.s3_service.create_upload_presigned_url(
-                document_reference.s3_bucket_name,
-                self.upload_sub_folder
-                + "/"
-                + document_reference.doc_type
-                + "/"
-                + document_reference.nhs_number
-                + "/"
-                + document_reference.id,
+                document_reference.s3_bucket_name, document_reference.s3_file_key
             )
 
             return s3_response

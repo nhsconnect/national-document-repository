@@ -10,6 +10,7 @@ import { useState } from 'react';
 import { MomentInput } from 'moment';
 
 import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../../helpers/utils/toFileList', () => ({
     __esModule: true,
@@ -671,6 +672,39 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(await screen.findByText(lgDocumentOne.name)).toBeInTheDocument();
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            renderApp();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when error box appears (file name error)', async () => {
+            renderApp();
+            act(() => {
+                userEvent.upload(screen.getByTestId('button-input'), lgFilesThreeNames);
+            });
+
+            await screen.findAllByText('The patient’s name does not match this filename');
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when error box appears (no file selected)', async () => {
+            renderApp();
+            act(() => {
+                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+            });
+
+            await screen.findByText('You did not select any file to upload');
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 

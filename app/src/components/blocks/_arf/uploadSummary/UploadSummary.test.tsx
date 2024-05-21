@@ -13,6 +13,7 @@ import {
     buildTextFile,
 } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 const mockedUsePatient = usePatient as jest.Mock;
@@ -197,6 +198,36 @@ describe('UploadSummary', () => {
         expect(
             screen.getByText(`${documents.length} of ${files.length} files failed to upload`),
         ).toBeInTheDocument();
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks when upload result are all successful', async () => {
+            const files = [buildTextFile('one', 100), buildTextFile('two', 101)];
+            const documents = files.map((file) =>
+                buildDocument(file, documentUploadStates.SUCCEEDED),
+            );
+            renderUploadSummary({ documents });
+
+            await screen.findByText(/All documents have been successfully uploaded/);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when result contain both successful and unsuccessful uploads', async () => {
+            const files = [buildTextFile('one', 100), buildTextFile('two', 101)];
+            const documents = [
+                buildDocument(files[0], documentUploadStates.FAILED),
+                buildDocument(files[1], documentUploadStates.SUCCEEDED),
+            ];
+            renderUploadSummary({ documents });
+
+            await screen.findByText(/files failed to upload/);
+            await screen.findByText('View successfully uploaded documents');
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
     });
 });
 

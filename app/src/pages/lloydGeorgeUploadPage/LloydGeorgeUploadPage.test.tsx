@@ -18,6 +18,7 @@ import { act } from 'react-dom/test-utils';
 import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
 import { Props } from '../../components/blocks/_lloydGeorge/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
 import { MomentInput } from 'moment/moment';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
@@ -88,6 +89,7 @@ describe('LloydGeorgeUploadPage', () => {
     });
     afterEach(() => {
         jest.clearAllMocks();
+        jest.useRealTimers();
     });
     describe('Rendering', () => {
         it('renders initial file input stage', () => {
@@ -292,6 +294,16 @@ describe('LloydGeorgeUploadPage', () => {
             },
         );
     });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            render(<LloydGeorgeUploadPage />);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+    });
+
     describe('Navigating', () => {
         it('navigates to Error page when call to lg record view return 423', async () => {
             const errorResponse = {
