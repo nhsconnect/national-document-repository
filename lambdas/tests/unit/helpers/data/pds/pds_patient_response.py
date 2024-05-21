@@ -531,3 +531,54 @@ PDS_PATIENT_WITH_MIDDLE_NAME["name"][0]["given"].append("Jake")
 
 PDS_PATIENT_WITHOUT_ADDRESS = copy.deepcopy(PDS_PATIENT)
 PDS_PATIENT_WITHOUT_ADDRESS.pop("address")
+
+PDS_PATIENT_NO_PERIOD_IN_NAME_MODEL = copy.deepcopy(PDS_PATIENT)
+PDS_PATIENT_NO_PERIOD_IN_NAME_MODEL["name"] = [
+    {
+        "id": "123",
+        "use": "usual",
+        "given": ["Jane"],
+        "family": "Smith",
+    },
+]
+
+PDS_PATIENT_NO_GIVEN_NAME_IN_HISTORIC_NAME = copy.deepcopy(PDS_PATIENT)
+PDS_PATIENT_NO_GIVEN_NAME_IN_HISTORIC_NAME["name"] = [
+    {
+        "id": "123",
+        "use": "usual",
+        "period": {"start": "2022-01-01"},
+        "given": ["Jane"],
+        "family": "Smith",
+        "prefix": ["Mrs"],
+        "suffix": ["MBE"],
+    },
+    {
+        "id": "1234",
+        "use": "other",
+        "period": {"start": "2020-01-01", "end": "2021-12-31"},
+        "family": "Stevens",
+    },
+]
+
+
+PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME = copy.deepcopy(PDS_PATIENT)
+PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME["name"] = [
+    {
+        "id": "123",
+        "use": "usual",
+        "period": {"start": "2022-01-01"},
+        "family": "Smith",
+        "prefix": ["Mrs"],
+        "suffix": ["MBE"],
+    },
+    {
+        "id": "1234",
+        "use": "other",
+        "period": {"start": "2020-01-01", "end": "2021-12-31"},
+        "given": ["Jim"],
+        "family": "Stevens",
+        "prefix": ["Mr"],
+        "suffix": ["MBE"],
+    },
+]
