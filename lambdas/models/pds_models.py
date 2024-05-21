@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 
 class Period(BaseModel):
-    start: date = None
+    start: Optional[date] = None
     end: Optional[date] = None
 
 
@@ -15,13 +15,13 @@ class Address(BaseModel):
 
     use: str
     period: Optional[Period] = None
-    postal_code: Optional[str] = ""
+    postal_code: str = ""
 
 
 class Name(BaseModel):
     use: str
     period: Optional[Period] = None
-    given: Optional[list[str]] = None
+    given: list[str] = [""]
     family: str
 
 
@@ -36,28 +36,28 @@ class Meta(BaseModel):
 
 
 class GPIdentifier(BaseModel):
-    system: Optional[str] = ""
+    system: str = ""
     value: str
     period: Optional[Period] = None
 
 
 class GeneralPractitioner(BaseModel):
-    id: Optional[str] = ""
-    type: Optional[str] = ""
+    id: str = ""
+    type: str = ""
     identifier: GPIdentifier
 
 
 class PatientDetails(BaseModel):
     model_config = conf
 
-    given_name: Optional[list[str]] = [""]
-    family_name: Optional[str] = ""
+    given_name: list[str] = [""]
+    family_name: str = ""
     birth_date: Optional[date] = None
-    postal_code: Optional[str] = ""
+    postal_code: str = ""
     nhs_number: str
     superseded: bool
     restricted: bool
-    general_practice_ods: Optional[str] = ""
+    general_practice_ods: str = ""
     active: Optional[bool] = None
 
 
@@ -66,7 +66,7 @@ class Patient(BaseModel):
 
     id: str
     birth_date: date
-    address: Optional[list[Address]] = []
+    address: list[Address] = []
     name: list[Name]
     meta: Meta
     general_practitioner: Optional[list[GeneralPractitioner]] = None
@@ -80,11 +80,9 @@ class Patient(BaseModel):
 
     def is_unrestricted(self) -> bool:
         security = self.get_security()
-        if security.code == "U":
-            return True
-        return False
+        return security.code == "U"
 
-    def get_current_usual_name(self) -> [Optional[Name]]:
+    def get_current_usual_name(self) -> Optional[Name]:
         for entry in self.name:
             if entry.use.lower() == "usual":
                 return entry
@@ -98,7 +96,8 @@ class Patient(BaseModel):
     def get_active_ods_code_for_gp(self) -> str:
         if self.general_practitioner:
             for entry in self.general_practitioner:
-                gp_end_date = entry.identifier.period.end
+                period = entry.identifier.period
+                gp_end_date = period.end if period else None
                 if not gp_end_date or gp_end_date >= date.today():
                     return entry.identifier.value
         return ""
@@ -108,13 +107,18 @@ class Patient(BaseModel):
         return bool(gp_ods)
 
     def get_patient_details(self, nhs_number) -> PatientDetails:
+        current_usual_name = self.get_current_usual_name()
+        given_name = current_usual_name.given if current_usual_name else [""]
+        family_name = current_usual_name.family if current_usual_name else ""
+        current_home_address = self.get_current_home_address()
+
         patient_details = PatientDetails(
-            givenName=self.get_current_usual_name().given,
-            familyName=self.get_current_usual_name().family,
+            givenName=given_name,
+            familyName=family_name,
             birthDate=self.birth_date,
             postalCode=(
-                self.get_current_home_address().postal_code
-                if self.is_unrestricted() and self.address
+                current_home_address.postal_code
+                if self.is_unrestricted() and current_home_address
                 else ""
             ),
             nhsNumber=self.id,
@@ -127,9 +131,13 @@ class Patient(BaseModel):
         return patient_details
 
     def get_minimum_patient_details(self, nhs_number) -> PatientDetails:
+        current_usual_name = self.get_current_usual_name()
+        given_name = current_usual_name.given if current_usual_name else [""]
+        family_name = current_usual_name.family if current_usual_name else ""
+
         return PatientDetails(
-            givenName=self.get_current_usual_name().given,
-            familyName=self.get_current_usual_name().family,
+            givenName=given_name,
+            familyName=family_name,
             birthDate=self.birth_date,
             generalPracticeOds=(
                 self.get_active_ods_code_for_gp() if self.is_unrestricted() else ""
