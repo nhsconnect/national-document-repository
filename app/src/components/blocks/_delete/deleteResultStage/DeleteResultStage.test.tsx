@@ -10,7 +10,7 @@ import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import { LinkProps } from 'react-router-dom';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
-import { runAxeTest } from '../../../helpers/test/axeTestHelper';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../../../helpers/hooks/useRole');
@@ -205,7 +205,7 @@ describe('DeleteResultStage', () => {
         const roles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE];
         it.each(roles)('pass accessibility checks for role %s', async (role) => {
             mockedUseRole.mockReturnValue(role);
-            render(<DeletionConfirmationStage numberOfFiles={3} setStage={mockSetStage} />);
+            render(<DeleteResultStage numberOfFiles={3} setStage={mockSetStage} />);
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
