@@ -51,13 +51,13 @@ describe('DeleteResultStage', () => {
                 render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
                 await waitFor(async () => {
-                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                    expect(
+                        screen.getByText('You have permanently removed the record of:'),
+                    ).toBeInTheDocument();
                 });
 
                 expect(
-                    screen.getByText(
-                        `You have successfully deleted ${numberOfFiles} file(s) from the Lloyd George record of:`,
-                    ),
+                    screen.getByText(`You can no longer access this record using our storage.`),
                 ).toBeInTheDocument();
                 expect(screen.getByText(patientName)).toBeInTheDocument();
                 expect(screen.getByText(/NHS number/)).toBeInTheDocument();
@@ -76,18 +76,13 @@ describe('DeleteResultStage', () => {
             render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
-                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                expect(
+                    screen.getByText('You have permanently removed the record of:'),
+                ).toBeInTheDocument();
             });
 
             expect(
-                screen.queryByText(
-                    `You have successfully deleted ${numberOfFiles} file(s) from the Lloyd George record of:`,
-                ),
-            ).not.toBeInTheDocument();
-            expect(
-                screen.getByText(
-                    `You have successfully deleted ${numberOfFiles} file(s) from the record of:`,
-                ),
+                screen.getByText(`You can no longer access this record using our storage.`),
             ).toBeInTheDocument();
             expect(screen.getByText(patientName)).toBeInTheDocument();
             expect(screen.getByText(/NHS number/)).toBeInTheDocument();
@@ -102,7 +97,9 @@ describe('DeleteResultStage', () => {
                 render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
                 await waitFor(async () => {
-                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                    expect(
+                        screen.getByText('You have permanently removed the record of:'),
+                    ).toBeInTheDocument();
                 });
 
                 expect(
@@ -120,7 +117,9 @@ describe('DeleteResultStage', () => {
             render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
-                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                expect(
+                    screen.getByText('You have permanently removed the record of:'),
+                ).toBeInTheDocument();
             });
 
             expect(
@@ -137,7 +136,9 @@ describe('DeleteResultStage', () => {
             render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
-                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                expect(
+                    screen.getByText('You have permanently removed the record of:'),
+                ).toBeInTheDocument();
             });
 
             expect(
@@ -156,7 +157,9 @@ describe('DeleteResultStage', () => {
                 render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
                 await waitFor(async () => {
-                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                    expect(
+                        screen.getByText('You have permanently removed the record of:'),
+                    ).toBeInTheDocument();
                 });
 
                 expect(
@@ -182,7 +185,9 @@ describe('DeleteResultStage', () => {
                 );
 
                 await waitFor(async () => {
-                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                    expect(
+                        screen.getByText('You have permanently removed the record of:'),
+                    ).toBeInTheDocument();
                 });
 
                 act(() => {
@@ -220,11 +225,13 @@ describe('DeleteResultStage', () => {
             render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
-                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                expect(
+                    screen.getByText('You have permanently removed the record of:'),
+                ).toBeInTheDocument();
             });
 
             act(() => {
-                userEvent.click(screen.getByRole('link'));
+                userEvent.click(screen.getByTestId('start-again-link'));
             });
 
             await waitFor(() => {

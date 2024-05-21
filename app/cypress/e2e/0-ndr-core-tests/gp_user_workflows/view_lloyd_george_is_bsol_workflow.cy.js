@@ -250,10 +250,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.wait('@documentDelete');
 
                 // assert delete success page is as expected
-                cy.contains('Deletion complete').should('be.visible');
-                cy.contains(
-                    'You have successfully deleted 12 file(s) from the Lloyd George record of:',
-                ).should('be.visible');
+                cy.getByTestId('deletion-complete_card_content_header').should('be.visible');
                 cy.contains('GivenName Surname').should('be.visible');
                 cy.contains(
                     `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,

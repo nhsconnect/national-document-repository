@@ -89,6 +89,25 @@ function DeleteResultStage({ numberOfFiles, setStage, setDownloadStage }: Props)
                 provides a framework for consistent and effective records management, based on
                 established standards.
             </p>
+            <p style={{ marginTop: 40 }}>
+                {isGP ? (
+                    <ButtonLink onClick={handleClick} data-testid="lg-return-btn" href="#">
+                        Return to patient's Lloyd George record page
+                    </ButtonLink>
+                ) : (
+                    <Link
+                        id="start-again-link"
+                        data-testid="start-again-link"
+                        to=""
+                        onClick={(e) => {
+                            e.preventDefault();
+                            navigate(routes.START);
+                        }}
+                    >
+                        Start Again
+                    </Link>
+                )}
+            </p>
         </div>
     );
 }

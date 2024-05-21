@@ -168,11 +168,6 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                 </Fieldset.Legend>
                 <PatientDetails />
 
-                <Fieldset.Legend headingLevel="h1" isPageHeading>
-                    Upload documents
-                </Fieldset.Legend>
-                <PatientSummary />
-
                 <Fieldset>
                     <h2>Electronic health records</h2>
                     <DocumentInputForm
