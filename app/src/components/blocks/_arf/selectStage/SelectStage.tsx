@@ -25,7 +25,6 @@ import { routes } from '../../../../types/generic/routes';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import { useNavigate } from 'react-router';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 interface Props {
     setDocuments: SetUploadDocuments;
