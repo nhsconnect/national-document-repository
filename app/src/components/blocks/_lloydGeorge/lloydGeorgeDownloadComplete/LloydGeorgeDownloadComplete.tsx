@@ -55,11 +55,19 @@ function LloydGeorgeDownloadComplete({
 
     const getCardHeader = () => {
         if (selectedFilesDownload) {
-            return 'You have downloaded files from the record of:';
+            return (
+                <div data-testid="downloaded-files-card-header">
+                    You have downloaded files from the record of:
+                </div>
+            );
         } else if (selectedDocuments) {
-            return 'You have downloaded the record of:';
+            return (
+                <div data-testid="downloaded-record-card-header">
+                    You have downloaded the record of:
+                </div>
+            );
         } else {
-            return 'Download complete';
+            return <div data-testid="download-complete-card-header">Download complete</div>;
         }
     };
 

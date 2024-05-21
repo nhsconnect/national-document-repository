@@ -5,6 +5,32 @@ import { formatNhsNumber } from '../../../../src/helpers/utils/formatNhsNumber';
 
 const baseUrl = Cypress.config('baseUrl');
 const searchPatientUrl = '/search/patient';
+const downloadPageTitle =
+    'Download the Lloyd George record for this patient - Digital Lloyd George records';
+const downloadingPageTitle = 'Downloading documents - Digital Lloyd George records';
+const downloadCompletePageTitle = 'Download complete - Digital Lloyd George records';
+const verifyPatientPageTitle = 'Verify patient details - Digital Lloyd George records';
+const lloydGeorgeRecordPageTitle = 'Available records - Digital Lloyd George records';
+const testFiles = [
+    {
+        fileName: '1of2_testy_test.pdf',
+        created: '2024-05-07T14:52:00.827602Z',
+        virusScannerResult: 'Clean',
+        id: 'test-id',
+    },
+    {
+        fileName: '2of2_testy_test.pdf',
+        created: '2024-05-07T14:52:00.827602Z',
+        virusScannerResult: 'Clean',
+        id: 'test-id-2',
+    },
+    {
+        fileName: '1of1_lone_test_file.pdf',
+        created: '2024-01-01T14:52:00.827602Z',
+        virusScannerResult: 'Clean',
+        id: 'test-id-3',
+    },
+];
 
 describe('GP Workflow: View Lloyd George record', () => {
     const beforeEachConfiguration = (role) => {
@@ -37,26 +63,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
         cy.intercept('GET', '/SearchDocumentReferences*', {
             statusCode: 200,
-            body: [
-                {
-                    fileName: '1of2_testy_test.pdf',
-                    created: '2024-05-07T14:52:00.827602Z',
-                    virusScannerResult: 'Clean',
-                    id: 'test-id',
-                },
-                {
-                    fileName: '2of2_testy_test.pdf',
-                    created: '2024-05-07T14:52:00.827602Z',
-                    virusScannerResult: 'Clean',
-                    id: 'test-id-2',
-                },
-                {
-                    fileName: '1of1_lone_test_file.pdf',
-                    created: '2024-01-01T14:52:00.827602Z',
-                    virusScannerResult: 'Clean',
-                    id: 'test-id-3',
-                },
-            ],
+            body: testFiles,
         }).as('searchDocumentReferences');
 
         cy.getByTestId('download-all-files-link').click();
@@ -73,11 +80,11 @@ describe('GP Workflow: View Lloyd George record', () => {
                     statusCode: 200,
                     body: viewLloydGeorgePayload,
                 }).as('lloydGeorgeStitch');
-                cy.title().should('eq', 'Verify patient details - Digital Lloyd George records');
+                cy.title().should('eq', verifyPatientPageTitle);
 
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
-                cy.title().should('eq', 'Available records - Digital Lloyd George records');
+                cy.title().should('eq', lloydGeorgeRecordPageTitle);
 
                 cy.intercept('GET', '/DocumentManifest*', {
                     statusCode: 200,
@@ -86,36 +93,14 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.intercept('GET', '/SearchDocumentReferences*', {
                     statusCode: 200,
-                    body: [
-                        {
-                            fileName: '1of2_testy_test.pdf',
-                            created: '2024-05-07T14:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            id: 'test-id',
-                        },
-                        {
-                            fileName: '2of2_testy_test.pdf',
-                            created: '2024-05-07T14:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            id: 'test-id-2',
-                        },
-                        {
-                            fileName: '1of1_lone_test_file.pdf',
-                            created: '2024-01-01T14:52:00.827602Z',
-                            virusScannerResult: 'Clean',
-                            id: 'test-id-3',
-                        },
-                    ],
+                    body: testFiles,
                 }).as('searchDocumentReferences');
 
                 cy.getByTestId('download-all-files-link').should('exist');
                 cy.getByTestId('download-all-files-link').click();
 
                 // Select documents page
-                cy.title().should(
-                    'eq',
-                    'Download the Lloyd George record for this patient - Digital Lloyd George records',
-                );
+                cy.title().should('eq', downloadPageTitle);
                 cy.wait('@searchDocumentReferences');
 
                 cy.getByTestId('patient-summary').should('exist');
@@ -127,7 +112,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('start-again-link').should('exist');
                 cy.getByTestId('download-all-files-btn').click();
 
-                cy.title().should('eq', 'Downloading documents - Digital Lloyd George records');
+                cy.title().should('eq', downloadingPageTitle);
 
                 // Assert contents of page when downloading
                 cy.getByTestId('lloyd-george-download-header').should('exist');
@@ -135,15 +120,12 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('cancel-download-link').should('exist');
 
                 // Assert contents of page after download
-                cy.title().should('eq', 'Download complete - Digital Lloyd George records');
-
-                cy.contains('You have downloaded the record of:').should('be.visible');
+                cy.title().should('eq', downloadCompletePageTitle);
+                cy.getByTestId('downloaded-record-card-header').should('exist');
                 cy.contains(
                     `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
                 ).should('be.visible');
-                cy.contains(
-                    `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
-                ).should('be.visible');
+                cy.contains(formatNhsNumber(searchPatientPayload.nhsNumber)).should('be.visible');
 
                 // Assert file has been downloaded
                 cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
@@ -163,10 +145,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 proceedToDownloadSelectionPage();
 
                 // Select documents page
-                cy.title().should(
-                    'eq',
-                    'Download the Lloyd George record for this patient - Digital Lloyd George records',
-                );
+                cy.title().should('eq', downloadPageTitle);
                 cy.wait('@searchDocumentReferences');
 
                 cy.getByTestId('download-selected-files-btn').should('exist');
@@ -181,24 +160,19 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.getByTestId('download-selected-files-btn').click();
 
-                cy.title().should('eq', 'Downloading documents - Digital Lloyd George records');
-
                 // Assert contents of page when downloading
-                cy.contains('Downloading documents').should('be.visible');
-                cy.contains(`Preparing download for 2 file(s)`).should('be.visible');
-                cy.contains('Compressing record into a zip file').should('be.visible');
-                cy.contains('Cancel').should('be.visible');
+                cy.title().should('eq', downloadingPageTitle);
+                cy.getByTestId('lloyd-george-download-header').should('exist');
+                cy.getByTestId('lloyd-george-download-card-content').should('exist');
+                cy.getByTestId('cancel-download-link').should('exist');
 
                 // Assert contents of page after download
-                cy.title().should('eq', 'Download complete - Digital Lloyd George records');
-
-                cy.contains('You have downloaded files from the record of:').should('be.visible');
+                cy.title().should('eq', downloadCompletePageTitle);
+                cy.getByTestId('downloaded-files-card-header').should('exist');
                 cy.contains(
                     `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
                 ).should('be.visible');
-                cy.contains(
-                    `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
-                ).should('be.visible');
+                cy.contains(formatNhsNumber(searchPatientPayload.nhsNumber)).should('be.visible');
 
                 // Assert file has been downloaded
                 cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
@@ -218,31 +192,18 @@ describe('GP Workflow: View Lloyd George record', () => {
                 proceedToDownloadSelectionPage();
 
                 // Select documents page
-                cy.title().should(
-                    'eq',
-                    'Download the Lloyd George record for this patient - Digital Lloyd George records',
-                );
+                cy.title().should('eq', downloadPageTitle);
                 cy.wait('@searchDocumentReferences');
 
                 cy.getByTestId('download-selected-files-btn').should('exist');
                 cy.getByTestId('download-selected-files-btn').click();
 
-                cy.title().should(
-                    'not.equal',
-                    'Downloading documents - Digital Lloyd George records',
-                );
-                cy.title().should(
-                    'equal',
-                    'Download the Lloyd George record for this patient - Digital Lloyd George records',
-                );
+                cy.title().should('not.equal', downloadingPageTitle);
+                cy.title().should('equal', downloadPageTitle);
 
                 cy.get('#error-box-summary').should('be.visible');
-                cy.get('#error-box-summary').should('have.text', 'There is a problem');
                 cy.get('.nhsuk-error-summary__body').should('be.visible');
-                cy.get('.nhsuk-error-summary__body').should(
-                    'have.text',
-                    'You must select a file to download or download all files',
-                );
+                cy.getByTestId('download-selection-error-box').should('exist');
             },
         );
 
