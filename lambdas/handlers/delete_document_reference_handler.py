@@ -35,13 +35,15 @@ def lambda_handler(event, context):
     logger.info("Delete Document Reference handler has been triggered")
 
     nhs_number = extract_nhs_number_from_event(event)
-    doc_types = extract_document_type_to_enum(event["queryStringParameters"]["docType"])
+    document_types = extract_document_type_to_enum(
+        event["queryStringParameters"]["docType"]
+    )
 
     request_context.patient_nhs_no = nhs_number
 
     deletion_service = DocumentDeletionService()
 
-    files_deleted = deletion_service.handle_delete(nhs_number, doc_types)
+    files_deleted = deletion_service.handle_delete(nhs_number, document_types)
     if files_deleted:
         logger.info(
             "Documents were deleted successfully", {"Result": "Successful deletion"}

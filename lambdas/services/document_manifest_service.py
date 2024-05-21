@@ -42,12 +42,12 @@ class DocumentManifestService:
 
     def create_document_manifest_presigned_url(
         self,
-        doc_types: list[SupportedDocumentTypes],
+        document_types: list[SupportedDocumentTypes],
         document_references: list[str] = None,
     ) -> str:
         try:
             documents = self.arrange_documents_for_download(
-                doc_types, document_references
+                document_types, document_references
             )
             if not documents:
                 logger.error(

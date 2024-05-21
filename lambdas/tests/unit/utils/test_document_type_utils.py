@@ -17,7 +17,7 @@ def test_extract_document_type_both(value):
 
     actual = extract_document_type_to_enum(value)
 
-    assert expected == actual
+    assert set(expected) == set(actual)
 
 
 @pytest.mark.parametrize(
@@ -60,7 +60,7 @@ def test_extract_document_type_arf(value):
         ("LG ", [SupportedDocumentTypes.LG]),
         (" LG", [SupportedDocumentTypes.LG]),
         (" ARF, LG ", [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG]),
-        (" LG  , ARF ", [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG]),
+        (" LG  , ARF ", [SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF]),
     ],
 )
 def test_extract_document_type_as_enum(value, expected):

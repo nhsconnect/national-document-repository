@@ -32,7 +32,9 @@ def lambda_handler(event, context):
     logger.info("Starting document manifest process")
 
     nhs_number = event["queryStringParameters"]["patientId"]
-    doc_types = extract_document_type_to_enum(event["queryStringParameters"]["docType"])
+    document_types = extract_document_type_to_enum(
+        event["queryStringParameters"]["docType"]
+    )
     if document_references := event["queryStringParameters"].get("docReferences"):
         document_references = document_references.split(",")
 
@@ -40,7 +42,7 @@ def lambda_handler(event, context):
 
     document_manifest_service = DocumentManifestService(nhs_number)
     response = document_manifest_service.create_document_manifest_presigned_url(
-        doc_types, document_references
+        document_types, document_references
     )
 
     logger.audit_splunk_info(
