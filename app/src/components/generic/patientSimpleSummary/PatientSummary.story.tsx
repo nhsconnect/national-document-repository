@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Component from './PatientSummary';
+import Component from './PatientSimpleSummary';
 
 const meta = {
-    title: 'Blocks/PatientSummary',
+    title: 'Blocks/PatientSimpleSummary',
     component: Component,
     tags: ['autodocs'],
     parameters: {

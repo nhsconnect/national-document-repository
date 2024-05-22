@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
+import DeleteSubmitStage from '../../components/blocks/_delete/deleteSubmitStage/DeleteSubmitStage';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
-import LloydGeorgeRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRecordStage/LloydGeorgeRecordStage';
+
+import LloydGeorgeViewRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeViewRecordStage/LloydGeorgeViewRecordStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
@@ -20,6 +21,7 @@ import { isMock } from '../../helpers/utils/isLocal';
 import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
+import RemoveRecordStage from '../../components/blocks/_delete/removeRecordStage/RemoveRecordStage';
 import LloydGeorgeSelectDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeSelectDownloadStage/LloydGeorgeSelectDownloadStage';
 import LloydGeorgeDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeDownloadStage/LloydGeorgeDownloadStage';
 
@@ -120,7 +122,7 @@ function LloydGeorgeRecordPage() {
     switch (stage) {
         case LG_RECORD_STAGE.RECORD:
             return (
-                <LloydGeorgeRecordStage
+                <LloydGeorgeViewRecordStage
                     numberOfFiles={numberOfFiles}
                     totalFileSizeInByte={totalFileSizeInByte}
                     lastUpdated={lastUpdated}
@@ -130,6 +132,9 @@ function LloydGeorgeRecordPage() {
                     stage={stage}
                 />
             );
+        case LG_RECORD_STAGE.REMOVE:
+            return <RemoveRecordStage setStage={setStage} recordType="Lloyd George" />;
+
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
             return isBSOL ? (
                 <LloydGeorgeSelectDownloadStage
@@ -147,9 +152,10 @@ function LloydGeorgeRecordPage() {
             );
         case LG_RECORD_STAGE.DELETE_ALL:
             return (
-                <DeleteDocumentsStage
+                <DeleteSubmitStage
                     docType={DOCUMENT_TYPE.LLOYD_GEORGE}
                     numberOfFiles={numberOfFiles}
+                    recordType="Lloyd George"
                     setStage={setStage}
                     setDownloadStage={setDownloadStage}
                 />

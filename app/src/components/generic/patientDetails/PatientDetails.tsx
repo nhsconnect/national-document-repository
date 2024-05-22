@@ -1,41 +1,39 @@
 import React from 'react';
-import usePatient from '../../../helpers/hooks/usePatient';
-import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { SummaryList } from 'nhsuk-react-components';
-type Props = {
-    separator?: boolean;
-};
-const PatientSummary = ({ separator = false }: Props) => {
+import { getFormattedDate } from '../../../helpers/utils/formatDate';
+import usePatient from '../../../helpers/hooks/usePatient';
+
+const PatientDetails = () => {
     const patientDetails = usePatient();
     return (
-        <SummaryList id="patient-summary" data-testid="patient-summary">
+        <SummaryList id="patient-details">
             <SummaryList.Row>
-                <SummaryList.Key>NHS number</SummaryList.Key>
-                <SummaryList.Value id="patient-summary-nhs-number">
+                <SummaryList.Key>NHS Number</SummaryList.Key>
+                <SummaryList.Value id="patient-details-nhs-number">
                     {patientDetails?.nhsNumber}
                 </SummaryList.Value>
             </SummaryList.Row>
             <SummaryList.Row>
                 <SummaryList.Key>Surname</SummaryList.Key>
-                <SummaryList.Value id="patient-summary-family-name">
+                <SummaryList.Value id="patient-details-family-name">
                     {patientDetails?.familyName}
                 </SummaryList.Value>
             </SummaryList.Row>
             <SummaryList.Row>
                 <SummaryList.Key>First name</SummaryList.Key>
-                <SummaryList.Value id="patient-summary-given-name">
+                <SummaryList.Value id="patient-details-given-name">
                     {patientDetails?.givenName?.map((name) => `${name} `)}
                 </SummaryList.Value>
             </SummaryList.Row>
             <SummaryList.Row>
                 <SummaryList.Key>Date of birth</SummaryList.Key>
-                <SummaryList.Value id="patient-summary-date-of-birth">
+                <SummaryList.Value id="patient-details-date-of-birth">
                     {getFormattedDate(new Date(patientDetails?.birthDate ?? ''))}
                 </SummaryList.Value>
             </SummaryList.Row>
             <SummaryList.Row>
                 <SummaryList.Key>Postcode</SummaryList.Key>
-                <SummaryList.Value id="patient-summary-postcode">
+                <SummaryList.Value id="patient-details-postcode">
                     {patientDetails?.postalCode}
                 </SummaryList.Value>
             </SummaryList.Row>
@@ -43,4 +41,4 @@ const PatientSummary = ({ separator = false }: Props) => {
     );
 };
 
-export default PatientSummary;
+export default PatientDetails;

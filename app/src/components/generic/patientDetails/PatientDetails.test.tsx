@@ -1,12 +1,12 @@
 import usePatient from '../../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
-import PatientSummary from './PatientSummary';
+import PatientDetails from './PatientDetails';
 import { render, screen } from '@testing-library/react';
 
 jest.mock('../../../helpers/hooks/usePatient');
 const mockedUsePatient = usePatient as jest.Mock;
 
-describe('PatientSummary', () => {
+describe('PatientDetails', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
     });
@@ -21,10 +21,11 @@ describe('PatientSummary', () => {
         });
 
         mockedUsePatient.mockReturnValue(mockDetails);
-        render(<PatientSummary />);
+        render(<PatientDetails />);
 
         expect(screen.getByText(mockDetails.nhsNumber)).toBeInTheDocument();
         expect(screen.getByText(mockDetails.familyName)).toBeInTheDocument();
+        //expect(screen.getByText(mockDetails.givenName)).toBeInTheDocument()
     });
 
     it('renders multiple given names with correct spacing', () => {
@@ -35,7 +36,7 @@ describe('PatientSummary', () => {
         });
 
         mockedUsePatient.mockReturnValue(mockDetails);
-        render(<PatientSummary />);
+        render(<PatientDetails />);
 
         // Using hard coded expected value instead of duplicating the expected logic
         const expectedGivenName = 'Comfort Zulu';

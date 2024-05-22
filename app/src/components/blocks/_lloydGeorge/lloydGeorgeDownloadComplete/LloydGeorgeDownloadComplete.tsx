@@ -137,7 +137,7 @@ function LloydGeorgeDownloadComplete({
                 appropriately. It is important all general practice staff understand their
                 responsibilities for creating, maintaining, and disposing of records appropriately.
             </p>
-            <p className="lloydgeorge_download-complete_paragraph-headers">
+            <p className="lloydgeorge_download-complete_paragraph-subheaders">
                 Follow the Record Management Code of Practice
             </p>
             <p>

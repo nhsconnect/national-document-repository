@@ -62,12 +62,12 @@ describe('PCSE Workflow: Access and download found files', () => {
         navigateToDownload();
 
         cy.get('#download-page-title').should('have.length', 1);
-        cy.get('#patient-summary-nhs-number').should('have.text', patient.nhsNumber);
-        cy.get('#patient-summary-family-name').should('have.text', patient.familyName);
+        cy.get('#patient-details-nhs-number').should('have.text', patient.nhsNumber);
+        cy.get('#patient-details-family-name').should('have.text', patient.familyName);
 
         const givenName = patient.givenName[0];
-        cy.get('#patient-summary-given-name').should('have.text', givenName + ' ');
-        cy.get('#patient-summary-date-of-birth').should(
+        cy.get('#patient-details-given-name').should('have.text', givenName + ' ');
+        cy.get('#patient-details-date-of-birth').should(
             'have.text',
             patient.birthDate.toLocaleDateString('en-GB', {
                 day: '2-digit',
@@ -75,7 +75,7 @@ describe('PCSE Workflow: Access and download found files', () => {
                 year: 'numeric',
             }),
         );
-        cy.get('#patient-summary-postcode').should('have.text', patient.postalCode);
+        cy.get('#patient-details-postcode').should('have.text', patient.postalCode);
     });
 
     it('shows no files avaliable on 204 success', { tags: 'regression' }, () => {
@@ -257,16 +257,14 @@ describe('PCSE Workflow: Access and download found files', () => {
 
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                cy.getByTestId('yes-radio-btn').click();
+                cy.get('#delete-docs').should('be.visible');
+                cy.get('#yes-radio-button').click();
                 cy.getByTestId('delete-submit-btn').click();
 
                 cy.wait('@documentDelete');
 
                 // assert delete success page is as expected
-                cy.contains('Deletion complete').should('be.visible');
-                cy.contains('You have successfully deleted 2 file(s) from the record of:').should(
-                    'be.visible',
-                );
+                cy.getByTestId('deletion-complete_card_content_header').should('be.visible');
                 cy.contains('GivenName Surname').should('be.visible');
                 cy.contains(
                     `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
@@ -280,8 +278,8 @@ describe('PCSE Workflow: Access and download found files', () => {
             () => {
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                // cancel delete
-                cy.getByTestId('no-radio-btn').click();
+                cy.get('#delete-docs').should('be.visible');
+                cy.get('#no-radio-button').click();
                 cy.getByTestId('delete-submit-btn').click();
 
                 // assert user is returned to download documents page
@@ -306,7 +304,8 @@ describe('PCSE Workflow: Access and download found files', () => {
 
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                cy.getByTestId('yes-radio-btn').click();
+                cy.get('#delete-docs').should('be.visible');
+                cy.get('#yes-radio-button').click();
                 cy.getByTestId('delete-submit-btn').click();
 
                 // assert
@@ -329,7 +328,8 @@ describe('PCSE Workflow: Access and download found files', () => {
 
                 cy.getByTestId('delete-all-documents-btn').click();
 
-                cy.getByTestId('yes-radio-btn').click();
+                cy.get('#delete-docs').should('be.visible');
+                cy.get('#yes-radio-button').click();
                 cy.getByTestId('delete-submit-btn').click();
 
                 // assert

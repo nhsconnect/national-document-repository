@@ -10,7 +10,7 @@ import {
 import { Button, Fieldset } from 'nhsuk-react-components';
 import { useController, useForm } from 'react-hook-form';
 import toFileList from '../../../../helpers/utils/toFileList';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import PatientDetails from '../../../generic/patientDetails/PatientDetails';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
@@ -165,7 +165,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                 <Fieldset.Legend headingLevel="h1" isPageHeading>
                     Upload documents
                 </Fieldset.Legend>
-                <PatientSummary />
+                <PatientDetails />
 
                 <Fieldset>
                     <h2>Electronic health records</h2>
