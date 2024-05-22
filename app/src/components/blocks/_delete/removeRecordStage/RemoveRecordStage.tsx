@@ -99,7 +99,7 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
                 <WarningCallout.Label>Before removing</WarningCallout.Label>
                 <p data-testid="remove-record-warning-text">
                     Only permanently remove this patient record if you have a valid reason to. For
-                    example, you confirmed these files have reached the end of their
+                    example, you confirmed these files have reached the end of their{' '}
                     <a
                         href="https://transform.england.nhs.uk/information-governance/guidance/records-management-code/records-management-code-of-practice/#appendix-ii-retention-schedule"
                         target="_blank"
