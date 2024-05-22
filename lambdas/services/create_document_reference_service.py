@@ -71,9 +71,9 @@ class CreateDocumentReferenceService:
                             400, LambdaError.CreateDocInvalidType
                         )
 
-                url_responses[document_reference.file_name] = (
-                    self.prepare_pre_signed_url(document_reference)
-                )
+                url_responses[
+                    document_reference.file_name
+                ] = self.prepare_pre_signed_url(document_reference)
 
             if lg_documents:
                 validate_lg_files(lg_documents, nhs_number)
@@ -111,26 +111,20 @@ class CreateDocumentReferenceService:
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
 
-        document_type = SupportedDocumentTypes.get_from_field_name(
-            validated_doc.docType
-        )
-
-        if document_type is None:
-            logger.error(
-                f"{LambdaError.CreateDocNoType.to_str()}",
-                {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
-            )
-            raise CreateDocumentRefException(400, LambdaError.CreateDocNoType)
-
         logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
-        if document_type == SupportedDocumentTypes.LG.value:
-            document_reference = self.create_document_reference_for_lg(
-                nhs_number, validated_doc
+        if validated_doc.docType == SupportedDocumentTypes.LG.value:
+            document_reference = self.create_document_reference(
+                nhs_number,
+                validated_doc,
+                s3_bucket_name=self.staging_bucket_name,
+                sub_folder=self.upload_sub_folder,
             )
-        elif document_type == SupportedDocumentTypes.ARF.value:
-            document_reference = self.create_document_reference_for_arf(
-                nhs_number, validated_doc
+        elif validated_doc.docType == SupportedDocumentTypes.ARF.value:
+            document_reference = self.create_document_reference(
+                nhs_number,
+                validated_doc,
+                s3_bucket_name=self.arf_bucket_name,
             )
         else:
             logger.error(
@@ -141,31 +135,14 @@ class CreateDocumentReferenceService:
 
         return document_reference
 
-    def create_document_reference_for_lg(
-        self, nhs_number: str, validated_doc: UploadRequestDocument
-    ) -> NHSDocumentReference:
-        s3_object_key = create_reference_id()
-
-        document_reference = NHSDocumentReference(
-            nhs_number=nhs_number,
-            s3_bucket_name=self.staging_bucket_name,
-            sub_folder=self.upload_sub_folder,
-            reference_id=s3_object_key,
-            content_type=validated_doc.contentType,
-            file_name=validated_doc.fileName,
-            doc_type=SupportedDocumentTypes.LG.value,
-            uploading=True,
-        )
-        return document_reference
-
-    def create_document_reference_for_arf(
+    def create_document_reference(
         self,
         nhs_number: str,
         validated_doc: UploadRequestDocument,
+        s3_bucket_name,
+        sub_folder="",
     ) -> NHSDocumentReference:
         s3_object_key = create_reference_id()
-        s3_bucket_name = self.arf_bucket_name
-        sub_folder = ""
 
         document_reference = NHSDocumentReference(
             nhs_number=nhs_number,
@@ -174,7 +151,7 @@ class CreateDocumentReferenceService:
             reference_id=s3_object_key,
             content_type=validated_doc.contentType,
             file_name=validated_doc.fileName,
-            doc_type=SupportedDocumentTypes.ARF.value,
+            doc_type=validated_doc.docType,
             uploading=True,
         )
         return document_reference

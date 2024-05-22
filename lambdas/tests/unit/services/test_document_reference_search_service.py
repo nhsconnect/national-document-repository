@@ -16,6 +16,7 @@ EXPECTED_RESPONSE = {
     "created": "2024-01-01T12:00:00.000Z",
     "fileName": "document.csv",
     "virusScannerResult": "Clean",
+    "ID": "3d8683b9-1665-40d2-8499-6e8302d507ff",
 }
 
 

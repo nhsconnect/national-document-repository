@@ -261,7 +261,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     // Assert contents of page when downloading
                     cy.contains('Downloading documents').should('be.visible');
                     cy.contains(
-                        `Preparing download for ${viewLloydGeorgePayload.number_of_files} files`,
+                        `Preparing download for ${viewLloydGeorgePayload.number_of_files} file(s)`,
                     ).should('be.visible');
                     cy.contains('Compressing record into a zip file').should('be.visible');
                     cy.contains('Cancel').should('be.visible');
@@ -281,7 +281,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     // Assert file has been downloaded
                     cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
 
-                    cy.getByTestId('return-btn').should('not.exist');
+                    cy.getByTestId('return-btn').should('exist');
                     cy.contains('This record has been removed from our storage.').should(
                         'be.visible',
                     );

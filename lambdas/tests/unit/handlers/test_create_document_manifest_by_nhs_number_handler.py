@@ -3,6 +3,7 @@ from enum import Enum
 
 import pytest
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from handlers.document_manifest_by_nhs_number_handler import lambda_handler
@@ -42,15 +43,15 @@ def manifest_service_side_effect(nhs_number, doc_type):
         return create_test_doc_store_refs()
     if doc_type == SupportedDocumentTypes.LG.value:
         return create_test_lloyd_george_doc_store_refs()
-    if doc_type == SupportedDocumentTypes.ALL.value:
-        return create_test_doc_store_refs() + create_test_lloyd_george_doc_store_refs()
     return []
 
 
 def test_lambda_handler_when_service_raises_document_manifest_exception_returns_correct_response(
     mock_service, valid_id_and_arf_doctype_event, context
 ):
-    exception = DocumentManifestServiceException(status_code=404, error=MockError.Error)
+    exception = DocumentManifestServiceException(
+        status_code=404, error=LambdaError.MockError
+    )
     mock_service.create_document_manifest_presigned_url.side_effect = exception
 
     expected = ApiGatewayResponse(
@@ -222,3 +223,21 @@ def test_lambda_handler_returns_400_when_doc_type_not_supplied(
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_event_without_auth_header, context)
     assert expected == actual
+
+
+def test_lambda_handler_sets_document_references_to_none_when_no_document_reference_params(
+    mock_service, valid_id_and_lg_doctype_event, context
+):
+    lambda_handler(valid_id_and_lg_doctype_event, context)
+    mock_service.create_document_manifest_presigned_url.assert_called_once_with(
+        [SupportedDocumentTypes.LG], None
+    )
+
+
+def test_lambda_handler_sets_document_references_when_event_contains_document_reference_params(
+    mock_service, valid_id_and_lg_doctype_event_with_doc_references, context
+):
+    lambda_handler(valid_id_and_lg_doctype_event_with_doc_references, context)
+    mock_service.create_document_manifest_presigned_url.assert_called_once_with(
+        [SupportedDocumentTypes.LG], ["test-doc-ref", "test-doc-ref2"]
+    )
