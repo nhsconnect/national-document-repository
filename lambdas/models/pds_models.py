@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 
 class Period(BaseModel):
-    start: Optional[date] = None
+    start: date
     end: Optional[date] = None
 
 

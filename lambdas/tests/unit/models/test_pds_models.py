@@ -154,7 +154,7 @@ def test_patient_without_given_name_in_historic_name_can_be_processed_successful
 def test_patient_without_given_name_in_current_name_can_be_processed_successfully():
     patient = create_patient(PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME)
 
-    expected = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(update={"given_name": None})
+    expected = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(update={"given_name": [""]})
     result = patient.get_patient_details(patient.id)
 
     assert expected == result
