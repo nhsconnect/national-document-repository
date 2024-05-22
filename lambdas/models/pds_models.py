@@ -69,7 +69,7 @@ class Patient(BaseModel):
     address: list[Address] = []
     name: list[Name]
     meta: Meta
-    general_practitioner: Optional[list[GeneralPractitioner]] = None
+    general_practitioner: list[GeneralPractitioner] = []
 
     def get_security(self) -> Security:
         security = self.meta.security[0] if self.meta.security[0] else None
@@ -94,12 +94,13 @@ class Patient(BaseModel):
                     return entry
 
     def get_active_ods_code_for_gp(self) -> str:
-        if self.general_practitioner:
-            for entry in self.general_practitioner:
-                period = entry.identifier.period
-                gp_end_date = period.end if period else None
-                if not gp_end_date or gp_end_date >= date.today():
-                    return entry.identifier.value
+        for entry in self.general_practitioner:
+            period = entry.identifier.period
+            if not period:
+                continue
+            gp_end_date = period.end
+            if not gp_end_date or gp_end_date >= date.today():
+                return entry.identifier.value
         return ""
 
     def get_is_active_status(self) -> bool:
