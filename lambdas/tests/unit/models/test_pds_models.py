@@ -1,7 +1,5 @@
-import pytest
 from freezegun import freeze_time
 from models.pds_models import PatientDetails
-from pydantic import ValidationError
 from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT,
     PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME,
@@ -91,7 +89,7 @@ def test_gp_ods_empty_when_gp_end_date_indicates_inactive():
     assert response.general_practice_ods == ""
 
 
-def test_raise_error_when_no_gp_in_response():
+def test_not_raise_error_when_no_gp_in_response():
     patient = create_patient(PDS_PATIENT_WITHOUT_ACTIVE_GP)
 
     response = patient.get_minimum_patient_details(patient.id)
@@ -153,7 +151,10 @@ def test_patient_without_given_name_in_historic_name_can_be_processed_successful
     assert EXPECTED_PARSED_PATIENT_BASE_CASE == result
 
 
-def test_patient_without_given_name_in_current_name_raise_error():
-    with pytest.raises(ValidationError):
-        patient = create_patient(PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME)
-        patient.get_patient_details(patient.id)
+def test_patient_without_given_name_in_current_name_can_be_processed_successfully():
+    patient = create_patient(PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME)
+
+    expected = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(update={"given_name": None})
+    result = patient.get_patient_details(patient.id)
+
+    assert expected == result
