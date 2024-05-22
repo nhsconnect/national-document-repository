@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
+import DeleteSubmitStage from '../../components/blocks/_delete/deleteSubmitStage/DeleteSubmitStage';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
-import LloydGeorgeRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRecordStage/LloydGeorgeRecordStage';
-import LloydGeorgeDownloadAllStage from '../../components/blocks/_lloydGeorge/lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
+
+import LloydGeorgeViewRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeViewRecordStage/LloydGeorgeViewRecordStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
@@ -22,6 +22,9 @@ import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
+import RemoveRecordStage from '../../components/blocks/_delete/removeRecordStage/RemoveRecordStage';
+import LloydGeorgeSelectDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeSelectDownloadStage/LloydGeorgeSelectDownloadStage';
+import LloydGeorgeDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeDownloadStage/LloydGeorgeDownloadStage';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -38,7 +41,7 @@ function LloydGeorgeRecordPage() {
     const config = useConfig();
     const role = useRole();
     const isBSOL = useIsBSOL();
-    const deleteAfterDownload = role === REPOSITORY_ROLE.GP_ADMIN && isBSOL === false;
+    const deleteAfterDownload = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
     useEffect(() => {
         const onSuccess = (
@@ -123,7 +126,7 @@ function LloydGeorgeRecordPage() {
                 <Route
                     index
                     element={
-                        <LloydGeorgeRecordStage
+                        <LloydGeorgeViewRecordStage
                             numberOfFiles={numberOfFiles}
                             totalFileSizeInByte={totalFileSizeInByte}
                             lastUpdated={lastUpdated}
@@ -135,9 +138,19 @@ function LloydGeorgeRecordPage() {
                     }
                 />
                 <Route
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_SELECT) + '/*'}
+                    element={
+                        <LloydGeorgeSelectDownloadStage
+                            setStage={setStage}
+                            deleteAfterDownload={deleteAfterDownload}
+                            setDownloadStage={setDownloadStage}
+                        />
+                    }
+                />
+                <Route
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD) + '/*'}
                     element={
-                        <LloydGeorgeDownloadAllStage
+                        <LloydGeorgeDownloadStage
                             numberOfFiles={numberOfFiles}
                             deleteAfterDownload={deleteAfterDownload}
                         />
@@ -146,11 +159,12 @@ function LloydGeorgeRecordPage() {
                 <Route
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DELETE) + '/*'}
                     element={
-                        <DeleteDocumentsStage
+                        <DeleteSubmitStage
                             docType={DOCUMENT_TYPE.LLOYD_GEORGE}
                             numberOfFiles={numberOfFiles}
                             setStage={setStage}
                             setDownloadStage={setDownloadStage}
+                            recordType="Lloyd George"
                         />
                     }
                 />
@@ -162,3 +176,44 @@ function LloydGeorgeRecordPage() {
 }
 
 export default LloydGeorgeRecordPage;
+
+//     switch (stage) {
+//         case LG_RECORD_STAGE.RECORD:
+//             return (
+//                 <LloydGeorgeViewRecordStage
+//                     numberOfFiles={numberOfFiles}
+//                     totalFileSizeInByte={totalFileSizeInByte}
+//                     lastUpdated={lastUpdated}
+//                     lloydGeorgeUrl={lloydGeorgeUrl}
+//                     downloadStage={downloadStage}
+//                     setStage={setStage}
+//                     stage={stage}
+//                 />
+//             );
+//         case LG_RECORD_STAGE.REMOVE:
+//             return <RemoveRecordStage setStage={setStage} recordType="Lloyd George" />;
+
+//         case LG_RECORD_STAGE.DOWNLOAD_ALL:
+//             return isBSOL ? (
+//                 <LloydGeorgeSelectDownloadStage
+//                     setStage={setStage}
+//                     deleteAfterDownload={deleteAfterDownload}
+//                     setDownloadStage={setDownloadStage}
+//                 />
+//             ) : (
+//                 <LloydGeorgeDownloadStage
+//                     numberOfFiles={numberOfFiles}
+//                     setStage={setStage}
+//                     deleteAfterDownload={deleteAfterDownload}
+//                     setDownloadStage={setDownloadStage}
+//                 />
+//             );
+//         case LG_RECORD_STAGE.DELETE_ALL:
+//             return (
+//                 <DeleteSubmitStage
+//                     docType={DOCUMENT_TYPE.LLOYD_GEORGE}
+//                     numberOfFiles={numberOfFiles}
+//                     recordType="Lloyd George"
+//                     setStage={setStage}
+//                     setDownloadStage={setDownloadStage}
+// >>>>>>> main

@@ -4,6 +4,8 @@ import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
 import UnauthorisedLoginPage from './UnauthorisedLoginPage';
+import StartPage from '../startPage/StartPage';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
@@ -47,5 +49,12 @@ describe('UnauthorisedPage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
             });
         });
+    });
+
+    it('pass accessibility checks', async () => {
+        render(<UnauthorisedLoginPage />);
+        const results = await runAxeTest(document.body);
+
+        expect(results).toHaveNoViolations();
     });
 });

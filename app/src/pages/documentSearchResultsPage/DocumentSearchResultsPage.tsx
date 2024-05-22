@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
+import PatientDetails from '../../components/generic/patientDetails/PatientDetails';
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/_arf/documentSearchResults/DocumentSearchResults';
 import { Outlet, Route, Routes, useNavigate } from 'react-router';
@@ -12,7 +12,7 @@ import DocumentSearchResultsOptions from '../../components/blocks/_arf/documentS
 import { AxiosError } from 'axios';
 import getDocumentSearchResults from '../../helpers/requests/getDocumentSearchResults';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import DeleteDocumentsStage from '../../components/blocks/deleteDocumentsStage/DeleteDocumentsStage';
+import DeleteSubmitStage from '../../components/blocks/_delete/deleteSubmitStage/DeleteSubmitStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
@@ -87,7 +87,7 @@ function DocumentSearchResultsPage() {
             {(submissionState === SUBMISSION_STATE.FAILED ||
                 downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
 
-            <PatientSummary />
+            <PatientDetails />
 
             {submissionState === SUBMISSION_STATE.PENDING && (
                 <ProgressBar status="Loading..."></ProgressBar>
@@ -149,7 +149,8 @@ function DocumentSearchResultsPage() {
                     <Route
                         path={getLastURLPath(routeChildren.ARF_DELETE) + '/*'}
                         element={
-                            <DeleteDocumentsStage
+                            <DeleteSubmitStage
+                                recordType="ARF"
                                 numberOfFiles={searchResults.length}
                                 setIsDeletingDocuments={setIsDeletingDocuments}
                                 docType={DOCUMENT_TYPE.ALL}

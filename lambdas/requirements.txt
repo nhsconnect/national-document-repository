@@ -20,7 +20,7 @@ pycparser==2.21
 pydantic==2.4.0
 pypdf==3.17.2
 python-dateutil==2.8.2
-requests==2.31.0
+requests==2.32.0
 responses==0.23.1
 s3transfer==0.8.2
 setuptools==65.5.1

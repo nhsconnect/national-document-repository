@@ -15,12 +15,15 @@ import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
+import { SearchResult } from '../../../../types/generic/searchResult';
 
 const FakeProgress = require('fake-progress');
 
 export type Props = {
-    numberOfFiles: number;
     deleteAfterDownload: boolean;
+    selectedDocuments?: Array<string>;
+    searchResults?: Array<SearchResult>;
+    numberOfFiles: number;
 };
 
 type DownloadLinkAttributes = {
@@ -28,7 +31,13 @@ type DownloadLinkAttributes = {
     filename: string;
 };
 
-function LloydGeorgeDownloadAllStage({ numberOfFiles, deleteAfterDownload = false }: Props) {
+
+function LloydGeorgeDownloadStage({
+    deleteAfterDownload = false,
+    selectedDocuments,
+    searchResults,
+    numberOfFiles,
+}: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
     const baseUrl = useBaseAPIUrl();
@@ -45,12 +54,17 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, deleteAfterDownload = fals
     const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
 
+    const numberOfFilesForDownload = selectedDocuments?.length
+        ? selectedDocuments.length
+        : numberOfFiles;
+
     const progressTimer = useMemo(() => {
         return new FakeProgress({
             timeConstant: timeToComplete,
             autoStart: true,
         });
     }, []);
+
     const intervalTimer = window.setInterval(() => {
         setProgress(parseInt((progressTimer.progress * 100).toFixed(1)));
     }, 100);
@@ -96,6 +110,7 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, deleteAfterDownload = fals
                     baseHeaders,
                     nhsNumber,
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                    docReferences: selectedDocuments,
                 });
 
                 const filename = `patient-record-${nhsNumber}`;
@@ -136,7 +151,9 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, deleteAfterDownload = fals
         deleteAfterDownload,
         navigate,
         mockLocal,
+        selectedDocuments,
     ]);
+
     const pageHeader = 'Downloading documents';
     useTitle({ pageTitle: pageHeader });
     return (
@@ -202,13 +219,56 @@ function LloydGeorgeDownloadAllStage({ numberOfFiles, deleteAfterDownload = fals
                 />
                 <Route
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE)}
-                    element={<LgDownloadComplete deleteAfterDownload={deleteAfterDownload} />}
+                    element={
+                        <LgDownloadComplete
+                            deleteAfterDownload={deleteAfterDownload}
+                            numberOfFiles={numberOfFilesForDownload}
+                            selectedDocuments={selectedDocuments}
+                            searchResults={searchResults}
+                        />
+                    }
                 />
             </Routes>
 
             <Outlet />
         </>
     );
+        // return inProgress ? (
+        //     <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
+        //         <div
+        //             className="lloydgeorge_downloadall-stage_header"
+        //             data-testid="lloyd-george-download-header"
+        //         >
+        //             <h1>{pageHeader}</h1>
+        //             <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
+        //             <h4>NHS number: {patientDetails?.nhsNumber}</h4>
+        //             <div className="nhsuk-heading-xl" />
+        //             <h4>Preparing download for {numberOfFilesForDownload} file(s)</h4>
+        //         </div>
+
+        //         <Card className="lloydgeorge_downloadall-stage_details">
+        //             <Card.Content data-testid="lloyd-george-download-card-content">
+        //                 <strong>
+        //                     <p>Compressing record into a zip file</p>
+        //                 </strong>
+        //                 <div>
+        //                     <Link
+        //                         to="#"
+        //                         onClick={(e) => {
+        //                             e.preventDefault();
+        //                             handlePageExit();
+        //                             setStage(LG_RECORD_STAGE.RECORD);
+        //                         }}
+        //                         data-testid="cancel-download-link"
+        //                     >
+        //                         Cancel
+        //                     </Link>
+        //                 </div>
+        //             </div>
+        //         </Card.Content>
+        //     </Card>
+        // </div>
+
 }
 
-export default LloydGeorgeDownloadAllStage;
+export default LloydGeorgeDownloadStage;

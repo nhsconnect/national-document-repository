@@ -11,6 +11,7 @@ import DocumentsListView from '../../../generic/documentsListView/DocumentsListV
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { GenericDocument } from '../../../../types/generic/genericDocument';
 
 interface Props {
     documents: Array<UploadDocument>;
@@ -25,9 +26,17 @@ function LloydGeorgeUploadCompleteStage({ documents }: Props) {
         focusLayoutDiv();
     }, []);
 
-    const successfulUploads = documents.filter((document) => {
-        return document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED;
-    });
+    const successfulUploads = documents.map((document) => {
+        if (document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) {
+            return {
+                reference: document.ref,
+                id: document.id,
+                fileName: document.file.name,
+            };
+        } else {
+            return null;
+        }
+    }) as GenericDocument[];
     useTitle({ pageTitle: 'Record upload complete' });
 
     return (

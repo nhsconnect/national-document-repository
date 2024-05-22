@@ -4,8 +4,8 @@ from enum import Enum
 import pytest
 from handlers.update_upload_state_handler import lambda_handler
 from tests.unit.helpers.data.update_upload_state import (
-    MOCK_INVALID_ALL_EVENT,
     MOCK_INVALID_BODY_EVENT,
+    MOCK_INVALID_TYPE_EVENT,
     MOCK_NO_BODY_EVENT,
     MOCK_VALID_ARF_EVENT,
     MOCK_VALID_LG_EVENT,
@@ -53,15 +53,15 @@ def test_update_upload_state_handler_success_arf(
 
 def test_update_upload_state_handler_both_doc_types_raise_error(set_env, context):
     expected_body = {
-        "message": "Doctype invalid",
-        "err_code": "US_4003",
+        "message": "Missing fields",
+        "err_code": "US_4002",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
     expected = ApiGatewayResponse(
         400, json.dumps(expected_body), "POST"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(MOCK_INVALID_ALL_EVENT, context)
+    actual = lambda_handler(MOCK_INVALID_TYPE_EVENT, context)
 
     assert expected == actual
 

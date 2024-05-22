@@ -1,7 +1,8 @@
 import { render, screen } from '@testing-library/react';
-import FeedbackConfirmation from './FeedbackConfirmation';
+import FeedbackConfirmationPage from './FeedbackConfirmationPage';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
-describe('<FeedbackConfirmation />', () => {
+describe('<FeedbackConfirmationPage />', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
     });
@@ -10,7 +11,7 @@ describe('<FeedbackConfirmation />', () => {
     });
 
     it('renders the page header and content', () => {
-        render(<FeedbackConfirmation />);
+        render(<FeedbackConfirmationPage />);
 
         expect(
             screen.getByRole('heading', { name: 'We’ve received your feedback' }),
@@ -23,5 +24,12 @@ describe('<FeedbackConfirmation />', () => {
         contentStrings.forEach((s) => {
             expect(screen.getByText(s)).toBeInTheDocument();
         });
+    });
+
+    it('pass accessibility checks at confirmation screen', async () => {
+        render(<FeedbackConfirmationPage />);
+
+        const results = await runAxeTest(document.body);
+        expect(results).toHaveNoViolations();
     });
 });

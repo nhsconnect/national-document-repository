@@ -219,17 +219,30 @@ describe('GP Workflow: View Lloyd George record', () => {
                     request = request + 1;
                 }).as('lloydGeorgeStitch');
 
+                cy.intercept('GET', '/SearchDocumentReferences*', {
+                    statusCode: 200,
+                    body: [
+                        {
+                            fileName: 'testName',
+                            created: 'testCreated',
+                            virusScannerResult: 'Clean',
+                        },
+                    ],
+                }).as('searchDocs');
+
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
 
+                cy.wait('@searchDocs');
                 // assert delete confirmation page is as expected
-                cy.contains('Are you sure you want to permanently delete files for:').should(
-                    'be.visible',
-                );
-                cy.contains('GivenName Surname').should('be.visible');
+                cy.getByTestId('remove-record-warning-text').should('be.visible');
+
+                cy.getByTestId('remove-btn').click();
+                cy.contains('Surname').should('be.visible');
+                cy.contains('GivenName').should('be.visible');
                 cy.contains('NHS number: 900 000 0009').should('be.visible');
                 cy.contains('Date of birth: 01 January 1970').should('be.visible');
 
@@ -242,16 +255,14 @@ describe('GP Workflow: View Lloyd George record', () => {
                     },
                 ).as('documentDelete');
 
-                cy.getByTestId('yes-radio-btn').click();
+                cy.get('#delete-docs').should('be.visible');
+                cy.get('#yes-radio-button').click();
                 cy.getByTestId('delete-submit-btn').click();
 
                 cy.wait('@documentDelete');
 
                 // assert delete success page is as expected
-                cy.contains('Deletion complete').should('be.visible');
-                cy.contains(
-                    'You have successfully deleted 12 file(s) from the Lloyd George record of:',
-                ).should('be.visible');
+                cy.getByTestId('deletion-complete_card_content_header').should('be.visible');
                 cy.contains('GivenName Surname').should('be.visible');
                 cy.contains(
                     `NHS number: ${formatNhsNumber(searchPatientPayload.nhsNumber)}`,
@@ -283,8 +294,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
                 // cancel delete
-                cy.getByTestId('no-radio-btn').click();
-                cy.getByTestId('delete-submit-btn').click();
+                cy.getByTestId('start-again-btn').click();
 
                 // assert user is returned to view Lloyd George page
                 cy.contains('Lloyd George record').should('be.visible');
@@ -304,11 +314,16 @@ describe('GP Workflow: View Lloyd George record', () => {
                     body: viewLloydGeorgePayload,
                 }).as('lloydGeorgeStitch');
 
-                cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
-
-                cy.getByTestId('delete-all-files-link').should('exist');
-                cy.getByTestId('delete-all-files-link').click();
+                cy.intercept('GET', '/SearchDocumentReferences*', {
+                    statusCode: 200,
+                    body: [
+                        {
+                            fileName: 'testName',
+                            created: 'testCreated',
+                            virusScannerResult: 'Clean',
+                        },
+                    ],
+                }).as('searchDocs');
 
                 cy.intercept(
                     'DELETE',
@@ -319,9 +334,18 @@ describe('GP Workflow: View Lloyd George record', () => {
                     },
                 ).as('documentDelete');
 
-                cy.getByTestId('yes-radio-btn').click();
-                cy.getByTestId('delete-submit-btn').click();
+                cy.get('#verify-submit').click();
+                cy.wait('@lloydGeorgeStitch');
 
+                cy.getByTestId('delete-all-files-link').should('exist');
+                cy.getByTestId('delete-all-files-link').click();
+
+                cy.wait('@searchDocs');
+
+                cy.getByTestId('remove-btn').click();
+                cy.get('#delete-docs').should('be.visible');
+                cy.get('#yes-radio-button').click();
+                cy.getByTestId('delete-submit-btn').click();
                 cy.wait('@documentDelete');
 
                 // assert

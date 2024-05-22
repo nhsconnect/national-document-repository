@@ -18,6 +18,7 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { LinkProps } from 'react-router-dom';
 import * as ReactRouter from 'react-router';
 import { History, createMemoryHistory } from 'history';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 jest.mock('../../helpers/hooks/useConfig');
 jest.mock('axios');
@@ -200,6 +201,22 @@ describe('LloydGeorgeRecordPage', () => {
             screen.getByText(`File size: ${formatFileSize(lgResult.total_file_size_in_byte)}`),
         ).toBeInTheDocument();
         expect(screen.getByText('File format: PDF')).toBeInTheDocument();
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            const lgResult = buildLgSearchResult();
+            mockAxios.get.mockReturnValue(Promise.resolve({ data: lgResult }));
+
+            render(<LloydGeorgeRecordPage />);
+
+            await waitFor(() => {
+                expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
+            });
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
     });
 
     it('navigates to Error page when call to lg record view return 500', async () => {

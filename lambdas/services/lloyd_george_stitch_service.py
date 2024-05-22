@@ -3,7 +3,6 @@ import os
 import shutil
 import tempfile
 from urllib import parse
-from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -14,7 +13,7 @@ from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from services.pdf_stitch_service import stitch_pdf
 from utils.audit_logging_setup import LoggingService
-from utils.dynamo_utils import filter_expression_for_available_docs
+from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.exceptions import FileUploadInProgress
 from utils.filename_utils import extract_page_number
 from utils.lambda_exceptions import LGStitchServiceException
@@ -22,7 +21,7 @@ from utils.lloyd_george_validator import (
     LGInvalidFilesException,
     check_for_number_of_files_match_expected,
 )
-from utils.utilities import create_reference_id
+from utils.utilities import create_reference_id, get_file_key_from_s3_url
 
 logger = LoggingService(__name__)
 
@@ -55,23 +54,21 @@ class LloydGeorgeStitchService:
             )
 
         try:
-            filename_for_stitched_file = self.make_filename_for_stitched_file(
-                lg_records
-            )
             stitched_lg_record = stitch_pdf(all_lg_parts, self.temp_folder)
+            filename_for_stitched_file = os.path.basename(stitched_lg_record)
             number_of_files = len(all_lg_parts)
             last_updated = self.get_most_recent_created_date(lg_records)
-            total_file_size = self.get_total_file_size(all_lg_parts)
+            total_file_size_in_byte = self.get_total_file_size_in_bytes(all_lg_parts)
 
             presign_url = self.upload_stitched_lg_record_and_retrieve_presign_url(
                 stitched_lg_record=stitched_lg_record,
-                filename_on_bucket=f"{nhs_number}/{filename_for_stitched_file}",
+                filename_on_bucket=f"combined_files/{filename_for_stitched_file}",
             )
             response = {
                 "number_of_files": number_of_files,
                 "last_updated": last_updated,
                 "presign_url": presign_url,
-                "total_file_size_in_byte": total_file_size,
+                "total_file_size_in_byte": total_file_size_in_byte,
             }
             logger.audit_splunk_info(
                 "User has viewed Lloyd George records",
@@ -92,7 +89,7 @@ class LloydGeorgeStitchService:
         self, nhs_number: str
     ) -> list[DocumentReference]:
         try:
-            filter_expression = filter_expression_for_available_docs()
+            filter_expression = filter_uploaded_docs_and_recently_uploading_docs()
             available_docs = (
                 self.document_service.fetch_available_document_references_by_type(
                     nhs_number,
@@ -152,7 +149,6 @@ class LloydGeorgeStitchService:
         try:
             return sorted(documents, key=lambda doc: extract_page_number(doc.file_name))
         except (KeyError, ValueError) as e:
-            documents[0].nhs_number
             logger.error(
                 f"{LambdaError.StitchValidation.to_str()}: {str(e)}",
                 {"Result": "Lloyd George stitching failed"},
@@ -167,7 +163,7 @@ class LloydGeorgeStitchService:
 
         for lg_part in ordered_lg_records:
             file_location_on_s3 = lg_part.file_location
-            s3_file_path = urlparse(file_location_on_s3).path.lstrip("/")
+            s3_file_path = get_file_key_from_s3_url(file_location_on_s3)
             local_file_name = os.path.join(self.temp_folder, create_reference_id())
             self.s3_service.download_file(
                 self.lloyd_george_bucket_name, s3_file_path, local_file_name
@@ -175,14 +171,6 @@ class LloydGeorgeStitchService:
             all_lg_parts.append(local_file_name)
 
         return all_lg_parts
-
-    @staticmethod
-    def make_filename_for_stitched_file(documents: list[DocumentReference]) -> str:
-        sample_doc = documents[0]
-        base_filename = sample_doc.file_name
-        end_of_total_page_numbers = base_filename.index("_")
-
-        return "Combined" + base_filename[end_of_total_page_numbers:]
 
     def upload_stitched_lg_record_and_retrieve_presign_url(
         self,
@@ -210,6 +198,5 @@ class LloydGeorgeStitchService:
         return max(doc.created for doc in documents)
 
     @staticmethod
-    def get_total_file_size(filepaths: list[str]) -> int:
-        # Return the sum of a list of files (unit: byte)
+    def get_total_file_size_in_bytes(filepaths: list[str]) -> int:
         return sum(os.path.getsize(filepath) for filepath in filepaths)

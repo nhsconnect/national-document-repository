@@ -13,6 +13,8 @@ import {
 import LloydGeorgeUploadStage from './LloydGeorgeUploadingStage';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import userEvent from '@testing-library/user-event';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+
 
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/usePatient');
@@ -219,6 +221,57 @@ describe('<LloydGeorgeUploadingStage />', () => {
             });
             userEvent.click(screen.getByRole('link', { name: 'Retry uploading all failed files' }));
             expect(mockUploadAndScan).toHaveBeenCalled();
+        });
+    });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks during upload', async () => {
+            const uploadDocument = {
+                file: buildTextFile('one', 100),
+                state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+                id: '1',
+                progress: 50,
+                docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                attempts: 0,
+            };
+
+            const uploadSession = buildUploadSession([uploadDocument]);
+            render(
+                <LloydGeorgeUploadStage
+                    documents={[uploadDocument]}
+                    uploadSession={uploadSession}
+                    uploadAndScanDocuments={mockUploadAndScan}
+                />,
+            );
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when some files failed and warning callout appeared', async () => {
+            const uploadDocument = {
+                file: buildTextFile('one', 100),
+                state: DOCUMENT_UPLOAD_STATE.FAILED,
+                id: '1',
+                progress: 0,
+                docType: DOCUMENT_TYPE.ARF,
+                attempts: 10,
+            };
+
+            const uploadSession = buildUploadSession([uploadDocument]);
+            render(
+                <LloydGeorgeUploadStage
+                    documents={[uploadDocument]}
+                    uploadSession={uploadSession}
+                    uploadAndScanDocuments={mockUploadAndScan}
+                />,
+            );
+
+            await screen.findByText('There is a problem with some of your files');
+            await screen.findByText('File failed to upload');
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
         });
     });
 });

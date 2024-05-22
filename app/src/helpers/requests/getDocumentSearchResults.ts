@@ -3,18 +3,25 @@ import { endpoints } from '../../types/generic/endpoints';
 import { SearchResult } from '../../types/generic/searchResult';
 
 import axios, { AxiosError } from 'axios';
+import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 
 type Args = {
     nhsNumber: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
+    docType?: DOCUMENT_TYPE;
 };
 
 export type GetDocumentSearchResultsResponse = {
     data: Array<SearchResult>;
 };
 
-const getDocumentSearchResults = async ({ nhsNumber, baseUrl, baseHeaders }: Args) => {
+const getDocumentSearchResults = async ({
+    nhsNumber,
+    baseUrl,
+    baseHeaders,
+    docType = DOCUMENT_TYPE.ALL,
+}: Args) => {
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_SEARCH;
 
     try {
@@ -24,6 +31,7 @@ const getDocumentSearchResults = async ({ nhsNumber, baseUrl, baseHeaders }: Arg
             },
             params: {
                 patientId: nhsNumber,
+                docType: docType,
             },
         });
         return response?.data;

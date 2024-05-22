@@ -25,7 +25,6 @@ describe('PatientSummary', () => {
 
         expect(screen.getByText(mockDetails.nhsNumber)).toBeInTheDocument();
         expect(screen.getByText(mockDetails.familyName)).toBeInTheDocument();
-        //expect(screen.getByText(mockDetails.givenName)).toBeInTheDocument()
     });
 
     it('renders multiple given names with correct spacing', () => {

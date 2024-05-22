@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import LgDownloadAllStage, { Props } from './LloydGeorgeDownloadAllStage';
 import {
     buildConfig,
     buildLgSearchResult,
@@ -14,6 +13,8 @@ import { routeChildren, routes } from '../../../../types/generic/routes';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router';
+import LloydGeorgeDownloadStage, { Props } from './LloydGeorgeDownloadStage';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -41,7 +42,8 @@ let history = createMemoryHistory({
     initialIndex: 0,
 });
 
-describe('LloydGeorgeDownloadAllStage', () => {
+describe('LloydGeorgeDownloadStage', () => {
+
     beforeEach(() => {
         history = createMemoryHistory({
             initialEntries: ['/'],
@@ -53,6 +55,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         mockUseConfig.mockReturnValue(buildConfig());
     });
     afterEach(() => {
+        jest.useRealTimers();
         jest.clearAllMocks();
     });
 
@@ -72,7 +75,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByRole('heading', {
-                name: `Preparing download for ${mockPdf.number_of_files} files`,
+                name: `Preparing download for ${mockPdf.number_of_files} file(s)`,
             }),
         ).toBeInTheDocument();
     });
@@ -117,6 +120,13 @@ describe('LloydGeorgeDownloadAllStage', () => {
                 routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE,
             );
         });
+    });
+
+    it('pass accessibility checks', async () => {
+        renderComponent(history);
+
+        const results = await runAxeTest(document.body);
+        expect(results).toHaveNoViolations();
     });
 
     it('navigates to Error page when zip lg record view complete but fail on delete', async () => {
@@ -201,7 +211,7 @@ const renderComponent = (history: MemoryHistory, propsOverride?: Partial<Props>)
 
     return render(
         <ReactRouter.Router navigator={history} location={history.location}>
-            <LgDownloadAllStage {...props} />
+            <LloydGeorgeDownloadStage {...props} />
         </ReactRouter.Router>,
     );
 };

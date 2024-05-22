@@ -2,17 +2,14 @@ import os
 from enum import Enum
 from typing import List
 
-from enums.lambda_error import LambdaError
 from utils.audit_logging_setup import LoggingService
-from utils.lambda_exceptions import InvalidDocTypeException
 
 logger = LoggingService(__name__)
 
 
-class SupportedDocumentTypes(Enum):
+class SupportedDocumentTypes(str, Enum):
     ARF = "ARF"
     LG = "LG"
-    ALL = "ALL"
 
     @staticmethod
     def list():
@@ -20,15 +17,9 @@ class SupportedDocumentTypes(Enum):
 
     @staticmethod
     def list_names() -> List[str]:
-        return [str(doc_type.value) for doc_type in SupportedDocumentTypes.list()]
+        return [doc_type.value for doc_type in SupportedDocumentTypes.list()]
 
-    @staticmethod
-    def get_from_field_name(value: str):
-        if value in SupportedDocumentTypes.list_names():
-            return value
-        return None
-
-    def get_dynamodb_table_name(self) -> str | List[str]:
+    def get_dynamodb_table_name(self) -> str:
         """
         Get the dynamodb table name related to a specific doc_type
 
@@ -42,23 +33,9 @@ class SupportedDocumentTypes(Enum):
         Eventually we could replace all os.environ["XXX_DYNAMODB_NAME"] calls with this method,
         so that the logic of resolving table names are controlled in one place.
         """
-        try:
-            match self:
-                case SupportedDocumentTypes.ARF:
-                    return os.environ["DOCUMENT_STORE_DYNAMODB_NAME"]
-                case SupportedDocumentTypes.LG:
-                    return os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-                case SupportedDocumentTypes.ALL:
-                    return [
-                        enum.get_dynamodb_table_name()
-                        for enum in SupportedDocumentTypes.list()
-                    ]
 
-        except KeyError as e:
-            logger.error(
-                str(e),
-                {
-                    "Result": f"An error occurred due to missing environment variable for doc_type {self.value}"
-                },
-            )
-            raise InvalidDocTypeException(status_code=500, error=LambdaError.DocTypeDB)
+        document_type_to_table_name = {
+            SupportedDocumentTypes.ARF: os.getenv("DOCUMENT_STORE_DYNAMODB_NAME"),
+            SupportedDocumentTypes.LG: os.getenv("LLOYD_GEORGE_DYNAMODB_NAME"),
+        }
+        return document_type_to_table_name[self]

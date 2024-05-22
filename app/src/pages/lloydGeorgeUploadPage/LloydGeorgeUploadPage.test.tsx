@@ -19,6 +19,7 @@ import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDo
 import { MomentInput } from 'moment/moment';
 import * as ReactRouter from 'react-router';
 import { History, createMemoryHistory } from 'history';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
@@ -85,6 +86,7 @@ describe('LloydGeorgeUploadPage', () => {
     });
     afterEach(() => {
         jest.clearAllMocks();
+        jest.useRealTimers();
     });
     describe('Rendering', () => {
         it('renders initial file input stage', () => {
@@ -209,6 +211,16 @@ describe('LloydGeorgeUploadPage', () => {
             },
         );
     });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            render(<LloydGeorgeUploadPage />);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+    });
+
     describe('Navigating', () => {
         it('navigates to uploading stage when submit documents is clicked', async () => {
             mockS3Upload.mockReturnValue(Promise.resolve());

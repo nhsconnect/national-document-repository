@@ -22,14 +22,17 @@ export enum routes {
     ARF_OVERVIEW = '/patient/arf',
     ARF_OVERVIEW_WILDCARD = '/patient/arf/*',
     ARF_UPLOAD_DOCUMENTS = '/patient/arf/upload',
+    FEEDBACK_CONFIRMATION = '/feedback/confirmation',
 }
 
 export enum routeChildren {
     LLOYD_GEORGE_DOWNLOAD = '/patient/lloyd-george-record/download',
+    LLOYD_GEORGE_DOWNLOAD_SELECT = '/patient/lloyd-george-record/download/select',
+    LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS = '/patient/lloyd-george-record/download/in-progress',
     LLOYD_GEORGE_DOWNLOAD_COMPLETE = '/patient/lloyd-george-record/download/complete',
     LLOYD_GEORGE_DELETE = '/patient/lloyd-george-record/delete',
     LLOYD_GEORGE_DELETE_COMPLETE = '/patient/lloyd-george-record/delete/complete',
-    LLOYD_GEORGE_UPLOAD_UPLOADING = '/patient/lloyd-george-record/upload/uploading',
+    LLOYD_GEORGE_UPLOAD_UPLOADING = '/patient/lloyd-george-record/upload/in-progress',
     LLOYD_GEORGE_UPLOAD_COMPLETED = '/patient/lloyd-george-record/upload/completed',
     LLOYD_GEORGE_UPLOAD_FAILED = '/patient/lloyd-george-record/upload/failed',
     LLOYD_GEORGE_UPLOAD_INFECTED = '/patient/lloyd-george-record/upload/infected',

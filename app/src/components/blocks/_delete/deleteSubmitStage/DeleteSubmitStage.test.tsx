@@ -1,26 +1,25 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
-import DeleteDocumentsStage, { Props } from './DeleteDocumentsStage';
-import { getFormattedDate } from '../../../helpers/utils/formatDate';
+import { buildLgSearchResult, buildPatientDetails } from '../../../../helpers/test/testBuilders';
+import DeleteSubmitStage, { Props } from './DeleteSubmitStage';
+import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
+import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
 import axios from 'axios/index';
-import useRole from '../../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE, authorisedRoles } from '../../../types/generic/authRole';
-import { routeChildren, routes } from '../../../types/generic/routes';
-import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
-import usePatient from '../../../helpers/hooks/usePatient';
+import useRole from '../../../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE, authorisedRoles } from '../../../../types/generic/authRole';
+import { routes, routeChildren } from '../../../../types/generic/routes';
+import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
+import usePatient from '../../../../helpers/hooks/usePatient';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router';
 
-jest.mock('../../../helpers/hooks/useConfig');
-jest.mock('../deletionConfirmationStage/DeletionConfirmationStage', () => () => (
-    <div>Deletion complete</div>
-));
-jest.mock('../../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('../../../helpers/hooks/useRole');
-jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/useConfig');
+jest.mock('../deleteResultStage/DeleteResultStage', () => () => <div>Deletion complete</div>);
+jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../../../helpers/hooks/useRole');
+jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('axios');
 
 const mockedUseNavigate = jest.fn();
@@ -49,7 +48,7 @@ const mockSetStage = jest.fn();
 const mockSetIsDeletingDocuments = jest.fn();
 const mockSetDownloadStage = jest.fn();
 
-describe('DeleteDocumentsStage', () => {
+describe('DeleteSubmitStage', () => {
     beforeEach(() => {
         history = createMemoryHistory({
             initialEntries: ['/'],
@@ -76,7 +75,9 @@ describe('DeleteDocumentsStage', () => {
 
                 await waitFor(async () => {
                     expect(
-                        screen.getByText('Are you sure you want to permanently delete files for:'),
+                        screen.getByText(
+                            'Are you sure you want to permanently remove this record?',
+                        ),
                     ).toBeInTheDocument();
                 });
 
@@ -187,11 +188,10 @@ describe('DeleteDocumentsStage', () => {
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_DELETE_COMPLETE);
-                // expect(screen.getByText('Deletion complete')).toBeInTheDocument();
             });
         });
 
-        it('does not render DeletionConfirmationStage when the Yes is selected, Continue clicked, and user role is GP Clinical', async () => {
+        it('does not render DeleteResultStage when the Yes is selected, Continue clicked, and user role is GP Clinical', async () => {
             mockedAxios.delete.mockReturnValue(Promise.resolve({ status: 200, data: 'Success' }));
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
 
@@ -263,6 +263,39 @@ describe('DeleteDocumentsStage', () => {
             ).toBeInTheDocument();
         });
     });
+
+    describe('Accessibility', () => {
+        it('pass accessibility checks at page entry point', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when error box appears', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
+
+            const errorResponse = {
+                response: {
+                    status: 400,
+                    message: 'Forbidden',
+                },
+            };
+            mockedAxios.delete.mockRejectedValueOnce(errorResponse);
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await screen.findByText('Sorry, the service is currently unavailable.');
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+    });
 });
 
 describe('Navigation', () => {
@@ -296,11 +329,12 @@ const renderComponent = (docType: DOCUMENT_TYPE, history: MemoryHistory) => {
     const props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'> = {
         numberOfFiles: mockLgSearchResult.number_of_files,
         docType,
+        recordType: docType.toString(),
     };
 
     return render(
         <ReactRouter.Router navigator={history} location={history.location}>
-            <DeleteDocumentsStage
+            <DeleteSubmitStage
                 {...props}
                 setStage={mockSetStage}
                 setIsDeletingDocuments={mockSetIsDeletingDocuments}

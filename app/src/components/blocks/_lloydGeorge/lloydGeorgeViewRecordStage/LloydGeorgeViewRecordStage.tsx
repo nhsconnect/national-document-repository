@@ -7,13 +7,10 @@ import {
     InsetText,
     WarningCallout,
 } from 'nhsuk-react-components';
-import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import PdfViewer from '../../../generic/pdfViewer/PdfViewer';
 import LloydGeorgeRecordDetails from '../lloydGeorgeRecordDetails/LloydGeorgeRecordDetails';
-import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
-import usePatient from '../../../../helpers/hooks/usePatient';
 import LloydGeorgeRecordError from '../lloydGeorgeRecordError/LloydGeorgeRecordError';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
@@ -32,6 +29,9 @@ import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router';
+import ProgressBar from '../../../generic/progressBar/ProgressBar';
+import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
+
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -43,7 +43,7 @@ export type Props = {
     stage: LG_RECORD_STAGE;
 };
 
-function LloydGeorgeRecordStage({
+function LloydGeorgeViewRecordStage({
     downloadStage,
     lloydGeorgeUrl,
     lastUpdated,
@@ -55,10 +55,6 @@ function LloydGeorgeRecordStage({
 
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
-    const patientDetails = usePatient();
-    const dob: string = patientDetails?.birthDate
-        ? getFormattedDate(new Date(patientDetails.birthDate))
-        : '';
     const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
         reValidateMode: 'onSubmit',
     });
@@ -73,10 +69,6 @@ function LloydGeorgeRecordStage({
         setFocus('confirmDownloadRemove');
         setDownloadRemoveButtonClicked(true);
     };
-
-    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
-    const formattedNhsNumber = formatNhsNumber(nhsNumber);
-
     const role = useRole();
     const isBSOL = useIsBSOL();
     const userIsGpAdminNonBSOL = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
@@ -102,7 +94,7 @@ function LloydGeorgeRecordStage({
 
     const RecordDetails = () => {
         if (downloadStage === DOWNLOAD_STAGE.PENDING) {
-            return <output>Loading...</output>;
+            return <ProgressBar status="Loading..." />;
         } else if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
             const detailsProps = {
                 lastUpdated,
@@ -223,13 +215,7 @@ function LloydGeorgeRecordStage({
             )}
 
             <h1>{pageHeader}</h1>
-            <div id="patient-info" className="lloydgeorge_record-stage_patient-info">
-                <p data-testid="patient-name">
-                    {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
-                </p>
-                <p data-testid="patient-nhs-number">NHS number: {formattedNhsNumber}</p>
-                <p data-testid="patient-dob">Date of birth: {dob}</p>
-            </div>
+            <PatientSimpleSummary />
             {!fullScreen ? (
                 <>
                     {showMenu ? (
@@ -269,4 +255,4 @@ function LloydGeorgeRecordStage({
     );
 }
 
-export default LloydGeorgeRecordStage;
+export default LloydGeorgeViewRecordStage;

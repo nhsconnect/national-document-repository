@@ -1,21 +1,20 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import { buildLgSearchResult, buildPatientDetails } from '../../../helpers/test/testBuilders';
-import DeletionConfirmationStage from './DeletionConfirmationStage';
+import { buildLgSearchResult, buildPatientDetails } from '../../../../helpers/test/testBuilders';
+import DeleteResultStage from './DeleteResultStage';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import { routes } from '../../../types/generic/routes';
-import useRole from '../../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
-import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
+import { routes } from '../../../../types/generic/routes';
+import useRole from '../../../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import { LinkProps } from 'react-router-dom';
-import usePatient from '../../../helpers/hooks/usePatient';
-import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
+import usePatient from '../../../../helpers/hooks/usePatient';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
-const mockedUseNavigate = jest.fn();
 const mockNavigate = jest.fn();
 
-jest.mock('../../../helpers/hooks/useRole');
-jest.mock('../../../helpers/hooks/usePatient');
+jest.mock('../../../../helpers/hooks/useRole');
+jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
@@ -33,7 +32,7 @@ const mockLgSearchResult = buildLgSearchResult();
 const mockSetStage = jest.fn();
 const mockSetDownloadStage = jest.fn();
 
-describe('DeletionConfirmationStage', () => {
+describe('DeleteResultStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
@@ -50,21 +49,16 @@ describe('DeletionConfirmationStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
 
                 mockedUseRole.mockReturnValue(role);
-                render(
-                    <DeletionConfirmationStage
-                        numberOfFiles={numberOfFiles}
-                        setStage={mockSetStage}
-                    />,
-                );
+                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
                 await waitFor(async () => {
-                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                    expect(
+                        screen.getByText('You have permanently removed the record of:'),
+                    ).toBeInTheDocument();
                 });
 
                 expect(
-                    screen.getByText(
-                        `You have successfully deleted ${numberOfFiles} file(s) from the Lloyd George record of:`,
-                    ),
+                    screen.getByText(`You can no longer access this record using our storage.`),
                 ).toBeInTheDocument();
                 expect(screen.getByText(patientName)).toBeInTheDocument();
                 expect(screen.getByText(/NHS number/)).toBeInTheDocument();
@@ -80,23 +74,16 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = 1;
 
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
-            render(
-                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
-            );
+            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
-                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                expect(
+                    screen.getByText('You have permanently removed the record of:'),
+                ).toBeInTheDocument();
             });
 
             expect(
-                screen.queryByText(
-                    `You have successfully deleted ${numberOfFiles} file(s) from the Lloyd George record of:`,
-                ),
-            ).not.toBeInTheDocument();
-            expect(
-                screen.getByText(
-                    `You have successfully deleted ${numberOfFiles} file(s) from the record of:`,
-                ),
+                screen.getByText(`You can no longer access this record using our storage.`),
             ).toBeInTheDocument();
             expect(screen.getByText(patientName)).toBeInTheDocument();
             expect(screen.getByText(/NHS number/)).toBeInTheDocument();
@@ -108,15 +95,12 @@ describe('DeletionConfirmationStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
 
-                render(
-                    <DeletionConfirmationStage
-                        numberOfFiles={numberOfFiles}
-                        setStage={mockSetStage}
-                    />,
-                );
+                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
                 await waitFor(async () => {
-                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                    expect(
+                        screen.getByText('You have permanently removed the record of:'),
+                    ).toBeInTheDocument();
                 });
 
                 expect(
@@ -131,12 +115,12 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = mockLgSearchResult.number_of_files;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(
-                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
-            );
+            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
-                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                expect(
+                    screen.getByText('You have permanently removed the record of:'),
+                ).toBeInTheDocument();
             });
 
             expect(
@@ -150,12 +134,12 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(
-                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
-            );
+            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
-                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                expect(
+                    screen.getByText('You have permanently removed the record of:'),
+                ).toBeInTheDocument();
             });
 
             expect(
@@ -171,15 +155,12 @@ describe('DeletionConfirmationStage', () => {
                 const numberOfFiles = 7;
                 mockedUseRole.mockReturnValue(role);
 
-                render(
-                    <DeletionConfirmationStage
-                        numberOfFiles={numberOfFiles}
-                        setStage={mockSetStage}
-                    />,
-                );
+                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
                 await waitFor(async () => {
-                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                    expect(
+                        screen.getByText('You have permanently removed the record of:'),
+                    ).toBeInTheDocument();
                 });
 
                 expect(
@@ -191,6 +172,17 @@ describe('DeletionConfirmationStage', () => {
         );
     });
 
+    describe('Accessibility', () => {
+        const roles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE];
+        it.each(roles)('pass accessibility checks for role %s', async (role) => {
+            mockedUseRole.mockReturnValue(role);
+            render(<DeleteResultStage numberOfFiles={3} setStage={mockSetStage} />);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+    });
+
     describe('Navigation', () => {
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
             "navigates to the Lloyd George view page when return button is clicked, when user role is '%s'",
@@ -199,7 +191,7 @@ describe('DeletionConfirmationStage', () => {
                 mockedUseRole.mockReturnValue(role);
 
                 render(
-                    <DeletionConfirmationStage
+                    <DeleteResultStage
                         numberOfFiles={numberOfFiles}
                         setStage={mockSetStage}
                         setDownloadStage={mockSetDownloadStage}
@@ -207,7 +199,9 @@ describe('DeletionConfirmationStage', () => {
                 );
 
                 await waitFor(async () => {
-                    expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                    expect(
+                        screen.getByText('You have permanently removed the record of:'),
+                    ).toBeInTheDocument();
                 });
 
                 act(() => {
@@ -229,16 +223,16 @@ describe('DeletionConfirmationStage', () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(
-                <DeletionConfirmationStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />,
-            );
+            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
 
             await waitFor(async () => {
-                expect(screen.getByText('Deletion complete')).toBeInTheDocument();
+                expect(
+                    screen.getByText('You have permanently removed the record of:'),
+                ).toBeInTheDocument();
             });
 
             act(() => {
-                userEvent.click(screen.getByRole('link'));
+                userEvent.click(screen.getByTestId('start-again-link'));
             });
 
             await waitFor(() => {
