@@ -28,7 +28,7 @@ import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSummary';
+import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;

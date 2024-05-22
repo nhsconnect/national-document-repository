@@ -2,7 +2,7 @@ import usePatient from '../../../helpers/hooks/usePatient';
 import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
-import PatientSummary from './PatientSummary';
+import PatientSummary from './PatientSimpleSummary';
 import { render, screen } from '@testing-library/react';
 
 jest.mock('../../../helpers/hooks/usePatient');

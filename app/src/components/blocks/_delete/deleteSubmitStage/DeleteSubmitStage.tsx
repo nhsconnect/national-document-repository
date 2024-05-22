@@ -25,7 +25,7 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 import WarningText from '../../../generic/warningText/WarningText';
-import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSummary';
+import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -145,7 +145,9 @@ function DeleteSubmitStage({
                         Once you remove this files, you can not access this record using the
                         service. you may want to keep a copy of the paper record safe.
                     </p>
-                    <h2 test-dataid="delete-files-warning-message">Are you sure you want to permanently remove this record?</h2>
+                    <h2 test-dataid="delete-files-warning-message">
+                        Are you sure you want to permanently remove this record?
+                    </h2>
                     <div>
                         <WarningText text="This can not be undone" />
                     </div>

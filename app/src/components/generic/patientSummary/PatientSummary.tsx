@@ -1,6 +1,5 @@
 import React from 'react';
 import usePatient from '../../../helpers/hooks/usePatient';
-import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
 import { SummaryList } from 'nhsuk-react-components';
 type Props = {
@@ -8,11 +7,6 @@ type Props = {
 };
 const PatientSummary = ({ separator = false }: Props) => {
     const patientDetails = usePatient();
-    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
-    const formattedNhsNumber = formatNhsNumber(nhsNumber);
-    const dob: string = patientDetails?.birthDate
-        ? getFormattedDate(new Date(patientDetails.birthDate))
-        : '';
     return (
         <SummaryList id="patient-summary" data-testid="patient-summary">
             <SummaryList.Row>
