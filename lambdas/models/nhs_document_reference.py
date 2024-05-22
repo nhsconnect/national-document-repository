@@ -1,16 +1,19 @@
 from datetime import datetime, timezone
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from pydantic import BaseModel
+from enums.supported_document_types import SupportedDocumentTypes
+from pydantic import BaseModel, ConfigDict
 from utils.utilities import get_file_key_from_s3_url
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class UploadRequestDocument(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
     fileName: str
     contentType: str
-    docType: str
+    docType: SupportedDocumentTypes
 
 
 class NHSDocumentReference:

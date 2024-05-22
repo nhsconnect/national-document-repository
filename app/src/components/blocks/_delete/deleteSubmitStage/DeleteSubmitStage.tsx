@@ -23,9 +23,9 @@ import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 import WarningText from '../../../generic/warningText/WarningText';
+import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSummary';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -139,13 +139,13 @@ function DeleteSubmitStage({
                     <Fieldset.Legend isPageHeading>
                         You are removing the {recordType} record of:
                     </Fieldset.Legend>
-                    <PatientSummary separator />
+                    <PatientSimpleSummary separator />
 
                     <p>
                         Once you remove this files, you can not access this record using the
                         service. you may want to keep a copy of the paper record safe.
                     </p>
-                    <h2>Are you sure you want to permanently remove this record?</h2>
+                    <h2 test-dataid="delete-files-warning-message">Are you sure you want to permanently remove this record?</h2>
                     <div>
                         <WarningText text="This can not be undone" />
                     </div>

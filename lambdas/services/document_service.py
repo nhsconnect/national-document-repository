@@ -23,18 +23,10 @@ class DocumentService:
         doc_type: SupportedDocumentTypes,
         query_filter: Attr | ConditionBase,
     ) -> list[DocumentReference]:
-        results: list[DocumentReference] = []
-
-        doc_type_table = doc_type.get_dynamodb_table_name()
-        if isinstance(doc_type_table, list):
-            for table in doc_type_table:
-                results += self.fetch_documents_from_table_with_filter(
-                    nhs_number, table, query_filter=query_filter
-                )
-            return results
+        table_name = doc_type.get_dynamodb_table_name()
 
         return self.fetch_documents_from_table_with_filter(
-            nhs_number, doc_type_table, query_filter=query_filter
+            nhs_number, table_name, query_filter=query_filter
         )
 
     def fetch_documents_from_table(

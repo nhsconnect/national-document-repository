@@ -6,14 +6,12 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.decorators.validate_document_type import (
-    extract_document_type_as_enum,
-    validate_document_type,
-)
+from utils.decorators.validate_document_type import validate_document_type
 from utils.decorators.validate_patient_id import (
     extract_nhs_number_from_event,
     validate_patient_id,
 )
+from utils.document_type_utils import extract_document_type_to_enum
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -37,13 +35,15 @@ def lambda_handler(event, context):
     logger.info("Delete Document Reference handler has been triggered")
 
     nhs_number = extract_nhs_number_from_event(event)
-    doc_type = extract_document_type_as_enum(event["queryStringParameters"]["docType"])
+    document_types = extract_document_type_to_enum(
+        event["queryStringParameters"]["docType"]
+    )
 
     request_context.patient_nhs_no = nhs_number
 
     deletion_service = DocumentDeletionService()
 
-    files_deleted = deletion_service.handle_delete(nhs_number, doc_type)
+    files_deleted = deletion_service.handle_delete(nhs_number, document_types)
     if files_deleted:
         logger.info(
             "Documents were deleted successfully", {"Result": "Successful deletion"}

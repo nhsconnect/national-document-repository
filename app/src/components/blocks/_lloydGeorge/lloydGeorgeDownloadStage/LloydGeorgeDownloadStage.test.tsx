@@ -1,5 +1,4 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import LgDownloadAllStage, { Props } from './LloydGeorgeDownloadAllStage';
 import {
     buildConfig,
     buildLgSearchResult,
@@ -12,6 +11,7 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 import useConfig from '../../../../helpers/hooks/useConfig';
+import LloydGeorgeDownloadStage, { Props } from './LloydGeorgeDownloadStage';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
@@ -35,7 +35,7 @@ jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useConfig');
 
-describe('LloydGeorgeDownloadAllStage', () => {
+describe('LloydGeorgeDownloadStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
@@ -62,7 +62,7 @@ describe('LloydGeorgeDownloadAllStage', () => {
         ).toBeInTheDocument();
         expect(
             screen.getByRole('heading', {
-                name: `Preparing download for ${mockPdf.number_of_files} files`,
+                name: `Preparing download for ${mockPdf.number_of_files} file(s)`,
             }),
         ).toBeInTheDocument();
     });
@@ -196,7 +196,7 @@ const renderComponent = (propsOverride?: Partial<Props>) => {
     };
 
     return render(
-        <LgDownloadAllStage
+        <LloydGeorgeDownloadStage
             {...props}
             setStage={mockSetStage}
             setDownloadStage={mockDownloadStage}

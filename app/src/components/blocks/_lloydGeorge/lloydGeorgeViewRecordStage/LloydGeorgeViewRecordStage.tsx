@@ -27,8 +27,8 @@ import {
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
+import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSummary';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -210,7 +210,7 @@ function LloydGeorgeViewRecordStage({
             )}
 
             <h1>{pageHeader}</h1>
-            <PatientSummary />
+            <PatientSimpleSummary />
             {!fullScreen ? (
                 <>
                     {showMenu ? (

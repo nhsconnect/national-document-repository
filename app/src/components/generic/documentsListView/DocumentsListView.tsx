@@ -1,9 +1,9 @@
-import { UploadDocument } from '../../../types/pages/UploadDocumentsPage/types';
 import { Details } from 'nhsuk-react-components';
 import React, { useState } from 'react';
+import { GenericDocument } from '../../../types/generic/genericDocument';
 
 interface Props {
-    documentsList: Array<UploadDocument>;
+    documentsList: Array<GenericDocument>;
     ariaLabel: string;
 }
 
@@ -12,19 +12,23 @@ const DocumentsListView = ({ documentsList, ariaLabel }: Props) => {
 
     return (
         <Details open>
-            <Details.Summary aria-label={ariaLabel} onClick={() => setIsExpanded(!isExpanded)}>
+            <Details.Summary
+                aria-label={ariaLabel}
+                data-testid={ariaLabel}
+                onClick={() => setIsExpanded(!isExpanded)}
+            >
                 {isExpanded ? 'Hide files' : 'View files'}
             </Details.Summary>
             <Details.Text>
                 <ul className="document-list-view-list">
-                    {documentsList.map((document) => {
+                    {documentsList?.map((document) => {
                         return (
                             <li
                                 key={document.id}
                                 data-ref={document.ref}
-                                data-testid={document.file.name.split('_')[0]}
+                                data-testid={document.fileName.split('_')[0]}
                             >
-                                {document.file.name}
+                                {document.fileName}
                             </li>
                         );
                     })}

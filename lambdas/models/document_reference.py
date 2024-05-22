@@ -3,13 +3,14 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
+from enums.supported_document_types import SupportedDocumentTypes
 from pydantic import BaseModel, Field
 from utils.exceptions import InvalidDocumentReferenceException
 
 
 class UploadDocumentReference(BaseModel):
     reference: str = Field(...)
-    doc_type: str = Field(..., alias="type")
+    doc_type: SupportedDocumentTypes = Field(..., alias="type")
     fields: dict[str, bool] = Field(...)
 
 

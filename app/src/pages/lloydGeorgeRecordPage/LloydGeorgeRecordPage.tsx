@@ -4,8 +4,8 @@ import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import DeleteSubmitStage from '../../components/blocks/_delete/deleteSubmitStage/DeleteSubmitStage';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
+
 import LloydGeorgeViewRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeViewRecordStage/LloydGeorgeViewRecordStage';
-import LloydGeorgeDownloadAllStage from '../../components/blocks/_lloydGeorge/lloydGeorgeDownloadAllStage/LloydGeorgeDownloadAllStage';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
@@ -22,6 +22,8 @@ import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
 import RemoveRecordStage from '../../components/blocks/_delete/removeRecordStage/RemoveRecordStage';
+import LloydGeorgeSelectDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeSelectDownloadStage/LloydGeorgeSelectDownloadStage';
+import LloydGeorgeDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeDownloadStage/LloydGeorgeDownloadStage';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -38,7 +40,7 @@ function LloydGeorgeRecordPage() {
     const config = useConfig();
     const role = useRole();
     const isBSOL = useIsBSOL();
-    const deleteAfterDownload = role === REPOSITORY_ROLE.GP_ADMIN && isBSOL === false;
+    const deleteAfterDownload = role === REPOSITORY_ROLE.GP_ADMIN && !isBSOL;
 
     useEffect(() => {
         const onSuccess = (
@@ -134,8 +136,14 @@ function LloydGeorgeRecordPage() {
             return <RemoveRecordStage setStage={setStage} recordType="Lloyd George" />;
 
         case LG_RECORD_STAGE.DOWNLOAD_ALL:
-            return (
-                <LloydGeorgeDownloadAllStage
+            return isBSOL ? (
+                <LloydGeorgeSelectDownloadStage
+                    setStage={setStage}
+                    deleteAfterDownload={deleteAfterDownload}
+                    setDownloadStage={setDownloadStage}
+                />
+            ) : (
+                <LloydGeorgeDownloadStage
                     numberOfFiles={numberOfFiles}
                     setStage={setStage}
                     deleteAfterDownload={deleteAfterDownload}

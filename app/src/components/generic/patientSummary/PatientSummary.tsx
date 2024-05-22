@@ -2,6 +2,7 @@ import React from 'react';
 import usePatient from '../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
 import { getFormattedDate } from '../../../helpers/utils/formatDate';
+import { SummaryList } from 'nhsuk-react-components';
 type Props = {
     separator?: boolean;
 };
@@ -13,16 +14,38 @@ const PatientSummary = ({ separator = false }: Props) => {
         ? getFormattedDate(new Date(patientDetails.birthDate))
         : '';
     return (
-        <div
-            id="patient-info"
-            className={`lloydgeorge_record-stage_patient-info ${separator ? 'separator' : ''}`}
-        >
-            <p data-testid="patient-name">
-                {`${patientDetails?.givenName} ${patientDetails?.familyName}`}
-            </p>
-            <p data-testid="patient-nhs-number">NHS number: {formattedNhsNumber}</p>
-            <p data-testid="patient-dob">Date of birth: {dob}</p>
-        </div>
+        <SummaryList id="patient-summary" data-testid="patient-summary">
+            <SummaryList.Row>
+                <SummaryList.Key>NHS number</SummaryList.Key>
+                <SummaryList.Value id="patient-summary-nhs-number">
+                    {patientDetails?.nhsNumber}
+                </SummaryList.Value>
+            </SummaryList.Row>
+            <SummaryList.Row>
+                <SummaryList.Key>Surname</SummaryList.Key>
+                <SummaryList.Value id="patient-summary-family-name">
+                    {patientDetails?.familyName}
+                </SummaryList.Value>
+            </SummaryList.Row>
+            <SummaryList.Row>
+                <SummaryList.Key>First name</SummaryList.Key>
+                <SummaryList.Value id="patient-summary-given-name">
+                    {patientDetails?.givenName?.map((name) => `${name} `)}
+                </SummaryList.Value>
+            </SummaryList.Row>
+            <SummaryList.Row>
+                <SummaryList.Key>Date of birth</SummaryList.Key>
+                <SummaryList.Value id="patient-summary-date-of-birth">
+                    {getFormattedDate(new Date(patientDetails?.birthDate ?? ''))}
+                </SummaryList.Value>
+            </SummaryList.Row>
+            <SummaryList.Row>
+                <SummaryList.Key>Postcode</SummaryList.Key>
+                <SummaryList.Value id="patient-summary-postcode">
+                    {patientDetails?.postalCode}
+                </SummaryList.Value>
+            </SummaryList.Row>
+        </SummaryList>
     );
 };
 

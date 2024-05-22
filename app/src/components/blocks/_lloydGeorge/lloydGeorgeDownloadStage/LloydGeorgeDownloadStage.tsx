@@ -24,14 +24,17 @@ import { AxiosError } from 'axios/index';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { SearchResult } from '../../../../types/generic/searchResult';
 
 const FakeProgress = require('fake-progress');
 
 export type Props = {
-    numberOfFiles: number;
     setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     deleteAfterDownload: boolean;
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
+    selectedDocuments?: Array<string>;
+    searchResults?: Array<SearchResult>;
+    numberOfFiles: number;
 };
 
 type DownloadLinkAttributes = {
@@ -39,11 +42,13 @@ type DownloadLinkAttributes = {
     filename: string;
 };
 
-function LloydGeorgeDownloadAllStage({
-    numberOfFiles,
+function LloydGeorgeDownloadStage({
     setStage,
     deleteAfterDownload = false,
     setDownloadStage,
+    selectedDocuments,
+    searchResults,
+    numberOfFiles,
 }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
@@ -61,6 +66,11 @@ function LloydGeorgeDownloadAllStage({
     const patientDetails = usePatient();
     const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
+    const pageHeader = 'Downloading documents';
+    useTitle({ pageTitle: pageHeader });
+    const numberOfFilesForDownload = selectedDocuments?.length
+        ? selectedDocuments.length
+        : numberOfFiles;
 
     const progressTimer = useMemo(() => {
         return new FakeProgress({
@@ -68,6 +78,7 @@ function LloydGeorgeDownloadAllStage({
             autoStart: true,
         });
     }, []);
+
     const intervalTimer = window.setInterval(() => {
         setProgress(parseInt((progressTimer.progress * 100).toFixed(1)));
     }, 100);
@@ -113,6 +124,7 @@ function LloydGeorgeDownloadAllStage({
                     baseHeaders,
                     nhsNumber,
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                    docReferences: selectedDocuments,
                 });
 
                 const filename = `patient-record-${nhsNumber}`;
@@ -153,21 +165,24 @@ function LloydGeorgeDownloadAllStage({
         deleteAfterDownload,
         navigate,
         mockLocal,
+        selectedDocuments,
     ]);
-    const pageHeader = 'Downloading documents';
-    useTitle({ pageTitle: pageHeader });
+
     return inProgress ? (
         <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
-            <div className="lloydgeorge_downloadall-stage_header">
+            <div
+                className="lloydgeorge_downloadall-stage_header"
+                data-testid="lloyd-george-download-header"
+            >
                 <h1>{pageHeader}</h1>
                 <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
                 <h4>NHS number: {patientDetails?.nhsNumber}</h4>
                 <div className="nhsuk-heading-xl" />
-                <h4>Preparing download for {numberOfFiles} files</h4>
+                <h4>Preparing download for {numberOfFilesForDownload} file(s)</h4>
             </div>
 
             <Card className="lloydgeorge_downloadall-stage_details">
-                <Card.Content>
+                <Card.Content data-testid="lloyd-george-download-card-content">
                     <strong>
                         <p>Compressing record into a zip file</p>
                     </strong>
@@ -194,6 +209,7 @@ function LloydGeorgeDownloadAllStage({
                                     handlePageExit();
                                     setStage(LG_RECORD_STAGE.RECORD);
                                 }}
+                                data-testid="cancel-download-link"
                             >
                                 Cancel
                             </Link>
@@ -207,8 +223,11 @@ function LloydGeorgeDownloadAllStage({
             setStage={setStage}
             setDownloadStage={setDownloadStage}
             deleteAfterDownload={deleteAfterDownload}
+            numberOfFiles={numberOfFilesForDownload}
+            selectedDocuments={selectedDocuments}
+            searchResults={searchResults}
         />
     );
 }
 
-export default LloydGeorgeDownloadAllStage;
+export default LloydGeorgeDownloadStage;

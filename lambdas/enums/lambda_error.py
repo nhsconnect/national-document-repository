@@ -164,6 +164,10 @@ class LambdaError(Enum):
         "err_code": "DMS_4001",
         "message": "No documents found for given NHS number and document type",
     }
+    ManifestMissingBody = {
+        "err_code": "DMS_4002",
+        "message": "Missing POST request body",
+    }
     ManifestValidation = {
         "err_code": "DMS_5001",
         "message": "Failed to parse document reference from from DynamoDb response",
