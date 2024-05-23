@@ -19,7 +19,7 @@ import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import uploadDocuments, { uploadDocumentToS3 } from '../../../../helpers/requests/uploadDocuments';
 import { useState } from 'react';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
@@ -227,11 +227,9 @@ describe('<SelectStage />', () => {
             act(() => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
+
             await waitFor(() => {
-                expect(mockSetStage).toHaveBeenCalledWith(UPLOAD_STAGE.Uploading);
-            });
-            await waitFor(() => {
-                expect(mockSetStage).toHaveBeenCalledWith(UPLOAD_STAGE.Complete);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_UPLOADING);
             });
         });
 

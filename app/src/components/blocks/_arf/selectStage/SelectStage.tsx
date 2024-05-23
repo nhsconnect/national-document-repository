@@ -28,11 +28,10 @@ import { useNavigate } from 'react-router';
 
 interface Props {
     setDocuments: SetUploadDocuments;
-    setStage: Dispatch<SetStateAction<UPLOAD_STAGE>>;
     documents: Array<UploadDocument>;
 }
 
-function SelectStage({ setDocuments, setStage, documents }: Props) {
+function SelectStage({ setDocuments, documents }: Props) {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
@@ -165,7 +164,11 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                 noValidate
                 data-testid="upload-document-form"
             >
-                <Fieldset.Legend headingLevel="h1" isPageHeading>
+                <Fieldset.Legend
+                    headingLevel="h1"
+                    isPageHeading
+                    data-testid="arf-upload-select-stage-header"
+                >
                     Upload documents
                 </Fieldset.Legend>
                 <PatientDetails />
@@ -182,7 +185,12 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                         formType={DOCUMENT_TYPE.ARF}
                     />
                 </Fieldset>
-                <Button type="submit" id="upload-button" disabled={formState.isSubmitting}>
+                <Button
+                    type="submit"
+                    id="upload-button"
+                    data-testid="arf-upload-submit-btn"
+                    disabled={formState.isSubmitting}
+                >
                     Upload
                 </Button>
             </form>
