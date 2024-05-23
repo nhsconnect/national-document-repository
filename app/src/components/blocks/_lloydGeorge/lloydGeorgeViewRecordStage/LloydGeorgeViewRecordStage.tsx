@@ -32,7 +32,6 @@ import { useNavigate } from 'react-router';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
-
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
     lloydGeorgeUrl: string;
