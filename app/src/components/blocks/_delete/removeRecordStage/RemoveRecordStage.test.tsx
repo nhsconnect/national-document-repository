@@ -24,6 +24,7 @@ const mockSetStage = jest.fn();
 
 const testFileName1 = 'John_1';
 const testFileName2 = 'John_2';
+const numberOfFiles = 7;
 const searchResults = [
     buildSearchResult({ fileName: testFileName1 }),
     buildSearchResult({ fileName: testFileName2 }),
@@ -41,7 +42,7 @@ describe('RemoveRecordStage', () => {
             const recordType = 'Test Record';
 
             act(() => {
-                render(<RemoveRecordStage setStage={mockSetStage} recordType={recordType} />);
+                render(<RemoveRecordStage  numberOfFiles={numberOfFiles} recordType={recordType} />);
             });
             expect(
                 screen.getByRole('heading', { name: 'Remove this ' + recordType }),
@@ -58,7 +59,7 @@ describe('RemoveRecordStage', () => {
             const recordType = 'Test Record';
             mockedAxios.get.mockImplementation(() => Promise.resolve({ data: searchResults }));
             act(() => {
-                render(<RemoveRecordStage setStage={mockSetStage} recordType={recordType} />);
+                render(<RemoveRecordStage  numberOfFiles={numberOfFiles} recordType={recordType} />);
             });
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
         });
@@ -74,7 +75,7 @@ describe('RemoveRecordStage', () => {
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             act(() => {
-                render(<RemoveRecordStage setStage={mockSetStage} recordType={recordType} />);
+                render(<RemoveRecordStage  numberOfFiles={numberOfFiles} recordType={recordType} />);
             });
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             await waitFor(() => {
@@ -95,7 +96,7 @@ describe('RemoveRecordStage', () => {
             mockedAxios.get.mockImplementation(() => Promise.resolve({ data: searchResults }));
 
             act(() => {
-                render(<RemoveRecordStage setStage={mockSetStage} recordType={recordType} />);
+                render(<RemoveRecordStage  numberOfFiles={numberOfFiles} recordType={recordType} />);
             });
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             await waitFor(() => {
@@ -122,7 +123,7 @@ describe('RemoveRecordStage', () => {
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             act(() => {
-                render(<RemoveRecordStage setStage={mockSetStage} recordType={recordType} />);
+                render(<RemoveRecordStage  numberOfFiles={numberOfFiles} recordType={recordType} />);
             });
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             const mockedShortcode = '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd';
@@ -142,7 +143,7 @@ describe('RemoveRecordStage', () => {
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             act(() => {
-                render(<RemoveRecordStage setStage={mockSetStage} recordType={recordType} />);
+                render(<RemoveRecordStage numberOfFiles={numberOfFiles} recordType={recordType} />);
             });
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             await waitFor(() => {
@@ -150,4 +151,6 @@ describe('RemoveRecordStage', () => {
             });
         });
     });
+
+
 });

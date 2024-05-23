@@ -23,15 +23,12 @@ import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
-import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 import WarningText from '../../../generic/warningText/WarningText';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
     numberOfFiles: number;
-    setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     setIsDeletingDocuments?: Dispatch<boolean>;
     setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     recordType: string;
@@ -45,7 +42,6 @@ enum DELETE_DOCUMENTS_OPTION {
 function DeleteSubmitStage({
     docType,
     numberOfFiles,
-    setStage,
     setIsDeletingDocuments,
     setDownloadStage,
     recordType,
@@ -69,9 +65,6 @@ function DeleteSubmitStage({
     const handleYesOption = async () => {
         const onSuccess = () => {
             setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
-            if (setDownloadStage) {
-                setDownloadStage(DOWNLOAD_STAGE.FAILED);
-            }
             if (userIsGP) {
                 navigate(routeChildren.LLOYD_GEORGE_DELETE_COMPLETE);
             } else {
@@ -195,23 +188,11 @@ function DeleteSubmitStage({
 
     return (
         <>
-            <div>
-                <Routes>
-                    <Route index element={<PageIndexView />} />
-                    <Route
-                        path={getLastURLPath(routeChildren.ARF_DELETE_COMPLETE)}
-                        element={
-                            <DeleteResultStage
-                                numberOfFiles={numberOfFiles}
-                                setStage={setStage}
-                                setDownloadStage={setDownloadStage}
-                            />
-                        }
-                    />
-                </Routes>
+            <Routes>
+                <Route index element={<PageIndexView />} />
+            </Routes>
 
-                <Outlet />
-            </div>
+            <Outlet />
         </>
     );
 }

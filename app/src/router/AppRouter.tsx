@@ -78,6 +78,10 @@ export const childRoutes = [
         parent: LLOYD_GEORGE,
     },
     {
+        route: routeChildren.LLOYD_GEORGE_DELETE_CONFIRMATION,
+        parent: LLOYD_GEORGE,
+    },
+    {
         route: routeChildren.LLOYD_GEORGE_DELETE_COMPLETE,
         parent: LLOYD_GEORGE,
     },
@@ -107,6 +111,10 @@ export const childRoutes = [
     },
     {
         route: routeChildren.ARF_DELETE,
+        parent: ARF_OVERVIEW,
+    },
+    {
+        route: routeChildren.ARF_DELETE_CONFIRMATION,
         parent: ARF_OVERVIEW,
     },
     {

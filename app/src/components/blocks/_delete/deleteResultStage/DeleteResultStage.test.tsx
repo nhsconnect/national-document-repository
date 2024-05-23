@@ -49,7 +49,7 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
 
                 mockedUseRole.mockReturnValue(role);
-                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+                render(<DeleteResultStage numberOfFiles={numberOfFiles}  />);
 
                 await waitFor(async () => {
                     expect(
@@ -74,7 +74,7 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = 1;
 
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
-            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+            render(<DeleteResultStage numberOfFiles={numberOfFiles}  />);
 
             await waitFor(async () => {
                 expect(
@@ -95,7 +95,7 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
 
-                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+                render(<DeleteResultStage numberOfFiles={numberOfFiles}  />);
 
                 await waitFor(async () => {
                     expect(
@@ -115,7 +115,7 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = mockLgSearchResult.number_of_files;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+            render(<DeleteResultStage numberOfFiles={numberOfFiles}  />);
 
             await waitFor(async () => {
                 expect(
@@ -134,7 +134,7 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+            render(<DeleteResultStage numberOfFiles={numberOfFiles}  />);
 
             await waitFor(async () => {
                 expect(
@@ -155,7 +155,7 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = 7;
                 mockedUseRole.mockReturnValue(role);
 
-                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+                render(<DeleteResultStage numberOfFiles={numberOfFiles} />);
 
                 await waitFor(async () => {
                     expect(
@@ -176,7 +176,7 @@ describe('DeleteResultStage', () => {
         const roles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE];
         it.each(roles)('pass accessibility checks for role %s', async (role) => {
             mockedUseRole.mockReturnValue(role);
-            render(<DeleteResultStage numberOfFiles={3} setStage={mockSetStage} />);
+            render(<DeleteResultStage numberOfFiles={3} />);
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
@@ -190,13 +190,7 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
 
-                render(
-                    <DeleteResultStage
-                        numberOfFiles={numberOfFiles}
-                        setStage={mockSetStage}
-                        setDownloadStage={mockSetDownloadStage}
-                    />,
-                );
+                render(<DeleteResultStage numberOfFiles={numberOfFiles} />);
 
                 await waitFor(async () => {
                     expect(
@@ -223,7 +217,7 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+            render(<DeleteResultStage numberOfFiles={numberOfFiles} />);
 
             await waitFor(async () => {
                 expect(

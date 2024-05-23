@@ -155,11 +155,8 @@ function LloydGeorgeRecordPage() {
                 <Route
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DELETE) + '/*'}
                     element={
-                        <DeleteSubmitStage
-                            docType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                        <RemoveRecordStage
                             numberOfFiles={numberOfFiles}
-                            setStage={setStage}
-                            setDownloadStage={setDownloadStage}
                             recordType="Lloyd George"
                         />
                     }
@@ -172,44 +169,3 @@ function LloydGeorgeRecordPage() {
 }
 
 export default LloydGeorgeRecordPage;
-
-//     switch (stage) {
-//         case LG_RECORD_STAGE.RECORD:
-//             return (
-//                 <LloydGeorgeViewRecordStage
-//                     numberOfFiles={numberOfFiles}
-//                     totalFileSizeInByte={totalFileSizeInByte}
-//                     lastUpdated={lastUpdated}
-//                     lloydGeorgeUrl={lloydGeorgeUrl}
-//                     downloadStage={downloadStage}
-//                     setStage={setStage}
-//                     stage={stage}
-//                 />
-//             );
-//         case LG_RECORD_STAGE.REMOVE:
-//             return <RemoveRecordStage setStage={setStage} recordType="Lloyd George" />;
-
-//         case LG_RECORD_STAGE.DOWNLOAD_ALL:
-//             return isBSOL ? (
-//                 <LloydGeorgeSelectDownloadStage
-//                     setStage={setStage}
-//                     deleteAfterDownload={deleteAfterDownload}
-//                     setDownloadStage={setDownloadStage}
-//                 />
-//             ) : (
-//                 <LloydGeorgeDownloadStage
-//                     numberOfFiles={numberOfFiles}
-//                     setStage={setStage}
-//                     deleteAfterDownload={deleteAfterDownload}
-//                     setDownloadStage={setDownloadStage}
-//                 />
-//             );
-//         case LG_RECORD_STAGE.DELETE_ALL:
-//             return (
-//                 <DeleteSubmitStage
-//                     docType={DOCUMENT_TYPE.LLOYD_GEORGE}
-//                     numberOfFiles={numberOfFiles}
-//                     recordType="Lloyd George"
-//                     setStage={setStage}
-//                     setDownloadStage={setDownloadStage}
-// >>>>>>> main

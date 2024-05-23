@@ -333,13 +333,7 @@ const renderComponent = (docType: DOCUMENT_TYPE, history: MemoryHistory) => {
 
     return render(
         <ReactRouter.Router navigator={history} location={history.location}>
-            <DeleteSubmitStage
-                {...props}
-                setStage={mockSetStage}
-                setIsDeletingDocuments={mockSetIsDeletingDocuments}
-                setDownloadStage={mockSetDownloadStage}
-            />
-            ,
+            <DeleteSubmitStage {...props} setIsDeletingDocuments={mockSetIsDeletingDocuments} />,
         </ReactRouter.Router>,
     );
 };

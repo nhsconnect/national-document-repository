@@ -1,23 +1,19 @@
-import React, { Dispatch, MouseEvent, SetStateAction, useEffect } from 'react';
+import React, { MouseEvent, useEffect } from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
 import { routes } from '../../../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
-import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
 
 export type Props = {
     numberOfFiles: number;
-    setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
-    setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-function DeleteResultStage({ numberOfFiles, setStage, setDownloadStage }: Props) {
+function DeleteResultStage({ numberOfFiles }: Props) {
     const navigate = useNavigate();
     const role = useRole();
 
@@ -29,10 +25,6 @@ function DeleteResultStage({ numberOfFiles, setStage, setDownloadStage }: Props)
 
     const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
-        if (setStage && setDownloadStage) {
-            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
-            setStage(LG_RECORD_STAGE.RECORD);
-        }
         navigate(routes.LLOYD_GEORGE);
     };
     const isGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
