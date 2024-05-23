@@ -68,7 +68,7 @@ class Patient(BaseModel):
     model_config = conf
 
     id: str
-    birth_date: date
+    birth_date: Optional[date] = None
     address: list[Address] = []
     name: list[Name]
     meta: Meta
