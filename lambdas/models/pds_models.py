@@ -1,8 +1,11 @@
 from datetime import date
-from typing import Optional
+from typing import Optional, Tuple
 
 from models.config import conf
 from pydantic import BaseModel
+from utils.audit_logging_setup import LoggingService
+
+logger = LoggingService(__name__)
 
 
 class Period(BaseModel):
@@ -87,6 +90,19 @@ class Patient(BaseModel):
             if entry.use.lower() == "usual":
                 return entry
 
+    def get_current_family_name_and_given_name(self) -> Tuple[str, list[str]]:
+        usual_name = self.get_current_usual_name()
+        if not usual_name:
+            logger.warning("The patient does not have a usual name.")
+            return "", [""]
+        given_name = usual_name.given
+        family_name = usual_name.family
+
+        if not given_name or given_name == [""]:
+            logger.warning("The given name of patient is empty.")
+
+        return family_name, given_name
+
     def get_current_home_address(self) -> Optional[Address]:
         if self.is_unrestricted() and self.address:
             for entry in self.address:
@@ -108,9 +124,7 @@ class Patient(BaseModel):
         return bool(gp_ods)
 
     def get_patient_details(self, nhs_number) -> PatientDetails:
-        current_usual_name = self.get_current_usual_name()
-        given_name = current_usual_name.given if current_usual_name else [""]
-        family_name = current_usual_name.family if current_usual_name else ""
+        family_name, given_name = self.get_current_family_name_and_given_name()
         current_home_address = self.get_current_home_address()
 
         patient_details = PatientDetails(
@@ -132,9 +146,7 @@ class Patient(BaseModel):
         return patient_details
 
     def get_minimum_patient_details(self, nhs_number) -> PatientDetails:
-        current_usual_name = self.get_current_usual_name()
-        given_name = current_usual_name.given if current_usual_name else [""]
-        family_name = current_usual_name.family if current_usual_name else ""
+        family_name, given_name = self.get_current_family_name_and_given_name()
 
         return PatientDetails(
             givenName=given_name,
