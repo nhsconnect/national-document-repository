@@ -1,10 +1,9 @@
-import React, { Dispatch, SetStateAction, useRef } from 'react';
+import React, { useRef } from 'react';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     FileInputEvent,
     SetUploadDocuments,
-    UPLOAD_STAGE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { Button, Fieldset } from 'nhsuk-react-components';
