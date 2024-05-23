@@ -16,12 +16,10 @@ const mockNavigate = jest.fn();
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('axios');
-jest.mock('react-router', () => ({
-    useNavigate: () => mockNavigate,
-}));
+
 jest.mock('react-router-dom', () => ({
     __esModule: true,
-    ...jest.requireActual('react-router'),
+    ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockNavigate,
 }));
 jest.mock('moment', () => {
@@ -124,7 +122,7 @@ describe('LloydGeorgeSelectDownloadStage', () => {
 const renderComponent = (history: MemoryHistory, deleteAfterDownload = false) => {
     return render(
         <ReactRouter.Router navigator={history} location={history.location}>
-            <LloydGeorgeSelectDownloadStage deleteAfterDownload={deleteAfterDownload} />
+            <LloydGeorgeSelectDownloadStage deleteAfterDownload={deleteAfterDownload} />,
         </ReactRouter.Router>,
     );
 };
