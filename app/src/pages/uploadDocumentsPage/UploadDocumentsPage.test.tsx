@@ -1,48 +1,27 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import UploadDocumentsPage from './UploadDocumentsPage';
 import { buildConfig, buildTextFile } from '../../helpers/test/testBuilders';
-import { UPLOAD_STAGE } from '../../types/pages/UploadDocumentsPage/types';
-// import { useState } from 'react';
 import useConfig from '../../helpers/hooks/useConfig';
 import { routeChildren, routes } from '../../types/generic/routes';
-import UnauthorisedPage from '../unauthorisedPage/UnauthorisedPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router';
-import LloydGeorgeUploadPage from '../lloydGeorgeUploadPage/LloydGeorgeUploadPage';
-import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
-import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import usePatient from '../../helpers/hooks/usePatient';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import { childRoutes } from '../../router/AppRouter';
 import uploadDocuments, { uploadDocumentToS3 } from '../../helpers/requests/uploadDocuments';
 
-// const mockUseState = useState as jest.Mock;
 const mockConfigContext = useConfig as jest.Mock;
 const mockedUseNavigate = jest.fn();
-const mockUploadDocuments = uploadDocuments as jest.Mock;
-const mockS3Upload = uploadDocumentToS3 as jest.Mock;
 
 jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
     useNavigate: () => mockedUseNavigate,
-    // useLocation: () => jest.fn(),
 }));
 jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/usePatient');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 
-// jest.mock('../../components/blocks/_arf/selectStage/SelectStage', () => () => (
-//     <h1>Mock file input stage</h1>
-// ));
-// jest.mock('../../components/blocks/_arf/uploadingStage/UploadingStage', () => () => (
-//     <h1>Mock files are uploading stage</h1>
-// ));
-// jest.mock('../../components/blocks/_arf/completeStage/CompleteStage', () => () => (
-//     <h1>Mock complete stage</h1>
-// ));
 jest.mock('../../helpers/hooks/useConfig');
 
 let history = createMemoryHistory({
@@ -61,7 +40,6 @@ describe('UploadDocumentsPage', () => {
         mockConfigContext.mockReturnValue(
             buildConfig({}, { uploadArfWorkflowEnabled: true, uploadLambdaEnabled: true }),
         );
-        // mockUseState.mockImplementation(() => [UPLOAD_STAGE.Selecting, jest.fn()]);
     });
     afterEach(() => {
         jest.clearAllMocks();

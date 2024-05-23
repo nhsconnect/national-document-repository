@@ -281,12 +281,6 @@ describe('<SelectStage />', () => {
 
     const TestApp = () => {
         const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
-        return (
-            <SelectStage
-                setDocuments={setDocuments}
-                setStage={mockSetStage}
-                documents={documents}
-            />
-        );
+        return <SelectStage setDocuments={setDocuments} documents={documents} />;
     };
 });

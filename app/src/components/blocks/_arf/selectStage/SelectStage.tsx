@@ -50,7 +50,6 @@ function SelectStage({ setDocuments, documents }: Props) {
             return;
         }
 
-        // setStage(UPLOAD_STAGE.Uploading);
         navigate(routeChildren.ARF_UPLOAD_UPLOADING);
         try {
             const uploadSession = await uploadDocuments({
@@ -65,7 +64,6 @@ function SelectStage({ setDocuments, documents }: Props) {
 
             await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
 
-            // setStage(UPLOAD_STAGE.Complete);
             navigate(routeChildren.ARF_UPLOAD_COMPLETED);
         } catch (error) {
             handleUploadError(error as AxiosError);
@@ -107,7 +105,6 @@ function SelectStage({ setDocuments, documents }: Props) {
                 })),
             );
             /* istanbul ignore next */
-            // setStage(UPLOAD_STAGE.Complete);
             navigate(routeChildren.ARF_UPLOAD_COMPLETED);
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
