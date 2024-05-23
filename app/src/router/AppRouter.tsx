@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Outlet, Route, Routes as Switch } from 'react-router-dom';
 import Layout from '../components/layout/Layout';
-import { route, ROUTE_TYPE, routes, routeChildren } from '../types/generic/routes';
+import { route, ROUTE_TYPE, routeChildren, routes } from '../types/generic/routes';
 import StartPage from '../pages/startPage/StartPage';
 import AuthCallbackPage from '../pages/authCallbackPage/AuthCallbackPage';
 import NotFoundPage from '../pages/notFoundPage/NotFoundPage';
@@ -49,6 +49,7 @@ const {
     ARF_OVERVIEW,
     ARF_OVERVIEW_WILDCARD,
     ARF_UPLOAD_DOCUMENTS,
+    ARF_UPLOAD_DOCUMENTS_WILDCARD,
 } = routes;
 
 type Routes = {
@@ -111,6 +112,14 @@ export const childRoutes = [
     {
         route: routeChildren.ARF_DELETE_COMPLETE,
         parent: ARF_OVERVIEW,
+    },
+    {
+        route: routeChildren.ARF_UPLOAD_UPLOADING,
+        parent: ARF_UPLOAD_DOCUMENTS,
+    },
+    {
+        route: routeChildren.ARF_UPLOAD_COMPLETED,
+        parent: ARF_UPLOAD_DOCUMENTS,
     },
 ];
 
@@ -210,6 +219,11 @@ export const routeMap: Routes = {
         unauthorized: [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL],
     },
     [ARF_UPLOAD_DOCUMENTS]: {
+        page: <ArfUploadDocumentsPage />,
+        type: ROUTE_TYPE.PATIENT,
+        unauthorized: [REPOSITORY_ROLE.PCSE],
+    },
+    [ARF_UPLOAD_DOCUMENTS_WILDCARD]: {
         page: <ArfUploadDocumentsPage />,
         type: ROUTE_TYPE.PATIENT,
         unauthorized: [REPOSITORY_ROLE.PCSE],

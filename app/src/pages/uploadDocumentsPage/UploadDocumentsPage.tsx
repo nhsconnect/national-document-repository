@@ -3,9 +3,10 @@ import { UPLOAD_STAGE, UploadDocument } from '../../types/pages/UploadDocumentsP
 import SelectStage from '../../components/blocks/_arf/selectStage/SelectStage';
 import UploadingStage from '../../components/blocks/_arf/uploadingStage/UploadingStage';
 import CompleteStage from '../../components/blocks/_arf/completeStage/CompleteStage';
-import { routes } from '../../types/generic/routes';
-import { useNavigate } from 'react-router';
+import { routeChildren, routes } from '../../types/generic/routes';
+import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import useConfig from '../../helpers/hooks/useConfig';
+import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 
 function UploadDocumentsPage() {
     const [stage, setStage] = useState<UPLOAD_STAGE>(UPLOAD_STAGE.Selecting);
@@ -30,16 +31,41 @@ function UploadDocumentsPage() {
         }
     }, [navigate, config]);
 
-    if (stage === UPLOAD_STAGE.Selecting) {
-        return (
-            <SelectStage setDocuments={setDocuments} setStage={setStage} documents={documents} />
-        );
-    } else if (stage === UPLOAD_STAGE.Uploading) {
-        return <UploadingStage documents={documents} />;
-    } else if (stage === UPLOAD_STAGE.Complete) {
-        return <CompleteStage documents={documents} />;
-    }
-    return null;
+    // if (stage === UPLOAD_STAGE.Selecting) {
+    //     return (
+    //         <SelectStage setDocuments={setDocuments} setStage={setStage} documents={documents} />
+    //     );
+    // } else if (stage === UPLOAD_STAGE.Uploading) {
+    //     return <UploadingStage documents={documents} />;
+    // } else if (stage === UPLOAD_STAGE.Complete) {
+    //     return <CompleteStage documents={documents} />;
+    // }
+
+    return (
+        <>
+            <Routes>
+                <Route
+                    index
+                    element={
+                        <SelectStage
+                            setDocuments={setDocuments}
+                            setStage={setStage}
+                            documents={documents}
+                        />
+                    }
+                ></Route>
+                <Route
+                    path={getLastURLPath(routeChildren.ARF_UPLOAD_UPLOADING)}
+                    element={<UploadingStage documents={documents} />}
+                ></Route>
+                <Route
+                    path={getLastURLPath(routeChildren.ARF_UPLOAD_COMPLETED)}
+                    element={<CompleteStage documents={documents} />}
+                ></Route>
+            </Routes>
+            <Outlet></Outlet>
+        </>
+    );
 }
 
 export default UploadDocumentsPage;

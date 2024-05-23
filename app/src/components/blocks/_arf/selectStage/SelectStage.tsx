@@ -21,7 +21,7 @@ import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import BackButton from '../../../generic/backButton/BackButton';
 import { UploadSession } from '../../../../types/generic/uploadResult';
 import { AxiosError } from 'axios';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import { useNavigate } from 'react-router';
@@ -51,7 +51,8 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             return;
         }
 
-        setStage(UPLOAD_STAGE.Uploading);
+        // setStage(UPLOAD_STAGE.Uploading);
+        navigate(routeChildren.ARF_UPLOAD_UPLOADING);
         try {
             const uploadSession = await uploadDocuments({
                 nhsNumber,
@@ -65,7 +66,8 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
 
             await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
 
-            setStage(UPLOAD_STAGE.Complete);
+            // setStage(UPLOAD_STAGE.Complete);
+            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
         } catch (error) {
             handleUploadError(error as AxiosError);
         }
@@ -106,7 +108,8 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                 })),
             );
             /* istanbul ignore next */
-            setStage(UPLOAD_STAGE.Complete);
+            // setStage(UPLOAD_STAGE.Complete);
+            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }

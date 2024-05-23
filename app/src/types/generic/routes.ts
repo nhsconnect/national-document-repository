@@ -22,6 +22,7 @@ export enum routes {
     ARF_OVERVIEW = '/patient/arf',
     ARF_OVERVIEW_WILDCARD = '/patient/arf/*',
     ARF_UPLOAD_DOCUMENTS = '/patient/arf/upload',
+    ARF_UPLOAD_DOCUMENTS_WILDCARD = '/patient/arf/upload/*',
     FEEDBACK_CONFIRMATION = '/feedback/confirmation',
 }
 
@@ -40,6 +41,8 @@ export enum routeChildren {
     LLOYD_GEORGE_UPLOAD_CONFIRMATION = '/patient/lloyd-george-record/upload/confirmation',
     ARF_DELETE = '/patient/arf/delete',
     ARF_DELETE_COMPLETE = '/patient/arf/delete/complete',
+    ARF_UPLOAD_UPLOADING = '/patient/arf/upload/in-progress',
+    ARF_UPLOAD_COMPLETED = '/patient/arf/upload/completed',
 }
 
 export enum ROUTE_TYPE {
