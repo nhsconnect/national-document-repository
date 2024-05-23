@@ -1,8 +1,6 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
+import React, { useEffect, useRef, useState } from 'react';
 import usePatient from '../../../../helpers/hooks/usePatient';
-import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
-import { useNavigate } from 'react-router-dom';
+import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
@@ -10,7 +8,7 @@ import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import getDocumentSearchResults from '../../../../helpers/requests/getDocumentSearchResults';
 import { AxiosError } from 'axios';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
@@ -19,18 +17,14 @@ import LloydGeorgeSelectSearchResults from '../lloydGeorgeSelectSearchResults/Ll
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import LloydGeorgeDownloadStage from '../lloydGeorgeDownloadStage/LloydGeorgeDownloadStage';
 import { buildSearchResult } from '../../../../helpers/test/testBuilders';
+import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
+import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownloadComplete';
 
 export type Props = {
-    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
     deleteAfterDownload?: boolean;
-    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
-function LloydGeorgeSelectDownloadStage({
-    setStage,
-    deleteAfterDownload = false,
-    setDownloadStage,
-}: Props) {
+function LloydGeorgeSelectDownloadStage({ deleteAfterDownload = false }: Props) {
     const mounted = useRef(false);
     const navigate = useNavigate();
     const patientDetails = usePatient();
@@ -88,7 +82,7 @@ function LloydGeorgeSelectDownloadStage({
         baseHeaders,
     ]);
 
-    return (
+    const PageIndexView = () => (
         <>
             {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.SEARCH_PENDING && (
                 <>
@@ -106,14 +100,38 @@ function LloydGeorgeSelectDownloadStage({
                         selectedDocuments={selectedDocuments}
                     />
                 )}
-            {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED && (
-                <LloydGeorgeDownloadStage
-                    deleteAfterDownload={deleteAfterDownload}
-                    selectedDocuments={selectedDocuments}
-                    searchResults={searchResults}
-                    numberOfFiles={searchResults.length}
+        </>
+    );
+
+    return (
+        <>
+            <Routes>
+                <Route index element={<PageIndexView />} />
+                <Route
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS)}
+                    element={
+                        <LloydGeorgeDownloadStage
+                            deleteAfterDownload={deleteAfterDownload}
+                            selectedDocuments={selectedDocuments}
+                            searchResults={searchResults}
+                            numberOfFiles={searchResults.length}
+                        />
+                    }
                 />
-            )}
+                <Route
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE)}
+                    element={
+                        <LgDownloadComplete
+                            deleteAfterDownload={deleteAfterDownload}
+                            numberOfFiles={searchResults.length}
+                            selectedDocuments={selectedDocuments}
+                            searchResults={searchResults}
+                        />
+                    }
+                />
+            </Routes>
+
+            <Outlet />
         </>
     );
 }

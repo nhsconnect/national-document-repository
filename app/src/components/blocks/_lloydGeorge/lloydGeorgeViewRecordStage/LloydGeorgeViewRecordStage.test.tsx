@@ -169,16 +169,14 @@ describe('LloydGeorgeViewRecordStage', () => {
             expect(screen.getByText('Before downloading')).toBeInTheDocument();
             expect(screen.getByText('Available records')).toBeInTheDocument();
             expect(
-                screen.getByRole('button', { name: 'Download and remove files' }),
+                screen.getByTestId('download-and-remove-record-btn'),
             ).toBeInTheDocument();
         });
 
         it('clicking the side menu download button should show confirmation message, checkbox, red download button and cancel button', async () => {
             renderComponentForNonBSOLGPAdmin();
 
-            const downloadButton = screen.getByRole('button', {
-                name: 'Download and remove files',
-            });
+            const downloadButton = screen.getByTestId('download-and-remove-record-btn');
 
             act(() => {
                 userEvent.click(downloadButton);

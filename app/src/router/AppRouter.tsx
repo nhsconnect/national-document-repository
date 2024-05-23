@@ -69,6 +69,10 @@ export const childRoutes = [
         parent: LLOYD_GEORGE,
     },
     {
+        route: routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS,
+        parent: LLOYD_GEORGE,
+    },
+    {
         route: routeChildren.LLOYD_GEORGE_DELETE,
         parent: LLOYD_GEORGE,
     },

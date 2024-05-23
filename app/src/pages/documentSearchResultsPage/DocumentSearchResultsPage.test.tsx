@@ -182,7 +182,7 @@ describe('<DocumentSearchResultsPage />', () => {
             mockedAxios.get.mockReturnValueOnce(
                 new Promise((resolve) => setTimeout(resolve, 100000)),
             );
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
 
@@ -193,7 +193,7 @@ describe('<DocumentSearchResultsPage />', () => {
         it('pass accessibility checks when displaying search result', async () => {
             mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             expect(await screen.findByText('List of documents available')).toBeInTheDocument();
 
@@ -209,7 +209,7 @@ describe('<DocumentSearchResultsPage />', () => {
                     data: { message: 'An error occurred', err_code: 'SP_1001' },
                 },
             };
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             const downloadButton = await screen.findByRole('button', {
                 name: 'Download All Documents',

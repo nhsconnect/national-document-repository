@@ -214,7 +214,7 @@ describe('LloydGeorgeUploadPage', () => {
 
     describe('Accessibility', () => {
         it('pass accessibility checks at page entry point', async () => {
-            render(<LloydGeorgeUploadPage />);
+            renderPage(history);
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();

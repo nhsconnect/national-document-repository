@@ -208,7 +208,7 @@ describe('LloydGeorgeRecordPage', () => {
             const lgResult = buildLgSearchResult();
             mockAxios.get.mockReturnValue(Promise.resolve({ data: lgResult }));
 
-            render(<LloydGeorgeRecordPage />);
+            renderPage(history);
 
             await waitFor(() => {
                 expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();

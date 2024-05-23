@@ -3,7 +3,7 @@ import { Button, Card } from 'nhsuk-react-components';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 import DocumentsListView from '../../../generic/documentsListView/DocumentsListView';
 import { SearchResult } from '../../../../types/generic/searchResult';

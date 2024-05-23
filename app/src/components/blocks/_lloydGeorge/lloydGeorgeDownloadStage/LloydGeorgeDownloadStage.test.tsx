@@ -43,7 +43,6 @@ let history = createMemoryHistory({
 });
 
 describe('LloydGeorgeDownloadStage', () => {
-
     beforeEach(() => {
         history = createMemoryHistory({
             initialEntries: ['/'],
@@ -73,11 +72,9 @@ describe('LloydGeorgeDownloadStage', () => {
                 name: `NHS number: ${mockPatient.nhsNumber}`,
             }),
         ).toBeInTheDocument();
-        expect(
-            screen.getByRole('heading', {
-                name: `Preparing download for ${mockPdf.number_of_files} file(s)`,
-            }),
-        ).toBeInTheDocument();
+
+        const expectedTestId = 'download-file-header-' + mockPdf.number_of_files + '-files';
+        expect(screen.getByTestId(expectedTestId)).toBeInTheDocument();
     });
 
     it('renders a progress bar', () => {

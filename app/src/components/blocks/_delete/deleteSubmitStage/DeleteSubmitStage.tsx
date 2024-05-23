@@ -213,6 +213,6 @@ function DeleteSubmitStage({
                 <Outlet />
             </div>
         </>
-    )
+    );
 }
 export default DeleteSubmitStage;

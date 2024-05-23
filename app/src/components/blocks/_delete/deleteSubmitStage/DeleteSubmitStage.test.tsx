@@ -9,7 +9,6 @@ import axios from 'axios/index';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../../../types/generic/authRole';
 import { routes, routeChildren } from '../../../../types/generic/routes';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import { MemoryHistory, createMemoryHistory } from 'history';

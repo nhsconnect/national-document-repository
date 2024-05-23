@@ -138,17 +138,15 @@ function LloydGeorgeRecordPage() {
                     }
                 />
                 <Route
-                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_SELECT) + '/*'}
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD) + '/*'}
                     element={
                         <LloydGeorgeSelectDownloadStage
-                            setStage={setStage}
                             deleteAfterDownload={deleteAfterDownload}
-                            setDownloadStage={setDownloadStage}
                         />
                     }
                 />
                 <Route
-                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD) + '/*'}
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS) + '/*'}
                     element={
                         <LloydGeorgeDownloadStage
                             numberOfFiles={numberOfFiles}

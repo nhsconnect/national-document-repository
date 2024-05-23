@@ -34,7 +34,7 @@ export const lloydGeorgeRecordLinksInBSOL: Array<LGRecordActionLink> = [
         key: 'download-all-files-link',
         type: RECORD_ACTION.DOWNLOAD,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
-        href: routeChildren.LLOYD_GEORGE_DOWNLOAD_SELECT,
+        href: routeChildren.LLOYD_GEORGE_DOWNLOAD,
         showIfRecordInStorage: true,
     },
 ];
@@ -90,7 +90,6 @@ export function getNonBSOLUserRecordActionLinks({
             type: RECORD_ACTION.DOWNLOAD,
             unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
             showIfRecordInStorage: true,
-            href: routeChildren.LLOYD_GEORGE_DOWNLOAD,
             onClick: onClickFunctionForDownloadAndRemove,
         },
     ];
