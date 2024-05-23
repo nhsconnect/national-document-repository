@@ -7,6 +7,7 @@ import React, { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react
 import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import BackButton from '../../../generic/backButton/BackButton';
 
 type Props = {
     searchResults: Array<SearchResult>;
@@ -31,11 +32,14 @@ const LloydGeorgeSelectSearchResults = ({
         }
     };
     const navigate = useNavigate();
+    const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
+
     const orderedResults = [...searchResults].sort(sortByFileName);
     const tableCaption = <h2 className="nhsuk-heading-l">List of files in record</h2>;
-    const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
     const noOptionSelectedError = 'You must select a file to download or download all files';
     const pageHeader = 'Download the Lloyd George record for this patient';
+
+    const allowSelectFile = searchResults.length > 1;
 
     const handleChangeCheckboxes = (e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
@@ -63,6 +67,7 @@ const LloydGeorgeSelectSearchResults = ({
 
     return (
         <>
+            <BackButton />
             {showNoOptionSelectedMessage && (
                 <ErrorBox
                     messageTitle={'There is a problem'}
@@ -82,7 +87,9 @@ const LloydGeorgeSelectSearchResults = ({
             >
                 <Table.Head>
                     <Table.Row>
-                        <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
+                        {allowSelectFile && (
+                            <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
+                        )}
                         <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
                         <Table.Cell className={'table-column-header'}>Upload date</Table.Cell>
                     </Table.Row>
@@ -95,18 +102,20 @@ const LloydGeorgeSelectSearchResults = ({
                             key={`document-${result.fileName + result.created}`}
                             data-testid={`search-result-${index}`}
                         >
-                            <Table.Cell id={'selected-files-row-' + index + ''}>
-                                <Checkboxes onChange={handleChangeCheckboxes}>
-                                    <Checkboxes.Box
-                                        value={result.ID}
-                                        data-testid={`checkbox-${index}`}
-                                    >
-                                        <span className="nhsuk-u-visually-hidden">
-                                            {result.fileName}
-                                        </span>
-                                    </Checkboxes.Box>
-                                </Checkboxes>{' '}
-                            </Table.Cell>
+                            {allowSelectFile && (
+                                <Table.Cell id={'selected-files-row-' + index + ''}>
+                                    <Checkboxes onChange={handleChangeCheckboxes}>
+                                        <Checkboxes.Box
+                                            value={result.ID}
+                                            data-testid={`checkbox-${index}`}
+                                        >
+                                            <span className="nhsuk-u-visually-hidden">
+                                                {result.fileName}
+                                            </span>
+                                        </Checkboxes.Box>
+                                    </Checkboxes>{' '}
+                                </Table.Cell>
+                            )}
                             <Table.Cell
                                 id={'available-files-row-' + index + '-filename'}
                                 data-testid="filename"
@@ -123,17 +132,19 @@ const LloydGeorgeSelectSearchResults = ({
                     ))}
                 </Table.Body>
             </Table>
-            <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <Button
-                    onClick={handleClickSelectedDownload}
-                    data-testid="download-selected-files-btn"
-                >
-                    Download selected files
-                </Button>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 18 }}>
+                {allowSelectFile && (
+                    <Button
+                        onClick={handleClickSelectedDownload}
+                        data-testid="download-selected-files-btn"
+                    >
+                        Download selected files
+                    </Button>
+                )}
                 <Button
                     onClick={handleClickDownloadAll}
-                    className={'nhsuk-button nhsuk-button--secondary'}
-                    style={{ marginLeft: 18 }}
+                    className={'nhsuk-button' + (allowSelectFile ? ' nhsuk-button--secondary' : '')}
+                    // style={{ marginLeft: 18 }}
                     data-testid="download-all-files-btn"
                 >
                     Download all files
@@ -146,7 +157,7 @@ const LloydGeorgeSelectSearchResults = ({
                         e.preventDefault();
                         navigate(routes.START);
                     }}
-                    style={{ marginLeft: 18 }}
+                    // style={{ marginLeft: 18 }}
                 >
                     Start again
                 </Link>
