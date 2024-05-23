@@ -32,7 +32,6 @@ import { useNavigate } from 'react-router';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
-
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
     lloydGeorgeUrl: string;
@@ -85,7 +84,7 @@ function LloydGeorgeViewRecordStage({
     const showMenu = recordLinksToShow.length > 0;
 
     const handleConfirmDownloadAndRemoveButton = () => {
-        navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD);
+        navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS);
     };
     const handleCancelButton = () => {
         setDownloadRemoveButtonClicked(false);

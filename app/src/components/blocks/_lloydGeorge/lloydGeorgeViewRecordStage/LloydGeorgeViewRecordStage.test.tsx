@@ -255,7 +255,7 @@ describe('LloydGeorgeViewRecordStage', () => {
             clickRedDownloadButton();
 
             await waitFor(() => {
-                expect(mockNavigate).toBeCalledWith(routeChildren.LLOYD_GEORGE_DOWNLOAD);
+                expect(mockNavigate).toBeCalledWith(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS);
             });
         });
 
