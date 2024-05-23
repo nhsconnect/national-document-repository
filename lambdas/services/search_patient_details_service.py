@@ -27,7 +27,9 @@ class SearchPatientDetailsService:
             pds_api_service = get_pds_service()(self.ssm_service)
             patient_details = pds_api_service.fetch_patient_details(nhs_number)
 
-            self.check_if_user_authorise(gp_ods=patient_details.general_practice_ods)
+            self.check_if_user_authorise(
+                gp_ods_for_patient=patient_details.general_practice_ods
+            )
 
             logger.audit_splunk_info(
                 "Searched for patient details", {"Result": "Patient found"}
