@@ -582,3 +582,24 @@ PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME["name"] = [
         "suffix": ["MBE"],
     },
 ]
+
+PDS_PATIENT_NO_PERIOD_IN_GENERAL_PRACTITIONER_IDENTIFIER = copy.deepcopy(PDS_PATIENT)
+PDS_PATIENT_NO_PERIOD_IN_GENERAL_PRACTITIONER_IDENTIFIER["generalPractitioner"] = [
+    {
+        "id": "254406A3",
+        "type": "Organization",
+        "identifier": {
+            "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+            "value": "H81109",
+        },
+    },
+    {
+        "id": "254406A3",
+        "type": "Organization",
+        "identifier": {
+            "system": "https://fhir.nhs.uk/Id/ods-organization-code",
+            "value": "Y12345",
+            "period": {"start": "2020-01-01"},
+        },
+    },
+]

@@ -4,6 +4,7 @@ from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT,
     PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME,
     PDS_PATIENT_NO_GIVEN_NAME_IN_HISTORIC_NAME,
+    PDS_PATIENT_NO_PERIOD_IN_GENERAL_PRACTITIONER_IDENTIFIER,
     PDS_PATIENT_NO_PERIOD_IN_NAME_MODEL,
     PDS_PATIENT_RESTRICTED,
     PDS_PATIENT_WITH_GP_END_DATE,
@@ -164,3 +165,12 @@ def test_patient_without_given_name_in_current_name_logs_a_warning_and_process_s
     expected_log = "The given name of patient is empty."
     actual_log = caplog.records[-1].msg
     assert expected_log == actual_log
+
+
+def test_patient_without_period_in_general_practitioner_identifier_can_be_processed_successfully():
+    patient = create_patient(PDS_PATIENT_NO_PERIOD_IN_GENERAL_PRACTITIONER_IDENTIFIER)
+
+    expected = EXPECTED_PARSED_PATIENT_BASE_CASE
+    result = patient.get_patient_details(patient.id)
+
+    assert expected == result
