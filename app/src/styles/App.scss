@@ -78,6 +78,7 @@ $hunit: '%';
 @include spacing-mixin('.pr-', 'padding-right');
 @include spacing-mixin('.pb-', 'padding-bottom');
 @include spacing-mixin('.pl-', 'padding-left');
+@include spacing-mixin('.gap-', 'gap');
 
 @include x-axis-mixin('.px-', 'padding');
 @include x-axis-mixin('.mx-', 'margin');
@@ -136,6 +137,13 @@ $hunit: '%';
     flex-flow: row nowrap;
     justify-content: center;
     align-items: flex-start;
+}
+
+.align-baseline {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: baseline;
 }
 
 // Spinner

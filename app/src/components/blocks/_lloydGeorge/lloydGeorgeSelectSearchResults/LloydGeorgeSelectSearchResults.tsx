@@ -132,7 +132,7 @@ const LloydGeorgeSelectSearchResults = ({
                     ))}
                 </Table.Body>
             </Table>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 18 }}>
+            <div className="align-baseline gap-4">
                 {allowSelectFile && (
                     <Button
                         onClick={handleClickSelectedDownload}
@@ -144,7 +144,6 @@ const LloydGeorgeSelectSearchResults = ({
                 <Button
                     onClick={handleClickDownloadAll}
                     className={'nhsuk-button' + (allowSelectFile ? ' nhsuk-button--secondary' : '')}
-                    // style={{ marginLeft: 18 }}
                     data-testid="download-all-files-btn"
                 >
                     Download all files
@@ -157,7 +156,6 @@ const LloydGeorgeSelectSearchResults = ({
                         e.preventDefault();
                         navigate(routes.START);
                     }}
-                    // style={{ marginLeft: 18 }}
                 >
                     Start again
                 </Link>
