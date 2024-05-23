@@ -140,9 +140,7 @@ function LloydGeorgeRecordPage() {
                 <Route
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD) + '/*'}
                     element={
-                        <LloydGeorgeSelectDownloadStage
-                            deleteAfterDownload={deleteAfterDownload}
-                        />
+                        <LloydGeorgeSelectDownloadStage deleteAfterDownload={deleteAfterDownload} />
                     }
                 />
                 <Route
