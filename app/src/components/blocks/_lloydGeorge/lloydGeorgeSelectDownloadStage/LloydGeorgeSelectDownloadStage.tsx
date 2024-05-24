@@ -27,6 +27,41 @@ export type Props = {
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
+const PageHeader = 'Download the Lloyd George record for this patient';
+
+type PageIndexViewProps = {
+    submissionSearchState: SEARCH_AND_DOWNLOAD_STATE;
+    setSubmissionSearchState: Dispatch<SetStateAction<SEARCH_AND_DOWNLOAD_STATE>>;
+    searchResults: Array<SearchResult>;
+    selectedDocuments: Array<string>;
+    setSelectedDocuments: Dispatch<SetStateAction<Array<string>>>;
+};
+const SelectDownloadPageIndexView = ({
+    submissionSearchState,
+    setSubmissionSearchState,
+    searchResults,
+    selectedDocuments,
+    setSelectedDocuments,
+}: PageIndexViewProps) => (
+    <>
+        {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.SEARCH_PENDING && (
+            <>
+                <h1 id="download-page-title">{PageHeader}</h1>
+                <PatientSummary />
+                <ProgressBar status="Loading..."></ProgressBar>
+            </>
+        )}
+        {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED &&
+            !!searchResults.length && (
+                <LloydGeorgeSelectSearchResults
+                    searchResults={searchResults}
+                    setSubmissionSearchState={setSubmissionSearchState}
+                    setSelectedDocuments={setSelectedDocuments}
+                    selectedDocuments={selectedDocuments}
+                />
+            )}
+    </>
+);
 function LloydGeorgeSelectDownloadStage({
     setDownloadStage,
     numberOfFiles,
@@ -36,7 +71,6 @@ function LloydGeorgeSelectDownloadStage({
     const navigate = useNavigate();
     const patientDetails = usePatient();
     const nhsNumber = patientDetails?.nhsNumber ?? '';
-    const pageHeader = 'Download the Lloyd George record for this patient';
     const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
     const [submissionSearchState, setSubmissionSearchState] = useState(
         SEARCH_AND_DOWNLOAD_STATE.INITIAL,
@@ -46,7 +80,7 @@ function LloydGeorgeSelectDownloadStage({
     const baseHeaders = useBaseAPIHeaders();
     let numberOfFilesForDownload = useRef(numberOfFiles);
 
-    useTitle({ pageTitle: pageHeader });
+    useTitle({ pageTitle: PageHeader });
 
     useEffect(() => {
         const onPageLoad = async () => {
@@ -95,31 +129,21 @@ function LloydGeorgeSelectDownloadStage({
         baseHeaders,
     ]);
 
-    const PageIndexView = () => (
-        <>
-            {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.SEARCH_PENDING && (
-                <>
-                    <h1 id="download-page-title">{pageHeader}</h1>
-                    <PatientSummary />
-                    <ProgressBar status="Loading..."></ProgressBar>
-                </>
-            )}
-            {submissionSearchState === SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED &&
-                !!searchResults.length && (
-                    <LloydGeorgeSelectSearchResults
-                        searchResults={searchResults}
-                        setSubmissionSearchState={setSubmissionSearchState}
-                        setSelectedDocuments={setSelectedDocuments}
-                        selectedDocuments={selectedDocuments}
-                    />
-                )}
-        </>
-    );
-
     return (
         <>
             <Routes>
-                <Route index element={<PageIndexView />} />
+                <Route
+                    index
+                    element={
+                        <SelectDownloadPageIndexView
+                            submissionSearchState={submissionSearchState}
+                            setSubmissionSearchState={setSubmissionSearchState}
+                            searchResults={searchResults}
+                            selectedDocuments={selectedDocuments}
+                            setSelectedDocuments={setSelectedDocuments}
+                        />
+                    }
+                />
                 <Route
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS)}
                     element={
