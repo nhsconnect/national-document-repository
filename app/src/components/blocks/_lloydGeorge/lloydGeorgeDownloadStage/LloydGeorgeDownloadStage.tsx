@@ -57,6 +57,9 @@ function LloydGeorgeDownloadStage({
         filename: '',
     });
     const linkRef = useRef<HTMLAnchorElement | null>(null);
+    const numberOfFilesForDownload = useRef(
+        selectedDocuments?.length ? selectedDocuments.length : numberOfFiles,
+    );
     const mounted = useRef(false);
     const navigate = useNavigate();
     const { mockLocal } = useConfig();
@@ -64,11 +67,8 @@ function LloydGeorgeDownloadStage({
     const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
 
-    const numberOfFilesForDownload = selectedDocuments?.length
-        ? selectedDocuments.length
-        : numberOfFiles;
-
-    const pageDownloadCountId = 'download-file-header-' + numberOfFilesForDownload + '-files';
+    const pageDownloadCountId =
+        'download-file-header-' + numberOfFilesForDownload.current + '-files';
 
     const progressTimer = useMemo(() => {
         return new FakeProgress({
@@ -179,7 +179,7 @@ function LloydGeorgeDownloadStage({
                 <h4>NHS number: {patientDetails?.nhsNumber}</h4>
                 <div className="nhsuk-heading-xl" />
                 <h4 data-testid={pageDownloadCountId}>
-                    Preparing download for {numberOfFilesForDownload} files
+                    Preparing download for {numberOfFilesForDownload.current} files
                 </h4>
             </div>
 

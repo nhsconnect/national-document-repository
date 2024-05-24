@@ -44,6 +44,8 @@ function LloydGeorgeSelectDownloadStage({
     const [selectedDocuments, setSelectedDocuments] = useState<Array<string>>([]);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
+    let numberOfFilesForDownload = useRef(numberOfFiles);
+
     useTitle({ pageTitle: pageHeader });
 
     useEffect(() => {
@@ -58,7 +60,7 @@ function LloydGeorgeSelectDownloadStage({
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                 });
                 setSearchResults(results ?? []);
-                numberOfFiles = searchResults.length;
+                numberOfFilesForDownload.current = searchResults.length;
                 setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
             } catch (e) {
                 const error = e as AxiosError;
@@ -121,7 +123,7 @@ function LloydGeorgeSelectDownloadStage({
                             deleteAfterDownload={deleteAfterDownload}
                             selectedDocuments={selectedDocuments}
                             searchResults={searchResults}
-                            numberOfFiles={numberOfFiles}
+                            numberOfFiles={numberOfFilesForDownload.current}
                             setDownloadStage={setDownloadStage}
                         />
                     }
@@ -131,7 +133,7 @@ function LloydGeorgeSelectDownloadStage({
                     element={
                         <LgDownloadComplete
                             deleteAfterDownload={deleteAfterDownload}
-                            numberOfFiles={numberOfFiles}
+                            numberOfFiles={numberOfFilesForDownload.current}
                             selectedDocuments={selectedDocuments}
                             searchResults={searchResults}
                             setDownloadStage={setDownloadStage}
