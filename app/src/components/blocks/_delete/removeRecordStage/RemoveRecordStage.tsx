@@ -99,7 +99,7 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage }: Prop
             >
                 Go back
             </BackLink>
-            <h1>Remove this {recordType}</h1>
+            <h1>Remove this {recordType} record</h1>
             <WarningCallout>
                 <WarningCallout.Label>Before removing</WarningCallout.Label>
                 <p data-testid="remove-record-warning-text">
