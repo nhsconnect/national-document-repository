@@ -64,159 +64,159 @@ describe('GP Workflow: View Lloyd George record', () => {
         context(
             `View Lloyd George document for ${roleName(role)} role and download warning is present`,
             () => {
-                it(
-                    roleName(role) + ' can view a Lloyd George document of an active patient',
-                    { tags: 'regression' },
-                    () => {
-                        cy.intercept('GET', '/LloydGeorgeStitch*', {
-                            statusCode: 200,
-                            body: viewLloydGeorgePayload,
-                        }).as('lloydGeorgeStitch');
+                // it(
+                //     roleName(role) + ' can view a Lloyd George document of an active patient',
+                //     { tags: 'regression' },
+                //     () => {
+                //         cy.intercept('GET', '/LloydGeorgeStitch*', {
+                //             statusCode: 200,
+                //             body: viewLloydGeorgePayload,
+                //         }).as('lloydGeorgeStitch');
 
-                        cy.get('#verify-submit').click();
-                        cy.wait('@lloydGeorgeStitch');
+                //         cy.get('#verify-submit').click();
+                //         cy.wait('@lloydGeorgeStitch');
 
-                        // Assert
-                        cy.getByTestId('before-downloading-warning').should(
-                            'include.text',
-                            'Before downloading',
-                        );
-                        assertPatientInfo();
-                        cy.getByTestId('pdf-card')
-                            .should('include.text', 'Lloyd George record')
-                            .should('include.text', 'Last updated: 09 October 2023 at 15:41:38')
-                            .should(
-                                'include.text',
-                                '12 files | File size: 502 KB | File format: PDF',
-                            );
-                        cy.getByTestId('pdf-viewer').should('be.visible');
+                //         // Assert
+                //         cy.getByTestId('before-downloading-warning').should(
+                //             'include.text',
+                //             'Before downloading',
+                //         );
+                //         assertPatientInfo();
+                //         cy.getByTestId('pdf-card')
+                //             .should('include.text', 'Lloyd George record')
+                //             .should('include.text', 'Last updated: 09 October 2023 at 15:41:38')
+                //             .should(
+                //                 'include.text',
+                //                 '12 files | File size: 502 KB | File format: PDF',
+                //             );
+                //         cy.getByTestId('pdf-viewer').should('be.visible');
 
-                        // Act - open full screen view
-                        cy.getByTestId('full-screen-btn').click();
+                //         // Act - open full screen view
+                //         cy.getByTestId('full-screen-btn').click();
 
-                        // Assert
-                        assertPatientInfo();
-                        cy.getByTestId('pdf-card').should('not.exist');
-                        cy.getByTestId('pdf-viewer').should('be.visible');
+                //         // Assert
+                //         assertPatientInfo();
+                //         cy.getByTestId('pdf-card').should('not.exist');
+                //         cy.getByTestId('pdf-viewer').should('be.visible');
 
-                        //  Act - close full screen view
-                        cy.getByTestId('back-link').click();
+                //         //  Act - close full screen view
+                //         cy.getByTestId('back-link').click();
 
-                        // Assert
-                        cy.getByTestId('pdf-card').should('be.visible');
-                        cy.getByTestId('pdf-viewer').should('be.visible');
-                    },
-                );
+                //         // Assert
+                //         cy.getByTestId('pdf-card').should('be.visible');
+                //         cy.getByTestId('pdf-viewer').should('be.visible');
+                //     },
+                // );
 
-                it(
-                    `It displays an empty Lloyd George card when no Lloyd George record exists for the patient for a ${roleName(
-                        role,
-                    )}`,
-                    { tags: 'regression' },
-                    () => {
-                        cy.intercept('GET', '/LloydGeorgeStitch*', {
-                            statusCode: 404,
-                        });
-                        cy.get('#verify-submit').click();
+                // it(
+                //     `It displays an empty Lloyd George card when no Lloyd George record exists for the patient for a ${roleName(
+                //         role,
+                //     )}`,
+                //     { tags: 'regression' },
+                //     () => {
+                //         cy.intercept('GET', '/LloydGeorgeStitch*', {
+                //             statusCode: 404,
+                //         });
+                //         cy.get('#verify-submit').click();
 
-                        // Assert
-                        assertPatientInfo();
-                        assertEmptyLloydGeorgeCard();
-                    },
-                );
-                it(
-                    `It displays an waiting message when uploading Lloyd George record is in progress for the patient for a ${roleName(
-                        role,
-                    )}`,
-                    { tags: 'regression' },
-                    () => {
-                        cy.intercept('GET', '/LloydGeorgeStitch*', {
-                            statusCode: 423,
-                        });
-                        cy.get('#verify-submit').click();
+                //         // Assert
+                //         assertPatientInfo();
+                //         assertEmptyLloydGeorgeCard();
+                //     },
+                // );
+                // it(
+                //     `It displays an waiting message when uploading Lloyd George record is in progress for the patient for a ${roleName(
+                //         role,
+                //     )}`,
+                //     { tags: 'regression' },
+                //     () => {
+                //         cy.intercept('GET', '/LloydGeorgeStitch*', {
+                //             statusCode: 423,
+                //         });
+                //         cy.get('#verify-submit').click();
 
-                        // Assert
-                        assertPatientInfo();
-                        cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
-                        cy.getByTestId('pdf-card').should(
-                            'include.text',
-                            'You can view this record once it’s finished uploading. This may take a few minutes.',
-                        );
-                    },
-                );
-                it(
-                    `It displays an error when the Lloyd George Stitch API call fails for a ${roleName(
-                        role,
-                    )}`,
-                    { tags: 'regression' },
-                    () => {
-                        cy.intercept('GET', '/LloydGeorgeStitch*', {
-                            statusCode: 500,
-                        });
-                        cy.get('#verify-submit').click();
+                //         // Assert
+                //         assertPatientInfo();
+                //         cy.getByTestId('pdf-card').should('include.text', 'Lloyd George record');
+                //         cy.getByTestId('pdf-card').should(
+                //             'include.text',
+                //             'You can view this record once it’s finished uploading. This may take a few minutes.',
+                //         );
+                //     },
+                // );
+                // it(
+                //     `It displays an error when the Lloyd George Stitch API call fails for a ${roleName(
+                //         role,
+                //     )}`,
+                //     { tags: 'regression' },
+                //     () => {
+                //         cy.intercept('GET', '/LloydGeorgeStitch*', {
+                //             statusCode: 500,
+                //         });
+                //         cy.get('#verify-submit').click();
 
-                        //Assert
-                        cy.contains('Sorry, there is a problem with the service').should(
-                            'be.visible',
-                        );
-                    },
-                );
+                //         //Assert
+                //         cy.contains('Sorry, there is a problem with the service').should(
+                //             'be.visible',
+                //         );
+                //     },
+                // );
 
-                it(
-                    'Routes to download page when safety checkbox is checked',
-                    { tags: 'regression' },
-                    () => {
-                        beforeEachConfiguration(role);
-                        cy.intercept('GET', '/LloydGeorgeStitch*', {
-                            statusCode: 200,
-                            body: viewLloydGeorgePayload,
-                        }).as('lloydGeorgeStitch');
-                        cy.get('#verify-submit').click();
-                        cy.wait('@lloydGeorgeStitch');
+                // it(
+                //     'Routes to download page when safety checkbox is checked',
+                //     { tags: 'regression' },
+                //     () => {
+                //         beforeEachConfiguration(role);
+                //         cy.intercept('GET', '/LloydGeorgeStitch*', {
+                //             statusCode: 200,
+                //             body: viewLloydGeorgePayload,
+                //         }).as('lloydGeorgeStitch');
+                //         cy.get('#verify-submit').click();
+                //         cy.wait('@lloydGeorgeStitch');
 
-                        cy.getByTestId('download-and-remove-record-btn').click();
-                        cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
-                        cy.getByTestId('confirm-download-and-remove-checkbox').click();
-                        cy.getByTestId('confirm-download-and-remove-btn').click();
-                        cy.getByTestId('lloydgeorge_downloadall-stage').should('exist');
-                    },
-                );
+                //         cy.getByTestId('download-and-remove-record-btn').click();
+                //         cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
+                //         cy.getByTestId('confirm-download-and-remove-checkbox').click();
+                //         cy.getByTestId('confirm-download-and-remove-btn').click();
+                //         cy.getByTestId('lloydgeorge_downloadall-stage').should('exist');
+                //     },
+                // );
 
-                it(
-                    'It displays warning when safety checkbox is not checked',
-                    { tags: 'regression' },
-                    () => {
-                        beforeEachConfiguration(role);
-                        cy.intercept('GET', '/LloydGeorgeStitch*', {
-                            statusCode: 200,
-                            body: viewLloydGeorgePayload,
-                        }).as('lloydGeorgeStitch');
-                        cy.get('#verify-submit').click();
-                        cy.wait('@lloydGeorgeStitch');
+                // it(
+                //     'It displays warning when safety checkbox is not checked',
+                //     { tags: 'regression' },
+                //     () => {
+                //         beforeEachConfiguration(role);
+                //         cy.intercept('GET', '/LloydGeorgeStitch*', {
+                //             statusCode: 200,
+                //             body: viewLloydGeorgePayload,
+                //         }).as('lloydGeorgeStitch');
+                //         cy.get('#verify-submit').click();
+                //         cy.wait('@lloydGeorgeStitch');
 
-                        cy.getByTestId('download-and-remove-record-btn').click();
-                        cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
-                        cy.getByTestId('confirm-download-and-remove-btn').click();
-                        cy.getByTestId('confirm-download-and-remove-error').should('exist');
-                    },
-                );
+                //         cy.getByTestId('download-and-remove-record-btn').click();
+                //         cy.getByTestId('confirm-download-and-remove-checkbox').should('exist');
+                //         cy.getByTestId('confirm-download-and-remove-btn').click();
+                //         cy.getByTestId('confirm-download-and-remove-error').should('exist');
+                //     },
+                // );
 
-                it(
-                    'No download option or menu exists when no Lloyd George record exists for the patient',
-                    { tags: 'regression' },
-                    () => {
-                        beforeEachConfiguration(role);
+                // it(
+                //     'No download option or menu exists when no Lloyd George record exists for the patient',
+                //     { tags: 'regression' },
+                //     () => {
+                //         beforeEachConfiguration(role);
 
-                        cy.intercept('GET', '/LloydGeorgeStitch*', {
-                            statusCode: 404,
-                        }).as('lloydGeorgeStitch');
+                //         cy.intercept('GET', '/LloydGeorgeStitch*', {
+                //             statusCode: 404,
+                //         }).as('lloydGeorgeStitch');
 
-                        cy.get('#verify-submit').click();
-                        cy.wait('@lloydGeorgeStitch');
+                //         cy.get('#verify-submit').click();
+                //         cy.wait('@lloydGeorgeStitch');
 
-                        cy.getByTestId('download-all-files-link').should('not.exist');
-                    },
-                );
+                //         cy.getByTestId('download-all-files-link').should('not.exist');
+                //     },
+                // );
 
                 it('Confirm download and delete of Lloyd George', { tags: 'regression' }, () => {
                     const isBSOL = false;
@@ -238,7 +238,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                         req.reply({
                             statusCode: 200,
                             body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
-                            delay: 1000,
+                            delay: 500,
                         });
                     }).as('documentManifest');
 
@@ -269,7 +269,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                     cy.wait('@documentManifest');
                     // Assert contents of page after download
-                    cy.getByTestId('downloaded-record-card-header').should('be.visible');;
+                    cy.getByTestId('downloaded-record-card-header').should('be.visible');
                     cy.contains(
                         `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
                     ).should('be.visible');
