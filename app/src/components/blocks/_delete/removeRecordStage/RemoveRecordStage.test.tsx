@@ -174,7 +174,6 @@ const renderComponent = (history: MemoryHistory, numberOfFiles: number, recordTy
                 recordType={recordType}
                 setDownloadStage={mockDownloadStage}
             />
-            ,
         </ReactRouter.Router>,
     );
 };
