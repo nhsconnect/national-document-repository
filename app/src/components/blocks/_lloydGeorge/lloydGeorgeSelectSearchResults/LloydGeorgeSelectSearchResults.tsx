@@ -9,7 +9,7 @@ import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import BackButton from '../../../generic/backButton/BackButton';
 
-type Props = {
+export type Props = {
     searchResults: Array<SearchResult>;
     setSubmissionSearchState: Dispatch<SetStateAction<SEARCH_AND_DOWNLOAD_STATE>>;
     setSelectedDocuments: Dispatch<React.SetStateAction<Array<string>>>;
@@ -143,7 +143,7 @@ const LloydGeorgeSelectSearchResults = ({
                 )}
                 <Button
                     onClick={handleClickDownloadAll}
-                    className={'nhsuk-button' + (allowSelectFile ? ' nhsuk-button--secondary' : '')}
+                    secondary={allowSelectFile}
                     data-testid="download-all-files-btn"
                 >
                     Download all files
