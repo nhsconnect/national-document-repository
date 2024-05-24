@@ -4,7 +4,7 @@ boto3==1.33.11
 botocore==1.33.11
 certifi==2023.7.22
 charset-normalizer==3.2.0
-cryptography==41.0.6
+cryptography==42.0.4
 email-validator==2.1.0.post1
 fhir.resources[xml]==7.1.0
 idna==3.7
