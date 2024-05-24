@@ -137,7 +137,6 @@ const renderComponent = (history: MemoryHistory, deleteAfterDownload = false) =>
                 numberOfFiles={2}
                 deleteAfterDownload={deleteAfterDownload}
             />
-            ,
         </ReactRouter.Router>,
     );
 };
