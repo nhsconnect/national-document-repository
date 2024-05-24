@@ -1,4 +1,4 @@
-import React, { MouseEvent, useEffect } from 'react';
+import React, { Dispatch, MouseEvent, SetStateAction, useEffect } from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
 import { routes } from '../../../../types/generic/routes';
 import { Link } from 'react-router-dom';
@@ -8,12 +8,14 @@ import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 export type Props = {
     numberOfFiles: number;
+    setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
-function DeleteResultStage({ numberOfFiles }: Props) {
+function DeleteResultStage({ numberOfFiles, setDownloadStage }: Props) {
     const navigate = useNavigate();
     const role = useRole();
 
@@ -25,6 +27,9 @@ function DeleteResultStage({ numberOfFiles }: Props) {
 
     const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
+        if (setDownloadStage) {
+            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
+        }
         navigate(routes.LLOYD_GEORGE);
     };
     const isGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;

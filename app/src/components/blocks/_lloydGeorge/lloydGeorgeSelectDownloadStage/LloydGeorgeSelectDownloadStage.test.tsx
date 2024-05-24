@@ -12,6 +12,7 @@ const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
+const mockSetDownloadStage = jest.fn();
 
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
@@ -122,7 +123,11 @@ describe('LloydGeorgeSelectDownloadStage', () => {
 const renderComponent = (history: MemoryHistory, deleteAfterDownload = false) => {
     return render(
         <ReactRouter.Router navigator={history} location={history.location}>
-            <LloydGeorgeSelectDownloadStage deleteAfterDownload={deleteAfterDownload} />,
+            <LloydGeorgeSelectDownloadStage
+                setDownloadStage={mockSetDownloadStage}
+                numberOfFiles={2}
+                deleteAfterDownload={deleteAfterDownload}
+            />,
         </ReactRouter.Router>,
     );
 };

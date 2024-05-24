@@ -5,6 +5,8 @@ import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test
 import axios from 'axios';
 import { act } from 'react-dom/test-utils';
 import { routes } from '../../../../types/generic/routes';
+import { MemoryHistory, createMemoryHistory } from 'history';
+import * as ReactRouter from 'react-router';
 
 jest.mock('axios');
 jest.mock('moment', () => {
@@ -13,6 +15,7 @@ jest.mock('moment', () => {
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
     useNavigate: () => mockUseNavigate,
 }));
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
@@ -20,7 +23,7 @@ jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/hooks/usePatient');
 const mockUsePatient = usePatient as jest.Mock;
 const mockPatientDetails = buildPatientDetails();
-const mockSetStage = jest.fn();
+const mockDownloadStage = jest.fn();
 
 const testFileName1 = 'John_1';
 const testFileName2 = 'John_2';
@@ -29,8 +32,18 @@ const searchResults = [
     buildSearchResult({ fileName: testFileName1 }),
     buildSearchResult({ fileName: testFileName2 }),
 ];
+
+let history = createMemoryHistory({
+    initialEntries: ['/'],
+    initialIndex: 0,
+});
+
 describe('RemoveRecordStage', () => {
     beforeEach(() => {
+        history = createMemoryHistory({
+            initialEntries: ['/'],
+            initialIndex: 0,
+        });
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockUsePatient.mockReturnValue(mockPatientDetails);
     });
@@ -42,7 +55,7 @@ describe('RemoveRecordStage', () => {
             const recordType = 'Test Record';
 
             act(() => {
-                render(<RemoveRecordStage  numberOfFiles={numberOfFiles} recordType={recordType} />);
+                renderComponent(history, numberOfFiles, recordType);
             });
             expect(
                 screen.getByRole('heading', { name: 'Remove this ' + recordType }),
@@ -59,7 +72,7 @@ describe('RemoveRecordStage', () => {
             const recordType = 'Test Record';
             mockedAxios.get.mockImplementation(() => Promise.resolve({ data: searchResults }));
             act(() => {
-                render(<RemoveRecordStage  numberOfFiles={numberOfFiles} recordType={recordType} />);
+                renderComponent(history, numberOfFiles, recordType);
             });
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
         });
@@ -75,7 +88,7 @@ describe('RemoveRecordStage', () => {
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             act(() => {
-                render(<RemoveRecordStage  numberOfFiles={numberOfFiles} recordType={recordType} />);
+                renderComponent(history, numberOfFiles, recordType);
             });
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             await waitFor(() => {
@@ -96,7 +109,7 @@ describe('RemoveRecordStage', () => {
             mockedAxios.get.mockImplementation(() => Promise.resolve({ data: searchResults }));
 
             act(() => {
-                render(<RemoveRecordStage  numberOfFiles={numberOfFiles} recordType={recordType} />);
+                renderComponent(history, numberOfFiles, recordType);
             });
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             await waitFor(() => {
@@ -123,7 +136,7 @@ describe('RemoveRecordStage', () => {
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             act(() => {
-                render(<RemoveRecordStage  numberOfFiles={numberOfFiles} recordType={recordType} />);
+                renderComponent(history, numberOfFiles, recordType);
             });
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             const mockedShortcode = '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd';
@@ -143,7 +156,7 @@ describe('RemoveRecordStage', () => {
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             act(() => {
-                render(<RemoveRecordStage numberOfFiles={numberOfFiles} recordType={recordType} />);
+                renderComponent(history, numberOfFiles, recordType);
             });
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
             await waitFor(() => {
@@ -151,6 +164,16 @@ describe('RemoveRecordStage', () => {
             });
         });
     });
-
-
 });
+
+const renderComponent = (history: MemoryHistory, numberOfFiles: number, recordType: string) => {
+    return render(
+        <ReactRouter.Router navigator={history} location={history.location}>
+            <RemoveRecordStage
+                numberOfFiles={numberOfFiles}
+                recordType={recordType}
+                setDownloadStage={mockDownloadStage}
+            />,
+        </ReactRouter.Router>,
+    );
+};

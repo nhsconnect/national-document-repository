@@ -66,7 +66,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
     };
 
     const deleteAllDocuments = () => {
-        navigate(routeChildren.ARF_DELETE);
+        navigate(routeChildren.ARF_DELETE_CONFIRMATION);
     };
 
     return (

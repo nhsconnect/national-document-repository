@@ -14,6 +14,8 @@ jest.mock('../../../../helpers/hooks/usePatient');
 const mockedUseNavigate = jest.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
+const mockSetDownloadStage = jest.fn();
+
 const numberOfFiles = 7;
 const selectedDocuments = ['test-id-1', 'test-id-2'];
 const downloadAllSelectedDocuments: Array<string> = [];
@@ -43,6 +45,7 @@ describe('LloydGeorgeDownloadComplete', () => {
                 <LloydGeorgeDownloadComplete
                     deleteAfterDownload={true}
                     numberOfFiles={numberOfFiles}
+                    setDownloadStage={mockSetDownloadStage}
                 />,
             );
 
@@ -77,6 +80,7 @@ describe('LloydGeorgeDownloadComplete', () => {
                     numberOfFiles={downloadAllSelectedDocuments.length}
                     selectedDocuments={downloadAllSelectedDocuments}
                     searchResults={searchResults}
+                    setDownloadStage={mockSetDownloadStage}
                 />,
             );
 
@@ -107,6 +111,7 @@ describe('LloydGeorgeDownloadComplete', () => {
                     numberOfFiles={selectedDocuments.length}
                     selectedDocuments={selectedDocuments}
                     searchResults={searchResults}
+                    setDownloadStage={mockSetDownloadStage}
                 />,
             );
 
@@ -149,6 +154,7 @@ describe('LloydGeorgeDownloadComplete', () => {
                     <LloydGeorgeDownloadComplete
                         numberOfFiles={numberOfFiles}
                         deleteAfterDownload={deleteAfterDownload}
+                        setDownloadStage={mockSetDownloadStage}
                     />,
                 );
 

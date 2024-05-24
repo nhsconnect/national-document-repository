@@ -23,13 +23,15 @@ import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
 import DeleteSubmitStage from '../deleteSubmitStage/DeleteSubmitStage';
 import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 export type Props = {
     numberOfFiles: number;
     recordType: string;
+    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
-function RemoveRecordStage({ numberOfFiles, recordType }: Props) {
+function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage }: Props) {
     useTitle({ pageTitle: 'Remove record' });
     const patientDetails = usePatient();
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.PENDING);
@@ -213,11 +215,12 @@ function RemoveRecordStage({ numberOfFiles, recordType }: Props) {
                 ></Route>
                 <Route
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DELETE_COMPLETE)}
-                    element={<DeleteResultStage numberOfFiles={numberOfFiles} />}
-                ></Route>
-                <Route
-                    path={getLastURLPath(routeChildren.ARF_DELETE_COMPLETE)}
-                    element={<DeleteResultStage numberOfFiles={numberOfFiles} />}
+                    element={
+                        <DeleteResultStage
+                            numberOfFiles={numberOfFiles}
+                            setDownloadStage={setDownloadStage}
+                        />
+                    }
                 ></Route>
             </Routes>
             <Outlet></Outlet>

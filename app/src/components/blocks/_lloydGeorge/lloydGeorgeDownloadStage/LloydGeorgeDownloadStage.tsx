@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card } from 'nhsuk-react-components';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
@@ -14,6 +14,9 @@ import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { SearchResult } from '../../../../types/generic/searchResult';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
+import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
+import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownloadComplete';
 
 const FakeProgress = require('fake-progress');
 
@@ -22,6 +25,7 @@ export type Props = {
     selectedDocuments?: Array<string>;
     searchResults?: Array<SearchResult>;
     numberOfFiles: number;
+    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
 type DownloadLinkAttributes = {
@@ -34,6 +38,7 @@ function LloydGeorgeDownloadStage({
     selectedDocuments,
     searchResults,
     numberOfFiles,
+    setDownloadStage,
 }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
@@ -54,6 +59,7 @@ function LloydGeorgeDownloadStage({
     const numberOfFilesForDownload = selectedDocuments?.length
         ? selectedDocuments.length
         : numberOfFiles;
+
     const pageDownloadCountId = 'download-file-header-' + numberOfFilesForDownload + '-files';
 
     const progressTimer = useMemo(() => {
@@ -126,6 +132,10 @@ function LloydGeorgeDownloadStage({
                     } // This is fail and forget at this point in time.
                 }
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
+
+                console.log("HERE-Z");
+                console.log(numberOfFiles);
+                console.log(numberOfFilesForDownload);
             } catch (e) {
                 const error = e as AxiosError;
                 onFail(error);
@@ -158,7 +168,7 @@ function LloydGeorgeDownloadStage({
     const PageViewIndex = () => (
         <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
             <div className="lloydgeorge_downloadall-stage_header">
-                <h1>{pageHeader}</h1>
+                <h1 data-testid="lloyd-george-download-header">{pageHeader}</h1>
                 <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
                 <h4>NHS number: {patientDetails?.nhsNumber}</h4>
                 <div className="nhsuk-heading-xl" />
@@ -190,6 +200,7 @@ function LloydGeorgeDownloadStage({
                         <div>
                             <Link
                                 to="#"
+                                data-testid="cancel-download-link"
                                 onClick={(e) => {
                                     e.preventDefault();
                                     handlePageExit();
@@ -209,6 +220,18 @@ function LloydGeorgeDownloadStage({
         <>
             <Routes>
                 <Route index element={PageViewIndex()} />
+                <Route
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE)}
+                    element={
+                        <LgDownloadComplete
+                            deleteAfterDownload={deleteAfterDownload}
+                            numberOfFiles={numberOfFiles}
+                            selectedDocuments={selectedDocuments}
+                            searchResults={searchResults}
+                            setDownloadStage={setDownloadStage}
+                        />
+                    }
+                />
             </Routes>
 
             <Outlet />

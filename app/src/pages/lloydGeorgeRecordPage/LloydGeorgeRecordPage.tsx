@@ -67,9 +67,12 @@ function LloydGeorgeRecordPage() {
                         baseUrl,
                         baseHeaders,
                     });
-                if (presign_url?.startsWith('https://')) {
+                
+                console.log('here-x')
+                console.log(number_of_files);
+                // if (presign_url?.startsWith('https://')) {
                     onSuccess(number_of_files, last_updated, presign_url, total_file_size_in_byte);
-                }
+                // }
             } catch (e) {
                 const error = e as AxiosError;
                 const errorResponse = (error.response?.data as ErrorResponse) ?? {};
@@ -100,7 +103,6 @@ function LloydGeorgeRecordPage() {
                 }
             }
         };
-
         if (!mounted.current || downloadStage === DOWNLOAD_STAGE.REFRESH) {
             mounted.current = true;
             setDownloadStage(DOWNLOAD_STAGE.PENDING);
@@ -140,15 +142,10 @@ function LloydGeorgeRecordPage() {
                 <Route
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD) + '/*'}
                     element={
-                        <LloydGeorgeSelectDownloadStage deleteAfterDownload={deleteAfterDownload} />
-                    }
-                />
-                <Route
-                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS) + '/*'}
-                    element={
-                        <LloydGeorgeDownloadStage
-                            numberOfFiles={numberOfFiles}
+                        <LloydGeorgeSelectDownloadStage
+                            setDownloadStage={setDownloadStage}
                             deleteAfterDownload={deleteAfterDownload}
+                            numberOfFiles={numberOfFiles}
                         />
                     }
                 />
@@ -156,6 +153,7 @@ function LloydGeorgeRecordPage() {
                     path={getLastURLPath(routeChildren.LLOYD_GEORGE_DELETE) + '/*'}
                     element={
                         <RemoveRecordStage
+                            setDownloadStage={setDownloadStage}
                             numberOfFiles={numberOfFiles}
                             recordType="Lloyd George"
                         />

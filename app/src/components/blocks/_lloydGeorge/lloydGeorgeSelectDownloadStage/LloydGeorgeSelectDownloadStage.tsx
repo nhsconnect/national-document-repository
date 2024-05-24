@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import useTitle from '../../../../helpers/hooks/useTitle';
@@ -19,12 +19,19 @@ import LloydGeorgeDownloadStage from '../lloydGeorgeDownloadStage/LloydGeorgeDow
 import { buildSearchResult } from '../../../../helpers/test/testBuilders';
 import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
 import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownloadComplete';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 export type Props = {
     deleteAfterDownload?: boolean;
+    numberOfFiles: number;
+    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
-function LloydGeorgeSelectDownloadStage({ deleteAfterDownload = false }: Props) {
+function LloydGeorgeSelectDownloadStage({
+    setDownloadStage,
+    numberOfFiles,
+    deleteAfterDownload = false,
+}: Props) {
     const mounted = useRef(false);
     const navigate = useNavigate();
     const patientDetails = usePatient();
@@ -51,7 +58,7 @@ function LloydGeorgeSelectDownloadStage({ deleteAfterDownload = false }: Props) 
                     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                 });
                 setSearchResults(results ?? []);
-
+                numberOfFiles = searchResults.length;
                 setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
             } catch (e) {
                 const error = e as AxiosError;
@@ -114,7 +121,8 @@ function LloydGeorgeSelectDownloadStage({ deleteAfterDownload = false }: Props) 
                             deleteAfterDownload={deleteAfterDownload}
                             selectedDocuments={selectedDocuments}
                             searchResults={searchResults}
-                            numberOfFiles={searchResults.length}
+                            numberOfFiles={numberOfFiles}
+                            setDownloadStage={setDownloadStage}
                         />
                     }
                 />
@@ -123,9 +131,10 @@ function LloydGeorgeSelectDownloadStage({ deleteAfterDownload = false }: Props) 
                     element={
                         <LgDownloadComplete
                             deleteAfterDownload={deleteAfterDownload}
-                            numberOfFiles={searchResults.length}
+                            numberOfFiles={numberOfFiles}
                             selectedDocuments={selectedDocuments}
                             searchResults={searchResults}
+                            setDownloadStage={setDownloadStage}
                         />
                     }
                 />

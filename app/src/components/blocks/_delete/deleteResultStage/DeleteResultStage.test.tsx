@@ -29,7 +29,6 @@ const mockedUsePatient = usePatient as jest.Mock;
 
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
-const mockSetStage = jest.fn();
 const mockSetDownloadStage = jest.fn();
 
 describe('DeleteResultStage', () => {
@@ -49,7 +48,12 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
 
                 mockedUseRole.mockReturnValue(role);
-                render(<DeleteResultStage numberOfFiles={numberOfFiles}  />);
+                render(
+                    <DeleteResultStage
+                        numberOfFiles={numberOfFiles}
+                        setDownloadStage={mockSetDownloadStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(
@@ -74,7 +78,12 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = 1;
 
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
-            render(<DeleteResultStage numberOfFiles={numberOfFiles}  />);
+            render(
+                <DeleteResultStage
+                    numberOfFiles={numberOfFiles}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(
@@ -95,7 +104,12 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
 
-                render(<DeleteResultStage numberOfFiles={numberOfFiles}  />);
+                render(
+                    <DeleteResultStage
+                        numberOfFiles={numberOfFiles}
+                        setDownloadStage={mockSetDownloadStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(
@@ -115,7 +129,12 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = mockLgSearchResult.number_of_files;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(<DeleteResultStage numberOfFiles={numberOfFiles}  />);
+            render(
+                <DeleteResultStage
+                    numberOfFiles={numberOfFiles}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(
@@ -134,7 +153,12 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(<DeleteResultStage numberOfFiles={numberOfFiles}  />);
+            render(
+                <DeleteResultStage
+                    numberOfFiles={numberOfFiles}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(
@@ -155,7 +179,12 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = 7;
                 mockedUseRole.mockReturnValue(role);
 
-                render(<DeleteResultStage numberOfFiles={numberOfFiles} />);
+                render(
+                    <DeleteResultStage
+                        numberOfFiles={numberOfFiles}
+                        setDownloadStage={mockSetDownloadStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(
@@ -176,7 +205,7 @@ describe('DeleteResultStage', () => {
         const roles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE];
         it.each(roles)('pass accessibility checks for role %s', async (role) => {
             mockedUseRole.mockReturnValue(role);
-            render(<DeleteResultStage numberOfFiles={3} />);
+            render(<DeleteResultStage numberOfFiles={3} setDownloadStage={mockSetDownloadStage} />);
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
@@ -190,7 +219,12 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
 
-                render(<DeleteResultStage numberOfFiles={numberOfFiles} />);
+                render(
+                    <DeleteResultStage
+                        numberOfFiles={numberOfFiles}
+                        setDownloadStage={mockSetDownloadStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(
@@ -217,7 +251,12 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(<DeleteResultStage numberOfFiles={numberOfFiles} />);
+            render(
+                <DeleteResultStage
+                    numberOfFiles={numberOfFiles}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(

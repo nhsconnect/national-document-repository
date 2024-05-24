@@ -228,14 +228,27 @@ describe('GP Workflow: View Lloyd George record', () => {
                         statusCode: 200,
                         body: searchPatientPayload,
                     }).as('search');
-                    cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
-                    cy.getByTestId('search-submit-btn').click();
-                    cy.wait('@search');
 
                     cy.intercept('GET', '/LloydGeorgeStitch*', {
                         statusCode: 200,
                         body: viewLloydGeorgePayload,
                     }).as('lloydGeorgeStitch');
+
+                    cy.intercept('GET', '/DocumentManifest*', (req) => {
+                        req.reply({
+                            statusCode: 200,
+                            body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
+                            delay: 1000,
+                        });
+                    }).as('documentManifest');
+
+                    cy.intercept('DELETE', '/DocumentDelete*', {
+                        statusCode: 200,
+                    }).as('documentDelete');
+
+                    cy.getByTestId('nhs-number-input').type(searchPatientPayload.nhsNumber);
+                    cy.getByTestId('search-submit-btn').click();
+                    cy.wait('@search');
 
                     cy.get('#verify-submit').click();
                     cy.wait('@lloydGeorgeStitch');
@@ -246,31 +259,17 @@ describe('GP Workflow: View Lloyd George record', () => {
                     cy.getByTestId('confirm-download-and-remove-btn').click();
                     cy.getByTestId('lloydgeorge_downloadall-stage').should('exist');
 
-                    cy.intercept('GET', '/DocumentManifest*', {
-                        statusCode: 200,
-                        body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
-                    }).as('documentManifest');
-
-                    cy.intercept('DELETE', '/DocumentDelete*', {
-                        statusCode: 200,
-                    }).as('documentDelete');
-
-                    cy.wait('@documentManifest');
-                    cy.wait('@documentDelete');
-
                     // Assert contents of page when downloading
                     cy.contains('Downloading documents').should('be.visible');
-                    cy.contains(
-                        `Preparing download for ${viewLloydGeorgePayload.number_of_files} file(s)`,
+                    cy.getByTestId(
+                        'download-file-header-' + viewLloydGeorgePayload.number_of_files + '-files',
                     ).should('be.visible');
                     cy.contains('Compressing record into a zip file').should('be.visible');
                     cy.contains('Cancel').should('be.visible');
 
+                    cy.wait('@documentManifest');
                     // Assert contents of page after download
-                    cy.contains('Download complete').should('be.visible');
-                    cy.contains(
-                        'You have successfully downloaded the Lloyd George record of:',
-                    ).should('be.visible');
+                    cy.getByTestId('downloaded-record-card-header').should('be.visible');;
                     cy.contains(
                         `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
                     ).should('be.visible');
@@ -280,7 +279,7 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                     // Assert file has been downloaded
                     cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
-
+                    cy.wait('@documentDelete');
                     cy.getByTestId('return-btn').should('exist');
                     cy.contains('This record has been removed from our storage.').should(
                         'be.visible',

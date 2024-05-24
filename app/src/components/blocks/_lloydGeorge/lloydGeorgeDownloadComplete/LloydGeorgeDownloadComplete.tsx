@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { Dispatch, SetStateAction, useEffect } from 'react';
 import { Button, Card } from 'nhsuk-react-components';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
@@ -8,12 +8,14 @@ import { routes } from '../../../../types/generic/routes';
 import DocumentsListView from '../../../generic/documentsListView/DocumentsListView';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import { GenericDocument } from '../../../../types/generic/genericDocument';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 export type Props = {
     deleteAfterDownload: boolean;
     numberOfFiles: number;
     selectedDocuments?: Array<string>;
     searchResults?: Array<SearchResult>;
+    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
 function LloydGeorgeDownloadComplete({
@@ -21,6 +23,7 @@ function LloydGeorgeDownloadComplete({
     numberOfFiles,
     selectedDocuments,
     searchResults,
+    setDownloadStage,
 }: Props) {
     // temp solution to focus on layout div so that skip-link can be selected.
     // we should remove this when this component become a separate route.
@@ -36,6 +39,9 @@ function LloydGeorgeDownloadComplete({
     useTitle({ pageTitle: pageHeader });
 
     const handleReturnButtonClick = () => {
+        if (deleteAfterDownload) {
+            setDownloadStage(DOWNLOAD_STAGE.REFRESH);
+        }
         navigate(routes.LLOYD_GEORGE);
     };
 
@@ -73,12 +79,16 @@ function LloydGeorgeDownloadComplete({
                 <Card.Content className="lloydgeorge_download-complete_details-content">
                     <Card.Heading
                         className="lloydgeorge_download-complete_details-content_header"
+                        data-testid="lloyd-george-download-complete-header"
                         headingLevel="h1"
                     >
                         {getCardHeader()}
                     </Card.Heading>
                     {!selectedDocuments && (
-                        <Card.Description className="lloydgeorge_download-complete_details-content_description">
+                        <Card.Description
+                            className="lloydgeorge_download-complete_details-content_description"
+                            data-testid="lloyd-george-download-complete-card-content"
+                        >
                             You have successfully downloaded the{'\n'}
                             Lloyd George record of:
                         </Card.Description>

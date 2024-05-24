@@ -25,6 +25,8 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import WarningText from '../../../generic/warningText/WarningText';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
+import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
+import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
@@ -100,7 +102,7 @@ function DeleteSubmitStage({
     const handleNoOption = () => {
         if (role === REPOSITORY_ROLE.GP_ADMIN) {
             navigate(routes.LLOYD_GEORGE);
-        } else if (role === REPOSITORY_ROLE.PCSE && setIsDeletingDocuments) {
+        } else if (role === REPOSITORY_ROLE.PCSE) {
             navigate(routes.ARF_OVERVIEW);
         }
     };
@@ -190,8 +192,26 @@ function DeleteSubmitStage({
         <>
             <Routes>
                 <Route index element={<PageIndexView />} />
+                <Route
+                    path={getLastURLPath(routeChildren.ARF_DELETE_CONFIRMATION)}
+                    element={
+                        <DeleteSubmitStage
+                            docType={docType}
+                            numberOfFiles={numberOfFiles}
+                            recordType={recordType}
+                        />
+                    }
+                ></Route>
+                <Route
+                    path={getLastURLPath(routeChildren.ARF_DELETE_COMPLETE)}
+                    element={
+                        <DeleteResultStage
+                            numberOfFiles={numberOfFiles}
+                            setDownloadStage={setDownloadStage}
+                        />
+                    }
+                ></Route>
             </Routes>
-
             <Outlet />
         </>
     );
