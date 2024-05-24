@@ -53,15 +53,19 @@ function LloydGeorgeSelectDownloadStage({
             setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_PENDING);
 
             try {
-                const results = await getDocumentSearchResults({
-                    nhsNumber,
-                    baseUrl,
-                    baseHeaders,
-                    docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-                });
-                setSearchResults(results ?? []);
-                numberOfFilesForDownload.current = searchResults.length;
-                setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
+                // This check is in place for when we navigate directly to a full download,
+                // in that instance we do not need to get a list of selectable files as we will download all files
+                if (window.location.href.indexOf(routeChildren.LLOYD_GEORGE_DOWNLOAD) !== -1) {
+                    const results = await getDocumentSearchResults({
+                        nhsNumber,
+                        baseUrl,
+                        baseHeaders,
+                        docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+                    });
+                    setSearchResults(results ?? []);
+                    numberOfFilesForDownload.current = searchResults.length;
+                    setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
+                }
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
