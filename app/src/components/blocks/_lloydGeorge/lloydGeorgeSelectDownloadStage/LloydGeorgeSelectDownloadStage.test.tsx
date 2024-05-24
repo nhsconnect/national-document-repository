@@ -40,7 +40,8 @@ const searchResults = [
 
 // This page has a specific url check to trigger a api call when on the select file view
 global.window = Object.create(window);
-const url = 'http://localhost:3000/' + routeChildren.LLOYD_GEORGE_DOWNLOAD;
+const baseURL = 'http://test';
+const url = baseURL + routeChildren.LLOYD_GEORGE_DOWNLOAD;
 Object.defineProperty(window, 'location', {
     value: {
         href: url,
