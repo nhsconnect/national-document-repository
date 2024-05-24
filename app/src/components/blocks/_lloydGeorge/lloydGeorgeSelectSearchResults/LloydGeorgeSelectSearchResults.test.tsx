@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import React from 'react';
+import React, { useState } from 'react';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
@@ -73,6 +73,34 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 expect(screen.getByTestId('download-selection-error-box')).toBeInTheDocument();
             });
             expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+        });
+
+        it('add documentId to selectedDocument when checkbox is checked', async () => {
+            renderComponent({ selectedDocuments: mockSelectedDocuments });
+            const expectedSelectedDocument = [...mockSelectedDocuments, searchResults[2].ID];
+
+            const checkbox = screen.getByRole('checkbox', { name: searchResults[2].fileName });
+            expect(checkbox).not.toBeChecked();
+
+            act(() => {
+                userEvent.click(checkbox);
+            });
+            expect(mockSetSelectedDocuments).toBeCalledWith(expectedSelectedDocument);
+        });
+
+        it('remove documentId from selectedDocument when a checkbox is unchecked', async () => {
+            renderComponent({ selectedDocuments: mockSelectedDocuments });
+            const expectedSelectedDocument = mockSelectedDocuments.filter(
+                (id) => id !== searchResults[0].ID,
+            );
+
+            const checkbox = screen.getByRole('checkbox', { name: searchResults[0].fileName });
+            expect(checkbox).toBeChecked();
+
+            act(() => {
+                userEvent.click(checkbox);
+            });
+            expect(mockSetSelectedDocuments).toBeCalledWith(expectedSelectedDocument);
         });
 
         it('does not render checkbox and `download selected file` button when there is only one file in search result', async () => {
