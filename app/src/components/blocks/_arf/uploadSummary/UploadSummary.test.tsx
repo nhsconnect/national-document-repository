@@ -37,7 +37,7 @@ describe('UploadSummary', () => {
                 name: /All documents have been successfully uploaded on/,
             }),
         ).toBeInTheDocument();
-        expect(screen.getByText('NHS Number')).toBeInTheDocument();
+        expect(screen.getByText('NHS number')).toBeInTheDocument();
         expect(screen.getByText('Surname')).toBeInTheDocument();
         expect(screen.getByText('First name')).toBeInTheDocument();
         expect(screen.getByText('Date of birth')).toBeInTheDocument();

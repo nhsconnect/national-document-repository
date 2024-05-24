@@ -58,7 +58,7 @@ describe('RemoveRecordStage', () => {
                 renderComponent(history, numberOfFiles, recordType);
             });
             expect(
-                screen.getByRole('heading', { name: 'Remove this ' + recordType }),
+                screen.getByRole('heading', { name: 'Remove this ' + recordType + ' record' }),
             ).toBeInTheDocument();
             expect(
                 screen.getByText(
@@ -173,7 +173,8 @@ const renderComponent = (history: MemoryHistory, numberOfFiles: number, recordTy
                 numberOfFiles={numberOfFiles}
                 recordType={recordType}
                 setDownloadStage={mockDownloadStage}
-            />,
+            />
+            ,
         </ReactRouter.Router>,
     );
 };
