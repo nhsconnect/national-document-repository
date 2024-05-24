@@ -24,11 +24,11 @@ class LambdaLayerUpdate:
         print("")
 
     def start(self):
-        self.extract_current_layer_arns()
-        self.extract_new_layer_arns()
+        self.extract_default_layer_arns()
+        self.extract_updated_layer_arns()
         self.update_lambda()
 
-    def extract_current_layer_arns(self):
+    def extract_default_layer_arns(self):
         response = self.client.get_function(FunctionName=self.function_name_aws)
         layer_arns_responses = response["Configuration"]["Layers"]
 
@@ -37,9 +37,11 @@ class LambdaLayerUpdate:
             match = re.search(r"layer:([^:]+):", layer_arn)
             if match:
                 layer_name = match.group(1)
-                self.updated_lambda_arns.update({layer_name: layer_arn})
 
-    def extract_new_layer_arns(self):
+                if layer_name in ["AWS-AppConfig-Extension", "LambdaInsightsExtension"]:
+                    self.updated_lambda_arns.update({layer_name: layer_arn})
+
+    def extract_updated_layer_arns(self):
         for updated_layer_name in self.updated_layer_names:
             print(f"Extracting latest version ARN for {updated_layer_name}...")
             response = self.client.list_layer_versions(LayerName=updated_layer_name)
