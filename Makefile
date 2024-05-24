@@ -1,3 +1,17 @@
+PYTHON_VERSION=3.11
+
+REQUIREMENTS_PATH=lambdas/requirements
+LAMBDA_LAYER_REQUIREMENTS_PATH=$(REQUIREMENTS_PATH)/layers
+
+GITHUB_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_github_runner.txt
+TEST_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_test.txt
+CORE_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_core_lambda_layer.txt
+DATA_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_data_lambda_layer.txt
+
+LAMBDAS_BUILD_PATH=build/lambdas
+LAMBDA_LAYERS_BUILD_PATH=build/lambda_layers
+LAMBDA_LAYER_PYTHON_PATH=python/lib/python$(PYTHON_VERSION)/site-packages
+
 default: help
 
 clean: clean-build clean-py clean-test
@@ -26,12 +40,14 @@ format:
 	./lambdas/venv/bin/ruff check lambdas/ --fix
 
 sort-requirements:
-	sort -o lambdas/requirements.txt lambdas/requirements.txt
-	sort -o lambdas/requirements-test.txt lambdas/requirements-test.txt
+	sort -o $(TEST_REQUIREMENTS) $(TEST_REQUIREMENTS)
+	sort -o $(CORE_REQUIREMENTS) $(CORE_REQUIREMENTS)
+	sort -o $(CORE_REQUIREMENTS) $(DATA_REQUIREMENTS)
 
 check-packages:
-	./lambdas/venv/bin/pip-audit -r lambdas/requirements.txt
-	./lambdas/venv/bin/pip-audit -r lambdas/requirements-test.txt
+	./lambdas/venv/bin/pip-audit -r $(TEST_REQUIREMENTS)
+	./lambdas/venv/bin/pip-audit -r $(CORE_REQUIREMENTS)
+	./lambdas/venv/bin/pip-audit -r $(DATA_REQUIREMENTS)
 
 test-unit:
 	cd ./lambdas && ./venv/bin/python3 -m pytest tests/
@@ -50,22 +66,37 @@ env:
 	rm -rf lambdas/venv || true
 	python3 -m venv ./lambdas/venv
 	./lambdas/venv/bin/pip3 install --upgrade pip
-	./lambdas/venv/bin/pip3 install -r lambdas/requirements.txt
-	./lambdas/venv/bin/pip3 install -r lambdas/requirements-test.txt
+	./lambdas/venv/bin/pip3 install -r $(TEST_REQUIREMENTS)
+	./lambdas/venv/bin/pip3 install -r $(CORE_REQUIREMENTS)
+	./lambdas/venv/bin/pip3 install -r $(DATA_REQUIREMENTS)
+
+github_env:
+	rm -rf lambdas/venv || true
+	python3 -m venv ./lambdas/venv
+	./lambdas/venv/bin/pip3 install --upgrade pip
+	./lambdas/venv/bin/pip3 install -r $(GITHUB_REQUIREMENTS)
 
 zip:
-	rm -rf ./lambdas/package_$(lambda_name) || true
-	mkdir ./lambdas/package_$(lambda_name)
-	./lambdas/venv/bin/pip3 install --platform manylinux2014_x86_64 --only-binary=:all: --implementation cp  -r lambdas/requirements.txt -t ./lambdas/package_$(lambda_name)
-	mkdir ./lambdas/package_$(lambda_name)/handlers
-	cp -r lambdas/handlers/$(lambda_name).py lambdas/package_$(lambda_name)/handlers
-	cp -r lambdas/utils lambdas/package_$(lambda_name)
-	cp -r lambdas/models lambdas/package_$(lambda_name)
-	cp -r lambdas/services lambdas/package_$(lambda_name)
-	cp -r lambdas/repositories lambdas/package_$(lambda_name)
-	cp -r lambdas/enums lambdas/package_$(lambda_name)
-	cd ./lambdas/package_$(lambda_name); zip -r ../../package_lambdas_$(lambda_name).zip .
-	rm -rf ./lambdas/package_$(lambda_name)
+	echo $(LAMBDAS_BUILD_PATH)/$(lambda_name)
+	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)|| true
+	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)
+	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/handlers
+	cp -r lambdas/handlers/$(lambda_name).py ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/handlers
+	cp -r lambdas/utils ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cp -r lambdas/models ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cp -r lambdas/services ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cp -r lambdas/repositories ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cp -r lambdas/enums ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cd ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp ; zip -r ../$(lambda_name).zip .
+	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cd ../..
+
+lambda_layer_zip:
+	rm -rf ./$(LAMBDA_LAYERS_BUILD_PATH)/$(layer_name) || true
+	mkdir -p ./$(LAMBDA_LAYERS_BUILD_PATH)/$(layer_name)
+	./lambdas/venv/bin/pip3 install --platform manylinux2014_x86_64 --only-binary=:all: --implementation cp  -r $(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_$(layer_name).txt -t ./$(LAMBDA_LAYERS_BUILD_PATH)/$(layer_name)/tmp/$(LAMBDA_LAYER_PYTHON_PATH)
+	cd ./$(LAMBDA_LAYERS_BUILD_PATH)/$(layer_name)/tmp; zip -r ../$(layer_name).zip .
+	rm -rf ./$(LAMBDA_LAYERS_BUILD_PATH)/$(layer_name)/tmp
 	cd ../..
 
 package: format zip

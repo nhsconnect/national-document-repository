@@ -1,0 +1,63 @@
+name: 'ZBASE Lambda Layers: Deploy all required Lambda layers'
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      python_version:
+        required: true
+        type: string
+      build_branch:
+        description: 'Feature branch to push to test?'
+        required: true
+        type: 'string'
+      sandbox:
+        description: 'Which Sandbox to push to'
+        required: true
+        type: 'string'
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  view_action_parameters:
+    name: View Deploy all input variables
+    runs-on: ubuntu-latest
+    steps:
+      - name: Display client passed variables
+        run: |
+          echo Python Version: ${{ inputs.python_version }}
+          echo Build Branch: ${{ inputs.build_branch }}
+          echo Environment: ${{ inputs.environment }}
+          echo Sandbox: ${{ inputs.sandbox }}
+
+  deploy_core_lambda_layer:
+    name: Deploy core_lambda_layer
+    uses: ./.github/workflows/base-lambda-layer-reusable-publish.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_layer_name: core_lambda_layer
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_data_lambda_layer:
+    name: Deploy data_lambda_layer
+    uses: ./.github/workflows/base-lambda-layer-reusable-publish.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_layer_name: data_lambda_layer
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}

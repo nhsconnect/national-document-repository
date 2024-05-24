@@ -1,4 +1,4 @@
-name: "Z-BASE Lambdas: action to deploy a single lambda"
+name: "Z-BASE Lambda Layer: action to deploy a single lambda layer"
 
 on:
   workflow_call:
@@ -17,14 +17,7 @@ on:
         required: true
         type: string
         default: main
-      lambda_handler_name:
-        required: true
-        type: string
-      lambda_aws_name:
-        required: true
-        type: string
-      lambda_layer_names:
-        description: 'Comma-separated list of Lambda Layer names'
+      lambda_layer_name:
         required: true
         type: string
     secrets:
@@ -37,8 +30,8 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-  python_deploy_lambda:
-    name: Deploy lambda ${{ inputs.lambda_handler_name }} to 
+  python_deploy_lambda_layer:
+    name: Deploy lambda layer ${{ inputs.lambda_layer_name }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
@@ -49,9 +42,7 @@ jobs:
           echo Build Branch: ${{ inputs.build_branch }}
           echo Environment: ${{ inputs.environment }}
           echo Sandbox: ${{ inputs.sandbox }}
-          echo Lambda Handler Name: ${{ inputs.lambda_handler_name }}
-          echo Lambda AWS function: ${{ inputs.lambda_aws_name }}
-          echo Lambda Layers Names: ${{ inputs.lambda_layer_names }}
+          echo Lambda Layer Name: ${{ inputs.lambda_layer_name }}
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -76,20 +67,14 @@ jobs:
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Run Lambda Layer Update
+      - name: Create release package for Lambda Layer ${{ inputs.lambda_layer_name }}
         run: |
-          ./lambdas/venv/bin/python3 lambdas/scripts/lambda_layer_update.py ${{ inputs.sandbox }} ${{ inputs.lambda_aws_name }} ${{ inputs.lambda_layer_names }}
+          make lambda_layer_zip layer_name=${{ inputs.lambda_layer_name }}
 
-      - name: Create release package for ${{ inputs.lambda_handler_name }}
+      - name: Publish Lambda Layer
+        id: publish_layer
         run: |
-          make lambda_name=${{ inputs.lambda_handler_name }} zip
-
-      - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
-        uses: appleboy/lambda-action@master
-        with:
-          aws_region: ${{ vars.AWS_REGION }}
-          function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
-          zip_file: build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
-
-
-
+          aws lambda publish-layer-version --layer-name ${{ inputs.sandbox }}_${{ inputs.lambda_layer_name }} \
+          --zip-file fileb://build/lambda_layers/${{ inputs.lambda_layer_name }}/${{ inputs.lambda_layer_name }}.zip \
+          --compatible-runtimes python${{ inputs.python_version }} \
+          --compatible-architectures "x86_64"
