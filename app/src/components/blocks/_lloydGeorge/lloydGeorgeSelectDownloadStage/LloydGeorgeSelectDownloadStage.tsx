@@ -55,7 +55,7 @@ function LloydGeorgeSelectDownloadStage({
             try {
                 // This check is in place for when we navigate directly to a full download,
                 // in that instance we do not need to get a list of selectable files as we will download all files
-                if (window.location.href === baseUrl + routeChildren.LLOYD_GEORGE_DOWNLOAD) {
+                if (window.location.pathname === routeChildren.LLOYD_GEORGE_DOWNLOAD) {
                     const results = await getDocumentSearchResults({
                         nhsNumber,
                         baseUrl,
@@ -118,10 +118,6 @@ function LloydGeorgeSelectDownloadStage({
 
     return (
         <>
-            {/* <div id="here">{window.location.href}</div>
-            <div id="here2">
-                {window.location.href === baseUrl + routeChildren.LLOYD_GEORGE_DOWNLOAD}
-            </div> */}
             <Routes>
                 <Route index element={<PageIndexView />} />
                 <Route
