@@ -48,7 +48,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: create_document_reference_handler
       lambda_aws_name: CreateDocRefLambda
-      lambda_layer_names: "core_lambda_layer,data_lambda_layer"
+      lambda_layer_names: "core_lambda_layer"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -65,251 +65,255 @@ jobs:
       lambda_layer_names: "core_lambda_layer"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_document_reference_search_lambda:
-#    name: Deploy document_reference_search_lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: document_reference_search_handler
-#      lambda_aws_name: SearchDocumentReferencesLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_delete_document_reference_handler:
-#    name: Deploy delete_document_reference_handler
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: delete_document_reference_handler
-#      lambda_aws_name: DeleteDocRefLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_document_manifest_by_nhs_number_lambda:
-#    name: Deploy document_manifest_by_nhs_number_lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: document_manifest_by_nhs_number_handler
-#      lambda_aws_name: DocumentManifestByNHSNumberLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_bulk_upload_metadata_lambda:
-#    name: Deploy bulk_upload_metadata_lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: bulk_upload_metadata_handler
-#      lambda_aws_name: BulkUploadMetadataLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_token_request_lambda:
-#    name: Deploy TokenRequestHandler
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: token_handler
-#      lambda_aws_name: TokenRequestHandler
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_login_redirect_lambda:
-#    name: Deploy LoginRedirectHandler
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: login_redirect_handler
-#      lambda_aws_name: LoginRedirectHandler
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_authoriser_lambda:
-#    name: Deploy AuthoriserLambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: authoriser_handler
-#      lambda_aws_name: AuthoriserLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_lloyd_george_record_stitch_lambda:
-#    name: Deploy LloydGeorgeStitchLambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: lloyd_george_record_stitch_handler
-#      lambda_aws_name: LloydGeorgeStitchLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_logout_handler_lambda:
-#    name: Deploy LogoutHandler
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: logout_handler
-#      lambda_aws_name: LogoutHandler
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_bulk_upload_lambda:
-#    name: Deploy bulk_upload_lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: bulk_upload_handler
-#      lambda_aws_name: BulkUploadLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_report_bulk_upload_lambda:
-#    name: Deploy report_bulk_upload_lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: bulk_upload_report_handler
-#      lambda_aws_name: BulkUploadReportLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_back_channel_logout_lambda:
-#    name: Deploy back_channel_logout_lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: back_channel_logout_handler
-#      lambda_aws_name: BackChannelLogoutHandler
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_send_feedback_lambda:
-#    name: Deploy send_feedback_lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: send_feedback_handler
-#      lambda_aws_name: SendFeedbackLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_nems_message_lambda:
-#    name: Deploy nems_message_lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: nems_message_handler
-#      lambda_aws_name: NemsMessageLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_feature_flags_lambda:
-#    name: Deploy feature flags lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: feature_flags_handler
-#      lambda_aws_name: FeatureFlagsLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_virus_scan_result_lambda:
-#    name: Deploy virus scan result lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: virus_scan_result_handler
-#      lambda_aws_name: VirusScanResult
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_upload_confirm_result_lambda:
-#    name: Deploy upload confirm result lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: upload_confirm_result_handler
-#      lambda_aws_name: UploadConfirmResultLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  deploy_update_upload_state_lambda:
-#    name: Deploy update upload state lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: update_upload_state_handler
-#      lambda_aws_name: UpdateUploadStateLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-#
-#  # Attach Lambda Layers
-#  configure_update_upload_state_lambda:
-#    name: Deploy update upload state lambda
-#    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
-#    with:
-#      environment: ${{ inputs.environment}}
-#      python_version: ${{ inputs.python_version }}
-#      build_branch: ${{ inputs.build_branch}}
-#      sandbox: ${{ inputs.sandbox }}
-#      lambda_handler_name: update_upload_state_handler
-#      lambda_aws_name: UpdateUploadStateLambda
-#    secrets:
-#      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_document_reference_search_lambda:
+    name: Deploy document_reference_search_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: document_reference_search_handler
+      lambda_aws_name: SearchDocumentReferencesLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_delete_document_reference_handler:
+    name: Deploy delete_document_reference_handler
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: delete_document_reference_handler
+      lambda_aws_name: DeleteDocRefLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_document_manifest_by_nhs_number_lambda:
+    name: Deploy document_manifest_by_nhs_number_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: document_manifest_by_nhs_number_handler
+      lambda_aws_name: DocumentManifestByNHSNumberLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_bulk_upload_metadata_lambda:
+    name: Deploy bulk_upload_metadata_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: bulk_upload_metadata_handler
+      lambda_aws_name: BulkUploadMetadataLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_token_request_lambda:
+    name: Deploy TokenRequestHandler
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: token_handler
+      lambda_aws_name: TokenRequestHandler
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_login_redirect_lambda:
+    name: Deploy LoginRedirectHandler
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: login_redirect_handler
+      lambda_aws_name: LoginRedirectHandler
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_authoriser_lambda:
+    name: Deploy AuthoriserLambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: authoriser_handler
+      lambda_aws_name: AuthoriserLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_lloyd_george_record_stitch_lambda:
+    name: Deploy LloydGeorgeStitchLambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: lloyd_george_record_stitch_handler
+      lambda_aws_name: LloydGeorgeStitchLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_logout_handler_lambda:
+    name: Deploy LogoutHandler
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: logout_handler
+      lambda_aws_name: LogoutHandler
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_bulk_upload_lambda:
+    name: Deploy bulk_upload_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: bulk_upload_handler
+      lambda_aws_name: BulkUploadLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_report_bulk_upload_lambda:
+    name: Deploy report_bulk_upload_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: bulk_upload_report_handler
+      lambda_aws_name: BulkUploadReportLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_back_channel_logout_lambda:
+    name: Deploy back_channel_logout_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: back_channel_logout_handler
+      lambda_aws_name: BackChannelLogoutHandler
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_send_feedback_lambda:
+    name: Deploy send_feedback_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: send_feedback_handler
+      lambda_aws_name: SendFeedbackLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_nems_message_lambda:
+    name: Deploy nems_message_lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: nems_message_handler
+      lambda_aws_name: NemsMessageLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_feature_flags_lambda:
+    name: Deploy feature flags lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: feature_flags_handler
+      lambda_aws_name: FeatureFlagsLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_virus_scan_result_lambda:
+    name: Deploy virus scan result lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: virus_scan_result_handler
+      lambda_aws_name: VirusScanResult
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_upload_confirm_result_lambda:
+    name: Deploy upload confirm result lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: upload_confirm_result_handler
+      lambda_aws_name: UploadConfirmResultLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_update_upload_state_lambda:
+    name: Deploy update upload state lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: update_upload_state_handler
+      lambda_aws_name: UpdateUploadStateLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
