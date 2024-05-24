@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { useLocation } from 'react-router-dom';
 import { routes } from '../../../types/generic/routes';
-import { routeMap } from '../../AppRouter';
+import { childRoutes, routeMap } from '../../AppRouter';
 import useRole from '../../../helpers/hooks/useRole';
 
 type Props = {
@@ -14,8 +14,16 @@ function RoleGuard({ children }: Props) {
     const navigate = useNavigate();
     const location = useLocation();
     useEffect(() => {
-        const routeKey = location.pathname as keyof typeof routeMap;
-        const { unauthorized } = routeMap[routeKey];
+        let routeKey = location.pathname;
+
+        childRoutes.forEach((childRoute) => {
+            if (childRoute.route === routeKey) {
+                routeKey = childRoute.parent;
+                return;
+            }
+        });
+
+        const { unauthorized } = routeMap[routeKey as keyof typeof routeMap];
         const denyResource = Array.isArray(unauthorized) && role && unauthorized.includes(role);
 
         if (denyResource) {

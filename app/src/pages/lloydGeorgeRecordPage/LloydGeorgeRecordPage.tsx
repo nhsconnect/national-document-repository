@@ -1,12 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import DeleteSubmitStage from '../../components/blocks/_delete/deleteSubmitStage/DeleteSubmitStage';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 
 import LloydGeorgeViewRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeViewRecordStage/LloydGeorgeViewRecordStage';
-import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../helpers/hooks/usePatient';
@@ -14,16 +12,16 @@ import { AxiosError } from 'axios';
 import useRole from '../../helpers/hooks/useRole';
 import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-import { routes } from '../../types/generic/routes';
-import { useNavigate } from 'react-router';
+import { routeChildren, routes } from '../../types/generic/routes';
+import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import { isMock } from '../../helpers/utils/isLocal';
 import moment from 'moment';
 import useConfig from '../../helpers/hooks/useConfig';
 import { ErrorResponse } from '../../types/generic/errorResponse';
+import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import RemoveRecordStage from '../../components/blocks/_delete/removeRecordStage/RemoveRecordStage';
 import LloydGeorgeSelectDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeSelectDownloadStage/LloydGeorgeSelectDownloadStage';
-import LloydGeorgeDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeDownloadStage/LloydGeorgeDownloadStage';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -66,6 +64,7 @@ function LloydGeorgeRecordPage() {
                         baseUrl,
                         baseHeaders,
                     });
+
                 if (presign_url?.startsWith('https://')) {
                     onSuccess(number_of_files, last_updated, presign_url, total_file_size_in_byte);
                 }
@@ -99,7 +98,6 @@ function LloydGeorgeRecordPage() {
                 }
             }
         };
-
         if (!mounted.current || downloadStage === DOWNLOAD_STAGE.REFRESH) {
             mounted.current = true;
             setDownloadStage(DOWNLOAD_STAGE.PENDING);
@@ -119,50 +117,48 @@ function LloydGeorgeRecordPage() {
         config,
     ]);
 
-    switch (stage) {
-        case LG_RECORD_STAGE.RECORD:
-            return (
-                <LloydGeorgeViewRecordStage
-                    numberOfFiles={numberOfFiles}
-                    totalFileSizeInByte={totalFileSizeInByte}
-                    lastUpdated={lastUpdated}
-                    lloydGeorgeUrl={lloydGeorgeUrl}
-                    downloadStage={downloadStage}
-                    setStage={setStage}
-                    stage={stage}
+    return (
+        <>
+            <Routes>
+                <Route
+                    index
+                    element={
+                        <LloydGeorgeViewRecordStage
+                            numberOfFiles={numberOfFiles}
+                            totalFileSizeInByte={totalFileSizeInByte}
+                            lastUpdated={lastUpdated}
+                            lloydGeorgeUrl={lloydGeorgeUrl}
+                            downloadStage={downloadStage}
+                            setStage={setStage}
+                            stage={stage}
+                        />
+                    }
                 />
-            );
-        case LG_RECORD_STAGE.REMOVE:
-            return <RemoveRecordStage setStage={setStage} recordType="Lloyd George" />;
+                <Route
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD) + '/*'}
+                    element={
+                        <LloydGeorgeSelectDownloadStage
+                            setDownloadStage={setDownloadStage}
+                            deleteAfterDownload={deleteAfterDownload}
+                            numberOfFiles={numberOfFiles}
+                        />
+                    }
+                />
+                <Route
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DELETE) + '/*'}
+                    element={
+                        <RemoveRecordStage
+                            setDownloadStage={setDownloadStage}
+                            numberOfFiles={numberOfFiles}
+                            recordType="Lloyd George"
+                        />
+                    }
+                />
+            </Routes>
 
-        case LG_RECORD_STAGE.DOWNLOAD_ALL:
-            return isBSOL ? (
-                <LloydGeorgeSelectDownloadStage
-                    setStage={setStage}
-                    deleteAfterDownload={deleteAfterDownload}
-                    setDownloadStage={setDownloadStage}
-                />
-            ) : (
-                <LloydGeorgeDownloadStage
-                    numberOfFiles={numberOfFiles}
-                    setStage={setStage}
-                    deleteAfterDownload={deleteAfterDownload}
-                    setDownloadStage={setDownloadStage}
-                />
-            );
-        case LG_RECORD_STAGE.DELETE_ALL:
-            return (
-                <DeleteSubmitStage
-                    docType={DOCUMENT_TYPE.LLOYD_GEORGE}
-                    numberOfFiles={numberOfFiles}
-                    recordType="Lloyd George"
-                    setStage={setStage}
-                    setDownloadStage={setDownloadStage}
-                />
-            );
-        default:
-            return <div></div>;
-    }
+            <Outlet />
+        </>
+    );
 }
 
 export default LloydGeorgeRecordPage;

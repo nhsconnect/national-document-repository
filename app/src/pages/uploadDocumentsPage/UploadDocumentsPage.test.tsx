@@ -1,87 +1,75 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import UploadDocumentsPage from './UploadDocumentsPage';
-import { buildConfig } from '../../helpers/test/testBuilders';
-import { UPLOAD_STAGE } from '../../types/pages/UploadDocumentsPage/types';
-import { useState } from 'react';
+import { buildConfig, buildTextFile } from '../../helpers/test/testBuilders';
 import useConfig from '../../helpers/hooks/useConfig';
-import { routes } from '../../types/generic/routes';
-import UnauthorisedPage from '../unauthorisedPage/UnauthorisedPage';
+import { routeChildren, routes } from '../../types/generic/routes';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { createMemoryHistory, History } from 'history';
+import * as ReactRouter from 'react-router';
+import { act } from 'react-dom/test-utils';
+import userEvent from '@testing-library/user-event';
+import uploadDocuments, { uploadDocumentToS3 } from '../../helpers/requests/uploadDocuments';
 
-const mockUseState = useState as jest.Mock;
 const mockConfigContext = useConfig as jest.Mock;
 const mockedUseNavigate = jest.fn();
 
 jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
     useNavigate: () => mockedUseNavigate,
-    useLocation: () => jest.fn(),
 }));
-jest.mock('react', () => ({
-    ...jest.requireActual('react'),
-    useState: jest.fn(),
-}));
-jest.mock('../../components/blocks/_arf/selectStage/SelectStage', () => () => (
-    <h1>Mock file input stage</h1>
-));
-jest.mock('../../components/blocks/_arf/uploadingStage/UploadingStage', () => () => (
-    <h1>Mock files are uploading stage</h1>
-));
-jest.mock('../../components/blocks/_arf/completeStage/CompleteStage', () => () => (
-    <h1>Mock complete stage</h1>
-));
+jest.mock('../../helpers/requests/uploadDocuments');
+jest.mock('../../helpers/hooks/usePatient');
+jest.mock('../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('../../helpers/hooks/useBaseAPIUrl');
+
 jest.mock('../../helpers/hooks/useConfig');
+
+let history = createMemoryHistory({
+    initialEntries: ['/'],
+    initialIndex: 0,
+});
 
 describe('UploadDocumentsPage', () => {
     beforeEach(() => {
+        history = createMemoryHistory({
+            initialEntries: ['/'],
+            initialIndex: 0,
+        });
+
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockConfigContext.mockReturnValue(
             buildConfig({}, { uploadArfWorkflowEnabled: true, uploadLambdaEnabled: true }),
         );
-        mockUseState.mockImplementation(() => [UPLOAD_STAGE.Selecting, jest.fn()]);
     });
     afterEach(() => {
         jest.clearAllMocks();
     });
     describe('Rendering', () => {
         it('renders initial file input stage', async () => {
-            render(<UploadDocumentsPage />);
+            renderPage(history);
 
-            expect(
-                screen.getByRole('heading', { name: 'Mock file input stage' }),
-            ).toBeInTheDocument();
+            expect(screen.getByTestId('arf-upload-select-stage-header')).toBeInTheDocument();
             await waitFor(() => {
                 expect(mockedUseNavigate).not.toHaveBeenCalledWith(routes.UNAUTHORISED);
             });
         });
 
         it('renders uploading stage when state is set', async () => {
-            mockUseState.mockImplementation(() => [UPLOAD_STAGE.Uploading, jest.fn()]);
+            renderPage(history);
+            const arfFile = buildTextFile('arf-test.txt', 100);
 
-            render(<UploadDocumentsPage />);
-
-            expect(
-                screen.getByRole('heading', { name: 'Mock files are uploading stage' }),
-            ).toBeInTheDocument();
-            await waitFor(() => {
-                expect(mockedUseNavigate).not.toHaveBeenCalledWith(routes.UNAUTHORISED);
+            act(() => {
+                userEvent.upload(screen.getByTestId(`ARF-input`), [arfFile]);
+                userEvent.click(screen.getByTestId('arf-upload-submit-btn'));
             });
-        });
 
-        it('renders upload complete stage when state is set', async () => {
-            mockUseState.mockImplementation(() => [UPLOAD_STAGE.Complete, jest.fn()]);
-
-            render(<UploadDocumentsPage />);
-
-            expect(
-                screen.getByRole('heading', { name: 'Mock complete stage' }),
-            ).toBeInTheDocument();
             await waitFor(() => {
-                expect(mockedUseNavigate).not.toHaveBeenCalledWith(routes.UNAUTHORISED);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_UPLOADING);
             });
         });
 
         it('pass accessibility checks', async () => {
-            render(<UploadDocumentsPage />);
+            renderPage(history);
             const results = await runAxeTest(document.body);
 
             expect(results).toHaveNoViolations();
@@ -94,7 +82,7 @@ describe('UploadDocumentsPage', () => {
                 buildConfig({}, { uploadArfWorkflowEnabled: true, uploadLambdaEnabled: false }),
             );
 
-            render(<UploadDocumentsPage />);
+            renderPage(history);
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UNAUTHORISED);
@@ -105,7 +93,7 @@ describe('UploadDocumentsPage', () => {
                 buildConfig({}, { uploadArfWorkflowEnabled: true, uploadLambdaEnabled: false }),
             );
 
-            render(<UploadDocumentsPage />);
+            renderPage(history);
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UNAUTHORISED);
@@ -116,7 +104,7 @@ describe('UploadDocumentsPage', () => {
                 buildConfig({}, { uploadArfWorkflowEnabled: false, uploadLambdaEnabled: false }),
             );
 
-            render(<UploadDocumentsPage />);
+            renderPage(history);
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UNAUTHORISED);
@@ -124,3 +112,11 @@ describe('UploadDocumentsPage', () => {
         });
     });
 });
+
+const renderPage = (history: History) => {
+    return render(
+        <ReactRouter.Router navigator={history} location={history.location}>
+            <UploadDocumentsPage />
+        </ReactRouter.Router>,
+    );
+};

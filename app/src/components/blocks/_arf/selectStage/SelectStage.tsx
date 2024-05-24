@@ -1,10 +1,9 @@
-import React, { Dispatch, SetStateAction, useRef } from 'react';
+import React, { useRef } from 'react';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     FileInputEvent,
     SetUploadDocuments,
-    UPLOAD_STAGE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { Button, Fieldset } from 'nhsuk-react-components';
@@ -21,18 +20,17 @@ import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import BackButton from '../../../generic/backButton/BackButton';
 import { UploadSession } from '../../../../types/generic/uploadResult';
 import { AxiosError } from 'axios';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import { useNavigate } from 'react-router';
 
 interface Props {
     setDocuments: SetUploadDocuments;
-    setStage: Dispatch<SetStateAction<UPLOAD_STAGE>>;
     documents: Array<UploadDocument>;
 }
 
-function SelectStage({ setDocuments, setStage, documents }: Props) {
+function SelectStage({ setDocuments, documents }: Props) {
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const navigate = useNavigate();
@@ -51,7 +49,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
             return;
         }
 
-        setStage(UPLOAD_STAGE.Uploading);
+        navigate(routeChildren.ARF_UPLOAD_UPLOADING);
         try {
             const uploadSession = await uploadDocuments({
                 nhsNumber,
@@ -65,7 +63,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
 
             await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
 
-            setStage(UPLOAD_STAGE.Complete);
+            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
         } catch (error) {
             handleUploadError(error as AxiosError);
         }
@@ -106,7 +104,7 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                 })),
             );
             /* istanbul ignore next */
-            setStage(UPLOAD_STAGE.Complete);
+            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
@@ -162,7 +160,11 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                 noValidate
                 data-testid="upload-document-form"
             >
-                <Fieldset.Legend headingLevel="h1" isPageHeading>
+                <Fieldset.Legend
+                    headingLevel="h1"
+                    isPageHeading
+                    data-testid="arf-upload-select-stage-header"
+                >
                     Upload documents
                 </Fieldset.Legend>
                 <PatientDetails />
@@ -179,7 +181,12 @@ function SelectStage({ setDocuments, setStage, documents }: Props) {
                         formType={DOCUMENT_TYPE.ARF}
                     />
                 </Fieldset>
-                <Button type="submit" id="upload-button" disabled={formState.isSubmitting}>
+                <Button
+                    type="submit"
+                    id="upload-button"
+                    data-testid="arf-upload-submit-btn"
+                    disabled={formState.isSubmitting}
+                >
                     Upload
                 </Button>
             </form>

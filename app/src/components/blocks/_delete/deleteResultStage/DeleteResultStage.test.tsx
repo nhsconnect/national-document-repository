@@ -6,21 +6,22 @@ import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import { LinkProps } from 'react-router-dom';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
-const mockedUseNavigate = jest.fn();
+const mockNavigate = jest.fn();
+
 jest.mock('../../../../helpers/hooks/useRole');
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
 }));
+
 jest.mock('react-router', () => ({
-    useNavigate: () => mockedUseNavigate,
+    useNavigate: () => mockNavigate,
 }));
 
 const mockedUseRole = useRole as jest.Mock;
@@ -28,7 +29,6 @@ const mockedUsePatient = usePatient as jest.Mock;
 
 const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
-const mockSetStage = jest.fn();
 const mockSetDownloadStage = jest.fn();
 
 describe('DeleteResultStage', () => {
@@ -48,7 +48,12 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
 
                 mockedUseRole.mockReturnValue(role);
-                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+                render(
+                    <DeleteResultStage
+                        numberOfFiles={numberOfFiles}
+                        setDownloadStage={mockSetDownloadStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(
@@ -73,7 +78,12 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = 1;
 
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
-            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+            render(
+                <DeleteResultStage
+                    numberOfFiles={numberOfFiles}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(
@@ -94,7 +104,12 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
 
-                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+                render(
+                    <DeleteResultStage
+                        numberOfFiles={numberOfFiles}
+                        setDownloadStage={mockSetDownloadStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(
@@ -114,7 +129,12 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = mockLgSearchResult.number_of_files;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+            render(
+                <DeleteResultStage
+                    numberOfFiles={numberOfFiles}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(
@@ -133,7 +153,12 @@ describe('DeleteResultStage', () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+            render(
+                <DeleteResultStage
+                    numberOfFiles={numberOfFiles}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(
@@ -154,7 +179,12 @@ describe('DeleteResultStage', () => {
                 const numberOfFiles = 7;
                 mockedUseRole.mockReturnValue(role);
 
-                render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+                render(
+                    <DeleteResultStage
+                        numberOfFiles={numberOfFiles}
+                        setDownloadStage={mockSetDownloadStage}
+                    />,
+                );
 
                 await waitFor(async () => {
                     expect(
@@ -169,9 +199,22 @@ describe('DeleteResultStage', () => {
                 ).not.toBeInTheDocument();
             },
         );
+    });
 
+    describe('Accessibility', () => {
+        const roles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE];
+        it.each(roles)('pass accessibility checks for role %s', async (role) => {
+            mockedUseRole.mockReturnValue(role);
+            render(<DeleteResultStage numberOfFiles={3} setDownloadStage={mockSetDownloadStage} />);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+    });
+
+    describe('Navigation', () => {
         it.each([REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.GP_CLINICAL])(
-            "displays the LgRecordStage when return button is clicked, when user role is '%s'",
+            "navigates to the Lloyd George view page when return button is clicked, when user role is '%s'",
             async (role) => {
                 const numberOfFiles = mockLgSearchResult.number_of_files;
                 mockedUseRole.mockReturnValue(role);
@@ -179,7 +222,6 @@ describe('DeleteResultStage', () => {
                 render(
                     <DeleteResultStage
                         numberOfFiles={numberOfFiles}
-                        setStage={mockSetStage}
                         setDownloadStage={mockSetDownloadStage}
                     />,
                 );
@@ -199,30 +241,22 @@ describe('DeleteResultStage', () => {
                 });
 
                 await waitFor(() => {
-                    expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
+                    expect(mockNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE);
                 });
                 expect(mockSetDownloadStage).toHaveBeenCalledWith(DOWNLOAD_STAGE.REFRESH);
             },
         );
-    });
 
-    describe('Accessibility', () => {
-        const roles = [REPOSITORY_ROLE.GP_ADMIN, REPOSITORY_ROLE.PCSE];
-        it.each(roles)('pass accessibility checks for role %s', async (role) => {
-            mockedUseRole.mockReturnValue(role);
-            render(<DeleteResultStage numberOfFiles={3} setStage={mockSetStage} />);
-
-            const results = await runAxeTest(document.body);
-            expect(results).toHaveNoViolations();
-        });
-    });
-
-    describe('Navigation', () => {
         it('navigates to Home page when link is clicked when user role is PCSE', async () => {
             const numberOfFiles = 7;
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.PCSE);
 
-            render(<DeleteResultStage numberOfFiles={numberOfFiles} setStage={mockSetStage} />);
+            render(
+                <DeleteResultStage
+                    numberOfFiles={numberOfFiles}
+                    setDownloadStage={mockSetDownloadStage}
+                />,
+            );
 
             await waitFor(async () => {
                 expect(
@@ -235,7 +269,7 @@ describe('DeleteResultStage', () => {
             });
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.START);
+                expect(mockNavigate).toHaveBeenCalledWith(routes.START);
             });
         });
     });

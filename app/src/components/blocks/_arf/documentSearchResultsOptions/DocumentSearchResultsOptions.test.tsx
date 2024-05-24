@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import axios from 'axios';
 import DocumentSearchResultsOptions from './DocumentSearchResultsOptions';
 import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
@@ -131,7 +131,7 @@ describe('DocumentSearchResultsOptions', () => {
             userEvent.click(screen.getByRole('button', { name: 'Delete All Documents' }));
 
             await waitFor(() => {
-                expect(mockSetIsDeletingDocuments).toHaveBeenCalledWith(true);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_DELETE_CONFIRMATION);
             });
         });
     });

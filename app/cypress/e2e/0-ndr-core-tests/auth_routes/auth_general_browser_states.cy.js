@@ -3,6 +3,7 @@ import { Roles } from '../../../support/roles';
 
 describe('Authentication & Authorisation', () => {
     const baseUrl = Cypress.config('baseUrl');
+    const logoutPath = '/Auth/Logout';
 
     context('Session management is handled correctly', () => {
         it.skip(
@@ -17,7 +18,7 @@ describe('Authentication & Authorisation', () => {
                 });
 
                 // Logout
-                cy.intercept('GET', '/Auth/Logout', {
+                cy.intercept('GET', logoutPath, {
                     statusCode: 200,
                 }).as('logout');
                 cy.getByTestId('logout-btn').click();
@@ -43,11 +44,11 @@ describe('Authentication & Authorisation', () => {
 
     context('Unauthorised access redirection', () => {
         const unauthorisedRoutes = [
-            '/search/patient',
-            '/search/patient/verify',
-            '/patient/download',
-            '/patient/view/lloyd-george-record',
-            '/patient/upload',
+            '/patient/search',
+            '/patient/verify',
+            '/patient/arf',
+            '/patient/lloyd-george-record',
+            '/patient/lloyd-george-record/upload',
         ];
 
         unauthorisedRoutes.forEach((route) => {

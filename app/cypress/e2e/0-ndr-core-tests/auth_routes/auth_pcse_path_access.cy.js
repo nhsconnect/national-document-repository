@@ -13,8 +13,12 @@ const patient = {
 };
 
 const baseUrl = Cypress.config('baseUrl');
+const patientSearchUrl = '/patient/search';
+const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
+const arfDownloadUrl = '/patient/arf';
+const arfUploadUrl = '/patient/arf/upload';
 
-const forbiddenRoutes = ['/patient/view/lloyd-george-record', '/patient/upload'];
+const forbiddenRoutes = [lloydGeorgeViewUrl, arfUploadUrl];
 
 describe('PCSE user role has access to the expected GP_ADMIN workflow paths', () => {
     context('PCSE role has access to expected routes', () => {
@@ -26,7 +30,7 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
 
             cy.login(Roles.PCSE);
 
-            cy.url().should('eq', baseUrl + '/search/patient');
+            cy.url().should('eq', baseUrl + patientSearchUrl);
 
             cy.get('#nhs-number-input').click();
             cy.get('#nhs-number-input').type(testPatient);
@@ -34,7 +38,7 @@ describe('PCSE user role has access to the expected GP_ADMIN workflow paths', ()
             cy.wait('@search');
 
             cy.get('#verify-submit').click();
-            cy.url().should('eq', baseUrl + '/patient/download');
+            cy.url().should('eq', baseUrl + arfDownloadUrl);
         });
     });
 });

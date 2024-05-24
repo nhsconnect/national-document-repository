@@ -1,11 +1,11 @@
 import { Button } from 'nhsuk-react-components';
 import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
 import { AxiosError } from 'axios';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, useEffect, useRef, useState } from 'react';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
@@ -15,7 +15,7 @@ type Props = {
     nhsNumber: string;
     downloadState: string;
     updateDownloadState: (newState: SUBMISSION_STATE) => void;
-    setIsDeletingDocuments: Dispatch<SetStateAction<boolean>>;
+    setIsDeletingDocuments: Dispatch<boolean>;
 };
 
 interface DownloadLinkAttributes {
@@ -66,7 +66,7 @@ const DocumentSearchResultsOptions = (props: Props) => {
     };
 
     const deleteAllDocuments = () => {
-        props.setIsDeletingDocuments(true);
+        navigate(routeChildren.ARF_DELETE_CONFIRMATION);
     };
 
     return (

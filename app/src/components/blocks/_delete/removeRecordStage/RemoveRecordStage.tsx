@@ -1,5 +1,4 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { BackLink, Button, Table, WarningCallout } from 'nhsuk-react-components';
 import PatientDetails from '../../../generic/patientDetails/PatientDetails';
@@ -11,21 +10,27 @@ import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsP
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import { AxiosError } from 'axios';
-import { useNavigate } from 'react-router';
-import { routes } from '../../../../types/generic/routes';
+import { Outlet, Route, Routes, useNavigate } from 'react-router';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import ServiceError from '../../../layout/serviceErrorBox/ServiceErrorBox';
 import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import { buildSearchResult } from '../../../../helpers/test/testBuilders';
+import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
+import DeleteSubmitStage from '../deleteSubmitStage/DeleteSubmitStage';
+import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
+import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 export type Props = {
-    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
+    numberOfFiles: number;
     recordType: string;
+    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
-function RemoveRecordStage({ setStage, recordType }: Props) {
+function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage }: Props) {
     useTitle({ pageTitle: 'Remove record' });
     const patientDetails = usePatient();
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.PENDING);
@@ -82,14 +87,14 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
 
     const hasDocuments = !!searchResults.length && !!patientDetails;
 
-    return (
+    const PageIndexView = () => (
         <>
             <BackLink
                 data-testid="back-link"
                 href="#"
                 onClick={(e) => {
                     e.preventDefault();
-                    setStage(LG_RECORD_STAGE.RECORD);
+                    navigate(routes.LLOYD_GEORGE);
                 }}
             >
                 Go back
@@ -161,7 +166,7 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
                         <Button
                             data-testid="remove-btn"
                             onClick={() => {
-                                setStage(LG_RECORD_STAGE.DELETE_ALL);
+                                navigate(routeChildren.LLOYD_GEORGE_DELETE_CONFIRMATION);
                             }}
                         >
                             Remove all files
@@ -173,13 +178,51 @@ function RemoveRecordStage({ setStage, recordType }: Props) {
                         type="button"
                         className="mb-7 ml-3"
                         onClick={() => {
-                            setStage(LG_RECORD_STAGE.RECORD);
+                            navigate(routes.LLOYD_GEORGE);
                         }}
                     >
                         Start again
                     </LinkButton>
                 </div>
             )}
+        </>
+    );
+
+    return (
+        <>
+            <Routes>
+                <Route index element={PageIndexView()}></Route>
+                <Route
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DELETE_CONFIRMATION)}
+                    element={
+                        <DeleteSubmitStage
+                            docType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                            numberOfFiles={numberOfFiles}
+                            recordType="Lloyd George"
+                        />
+                    }
+                ></Route>
+                <Route
+                    path={getLastURLPath(routeChildren.ARF_DELETE_CONFIRMATION)}
+                    element={
+                        <DeleteSubmitStage
+                            docType={DOCUMENT_TYPE.LLOYD_GEORGE}
+                            numberOfFiles={numberOfFiles}
+                            recordType="ARF"
+                        />
+                    }
+                ></Route>
+                <Route
+                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DELETE_COMPLETE)}
+                    element={
+                        <DeleteResultStage
+                            numberOfFiles={numberOfFiles}
+                            setDownloadStage={setDownloadStage}
+                        />
+                    }
+                ></Route>
+            </Routes>
+            <Outlet></Outlet>
         </>
     );
 }
