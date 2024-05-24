@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import PatientDetails from '../../components/generic/patientDetails/PatientDetails';
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/_arf/documentSearchResults/DocumentSearchResults';
-import { useNavigate } from 'react-router';
-import { routes } from '../../types/generic/routes';
+import { Outlet, Route, Routes, useNavigate } from 'react-router';
+import { routeChildren, routes } from '../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';
 import ProgressBar from '../../components/generic/progressBar/ProgressBar';
@@ -19,6 +19,7 @@ import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import useTitle from '../../helpers/hooks/useTitle';
+import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
@@ -78,7 +79,8 @@ function DocumentSearchResultsPage() {
     ]);
     const pageHeader = 'Download electronic health records and attachments';
     useTitle({ pageTitle: pageHeader });
-    return !isDeletingDocuments ? (
+
+    const PageIndexView = () => (
         <>
             <h1 id="download-page-title">{pageHeader}</h1>
 
@@ -137,13 +139,29 @@ function DocumentSearchResultsPage() {
                 </p>
             )}
         </>
-    ) : (
-        <DeleteSubmitStage
-            numberOfFiles={searchResults.length}
-            recordType="ARF"
-            setIsDeletingDocuments={setIsDeletingDocuments}
-            docType={DOCUMENT_TYPE.ALL}
-        />
+    );
+
+    return (
+        <>
+            <div>
+                <Routes>
+                    <Route index element={<PageIndexView />} />
+                    <Route
+                        path={getLastURLPath(routeChildren.ARF_DELETE) + '/*'}
+                        element={
+                            <DeleteSubmitStage
+                                recordType="ARF"
+                                numberOfFiles={searchResults.length}
+                                setIsDeletingDocuments={setIsDeletingDocuments}
+                                docType={DOCUMENT_TYPE.ALL}
+                            />
+                        }
+                    />
+                </Routes>
+
+                <Outlet />
+            </div>
+        </>
     );
 }
 

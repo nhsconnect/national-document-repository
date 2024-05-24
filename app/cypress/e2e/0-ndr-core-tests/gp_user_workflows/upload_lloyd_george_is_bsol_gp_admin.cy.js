@@ -2,8 +2,15 @@ import { Roles } from '../../../support/roles';
 import searchPatientPayload from '../../../fixtures/requests/GET_SearchPatientLGUpload.json';
 
 const baseUrl = Cypress.config('baseUrl');
-const searchPatientUrl = '/search/patient';
-const viewLloydGeorgeRecordUrl = '/patient/view/lloyd-george-record';
+const patientSearchUrl = '/patient/search';
+const patientVerifyUrl = '/patient/verify';
+const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
+const lloydGeorgeUploadUrl = '/patient/lloyd-george-record/upload';
+const lloydGeorgeInfectedUrl = '/patient/lloyd-george-record/upload/infected';
+const arfDownloadUrl = '/patient/arf';
+const arfUploadUrl = '/patient/arf/upload';
+const unauthorisedUrl = '/unauthorised';
+
 const clickUploadButton = () => {
     cy.get('#upload-button').click();
 };
@@ -11,12 +18,12 @@ const clickUploadButton = () => {
 const testSearchPatientButton = () => {
     cy.getByTestId('search-patient-btn').should('be.visible');
     cy.getByTestId('search-patient-btn').click();
-    cy.url().should('eq', baseUrl + searchPatientUrl);
+    cy.url().should('eq', baseUrl + patientSearchUrl);
 };
 const testViewRecordButton = () => {
     cy.getByTestId('view-record-btn').should('be.visible');
     cy.getByTestId('view-record-btn').click();
-    cy.url().should('eq', baseUrl + viewLloydGeorgeRecordUrl);
+    cy.url().should('eq', baseUrl + lloydGeorgeViewUrl);
 };
 
 const testUploadCompletePageContent = () => {
@@ -79,7 +86,7 @@ const stubbedResponseMulti = {
 describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and patient has no record', () => {
     const beforeEachConfiguration = () => {
         cy.login(Roles.GP_ADMIN);
-        cy.visit(searchPatientUrl);
+        cy.visit(patientSearchUrl);
 
         cy.intercept('GET', '/SearchPatient*', {
             statusCode: 200,
@@ -96,7 +103,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
         cy.wait('@stitch');
         cy.getByTestId('upload-patient-record-button').click();
         cy.url().should('include', 'upload');
-        cy.url().should('eq', baseUrl + '/patient/upload/lloyd-george-record');
+        cy.url().should('eq', baseUrl + lloydGeorgeUploadUrl);
         cy.intercept('POST', '**/UploadState', (req) => {
             req.reply({
                 statusCode: 200,
@@ -463,14 +470,16 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 cy.wait('@s3_retry_upload');
 
                 cy.get('#upload-retry-button').should('exist');
-
+                cy.wait(1000);
                 cy.get('#upload-retry-button').click();
+
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
                     req.reply({
                         statusCode: 204,
                         delay: 1500,
                     });
                 }).as('retry_success');
+
                 cy.getByTestId('button-input').selectFile(
                     uploadedFilePathNames.LG[multiFileUsecaseIndex],
                     { force: true },
@@ -540,10 +549,11 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                     .should('include.text', 'Some of your files failed a virus scan')
                     .should('include.text', uploadedFileNames.LG[singleFileUsecaseIndex]);
                 cy.title().should('eq', 'The record did not upload - Digital Lloyd George records');
+                cy.url().should('eq', baseUrl + lloydGeorgeInfectedUrl);
 
                 cy.getByTestId('retry-upload-btn').should('exist');
                 cy.getByTestId('retry-upload-btn').click();
-                cy.url().should('eq', baseUrl + '/patient/upload/lloyd-george-record');
+                cy.url().should('eq', baseUrl + lloydGeorgeUploadUrl);
             },
         );
 
@@ -608,7 +618,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
 
                 cy.getByTestId('retry-upload-btn').should('exist');
                 cy.getByTestId('retry-upload-btn').click();
-                cy.url().should('eq', baseUrl + '/patient/upload/lloyd-george-record');
+                cy.url().should('eq', baseUrl + lloydGeorgeUploadUrl);
             },
         );
         it(

@@ -2,7 +2,7 @@ import { Button, Checkboxes, Table } from 'nhsuk-react-components';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
 import { Link, useNavigate } from 'react-router-dom';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import React, { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
@@ -32,10 +32,9 @@ const LloydGeorgeSelectSearchResults = ({
         }
     };
     const navigate = useNavigate();
-    const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
-
     const orderedResults = [...searchResults].sort(sortByFileName);
     const tableCaption = <h2 className="nhsuk-heading-l">List of files in record</h2>;
+    const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
     const noOptionSelectedError = 'You must select a file to download or download all files';
     const pageHeader = 'Download the Lloyd George record for this patient';
 
@@ -43,7 +42,6 @@ const LloydGeorgeSelectSearchResults = ({
 
     const handleChangeCheckboxes = (e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
-
         if (target.checked) {
             setSelectedDocuments([...selectedDocuments, target.value]);
         } else {
@@ -55,6 +53,7 @@ const LloydGeorgeSelectSearchResults = ({
             handleClickDownloadAll();
         } else if (selectedDocuments.length) {
             setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
+            navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS);
         } else {
             setShowNoOptionSelectedMessage(true);
             window.scrollTo(0, 0);
@@ -63,6 +62,7 @@ const LloydGeorgeSelectSearchResults = ({
     const handleClickDownloadAll = () => {
         setSelectedDocuments([]);
         setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.DOWNLOAD_SELECTED);
+        navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS);
     };
 
     return (
@@ -108,6 +108,7 @@ const LloydGeorgeSelectSearchResults = ({
                                         <Checkboxes.Box
                                             value={result.ID}
                                             data-testid={`checkbox-${index}`}
+                                            checked={selectedDocuments.includes(result.ID)}
                                         >
                                             <span className="nhsuk-u-visually-hidden">
                                                 {result.fileName}

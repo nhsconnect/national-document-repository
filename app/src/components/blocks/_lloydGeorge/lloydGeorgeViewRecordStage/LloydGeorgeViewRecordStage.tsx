@@ -27,6 +27,8 @@ import {
 import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { routeChildren } from '../../../../types/generic/routes';
+import { useNavigate } from 'react-router';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
@@ -48,6 +50,8 @@ function LloydGeorgeViewRecordStage({
     totalFileSizeInByte,
     setStage,
 }: Props) {
+    const navigate = useNavigate();
+
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
     const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
@@ -80,7 +84,7 @@ function LloydGeorgeViewRecordStage({
     const showMenu = recordLinksToShow.length > 0;
 
     const handleConfirmDownloadAndRemoveButton = () => {
-        setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+        navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS);
     };
     const handleCancelButton = () => {
         setDownloadRemoveButtonClicked(false);

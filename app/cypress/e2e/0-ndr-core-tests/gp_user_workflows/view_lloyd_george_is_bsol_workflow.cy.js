@@ -288,12 +288,25 @@ describe('GP Workflow: View Lloyd George record', () => {
                     body: viewLloydGeorgePayload,
                 }).as('lloydGeorgeStitch');
 
+                cy.intercept('GET', '/SearchDocumentReferences*', {
+                    statusCode: 200,
+                    body: [
+                        {
+                            fileName: 'testName',
+                            created: 'testCreated',
+                            virusScannerResult: 'Clean',
+                        },
+                    ],
+                }).as('searchDocs');
+
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');
 
                 cy.getByTestId('delete-all-files-link').should('exist');
                 cy.getByTestId('delete-all-files-link').click();
+
                 // cancel delete
+                cy.wait('@searchDocs');
                 cy.getByTestId('start-again-btn').click();
 
                 // assert user is returned to view Lloyd George page

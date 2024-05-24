@@ -5,19 +5,17 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
-import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
 import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
 export type Props = {
     numberOfFiles: number;
     setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
-    setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-function DeleteResultStage({ numberOfFiles, setStage, setDownloadStage }: Props) {
+function DeleteResultStage({ numberOfFiles, setDownloadStage }: Props) {
     const navigate = useNavigate();
     const role = useRole();
 
@@ -29,10 +27,10 @@ function DeleteResultStage({ numberOfFiles, setStage, setDownloadStage }: Props)
 
     const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
-        if (setStage && setDownloadStage) {
+        if (setDownloadStage) {
             setDownloadStage(DOWNLOAD_STAGE.REFRESH);
-            setStage(LG_RECORD_STAGE.RECORD);
         }
+        navigate(routes.LLOYD_GEORGE);
     };
     const isGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
     const pageHeader = 'You have permanently removed the record of:';

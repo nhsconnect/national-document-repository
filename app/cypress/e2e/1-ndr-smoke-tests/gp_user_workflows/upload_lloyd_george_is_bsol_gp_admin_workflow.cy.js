@@ -12,9 +12,12 @@ const uploadedFileNames = [
     '2of3_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010].pdf',
     '3of3_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010].pdf',
 ];
-const viewLloydGeorgeRecordUrl = '/patient/view/lloyd-george-record';
+
 const baseUrl = Cypress.config('baseUrl');
 const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
+
+const patientVerifyUrl = '/patient/verify';
+const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
 
 const activePatient =
     workspace === 'ndr-dev' ? pdsPatients.activeNoUploadBsol : stubPatients.activeNoUploadBsol;
@@ -33,12 +36,12 @@ describe('GP Workflow: Upload Lloyd George record', () => {
                 cy.getByTestId('search-submit-btn').should('exist');
                 cy.getByTestId('search-submit-btn').click();
 
-                cy.url({ timeout: 15000 }).should('contain', '/search/patient/verify');
+                cy.url({ timeout: 15000 }).should('contain', patientVerifyUrl);
 
                 cy.get('#verify-submit').should('exist');
                 cy.get('#verify-submit').click();
 
-                cy.url().should('contain', '/patient/view/lloyd-george-record');
+                cy.url().should('contain', lloydGeorgeRecordUrl);
                 cy.getByTestId('upload-patient-record-text').should(
                     'include.text',
                     'You can upload full or part of a patient record',
@@ -74,7 +77,7 @@ describe('GP Workflow: Upload Lloyd George record', () => {
                 cy.getByTestId('search-patient-btn').should('be.visible');
                 cy.getByTestId('view-record-btn').should('be.visible');
                 cy.getByTestId('view-record-btn').click();
-                cy.url().should('eq', baseUrl + viewLloydGeorgeRecordUrl);
+                cy.url().should('eq', baseUrl + lloydGeorgeRecordUrl);
             },
         );
     });

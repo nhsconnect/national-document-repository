@@ -3,8 +3,9 @@ import Layout from './Layout';
 import { Link, MemoryRouter, Route, Routes } from 'react-router-dom';
 import SessionProvider, { Session } from '../../providers/sessionProvider/SessionProvider';
 import userEvent from '@testing-library/user-event';
-import { runAxeTest, runAxeTestForLayout } from '../../helpers/test/axeTestHelper';
+
 import { buildUserAuth } from '../../helpers/test/testBuilders';
+import { runAxeTestForLayout } from '../../helpers/test/axeTestHelper';
 
 describe('Layout', () => {
     beforeEach(() => {

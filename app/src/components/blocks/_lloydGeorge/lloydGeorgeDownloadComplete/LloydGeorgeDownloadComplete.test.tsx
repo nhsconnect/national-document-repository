@@ -11,10 +11,11 @@ import React from 'react';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 
-const mockSetStage = jest.fn();
-const mockSetDownloadStage = jest.fn();
+const mockedUseNavigate = jest.fn();
 const mockPatient = buildPatientDetails();
 const mockedUsePatient = usePatient as jest.Mock;
+const mockSetDownloadStage = jest.fn();
+
 const numberOfFiles = 7;
 const selectedDocuments = ['test-id-1', 'test-id-2'];
 const downloadAllSelectedDocuments: Array<string> = [];
@@ -23,6 +24,11 @@ const searchResults = [
     buildSearchResult({ fileName: '2of2_test.pdf', ID: 'test-id-2' }),
     buildSearchResult({ fileName: '1of1_test.pdf', ID: 'test-id-3' }),
 ];
+
+jest.mock('react-router-dom', () => ({
+    __esModule: true,
+    useNavigate: () => mockedUseNavigate,
+}));
 
 describe('LloydGeorgeDownloadComplete', () => {
     beforeEach(() => {
@@ -37,10 +43,9 @@ describe('LloydGeorgeDownloadComplete', () => {
         it('renders the component', () => {
             render(
                 <LloydGeorgeDownloadComplete
-                    setStage={mockSetStage}
-                    setDownloadStage={mockSetDownloadStage}
                     deleteAfterDownload={true}
                     numberOfFiles={numberOfFiles}
+                    setDownloadStage={mockSetDownloadStage}
                 />,
             );
 
@@ -65,38 +70,17 @@ describe('LloydGeorgeDownloadComplete', () => {
             ).toBeInTheDocument();
             expect(screen.queryByText('Hide files')).not.toBeInTheDocument();
         });
-
-        it('calls set stage AND set download stage when delete after download is true', () => {
-            render(
-                <LloydGeorgeDownloadComplete
-                    setStage={mockSetStage}
-                    setDownloadStage={mockSetDownloadStage}
-                    deleteAfterDownload={true}
-                    numberOfFiles={numberOfFiles}
-                />,
-            );
-
-            userEvent.click(
-                screen.getByRole('button', {
-                    name: 'Return to patient record',
-                }),
-            );
-
-            expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
-            expect(mockSetDownloadStage).toHaveBeenCalledWith(DOWNLOAD_STAGE.REFRESH);
-        });
     });
 
     describe('LloydGeorgeDownloadComplete BSOL journeys', () => {
         it('renders the download complete screen for download all journey', () => {
             render(
                 <LgDownloadComplete
-                    setStage={mockSetStage}
-                    setDownloadStage={mockSetDownloadStage}
                     deleteAfterDownload={false}
                     numberOfFiles={downloadAllSelectedDocuments.length}
                     selectedDocuments={downloadAllSelectedDocuments}
                     searchResults={searchResults}
+                    setDownloadStage={mockSetDownloadStage}
                 />,
             );
 
@@ -120,37 +104,14 @@ describe('LloydGeorgeDownloadComplete', () => {
             ).not.toBeInTheDocument();
         });
 
-        it('calls set stage when delete after download is false', () => {
-            render(
-                <LloydGeorgeDownloadComplete
-                    setStage={mockSetStage}
-                    setDownloadStage={mockSetDownloadStage}
-                    deleteAfterDownload={false}
-                    numberOfFiles={downloadAllSelectedDocuments.length}
-                    selectedDocuments={downloadAllSelectedDocuments}
-                    searchResults={searchResults}
-                />,
-            );
-
-            userEvent.click(
-                screen.getByRole('button', {
-                    name: 'Return to patient record',
-                }),
-            );
-
-            expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.RECORD);
-            expect(mockSetDownloadStage).not.toBeCalled();
-        });
-
         it('renders the download complete screen for download selected files journey', () => {
             render(
                 <LgDownloadComplete
-                    setStage={mockSetStage}
-                    setDownloadStage={mockSetDownloadStage}
                     deleteAfterDownload={false}
                     numberOfFiles={selectedDocuments.length}
                     selectedDocuments={selectedDocuments}
                     searchResults={searchResults}
+                    setDownloadStage={mockSetDownloadStage}
                 />,
             );
 
@@ -192,9 +153,8 @@ describe('LloydGeorgeDownloadComplete', () => {
                 render(
                     <LloydGeorgeDownloadComplete
                         numberOfFiles={numberOfFiles}
-                        setStage={mockSetStage}
-                        setDownloadStage={mockSetDownloadStage}
                         deleteAfterDownload={deleteAfterDownload}
+                        setDownloadStage={mockSetDownloadStage}
                     />,
                 );
 

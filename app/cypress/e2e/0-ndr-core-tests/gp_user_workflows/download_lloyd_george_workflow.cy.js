@@ -4,7 +4,8 @@ import { Roles } from '../../../support/roles';
 import { formatNhsNumber } from '../../../../src/helpers/utils/formatNhsNumber';
 
 const baseUrl = Cypress.config('baseUrl');
-const searchPatientUrl = '/search/patient';
+const patientSearchUrl = '/patient/search';
+
 const downloadPageTitle =
     'Download the Lloyd George record for this patient - Digital Lloyd George records';
 const downloadingPageTitle = 'Downloading documents - Digital Lloyd George records';
@@ -35,7 +36,7 @@ const testFiles = [
 describe('GP Workflow: View Lloyd George record', () => {
     const beforeEachConfiguration = (role) => {
         cy.login(role);
-        cy.visit(searchPatientUrl);
+        cy.visit(patientSearchUrl);
 
         // search patient
         cy.intercept('GET', '/SearchPatient*', {
@@ -53,18 +54,21 @@ describe('GP Workflow: View Lloyd George record', () => {
             body: viewLloydGeorgePayload,
         }).as('lloydGeorgeStitch');
 
-        cy.get('#verify-submit').click();
-        cy.wait('@lloydGeorgeStitch');
-
-        cy.intercept('GET', '/DocumentManifest*', {
-            statusCode: 200,
-            body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
-        }).as('documentManifest');
-
         cy.intercept('GET', '/SearchDocumentReferences*', {
             statusCode: 200,
             body: testFiles,
         }).as('searchDocumentReferences');
+
+        cy.intercept('GET', '/DocumentManifest*', (req) => {
+            req.reply({
+                statusCode: 200,
+                body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
+                delay: 1000,
+            });
+        }).as('documentManifest');
+
+        cy.get('#verify-submit').click();
+        cy.wait('@lloydGeorgeStitch');
 
         cy.getByTestId('download-all-files-link').click();
     };
@@ -80,21 +84,25 @@ describe('GP Workflow: View Lloyd George record', () => {
                     statusCode: 200,
                     body: viewLloydGeorgePayload,
                 }).as('lloydGeorgeStitch');
-                cy.title().should('eq', verifyPatientPageTitle);
-
-                cy.get('#verify-submit').click();
-                cy.wait('@lloydGeorgeStitch');
-                cy.title().should('eq', lloydGeorgeRecordPageTitle);
-
-                cy.intercept('GET', '/DocumentManifest*', {
-                    statusCode: 200,
-                    body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
-                }).as('documentManifest');
 
                 cy.intercept('GET', '/SearchDocumentReferences*', {
                     statusCode: 200,
                     body: testFiles,
                 }).as('searchDocumentReferences');
+
+                cy.intercept('GET', '/DocumentManifest*', (req) => {
+                    req.reply({
+                        statusCode: 200,
+                        body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
+                        delay: 1000,
+                    });
+                }).as('documentManifest');
+
+                cy.title().should('eq', verifyPatientPageTitle);
+
+                cy.get('#verify-submit').click();
+                cy.wait('@lloydGeorgeStitch');
+                cy.title().should('eq', lloydGeorgeRecordPageTitle);
 
                 cy.getByTestId('download-all-files-link').should('exist');
                 cy.getByTestId('download-all-files-link').click();
@@ -116,10 +124,10 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 // Assert contents of page when downloading
                 cy.getByTestId('lloyd-george-download-header').should('exist');
-                cy.getByTestId('lloyd-george-download-card-content').should('exist');
                 cy.getByTestId('cancel-download-link').should('exist');
 
                 // Assert contents of page after download
+                cy.wait('@documentManifest');
                 cy.title().should('eq', downloadCompletePageTitle);
                 cy.getByTestId('downloaded-record-card-header').should('exist');
                 cy.contains(
@@ -162,11 +170,12 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 // Assert contents of page when downloading
                 cy.title().should('eq', downloadingPageTitle);
+                // Assert contents of page when downloading
                 cy.getByTestId('lloyd-george-download-header').should('exist');
-                cy.getByTestId('lloyd-george-download-card-content').should('exist');
                 cy.getByTestId('cancel-download-link').should('exist');
 
                 // Assert contents of page after download
+                cy.wait('@documentManifest');
                 cy.title().should('eq', downloadCompletePageTitle);
                 cy.getByTestId('downloaded-files-card-header').should('exist');
                 cy.contains(
@@ -254,6 +263,8 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.intercept('GET', '/DocumentManifest*', {
                     statusCode: 500,
                 }).as('documentManifest');
+
+                beforeEachConfiguration(Roles.GP_CLINICAL);
 
                 cy.get('#verify-submit').click();
                 cy.wait('@lloydGeorgeStitch');

@@ -17,6 +17,7 @@ import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { LinkProps } from 'react-router-dom';
+import { routeChildren } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockPdf = buildLgSearchResult();
@@ -167,17 +168,13 @@ describe('LloydGeorgeViewRecordStage', () => {
 
             expect(screen.getByText('Before downloading')).toBeInTheDocument();
             expect(screen.getByText('Available records')).toBeInTheDocument();
-            expect(
-                screen.getByRole('button', { name: 'Download and remove files' }),
-            ).toBeInTheDocument();
+            expect(screen.getByTestId('download-and-remove-record-btn')).toBeInTheDocument();
         });
 
         it('clicking the side menu download button should show confirmation message, checkbox, red download button and cancel button', async () => {
             renderComponentForNonBSOLGPAdmin();
 
-            const downloadButton = screen.getByRole('button', {
-                name: 'Download and remove files',
-            });
+            const downloadButton = screen.getByTestId('download-and-remove-record-btn');
 
             act(() => {
                 userEvent.click(downloadButton);
@@ -256,7 +253,9 @@ describe('LloydGeorgeViewRecordStage', () => {
             clickRedDownloadButton();
 
             await waitFor(() => {
-                expect(mockSetStage).toBeCalledWith(LG_RECORD_STAGE.DOWNLOAD_ALL);
+                expect(mockNavigate).toBeCalledWith(
+                    routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS,
+                );
             });
         });
 
