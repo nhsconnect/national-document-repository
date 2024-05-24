@@ -22,7 +22,7 @@ jobs:
 
       - name: Configure React environment vars
         env:
-          ENDPOINT_DOC_STORE_API: http://test-endpoint.com
+          ENDPOINT_DOC_STORE_API: http://localhost:3000
           AWS_REGION: test region
           OIDC_PROVIDER_ID: not provided yet
           BUILD_ENV: development
