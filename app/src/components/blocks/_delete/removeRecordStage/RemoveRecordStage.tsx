@@ -1,7 +1,6 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { BackLink, Button, Table, WarningCallout } from 'nhsuk-react-components';
-import PatientDetails from '../../../generic/patientDetails/PatientDetails';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import getDocumentSearchResults from '../../../../helpers/requests/getDocumentSearchResults';
@@ -23,6 +22,7 @@ import DeleteSubmitStage from '../deleteSubmitStage/DeleteSubmitStage';
 import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 export type Props = {
     numberOfFiles: number;
@@ -115,7 +115,7 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage }: Prop
                     .
                 </p>
             </WarningCallout>
-            <PatientDetails />
+            <PatientSummary />
 
             {submissionState === SUBMISSION_STATE.PENDING && <ProgressBar status="Loading..." />}
 

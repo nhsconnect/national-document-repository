@@ -9,7 +9,6 @@ import {
 import { Button, Fieldset } from 'nhsuk-react-components';
 import { useController, useForm } from 'react-hook-form';
 import toFileList from '../../../../helpers/utils/toFileList';
-import PatientDetails from '../../../generic/patientDetails/PatientDetails';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,6 +23,7 @@ import { routeChildren, routes } from '../../../../types/generic/routes';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import { useNavigate } from 'react-router';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 interface Props {
     setDocuments: SetUploadDocuments;
@@ -167,7 +167,7 @@ function SelectStage({ setDocuments, documents }: Props) {
                 >
                     Upload documents
                 </Fieldset.Legend>
-                <PatientDetails />
+                <PatientSummary />
 
                 <Fieldset>
                     <h2>Electronic health records</h2>
