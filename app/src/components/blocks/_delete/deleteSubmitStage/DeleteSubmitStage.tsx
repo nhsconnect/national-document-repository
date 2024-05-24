@@ -15,7 +15,6 @@ import { routeChildren, routes } from '../../../../types/generic/routes';
 import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';

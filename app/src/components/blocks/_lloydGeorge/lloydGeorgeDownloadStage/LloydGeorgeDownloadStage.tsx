@@ -1,4 +1,12 @@
-import React, { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+    Dispatch,
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { Card } from 'nhsuk-react-components';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
@@ -132,10 +140,6 @@ function LloydGeorgeDownloadStage({
                     } // This is fail and forget at this point in time.
                 }
                 setLinkAttributes({ url: preSignedUrl, filename: filename });
-
-                console.log("HERE-Z");
-                console.log(numberOfFiles);
-                console.log(numberOfFilesForDownload);
             } catch (e) {
                 const error = e as AxiosError;
                 onFail(error);
@@ -160,6 +164,8 @@ function LloydGeorgeDownloadStage({
         navigate,
         mockLocal,
         selectedDocuments,
+        numberOfFiles,
+        numberOfFilesForDownload,
     ]);
 
     const pageHeader = 'Downloading documents';

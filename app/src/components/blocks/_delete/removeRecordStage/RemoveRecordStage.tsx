@@ -1,5 +1,4 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { BackLink, Button, Table, WarningCallout } from 'nhsuk-react-components';
 import PatientDetails from '../../../generic/patientDetails/PatientDetails';

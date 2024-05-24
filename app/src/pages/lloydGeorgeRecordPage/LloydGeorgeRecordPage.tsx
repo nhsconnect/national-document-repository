@@ -1,12 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DOWNLOAD_STAGE } from '../../types/generic/downloadStage';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import DeleteSubmitStage from '../../components/blocks/_delete/deleteSubmitStage/DeleteSubmitStage';
 import { getFormattedDatetime } from '../../helpers/utils/formatDatetime';
 import getLloydGeorgeRecord from '../../helpers/requests/getLloydGeorgeRecord';
 
 import LloydGeorgeViewRecordStage from '../../components/blocks/_lloydGeorge/lloydGeorgeViewRecordStage/LloydGeorgeViewRecordStage';
-import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { LG_RECORD_STAGE } from '../../types/blocks/lloydGeorgeStages';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../helpers/hooks/usePatient';
@@ -24,7 +22,6 @@ import { ErrorResponse } from '../../types/generic/errorResponse';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import RemoveRecordStage from '../../components/blocks/_delete/removeRecordStage/RemoveRecordStage';
 import LloydGeorgeSelectDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeSelectDownloadStage/LloydGeorgeSelectDownloadStage';
-import LloydGeorgeDownloadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeDownloadStage/LloydGeorgeDownloadStage';
 
 function LloydGeorgeRecordPage() {
     const patientDetails = usePatient();
@@ -67,12 +64,10 @@ function LloydGeorgeRecordPage() {
                         baseUrl,
                         baseHeaders,
                     });
-                
-                console.log('here-x')
-                console.log(number_of_files);
-                // if (presign_url?.startsWith('https://')) {
+
+                if (presign_url?.startsWith('https://')) {
                     onSuccess(number_of_files, last_updated, presign_url, total_file_size_in_byte);
-                // }
+                }
             } catch (e) {
                 const error = e as AxiosError;
                 const errorResponse = (error.response?.data as ErrorResponse) ?? {};
