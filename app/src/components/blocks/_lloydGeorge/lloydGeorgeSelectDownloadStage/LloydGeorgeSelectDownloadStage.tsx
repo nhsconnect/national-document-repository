@@ -119,6 +119,9 @@ function LloydGeorgeSelectDownloadStage({
     return (
         <>
             <div id="here">{window.location.href}</div>
+            <div id="here2">
+                {window.location.href === baseUrl + routeChildren.LLOYD_GEORGE_DOWNLOAD}
+            </div>
             <Routes>
                 <Route index element={<PageIndexView />} />
                 <Route
