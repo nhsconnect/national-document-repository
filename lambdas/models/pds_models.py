@@ -132,9 +132,7 @@ class Patient(BaseModel):
             familyName=family_name,
             birthDate=self.birth_date,
             postalCode=(
-                current_home_address.postal_code
-                if self.is_unrestricted() and current_home_address
-                else ""
+                current_home_address.postal_code if current_home_address else ""
             ),
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
