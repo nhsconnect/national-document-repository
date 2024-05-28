@@ -13,8 +13,11 @@ const patient = {
 };
 
 const baseUrl = Cypress.config('baseUrl');
-
-const forbiddenRoutes = ['/patient/download'];
+const patientSearchUrl = '/patient/search';
+const patientVerifyUrl = '/patient/verify';
+const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
+const arfDownloadUrl = '/patient/arf';
+const forbiddenRoutes = [arfDownloadUrl];
 
 const bsolOptions = [true, false];
 
@@ -35,7 +38,7 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
                     cy.getByTestId('search-patient-btn').click();
                 }
 
-                cy.url().should('eq', baseUrl + '/search/patient');
+                cy.url().should('eq', baseUrl + patientSearchUrl);
 
                 cy.get('#nhs-number-input').click();
                 cy.get('#nhs-number-input').type(testPatient);
@@ -43,12 +46,12 @@ describe('GP Clinical user role has access to the expected GP_CLINICAL workflow 
                 cy.wait('@search');
 
                 cy.url().should('include', 'verify');
-                cy.url().should('eq', baseUrl + '/search/patient/verify');
+                cy.url().should('eq', baseUrl + patientVerifyUrl);
 
                 cy.get('#verify-submit').click();
 
                 cy.url().should('include', 'lloyd-george-record');
-                cy.url().should('eq', baseUrl + '/patient/view/lloyd-george-record');
+                cy.url().should('eq', baseUrl + lloydGeorgeViewUrl);
             });
         });
     });

@@ -7,17 +7,19 @@ import axios from 'axios';
 import usePatient from '../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
 import { act } from 'react-dom/test-utils';
+import * as ReactRouter from 'react-router';
+import { History, createMemoryHistory } from 'history';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
+    ...jest.requireActual('react-router'),
     useNavigate: () => mockedUseNavigate,
 }));
 
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
-    useNavigate: () => jest.fn(),
-    useLocation: () => jest.fn(),
 }));
 jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
@@ -30,8 +32,18 @@ const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 
+let history = createMemoryHistory({
+    initialEntries: ['/'],
+    initialIndex: 0,
+});
+
 describe('<DocumentSearchResultsPage />', () => {
     beforeEach(() => {
+        history = createMemoryHistory({
+            initialEntries: ['/'],
+            initialIndex: 0,
+        });
+
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
     });
@@ -45,7 +57,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 return Promise.resolve({ data: [buildSearchResult()] });
             });
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             expect(
                 screen.getByRole('heading', {
@@ -73,7 +85,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 return Promise.resolve({ data: [buildSearchResult()] });
             });
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
         });
@@ -83,7 +95,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 return Promise.resolve({ data: [] });
             });
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             await waitFor(() => {
                 expect(
@@ -109,7 +121,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 },
             };
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
@@ -131,6 +143,7 @@ describe('<DocumentSearchResultsPage />', () => {
             ).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
         });
+
         it('displays a error messages when the call to document manifest return 400', async () => {
             mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
 
@@ -141,7 +154,7 @@ describe('<DocumentSearchResultsPage />', () => {
                 },
             };
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
@@ -164,13 +177,67 @@ describe('<DocumentSearchResultsPage />', () => {
         });
     });
 
+    describe('Accessibility', () => {
+        it('pass accessibility checks at loading screen', async () => {
+            mockedAxios.get.mockReturnValueOnce(
+                new Promise((resolve) => setTimeout(resolve, 100000)),
+            );
+            renderPage(history);
+
+            expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when displaying search result', async () => {
+            mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
+
+            renderPage(history);
+
+            expect(await screen.findByText('List of documents available')).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when error boxes are showing up', async () => {
+            mockedAxios.get.mockResolvedValue({ data: [buildSearchResult()] });
+            const errorResponse = {
+                response: {
+                    status: 400,
+                    data: { message: 'An error occurred', err_code: 'SP_1001' },
+                },
+            };
+            renderPage(history);
+
+            const downloadButton = await screen.findByRole('button', {
+                name: 'Download All Documents',
+            });
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+            act(() => {
+                userEvent.click(downloadButton);
+            });
+
+            expect(
+                await screen.findByText('Sorry, the service is currently unavailable.'),
+            ).toBeInTheDocument();
+            expect(
+                await screen.findByText('An error has occurred while preparing your download'),
+            ).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+    });
+
     describe('Navigation', () => {
         it('navigates to Start page when user clicks on start again button', async () => {
             mockedAxios.get.mockImplementation(() =>
                 Promise.resolve({ data: [buildSearchResult()] }),
             );
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             await waitFor(() => {
                 expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
@@ -193,7 +260,7 @@ describe('<DocumentSearchResultsPage />', () => {
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
             act(() => {
-                render(<DocumentSearchResultsPage />);
+                renderPage(history);
             });
 
             await waitFor(() => {
@@ -215,11 +282,19 @@ describe('<DocumentSearchResultsPage />', () => {
             };
             mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
 
-            render(<DocumentSearchResultsPage />);
+            renderPage(history);
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });
         });
     });
+
+    const renderPage = (history: History) => {
+        return render(
+            <ReactRouter.Router navigator={history} location={history.location}>
+                <DocumentSearchResultsPage />
+            </ReactRouter.Router>,
+        );
+    };
 });

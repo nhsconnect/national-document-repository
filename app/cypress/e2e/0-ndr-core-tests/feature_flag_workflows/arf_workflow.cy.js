@@ -1,7 +1,10 @@
 import { Roles, roleName } from '../../../support/roles';
 
 const baseUrl = Cypress.config('baseUrl');
-const searchPatientUrl = '/search/patient';
+
+const patientSearchUrl = '/patient/search';
+const arfUploadUrl = '/patient/arf/upload';
+const unauthorisedUrl = '/unauthorised';
 
 const testPatient = '9000000009';
 const patient = {
@@ -21,7 +24,7 @@ const navigateToUploadPage = () => {
         body: patient,
     }).as('search');
 
-    cy.visit(searchPatientUrl);
+    cy.visit(patientSearchUrl);
     cy.get('#nhs-number-input').click();
     cy.get('#nhs-number-input').type(testPatient);
 
@@ -43,7 +46,7 @@ describe('Feature flags - ARF Workflow', () => {
                     cy.login(role);
                     navigateToUploadPage();
 
-                    cy.url().should('eq', baseUrl + '/patient/upload');
+                    cy.url().should('eq', baseUrl + arfUploadUrl);
                     cy.get('h1').should('not.have.text', 'Unauthorised access');
                 },
             );
@@ -59,7 +62,7 @@ describe('Feature flags - ARF Workflow', () => {
                     cy.login(role, true, featureFlags);
                     navigateToUploadPage();
 
-                    cy.url().should('eq', baseUrl + '/unauthorised');
+                    cy.url().should('eq', baseUrl + unauthorisedUrl);
                     cy.get('h1').should('have.text', 'Unauthorised access');
                 },
             );
@@ -76,7 +79,7 @@ describe('Feature flags - ARF Workflow', () => {
                     cy.login(role, true, featureFlags);
                     navigateToUploadPage();
 
-                    cy.url().should('eq', baseUrl + '/unauthorised');
+                    cy.url().should('eq', baseUrl + unauthorisedUrl);
                     cy.get('h1').should('have.text', 'Unauthorised access');
                 },
             );
@@ -93,7 +96,7 @@ describe('Feature flags - ARF Workflow', () => {
                     cy.login(role, true, featureFlags);
                     navigateToUploadPage();
 
-                    cy.url().should('eq', baseUrl + '/unauthorised');
+                    cy.url().should('eq', baseUrl + unauthorisedUrl);
                     cy.get('h1').should('have.text', 'Unauthorised access');
                 },
             );

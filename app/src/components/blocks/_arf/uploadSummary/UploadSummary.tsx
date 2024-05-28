@@ -7,8 +7,8 @@ import {
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 export interface Props {
     documents: Array<UploadDocument>;

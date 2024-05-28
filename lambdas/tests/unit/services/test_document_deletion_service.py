@@ -66,7 +66,7 @@ def test_handle_delete_for_all_doc_type(
     expected = TEST_DOC_STORE_REFERENCES + TEST_LG_DOC_STORE_REFERENCES
 
     actual = mock_deletion_service.handle_delete(
-        TEST_NHS_NUMBER, SupportedDocumentTypes.ALL
+        TEST_NHS_NUMBER, [SupportedDocumentTypes.ARF, SupportedDocumentTypes.LG]
     )
 
     assert expected == actual
@@ -86,7 +86,9 @@ def test_handle_delete_all_doc_type_when_only_lg_records_available(
     nhs_number = TEST_NHS_NUMBER_WITH_ONLY_LG_RECORD
 
     expected = TEST_LG_DOC_STORE_REFERENCES
-    actual = mock_deletion_service.handle_delete(nhs_number, SupportedDocumentTypes.ALL)
+    actual = mock_deletion_service.handle_delete(
+        nhs_number, [SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF]
+    )
 
     assert expected == actual
 
@@ -107,7 +109,7 @@ def test_handle_delete_all_doc_type_when_only_lg_records_available(
 def test_handle_delete_for_one_doc_type(
     doc_type, expected, mock_delete_specific_doc_type, mock_deletion_service
 ):
-    actual = mock_deletion_service.handle_delete(TEST_NHS_NUMBER, doc_type)
+    actual = mock_deletion_service.handle_delete(TEST_NHS_NUMBER, [doc_type])
 
     assert actual == expected
 
@@ -120,7 +122,8 @@ def test_handle_delete_when_no_record_for_patient_return_empty_list(
 ):
     expected = []
     actual = mock_deletion_service.handle_delete(
-        TEST_NHS_NUMBER_WITH_NO_RECORD, SupportedDocumentTypes.ALL
+        TEST_NHS_NUMBER_WITH_NO_RECORD,
+        [SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF],
     )
 
     assert actual == expected

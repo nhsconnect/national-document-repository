@@ -5,10 +5,10 @@ from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
 from services.update_upload_state_service import UpdateUploadStateService
 from tests.unit.helpers.data.update_upload_state import (
-    MOCK_ALL_DOCUMENTS_REQUEST,
     MOCK_ARF_DOCUMENTS_REQUEST,
     MOCK_DOCUMENT_REFERENCE,
     MOCK_EMPTY_LIST,
+    MOCK_INVALID_TYPE_DOCUMENTS_REQUEST,
     MOCK_LG_DOCUMENTS_REQUEST,
     MOCK_NO_DOCTYPE_REQUEST,
     MOCK_NO_FIELDS_REQUEST,
@@ -112,7 +112,7 @@ def test_handle_update_state_when_doctype_ALL_and_raises_exception(
     mock_format_update,
 ):
     with pytest.raises(UpdateUploadStateException):
-        patched_service.handle_update_state(MOCK_ALL_DOCUMENTS_REQUEST)
+        patched_service.handle_update_state(MOCK_INVALID_TYPE_DOCUMENTS_REQUEST)
 
     mock_update_document.assert_not_called()
     mock_format_update.assert_not_called()
@@ -140,7 +140,7 @@ def test_format_update_throws_error(patched_service):
 
 
 def test_update_document_success(patched_service):
-    patched_service.update_document("111222", SupportedDocumentTypes.LG.value, True)
+    patched_service.update_document("111222", SupportedDocumentTypes.LG, True)
     patched_service.dynamo_service.update_item.assert_called_once()
 
 
@@ -149,4 +149,4 @@ def test_update_document_when_dynamo_throws_error(patched_service):
         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
     )
     with pytest.raises(UpdateUploadStateException):
-        patched_service.update_document("111222", SupportedDocumentTypes.LG.value, True)
+        patched_service.update_document("111222", SupportedDocumentTypes.LG, True)

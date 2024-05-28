@@ -5,7 +5,7 @@ import {
     buildPatientDetails,
 } from '../../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
-import LgRecordStage, { Props } from './LloydGeorgeRecordStage';
+import LgRecordStage, { Props } from './LloydGeorgeViewRecordStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
@@ -17,6 +17,8 @@ import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { LinkProps } from 'react-router-dom';
+import { routeChildren } from '../../../../types/generic/routes';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockPdf = buildLgSearchResult();
 const mockPatientDetails = buildPatientDetails();
@@ -41,7 +43,7 @@ jest.mock('react-router-dom', () => ({
     useNavigate: () => mockNavigate,
 }));
 
-describe('LloydGeorgeRecordStage', () => {
+describe('LloydGeorgeViewRecordStage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatientDetails);
@@ -128,6 +130,7 @@ describe('LloydGeorgeRecordStage', () => {
             expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
         });
     });
+
     describe('User is GP admin and non BSOL', () => {
         const renderComponentForNonBSOLGPAdmin = () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
@@ -165,17 +168,13 @@ describe('LloydGeorgeRecordStage', () => {
 
             expect(screen.getByText('Before downloading')).toBeInTheDocument();
             expect(screen.getByText('Available records')).toBeInTheDocument();
-            expect(
-                screen.getByRole('button', { name: 'Download and remove files' }),
-            ).toBeInTheDocument();
+            expect(screen.getByTestId('download-and-remove-record-btn')).toBeInTheDocument();
         });
 
         it('clicking the side menu download button should show confirmation message, checkbox, red download button and cancel button', async () => {
             renderComponentForNonBSOLGPAdmin();
 
-            const downloadButton = screen.getByRole('button', {
-                name: 'Download and remove files',
-            });
+            const downloadButton = screen.getByTestId('download-and-remove-record-btn');
 
             act(() => {
                 userEvent.click(downloadButton);
@@ -254,7 +253,9 @@ describe('LloydGeorgeRecordStage', () => {
             clickRedDownloadButton();
 
             await waitFor(() => {
-                expect(mockSetStage).toBeCalledWith(LG_RECORD_STAGE.DOWNLOAD_ALL);
+                expect(mockNavigate).toBeCalledWith(
+                    routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS,
+                );
             });
         });
 
@@ -290,6 +291,40 @@ describe('LloydGeorgeRecordStage', () => {
                 expect(
                     screen.queryByText('Are you sure you want to download and remove this record?'),
                 ).not.toBeInTheDocument();
+            });
+        });
+
+        describe('Accessibility (non BSOL)', () => {
+            it('pass accessibility checks at page entry point', async () => {
+                renderComponentForNonBSOLGPAdmin();
+
+                const results = await runAxeTest(document.body);
+                expect(results).toHaveNoViolations();
+            });
+
+            it('pass accessibility checks when Download & Remove confirmation message is showing up', async () => {
+                renderComponentForNonBSOLGPAdmin();
+                await showConfirmationMessage();
+
+                const results = await runAxeTest(document.body);
+                expect(results).toHaveNoViolations();
+            });
+
+            it('pass accessibility checks when error box is showing up', async () => {
+                renderComponentForNonBSOLGPAdmin();
+                await showConfirmationMessage();
+                const confirmButton = await screen.findByRole('button', {
+                    name: 'Yes, download and remove',
+                });
+                act(() => {
+                    userEvent.click(confirmButton);
+                });
+                await screen.findByText(
+                    'You must confirm if you want to download and remove this record',
+                );
+
+                const results = await runAxeTest(document.body);
+                expect(results).toHaveNoViolations();
             });
         });
     });
@@ -328,6 +363,42 @@ describe('LloydGeorgeRecordStage', () => {
         expect(
             screen.queryByRole('button', { name: 'Download and remove files' }),
         ).not.toBeInTheDocument();
+    });
+
+    describe('Accessibility (in BSOL)', () => {
+        it('pass accessibility checks when no LG record are displayed', async () => {
+            renderComponent({
+                downloadStage: DOWNLOAD_STAGE.NO_RECORDS,
+            });
+
+            expect(await screen.findByText(/No documents are available/)).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks when displaying LG record', async () => {
+            renderComponent();
+
+            expect(await screen.findByTitle('Embedded PDF')).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
+        it('pass accessibility checks in full screen mode', async () => {
+            renderComponent();
+            const fullScreenButton = await screen.findByRole('button', {
+                name: 'View in full screen',
+            });
+            act(() => {
+                userEvent.click(fullScreenButton);
+            });
+            expect(screen.getByText('Exit full screen')).toBeInTheDocument();
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
     });
 });
 const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {

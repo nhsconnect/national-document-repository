@@ -3,7 +3,12 @@ import { Roles, roleName } from '../../../support/roles';
 describe('GP Workflow: Patient search and verify', () => {
     // env vars
     const baseUrl = Cypress.config('baseUrl');
-    const searchPatientUrl = '/search/patient';
+
+    const patientSearchUrl = '/patient/search';
+    const patientVerifyUrl = '/patient/verify';
+    const lloydGeorgeViewUrl = '/patient/lloyd-george-record';
+    const arfUploadUrl = '/patient/arf/upload';
+
     const gpRoles = [Roles.GP_ADMIN, Roles.GP_CLINICAL];
 
     const noPatientError = 400;
@@ -33,7 +38,7 @@ describe('GP Workflow: Patient search and verify', () => {
             }).as('featureFlags');
 
             cy.login(role);
-            cy.visit(searchPatientUrl);
+            cy.visit(patientSearchUrl);
         });
 
         afterEach(() => {
@@ -58,7 +63,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.title().should('eq', 'Verify patient details - Digital Lloyd George records');
 
                 cy.url().should('include', 'verify');
-                cy.url().should('eq', baseUrl + '/search/patient/verify');
+                cy.url().should('eq', baseUrl + patientVerifyUrl);
                 cy.get('#gp-message').should('be.visible');
                 cy.get('#gp-message').should(
                     'have.text',
@@ -67,7 +72,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#verify-submit').click();
 
                 cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + '/patient/upload');
+                cy.url().should('eq', baseUrl + arfUploadUrl);
             },
         );
 
@@ -116,7 +121,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#verify-submit').click();
 
                 cy.url().should('include', 'upload');
-                cy.url().should('eq', baseUrl + '/patient/upload');
+                cy.url().should('eq', baseUrl + arfUploadUrl);
             },
         );
 
@@ -141,7 +146,7 @@ describe('GP Workflow: Patient search and verify', () => {
                 cy.get('#verify-submit').click();
 
                 cy.url().should('include', 'lloyd-george-record');
-                cy.url().should('eq', baseUrl + '/patient/view/lloyd-george-record');
+                cy.url().should('eq', baseUrl + lloydGeorgeViewUrl);
                 cy.title().should('eq', 'Available records - Digital Lloyd George records');
             },
         );

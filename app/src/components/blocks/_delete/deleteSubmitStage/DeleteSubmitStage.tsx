@@ -1,36 +1,38 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { FieldValues, useForm } from 'react-hook-form';
 import { BackLink, Button, Fieldset, Radios } from 'nhsuk-react-components';
-import { getFormattedDate } from '../../../helpers/utils/formatDate';
-import DeletionConfirmationStage from '../deletionConfirmationStage/DeletionConfirmationStage';
-import deleteAllDocuments, { DeleteResponse } from '../../../helpers/requests/deleteAllDocuments';
-import useBaseAPIHeaders from '../../../helpers/hooks/useBaseAPIHeaders';
-import { DOCUMENT_TYPE } from '../../../types/pages/UploadDocumentsPage/types';
-import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
-import SpinnerButton from '../../generic/spinnerButton/SpinnerButton';
-import ServiceError from '../../layout/serviceErrorBox/ServiceErrorBox';
-import { SUBMISSION_STATE } from '../../../types/pages/documentSearchResultsPage/types';
-import { formatNhsNumber } from '../../../helpers/utils/formatNhsNumber';
+import deleteAllDocuments, {
+    DeleteResponse,
+} from '../../../../helpers/requests/deleteAllDocuments';
+import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
+import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
+import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
+import SpinnerButton from '../../../generic/spinnerButton/SpinnerButton';
+import ServiceError from '../../../layout/serviceErrorBox/ServiceErrorBox';
+import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import { AxiosError } from 'axios';
-import { routes } from '../../../types/generic/routes';
-import { useNavigate } from 'react-router-dom';
-import useRole from '../../../helpers/hooks/useRole';
-import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
-import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
-import useBaseAPIUrl from '../../../helpers/hooks/useBaseAPIUrl';
-import usePatient from '../../../helpers/hooks/usePatient';
-import { errorToParams } from '../../../helpers/utils/errorToParams';
-import { isMock } from '../../../helpers/utils/isLocal';
-import useConfig from '../../../helpers/hooks/useConfig';
-import useTitle from '../../../helpers/hooks/useTitle';
-import ErrorBox from '../../layout/errorBox/ErrorBox';
+import { routeChildren, routes } from '../../../../types/generic/routes';
+import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
+import useRole from '../../../../helpers/hooks/useRole';
+import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
+import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
+import usePatient from '../../../../helpers/hooks/usePatient';
+import { errorToParams } from '../../../../helpers/utils/errorToParams';
+import { isMock } from '../../../../helpers/utils/isLocal';
+import useConfig from '../../../../helpers/hooks/useConfig';
+import useTitle from '../../../../helpers/hooks/useTitle';
+import ErrorBox from '../../../layout/errorBox/ErrorBox';
+import WarningText from '../../../generic/warningText/WarningText';
+import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
+import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
+import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 
 export type Props = {
     docType: DOCUMENT_TYPE;
     numberOfFiles: number;
-    setStage?: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
-    setIsDeletingDocuments?: Dispatch<SetStateAction<boolean>>;
+    setIsDeletingDocuments?: Dispatch<boolean>;
     setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
+    recordType: string;
 };
 
 enum DELETE_DOCUMENTS_OPTION {
@@ -38,12 +40,12 @@ enum DELETE_DOCUMENTS_OPTION {
     NO = 'no',
 }
 
-function DeleteDocumentsStage({
+function DeleteSubmitStage({
     docType,
     numberOfFiles,
-    setStage,
     setIsDeletingDocuments,
     setDownloadStage,
+    recordType,
 }: Props) {
     const patientDetails = usePatient();
     const role = useRole();
@@ -55,31 +57,19 @@ function DeleteDocumentsStage({
     const navigate = useNavigate();
     const config = useConfig();
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
-    const formattedNhsNumber = formatNhsNumber(nhsNumber);
     const [showNoOptionSelectedMessage, setShowNoOptionSelectedMessage] = useState<boolean>(false);
     const noOptionSelectedError =
         'Select whether you want to permanently delete these patient files';
-    const dob: string = patientDetails?.birthDate
-        ? getFormattedDate(new Date(patientDetails.birthDate))
-        : '';
 
-    const patientInfo = (
-        <>
-            <p style={{ marginBottom: 5, fontWeight: '700' }}>
-                {patientDetails?.givenName?.map((name: String) => `${name} `)}
-                {patientDetails?.familyName}
-            </p>
-            <p style={{ fontSize: '1rem', marginBottom: 5 }}>NHS number: {formattedNhsNumber}</p>
-            <p style={{ fontSize: '1rem' }}>Date of birth: {dob}</p>
-        </>
-    );
+    const userIsGP = role === REPOSITORY_ROLE.GP_ADMIN || role === REPOSITORY_ROLE.GP_CLINICAL;
 
     const handleYesOption = async () => {
-        setDeletionStage(SUBMISSION_STATE.PENDING);
         const onSuccess = () => {
             setDeletionStage(SUBMISSION_STATE.SUCCEEDED);
-            if (setDownloadStage) {
-                setDownloadStage(DOWNLOAD_STAGE.FAILED);
+            if (userIsGP) {
+                navigate(routeChildren.LLOYD_GEORGE_DELETE_COMPLETE);
+            } else {
+                navigate(routeChildren.ARF_DELETE_COMPLETE);
             }
         };
         try {
@@ -109,10 +99,10 @@ function DeleteDocumentsStage({
     };
 
     const handleNoOption = () => {
-        if (role === REPOSITORY_ROLE.GP_ADMIN && setStage) {
-            setStage(LG_RECORD_STAGE.RECORD);
-        } else if (role === REPOSITORY_ROLE.PCSE && setIsDeletingDocuments) {
-            setIsDeletingDocuments(false);
+        if (role === REPOSITORY_ROLE.GP_ADMIN) {
+            navigate(routes.LLOYD_GEORGE);
+        } else if (role === REPOSITORY_ROLE.PCSE) {
+            navigate(routes.ARF_OVERVIEW);
         }
     };
 
@@ -130,10 +120,10 @@ function DeleteDocumentsStage({
     };
     useTitle({ pageTitle: 'Delete files' });
 
-    return deletionStage !== SUBMISSION_STATE.SUCCEEDED ? (
+    const PageIndexView = () => (
         <>
             <BackLink onClick={handleNoOption} href="#">
-                Back
+                Go back
             </BackLink>
             {deletionStage === SUBMISSION_STATE.FAILED && <ServiceError />}
             {showNoOptionSelectedMessage && (
@@ -148,9 +138,20 @@ function DeleteDocumentsStage({
             <form onSubmit={handleSubmit(submit)}>
                 <Fieldset id="radio-selection">
                     <Fieldset.Legend isPageHeading>
-                        Are you sure you want to permanently delete files for:
+                        You are removing the {recordType} record of:
                     </Fieldset.Legend>
-                    <div>{patientInfo}</div>
+                    <PatientSimpleSummary separator />
+
+                    <p>
+                        Once you remove these files, you can not access this record using the
+                        service. You may want to keep a copy of the paper record safe.
+                    </p>
+                    <h2 test-dataid="delete-files-warning-message">
+                        Are you sure you want to permanently remove this record?
+                    </h2>
+                    <div>
+                        <WarningText text="This can not be undone" />
+                    </div>
                     <Radios
                         id="delete-docs"
                         error={showNoOptionSelectedMessage && noOptionSelectedError}
@@ -184,12 +185,34 @@ function DeleteDocumentsStage({
                 )}
             </form>
         </>
-    ) : (
-        <DeletionConfirmationStage
-            numberOfFiles={numberOfFiles}
-            setStage={setStage}
-            setDownloadStage={setDownloadStage}
-        />
+    );
+
+    return (
+        <>
+            <Routes>
+                <Route index element={<PageIndexView />} />
+                <Route
+                    path={getLastURLPath(routeChildren.ARF_DELETE_CONFIRMATION)}
+                    element={
+                        <DeleteSubmitStage
+                            docType={docType}
+                            numberOfFiles={numberOfFiles}
+                            recordType={recordType}
+                        />
+                    }
+                ></Route>
+                <Route
+                    path={getLastURLPath(routeChildren.ARF_DELETE_COMPLETE)}
+                    element={
+                        <DeleteResultStage
+                            numberOfFiles={numberOfFiles}
+                            setDownloadStage={setDownloadStage}
+                        />
+                    }
+                ></Route>
+            </Routes>
+            <Outlet />
+        </>
     );
 }
-export default DeleteDocumentsStage;
+export default DeleteSubmitStage;

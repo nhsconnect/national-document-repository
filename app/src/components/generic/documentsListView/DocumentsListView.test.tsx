@@ -1,13 +1,11 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import DocumentsListView from './DocumentsListView';
-import { buildDocument, buildTextFile } from '../../../helpers/test/testBuilders';
-import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../../types/pages/UploadDocumentsPage/types';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
 
 const mockDocuments = [
-    buildDocument(buildTextFile('test1'), documentUploadStates.SUCCEEDED),
-    buildDocument(buildTextFile('test2'), documentUploadStates.SUCCEEDED),
+    { fileName: 'test1.txt', id: '1', ref: 'testref1' },
+    { fileName: 'test2.txt', id: '2', ref: 'testref2' },
 ];
 
 describe('DocumentsListView', () => {

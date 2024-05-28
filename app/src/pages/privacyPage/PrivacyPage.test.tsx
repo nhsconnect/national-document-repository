@@ -6,6 +6,8 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
 import { routes } from '../../types/generic/routes';
+import ServerErrorPage from '../serverErrorPage/ServerErrorPage';
+import { runAxeTest } from '../../helpers/test/axeTestHelper';
 const mockedUseNavigate = jest.fn();
 jest.mock('../../helpers/hooks/useRole');
 const mockedUseRole = useRole as jest.Mock;
@@ -92,6 +94,15 @@ describe('PrivacyPage', () => {
             expect(screen.queryByTestId('feedback-link')).not.toHaveAttribute('href');
             expect(screen.getByTestId('feedback-link')).toHaveAttribute('to', '#');
         });
+
+        it('pass accessibility checks', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            render(<PrivacyPage />);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+
         describe('Navigation', () => {
             it('navigates to feedback form when link is clicked and user is logged in', async () => {
                 mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);

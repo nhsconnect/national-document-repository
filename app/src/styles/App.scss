@@ -13,6 +13,141 @@ $govuk-compatibility-govukelements: true;
 *   Docs: https://getbem.com/
 **/
 
+// Mixin
+$smax: 50;
+$soffset: 6;
+$sunit: 'px';
+@mixin spacing-mixin($className, $styleName) {
+    $i: 0;
+    $x: 0;
+    @while $i <= $smax {
+        $x: $x + 1;
+        #{$className + $x} {
+            #{$styleName}: #{$i + $sunit};
+        }
+        $i: $i + $soffset;
+    }
+}
+
+@mixin x-axis-mixin($className, $styleName) {
+    $i: 0;
+    $x: 0;
+    @while $i <= $smax {
+        $x: $x + 1;
+        #{$className + $x} {
+            #{$styleName + '-left'}: #{$i + $sunit};
+            #{$styleName + '-right'}: #{$i + $sunit};
+        }
+        $i: $i + $soffset;
+    }
+}
+
+@mixin y-axis-mixin($className, $styleName) {
+    $i: 0;
+    $x: 0;
+    @while $i <= $smax {
+        $x: $x + 1;
+        #{$className + $x} {
+            #{$styleName + '-top'}: #{$i + $sunit};
+            #{$styleName + '-bottom'}: #{$i + $sunit};
+        }
+        $i: $i + $soffset;
+    }
+}
+
+$hmax: 100;
+$hoffset: 10;
+$hunit: '%';
+@mixin size-mixin($className, $styleName) {
+    $i: 0;
+    $x: 0;
+    @while $i <= $hmax {
+        $x: $x + 1;
+        #{$className + $x} {
+            #{$styleName}: #{$i + $hunit};
+        }
+        $i: $i + $hoffset;
+    }
+}
+
+@include spacing-mixin('.mt-', 'margin-top');
+@include spacing-mixin('.mr-', 'margin-right');
+@include spacing-mixin('.mb-', 'margin-bottom');
+@include spacing-mixin('.ml-', 'margin-left');
+@include spacing-mixin('.pt-', 'padding-top');
+@include spacing-mixin('.pr-', 'padding-right');
+@include spacing-mixin('.pb-', 'padding-bottom');
+@include spacing-mixin('.pl-', 'padding-left');
+@include spacing-mixin('.gap-', 'gap');
+
+@include x-axis-mixin('.px-', 'padding');
+@include x-axis-mixin('.mx-', 'margin');
+
+@include y-axis-mixin('.py-', 'padding');
+@include y-axis-mixin('.my-', 'margin');
+
+@include size-mixin('.h-', 'height');
+@include size-mixin('.w-', 'width');
+
+.mx-auto {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.align-center {
+    height: 100%;
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: center;
+}
+.align-left {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: center;
+}
+.align-right {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: flex-end;
+    align-items: center;
+}
+.align-between {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+}
+.align-evenly {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: space-evenly;
+    align-items: center;
+}
+.align-bottom {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: flex-end;
+}
+
+.align-top {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.align-baseline {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: baseline;
+}
+
+// Spinner
+
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -87,30 +222,6 @@ $govuk-compatibility-govukelements: true;
     text-decoration: none;
 }
 
-.link-button {
-    background: none;
-    border: none;
-    font: inherit;
-    outline: inherit;
-    -webkit-font-smoothing: antialiased;
-    padding: 0;
-    border-spacing: 0;
-    box-sizing: inherit;
-    text-align: left;
-    color: $color_nhsuk-blue;
-    text-decoration: underline;
-    &:hover {
-        color: #7c2855;
-        text-decoration: none;
-    }
-    &:active {
-        color: #002f5c;
-    }
-    &:focus {
-        @include link-focus;
-    }
-}
-
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -120,16 +231,7 @@ $govuk-compatibility-govukelements: true;
     }
 }
 
-.clickable {
-    cursor: pointer;
-}
-
-.table-column-header {
-    font-size: 1.5rem;
-}
-
 // Lloyd George
-
 .lloydgeorge {
     &_record-stage {
         &_flex {
@@ -143,10 +245,6 @@ $govuk-compatibility-govukelements: true;
             &-row:last-child {
                 flex-basis: calc(70% - 17px);
             }
-        }
-        &_fs {
-            border-top: 'solid 1px';
-            padding-top: '48px';
         }
         &_patient-info {
             p {
@@ -358,6 +456,45 @@ $govuk-compatibility-govukelements: true;
             font-weight: 700;
             font-size: 2rem;
         }
+        &_paragraph-subheaders {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: 2.4rem;
+        }
+    }
+    &_delete-complete {
+        width: 711px;
+        &_details {
+            &-content {
+                padding: 95px 76px;
+                text-align: center;
+                background-color: $color_nhsuk-blue;
+                color: #fff;
+                font-size: 1.5rem;
+                white-space: pre-wrap;
+                &_header {
+                    font-weight: 700;
+                    font-size: 3rem;
+                    margin-bottom: 25px;
+                }
+                &_subheader {
+                    font-weight: 700;
+                    margin-top: 25px;
+                }
+                &_description {
+                    font-size: 1.5rem !important;
+                }
+            }
+        }
+        &_paragraph-headers {
+            font-weight: 700;
+            font-size: 2rem;
+        }
+        &_paragraph-subheaders {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-top: 2.4rem;
+        }
     }
     &_upload-complete {
         max-width: 711px;
@@ -436,17 +573,42 @@ $govuk-compatibility-govukelements: true;
     }
 }
 
-.document-list-view-list li {
-    font-size: 1rem;
-    list-style-type: none;
-}
-
-@-moz-document url-prefix() {
-    #pdf-viewer {
-        margin-top: 6px;
+//Feedback
+#feedback-form {
+    max-width: 800px;
+    & form > div {
+        margin: 50px 0;
     }
 }
 
+// NavLinks
+.navlinks {
+    display: initial;
+    &_wrapper {
+        display: flex;
+        flex-flow: row nowrap;
+    }
+    .nhsuk-header__navigation-title {
+        color: $color_nhsuk-white;
+    }
+    .nhsuk-header__navigation-close {
+        display: none;
+    }
+    &_item {
+        a,
+        a:hover {
+            color: $color_nhsuk-white;
+        }
+        a:visited {
+            color: $color_nhsuk-white;
+        }
+        &--desktop {
+            margin: 0 2rem;
+        }
+    }
+}
+
+// Generic
 .pdfobject-container:focus {
     border: 2px solid #212b32;
     outline: 4px solid #ffeb3b;
@@ -480,6 +642,60 @@ $govuk-compatibility-govukelements: true;
     }
 }
 
+.document-list-view-list li {
+    font-size: 1rem;
+    list-style-type: none;
+}
+
+.link-button {
+    background: none;
+    border: none;
+    font: inherit;
+    outline: inherit;
+    -webkit-font-smoothing: antialiased;
+    padding: 0;
+    border-spacing: 0;
+    box-sizing: inherit;
+    text-align: left;
+    color: $color_nhsuk-blue;
+    text-decoration: underline;
+    &:hover {
+        color: #7c2855;
+        text-decoration: none;
+    }
+    &:active {
+        color: #002f5c;
+    }
+    &:focus {
+        @include link-focus;
+    }
+}
+
+.nhsuk-error-summary__list div {
+    margin-bottom: 24px;
+}
+
+// Helper
+
+@-moz-document url-prefix() {
+    #pdf-viewer {
+        margin-top: 6px;
+    }
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.table-column-header {
+    font-size: 1.5rem;
+}
+
+.separator {
+    border-bottom: solid 1px $color_nhsuk-grey-3;
+    margin-bottom: 48px;
+}
+
 .govuk-phase-banner {
     background: #fff;
     border: none;
@@ -498,41 +714,4 @@ $govuk-compatibility-govukelements: true;
 
 .nhs-warning-color {
     color: $color_nhsuk-red;
-}
-
-#feedback-form {
-    max-width: 800px;
-    & form > div {
-        margin: 50px 0;
-    }
-}
-
-.navlinks {
-    display: initial;
-    &_wrapper {
-        display: flex;
-        flex-flow: row nowrap;
-    }
-    .nhsuk-header__navigation-title {
-        color: $color_nhsuk-white;
-    }
-    .nhsuk-header__navigation-close {
-        display: none;
-    }
-    &_item {
-        a,
-        a:hover {
-            color: $color_nhsuk-white;
-        }
-        a:visited {
-            color: $color_nhsuk-white;
-        }
-        &--desktop {
-            margin: 0 2rem;
-        }
-    }
-}
-
-.nhsuk-error-summary__list div {
-    margin-bottom: 24px;
 }

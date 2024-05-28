@@ -1,5 +1,5 @@
 import { REPOSITORY_ROLE } from '../generic/authRole';
-import { routes } from '../generic/routes';
+import { routeChildren, routes } from '../generic/routes';
 import { LG_RECORD_STAGE } from './lloydGeorgeStages';
 
 export enum RECORD_ACTION {
@@ -7,11 +7,13 @@ export enum RECORD_ACTION {
     DOWNLOAD = 1,
 }
 
+type ActionRoute = routeChildren | routes;
+
 export type LGRecordActionLink = {
     label: string;
     key: string;
     stage?: LG_RECORD_STAGE;
-    href?: routes;
+    href?: ActionRoute;
     onClick?: () => void;
     type: RECORD_ACTION;
     unauthorised?: Array<REPOSITORY_ROLE>;
@@ -23,16 +25,16 @@ export const lloydGeorgeRecordLinksInBSOL: Array<LGRecordActionLink> = [
         label: 'Remove files',
         key: 'delete-all-files-link',
         type: RECORD_ACTION.UPDATE,
-        stage: LG_RECORD_STAGE.DELETE_ALL,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        href: routeChildren.LLOYD_GEORGE_DELETE,
         showIfRecordInStorage: true,
     },
     {
         label: 'Download files',
         key: 'download-all-files-link',
         type: RECORD_ACTION.DOWNLOAD,
-        stage: LG_RECORD_STAGE.DOWNLOAD_ALL,
         unauthorised: [REPOSITORY_ROLE.GP_CLINICAL],
+        href: routeChildren.LLOYD_GEORGE_DOWNLOAD,
         showIfRecordInStorage: true,
     },
 ];

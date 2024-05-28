@@ -8,10 +8,6 @@ from models.document_reference import UploadDocumentReferences
 from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
-from utils.decorators.validate_document_type import (
-    doc_type_is_valid,
-    extract_document_type_as_enum,
-)
 from utils.lambda_exceptions import UpdateUploadStateException
 
 logger = LoggingService(__name__)
@@ -29,15 +25,11 @@ class UpdateUploadStateService:
             upload_document_references = UploadDocumentReferences.model_validate(
                 event_body
             )
-            for file in upload_document_references.files:
-                if not doc_type_is_valid(file.doc_type):
-                    raise UpdateUploadStateException(
-                        400, LambdaError.UpdateUploadStateDocType
-                    )
 
+            for file in upload_document_references.files:
                 self.update_document(
                     file.reference,
-                    extract_document_type_as_enum(file.doc_type),
+                    file.doc_type,
                     file.fields[str(Fields.UPLOADING.value)],
                 )
         except (KeyError, TypeError) as e:
@@ -57,7 +49,7 @@ class UpdateUploadStateService:
         self, doc_ref: str, doc_type: SupportedDocumentTypes, uploaded: bool
     ):
         updated_fields = self.format_update({Fields.UPLOADING.value: uploaded})
-        table = SupportedDocumentTypes.get_dynamodb_table_name(doc_type)
+        table = doc_type.get_dynamodb_table_name()
         try:
             self.dynamo_service.update_item(
                 table_name=table,

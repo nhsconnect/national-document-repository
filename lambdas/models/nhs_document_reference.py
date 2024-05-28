@@ -1,22 +1,26 @@
 from datetime import datetime, timezone
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from pydantic import BaseModel
+from enums.supported_document_types import SupportedDocumentTypes
+from pydantic import BaseModel, ConfigDict
+from utils.utilities import get_file_key_from_s3_url
 
 DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class UploadRequestDocument(BaseModel):
+    model_config = ConfigDict(use_enum_values=True)
+
     fileName: str
     contentType: str
-    docType: str
+    docType: SupportedDocumentTypes
 
 
 class NHSDocumentReference:
     def __init__(
         self,
         reference_id: str,
-        nhs_number,
+        nhs_number: str,
         file_name: str,
         s3_bucket_name: str,
         content_type: str = "application/pdf",
@@ -49,10 +53,11 @@ class NHSDocumentReference:
         if self.sub_folder != "":
             file_location += f"/{self.sub_folder}"
 
-        if self.doc_type != "":
+        if self.sub_folder and self.doc_type != "":
             file_location += f"/{self.doc_type}"
 
-        file_location += f"/{self.s3_file_key}"
+        file_location += f"/{self.nhs_number}/{self.id}"
+
         return file_location
 
     def set_deleted(self) -> None:
@@ -86,7 +91,7 @@ class NHSDocumentReference:
 
     @property
     def s3_file_key(self):
-        return f"{self.nhs_number}/{self.id}"
+        return get_file_key_from_s3_url(self.file_location)
 
     def __eq__(self, other):
         if isinstance(other, NHSDocumentReference):

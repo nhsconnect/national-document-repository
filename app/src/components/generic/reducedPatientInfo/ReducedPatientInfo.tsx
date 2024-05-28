@@ -13,7 +13,7 @@ const ReducedPatientInfo = ({ className }: Props) => {
 
     return (
         <>
-            <div className={className}>
+            <div className={className} data-testid="reduced-patient-info">
                 {patientDetails?.givenName?.map((name) => `${name} `)}
                 {patientDetails?.familyName}
             </div>

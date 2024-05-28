@@ -27,7 +27,9 @@ class SearchPatientDetailsService:
             pds_api_service = get_pds_service()(self.ssm_service)
             patient_details = pds_api_service.fetch_patient_details(nhs_number)
 
-            self.check_if_user_authorise(gp_ods=patient_details.general_practice_ods)
+            self.check_if_user_authorise(
+                gp_ods_for_patient=patient_details.general_practice_ods
+            )
 
             logger.audit_splunk_info(
                 "Searched for patient details", {"Result": "Patient found"}
@@ -62,23 +64,23 @@ class SearchPatientDetailsService:
             )
             raise SearchPatientException(400, LambdaError.SearchPatientNoParse)
 
-    def check_if_user_authorise(self, gp_ods):
+    def check_if_user_authorise(self, gp_ods_for_patient):
+        patient_is_active = bool(gp_ods_for_patient)
         match self.user_role:
             case RepositoryRole.GP_ADMIN.value:
-                # If the GP Admin ods code is null then the patient is not registered.
-                # The patient must be registered and registered to the users ODS practise
-                if gp_ods == "" or gp_ods != self.user_ods_code:
+                # Not raising error here if gp_ods is null / empty
+                if patient_is_active and gp_ods_for_patient != self.user_ods_code:
                     raise UserNotAuthorisedException
 
             case RepositoryRole.GP_CLINICAL.value:
                 # If the GP Clinical ods code is null then the patient is not registered.
                 # The patient must be registered and registered to the users ODS practise
-                if gp_ods == "" or gp_ods != self.user_ods_code:
+                if not patient_is_active or gp_ods_for_patient != self.user_ods_code:
                     raise UserNotAuthorisedException
 
             case RepositoryRole.PCSE.value:
                 # If there is a GP ODS field then the patient is registered, PCSE users should be denied access
-                if gp_ods != "":
+                if patient_is_active:
                     raise UserNotAuthorisedException
 
             case _:

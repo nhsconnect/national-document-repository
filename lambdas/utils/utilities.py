@@ -1,6 +1,7 @@
 import os
 import re
 import uuid
+from urllib.parse import urlparse
 
 from inflection import camelize
 from services.mock_pds_service import MockPdsApiService
@@ -49,3 +50,7 @@ def get_pds_service():
 
 def redact_id_to_last_4_chars(str_id: str) -> str:
     return str_id[-4:]
+
+
+def get_file_key_from_s3_url(s3_url: str) -> str:
+    return urlparse(s3_url).path.lstrip("/")

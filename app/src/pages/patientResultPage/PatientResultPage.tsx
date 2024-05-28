@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
-import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 import BackButton from '../../components/generic/backButton/BackButton';
 import { useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
@@ -11,6 +10,7 @@ import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
 import useTitle from '../../helpers/hooks/useTitle';
+import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 
 function PatientResultPage() {
     const role = useRole();
@@ -39,7 +39,7 @@ function PatientResultPage() {
         // PCSE Role
         else if (userIsPCSE) {
             // Make PDS and Dynamo document store search request to download documents from patient
-            navigate(routes.ARF_DOWNLOAD_DOCUMENTS);
+            navigate(routes.ARF_OVERVIEW);
         }
     };
     const showWarning = patientDetails?.superseded || patientDetails?.restricted;

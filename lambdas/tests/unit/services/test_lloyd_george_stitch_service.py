@@ -11,7 +11,7 @@ from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
-from utils.dynamo_utils import filter_expression_for_available_docs
+from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.lambda_exceptions import LGStitchServiceException
 
 
@@ -54,12 +54,10 @@ MOCK_DOWNLOADED_LLOYD_GEORGE_FILES = [
     f"{MOCK_TEMP_FOLDER}/mock_downloaded_file{i}" for i in range(1, 3 + 1)
 ]
 MOCK_STITCHED_FILE = "filename_of_stitched_lg_in_local_storage.pdf"
-MOCK_STITCHED_FILE_ON_S3 = (
-    f"Combined_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[30-12-2019].pdf"
-)
+MOCK_STITCHED_FILE_ON_S3 = f"combined_files/{MOCK_STITCHED_FILE}"
 MOCK_TOTAL_FILE_SIZE = 1024 * 256
 MOCK_PRESIGNED_URL = (
-    f"https://{MOCK_LG_BUCKET}.s3.amazonaws.com/{TEST_NHS_NUMBER}/abcd-1234-5678"
+    f"https://{MOCK_LG_BUCKET}.s3.amazonaws.com/{MOCK_STITCHED_FILE_ON_S3}"
 )
 
 
@@ -135,10 +133,10 @@ def mock_stitch_pdf(mocker):
 
 
 @pytest.fixture
-def mock_get_total_file_size(mocker):
+def mock_get_total_file_size_in_bytes(mocker):
     yield mocker.patch.object(
         LloydGeorgeStitchService,
-        "get_total_file_size",
+        "get_total_file_size_in_bytes",
         return_value=MOCK_TOTAL_FILE_SIZE,
     )
 
@@ -146,7 +144,7 @@ def mock_get_total_file_size(mocker):
 def test_stitch_lloyd_george_record_happy_path(
     mock_tempfile,
     mock_stitch_pdf,
-    mock_get_total_file_size,
+    mock_get_total_file_size_in_bytes,
     patched_stitch_service,
 ):
     expected = json.dumps(
@@ -173,7 +171,7 @@ def test_stitch_lloyd_george_record_happy_path(
 
     patched_stitch_service.upload_stitched_lg_record_and_retrieve_presign_url.assert_called_with(
         stitched_lg_record=MOCK_STITCHED_FILE,
-        filename_on_bucket=f"{TEST_NHS_NUMBER}/{MOCK_STITCHED_FILE_ON_S3}",
+        filename_on_bucket=MOCK_STITCHED_FILE_ON_S3,
     )
 
 
@@ -292,7 +290,7 @@ def test_stitch_lloyd_george_record_raise_500_error_if_failed_to_upload_stitched
 def test_get_lloyd_george_record_for_patient(
     stitch_service, mock_fetch_doc_ref_by_type
 ):
-    mock_filters = filter_expression_for_available_docs()
+    mock_filters = filter_uploaded_docs_and_recently_uploading_docs()
 
     expected = MOCK_LLOYD_GEORGE_DOCUMENT_REFS
     actual = stitch_service.get_lloyd_george_record_for_patient(TEST_NHS_NUMBER)
@@ -351,15 +349,6 @@ def test_download_lloyd_george_files_raise_error_when_failed_to_download(
         stitch_service.download_lloyd_george_files(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)
 
 
-def test_make_filename_for_stitched_file(stitch_service):
-    expected = f"Combined_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[30-12-2019].pdf"
-    actual = stitch_service.make_filename_for_stitched_file(
-        MOCK_LLOYD_GEORGE_DOCUMENT_REFS
-    )
-
-    assert actual == expected
-
-
 def test_get_most_recent_created_date(stitch_service):
     lg_record = build_lg_doc_ref_list(page_numbers=[1, 2, 3])
     lg_record[2].created = "2024-12-14T16:46:07.678657Z"
@@ -374,7 +363,9 @@ def test_get_total_file_size(mocker, stitch_service):
     mocker.patch("os.path.getsize", side_effect=[19000, 20000, 21000])
 
     expected = 60000
-    actual = stitch_service.get_total_file_size(["file1.pdf", "file2.pdf", "file3.pdf"])
+    actual = stitch_service.get_total_file_size_in_bytes(
+        ["file1.pdf", "file2.pdf", "file3.pdf"]
+    )
 
     assert actual == expected
 
@@ -383,13 +374,13 @@ def test_upload_stitched_lg_record_and_retrieve_presign_url(mock_s3, stitch_serv
     expected = MOCK_PRESIGNED_URL
     actual = stitch_service.upload_stitched_lg_record_and_retrieve_presign_url(
         stitched_lg_record=MOCK_STITCHED_FILE,
-        filename_on_bucket=f"{TEST_NHS_NUMBER}/{MOCK_STITCHED_FILE_ON_S3}",
+        filename_on_bucket=MOCK_STITCHED_FILE_ON_S3,
     )
 
     assert actual == expected
 
     mock_s3.upload_file_with_extra_args.assert_called_with(
-        file_key=f"{TEST_NHS_NUMBER}/{MOCK_STITCHED_FILE_ON_S3}",
+        file_key=MOCK_STITCHED_FILE_ON_S3,
         file_name=MOCK_STITCHED_FILE,
         s3_bucket_name=MOCK_LG_BUCKET,
         extra_args={

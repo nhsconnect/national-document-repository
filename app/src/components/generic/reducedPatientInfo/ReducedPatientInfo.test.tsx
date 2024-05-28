@@ -6,7 +6,7 @@ import ReducedPatientInfo from './ReducedPatientInfo';
 jest.mock('../../../helpers/hooks/usePatient');
 const mockedUsePatient = usePatient as jest.Mock;
 
-describe('PatientSummary', () => {
+describe('PatientDetails', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
     });

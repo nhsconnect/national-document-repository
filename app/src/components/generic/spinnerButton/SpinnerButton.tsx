@@ -5,16 +5,17 @@ export type Props = {
     id: string;
     status: string;
     disabled?: boolean;
+    dataTestId?: string;
 };
 
-const SpinnerButton = ({ id, status, disabled }: Props) => {
+const SpinnerButton = ({ id, status, disabled, dataTestId }: Props) => {
     return (
         <Button
             id={id}
+            data-testid={dataTestId}
             aria-label={status}
             className="spinner_button"
             disabled={disabled}
-            // role="SpinnerButton"
         >
             <div className="spinner_button-spinner"></div>
             <output>{status}</output>

@@ -3,6 +3,7 @@ import LloydGeorgeRetryUploadStage from './LloydGeorgeRetryUploadStage';
 import userEvent from '@testing-library/user-event';
 import { LG_UPLOAD_STAGE } from '../../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { routes } from '../../../../types/generic/routes';
+import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockSetStage = jest.fn();
 const mockUseNavigate = jest.fn();
@@ -13,7 +14,7 @@ jest.mock('react-router', () => ({
 describe('LloydGeorgeRetryUploadStage', () => {
     describe('Rendering', () => {
         it('renders component', () => {
-            render(<LloydGeorgeRetryUploadStage setStage={mockSetStage} />);
+            render(<LloydGeorgeRetryUploadStage />);
 
             const contentStrings = [
                 'The record did not upload',
@@ -38,17 +39,26 @@ describe('LloydGeorgeRetryUploadStage', () => {
         });
     });
 
+    describe('Accessibility', () => {
+        it('pass accessibility checks', async () => {
+            render(<LloydGeorgeRetryUploadStage />);
+
+            const results = await runAxeTest(document.body);
+            expect(results).toHaveNoViolations();
+        });
+    });
+
     describe('Navigation', () => {
         it('navigates to file input stage when try again is clicked', () => {
-            render(<LloydGeorgeRetryUploadStage setStage={mockSetStage} />);
+            render(<LloydGeorgeRetryUploadStage />);
 
             expect(screen.getByRole('button', { name: 'Try upload again' })).toBeInTheDocument();
             userEvent.click(screen.getByRole('button', { name: 'Try upload again' }));
-            expect(mockSetStage).toHaveBeenCalledWith(LG_UPLOAD_STAGE.SELECT);
+            expect(mockUseNavigate).toHaveBeenCalledWith(routes.LLOYD_GEORGE_UPLOAD);
         });
 
         it('navigates to patient search when search patient is clicked', () => {
-            render(<LloydGeorgeRetryUploadStage setStage={mockSetStage} />);
+            render(<LloydGeorgeRetryUploadStage />);
 
             expect(
                 screen.getByRole('button', { name: 'Search for a patient' }),

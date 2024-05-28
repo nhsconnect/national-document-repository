@@ -7,14 +7,21 @@ type Args = {
     nhsNumber: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
-    docType: DOCUMENT_TYPE;
+    docType?: DOCUMENT_TYPE;
+    docReferences?: Array<string>;
 };
 
 type GetPresignedUrl = {
     data: string;
 };
 
-const getPresignedUrlForZip = async ({ nhsNumber, baseUrl, baseHeaders, docType }: Args) => {
+const getPresignedUrlForZip = async ({
+    nhsNumber,
+    baseUrl,
+    baseHeaders,
+    docType = DOCUMENT_TYPE.ALL,
+    docReferences,
+}: Args) => {
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
 
     const { data }: GetPresignedUrl = await axios.get(gatewayUrl, {
@@ -23,8 +30,10 @@ const getPresignedUrlForZip = async ({ nhsNumber, baseUrl, baseHeaders, docType 
         },
         params: {
             patientId: nhsNumber,
-            docType,
+            docType: docType,
+            ...(!!docReferences && { docReference: docReferences }),
         },
+        paramsSerializer: { indexes: null },
     });
     return data;
 };

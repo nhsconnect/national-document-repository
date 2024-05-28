@@ -1,6 +1,7 @@
 import json
 import os
 import random
+from glob import glob
 
 from requests import Response
 from services.patient_search_service import PatientSearch
@@ -18,19 +19,15 @@ class MockPdsApiService(PatientSearch):
             if random.random() < 0.333:
                 return self.too_many_requests_response()
 
+        parent_dir_of_this_file = os.path.join(os.path.dirname(__file__), os.pardir)
+        all_mock_files = glob(
+            "services/mock_data/*.json", root_dir=parent_dir_of_this_file
+        )
+
         try:
-            with open("services/mock_data/pds_patient_9000000001_X4S4L_pcse.json") as f:
-                mock_pds_results.append(json.load(f))
-            with open("services/mock_data/pds_patient_9000000002_H81109_gp.json") as f:
-                mock_pds_results.append(json.load(f))
-            with open("services/mock_data/pds_patient_9730153817_H81109_gp.json") as f:
-                mock_pds_results.append(json.load(f))
-            with open("services/mock_data/pds_patient_9000000003_H85686_gp.json") as f:
-                mock_pds_results.append(json.load(f))
-            with open("services/mock_data/pds_patient_9000000004_M85143_gp.json") as f:
-                mock_pds_results.append(json.load(f))
-            with open("services/mock_data/pds_patient_9000000025_restricted.json") as f:
-                mock_pds_results.append(json.load(f))
+            for file in all_mock_files:
+                with open(file) as f:
+                    mock_pds_results.append(json.load(f))
 
         except FileNotFoundError:
             raise PdsErrorException("Error when requesting patient from PDS")
@@ -38,9 +35,10 @@ class MockPdsApiService(PatientSearch):
         pds_patient: dict = {}
 
         for result in mock_pds_results:
-            for k, v in result.items():
-                if v == nhs_number:
-                    pds_patient = result.copy()
+            mock_patient_nhs_number = result.get("id")
+            if mock_patient_nhs_number == nhs_number:
+                pds_patient = result
+                break
 
         response = Response()
 

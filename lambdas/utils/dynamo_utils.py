@@ -113,7 +113,7 @@ def create_expression_attribute_placeholder(value: str) -> str:
     return f"#{inflection.camelize(value, uppercase_first_letter=True)}_attr"
 
 
-def filter_expression_for_available_docs():
+def filter_uploaded_docs_and_recently_uploading_docs():
     filter_builder = DynamoQueryFilterBuilder()
     time_limit = int(datetime.now().timestamp() - (60 * 3))
 

@@ -19,6 +19,7 @@ import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import useTitle from '../../helpers/hooks/useTitle';
+import useConfig from '../../helpers/hooks/useConfig';
 
 export const incorrectFormatMessage = "Enter patient's 10 digit NHS number";
 
@@ -27,6 +28,7 @@ function PatientSearchPage() {
     const [submissionState, setSubmissionState] = useState<SEARCH_STATES>(SEARCH_STATES.IDLE);
     const [statusCode, setStatusCode] = useState<null | number>(null);
     const [inputError, setInputError] = useState<null | string>(null);
+    const { mockLocal } = useConfig();
     const { register, handleSubmit } = useForm({
         reValidateMode: 'onSubmit',
     });
@@ -64,8 +66,11 @@ function PatientSearchPage() {
             handleSuccess(patientDetails);
         } catch (e) {
             const error = e as AxiosError;
+            /* istanbul ignore if */
             if (isMock(error)) {
-                handleSuccess(buildPatientDetails({ nhsNumber }));
+                handleSuccess(
+                    buildPatientDetails({ nhsNumber, active: mockLocal.patientIsActive }),
+                );
                 return;
             }
             if (error.response?.status === 400) {
