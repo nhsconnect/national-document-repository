@@ -143,8 +143,8 @@ function DeleteSubmitStage({
                     <PatientSimpleSummary separator />
 
                     <p>
-                        Once you remove this files, you can not access this record using the
-                        service. you may want to keep a copy of the paper record safe.
+                        Once you remove these files, you can not access this record using the
+                        service. You may want to keep a copy of the paper record safe.
                     </p>
                     <h2 test-dataid="delete-files-warning-message">
                         Are you sure you want to permanently remove this record?

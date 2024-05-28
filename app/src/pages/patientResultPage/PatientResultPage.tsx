@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Button, WarningCallout } from 'nhsuk-react-components';
 import { useNavigate } from 'react-router';
 import { routes } from '../../types/generic/routes';
-import PatientDetails from '../../components/generic/patientDetails/PatientDetails';
 import BackButton from '../../components/generic/backButton/BackButton';
 import { useForm } from 'react-hook-form';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
@@ -11,6 +10,7 @@ import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';
 import useTitle from '../../helpers/hooks/useTitle';
+import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 
 function PatientResultPage() {
     const role = useRole();
@@ -74,7 +74,7 @@ function PatientResultPage() {
                 </WarningCallout>
             )}
 
-            <PatientDetails />
+            <PatientSummary />
 
             <form onSubmit={handleSubmit(submit)} style={{ marginTop: 60 }}>
                 {isGp && (
