@@ -131,7 +131,9 @@ describe('DocumentSearchResultsOptions', () => {
             userEvent.click(screen.getByRole('button', { name: 'Delete All Documents' }));
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_DELETE_CONFIRMATION);
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routeChildren.ARF_DELETE_CONFIRMATION,
+                );
             });
         });
     });

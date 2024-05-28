@@ -168,9 +168,7 @@ describe('LloydGeorgeViewRecordStage', () => {
 
             expect(screen.getByText('Before downloading')).toBeInTheDocument();
             expect(screen.getByText('Available records')).toBeInTheDocument();
-            expect(
-                screen.getByTestId('download-and-remove-record-btn'),
-            ).toBeInTheDocument();
+            expect(screen.getByTestId('download-and-remove-record-btn')).toBeInTheDocument();
         });
 
         it('clicking the side menu download button should show confirmation message, checkbox, red download button and cancel button', async () => {
@@ -255,7 +253,9 @@ describe('LloydGeorgeViewRecordStage', () => {
             clickRedDownloadButton();
 
             await waitFor(() => {
-                expect(mockNavigate).toBeCalledWith(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS);
+                expect(mockNavigate).toBeCalledWith(
+                    routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS,
+                );
             });
         });
 

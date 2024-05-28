@@ -136,7 +136,7 @@ const renderComponent = (history: MemoryHistory, deleteAfterDownload = false) =>
                 setDownloadStage={mockSetDownloadStage}
                 numberOfFiles={2}
                 deleteAfterDownload={deleteAfterDownload}
-            />,
+            />
         </ReactRouter.Router>,
     );
 };

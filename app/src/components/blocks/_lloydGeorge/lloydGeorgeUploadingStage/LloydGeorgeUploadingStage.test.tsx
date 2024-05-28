@@ -15,7 +15,6 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import userEvent from '@testing-library/user-event';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
-
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/requests/uploadDocuments');
