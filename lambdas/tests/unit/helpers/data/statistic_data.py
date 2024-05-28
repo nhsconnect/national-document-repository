@@ -105,6 +105,7 @@ serialised_organisation_data = [
 serialised_record_store_data = [
     {
         "TotalSizeOfRecordsInMegabytes": Decimal("1.23"),
+        "AverageSizeOfDocumentsPerPatientInMegabytes": Decimal("0"),
         "Date": "20240510",
         "TotalNumberOfRecords": 25,
         "NumberOfDocumentTypes": 1,
@@ -113,6 +114,7 @@ serialised_record_store_data = [
     },
     {
         "TotalSizeOfRecordsInMegabytes": Decimal("1.7578678131103515625"),
+        "AverageSizeOfDocumentsPerPatientInMegabytes": Decimal("0"),
         "Date": "20240510",
         "TotalNumberOfRecords": 18,
         "NumberOfDocumentTypes": 1,
