@@ -42,7 +42,7 @@ format:
 sort-requirements:
 	sort -o $(TEST_REQUIREMENTS) $(TEST_REQUIREMENTS)
 	sort -o $(CORE_REQUIREMENTS) $(CORE_REQUIREMENTS)
-	sort -o $(CORE_REQUIREMENTS) $(DATA_REQUIREMENTS)
+	sort -o $(DATA_REQUIREMENTS) $(DATA_REQUIREMENTS)
 
 check-packages:
 	./lambdas/venv/bin/pip-audit -r $(TEST_REQUIREMENTS)

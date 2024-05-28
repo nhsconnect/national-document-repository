@@ -59,5 +59,6 @@ class LambdaLayerUpdate:
 
 
 if __name__ == "__main__":
-    LambdaLayerUpdate.start(LambdaLayerUpdate())
+    layer_update = LambdaLayerUpdate()
+    layer_update.start()
     print("\nUpdate Process Complete.")
