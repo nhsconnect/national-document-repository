@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import PatientDetails from '../../components/generic/patientDetails/PatientDetails';
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/_arf/documentSearchResults/DocumentSearchResults';
 import { Outlet, Route, Routes, useNavigate } from 'react-router';
@@ -20,6 +19,7 @@ import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import useTitle from '../../helpers/hooks/useTitle';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
+import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
@@ -87,7 +87,7 @@ function DocumentSearchResultsPage() {
             {(submissionState === SUBMISSION_STATE.FAILED ||
                 downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
 
-            <PatientDetails />
+            <PatientSummary />
 
             {submissionState === SUBMISSION_STATE.PENDING && (
                 <ProgressBar status="Loading..."></ProgressBar>
