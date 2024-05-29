@@ -164,9 +164,7 @@ function LloydGeorgeUploadPage() {
                     state: DOCUMENT_UPLOAD_STATE.SCANNING,
                     progress: 'scan',
                 });
-                console.log('finish upload to s3, timestamp: ', Date.now());
                 await waitForSeconds(3);
-                console.log('start virus scan, timestamp: ', Date.now());
                 const virusDocumentState = await virusScanResult({
                     documentReference: document.key ?? '',
                     baseUrl,

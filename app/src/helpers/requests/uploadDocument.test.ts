@@ -8,7 +8,7 @@ import { UpdateStateArgs, updateDocumentState, virusScanResult } from './uploadD
 import waitForSeconds from '../utils/waitForSeconds';
 
 // Mock out all top level functions, such as get, put, delete and post:
-jest.mock('axios');
+// jest.mock('axios');
 jest.mock('../utils/waitForSeconds');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
