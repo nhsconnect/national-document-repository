@@ -34,6 +34,7 @@ jest.mock('moment', () => {
         return jest.requireActual('moment')(arg);
     };
 });
+jest.mock('../../helpers/utils/waitForSeconds');
 
 const mockedUsePatient = usePatient as jest.Mock;
 const mockUploadDocuments = uploadDocuments as jest.Mock;
