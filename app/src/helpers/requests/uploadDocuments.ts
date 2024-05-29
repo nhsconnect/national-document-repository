@@ -60,7 +60,6 @@ type UploadConfirmationArgs = {
 export const virusScanResult = async (virusScanArgs: VirusScanArgs) => {
     for (let i = 0; i < VIRUS_SCAN_RETRY_LIMIT; i++) {
         const scanResult = await requestVirusScan(virusScanArgs);
-        console.log(scanResult, '<--- actual scan result');
         if (scanResult === TIMEOUT_ERROR) {
             await waitForSeconds(5);
             continue;
@@ -83,11 +82,7 @@ const requestVirusScan = async ({ documentReference, baseUrl, baseHeaders }: Vir
         return DOCUMENT_UPLOAD_STATE.CLEAN;
     } catch (e) {
         const error = e as AxiosError;
-        console.log(JSON.stringify(error), '<-- actual error');
-        console.log(error.response, '<--- err res');
-        console.log(error.response?.status, '<-- err res status');
         if (error.response?.status === TIMEOUT_ERROR_STATUS_CODE) {
-            console.log('within if block');
             return TIMEOUT_ERROR;
         }
         return DOCUMENT_UPLOAD_STATE.INFECTED;
