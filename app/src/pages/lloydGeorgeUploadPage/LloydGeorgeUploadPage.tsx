@@ -41,6 +41,8 @@ type UpdateDocumentArgs = {
     ref?: string;
 };
 
+const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = 3;
+
 export const setDocument = (
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>,
     { id, state, progress, attempts, ref }: UpdateDocumentArgs,
@@ -164,7 +166,7 @@ function LloydGeorgeUploadPage() {
                     state: DOCUMENT_UPLOAD_STATE.SCANNING,
                     progress: 'scan',
                 });
-                await waitForSeconds(3);
+                await waitForSeconds(DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS);
                 const virusDocumentState = await virusScanResult({
                     documentReference: document.key ?? '',
                     baseUrl,

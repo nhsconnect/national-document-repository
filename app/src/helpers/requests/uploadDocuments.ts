@@ -13,6 +13,7 @@ import { setDocument } from '../../pages/lloydGeorgeUploadPage/LloydGeorgeUpload
 import waitForSeconds from '../utils/waitForSeconds';
 
 const VIRUS_SCAN_RETRY_LIMIT = 3;
+const DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS = 5;
 const TIMEOUT_ERROR_STATUS_CODE = 504;
 const TIMEOUT_ERROR = 'TIMEOUT_ERROR';
 
@@ -61,7 +62,7 @@ export const virusScanResult = async (virusScanArgs: VirusScanArgs) => {
     for (let i = 0; i < VIRUS_SCAN_RETRY_LIMIT; i++) {
         const scanResult = await requestVirusScan(virusScanArgs);
         if (scanResult === TIMEOUT_ERROR) {
-            await waitForSeconds(5);
+            await waitForSeconds(DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS);
             continue;
         }
         return scanResult;
