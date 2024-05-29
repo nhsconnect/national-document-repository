@@ -1,9 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { buildDocument, buildTextFile } from '../test/testBuilders';
-import {
-    DOCUMENT_UPLOAD_STATE,
-    DOCUMENT_UPLOAD_STATE as documentUploadStates,
-} from '../../types/pages/UploadDocumentsPage/types';
+import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../types/pages/UploadDocumentsPage/types';
 import { UpdateStateArgs, updateDocumentState, virusScanResult } from './uploadDocuments';
 import waitForSeconds from '../utils/waitForSeconds';
 
@@ -46,7 +43,7 @@ describe('virusScanResult', () => {
 
         const result = await virusScanResult(virusScanArgs);
 
-        expect(result).toEqual(DOCUMENT_UPLOAD_STATE.CLEAN);
+        expect(result).toEqual(documentUploadStates.CLEAN);
         expect(mockedWaitForSeconds).not.toBeCalled();
     });
 
@@ -55,7 +52,7 @@ describe('virusScanResult', () => {
 
         const result = await virusScanResult(virusScanArgs);
 
-        expect(result).toEqual(DOCUMENT_UPLOAD_STATE.INFECTED);
+        expect(result).toEqual(documentUploadStates.INFECTED);
         expect(mockedWaitForSeconds).not.toBeCalled();
     });
 
@@ -69,7 +66,7 @@ describe('virusScanResult', () => {
 
         const result = await virusScanResult(virusScanArgs);
 
-        expect(result).toEqual(DOCUMENT_UPLOAD_STATE.CLEAN);
+        expect(result).toEqual(documentUploadStates.CLEAN);
 
         expect(mockedWaitForSeconds).toBeCalledTimes(2);
         expect(mockedWaitForSeconds).toHaveBeenCalledWith(delay_between_retry_in_seconds);
