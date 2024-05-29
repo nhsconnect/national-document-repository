@@ -6,7 +6,7 @@ import {
     UploadDocument,
 } from '../../types/pages/UploadDocumentsPage/types';
 
-import axios, { Axios, AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
 import { setDocument } from '../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
@@ -70,11 +70,7 @@ export const virusScanResult = async (virusScanArgs: VirusScanArgs) => {
     throw new Error(`Virus scan api calls timed-out for ${VIRUS_SCAN_RETRY_LIMIT} attempts.`);
 };
 
-export const requestVirusScan = async ({
-    documentReference,
-    baseUrl,
-    baseHeaders,
-}: VirusScanArgs) => {
+const requestVirusScan = async ({ documentReference, baseUrl, baseHeaders }: VirusScanArgs) => {
     const virusScanGatewayUrl = baseUrl + endpoints.VIRUS_SCAN;
     const body = { documentReference };
     try {
