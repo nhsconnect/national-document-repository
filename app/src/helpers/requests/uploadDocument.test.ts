@@ -68,18 +68,19 @@ describe('virusScanResult', () => {
 
         expect(result).toEqual(documentUploadStates.CLEAN);
 
+        expect(mockedAxios.post).toBeCalledTimes(3);
         expect(mockedWaitForSeconds).toBeCalledTimes(2);
         expect(mockedWaitForSeconds).toHaveBeenCalledWith(delay_between_retry_in_seconds);
     });
 
     it('throw an error if timed out for 3 times', async () => {
-        mockedAxios.post
-            .mockRejectedValueOnce(gatewayTimeoutResponse)
-            .mockRejectedValueOnce(gatewayTimeoutResponse)
-            .mockRejectedValueOnce(gatewayTimeoutResponse);
+        mockedAxios.post.mockRejectedValue(gatewayTimeoutResponse);
 
         await expect(virusScanResult(virusScanArgs)).rejects.toThrowError(
             'Virus scan api calls timed-out for 3 attempts.',
         );
+
+        expect(mockedAxios.post).toBeCalledTimes(3);
+        expect(mockedWaitForSeconds).toBeCalledTimes(3);
     });
 });
