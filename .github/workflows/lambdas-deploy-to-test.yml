@@ -20,9 +20,21 @@ jobs:
       python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
 
-  deploy_all:
-    uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
+  publish_all_lambda_layers:
+    name: Publish all Lambda Layers
     needs: ["run_tests"]
+    uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
+    with:
+      environment: test
+      python_version: "3.11"
+      build_branch: ${{ inputs.build_branch }}
+      sandbox: ndr-test
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_all_lambdas:
+    uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
+    needs: ["run_tests", "publish_all_lambda_layers"]
     with:
       environment: test
       python_version: "3.11"

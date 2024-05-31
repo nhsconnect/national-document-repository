@@ -26,9 +26,21 @@ jobs:
       python_version: "3.11"
       build_branch: ${{ inputs.tag_version }}
 
+  publish_all_lambda_layers:
+    name: Publish all Lambda Layers
+    needs: ["run_tests"]
+    uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
+    with:
+      environment: prod
+      python_version: "3.11"
+      build_branch: ${{ inputs.tag_version }}
+      sandbox: prod
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_all:
     uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
-    needs: ["run_tests"]
+    needs: ["run_tests", "publish_all_lambda_layers"]
     with:
       environment: prod
       python_version: "3.11"
