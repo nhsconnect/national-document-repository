@@ -46,7 +46,7 @@ jobs:
       - name: Set up Python ${{ inputs.python_version }}
         uses: actions/setup-python@v4
         with:
-          python_version: ${{ inputs.python_version }}
+          python-version: ${{ inputs.python_version }}
 
       - name: Make virtual environment
         run: | 

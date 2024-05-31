@@ -38,7 +38,7 @@ jobs:
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python_version: 3.11
+          python-version: 3.11
 
       - name: Make virtual environment
         run: | 
