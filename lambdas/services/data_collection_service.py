@@ -10,6 +10,7 @@ from urllib.parse import urlparse
 import boto3
 import polars as pl
 from boto3.dynamodb.conditions import Attr
+from enums.supported_document_types import SupportedDocumentTypes
 from models.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
     LloydGeorgeRecordsDeleted,
@@ -48,8 +49,12 @@ class DataCollectionService:
         statistic_table_name = os.environ["STATISTICS_TABLE"]
         self.output_table = self.dynamodb.Table(statistic_table_name)
 
-        self.lloyd_george_dynamodb_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
-        self.lloyd_george_bucket_name = os.environ["LLOYD_GEORGE_BUCKET_NAME"]
+        self.lloyd_george_dynamodb_name = (
+            SupportedDocumentTypes.LG.get_dynamodb_table_name()
+        )
+        self.lloyd_george_bucket_name = SupportedDocumentTypes.LG.get_s3_bucket_name()
+        self.arf_dynamodb_name = SupportedDocumentTypes.ARF.get_dynamodb_table_name()
+        self.arf_bucket_name = SupportedDocumentTypes.ARF.get_s3_bucket_name()
 
         one_day = 60 * 60 * 24
         time_now = int(datetime.now().timestamp())
@@ -66,8 +71,8 @@ class DataCollectionService:
         self.write_to_local_dynamodb_table(all_statistic_data)
 
     def collect_all_data(self) -> list[StatisticData]:
-        dynamodb_scan_result = self.scan_dynamodb_table(self.lloyd_george_dynamodb_name)
-        s3_list_objects_result = self.get_s3_files_info(self.lloyd_george_bucket_name)
+        dynamodb_scan_result = self.scan_dynamodb_tables()
+        s3_list_objects_result = self.get_all_s3_files_info()
 
         record_store_data = self.get_record_store_data(
             dynamodb_scan_result, s3_list_objects_result
@@ -86,6 +91,24 @@ class DataCollectionService:
             self.output_table.put_item(Item=dynamodb_item)
 
         logger.info("Finish writing all data to dynamodb table")
+
+    def scan_dynamodb_tables(self) -> list[dict]:
+        all_results = []
+        for doc_type in SupportedDocumentTypes.list():
+            table_name = doc_type.get_dynamodb_table_name()
+            result = self.scan_dynamodb_table(table_name)
+            all_results += result
+
+        return all_results
+
+    def get_all_s3_files_info(self) -> list[dict]:
+        all_results = []
+        for doc_type in SupportedDocumentTypes.list():
+            bucket_name = doc_type.get_s3_bucket_name()
+            result = self.get_s3_files_info(bucket_name)
+            all_results += result
+
+        return all_results
 
     def scan_dynamodb_table(self, table_name: str) -> list[dict]:
         table = self.dynamodb.Table(table_name)
