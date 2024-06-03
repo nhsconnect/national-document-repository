@@ -23,6 +23,7 @@ import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
+import waitForSeconds from '../../helpers/utils/waitForSeconds';
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
     UPLOAD = 1,
@@ -39,6 +40,8 @@ type UpdateDocumentArgs = {
     attempts?: number;
     ref?: string;
 };
+
+const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = 3;
 
 export const setDocument = (
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>,
@@ -68,7 +71,6 @@ function LloydGeorgeUploadPage() {
     const nhsNumber: string = patientDetails?.nhsNumber ?? '';
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-    // const [stage, setStage] = useState<LG_UPLOAD_STAGE>(LG_UPLOAD_STAGE.SELECT);
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
     const confirmedReference = useRef(false);
@@ -164,6 +166,7 @@ function LloydGeorgeUploadPage() {
                     state: DOCUMENT_UPLOAD_STATE.SCANNING,
                     progress: 'scan',
                 });
+                await waitForSeconds(DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS);
                 const virusDocumentState = await virusScanResult({
                     documentReference: document.key ?? '',
                     baseUrl,

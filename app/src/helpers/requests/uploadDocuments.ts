@@ -10,6 +10,12 @@ import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
 import { setDocument } from '../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
+import waitForSeconds from '../utils/waitForSeconds';
+
+const VIRUS_SCAN_RETRY_LIMIT = 3;
+const DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS = 5;
+const TIMEOUT_ERROR_STATUS_CODE = 504;
+const TIMEOUT_ERROR = 'TIMEOUT_ERROR';
 
 type FileKeyBuilder = {
     [key in DOCUMENT_TYPE]: string[];
@@ -52,11 +58,20 @@ type UploadConfirmationArgs = {
     uploadSession: UploadSession;
 };
 
-export const virusScanResult = async ({
-    documentReference,
-    baseUrl,
-    baseHeaders,
-}: VirusScanArgs) => {
+export const virusScanResult = async (virusScanArgs: VirusScanArgs) => {
+    for (let i = 0; i < VIRUS_SCAN_RETRY_LIMIT; i++) {
+        const scanResult = await requestVirusScan(virusScanArgs);
+        if (scanResult === TIMEOUT_ERROR) {
+            await waitForSeconds(DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS);
+            continue;
+        }
+        return scanResult;
+    }
+
+    throw new Error(`Virus scan api calls timed-out for ${VIRUS_SCAN_RETRY_LIMIT} attempts.`);
+};
+
+const requestVirusScan = async ({ documentReference, baseUrl, baseHeaders }: VirusScanArgs) => {
     const virusScanGatewayUrl = baseUrl + endpoints.VIRUS_SCAN;
     const body = { documentReference };
     try {
@@ -67,6 +82,10 @@ export const virusScanResult = async ({
         });
         return DOCUMENT_UPLOAD_STATE.CLEAN;
     } catch (e) {
+        const error = e as AxiosError;
+        if (error.response?.status === TIMEOUT_ERROR_STATUS_CODE) {
+            return TIMEOUT_ERROR;
+        }
         return DOCUMENT_UPLOAD_STATE.INFECTED;
     }
 };

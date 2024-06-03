@@ -172,7 +172,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                     'contain',
                     uploadedFileNames.LG[singleFileUsecaseIndex],
                 );
-                cy.wait(20);
+                cy.wait('@upload_confirm');
 
                 cy.getByTestId('upload-complete-page')
                     .should('include.text', 'Record uploaded for')
@@ -218,6 +218,8 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
 
+                cy.wait('@upload_confirm');
+
                 cy.getByTestId('upload-complete-page')
                     .should('include.text', 'Record uploaded for')
                     .should('include.text', 'You have successfully uploaded 2 files')
@@ -259,6 +261,8 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 cy.getByTestId('upload-documents-table')
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][0])
                     .should('contain', uploadedFileNames.LG[multiFileUsecaseIndex][1]);
+
+                cy.wait('@upload_confirm');
 
                 cy.getByTestId('upload-complete-page')
                     .should('include.text', 'Record uploaded for')
@@ -406,6 +410,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 cy.getByTestId('error-box-link').should('exist');
                 cy.getByTestId('error-box-link').click();
                 cy.wait('@s3_retry_upload');
+                cy.wait('@upload_confirm');
 
                 cy.getByTestId('upload-complete-page')
                     .should('include.text', 'Record uploaded for')
