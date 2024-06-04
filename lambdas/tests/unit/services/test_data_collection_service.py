@@ -17,10 +17,10 @@ from tests.unit.data.statistic.logs_query_results import UNIQUE_ACTIVE_USER_IDS
 from tests.unit.data.statistic.s3_list_objects_result import (
     MOCK_ARF_LIST_OBJECTS_RESULT,
     MOCK_LG_LIST_OBJECTS_RESULT,
-    TOTAL_FILE_SIZE_FOR_9000000001,
-    TOTAL_FILE_SIZE_FOR_9000000005,
-    TOTAL_FILE_SIZE_FOR_9000000009,
+    TOTAL_FILE_SIZE_FOR_H81109,
+    TOTAL_FILE_SIZE_FOR_Y12345,
 )
+from unit.data.statistic.expected_data import MOCK_RECORD_STORE_DATA
 
 
 @pytest.fixture
@@ -74,9 +74,34 @@ def mock_service(
     yield service
 
 
+@pytest.fixture
+def mock_uuid(mocker):
+    count = 0
+
+    def mock_implementation():
+        nonlocal count
+        count += 1
+        return f"uuid{count}"
+
+    mocker.patch("uuid.uuid4", side_effect=mock_implementation)
+
+
 def test_collect_all_data(mock_service):
+    # to be implemented
     actual = mock_service.collect_all_data()
     expected = {}
+
+    assert actual == expected
+
+
+def test_get_record_store_data(mock_service, mock_uuid):
+    mock_dynamo_scan_result = MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
+    s3_list_objects_result = MOCK_ARF_LIST_OBJECTS_RESULT + MOCK_LG_LIST_OBJECTS_RESULT
+
+    actual = mock_service.get_record_store_data(
+        mock_dynamo_scan_result, s3_list_objects_result
+    )
+    expected = MOCK_RECORD_STORE_DATA
 
     assert actual == expected
 
@@ -150,22 +175,22 @@ def test_get_metrics_for_total_and_average_file_sizes(mock_service):
     actual = mock_service.get_metrics_for_total_and_average_file_sizes(
         mock_dynamo_scan_result, s3_list_objects_result
     )
-    total_file_size_H81109 = (
-        TOTAL_FILE_SIZE_FOR_9000000001 + TOTAL_FILE_SIZE_FOR_9000000009
-    )
-    total_file_size_Y12345 = TOTAL_FILE_SIZE_FOR_9000000005
+    # total_file_size_H81109 = (
+    #     TOTAL_FILE_SIZE_FOR_9000000001 + TOTAL_FILE_SIZE_FOR_9000000009
+    # )
+    # total_file_size_Y12345 = TOTAL_FILE_SIZE_FOR_9000000005
 
     expected = [
         {
             "ods_code": "H81109",
-            "average_size_of_documents_per_patient_in_megabytes": total_file_size_H81109
+            "average_size_of_documents_per_patient_in_megabytes": TOTAL_FILE_SIZE_FOR_H81109
             / 2,
-            "total_size_of_records_in_megabytes": total_file_size_H81109,
+            "total_size_of_records_in_megabytes": TOTAL_FILE_SIZE_FOR_H81109,
         },
         {
             "ods_code": "Y12345",
-            "average_size_of_documents_per_patient_in_megabytes": total_file_size_Y12345,
-            "total_size_of_records_in_megabytes": total_file_size_Y12345,
+            "average_size_of_documents_per_patient_in_megabytes": TOTAL_FILE_SIZE_FOR_Y12345,
+            "total_size_of_records_in_megabytes": TOTAL_FILE_SIZE_FOR_Y12345,
         },
     ]
 

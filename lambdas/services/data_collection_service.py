@@ -327,7 +327,10 @@ class DataCollectionService:
             ods_code = entry["ods_code"]
             joined_by_ods_code[ods_code].update(entry)
 
-        return list(joined_by_ods_code.values())
+        sorted_by_ods_code = sorted(joined_by_ods_code.items())
+        sorted_results = [result for _ods_code, result in sorted_by_ods_code]
+
+        return sorted_results
 
     @staticmethod
     def to_megabyte(file_size_in_byte: int) -> Decimal:
