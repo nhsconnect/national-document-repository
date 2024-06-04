@@ -17,6 +17,18 @@ MOCK_LG_SCAN_RESULT = [
         "FileLocation": "s3://test-lg-table/9000000009/0ab18243-783a-4044-8146-b5b0996d8422",
         "NhsNumber": "9000000009",
     },
+    {
+        "CurrentGpOds": "H81109",
+        "ContentType": "application/pdf",
+        "FileLocation": "s3://test-lg-table/9000000001/5d5b3c28-e6c8-4d46-8ae3-a2b97321bcf8",
+        "NhsNumber": "9000000001",
+    },
+    {
+        "CurrentGpOds": "H81109",
+        "ContentType": "application/pdf",
+        "FileLocation": "s3://test-lg-table/9000000001/2543ba87-dcdb-4583-bae2-e83c4ba7af34",
+        "NhsNumber": "9000000001",
+    },
 ]
 
 MOCK_ARF_SCAN_RESULT = [
@@ -34,7 +46,7 @@ MOCK_ARF_SCAN_RESULT = [
     },
     {
         "CurrentGpOds": "H81109",
-        "ContentType": "application/pdf",
+        "ContentType": "image/bmp",
         "FileLocation": "s3://test-arf-table/9000000009/71e0c54e-5cfc-4260-a538-09eab185a6ed",
         "NhsNumber": "9000000009",
     },

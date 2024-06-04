@@ -17,6 +17,9 @@ from tests.unit.data.statistic.logs_query_results import UNIQUE_ACTIVE_USER_IDS
 from tests.unit.data.statistic.s3_list_objects_result import (
     MOCK_ARF_LIST_OBJECTS_RESULT,
     MOCK_LG_LIST_OBJECTS_RESULT,
+    TOTAL_FILE_SIZE_FOR_9000000001,
+    TOTAL_FILE_SIZE_FOR_9000000005,
+    TOTAL_FILE_SIZE_FOR_9000000009,
 )
 
 
@@ -64,12 +67,14 @@ def mock_s3_list_objects(mocker):
 
 
 @pytest.fixture
-def mock_service(mock_logs_query_service, mock_dynamodb_scan, mock_s3_list_objects):
+def mock_service(
+    set_env, mock_logs_query_service, mock_dynamodb_scan, mock_s3_list_objects
+):
     service = DataCollectionService()
     yield service
 
 
-def test_collect_all_data(set_env, mock_service):
+def test_collect_all_data(mock_service):
     actual = mock_service.collect_all_data()
     expected = {}
 
@@ -87,5 +92,101 @@ def test_get_active_user_list(set_env, mock_logs_query_service):
         "Y12345": ["e807f1fcf82d132f9bb018ca6738a19f"],
     }
     actual = service.get_active_user_list()
+
+    assert actual == expected
+
+
+def test_get_total_number_of_records(mock_service):
+    actual = mock_service.get_total_number_of_records(MOCK_ARF_SCAN_RESULT)
+    expected = [
+        {"ods_code": "Y12345", "total_number_of_records": 2},
+        {"ods_code": "H81109", "total_number_of_records": 1},
+    ]
+
+    assert actual == expected
+
+    actual = mock_service.get_total_number_of_records(MOCK_LG_SCAN_RESULT)
+    expected = [
+        {"ods_code": "H81109", "total_number_of_records": 5},
+    ]
+
+    assert actual == expected
+
+    actual = mock_service.get_total_number_of_records(
+        MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
+    )
+    expected = [
+        {"ods_code": "Y12345", "total_number_of_records": 2},
+        {"ods_code": "H81109", "total_number_of_records": 6},
+    ]
+
+    assert actual == expected
+
+
+def test_get_number_of_patients(mock_service):
+    actual = mock_service.get_number_of_patients(MOCK_ARF_SCAN_RESULT)
+    expected = [
+        {"ods_code": "Y12345", "number_of_patients": 1},
+        {"ods_code": "H81109", "number_of_patients": 1},
+    ]
+
+    assert actual == expected
+
+    actual = mock_service.get_number_of_patients(
+        MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
+    )
+    expected = [
+        {"ods_code": "Y12345", "number_of_patients": 1},
+        {"ods_code": "H81109", "number_of_patients": 2},
+    ]
+
+    assert actual == expected
+
+
+def test_get_metrics_for_total_and_average_file_sizes(mock_service):
+    mock_dynamo_scan_result = MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
+    s3_list_objects_result = MOCK_ARF_LIST_OBJECTS_RESULT + MOCK_LG_LIST_OBJECTS_RESULT
+
+    actual = mock_service.get_metrics_for_total_and_average_file_sizes(
+        mock_dynamo_scan_result, s3_list_objects_result
+    )
+    total_file_size_H81109 = (
+        TOTAL_FILE_SIZE_FOR_9000000001 + TOTAL_FILE_SIZE_FOR_9000000009
+    )
+    total_file_size_Y12345 = TOTAL_FILE_SIZE_FOR_9000000005
+
+    expected = [
+        {
+            "ods_code": "H81109",
+            "average_size_of_documents_per_patient_in_megabytes": total_file_size_H81109
+            / 2,
+            "total_size_of_records_in_megabytes": total_file_size_H81109,
+        },
+        {
+            "ods_code": "Y12345",
+            "average_size_of_documents_per_patient_in_megabytes": total_file_size_Y12345,
+            "total_size_of_records_in_megabytes": total_file_size_Y12345,
+        },
+    ]
+
+    assert actual == expected
+
+
+def test_get_number_of_document_types(mock_service):
+    actual = mock_service.get_number_of_document_types(MOCK_ARF_SCAN_RESULT)
+    expected = [
+        {"ods_code": "Y12345", "number_of_document_types": 2},
+        {"ods_code": "H81109", "number_of_document_types": 1},
+    ]
+
+    assert actual == expected
+
+    actual = mock_service.get_number_of_document_types(
+        MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
+    )
+    expected = [
+        {"ods_code": "Y12345", "number_of_document_types": 2},
+        {"ods_code": "H81109", "number_of_document_types": 2},
+    ]
 
     assert actual == expected

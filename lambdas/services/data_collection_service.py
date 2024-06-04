@@ -4,7 +4,6 @@ import os
 from collections import Counter, defaultdict
 from datetime import datetime
 from decimal import Decimal
-from urllib.parse import urlparse
 
 import polars as pl
 from enums.supported_document_types import SupportedDocumentTypes
@@ -27,6 +26,7 @@ from services.base.s3_service import S3Service
 from services.logs_query_service import CloudwatchLogsQueryService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
+from utils.utilities import get_file_key_from_s3_url
 
 logger = LoggingService(__name__)
 
@@ -109,9 +109,7 @@ class DataCollectionService:
         dynamodb_scan_result: list[dict],
         s3_list_objects_result: list[dict],
     ) -> list[RecordStoreData]:
-        total_number_of_records_by_ods_code = (
-            self.get_total_number_of_records_by_ods_code(dynamodb_scan_result)
-        )
+        total_number_of_records = self.get_total_number_of_records(dynamodb_scan_result)
 
         total_and_average_file_sizes = (
             self.get_metrics_for_total_and_average_file_sizes(
@@ -125,7 +123,7 @@ class DataCollectionService:
 
         joined_query_result = self.join_results_by_ods_code(
             [
-                total_number_of_records_by_ods_code,
+                total_number_of_records,
                 total_and_average_file_sizes,
                 number_of_document_types,
             ]
@@ -207,7 +205,7 @@ class DataCollectionService:
             end_time=self.collection_end_time,
         )
 
-    def get_total_number_of_records_by_ods_code(
+    def get_total_number_of_records(
         self, dynamodb_scan_result: list[dict]
     ) -> list[dict]:
         ods_code_for_every_document = [
@@ -231,10 +229,6 @@ class DataCollectionService:
             for ods_code, patients in patients_grouped_by_ods_code.items()
         ]
 
-    @staticmethod
-    def get_file_key(file_location: str) -> str:
-        return str(urlparse(file_location).path.lstrip("/"))
-
     def get_metrics_for_total_and_average_file_sizes(
         self,
         dynamodb_scan_result: list[dict],
@@ -245,7 +239,7 @@ class DataCollectionService:
 
         dynamodb_df_with_file_key = dynamodb_df.with_columns(
             pl.col("FileLocation")
-            .map_elements(self.get_file_key, return_dtype=pl.String)
+            .map_elements(get_file_key_from_s3_url, return_dtype=pl.String)
             .alias("FileKey")
         )
 
@@ -275,6 +269,7 @@ class DataCollectionService:
             df_with_total_file_size_per_patient.group_by("CurrentGpOds")
             .agg(get_average_file_size_per_patient, get_total_file_size_for_ods_code)
             .rename({"CurrentGpOds": "ods_code"})
+            .sort("ods_code")
         )
 
         return result.to_dicts()
