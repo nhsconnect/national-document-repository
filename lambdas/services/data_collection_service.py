@@ -4,12 +4,9 @@ import os
 from collections import Counter, defaultdict
 from datetime import datetime
 from decimal import Decimal
-from typing import TypedDict
 from urllib.parse import urlparse
 
-import boto3
 import polars as pl
-from boto3.dynamodb.conditions import Attr
 from enums.supported_document_types import SupportedDocumentTypes
 from models.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
@@ -25,43 +22,30 @@ from models.statistics import (
     RecordStoreData,
     StatisticData,
 )
+from services.base.dynamo_service import DynamoDBService
+from services.base.s3_service import S3Service
 from services.logs_query_service import CloudwatchLogsQueryService
 from utils.audit_logging_setup import LoggingService
+from utils.common_query_filters import UploadCompleted
 
 logger = LoggingService(__name__)
-
-
-class S3ListObjectsResult(TypedDict):
-    Key: str
-    Size: int
 
 
 class DataCollectionService:
     def __init__(self):
         self.workspace = os.environ["WORKSPACE"]
+        self.output_table_name = os.environ["STATISTICS_TABLE"]
 
         self.logs_query_service = CloudwatchLogsQueryService()
-
-        # TODO: integrate with existing services
-        self.dynamodb = boto3.resource("dynamodb")
-        self.s3_client = boto3.client("s3")
-
-        statistic_table_name = os.environ["STATISTICS_TABLE"]
-        self.output_table = self.dynamodb.Table(statistic_table_name)
-
-        self.lloyd_george_dynamodb_name = (
-            SupportedDocumentTypes.LG.get_dynamodb_table_name()
-        )
-        self.lloyd_george_bucket_name = SupportedDocumentTypes.LG.get_s3_bucket_name()
-        self.arf_dynamodb_name = SupportedDocumentTypes.ARF.get_dynamodb_table_name()
-        self.arf_bucket_name = SupportedDocumentTypes.ARF.get_s3_bucket_name()
+        self.dynamodb_service = DynamoDBService()
+        self.s3_service = S3Service()
 
         one_day = 60 * 60 * 24
         time_now = int(datetime.now().timestamp())
 
         self.collection_start_time = time_now - one_day
         self.collection_end_time = time_now
-        self.date = datetime.today().strftime("%Y%m%d")
+        self.today_date = datetime.today().strftime("%Y%m%d")
 
     def collect_all_data_and_write_to_dynamodb(self):
         all_statistic_data = self.collect_all_data()
@@ -84,20 +68,30 @@ class DataCollectionService:
 
     def write_to_local_dynamodb_table(self, all_statistic_data: list[StatisticData]):
         logger.info("Writing statistic data to dynamodb table")
-
+        item_list = []
         for entry in all_statistic_data:
-            dynamodb_item = entry.model_dump(by_alias=True)
-            logger.info(f"writing item: {dynamodb_item}")
-            self.output_table.put_item(Item=dynamodb_item)
+            item_list.append(entry.model_dump(by_alias=True))
+
+        self.dynamodb_service.batch_writing(
+            table_name=self.output_table_name, item_list=item_list
+        )
 
         logger.info("Finish writing all data to dynamodb table")
 
     def scan_dynamodb_tables(self) -> list[dict]:
         all_results = []
+
+        project_expression = "CurrentGpOds,NhsNumber,FileLocation,ContentType"
+        filter_expression = UploadCompleted
+
         for doc_type in SupportedDocumentTypes.list():
             table_name = doc_type.get_dynamodb_table_name()
-            result = self.scan_dynamodb_table(table_name)
-            all_results += result
+            result = self.dynamodb_service.scan_whole_table(
+                table_name=table_name,
+                project_expression=project_expression,
+                filter_expression=filter_expression,
+            )
+            all_results.extend(result)
 
         return all_results
 
@@ -105,35 +99,15 @@ class DataCollectionService:
         all_results = []
         for doc_type in SupportedDocumentTypes.list():
             bucket_name = doc_type.get_s3_bucket_name()
-            result = self.get_s3_files_info(bucket_name)
+            result = self.s3_service.list_all_objects(bucket_name)
             all_results += result
 
         return all_results
 
-    def scan_dynamodb_table(self, table_name: str) -> list[dict]:
-        table = self.dynamodb.Table(table_name)
-        project_expression = "CurrentGpOds,NhsNumber,FileLocation,ContentType"
-        filter_expression = Attr("Uploaded").eq(True) & Attr("Deleted").eq("")
-
-        paginated_result = table.scan(
-            ProjectionExpression=project_expression,
-            FilterExpression=filter_expression,
-        )
-        dynamodb_scan_result = paginated_result["Items"]
-        while "LastEvaluatedKey" in paginated_result:
-            start_key_for_next_page = paginated_result["LastEvaluatedKey"]
-            paginated_result = table.scan(
-                ProjectionExpression=project_expression,
-                FilterExpression=filter_expression,
-                ExclusiveStartKey=start_key_for_next_page,
-            )
-            dynamodb_scan_result += paginated_result["Items"]
-        return dynamodb_scan_result
-
     def get_record_store_data(
         self,
         dynamodb_scan_result: list[dict],
-        s3_list_objects_result: list[S3ListObjectsResult],
+        s3_list_objects_result: list[dict],
     ) -> list[RecordStoreData]:
         total_number_of_records_by_ods_code = (
             self.get_total_number_of_records_by_ods_code(dynamodb_scan_result)
@@ -159,7 +133,7 @@ class DataCollectionService:
 
         record_store_data_for_all_ods_code = [
             RecordStoreData(
-                date=self.date,
+                date=self.today_date,
                 **record_store_data_properties,
             )
             for record_store_data_properties in joined_query_result
@@ -193,7 +167,7 @@ class DataCollectionService:
         )
 
         organisation_data_for_all_ods_code = [
-            OrganisationData(date=self.date, **organisation_data_properties)
+            OrganisationData(date=self.today_date, **organisation_data_properties)
             for organisation_data_properties in joined_query_result
         ]
 
@@ -203,7 +177,7 @@ class DataCollectionService:
         user_id_per_ods_code = self.get_active_user_list()
         application_data_for_all_ods_code = [
             ApplicationData(
-                date=self.date,
+                date=self.today_date,
                 active_user_ids_hashed=active_user_ids_hashed,
                 ods_code=ods_code,
             )
@@ -232,14 +206,6 @@ class DataCollectionService:
             start_time=self.collection_start_time,
             end_time=self.collection_end_time,
         )
-
-    def get_s3_files_info(self, bucket_name: str) -> list[S3ListObjectsResult]:
-        # TODO: move this to s3 service
-        s3_paginator = self.s3_client.get_paginator("list_objects_v2")
-        s3_list_objects_result = []
-        for paginated_result in s3_paginator.paginate(Bucket=bucket_name):
-            s3_list_objects_result += paginated_result["Contents"]
-        return s3_list_objects_result
 
     def get_total_number_of_records_by_ods_code(
         self, dynamodb_scan_result: list[dict]
@@ -272,7 +238,7 @@ class DataCollectionService:
     def get_metrics_for_total_and_average_file_sizes(
         self,
         dynamodb_scan_result: list[dict],
-        s3_list_objects_result: list[S3ListObjectsResult],
+        s3_list_objects_result: list[dict],
     ) -> list[dict]:
         dynamodb_df = pl.DataFrame(dynamodb_scan_result)
         s3_df = pl.DataFrame(s3_list_objects_result)
@@ -354,35 +320,6 @@ class DataCollectionService:
             for ods_code, list_of_number_of_files_of_each_patient in counter_dict_by_ods_code.items()
         ]
         return average_by_ods_code
-
-    # def get_average_document_size_per_patient(
-    #     self,
-    #     dynamodb_scan_result: list[dict],
-    #     s3_list_objects_result: list[S3ListObjectsResult]
-    # ) -> list[dict]:
-    #     # we should consider to use pandas / polars for this kind of aggregation
-    #     ods_code_and_patient_number_tuple_for_every_document = [
-    #         (item.current_gp_ods, item.nhs_number) for item in dynamodb_scan_result
-    #     ]
-    #     counter_dict = Counter(ods_code_and_patient_number_tuple_for_every_document)
-    #     counter_dict_by_ods_code = defaultdict(list)
-    #
-    #     for (
-    #         ods_code,
-    #         _nhs_number,
-    #     ), number_of_file_of_single_patient in counter_dict.items():
-    #         counter_dict_by_ods_code[ods_code].append(number_of_file_of_single_patient)
-    #
-    #     average_by_ods_code = [
-    #         {
-    #             "ods_code": ods_code,
-    #             "average_records_per_patient": self.take_average(
-    #                 list_of_number_of_files_of_each_patient
-    #             ),
-    #         }
-    #         for ods_code, list_of_number_of_files_of_each_patient in counter_dict_by_ods_code.items()
-    #     ]
-    #     return average_by_ods_cod
 
     @staticmethod
     def join_results_by_ods_code(results: list[list[dict]]) -> list[dict]:

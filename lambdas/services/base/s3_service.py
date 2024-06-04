@@ -123,3 +123,10 @@ class S3Service:
                 return False
             logger.error(str(e), {"Result": "Failed to check if file exists on s3"})
             raise e
+
+    def list_all_objects(self, bucket_name: str) -> list[dict]:
+        s3_paginator = self.client.get_paginator("list_objects_v2")
+        s3_list_objects_result = []
+        for paginated_result in s3_paginator.paginate(Bucket=bucket_name):
+            s3_list_objects_result += paginated_result["Contents"]
+        return s3_list_objects_result
