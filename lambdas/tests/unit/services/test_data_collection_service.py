@@ -13,6 +13,7 @@ from tests.unit.data.statistic.dynamodb_scan_result import (
     MOCK_ARF_SCAN_RESULT,
     MOCK_LG_SCAN_RESULT,
 )
+from tests.unit.data.statistic.expected_data import MOCK_RECORD_STORE_DATA
 from tests.unit.data.statistic.logs_query_results import UNIQUE_ACTIVE_USER_IDS
 from tests.unit.data.statistic.s3_list_objects_result import (
     MOCK_ARF_LIST_OBJECTS_RESULT,
@@ -20,7 +21,6 @@ from tests.unit.data.statistic.s3_list_objects_result import (
     TOTAL_FILE_SIZE_FOR_H81109,
     TOTAL_FILE_SIZE_FOR_Y12345,
 )
-from unit.data.statistic.expected_data import MOCK_RECORD_STORE_DATA
 
 
 @pytest.fixture

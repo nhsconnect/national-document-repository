@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from models.statistics import RecordStoreData
-from unit.data.statistic.s3_list_objects_result import (
+from tests.unit.data.statistic.s3_list_objects_result import (
     TOTAL_FILE_SIZE_FOR_H81109,
     TOTAL_FILE_SIZE_FOR_Y12345,
 )
