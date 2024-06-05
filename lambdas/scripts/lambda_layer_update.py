@@ -8,8 +8,8 @@ class LambdaLayerUpdate:
     def __init__(self):
         self.client = boto3.client("lambda")
 
-        self.environment = sys.argv[1]
-        self.function_name_aws = f"{self.environment}_{sys.argv[2]}"
+        self.sandbox = sys.argv[1]
+        self.function_name_aws = f"{self.sandbox}_{sys.argv[2]}"
         layers = sys.argv[3].strip().split(",")
 
         self.updated_lambda_arns = {}
@@ -18,7 +18,7 @@ class LambdaLayerUpdate:
         print(f"Function Name: {self.function_name_aws}")
         print("Layers to add:")
         for layer in layers:
-            updated_layer_name = f"{self.environment}_{layer}"
+            updated_layer_name = f"{self.sandbox}_{layer}"
             self.updated_layer_names.append(updated_layer_name)
             print(f"- {updated_layer_name}")
         print("")
