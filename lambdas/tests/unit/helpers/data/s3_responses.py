@@ -10,3 +10,81 @@ MOCK_PRESIGNED_URL_RESPONSE = {
         "x-amz-signature": "test-signature",
     },
 }
+
+MOCK_LIST_OBJECTS_RESPONSE = {
+    "ResponseMetadata": {
+        "RequestId": "abc",
+        "HostId": "xyz",
+        "HTTPStatusCode": 200,
+        "HTTPHeaders": {
+            "x-amz-id-2": "efg",
+            "x-amz-request-id": "HIJ",
+            "date": "Wed, 04 Jun 2024 13:49:45 GMT",
+            "x-amz-bucket-region": "eu-west-2",
+            "content-type": "application/xml",
+            "transfer-encoding": "chunked",
+            "server": "AmazonS3",
+        },
+        "RetryAttempts": 0,
+    },
+    "IsTruncated": False,
+    "Contents": [
+        {
+            "Key": "9000000009/2985a5dd-37ac-481a-b847-ee09e4b0817b",
+            "LastModified": "2024-04-22 15:39:54+00:00",
+            "ETag": '"ddeafe0237ac7cb097c9a34c0e21a8a9"',
+            "Size": 928,
+            "StorageClass": "STANDARD",
+        },
+        {
+            "Key": "9000000009/384b886d-bd86-4211-9f43-73f7146fbb9b",
+            "LastModified": "2024-04-22 15:39:53+00:00",
+            "ETag": '"ddeafe0237ac7cb097c9a34c0e21a8a9"',
+            "Size": 928,
+            "StorageClass": "STANDARD",
+        },
+    ],
+    "Name": "test-lg-bucket",
+    "Prefix": "",
+    "MaxKeys": 1000,
+    "EncodingType": "url",
+    "KeyCount": 2,
+}
+
+
+MOCK_LIST_OBJECTS_PAGINATED_RESPONSES = [
+    {
+        "IsTruncated": True,
+        "Contents": [
+            {
+                "Key": "9000000009/2985a5dd-37ac-481a-b847-ee09e4b0817b",
+                "LastModified": "2024-04-22 15:39:54+00:00",
+                "Size": 928,
+                "StorageClass": "STANDARD",
+            },
+            {
+                "Key": "9000000009/384b886d-bd86-4211-9f43-73f7146fbb9b",
+                "LastModified": "2024-04-22 15:39:53+00:00",
+                "Size": 928,
+                "StorageClass": "STANDARD",
+            },
+        ],
+    },
+    {
+        "IsTruncated": True,
+        "Contents": [
+            {
+                "Key": "9000000009/94c93a0c-a322-4eaa-ad0b-29ea876c33a5",
+                "LastModified": "2024-04-22 15:39:54+00:00",
+                "Size": 928,
+                "StorageClass": "STANDARD",
+            },
+            {
+                "Key": "9000000009/36af7807-7965-4c17-b2eb-0f2ae903196d",
+                "LastModified": "2024-04-22 15:39:53+00:00",
+                "Size": 928,
+                "StorageClass": "STANDARD",
+            },
+        ],
+    },
+]

@@ -1,5 +1,4 @@
 import hashlib
-import itertools
 import os
 from collections import Counter, defaultdict
 from datetime import datetime
@@ -26,7 +25,7 @@ from services.base.s3_service import S3Service
 from services.logs_query_service import CloudwatchLogsQueryService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
-from utils.utilities import get_file_key_from_s3_url
+from utils.utilities import flatten, get_file_key_from_s3_url
 
 logger = LoggingService(__name__)
 
@@ -320,10 +319,8 @@ class DataCollectionService:
 
     @staticmethod
     def join_results_by_ods_code(results: list[list[dict]]) -> list[dict]:
-        all_result_flatten = itertools.chain(*results)
-
         joined_by_ods_code = defaultdict(dict)
-        for entry in all_result_flatten:
+        for entry in flatten(results):
             ods_code = entry["ods_code"]
             joined_by_ods_code[ods_code].update(entry)
 
