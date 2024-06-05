@@ -73,3 +73,8 @@ MOCK_APPLICATION_DATA = [
         active_user_ids_hashed=[HASHED_USER_ID_1],
     ),
 ]
+
+ALL_MOCK_DATA = MOCK_RECORD_STORE_DATA + MOCK_ORGANISATION_DATA + MOCK_APPLICATION_DATA
+ALL_MOCK_DATA_AS_JSON_LIST = list(
+    map(lambda data: data.model_dump(by_alias=True), ALL_MOCK_DATA)
+)

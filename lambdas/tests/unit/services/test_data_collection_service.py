@@ -19,8 +19,10 @@ from tests.unit.conftest import (
     MOCK_ARF_TABLE_NAME,
     MOCK_LG_BUCKET,
     MOCK_LG_TABLE_NAME,
+    MOCK_STATISTICS_TABLE,
 )
 from tests.unit.data.statistic.expected_data import (
+    ALL_MOCK_DATA_AS_JSON_LIST,
     MOCK_APPLICATION_DATA,
     MOCK_ORGANISATION_DATA,
     MOCK_RECORD_STORE_DATA,
@@ -46,7 +48,7 @@ from tests.unit.data.statistic.mock_logs_query_results import (
 
 
 @pytest.fixture
-def mock_dynamodb_scan(mocker):
+def mock_dynamo_service(mocker):
     def mock_implementation(table_name, **_kwargs):
         if table_name == MOCK_LG_TABLE_NAME:
             return MOCK_LG_SCAN_RESULT
@@ -59,7 +61,7 @@ def mock_dynamodb_scan(mocker):
     patched_method = patched_instance.scan_whole_table
     patched_method.side_effect = mock_implementation
 
-    yield patched_method
+    yield patched_instance
 
 
 @pytest.fixture
@@ -104,7 +106,7 @@ def mock_query_logs(mocker):
 
 
 @pytest.fixture
-def mock_service(set_env, mock_query_logs, mock_dynamodb_scan, mock_s3_list_objects):
+def mock_service(set_env, mock_query_logs, mock_dynamo_service, mock_s3_list_objects):
     service = DataCollectionService()
     yield service
 
@@ -121,6 +123,15 @@ def test_collect_all_data(mock_service, mock_uuid):
     )
 
     assert actual == expected
+
+
+def test_write_to_local_dynamodb_table(mock_dynamo_service, mock_service):
+    mock_data = MOCK_RECORD_STORE_DATA + MOCK_ORGANISATION_DATA + MOCK_APPLICATION_DATA
+    mock_service.write_to_local_dynamodb_table(mock_data)
+
+    mock_dynamo_service.batch_writing.assert_called_with(
+        table_name=MOCK_STATISTICS_TABLE, item_list=ALL_MOCK_DATA_AS_JSON_LIST
+    )
 
 
 def test_get_record_store_data(mock_service, mock_uuid):
