@@ -88,7 +88,7 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.client_payload.sandbox }}_CreateDocRefLambda
-          zip_file: package_lambdas_create_document_reference_handler.zip
+          zip_file: ./build/lambdas/create_document_reference_handler/create_document_reference_handler.zip
 
   python_deploy_search_patient_details_lambda:
     runs-on: ubuntu-latest
@@ -129,7 +129,7 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.client_payload.sandbox }}_SearchPatientDetailsLambda
-          zip_file: package_lambdas_search_patient_details_handler.zip
+          zip_file: ./build/lambdas/search_patient_details_handler/search_patient_details_handler.zip
 
   python_deploy_document_reference_search_lambda:
     runs-on: ubuntu-latest
@@ -170,7 +170,7 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.client_payload.sandbox }}_SearchDocumentReferencesLambda
-          zip_file: package_lambdas_document_reference_search_handler.zip
+          zip_file: ./build/lambdas/document_reference_search_handler/document_reference_search_handler.zip
 
   python_deploy_delete_document_reference_handler:
     runs-on: ubuntu-latest
@@ -211,7 +211,7 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.client_payload.sandbox }}_DeleteDocRefLambda
-          zip_file: package_lambdas_delete_document_reference_handler.zip
+          zip_file: ./build/lambdas/delete_document_reference_handler/delete_document_reference_handler.zip
 
   python_deploy_lloyd_george_record_stitch_lambda:
     runs-on: ubuntu-latest
@@ -250,7 +250,7 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.client_payload.sandbox }}_LloydGeorgeStitchLambda
-          zip_file: package_lambdas_lloyd_george_record_stitch_handler.zip
+          zip_file: ./build/lambdas/lloyd_george_record_stitch_handler/lloyd_george_record_stitch_handler.zip
 
   python_deploy_back_channel_logout_lambda:
     runs-on: ubuntu-latest
@@ -289,7 +289,7 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_BackChannelLogoutHandler
-          zip_file: package_lambdas_back_channel_logout_handler.zip
+          zip_file: ./build/lambdas/back_channel_logout_handler/back_channel_logout_handler.zip
 
 
   python_deploy_send_feedback_lambda:
@@ -329,4 +329,4 @@ jobs:
         with:
           aws_region: ${{ vars.AWS_REGION }}
           function_name: ${{ github.event.inputs.sandboxWorkspace}}_SendFeedbackHandler
-          zip_file: package_lambdas_send_feedback_handler.zip
+          zip_file: ./build/lambdas/send_feedback_handler/send_feedback_handler.zip

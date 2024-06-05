@@ -65,11 +65,22 @@ jobs:
     with:
       cypress_base_url: ${{ vars.CYPRESS_BASE_URL }}
       build_branch: ${{ inputs.build_branch }}
-      
+
+  publish_all_lambda_layers:
+    name: Publish all Lambda Layers
+    uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
+    with:
+      build_branch: ${{ inputs.build_branch }}
+      sandbox: ${{ inputs.sandbox }}
+      environment: ${{ inputs.environment }}
+      python_version: "3.11"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_all_lambdas:
     name: Deploy all Lambdas
     uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
-
+    needs: ["publish_all_lambda_layers"]
     with:
       build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
@@ -85,8 +96,5 @@ jobs:
       build_branch: ${{ inputs.build_branch }}
       environment: ${{ inputs.environment }}
       sandbox: ${{ inputs.sandbox }}
-
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
-
-        
