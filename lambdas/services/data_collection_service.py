@@ -320,8 +320,6 @@ class DataCollectionService:
 
     @staticmethod
     def join_results_by_ods_code(results: list[list[dict]]) -> list[dict]:
-        # take a nested list of [[{ods_code: xxxxx, property_a: yyyyy}], [{ods_code: xxxxx, property_b: zzzzz}]]
-        # join by ods code and return as a flat list of [{ods_code: xxxxx, property_a: yyyyy, property_b: zzzzz}]
         all_result_flatten = itertools.chain(*results)
 
         joined_by_ods_code = defaultdict(dict)

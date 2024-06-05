@@ -1,6 +1,10 @@
+from datetime import datetime
+from decimal import Decimal
 from random import shuffle
+from unittest.mock import call
 
 import pytest
+from freezegun import freeze_time
 from models.cloudwatch_logs_query import (
     CloudwatchLogsQueryParams,
     LloydGeorgeRecordsDeleted,
@@ -45,6 +49,7 @@ from tests.unit.data.statistic.mock_logs_query_results import (
     MOCK_LG_VIEWED,
     MOCK_UNIQUE_ACTIVE_USER_IDS,
 )
+from utils.common_query_filters import UploadCompleted
 
 
 @pytest.fixture
@@ -65,7 +70,7 @@ def mock_dynamo_service(mocker):
 
 
 @pytest.fixture
-def mock_s3_list_objects(mocker):
+def mock_s3_list_all_objects(mocker):
     def mock_implementation(bucket_name, **_kwargs):
         if bucket_name == MOCK_LG_BUCKET:
             return MOCK_LG_LIST_OBJECTS_RESULT
@@ -106,7 +111,9 @@ def mock_query_logs(mocker):
 
 
 @pytest.fixture
-def mock_service(set_env, mock_query_logs, mock_dynamo_service, mock_s3_list_objects):
+def mock_service(
+    set_env, mock_query_logs, mock_dynamo_service, mock_s3_list_all_objects
+):
     service = DataCollectionService()
     yield service
 
@@ -114,6 +121,35 @@ def mock_service(set_env, mock_query_logs, mock_dynamo_service, mock_s3_list_obj
 @pytest.fixture
 def mock_uuid(mocker):
     yield mocker.patch("uuid.uuid4", return_value="mock_uuid")
+
+
+@pytest.fixture
+def larger_mock_data():
+    dynamodb_1, s3_1 = build_mock_results("H81109", "9000000001", 135, 123)
+    dynamodb_2, s3_2 = build_mock_results("H81109", "9000000002", 246, 456)
+    dynamodb_3, s3_3 = build_mock_results("H81109", "9000000003", 369, 789)
+    dynamodb_4, s3_4 = build_mock_results("Y12345", "9000000004", 4812, 9876)
+    dynamodb_5, s3_5 = build_mock_results("Y12345", "9000000005", 5101, 5432)
+
+    mock_dynamo_scan_result = (
+        dynamodb_1 + dynamodb_2 + dynamodb_3 + dynamodb_4 + dynamodb_5
+    )
+    mock_s3_list_objects_result = s3_1 + s3_2 + s3_3 + s3_4 + s3_5
+    shuffle(mock_dynamo_scan_result)
+    shuffle(mock_s3_list_objects_result)
+
+    return mock_dynamo_scan_result, mock_s3_list_objects_result
+
+
+def test_collect_all_data_and_write_to_dynamodb(mock_service, mocker):
+    mock_collected_data = ["testing1234"]
+    mock_service.collect_all_data = mocker.MagicMock(return_value=mock_collected_data)
+    mock_service.write_to_local_dynamodb_table = mocker.MagicMock()
+
+    mock_service.collect_all_data_and_write_to_dynamodb()
+
+    mock_service.collect_all_data.assert_called_once()
+    mock_service.write_to_local_dynamodb_table.assert_called_with(mock_collected_data)
 
 
 def test_collect_all_data(mock_service, mock_uuid):
@@ -132,6 +168,38 @@ def test_write_to_local_dynamodb_table(mock_dynamo_service, mock_service):
     mock_dynamo_service.batch_writing.assert_called_with(
         table_name=MOCK_STATISTICS_TABLE, item_list=ALL_MOCK_DATA_AS_JSON_LIST
     )
+
+
+def test_scan_dynamodb_tables(mock_dynamo_service, mock_service):
+    mock_service.scan_dynamodb_tables()
+
+    expected_project_expression = "CurrentGpOds,NhsNumber,FileLocation,ContentType"
+    expected_filter_expression = UploadCompleted
+
+    expected_calls = [
+        call(
+            table_name=MOCK_ARF_TABLE_NAME,
+            project_expression=expected_project_expression,
+            filter_expression=expected_filter_expression,
+        ),
+        call(
+            table_name=MOCK_LG_TABLE_NAME,
+            project_expression=expected_project_expression,
+            filter_expression=expected_filter_expression,
+        ),
+    ]
+    mock_dynamo_service.scan_whole_table.assert_has_calls(expected_calls)
+
+
+def test_get_all_s3_files_info(mock_s3_list_all_objects, mock_service):
+    mock_service.get_all_s3_files_info()
+
+    expected_calls = [
+        call(MOCK_ARF_BUCKET),
+        call(MOCK_LG_BUCKET),
+    ]
+
+    mock_s3_list_all_objects.assert_has_calls(expected_calls)
 
 
 def test_get_record_store_data(mock_service, mock_uuid):
@@ -177,6 +245,22 @@ def test_get_active_user_list(set_env, mock_query_logs):
     assert actual == expected
 
 
+@freeze_time("2024-06-04T10:25:00")
+def test_get_cloud_watch_query_result(set_env, mock_query_logs):
+    mock_query_param = CloudwatchLogsQueryParams("mock", "test")
+    service = DataCollectionService()
+    expected_start_time = datetime.fromisoformat("2024-06-03T10:25:00").timestamp()
+    expected_end_time = datetime.fromisoformat("2024-06-04T10:25:00").timestamp()
+
+    service.get_cloud_watch_query_result(mock_query_param)
+
+    mock_query_logs.assert_called_with(
+        query_params=mock_query_param,
+        start_time=expected_start_time,
+        end_time=expected_end_time,
+    )
+
+
 def test_get_total_number_of_records(mock_service):
     actual = mock_service.get_total_number_of_records(
         MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
@@ -189,22 +273,14 @@ def test_get_total_number_of_records(mock_service):
     assert actual == expected
 
 
-def test_get_total_number_of_records_larger_mock_data(mock_service):
-    dynamodb_1, _ = build_mock_results("H81109", "9000000001", 123)
-    dynamodb_2, _ = build_mock_results("H81109", "9000000002", 456)
-    dynamodb_3, _ = build_mock_results("H81109", "9000000003", 789)
-    dynamodb_4, _ = build_mock_results("Y12345", "9000000004", 9753)
-    dynamodb_5, _ = build_mock_results("Y12345", "9000000005", 8642)
-    mock_dynamo_scan_result = (
-        dynamodb_1 + dynamodb_2 + dynamodb_3 + dynamodb_4 + dynamodb_5
-    )
-    shuffle(mock_dynamo_scan_result)
+def test_get_total_number_of_records_larger_mock_data(mock_service, larger_mock_data):
+    mock_dynamo_scan_result, _ = larger_mock_data
 
     actual = mock_service.get_total_number_of_records(mock_dynamo_scan_result)
     expected = unordered(
         [
-            {"ods_code": "H81109", "total_number_of_records": 123 + 456 + 789},
-            {"ods_code": "Y12345", "total_number_of_records": 9753 + 8642},
+            {"ods_code": "H81109", "total_number_of_records": 135 + 246 + 369},
+            {"ods_code": "Y12345", "total_number_of_records": 4812 + 5101},
         ]
     )
 
@@ -254,20 +330,10 @@ def test_get_metrics_for_total_and_average_file_sizes(mock_service):
     assert actual == expected
 
 
-def test_get_metrics_for_total_and_average_file_sizes_larger_mock_data(mock_service):
-    dynamodb_1, s3_1 = build_mock_results("H81109", "9000000001", 20, 123)
-    dynamodb_2, s3_2 = build_mock_results("H81109", "9000000002", 30, 456)
-    dynamodb_3, s3_3 = build_mock_results("H81109", "9000000003", 40, 789)
-    dynamodb_4, s3_4 = build_mock_results("Y12345", "9000000004", 50, 9876)
-    dynamodb_5, s3_5 = build_mock_results("Y12345", "9000000005", 60, 5432)
-
-    mock_dynamo_scan_result = (
-        dynamodb_1 + dynamodb_2 + dynamodb_3 + dynamodb_4 + dynamodb_5
-    )
-    mock_s3_list_objects_result = s3_1 + s3_2 + s3_3 + s3_4 + s3_5
-    shuffle(mock_dynamo_scan_result)
-    shuffle(mock_s3_list_objects_result)
-
+def test_get_metrics_for_total_and_average_file_sizes_larger_mock_data(
+    mock_service, larger_mock_data
+):
+    mock_dynamo_scan_result, mock_s3_list_objects_result = larger_mock_data
     actual = mock_service.get_metrics_for_total_and_average_file_sizes(
         mock_dynamo_scan_result, mock_s3_list_objects_result
     )
@@ -309,6 +375,44 @@ def test_get_number_of_document_types(mock_service):
         [
             {"ods_code": "Y12345", "number_of_document_types": 2},
             {"ods_code": "H81109", "number_of_document_types": 2},
+        ]
+    )
+
+    assert actual == expected
+
+
+def test_get_average_number_of_file_per_patient(mock_service):
+    actual = mock_service.get_average_number_of_file_per_patient(
+        MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
+    )
+    expected = unordered(
+        [
+            {"ods_code": "Y12345", "average_records_per_patient": 2},
+            {"ods_code": "H81109", "average_records_per_patient": 3},
+        ]
+    )
+
+    assert actual == expected
+
+
+def test_get_average_number_of_file_per_patient_larger_mock_data(
+    mock_service, larger_mock_data
+):
+    mock_dynamo_scan_result, _ = larger_mock_data
+
+    actual = mock_service.get_average_number_of_file_per_patient(
+        mock_dynamo_scan_result
+    )
+    expected = unordered(
+        [
+            {
+                "ods_code": "H81109",
+                "average_records_per_patient": Decimal(135 + 246 + 369) / 3,
+            },
+            {
+                "ods_code": "Y12345",
+                "average_records_per_patient": Decimal(4812 + 5101) / 2,
+            },
         ]
     )
 
