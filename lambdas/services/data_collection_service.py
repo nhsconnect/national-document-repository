@@ -139,7 +139,9 @@ class DataCollectionService:
 
         return record_store_data_for_all_ods_code
 
-    def get_organisation_data(self, dynamodb_scan_result) -> list[OrganisationData]:
+    def get_organisation_data(
+        self, dynamodb_scan_result: list[dict]
+    ) -> list[OrganisationData]:
         number_of_patients = self.get_number_of_patients(dynamodb_scan_result)
         average_records_per_patient = self.get_average_number_of_file_per_patient(
             dynamodb_scan_result
@@ -244,7 +246,7 @@ class DataCollectionService:
         )
 
         joined_df = dynamodb_df_with_file_key.join(
-            s3_df, how="left", left_on="FileKey", right_on="Key"
+            s3_df, how="left", left_on="FileKey", right_on="Key", coalesce=True
         )
         get_total_size = (pl.col("Size").sum() / 1024 / 1024).alias(
             "TotalFileSizeForPatientInMegabytes"
@@ -327,14 +329,9 @@ class DataCollectionService:
             ods_code = entry["ods_code"]
             joined_by_ods_code[ods_code].update(entry)
 
-        sorted_by_ods_code = sorted(joined_by_ods_code.items())
-        sorted_results = [result for _ods_code, result in sorted_by_ods_code]
+        joined_result = list(joined_by_ods_code.values())
 
-        return sorted_results
-
-    @staticmethod
-    def to_megabyte(file_size_in_byte: int) -> Decimal:
-        return file_size_in_byte / Decimal(1024) / Decimal(1024)
+        return joined_result
 
     @staticmethod
     def take_average(list_of_number: list[int]) -> Decimal:
