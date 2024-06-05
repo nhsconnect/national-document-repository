@@ -78,7 +78,7 @@ class DynamoDBService:
             logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
             raise e
 
-    def simple_query(self, table_name: str, key_condition_expression):
+    def query_all_fields(self, table_name: str, key_condition_expression):
         """
         Allow querying dynamodb table without explicitly defining the fields to retrieve.
         :param table_name: Dynamodb table name
@@ -87,7 +87,7 @@ class DynamoDBService:
         example usage:
             from boto3.dynamodb.conditions import Key
 
-            query_response = db_service.simple_query(
+            query_response = db_service.query_all_fields(
                 table_name=session_table_name,
                 key_condition_expression=Key("NDRSessionId").eq(ndr_session_id)
             )

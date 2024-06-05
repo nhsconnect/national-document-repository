@@ -70,7 +70,7 @@ class StatisticalReportService:
         logger.info(f"The period to report: {self.report_period}")
         dynamodb_items = []
         for date in self.report_period:
-            response = self.dynamo_service.simple_query(
+            response = self.dynamo_service.query_all_fields(
                 table_name=self.statistic_table,
                 key_condition_expression=Key("Date").eq(date),
             )

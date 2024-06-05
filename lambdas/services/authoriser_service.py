@@ -76,7 +76,7 @@ class AuthoriserService:
         )
         session_table_name = os.environ["AUTH_SESSION_TABLE_NAME"]
         db_service = DynamoDBService()
-        query_response = db_service.simple_query(
+        query_response = db_service.query_all_fields(
             table_name=session_table_name,
             key_condition_expression=Key("NDRSessionId").eq(ndr_session_id),
         )
