@@ -38,7 +38,7 @@ permissions:
 
 jobs:
   python_deploy_lambda:
-    name: Deploy lambda ${{ inputs.lambda_handler_name }} to 
+    name: Deploy lambda ${{ inputs.lambda_handler_name }} to ${{ inputs.sandbox }}
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
 
