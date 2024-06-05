@@ -30,10 +30,11 @@ logger = LoggingService(__name__)
 
 class CreateDocumentReferenceService:
     def __init__(self):
-        self.s3_service = S3Service()
         self.dynamo_service = DynamoDBService()
         self.document_service = DocumentService()
         self.document_deletion_service = DocumentDeletionService()
+        create_document_aws_role_arn = os.getenv("PRE_SIGN_ASSUME_ROLE")
+        self.s3_service = S3Service(custom_aws_role=create_document_aws_role_arn)
 
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")

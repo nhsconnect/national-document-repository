@@ -23,7 +23,8 @@ MOCK_EVENT_BODY = {
 @pytest.fixture
 def mock_service(mocker, set_env):
     mocker.patch("boto3.client")
-    service = S3Service()
+    mocker.patch("services.base.iam_service.IAMService")
+    service = S3Service(custom_aws_role="mock_arn_custom_role")
     yield service
 
 
@@ -33,21 +34,29 @@ def mock_client(mocker, mock_service):
     yield client
 
 
-def test_create_upload_presigned_url(mock_service, mock_client):
-    mock_client.generate_presigned_post.return_value = MOCK_PRESIGNED_URL_RESPONSE
+@pytest.fixture()
+def mock_custom_client(mocker, mock_service):
+    client = mocker.patch.object(mock_service, "custom_client")
+    yield client
+
+
+def test_create_upload_presigned_url(mock_service, mock_custom_client):
+    mock_custom_client.generate_presigned_post.return_value = (
+        MOCK_PRESIGNED_URL_RESPONSE
+    )
     response = mock_service.create_upload_presigned_url(MOCK_BUCKET, TEST_OBJECT_KEY)
 
     assert response == MOCK_PRESIGNED_URL_RESPONSE
-    mock_client.generate_presigned_post.assert_called_once()
+    mock_custom_client.generate_presigned_post.assert_called_once()
 
 
-def test_create_download_presigned_url(mock_service, mock_client):
-    mock_client.generate_presigned_url.return_value = MOCK_PRESIGNED_URL_RESPONSE
+def test_create_download_presigned_url(mock_service, mock_custom_client):
+    mock_custom_client.generate_presigned_url.return_value = MOCK_PRESIGNED_URL_RESPONSE
 
     response = mock_service.create_download_presigned_url(MOCK_BUCKET, TEST_FILE_KEY)
 
     assert response == MOCK_PRESIGNED_URL_RESPONSE
-    mock_client.generate_presigned_url.assert_called_once()
+    mock_custom_client.generate_presigned_url.assert_called_once()
 
 
 def test_download_file(mock_service, mock_client):
