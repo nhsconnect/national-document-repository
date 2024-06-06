@@ -47,11 +47,17 @@ class DataCollectionService:
         self.today_date = datetime.today().strftime("%Y%m%d")
 
     def collect_all_data_and_write_to_dynamodb(self):
+        time_period_human_readable = (
+            f"{datetime.fromtimestamp(self.collection_start_time)}"
+            f" ~ {datetime.fromtimestamp(self.collection_end_time)}"
+        )
+        logger.info(f"Collecting data between {time_period_human_readable}.")
+
         all_statistic_data = self.collect_all_data()
-        logger.info("Statistic data collected:")
-        logger.info(all_statistic_data)
+        logger.info("Finished collecting data. Will output to dynamodb table.")
 
         self.write_to_local_dynamodb_table(all_statistic_data)
+        logger.info("Data collection completed.", {"Result": "Successful"})
 
     def collect_all_data(self) -> list[StatisticData]:
         dynamodb_scan_result = self.scan_dynamodb_tables()
