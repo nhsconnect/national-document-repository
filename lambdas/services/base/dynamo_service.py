@@ -169,23 +169,28 @@ class DynamoDBService:
         project_expression: Optional[str] = None,
         filter_expression: Optional[str] = None,
     ) -> list[dict]:
-        table = self.get_table(table_name)
-        scan_arguments = {}
-        if project_expression:
-            scan_arguments["ProjectionExpression"] = project_expression
-        if filter_expression:
-            scan_arguments["FilterExpression"] = filter_expression
+        try:
+            table = self.get_table(table_name)
+            scan_arguments = {}
+            if project_expression:
+                scan_arguments["ProjectionExpression"] = project_expression
+            if filter_expression:
+                scan_arguments["FilterExpression"] = filter_expression
 
-        paginated_result = table.scan(**scan_arguments)
-        dynamodb_scan_result = paginated_result["Items"]
-        while "LastEvaluatedKey" in paginated_result:
-            start_key_for_next_page = paginated_result["LastEvaluatedKey"]
-            paginated_result = table.scan(
-                **scan_arguments,
-                ExclusiveStartKey=start_key_for_next_page,
-            )
-            dynamodb_scan_result += paginated_result["Items"]
-        return dynamodb_scan_result
+            paginated_result = table.scan(**scan_arguments)
+            dynamodb_scan_result = paginated_result["Items"]
+            while "LastEvaluatedKey" in paginated_result:
+                start_key_for_next_page = paginated_result["LastEvaluatedKey"]
+                paginated_result = table.scan(
+                    **scan_arguments,
+                    ExclusiveStartKey=start_key_for_next_page,
+                )
+                dynamodb_scan_result += paginated_result["Items"]
+            return dynamodb_scan_result
+
+        except ClientError as e:
+            logger.error(str(e), {"Result": f"Unable to scan table: {table_name}"})
+            raise e
 
     def batch_writing(self, table_name: str, item_list: list[dict]):
         try:

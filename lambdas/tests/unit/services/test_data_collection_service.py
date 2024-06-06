@@ -141,6 +141,21 @@ def larger_mock_data():
     return mock_dynamo_scan_result, mock_s3_list_objects_result
 
 
+@freeze_time("2024-06-04T18:00:00Z")
+def test_datetime_correctly_configured_during_initialise(set_env):
+    service = DataCollectionService()
+
+    assert service.today_date == "20240604"
+    assert (
+        service.collection_start_time
+        == datetime.fromisoformat("2024-06-03T18:00:00Z").timestamp()
+    )
+    assert (
+        service.collection_end_time
+        == datetime.fromisoformat("2024-06-04T18:00:00Z").timestamp()
+    )
+
+
 def test_collect_all_data_and_write_to_dynamodb(mock_service, mocker):
     mock_collected_data = ["testing1234"]
     mock_service.collect_all_data = mocker.MagicMock(return_value=mock_collected_data)
