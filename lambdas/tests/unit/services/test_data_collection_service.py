@@ -25,13 +25,13 @@ from tests.unit.conftest import (
     MOCK_LG_TABLE_NAME,
     MOCK_STATISTICS_TABLE,
 )
-from tests.unit.data.statistic.expected_data import (
+from tests.unit.helpers.data.statistic.expected_data import (
     ALL_MOCK_DATA_AS_JSON_LIST,
     MOCK_APPLICATION_DATA,
     MOCK_ORGANISATION_DATA,
     MOCK_RECORD_STORE_DATA,
 )
-from tests.unit.data.statistic.mock_dynamodb_and_s3_records import (
+from tests.unit.helpers.data.statistic.mock_dynamodb_and_s3_records import (
     MOCK_ARF_LIST_OBJECTS_RESULT,
     MOCK_ARF_SCAN_RESULT,
     MOCK_LG_LIST_OBJECTS_RESULT,
@@ -40,7 +40,7 @@ from tests.unit.data.statistic.mock_dynamodb_and_s3_records import (
     TOTAL_FILE_SIZE_FOR_Y12345,
     build_mock_results,
 )
-from tests.unit.data.statistic.mock_logs_query_results import (
+from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     HASHED_USER_ID_1,
     HASHED_USER_ID_2,
     MOCK_LG_DELETED,

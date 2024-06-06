@@ -1,11 +1,11 @@
 from datetime import datetime
 
 from models.statistics import ApplicationData, OrganisationData, RecordStoreData
-from tests.unit.data.statistic.mock_dynamodb_and_s3_records import (
+from tests.unit.helpers.data.statistic.mock_dynamodb_and_s3_records import (
     TOTAL_FILE_SIZE_FOR_H81109,
     TOTAL_FILE_SIZE_FOR_Y12345,
 )
-from tests.unit.data.statistic.mock_logs_query_results import (
+from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     HASHED_USER_ID_1,
     HASHED_USER_ID_2,
 )
