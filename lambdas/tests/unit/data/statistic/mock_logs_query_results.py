@@ -67,3 +67,37 @@ MOCK_LG_STORED = [
         "daily_count_stored": "4",
     },
 ]
+
+MOCK_RESPONSE_QUERY_IN_PROGRESS = {"status": "Running"}
+
+MOCK_RESPONSE_QUERY_FAILED = {"status": "Failed"}
+
+MOCK_RESPONSE_QUERY_COMPLETE = {
+    "results": [
+        [
+            {"field": "ods_code", "value": "Y12345"},
+            {"field": "daily_count_viewed", "value": "20"},
+        ],
+        [
+            {"field": "ods_code", "value": "H81109"},
+            {"field": "daily_count_viewed", "value": "40"},
+        ],
+    ],
+    "statistics": {
+        "recordsMatched": 123.0,
+        "recordsScanned": 123.0,
+        "bytesScanned": 123.0,
+    },
+    "status": "Complete",
+}
+
+EXPECTED_QUERY_RESULT = [
+    {
+        "ods_code": "Y12345",
+        "daily_count_viewed": "20",
+    },
+    {
+        "ods_code": "H81109",
+        "daily_count_viewed": "40",
+    },
+]

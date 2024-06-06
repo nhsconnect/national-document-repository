@@ -14,9 +14,9 @@ from models.cloudwatch_logs_query import (
     UniqueActiveUserIds,
 )
 from pytest_unordered import unordered
+from services.base.cloudwatch_logs_query_service import CloudwatchLogsQueryService
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
-from services.cloudwatch_logs_query_service import CloudwatchLogsQueryService
 from services.data_collection_service import DataCollectionService
 from tests.unit.conftest import (
     MOCK_ARF_BUCKET,

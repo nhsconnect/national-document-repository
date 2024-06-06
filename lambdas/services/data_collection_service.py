@@ -20,9 +20,9 @@ from models.statistics import (
     RecordStoreData,
     StatisticData,
 )
+from services.base.cloudwatch_logs_query_service import CloudwatchLogsQueryService
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
-from services.cloudwatch_logs_query_service import CloudwatchLogsQueryService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
 from utils.utilities import flatten, get_file_key_from_s3_url
