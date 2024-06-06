@@ -20,7 +20,6 @@ env:
   BUILD_BRANCH: ${{ inputs.tag_version }}
 
 jobs:
-
   view_action_parameters:
     name: View input params
     runs-on: ubuntu-latest
@@ -59,9 +58,20 @@ jobs:
       cypress_base_url: ${{ vars.CYPRESS_BASE_URL }}
       build_branch: ${{ inputs.tag_version }}
 
+  publish_all_lambda_layers:
+    name: Publish all Lambda Layers
+    uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
+    with:
+      build_branch: ${{ inputs.tag_version }}
+      sandbox: prod
+      environment: prod
+      python_version: "3.11"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_all_lambdas:
     name: Deploy all Lambdas
-    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job"]
+    needs: ["lambda_test_job", "react_testing_job", "cypress_test_job", "publish_all_lambda_layers"]
     uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
     with:
       build_branch: ${{ inputs.tag_version }}

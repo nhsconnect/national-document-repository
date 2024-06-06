@@ -9,7 +9,6 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-
   view_action_parameters:
     name: View input params
     runs-on: ubuntu-latest
@@ -76,9 +75,21 @@ jobs:
         echo Current tag: ${{steps.versioning.outputs.tag}} 
         echo New tag: ${{steps.versioning.outputs.new_tag}}
 
+  publish_all_lambda_layers:
+    name: Publish all Lambda Layers
+    needs: ["tag_and_release"]
+    uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
+    with:
+      build_branch: ${{ needs.tag_and_release.outputs.tag }}
+      sandbox: pre-prod
+      environment: pre-prod
+      python_version: "3.11"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_all_lambdas:
     name: Deploy all Lambdas
-    needs: ["tag_and_release"]
+    needs: ["tag_and_release", "publish_all_lambda_layers"]
     uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
     with:
       build_branch: ${{ needs.tag_and_release.outputs.tag }}

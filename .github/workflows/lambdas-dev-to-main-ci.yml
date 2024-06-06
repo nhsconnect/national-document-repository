@@ -31,9 +31,23 @@ jobs:
       python_version: 3.11
       build_branch: ${{github.event.pull_request.head.ref}}
 
+  publish_all_lambda_layers:
+    name: Publish all Lambda Layers
+    needs: [ "run_tests" ]
+    uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
+    if: |
+      (github.ref == 'refs/heads/main')
+    with:
+      environment: development
+      python_version: '3.11'
+      build_branch: ${{github.event.pull_request.head.ref}}
+      sandbox: ndr-dev
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_all_lambdas:
     uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
-    needs: ['run_tests']
+    needs: ["run_tests", "publish_all_lambda_layers"]
     if: |
       (github.ref == 'refs/heads/main')
     with:

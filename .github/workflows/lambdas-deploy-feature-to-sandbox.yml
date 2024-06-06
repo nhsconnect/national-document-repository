@@ -45,7 +45,6 @@ permissions:
   contents: read # This is required for actions/checkout
 
 jobs:
-
   run_tests:
     name: Run all python tests
     uses: ./.github/workflows/base-lambdas-reusable-test.yml
@@ -53,9 +52,21 @@ jobs:
       python_version: "3.11"
       build_branch: ${{ inputs.build_branch }}
 
+  publish_all_lambda_layers:
+    name: Publish all Lambda Layers
+    uses: ./.github/workflows/base-lambda-layer-reusable-publish-all.yml
+    with:
+      build_branch: ${{ inputs.build_branch }}
+      sandbox: ${{ inputs.sandbox }}
+      environment: ${{ inputs.environment }}
+      python_version: "3.11"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
   deploy_all:
-    name: Deploy all Lambdas to AWS
+    name: Deploy all Lambdas
     uses: ./.github/workflows/base-lambdas-reusable-deploy-all.yml
+    needs: ["publish_all_lambda_layers"]
     with:
       environment: ${{ inputs.environment }}
       python_version: "3.11"
