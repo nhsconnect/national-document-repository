@@ -59,7 +59,7 @@ class OrganisationData(StatisticData):
 
 
 class ApplicationData(StatisticData):
-    active_user_ids_hashed: list[str]
+    active_user_ids_hashed: list[str] = []
 
 
 class LoadedStatisticData(NamedTuple):

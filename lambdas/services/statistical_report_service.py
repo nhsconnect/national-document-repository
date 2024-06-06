@@ -17,6 +17,7 @@ from models.statistics import (
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
+from utils.polars_utils import CastDecimalToFloat
 
 logger = LoggingService(__name__)
 
@@ -29,11 +30,15 @@ class StatisticalReportService:
         self.s3_service = S3Service()
         self.reports_bucket = os.environ["STATISTICAL_REPORTS_BUCKET"]
 
-        last_seven_days = [datetime.today() - timedelta(days=i + 1) for i in range(7)]
+        last_seven_days = [
+            datetime.today() - timedelta(days=i) for i in range(7, 0, -1)
+        ]
         self.report_period: list[str] = [
             date.strftime("%Y%m%d") for date in last_seven_days
         ]
-        self.most_recent_date = self.report_period[0]
+        self.date_period_on_output_filename = (
+            f"{self.report_period[0]}-{self.report_period[-1]}"
+        )
 
     def make_weekly_summary_and_output_to_bucket(self):
         weekly_summary = self.make_weekly_summary()
@@ -48,12 +53,7 @@ class StatisticalReportService:
         weekly_organisation_data = self.summarise_organisation_data(organisation_data)
         weekly_application_data = self.summarise_application_data(application_data)
 
-        logger.info("Data summarised by week:")
-        logger.info(f"Record store data: {weekly_record_store_data.to_dicts()}")
-        logger.info(f"Organisation data: {weekly_organisation_data.to_dicts()}")
-        logger.info(f"Application data: {weekly_application_data.to_dicts()}")
-
-        combined_data = self.join_data_by_ods_code(
+        combined_data = self.join_dataframes_by_ods_code(
             [
                 weekly_record_store_data,
                 weekly_organisation_data,
@@ -61,7 +61,6 @@ class StatisticalReportService:
             ]
         )
         weekly_summary = self.tidy_up_data(combined_data)
-        logger.info(f"Weekly summary by ODS code: {weekly_summary.to_dicts()}")
 
         return weekly_summary
 
@@ -80,9 +79,8 @@ class StatisticalReportService:
 
     @staticmethod
     def load_data_to_polars(data: list[StatisticData]) -> pl.DataFrame:
-        return pl.DataFrame(data).with_columns(
-            column_select.by_dtype(pl.datatypes.Decimal).cast(pl.Float64)
-        )
+        loaded_data = pl.DataFrame(data).with_columns(CastDecimalToFloat)
+        return loaded_data
 
     def summarise_record_store_data(
         self, record_store_data: list[RecordStoreData]
@@ -140,7 +138,7 @@ class StatisticalReportService:
         summarised_data = df.group_by("ods_code").agg(count_unique_ids)
         return summarised_data
 
-    def join_data_by_ods_code(
+    def join_dataframes_by_ods_code(
         self, summarised_data: list[pl.DataFrame]
     ) -> pl.DataFrame:
         joined_data = summarised_data[0]
@@ -185,7 +183,7 @@ class StatisticalReportService:
 
     def store_report_to_s3(self, weekly_summary: pl.DataFrame):
         logger.info("Saving the weekly report as .csv")
-        file_name = f"statistical_report_{self.most_recent_date}.csv"
+        file_name = f"statistical_report_{self.date_period_on_output_filename}.csv"
         local_file_path = f"{tempfile.mkdtemp()}/{file_name}"
         weekly_summary.write_csv(local_file_path)
 
