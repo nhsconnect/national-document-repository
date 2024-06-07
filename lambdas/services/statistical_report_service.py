@@ -18,7 +18,6 @@ from models.statistics import (
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.polars_utils import CastDecimalToFloat
 
 logger = LoggingService(__name__)
 
@@ -80,7 +79,10 @@ class StatisticalReportService:
 
     @staticmethod
     def load_data_to_polars(data: list[StatisticData]) -> pl.DataFrame:
-        loaded_data = pl.DataFrame(data).with_columns(CastDecimalToFloat)
+        cast_decimal_to_float = column_select.by_dtype(pl.datatypes.Decimal).cast(
+            pl.Float64
+        )
+        loaded_data = pl.DataFrame(data).with_columns(cast_decimal_to_float)
         return loaded_data
 
     def summarise_record_store_data(

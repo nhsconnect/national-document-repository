@@ -10,12 +10,7 @@ from models.document_reference import DocumentReference
 from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
-from tests.unit.conftest import (
-    MOCK_LG_BUCKET,
-    MOCK_TEMP_FOLDER,
-    TEST_NHS_NUMBER,
-    TEST_OBJECT_KEY,
-)
+from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
 from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.lambda_exceptions import LGStitchServiceException
 
@@ -54,6 +49,7 @@ def build_lg_doc_ref(
 
 
 MOCK_LLOYD_GEORGE_DOCUMENT_REFS = build_lg_doc_ref_list(page_numbers=[1, 2, 3])
+MOCK_TEMP_FOLDER = "/tmp"
 MOCK_DOWNLOADED_LLOYD_GEORGE_FILES = [
     f"{MOCK_TEMP_FOLDER}/mock_downloaded_file{i}" for i in range(1, 3 + 1)
 ]
@@ -327,7 +323,7 @@ def test_sort_documents_by_filenames_for_more_than_10_files(stitch_service):
 
 def test_download_lloyd_george_files(mock_s3, stitch_service, mock_uuid):
     expected_file_path_on_s3 = f"{TEST_NHS_NUMBER}/{TEST_OBJECT_KEY}"
-    expected_downloaded_file = f"{MOCK_TEMP_FOLDER}/{mock_uuid}"
+    expected_downloaded_file = f"/tmp/{mock_uuid}"
 
     expected = [expected_downloaded_file] * 3
     actual = stitch_service.download_lloyd_george_files(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)

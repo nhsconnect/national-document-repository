@@ -1,4 +1,5 @@
 import json
+import tempfile
 from dataclasses import dataclass
 from enum import Enum
 from unittest import mock
@@ -59,8 +60,6 @@ MOCK_LG_METADATA_SQS_QUEUE = "test_bulk_upload_metadata_queue"
 MOCK_LG_INVALID_SQS_QUEUE = "INVALID_SQS_QUEUE_URL"
 MOCK_STATISTICS_TABLE = "test_statistics_table"
 MOCK_STATISTICS_REPORT_BUCKET = "test_statistics_report_bucket"
-
-MOCK_TEMP_FOLDER = "/tmp/temp_subdir"
 
 TEST_NHS_NUMBER = "9000000009"
 TEST_OBJECT_KEY = "1234-4567-8912-HSDF-TEST"
@@ -239,3 +238,10 @@ class MockError(Enum):
         "err_code": "AB_XXXX",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
+
+
+@pytest.fixture
+def mock_temp_folder(mocker):
+    temp_folder = tempfile.mkdtemp()
+    mocker.patch.object(tempfile, "mkdtemp", return_value=temp_folder)
+    yield temp_folder

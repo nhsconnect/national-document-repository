@@ -11,11 +11,7 @@ from polars.testing import assert_frame_equal
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.statistical_report_service import StatisticalReportService
-from tests.unit.conftest import (
-    MOCK_STATISTICS_REPORT_BUCKET,
-    MOCK_STATISTICS_TABLE,
-    MOCK_TEMP_FOLDER,
-)
+from tests.unit.conftest import MOCK_STATISTICS_REPORT_BUCKET, MOCK_STATISTICS_TABLE
 from tests.unit.helpers.data.statistic.mock_data_build_utils import (
     build_random_application_data,
     build_random_organisation_data,
@@ -67,8 +63,9 @@ def mock_dynamodb_service(mocker):
 def mock_temp_folder(mocker):
     mocker.patch.object(pl.DataFrame, "write_csv")
     mocker.patch("shutil.rmtree")
-    mocker.patch.object(tempfile, "mkdtemp", return_value=MOCK_TEMP_FOLDER)
-    yield MOCK_TEMP_FOLDER
+    temp_folder = tempfile.mkdtemp()
+    mocker.patch.object(tempfile, "mkdtemp", return_value=temp_folder)
+    yield temp_folder
 
 
 @freeze_time("2024-06-06T18:00:00Z")
