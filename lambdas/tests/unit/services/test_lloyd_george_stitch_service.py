@@ -327,7 +327,7 @@ def test_sort_documents_by_filenames_for_more_than_10_files(stitch_service):
 
 def test_download_lloyd_george_files(mock_s3, stitch_service, mock_uuid):
     expected_file_path_on_s3 = f"{TEST_NHS_NUMBER}/{TEST_OBJECT_KEY}"
-    expected_downloaded_file = f"/tmp/{mock_uuid}"
+    expected_downloaded_file = f"{MOCK_TEMP_FOLDER}/{mock_uuid}"
 
     expected = [expected_downloaded_file] * 3
     actual = stitch_service.download_lloyd_george_files(MOCK_LLOYD_GEORGE_DOCUMENT_REFS)

@@ -198,7 +198,7 @@ class DataCollectionService:
         for entry in query_result:
             ods_code = entry.get("ods_code")
             user_id = entry.get("user_id")
-            hashed_user_id = hashlib.md5(bytes(user_id, "utf8")).hexdigest()
+            hashed_user_id = hashlib.sha256(bytes(user_id, "utf8")).hexdigest()
             user_ids_per_ods_code[ods_code].append(hashed_user_id)
 
         return user_ids_per_ods_code
