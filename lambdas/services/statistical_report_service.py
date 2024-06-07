@@ -1,4 +1,5 @@
 import os
+import shutil
 import tempfile
 from datetime import datetime, timedelta
 
@@ -40,7 +41,7 @@ class StatisticalReportService:
             f"{self.report_period[0]}-{self.report_period[-1]}"
         )
 
-    def make_weekly_summary_and_output_to_bucket(self):
+    def make_weekly_summary_and_output_to_bucket(self) -> None:
         weekly_summary = self.make_weekly_summary()
         self.store_report_to_s3(weekly_summary)
 
@@ -86,6 +87,9 @@ class StatisticalReportService:
         self, record_store_data: list[RecordStoreData]
     ) -> pl.DataFrame:
         logger.info("Summarising RecordStoreData...")
+        if not record_store_data:
+            logger.info("RecordStoreData for this period was empty.")
+            return pl.DataFrame()
 
         df = self.load_data_to_polars(record_store_data)
 
@@ -102,6 +106,9 @@ class StatisticalReportService:
         self, organisation_data: list[OrganisationData]
     ) -> pl.DataFrame:
         logger.info("Summarising OrganisationData...")
+        if not organisation_data:
+            logger.info("OrganisationData for this period was empty.")
+            return pl.DataFrame()
 
         df = self.load_data_to_polars(organisation_data)
 
@@ -110,7 +117,9 @@ class StatisticalReportService:
             .sum()
             .name.map(lambda column_name: column_name.replace("daily", "weekly"))
         )
-        take_average_for_patient_record = pl.col("average_records_per_patient").mean()
+        take_average_for_patient_record = (
+            pl.col("average_records_per_patient").mean().round(3)
+        )
         select_most_recent_number_of_patients = (
             pl.col("number_of_patients").sort_by("date").last()
         )
@@ -125,6 +134,9 @@ class StatisticalReportService:
         self, application_data: list[ApplicationData]
     ) -> pl.DataFrame:
         logger.info("Summarising ApplicationData...")
+        if not application_data:
+            logger.info("ApplicationData for this period was empty.")
+            return pl.DataFrame()
 
         df = self.load_data_to_polars(application_data)
 
@@ -141,8 +153,9 @@ class StatisticalReportService:
     def join_dataframes_by_ods_code(
         self, summarised_data: list[pl.DataFrame]
     ) -> pl.DataFrame:
-        joined_data = summarised_data[0]
-        for other_df in summarised_data[1:]:
+        non_empty_data = [df for df in summarised_data if not df.is_empty()]
+        joined_data = non_empty_data[0]
+        for other_df in non_empty_data[1:]:
             joined_data = joined_data.join(
                 other_df, on="ods_code", how="outer_coalesce"
             )
@@ -159,9 +172,8 @@ class StatisticalReportService:
         return with_columns_renamed
 
     def update_date_column(self, joined_data: pl.DataFrame) -> pl.DataFrame:
-        report_period_as_string = f"{self.report_period[-1]} ~ {self.report_period[0]}"
         date_column_filled_with_report_period = joined_data.with_columns(
-            pl.lit(report_period_as_string).alias("date")
+            pl.lit(self.date_period_in_output_filename).alias("date")
         )
         return date_column_filled_with_report_period
 
@@ -181,14 +193,17 @@ class StatisticalReportService:
         else:
             return humanize(column_name)
 
-    def store_report_to_s3(self, weekly_summary: pl.DataFrame):
+    def store_report_to_s3(self, weekly_summary: pl.DataFrame) -> None:
         logger.info("Saving the weekly report as .csv")
         file_name = f"statistical_report_{self.date_period_in_output_filename}.csv"
-        local_file_path = f"{tempfile.mkdtemp()}/{file_name}"
-        weekly_summary.write_csv(local_file_path)
+        local_file_path = os.path.join(tempfile.mkdtemp(), file_name)
+        try:
+            weekly_summary.write_csv(local_file_path)
 
-        logger.info("Uploading the csv report to S3 bucket...")
-        self.s3_service.upload_file(local_file_path, self.reports_bucket, file_name)
+            logger.info("Uploading the csv report to S3 bucket...")
+            self.s3_service.upload_file(local_file_path, self.reports_bucket, file_name)
 
-        logger.info("The weekly report is stored in s3 bucket.")
-        logger.info(f"File name: {file_name}")
+            logger.info("The weekly report is stored in s3 bucket.")
+            logger.info(f"File name: {file_name}")
+        finally:
+            shutil.rmtree(local_file_path)

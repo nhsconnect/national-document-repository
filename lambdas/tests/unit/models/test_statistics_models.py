@@ -4,11 +4,14 @@ from models.statistics import ApplicationData, RecordStoreData, load_from_dynamo
 from tests.unit.helpers.data.statistic.mock_statistic_data import (
     MOCK_APPLICATION_DATA_1,
     MOCK_APPLICATION_DATA_2,
+    MOCK_APPLICATION_DATA_3,
     MOCK_DYNAMODB_ITEMS,
     MOCK_ORGANISATION_DATA_1,
     MOCK_ORGANISATION_DATA_2,
+    MOCK_ORGANISATION_DATA_3,
     MOCK_RECORD_STORE_DATA_1,
     MOCK_RECORD_STORE_DATA_2,
+    MOCK_RECORD_STORE_DATA_3,
     SERIALISED_RECORD_STORE_DATA,
 )
 
@@ -26,7 +29,7 @@ def test_serialise_and_deserialise_record_store_data(mocker):
     assert test_data == load_from_deserialised
 
 
-def test_empty_ods_code_will_be_filled_with_an_empty_value(mocker):
+def test_empty_ods_code_will_be_filled_with_an_empty_value():
     data = RecordStoreData(date="20240516", ods_code="")
     assert data.ods_code == "NO_ODS_CODE"
 
@@ -46,12 +49,15 @@ def test_load_from_dynamodb_items():
     assert deserialised_data.record_store_data == [
         MOCK_RECORD_STORE_DATA_1,
         MOCK_RECORD_STORE_DATA_2,
+        MOCK_RECORD_STORE_DATA_3,
     ]
     assert deserialised_data.organisation_data == [
         MOCK_ORGANISATION_DATA_1,
         MOCK_ORGANISATION_DATA_2,
+        MOCK_ORGANISATION_DATA_3,
     ]
     assert deserialised_data.application_data == [
         MOCK_APPLICATION_DATA_1,
         MOCK_APPLICATION_DATA_2,
+        MOCK_APPLICATION_DATA_3,
     ]

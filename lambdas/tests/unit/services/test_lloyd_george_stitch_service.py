@@ -11,6 +11,7 @@ from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
 from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
+from unit.conftest import MOCK_TEMP_FOLDER
 from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.lambda_exceptions import LGStitchServiceException
 
@@ -49,7 +50,6 @@ def build_lg_doc_ref(
 
 
 MOCK_LLOYD_GEORGE_DOCUMENT_REFS = build_lg_doc_ref_list(page_numbers=[1, 2, 3])
-MOCK_TEMP_FOLDER = "/tmp"
 MOCK_DOWNLOADED_LLOYD_GEORGE_FILES = [
     f"{MOCK_TEMP_FOLDER}/mock_downloaded_file{i}" for i in range(1, 3 + 1)
 ]
