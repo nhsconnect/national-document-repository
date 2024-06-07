@@ -36,7 +36,7 @@ class StatisticalReportService:
         self.report_period: list[str] = [
             date.strftime("%Y%m%d") for date in last_seven_days
         ]
-        self.date_period_on_output_filename = (
+        self.date_period_in_output_filename = (
             f"{self.report_period[0]}-{self.report_period[-1]}"
         )
 
@@ -133,7 +133,7 @@ class StatisticalReportService:
             .flatten()
             .unique()
             .len()
-            .alias("Active users count")
+            .alias("active_users_count")
         )
         summarised_data = df.group_by("ods_code").agg(count_unique_ids)
         return summarised_data
@@ -183,7 +183,7 @@ class StatisticalReportService:
 
     def store_report_to_s3(self, weekly_summary: pl.DataFrame):
         logger.info("Saving the weekly report as .csv")
-        file_name = f"statistical_report_{self.date_period_on_output_filename}.csv"
+        file_name = f"statistical_report_{self.date_period_in_output_filename}.csv"
         local_file_path = f"{tempfile.mkdtemp()}/{file_name}"
         weekly_summary.write_csv(local_file_path)
 

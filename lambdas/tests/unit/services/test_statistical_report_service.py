@@ -3,15 +3,16 @@ from random import shuffle
 import polars as pl
 import pytest
 from freezegun import freeze_time
+from models.statistics import ApplicationData
 from polars.testing import assert_frame_equal
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.statistical_report_service import StatisticalReportService
-from unit.helpers.data.statistic.mock_statistic_data import (
+from tests.unit.helpers.data.statistic.mock_statistic_data import (
+    build_random_application_data,
     build_random_organisation_data,
     build_random_record_store_data,
 )
-from utils.polars_utils import CastDecimalToFloat
 
 
 @pytest.fixture
@@ -50,7 +51,7 @@ def test_datetime_correctly_configured_during_initialise(set_env):
         "20240604",
         "20240605",
     ]
-    assert service.date_period_on_output_filename == "20240530-20240605"
+    assert service.date_period_in_output_filename == "20240530-20240605"
 
 
 def test_summarise_record_store_data(mock_service):
@@ -65,15 +66,13 @@ def test_summarise_record_store_data(mock_service):
 
     latest_record_in_H81109 = max(mock_data_H81109, key=lambda record: record.date)
     latest_record_in_Y12345 = max(mock_data_Y12345, key=lambda record: record.date)
-    expected = (
-        pl.DataFrame([latest_record_in_H81109, latest_record_in_Y12345])
-        .drop("date", "statistic_id")
-        .with_columns(CastDecimalToFloat)
+    expected = pl.DataFrame([latest_record_in_H81109, latest_record_in_Y12345]).drop(
+        "date", "statistic_id"
     )
 
     actual = mock_service.summarise_record_store_data(mock_record_store_data)
 
-    assert_frame_equal(actual, expected, check_row_order=False)
+    assert_frame_equal(actual, expected, check_row_order=False, check_dtype=False)
 
 
 def test_summarise_organisation_data(mock_service):
@@ -129,4 +128,57 @@ def assert_number_of_patient_correct(mock_data, row_in_actual_data):
 
 
 def test_summarise_application_data(mock_service):
-    pass
+    mock_data = [
+        ApplicationData(
+            ods_code="H81109", date="20240606", active_user_ids_hashed=["aaa", "bbb"]
+        ),
+        ApplicationData(
+            ods_code="H81109",
+            date="20240607",
+            active_user_ids_hashed=["bbb", "ccc", "ddd"],
+        ),
+        ApplicationData(
+            ods_code="H81109",
+            date="20240608",
+            active_user_ids_hashed=["aaa", "ccc", "eee"],
+        ),
+    ]
+
+    expected = pl.DataFrame(
+        [
+            {"ods_code": "H81109", "active_users_count": 5},
+        ]
+    )
+    actual = mock_service.summarise_application_data(mock_data)
+
+    assert_frame_equal(actual, expected, check_dtype=False, check_row_order=False)
+
+
+def test_summarise_application_data_larger_mock_data(mock_service):
+    mock_data_H81109 = build_random_application_data(
+        "H81109", ["20240603", "20240604", "20240605", "20240606", "20240607"]
+    )
+    mock_data_Y12345 = build_random_application_data(
+        "Y12345", ["20240603", "20240604", "20240605", "20240606", "20240607"]
+    )
+    mock_organisation_data = mock_data_H81109 + mock_data_Y12345
+    shuffle(mock_organisation_data)
+
+    active_users_count_H81109 = count_unique_user_ids(mock_data_H81109)
+    active_users_count_Y12345 = count_unique_user_ids(mock_data_Y12345)
+
+    expected = pl.DataFrame(
+        [
+            {"ods_code": "H81109", "active_users_count": active_users_count_H81109},
+            {"ods_code": "Y12345", "active_users_count": active_users_count_Y12345},
+        ]
+    )
+    actual = mock_service.summarise_application_data(mock_organisation_data)
+
+    assert_frame_equal(actual, expected, check_dtype=False, check_row_order=False)
+
+
+def count_unique_user_ids(mock_data: list[ApplicationData]) -> int:
+    active_users_of_each_day = [set(data.active_user_ids_hashed) for data in mock_data]
+    unique_active_users_for_whole_week = set.union(*active_users_of_each_day)
+    return len(unique_active_users_for_whole_week)

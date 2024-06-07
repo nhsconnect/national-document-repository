@@ -1,8 +1,9 @@
 from decimal import Decimal
 
+import polars as pl
 from models.statistics import ApplicationData, OrganisationData, RecordStoreData
 
-mock_record_store_data_1 = RecordStoreData(
+MOCK_RECORD_STORE_DATA_1 = RecordStoreData(
     statistic_id="974b1ca0-8e5e-4d12-9673-93050f0fee71",
     date="20240510",
     ods_code="Y12345",
@@ -11,8 +12,7 @@ mock_record_store_data_1 = RecordStoreData(
     total_size_of_records_in_megabytes=Decimal("1.23"),
 )
 
-
-mock_record_store_data_2 = RecordStoreData(
+MOCK_RECORD_STORE_DATA_2 = RecordStoreData(
     statistic_id="e02ec4db-8a7d-4f84-a4b3-875a526b37d4",
     date="20240510",
     ods_code="Z56789",
@@ -21,7 +21,33 @@ mock_record_store_data_2 = RecordStoreData(
     total_size_of_records_in_megabytes=Decimal("1.7578678131103515625"),
 )
 
-mock_organisation_data_1 = OrganisationData(
+MOCK_RECORD_STORE_DATA_3 = RecordStoreData(
+    statistic_id="c2841ca0-8e5e-4d12-9673-93050f0fee71",
+    date="20240511",
+    ods_code="Y12345",
+    total_number_of_records=20,
+    number_of_document_types=2,
+    total_size_of_records_in_megabytes=Decimal("2.34"),
+)
+
+EXPECTED_SUMMARY_RECORD_STORE_DATA = pl.DataFrame(
+    [
+        {
+            "ods_code": "Z56789",
+            "total_number_of_records": 18,
+            "number_of_document_types": 1,
+            "total_size_of_records_in_megabytes": 1.7578678131103515625,
+        },
+        {
+            "ods_code": "Y12345",
+            "total_number_of_records": 20,
+            "number_of_document_types": 2,
+            "total_size_of_records_in_megabytes": 2.34,
+        },
+    ]
+)
+
+MOCK_ORGANISATION_DATA_1 = OrganisationData(
     statistic_id="5acda4bf-8b93-4ba0-8410-789aac4fcbae",
     date="20240510",
     ods_code="Z56789",
@@ -32,7 +58,7 @@ mock_organisation_data_1 = OrganisationData(
     daily_count_downloaded=4,
     daily_count_deleted=1,
 )
-mock_organisation_data_2 = OrganisationData(
+MOCK_ORGANISATION_DATA_2 = OrganisationData(
     statistic_id="9ee2c3d1-97b9-4c34-b75c-83e7d1b442f4",
     date="20240510",
     ods_code="Y12345",
@@ -43,7 +69,8 @@ mock_organisation_data_2 = OrganisationData(
     daily_count_downloaded=1,
     daily_count_deleted=1,
 )
-mock_application_data_1 = ApplicationData(
+
+MOCK_APPLICATION_DATA_1 = ApplicationData(
     statistic_id="12d92f26-47c3-452c-923b-819cfcc27c79",
     date="20240510",
     ods_code="Y12345",
@@ -52,14 +79,14 @@ mock_application_data_1 = ApplicationData(
         "ba81803adac3c816b6cbaf67bf33022a",
     ],
 )
-mock_application_data_2 = ApplicationData(
+MOCK_APPLICATION_DATA_2 = ApplicationData(
     statistic_id="d495959f-93dc-4f05-a869-43d8711ca120",
     date="20240510",
     ods_code="Z56789",
     active_user_ids_hashed=["cf1af742e351ce63d8ed275d4bec8d8f"],
 )
 
-serialised_application_data = [
+SERIALISED_APPLICATION_DATA = [
     {
         "Date": "20240510",
         "OdsCode": "Y12345",
@@ -77,7 +104,7 @@ serialised_application_data = [
     },
 ]
 
-serialised_organisation_data = [
+SERIALISED_ORGANISATION_DATA = [
     {
         "Date": "20240510",
         "DailyCountStored": 0,
@@ -102,7 +129,7 @@ serialised_organisation_data = [
     },
 ]
 
-serialised_record_store_data = [
+SERIALISED_RECORD_STORE_DATA = [
     {
         "TotalSizeOfRecordsInMegabytes": Decimal("1.23"),
         "AverageSizeOfDocumentsPerPatientInMegabytes": Decimal("0"),
@@ -123,8 +150,8 @@ serialised_record_store_data = [
     },
 ]
 
-mock_dynamodb_items = (
-    serialised_application_data
-    + serialised_organisation_data
-    + serialised_record_store_data
+MOCK_DYNAMODB_ITEMS = (
+    SERIALISED_APPLICATION_DATA
+    + SERIALISED_ORGANISATION_DATA
+    + SERIALISED_RECORD_STORE_DATA
 )

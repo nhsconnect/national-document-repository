@@ -1,6 +1,6 @@
 import random
 
-from models.statistics import OrganisationData, RecordStoreData
+from models.statistics import ApplicationData, OrganisationData, RecordStoreData
 
 
 def make_random_data(
@@ -40,3 +40,18 @@ def build_random_organisation_data(
     }
     all_random_data = make_random_data(ods_code, date_range, field_names)
     return [OrganisationData(**data) for data in all_random_data]
+
+
+def build_random_application_data(
+    ods_code: str, date_range: list[str]
+) -> list[ApplicationData]:
+    result = []
+    for date in date_range:
+        random_numbers = random.sample(range(30), k=random.randint(1, 10))
+        hashed_user_ids = [f"userid_{number}" for number in random_numbers]
+        application_data = ApplicationData(
+            ods_code=ods_code, date=date, active_user_ids_hashed=hashed_user_ids
+        )
+        result.append(application_data)
+
+    return result
