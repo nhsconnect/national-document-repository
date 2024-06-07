@@ -248,6 +248,7 @@ def test_file_exist_on_s3_raises_client_error_if_unexpected_response(
 
 def test_s3_service_singleton_instance(mocker):
     mocker.patch("boto3.client")
+    S3Service._instance = None
 
     instance_1 = S3Service()
     instance_2 = S3Service()
@@ -256,6 +257,8 @@ def test_s3_service_singleton_instance(mocker):
 
 
 def test_not_created_presigned_url_without_custom_client(mocker):
+    S3Service._instance = None
+
     mocker.patch("boto3.client")
     mock_service = S3Service()
 
@@ -265,6 +268,8 @@ def test_not_created_presigned_url_without_custom_client(mocker):
 
 
 def test_not_created_custom_client_without_client_role(mocker):
+    S3Service._instance = None
+
     mocker.patch("boto3.client")
     iam_service = mocker.patch("services.base.iam_service.IAMService")
 
@@ -275,6 +280,8 @@ def test_not_created_custom_client_without_client_role(mocker):
 
 
 def test_created_custom_client_when_client_role_is_passed(mocker):
+    S3Service._instance = None
+
     mocker.patch("boto3.client")
     iam_service_instance = mocker.MagicMock()
     iam_service = mocker.patch(
