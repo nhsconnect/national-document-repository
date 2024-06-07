@@ -264,3 +264,4 @@ def test_not_created_custom_client_without_client_role(mocker):
 
     assert response is None
     iam_service.assert_not_called()
+    assert mock_service.custom_client is None
