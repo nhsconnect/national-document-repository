@@ -10,8 +10,12 @@ from models.document_reference import DocumentReference
 from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
-from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
-from unit.conftest import MOCK_TEMP_FOLDER
+from tests.unit.conftest import (
+    MOCK_LG_BUCKET,
+    MOCK_TEMP_FOLDER,
+    TEST_NHS_NUMBER,
+    TEST_OBJECT_KEY,
+)
 from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.lambda_exceptions import LGStitchServiceException
 
