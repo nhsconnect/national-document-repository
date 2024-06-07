@@ -31,14 +31,12 @@ MOCK_LIST_OBJECTS_RESPONSE = {
     "Contents": [
         {
             "Key": "9000000009/2985a5dd-37ac-481a-b847-ee09e4b0817b",
-            "LastModified": "2024-04-22 15:39:54+00:00",
             "ETag": '"ddeafe0237ac7cb097c9a34c0e21a8a9"',
             "Size": 928,
             "StorageClass": "STANDARD",
         },
         {
             "Key": "9000000009/384b886d-bd86-4211-9f43-73f7146fbb9b",
-            "LastModified": "2024-04-22 15:39:53+00:00",
             "ETag": '"ddeafe0237ac7cb097c9a34c0e21a8a9"',
             "Size": 928,
             "StorageClass": "STANDARD",
@@ -58,13 +56,11 @@ MOCK_LIST_OBJECTS_PAGINATED_RESPONSES = [
         "Contents": [
             {
                 "Key": "9000000009/2985a5dd-37ac-481a-b847-ee09e4b0817b",
-                "LastModified": "2024-04-22 15:39:54+00:00",
                 "Size": 928,
                 "StorageClass": "STANDARD",
             },
             {
                 "Key": "9000000009/384b886d-bd86-4211-9f43-73f7146fbb9b",
-                "LastModified": "2024-04-22 15:39:53+00:00",
                 "Size": 928,
                 "StorageClass": "STANDARD",
             },
@@ -75,13 +71,11 @@ MOCK_LIST_OBJECTS_PAGINATED_RESPONSES = [
         "Contents": [
             {
                 "Key": "9000000009/94c93a0c-a322-4eaa-ad0b-29ea876c33a5",
-                "LastModified": "2024-04-22 15:39:54+00:00",
                 "Size": 928,
                 "StorageClass": "STANDARD",
             },
             {
                 "Key": "9000000009/36af7807-7965-4c17-b2eb-0f2ae903196d",
-                "LastModified": "2024-04-22 15:39:53+00:00",
                 "Size": 928,
                 "StorageClass": "STANDARD",
             },

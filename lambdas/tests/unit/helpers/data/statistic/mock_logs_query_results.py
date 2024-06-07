@@ -5,17 +5,14 @@ HASHED_USER_ID_2 = "a89d1cb4ac0776e45131c65a69e8b1a48026e9b497c94409e480588418a0
 
 MOCK_UNIQUE_ACTIVE_USER_IDS = [
     {
-        "@timestamp": "2024-06-04 09:17:25.245",
         "ods_code": "Y12345",
         "user_id": USER_ID_1,
     },
     {
-        "@timestamp": "2024-06-04 11:17:25.245",
         "ods_code": "H81109",
         "user_id": USER_ID_1,
     },
     {
-        "@timestamp": "2024-06-04 13:17:25.245",
         "ods_code": "H81109",
         "user_id": USER_ID_2,
     },

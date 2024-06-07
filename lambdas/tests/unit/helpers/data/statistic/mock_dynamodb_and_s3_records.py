@@ -3,6 +3,8 @@ import random
 import uuid
 from typing import Tuple
 
+PDF_MIME_TYPE = "application/pdf"
+
 
 def build_mock_results(
     ods_code: str,
@@ -22,7 +24,7 @@ def build_mock_results(
     dynamodb_scan_result = [
         {
             "CurrentGpOds": ods_code,
-            "ContentType": "application/pdf",
+            "ContentType": PDF_MIME_TYPE,
             "FileLocation": f"s3://test-lg-table/{nhs_number}/{file_id}",
             "NhsNumber": nhs_number,
         }
@@ -43,31 +45,31 @@ def build_mock_results(
 MOCK_LG_SCAN_RESULT = [
     {
         "CurrentGpOds": "H81109",
-        "ContentType": "application/pdf",
+        "ContentType": PDF_MIME_TYPE,
         "FileLocation": "s3://test-lg-table/9000000009/4ac21f7b-abd6-46c9-bf55-e7bafccba2ab",
         "NhsNumber": "9000000009",
     },
     {
         "CurrentGpOds": "H81109",
-        "ContentType": "application/pdf",
+        "ContentType": PDF_MIME_TYPE,
         "FileLocation": "s3://test-lg-table/9000000009/95764e53-b5fd-47b8-8756-1c5604121444",
         "NhsNumber": "9000000009",
     },
     {
         "CurrentGpOds": "H81109",
-        "ContentType": "application/pdf",
+        "ContentType": PDF_MIME_TYPE,
         "FileLocation": "s3://test-lg-table/9000000009/0ab18243-783a-4044-8146-b5b0996d8422",
         "NhsNumber": "9000000009",
     },
     {
         "CurrentGpOds": "H81109",
-        "ContentType": "application/pdf",
+        "ContentType": PDF_MIME_TYPE,
         "FileLocation": "s3://test-lg-table/9000000001/5d5b3c28-e6c8-4d46-8ae3-a2b97321bcf8",
         "NhsNumber": "9000000001",
     },
     {
         "CurrentGpOds": "H81109",
-        "ContentType": "application/pdf",
+        "ContentType": PDF_MIME_TYPE,
         "FileLocation": "s3://test-lg-table/9000000001/2543ba87-dcdb-4583-bae2-e83c4ba7af34",
         "NhsNumber": "9000000001",
     },
