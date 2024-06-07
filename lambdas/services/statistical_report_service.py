@@ -196,7 +196,8 @@ class StatisticalReportService:
     def store_report_to_s3(self, weekly_summary: pl.DataFrame) -> None:
         logger.info("Saving the weekly report as .csv")
         file_name = f"statistical_report_{self.date_period_in_output_filename}.csv"
-        local_file_path = os.path.join(tempfile.mkdtemp(), file_name)
+        temp_folder = tempfile.mkdtemp()
+        local_file_path = os.path.join(temp_folder, file_name)
         try:
             weekly_summary.write_csv(local_file_path)
 
@@ -206,4 +207,4 @@ class StatisticalReportService:
             logger.info("The weekly report is stored in s3 bucket.")
             logger.info(f"File name: {file_name}")
         finally:
-            shutil.rmtree(local_file_path)
+            shutil.rmtree(temp_folder)
