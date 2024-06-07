@@ -178,7 +178,7 @@ class DynamoDBService:
                 scan_arguments["FilterExpression"] = filter_expression
 
             paginated_result = table.scan(**scan_arguments)
-            dynamodb_scan_result = paginated_result["Items"]
+            dynamodb_scan_result = paginated_result.get("Items", [])
             while "LastEvaluatedKey" in paginated_result:
                 start_key_for_next_page = paginated_result["LastEvaluatedKey"]
                 paginated_result = table.scan(

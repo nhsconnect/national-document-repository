@@ -128,5 +128,5 @@ class S3Service:
         s3_paginator = self.client.get_paginator("list_objects_v2")
         s3_list_objects_result = []
         for paginated_result in s3_paginator.paginate(Bucket=bucket_name):
-            s3_list_objects_result += paginated_result["Contents"]
+            s3_list_objects_result += paginated_result.get("Contents", [])
         return s3_list_objects_result
