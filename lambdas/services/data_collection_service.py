@@ -2,7 +2,6 @@ import hashlib
 import os
 from collections import Counter, defaultdict
 from datetime import datetime
-from decimal import Decimal
 
 import polars as pl
 from enums.supported_document_types import SupportedDocumentTypes
@@ -247,18 +246,15 @@ class DataCollectionService:
         dynamodb_df_with_file_key = dynamodb_df.with_columns(
             pl.col("FileLocation")
             .map_elements(get_file_key_from_s3_url, return_dtype=pl.String)
-            .alias("FileKey")
+            .alias("S3FileKey")
+        )
+        joined_df = dynamodb_df_with_file_key.join(
+            s3_df, how="left", left_on="S3FileKey", right_on="Key", coalesce=True
         )
 
-        joined_df = dynamodb_df_with_file_key.join(
-            s3_df, how="left", left_on="FileKey", right_on="Key", coalesce=True
-        )
         get_total_size = (pl.col("Size").sum() / 1024 / 1024).alias(
             "TotalFileSizeForPatientInMegabytes"
         )
-        df_with_total_file_size_per_patient = joined_df.group_by(
-            "CurrentGpOds", "NhsNumber"
-        ).agg(get_total_size)
 
         get_average_file_size_per_patient = (
             pl.col("TotalFileSizeForPatientInMegabytes")
@@ -273,10 +269,11 @@ class DataCollectionService:
         )
 
         result = (
-            df_with_total_file_size_per_patient.group_by("CurrentGpOds")
+            joined_df.group_by("CurrentGpOds", "NhsNumber")
+            .agg(get_total_size)
+            .group_by("CurrentGpOds")
             .agg(get_average_file_size_per_patient, get_total_file_size_for_ods_code)
             .rename({"CurrentGpOds": "ods_code"})
-            .sort("ods_code")
         )
 
         return result.to_dicts()
@@ -299,29 +296,21 @@ class DataCollectionService:
         self,
         dynamodb_scan_result: list[dict],
     ) -> list[dict]:
-        # we should consider to use pandas / polars for this kind of aggregation
-        ods_code_and_patient_number_tuple_for_every_document = [
-            (item["CurrentGpOds"], item["NhsNumber"]) for item in dynamodb_scan_result
-        ]
-        counter_dict = Counter(ods_code_and_patient_number_tuple_for_every_document)
-        counter_dict_by_ods_code = defaultdict(list)
+        dynamodb_df = pl.DataFrame(dynamodb_scan_result)
 
-        for (
-            ods_code,
-            _nhs_number,
-        ), number_of_file_of_single_patient in counter_dict.items():
-            counter_dict_by_ods_code[ods_code].append(number_of_file_of_single_patient)
+        count_records = pl.len().alias("number_of_records")
+        take_average_of_record_count = (
+            pl.col("number_of_records").mean().alias("average_records_per_patient")
+        )
 
-        average_by_ods_code = [
-            {
-                "ods_code": ods_code,
-                "average_records_per_patient": self.take_average(
-                    list_of_number_of_files_of_each_patient
-                ),
-            }
-            for ods_code, list_of_number_of_files_of_each_patient in counter_dict_by_ods_code.items()
-        ]
-        return average_by_ods_code
+        result = (
+            dynamodb_df.group_by("CurrentGpOds", "NhsNumber")
+            .agg(count_records)
+            .group_by("CurrentGpOds")
+            .agg(take_average_of_record_count)
+            .rename({"CurrentGpOds": "ods_code"})
+        )
+        return result.to_dicts()
 
     @staticmethod
     def join_results_by_ods_code(results: list[list[dict]]) -> list[dict]:
@@ -333,9 +322,3 @@ class DataCollectionService:
         joined_result = list(joined_by_ods_code.values())
 
         return joined_result
-
-    @staticmethod
-    def take_average(list_of_number: list[int]) -> Decimal:
-        if list_of_number:
-            return sum(list_of_number) / Decimal(len(list_of_number))
-        return Decimal(0)
