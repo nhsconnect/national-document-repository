@@ -327,8 +327,8 @@ jobs:
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: data_collection_handler
-      lambda_aws_name: DataCollectionHandler
-      lambda_layer_names: "core_lambda_layer,data_layer"
+      lambda_aws_name: DataCollectionLambda
+      lambda_layer_names: "core_lambda_layer,data_lambda_layer"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -342,6 +342,6 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: statistical_report_handler
       lambda_aws_name: StatisticalReportLambda
-      lambda_layer_names: "core_lambda_layer,data_layer"
+      lambda_layer_names: "core_lambda_layer,data_lambda_layer"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
