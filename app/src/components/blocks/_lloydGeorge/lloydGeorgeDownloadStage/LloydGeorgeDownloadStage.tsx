@@ -231,7 +231,7 @@ function LloydGeorgeDownloadStage({
                     element={
                         <LgDownloadComplete
                             deleteAfterDownload={deleteAfterDownload}
-                            numberOfFiles={numberOfFiles}
+                            numberOfFiles={numberOfFilesForDownload.current}
                             selectedDocuments={selectedDocuments}
                             searchResults={searchResults}
                             setDownloadStage={setDownloadStage}
