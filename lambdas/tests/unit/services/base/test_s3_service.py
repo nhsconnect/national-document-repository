@@ -253,3 +253,14 @@ def test_s3_service_singleton_instance(mocker):
     instance_2 = S3Service()
 
     assert instance_1 is instance_2
+
+
+def test_not_created_custom_client_without_client_role(mocker):
+    mocker.patch("boto3.client")
+    iam_service = mocker.patch("services.base.iam_service.IAMService")
+    mock_service = S3Service()
+
+    response = mock_service.create_download_presigned_url(MOCK_BUCKET, TEST_FILE_KEY)
+
+    assert response is None
+    iam_service.assert_not_called()
