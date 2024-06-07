@@ -25,7 +25,7 @@ from tests.unit.conftest import (
     MOCK_LG_TABLE_NAME,
     MOCK_STATISTICS_TABLE,
 )
-from tests.unit.helpers.data.statistic.expected_data import (
+from tests.unit.helpers.data.statistic.mock_collected_data import (
     ALL_MOCK_DATA_AS_JSON_LIST,
     MOCK_APPLICATION_DATA,
     MOCK_ORGANISATION_DATA,

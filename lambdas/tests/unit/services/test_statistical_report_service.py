@@ -8,10 +8,20 @@ from polars.testing import assert_frame_equal
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.statistical_report_service import StatisticalReportService
-from tests.unit.helpers.data.statistic.mock_statistic_data import (
+from tests.unit.helpers.data.statistic.mock_data_build_utils import (
     build_random_application_data,
     build_random_organisation_data,
     build_random_record_store_data,
+)
+from tests.unit.helpers.data.statistic.mock_statistic_data import (
+    EXPECTED_SUMMARY_ORGANISATION_DATA,
+    EXPECTED_SUMMARY_RECORD_STORE_DATA,
+    MOCK_ORGANISATION_DATA_1,
+    MOCK_ORGANISATION_DATA_2,
+    MOCK_ORGANISATION_DATA_3,
+    MOCK_RECORD_STORE_DATA_1,
+    MOCK_RECORD_STORE_DATA_2,
+    MOCK_RECORD_STORE_DATA_3,
 )
 
 
@@ -55,6 +65,16 @@ def test_datetime_correctly_configured_during_initialise(set_env):
 
 
 def test_summarise_record_store_data(mock_service):
+    actual = mock_service.summarise_record_store_data(
+        [MOCK_RECORD_STORE_DATA_1, MOCK_RECORD_STORE_DATA_2, MOCK_RECORD_STORE_DATA_3]
+    )
+
+    expected = EXPECTED_SUMMARY_RECORD_STORE_DATA
+
+    assert_frame_equal(actual, expected, check_row_order=False, check_dtype=False)
+
+
+def test_summarise_record_store_data_larger_mock_data(mock_service):
     mock_data_H81109 = build_random_record_store_data(
         "H81109", ["20240601", "20240603", "20240604", "20240605", "20240607"]
     )
@@ -76,6 +96,16 @@ def test_summarise_record_store_data(mock_service):
 
 
 def test_summarise_organisation_data(mock_service):
+    actual = mock_service.summarise_organisation_data(
+        [MOCK_ORGANISATION_DATA_1, MOCK_ORGANISATION_DATA_2, MOCK_ORGANISATION_DATA_3]
+    )
+
+    expected = EXPECTED_SUMMARY_ORGANISATION_DATA
+
+    assert_frame_equal(actual, expected, check_row_order=False, check_dtype=False)
+
+
+def test_summarise_organisation_data_larger_mock_data(mock_service):
     mock_data_H81109 = build_random_organisation_data(
         "H81109", ["20240603", "20240604", "20240605", "20240606", "20240607"]
     )
