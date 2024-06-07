@@ -47,7 +47,7 @@ def ensure_environment_variables_for_non_webapi(names: list[str]) -> Callable:
     Use for lambdas that are NOT supposed to be integrated with API Gateway.
 
     Usage:
-    @ensure_environment_variables(names=["LLOYD_GEORGE_BUCKET_NAME", "LLOYD_GEORGE_DYNAMODB_NAME"])
+    @ensure_environment_variables_for_non_webapi(names=["LLOYD_GEORGE_BUCKET_NAME", "LLOYD_GEORGE_DYNAMODB_NAME"])
     def lambda_handler(event, context):
         ...
     """
