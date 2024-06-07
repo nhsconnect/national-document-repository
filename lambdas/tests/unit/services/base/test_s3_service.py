@@ -255,13 +255,37 @@ def test_s3_service_singleton_instance(mocker):
     assert instance_1 is instance_2
 
 
-def test_not_created_custom_client_without_client_role(mocker):
+def test_not_created_presigned_url_without_custom_client(mocker):
     mocker.patch("boto3.client")
-    iam_service = mocker.patch("services.base.iam_service.IAMService")
     mock_service = S3Service()
 
     response = mock_service.create_download_presigned_url(MOCK_BUCKET, TEST_FILE_KEY)
 
     assert response is None
+
+
+def test_not_created_custom_client_without_client_role(mocker):
+    mocker.patch("boto3.client")
+    iam_service = mocker.patch("services.base.iam_service.IAMService")
+
+    mock_service = S3Service()
+
     iam_service.assert_not_called()
     assert mock_service.custom_client is None
+
+
+def test_created_custom_client_when_client_role_is_passed(mocker):
+    mocker.patch("boto3.client")
+    iam_service_instance = mocker.MagicMock()
+    iam_service = mocker.patch(
+        "services.base.s3_service.IAMService", return_value=iam_service_instance
+    )
+
+    custom_client_mock = mocker.MagicMock()
+    iam_service_instance.assume_role.return_value = custom_client_mock
+
+    mock_service = S3Service(custom_aws_role="test")
+
+    iam_service.assert_called()
+    assert mock_service.custom_client == custom_client_mock
+    iam_service_instance.assume_role.assert_called()
