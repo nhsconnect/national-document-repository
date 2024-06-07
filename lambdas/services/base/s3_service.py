@@ -13,7 +13,7 @@ logger = LoggingService(__name__)
 class S3Service:
     _instance = None
 
-    def __new__(cls, custom_aws_role=None):
+    def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance.initialised = False
@@ -29,7 +29,7 @@ class S3Service:
             self.presigned_url_expiry = 1800
             self.client = boto3.client("s3", config=config)
             self.initialised = True
-
+            self.custom_client = None
             if custom_aws_role:
                 iam_service = IAMService()
                 self.custom_client = iam_service.assume_role(

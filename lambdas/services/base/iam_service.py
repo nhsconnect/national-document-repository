@@ -1,5 +1,8 @@
 import boto3
 from botocore.exceptions import ClientError
+from utils.audit_logging_setup import LoggingService
+
+logger = LoggingService(__name__)
 
 
 class IAMService:
@@ -8,7 +11,10 @@ class IAMService:
 
     def assume_role(self, assume_role_arn, resource_name, config=None):
         try:
-            response = self.sts_client.assume_role(RoleArn=assume_role_arn)
+            session_name = resource_name + " " + assume_role_arn.split(":")[-1]
+            response = self.sts_client.assume_role(
+                RoleArn=assume_role_arn, RoleSessionName=session_name
+            )
             temp_credentials = response["Credentials"]
             aws_client = boto3.client(
                 resource_name,
@@ -17,11 +23,10 @@ class IAMService:
                 aws_session_token=temp_credentials["SessionToken"],
                 config=config,
             )
-            print(f"Assumed role {assume_role_arn} and got temporary credentials.")
             return aws_client
         except ClientError as error:
-            print(
-                f"Couldn't assume role {assume_role_arn}. Here's why: "
+            logger.error(
+                f"Couldn't assume role {assume_role_arn}"
                 f"{error.response['Error']['Message']}"
             )
             raise
