@@ -113,22 +113,18 @@ MOCK_PAGINATED_RESPONSE_1 = {
     "Items": [
         {
             "FileName": "1of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-            "Created": "2023-08-23T00:38:04.103Z",
             "VirusScannerResult": "Clean",
         },
         {
             "FileName": "3of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-            "Created": "2023-08-22T17:38:31.890Z",
             "VirusScannerResult": "Clean",
         },
         {
             "FileName": "5of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-            "Created": "2023-08-23T00:38:04.095Z",
             "VirusScannerResult": "Clean",
         },
         {
             "FileName": "7of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-            "Created": "2023-08-23T00:38:04.095Z",
             "VirusScannerResult": "Clean",
         },
     ],
@@ -142,22 +138,18 @@ MOCK_PAGINATED_RESPONSE_2 = {
     "Items": [
         {
             "FileName": "2of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-            "Created": "2023-08-23T00:38:04.103Z",
             "VirusScannerResult": "Clean",
         },
         {
             "FileName": "10of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-            "Created": "2023-08-22T17:38:31.890Z",
             "VirusScannerResult": "Clean",
         },
         {
             "FileName": "8of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-            "Created": "2023-08-23T00:38:04.095Z",
             "VirusScannerResult": "Clean",
         },
         {
             "FileName": "6of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-            "Created": "2023-08-23T00:38:04.095Z",
             "VirusScannerResult": "Clean",
         },
     ],
@@ -170,12 +162,10 @@ MOCK_PAGINATED_RESPONSE_3 = {
     "Items": [
         {
             "FileName": "9of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-            "Created": "2023-08-23T00:38:04.103Z",
             "VirusScannerResult": "Clean",
         },
         {
             "FileName": "4of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
-            "Created": "2023-08-22T17:38:31.890Z",
             "VirusScannerResult": "Clean",
         },
     ],
