@@ -142,9 +142,9 @@ def test_summarise_record_store_data_larger_mock_data(mock_service):
     mock_record_store_data = mock_data_h81109 + mock_data_y12345
     shuffle(mock_record_store_data)
 
-    latest_record_in_H81109 = max(mock_data_h81109, key=lambda record: record.date)
-    latest_record_in_Y12345 = max(mock_data_y12345, key=lambda record: record.date)
-    expected = pl.DataFrame([latest_record_in_H81109, latest_record_in_Y12345]).drop(
+    latest_record_in_h81109 = max(mock_data_h81109, key=lambda record: record.date)
+    latest_record_in_y12345 = max(mock_data_y12345, key=lambda record: record.date)
+    expected = pl.DataFrame([latest_record_in_h81109, latest_record_in_y12345]).drop(
         "date", "statistic_id"
     )
 
@@ -241,13 +241,13 @@ def test_summarise_application_data_larger_mock_data(mock_service):
     mock_organisation_data = mock_data_h81109 + mock_data_y12345
     shuffle(mock_organisation_data)
 
-    active_users_count_H81109 = count_unique_user_ids(mock_data_h81109)
-    active_users_count_Y12345 = count_unique_user_ids(mock_data_y12345)
+    active_users_count_h81109 = count_unique_user_ids(mock_data_h81109)
+    active_users_count_y12345 = count_unique_user_ids(mock_data_y12345)
 
     expected = pl.DataFrame(
         [
-            {"ods_code": "H81109", "active_users_count": active_users_count_H81109},
-            {"ods_code": "Y12345", "active_users_count": active_users_count_Y12345},
+            {"ods_code": "H81109", "active_users_count": active_users_count_h81109},
+            {"ods_code": "Y12345", "active_users_count": active_users_count_y12345},
         ]
     )
     actual = mock_service.summarise_application_data(mock_organisation_data)
