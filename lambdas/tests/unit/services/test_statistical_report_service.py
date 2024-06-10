@@ -160,6 +160,14 @@ def test_summarise_record_store_data_larger_mock_data(mock_service):
     assert_frame_equal(actual, expected, check_row_order=False, check_dtype=False)
 
 
+def test_summarise_record_store_data_can_handle_empty_input(mock_service):
+    empty_input = []
+    actual = mock_service.summarise_record_store_data(empty_input)
+
+    assert isinstance(actual, pl.DataFrame)
+    assert actual.is_empty()
+
+
 def test_summarise_organisation_data(mock_service):
     actual = mock_service.summarise_organisation_data(
         [MOCK_ORGANISATION_DATA_1, MOCK_ORGANISATION_DATA_2, MOCK_ORGANISATION_DATA_3]
@@ -225,6 +233,14 @@ def assert_number_of_patient_correct(mock_data, row_in_actual_data):
     assert actual_number_of_patient == expected_number_of_patients
 
 
+def test_summarise_organisation_data_can_handle_empty_input(mock_service):
+    empty_input = []
+    actual = mock_service.summarise_organisation_data(empty_input)
+
+    assert isinstance(actual, pl.DataFrame)
+    assert actual.is_empty()
+
+
 def test_summarise_application_data(mock_service):
     mock_data = [
         MOCK_APPLICATION_DATA_1,
@@ -268,6 +284,14 @@ def count_unique_user_ids(mock_data: list[ApplicationData]) -> int:
     return len(unique_active_users_for_whole_week)
 
 
+def test_summarise_application_data_can_handle_empty_input(mock_service):
+    empty_input = []
+    actual = mock_service.summarise_application_data(empty_input)
+
+    assert isinstance(actual, pl.DataFrame)
+    assert actual.is_empty()
+
+
 def test_join_dataframes_by_ods_code(mock_service):
     mock_data_1 = pl.DataFrame([{"ods_code": "Y12345", "field1": "apple"}])
     mock_data_2 = pl.DataFrame(
@@ -276,12 +300,32 @@ def test_join_dataframes_by_ods_code(mock_service):
             {"ods_code": "Z56789", "field2": "cherry"},
         ]
     )
-    mock_data_3 = pl.DataFrame([])
 
     expected = pl.DataFrame(
         [
             {"ods_code": "Y12345", "field1": "apple", "field2": "banana"},
             {"ods_code": "Z56789", "field2": "cherry"},
+        ]
+    )
+    actual = mock_service.join_dataframes_by_ods_code([mock_data_1, mock_data_2])
+
+    assert_frame_equal(actual, expected, check_dtype=False, check_row_order=False)
+
+
+def test_join_dataframes_by_ods_code_can_handle_empty_dataframe(mock_service):
+    mock_data_1 = pl.DataFrame([{"ods_code": "Y12345", "field1": "cat"}])
+    mock_data_2 = pl.DataFrame()
+    mock_data_3 = pl.DataFrame(
+        [
+            {"ods_code": "Y12345", "field2": "dog"},
+            {"ods_code": "Z56789", "field3": "lizard"},
+        ]
+    )
+
+    expected = pl.DataFrame(
+        [
+            {"ods_code": "Y12345", "field1": "cat", "field2": "dog"},
+            {"ods_code": "Z56789", "field3": "lizard"},
         ]
     )
     actual = mock_service.join_dataframes_by_ods_code(
