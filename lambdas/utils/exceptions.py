@@ -118,3 +118,7 @@ class FileUploadInProgress(Exception):
 
 class LogsQueryException(Exception):
     pass
+
+
+class StatisticDataNotFoundException(Exception):
+    pass

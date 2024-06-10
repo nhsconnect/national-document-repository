@@ -18,6 +18,7 @@ from models.statistics import (
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
+from utils.exceptions import StatisticDataNotFoundException
 
 logger = LoggingService(__name__)
 
@@ -33,12 +34,10 @@ class StatisticalReportService:
         last_seven_days = [
             datetime.today() - timedelta(days=i) for i in range(7, 0, -1)
         ]
-        self.report_period: list[str] = [
+        self.dates_to_collect: list[str] = [
             date.strftime("%Y%m%d") for date in last_seven_days
         ]
-        self.date_period_in_output_filename = (
-            f"{self.report_period[0]}-{self.report_period[-1]}"
-        )
+        self.report_period = f"{self.dates_to_collect[0]}-{self.dates_to_collect[-1]}"
 
     def make_weekly_summary_and_output_to_bucket(self) -> None:
         weekly_summary = self.make_weekly_summary()
@@ -53,29 +52,40 @@ class StatisticalReportService:
         weekly_organisation_data = self.summarise_organisation_data(organisation_data)
         weekly_application_data = self.summarise_application_data(application_data)
 
-        combined_data = self.join_dataframes_by_ods_code(
-            [
-                weekly_record_store_data,
-                weekly_organisation_data,
-                weekly_application_data,
-            ]
-        )
+        all_summarised_data = [
+            weekly_record_store_data,
+            weekly_organisation_data,
+            weekly_application_data,
+        ]
+
+        combined_data = self.join_dataframes_by_ods_code(all_summarised_data)
         weekly_summary = self.tidy_up_data(combined_data)
 
         return weekly_summary
 
     def get_statistic_data(self) -> LoadedStatisticData:
         logger.info("Loading statistic data of previous week from dynamodb...")
-        logger.info(f"The period to report: {self.report_period}")
+        logger.info(f"The period to report: {self.dates_to_collect}")
         dynamodb_items = []
-        for date in self.report_period:
+        for date in self.dates_to_collect:
             response = self.dynamo_service.query_all_fields(
                 table_name=self.statistic_table,
                 key_condition_expression=Key("Date").eq(date),
             )
             dynamodb_items.extend(response["Items"])
 
-        return load_from_dynamodb_items(dynamodb_items)
+        loaded_data = load_from_dynamodb_items(dynamodb_items)
+
+        all_data_empty = all(not data for data in loaded_data)
+        if all_data_empty:
+            logger.error(
+                f"No statistic data can be found during the period {self.report_period}. "
+                "Please check whether the data collection lambda worked properly.",
+                {"Result": "Statistic data not available."},
+            )
+            raise StatisticDataNotFoundException()
+
+        return loaded_data
 
     @staticmethod
     def load_data_to_polars(data: list[StatisticData]) -> pl.DataFrame:
@@ -153,16 +163,17 @@ class StatisticalReportService:
         return summarised_data
 
     def join_dataframes_by_ods_code(
-        self, summarised_data: list[pl.DataFrame]
+        self, all_summarised_data: list[pl.DataFrame]
     ) -> pl.DataFrame:
-        non_empty_data = [df for df in summarised_data if not df.is_empty()]
-        joined_data = non_empty_data[0]
-        for other_df in non_empty_data[1:]:
-            joined_data = joined_data.join(
-                other_df, on="ods_code", how="outer_coalesce"
+        data_to_report = [df for df in all_summarised_data if not df.is_empty()]
+        joined_dataframe = data_to_report[0]
+
+        for other_dataframe in data_to_report[1:]:
+            joined_dataframe = joined_dataframe.join(
+                other_dataframe, on="ods_code", how="outer_coalesce"
             )
 
-        return joined_data
+        return joined_dataframe
 
     def tidy_up_data(self, joined_data: pl.DataFrame) -> pl.DataFrame:
         with_date_column_updated = self.update_date_column(joined_data)
@@ -175,7 +186,7 @@ class StatisticalReportService:
 
     def update_date_column(self, joined_data: pl.DataFrame) -> pl.DataFrame:
         date_column_filled_with_report_period = joined_data.with_columns(
-            pl.lit(self.date_period_in_output_filename).alias("date")
+            pl.lit(self.report_period).alias("date")
         )
         return date_column_filled_with_report_period
 
@@ -197,7 +208,7 @@ class StatisticalReportService:
 
     def store_report_to_s3(self, weekly_summary: pl.DataFrame) -> None:
         logger.info("Saving the weekly report as .csv")
-        file_name = f"statistical_report_{self.date_period_in_output_filename}.csv"
+        file_name = f"statistical_report_{self.report_period}.csv"
         temp_folder = tempfile.mkdtemp()
         local_file_path = os.path.join(temp_folder, file_name)
         try:
