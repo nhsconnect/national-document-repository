@@ -39,7 +39,9 @@ class StatisticData(BaseModel):
     @field_validator("ods_code")
     @classmethod
     def fill_empty_ods_code(cls, ods_code: str) -> str:
-        return ods_code or "NO_ODS_CODE"
+        if not ods_code:
+            return "NO_ODS_CODE"
+        return ods_code
 
 
 class RecordStoreData(StatisticData):
