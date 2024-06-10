@@ -55,7 +55,7 @@ class DataCollectionService:
         all_statistic_data = self.collect_all_data()
         logger.info("Finished collecting data. Will output to dynamodb table.")
 
-        self.write_to_local_dynamodb_table(all_statistic_data)
+        self.write_to_dynamodb_table(all_statistic_data)
         logger.info("Data collection completed.", {"Result": "Successful"})
 
     def collect_all_data(self) -> list[StatisticData]:
@@ -70,7 +70,7 @@ class DataCollectionService:
 
         return record_store_data + organisation_data + application_data
 
-    def write_to_local_dynamodb_table(self, all_statistic_data: list[StatisticData]):
+    def write_to_dynamodb_table(self, all_statistic_data: list[StatisticData]):
         logger.info("Writing statistic data to dynamodb table")
         item_list = []
         for entry in all_statistic_data:

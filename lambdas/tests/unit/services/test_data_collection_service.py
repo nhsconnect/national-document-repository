@@ -159,12 +159,12 @@ def test_datetime_correctly_configured_during_initialise(set_env):
 def test_collect_all_data_and_write_to_dynamodb(mock_service, mocker):
     mock_collected_data = ["testing1234"]
     mock_service.collect_all_data = mocker.MagicMock(return_value=mock_collected_data)
-    mock_service.write_to_local_dynamodb_table = mocker.MagicMock()
+    mock_service.write_to_dynamodb_table = mocker.MagicMock()
 
     mock_service.collect_all_data_and_write_to_dynamodb()
 
     mock_service.collect_all_data.assert_called_once()
-    mock_service.write_to_local_dynamodb_table.assert_called_with(mock_collected_data)
+    mock_service.write_to_dynamodb_table.assert_called_with(mock_collected_data)
 
 
 def test_collect_all_data(mock_service, mock_uuid):
@@ -176,9 +176,9 @@ def test_collect_all_data(mock_service, mock_uuid):
     assert actual == expected
 
 
-def test_write_to_local_dynamodb_table(mock_dynamo_service, mock_service):
+def test_write_to_dynamodb_table(mock_dynamo_service, mock_service):
     mock_data = MOCK_RECORD_STORE_DATA + MOCK_ORGANISATION_DATA + MOCK_APPLICATION_DATA
-    mock_service.write_to_local_dynamodb_table(mock_data)
+    mock_service.write_to_dynamodb_table(mock_data)
 
     mock_dynamo_service.batch_writing.assert_called_with(
         table_name=MOCK_STATISTICS_TABLE, item_list=ALL_MOCK_DATA_AS_JSON_LIST
