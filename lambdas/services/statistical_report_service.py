@@ -83,7 +83,9 @@ class StatisticalReportService:
                 "Please check whether the data collection lambda worked properly.",
                 {"Result": "Statistic data not available."},
             )
-            raise StatisticDataNotFoundException()
+            raise StatisticDataNotFoundException(
+                f"No statistic data can be found during the period {self.report_period}"
+            )
 
         return loaded_data
 
