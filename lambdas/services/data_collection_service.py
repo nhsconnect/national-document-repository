@@ -5,14 +5,6 @@ from datetime import datetime
 
 import polars as pl
 from enums.supported_document_types import SupportedDocumentTypes
-from models.cloudwatch_logs_query import (
-    CloudwatchLogsQueryParams,
-    LloydGeorgeRecordsDeleted,
-    LloydGeorgeRecordsDownloaded,
-    LloydGeorgeRecordsStored,
-    LloydGeorgeRecordsViewed,
-    UniqueActiveUserIds,
-)
 from models.statistics import (
     ApplicationData,
     OrganisationData,
@@ -23,6 +15,14 @@ from services.base.cloudwatch_logs_query_service import CloudwatchLogsQueryServi
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
+from utils.cloudwatch_logs_query import (
+    CloudwatchLogsQueryParams,
+    LloydGeorgeRecordsDeleted,
+    LloydGeorgeRecordsDownloaded,
+    LloydGeorgeRecordsStored,
+    LloydGeorgeRecordsViewed,
+    UniqueActiveUserIds,
+)
 from utils.common_query_filters import UploadCompleted
 from utils.utilities import flatten, get_file_key_from_s3_url
 

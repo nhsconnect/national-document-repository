@@ -1,5 +1,4 @@
 import pytest
-from models.cloudwatch_logs_query import CloudwatchLogsQueryParams
 from services.base.cloudwatch_logs_query_service import CloudwatchLogsQueryService
 from tests.unit.conftest import WORKSPACE
 from tests.unit.helpers.data.statistic.mock_logs_query_results import (
@@ -8,6 +7,7 @@ from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     MOCK_RESPONSE_QUERY_FAILED,
     MOCK_RESPONSE_QUERY_IN_PROGRESS,
 )
+from utils.cloudwatch_logs_query import CloudwatchLogsQueryParams
 from utils.exceptions import LogsQueryException
 
 MOCK_QUERY_ID = "mock_query_id"

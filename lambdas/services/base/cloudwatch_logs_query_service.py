@@ -2,8 +2,8 @@ import os
 import time
 
 import boto3
-from models.cloudwatch_logs_query import CloudwatchLogsQueryParams
 from utils.audit_logging_setup import LoggingService
+from utils.cloudwatch_logs_query import CloudwatchLogsQueryParams
 from utils.exceptions import LogsQueryException
 
 logger = LoggingService(__name__)

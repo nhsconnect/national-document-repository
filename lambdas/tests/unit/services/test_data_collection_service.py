@@ -5,14 +5,6 @@ from unittest.mock import call
 
 import pytest
 from freezegun import freeze_time
-from models.cloudwatch_logs_query import (
-    CloudwatchLogsQueryParams,
-    LloydGeorgeRecordsDeleted,
-    LloydGeorgeRecordsDownloaded,
-    LloydGeorgeRecordsStored,
-    LloydGeorgeRecordsViewed,
-    UniqueActiveUserIds,
-)
 from pytest_unordered import unordered
 from services.base.cloudwatch_logs_query_service import CloudwatchLogsQueryService
 from services.base.dynamo_service import DynamoDBService
@@ -48,6 +40,14 @@ from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     MOCK_LG_STORED,
     MOCK_LG_VIEWED,
     MOCK_UNIQUE_ACTIVE_USER_IDS,
+)
+from utils.cloudwatch_logs_query import (
+    CloudwatchLogsQueryParams,
+    LloydGeorgeRecordsDeleted,
+    LloydGeorgeRecordsDownloaded,
+    LloydGeorgeRecordsStored,
+    LloydGeorgeRecordsViewed,
+    UniqueActiveUserIds,
 )
 from utils.common_query_filters import UploadCompleted
 
