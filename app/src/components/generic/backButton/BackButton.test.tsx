@@ -26,7 +26,7 @@ describe('BackButton', () => {
         mockPathname = { pathname: testUrl };
 
         render(<BackButton />);
-        userEvent.click(screen.getByText('Back'));
+        userEvent.click(screen.getByText('Go back'));
 
         await waitFor(() => {
             expect(mockUseNavigate).toHaveBeenCalledWith(-1);
