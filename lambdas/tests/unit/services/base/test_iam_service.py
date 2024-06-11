@@ -60,6 +60,16 @@ def test_assume_role_raise_error(mock_client, mock_service):
     )
 
 
+def test_s3_service_singleton_instance(mocker):
+    mocker.patch("boto3.client")
+    IAMService._instance = None
+
+    instance_1 = IAMService()
+    instance_2 = IAMService()
+
+    assert instance_1 is instance_2
+
+
 ASSUME_ROLE_RESPONSE = {
     "Credentials": {
         "AccessKeyId": "AccessKeyIdstring",

@@ -6,8 +6,18 @@ logger = LoggingService(__name__)
 
 
 class IAMService:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.initialised = False
+        return cls._instance
+
     def __init__(self):
-        self.sts_client = boto3.client("sts")
+        if not self.initialised:
+            self.sts_client = boto3.client("sts")
+            self.initialised = True
 
     def assume_role(self, assume_role_arn, resource_name, config=None):
         try:
