@@ -125,6 +125,9 @@ describe('GP Workflow: View Lloyd George record', () => {
                 // Assert contents of page when downloading
                 cy.getByTestId('lloyd-george-download-header').should('exist');
                 cy.getByTestId('cancel-download-link').should('exist');
+                cy.getByTestId('download-file-header-' + testFiles.length + '-files').should(
+                    'exist',
+                );
 
                 // Assert contents of page after download
                 cy.wait('@documentManifest');
@@ -134,6 +137,9 @@ describe('GP Workflow: View Lloyd George record', () => {
                     `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
                 ).should('be.visible');
                 cy.contains(formatNhsNumber(searchPatientPayload.nhsNumber)).should('be.visible');
+                cy.getByTestId('downloaded-files-' + testFiles.length + '-files').should(
+                    'not.exist',
+                );
 
                 // Assert file has been downloaded
                 cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
@@ -172,6 +178,8 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.title().should('eq', downloadingPageTitle);
                 // Assert contents of page when downloading
                 cy.getByTestId('lloyd-george-download-header').should('exist');
+                cy.getByTestId('download-file-header-2-files').should('exist');
+
                 cy.getByTestId('cancel-download-link').should('exist');
 
                 // Assert contents of page after download
@@ -181,6 +189,8 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.contains(
                     `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
                 ).should('be.visible');
+                cy.getByTestId('downloaded-files-2-files').should('exist');
+
                 cy.contains(formatNhsNumber(searchPatientPayload.nhsNumber)).should('be.visible');
 
                 // Assert file has been downloaded
