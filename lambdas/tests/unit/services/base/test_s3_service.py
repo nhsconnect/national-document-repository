@@ -28,13 +28,13 @@ def mock_service(mocker, set_env):
     yield service
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_client(mocker, mock_service):
     client = mocker.patch.object(mock_service, "client")
     yield client
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_custom_client(mocker, mock_service):
     client = mocker.patch.object(mock_service, "custom_client")
     yield client

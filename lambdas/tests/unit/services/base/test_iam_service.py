@@ -6,12 +6,13 @@ from services.base.iam_service import IAMService
 
 
 @pytest.fixture
-def mock_service(mock_client, set_env):
+def mock_service(mock_client):
     service = IAMService()
     yield service
+    IAMService._instance = None
 
 
-@pytest.fixture()
+@pytest.fixture
 def mock_client(mocker):
     client = mocker.patch("boto3.client")
     yield client
