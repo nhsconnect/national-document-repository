@@ -1,12 +1,4 @@
-import React, {
-    Dispatch,
-    SetStateAction,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Card } from 'nhsuk-react-components';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
@@ -15,25 +7,19 @@ import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import deleteAllDocuments from '../../../../helpers/requests/deleteAllDocuments';
 import { routeChildren, routes } from '../../../../types/generic/routes';
-import { useNavigate, Link, Routes, Route, Outlet } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import { AxiosError } from 'axios/index';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { SearchResult } from '../../../../types/generic/searchResult';
-import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
-import { getLastURLPath } from '../../../../helpers/utils/urlManipulations';
-import LgDownloadComplete from '../lloydGeorgeDownloadComplete/LloydGeorgeDownloadComplete';
 
 const FakeProgress = require('fake-progress');
 
 export type Props = {
     deleteAfterDownload: boolean;
     selectedDocuments?: Array<string>;
-    searchResults?: Array<SearchResult>;
     numberOfFiles: number;
-    setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
 type DownloadLinkAttributes = {
@@ -44,9 +30,7 @@ type DownloadLinkAttributes = {
 function LloydGeorgeDownloadStage({
     deleteAfterDownload = false,
     selectedDocuments,
-    searchResults,
     numberOfFiles,
-    setDownloadStage,
 }: Props) {
     const timeToComplete = 600;
     const [progress, setProgress] = useState(0);
@@ -57,9 +41,7 @@ function LloydGeorgeDownloadStage({
         filename: '',
     });
     const linkRef = useRef<HTMLAnchorElement | null>(null);
-    const numberOfFilesForDownload = useRef(
-        selectedDocuments?.length ? selectedDocuments.length : numberOfFiles,
-    );
+
     const mounted = useRef(false);
     const navigate = useNavigate();
     const { mockLocal } = useConfig();
@@ -67,8 +49,7 @@ function LloydGeorgeDownloadStage({
     const nhsNumber = patientDetails?.nhsNumber ?? '';
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout>();
 
-    const pageDownloadCountId =
-        'download-file-header-' + numberOfFilesForDownload.current + '-files';
+    const pageDownloadCountId = 'download-file-header-' + numberOfFiles + '-files';
 
     const progressTimer = useMemo(() => {
         return new FakeProgress({
@@ -165,13 +146,12 @@ function LloydGeorgeDownloadStage({
         mockLocal,
         selectedDocuments,
         numberOfFiles,
-        numberOfFilesForDownload,
     ]);
 
     const pageHeader = 'Downloading documents';
     useTitle({ pageTitle: pageHeader });
 
-    const PageViewIndex = () => (
+    return (
         <div className="lloydgeorge_downloadall-stage" data-testid="lloydgeorge_downloadall-stage">
             <div className="lloydgeorge_downloadall-stage_header">
                 <h1 data-testid="lloyd-george-download-header">{pageHeader}</h1>
@@ -179,7 +159,7 @@ function LloydGeorgeDownloadStage({
                 <h4>NHS number: {patientDetails?.nhsNumber}</h4>
                 <div className="nhsuk-heading-xl" />
                 <h4 data-testid={pageDownloadCountId}>
-                    Preparing download for {numberOfFilesForDownload.current} files
+                    Preparing download for {numberOfFiles} files
                 </h4>
             </div>
 
@@ -220,28 +200,6 @@ function LloydGeorgeDownloadStage({
                 </Card.Content>
             </Card>
         </div>
-    );
-
-    return (
-        <>
-            <Routes>
-                <Route index element={PageViewIndex()} />
-                <Route
-                    path={getLastURLPath(routeChildren.LLOYD_GEORGE_DOWNLOAD_COMPLETE)}
-                    element={
-                        <LgDownloadComplete
-                            deleteAfterDownload={deleteAfterDownload}
-                            numberOfFiles={numberOfFilesForDownload.current}
-                            selectedDocuments={selectedDocuments}
-                            searchResults={searchResults}
-                            setDownloadStage={setDownloadStage}
-                        />
-                    }
-                />
-            </Routes>
-
-            <Outlet />
-        </>
     );
 }
 

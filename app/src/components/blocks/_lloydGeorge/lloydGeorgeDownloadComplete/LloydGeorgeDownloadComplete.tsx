@@ -14,7 +14,7 @@ export type Props = {
     deleteAfterDownload: boolean;
     numberOfFiles: number;
     selectedDocuments?: Array<string>;
-    searchResults?: Array<SearchResult>;
+    searchResults: Array<SearchResult>;
     setDownloadStage: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
 };
 
@@ -33,7 +33,6 @@ function LloydGeorgeDownloadComplete({
     useEffect(() => {
         focusLayoutDiv();
     }, []);
-
     const selectedFilesDownload = !!selectedDocuments?.length;
     const pageHeader = 'Download complete';
     useTitle({ pageTitle: pageHeader });

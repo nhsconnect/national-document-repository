@@ -85,7 +85,6 @@ function LloydGeorgeSelectDownloadStage({
     useEffect(() => {
         const onPageLoad = async () => {
             setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_PENDING);
-
             try {
                 // This check is in place for when we navigate directly to a full download,
                 // in that instance we do not need to get a list of selectable files as we will download all files
@@ -97,7 +96,6 @@ function LloydGeorgeSelectDownloadStage({
                         docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     });
                     setSearchResults(results ?? []);
-                    numberOfFilesForDownload.current = searchResults.length;
                     setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
                 }
             } catch (e) {
@@ -119,9 +117,15 @@ function LloydGeorgeSelectDownloadStage({
             mounted.current = true;
             void onPageLoad();
         }
+        numberOfFilesForDownload.current = selectedDocuments?.length
+            ? selectedDocuments.length
+            : searchResults.length
+            ? searchResults.length
+            : numberOfFilesForDownload.current;
     }, [
         patientDetails,
         searchResults,
+        selectedDocuments,
         nhsNumber,
         setSearchResults,
         navigate,
@@ -150,9 +154,7 @@ function LloydGeorgeSelectDownloadStage({
                         <LloydGeorgeDownloadStage
                             deleteAfterDownload={deleteAfterDownload}
                             selectedDocuments={selectedDocuments}
-                            searchResults={searchResults}
                             numberOfFiles={numberOfFilesForDownload.current}
-                            setDownloadStage={setDownloadStage}
                         />
                     }
                 />
