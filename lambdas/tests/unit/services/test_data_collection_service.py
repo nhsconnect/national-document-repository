@@ -6,7 +6,7 @@ from unittest.mock import call
 import pytest
 from freezegun import freeze_time
 from pytest_unordered import unordered
-from services.base.cloudwatch_logs_query_service import CloudwatchLogsQueryService
+from services.base.cloudwatch_service import CloudwatchService
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.data_collection_service import DataCollectionService
@@ -101,8 +101,8 @@ def mock_query_logs(mocker):
             return MOCK_UNIQUE_ACTIVE_USER_IDS
 
     patched_instance = mocker.patch(
-        "services.data_collection_service.CloudwatchLogsQueryService",
-        spec=CloudwatchLogsQueryService,
+        "services.data_collection_service.CloudwatchService",
+        spec=CloudwatchService,
     ).return_value
     mocked_method = patched_instance.query_logs
     mocked_method.side_effect = mock_implementation

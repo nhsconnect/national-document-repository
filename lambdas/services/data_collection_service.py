@@ -12,7 +12,7 @@ from models.statistics import (
     RecordStoreData,
     StatisticData,
 )
-from services.base.cloudwatch_logs_query_service import CloudwatchLogsQueryService
+from services.base.cloudwatch_service import CloudwatchService
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -41,7 +41,7 @@ class DataCollectionService:
         self.workspace = os.environ["WORKSPACE"]
         self.output_table_name = os.environ["STATISTICS_TABLE"]
 
-        self.logs_query_service = CloudwatchLogsQueryService()
+        self.cloudwatch_service = CloudwatchService()
         self.dynamodb_service = DynamoDBService()
         self.s3_service = S3Service()
 
@@ -218,7 +218,7 @@ class DataCollectionService:
     def get_cloud_watch_query_result(
         self, query_params: CloudwatchLogsQueryParams
     ) -> list[dict]:
-        return self.logs_query_service.query_logs(
+        return self.cloudwatch_service.query_logs(
             query_params=query_params,
             start_time=self.collection_start_time,
             end_time=self.collection_end_time,

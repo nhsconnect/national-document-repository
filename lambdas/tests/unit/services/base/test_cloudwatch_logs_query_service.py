@@ -1,5 +1,5 @@
 import pytest
-from services.base.cloudwatch_logs_query_service import CloudwatchLogsQueryService
+from services.base.cloudwatch_service import CloudwatchService
 from tests.unit.conftest import WORKSPACE
 from tests.unit.helpers.data.statistic.mock_logs_query_results import (
     EXPECTED_QUERY_RESULT,
@@ -24,7 +24,7 @@ MOCK_END_TIME = 171777304
 
 @pytest.fixture
 def mock_service(set_env, mock_logs_client, patch_sleep):
-    service = CloudwatchLogsQueryService()
+    service = CloudwatchService()
     yield service
 
 

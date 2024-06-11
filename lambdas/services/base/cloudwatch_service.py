@@ -9,7 +9,7 @@ from utils.exceptions import LogsQueryException
 logger = LoggingService(__name__)
 
 
-class CloudwatchLogsQueryService:
+class CloudwatchService:
     def __init__(self):
         self.logs_client = boto3.client("logs")
         self.workspace = os.environ["WORKSPACE"]
