@@ -20,7 +20,11 @@ logger = LoggingService(__name__)
 @override_error_check
 @handle_lambda_exceptions
 @ensure_environment_variables(
-    names=["LLOYD_GEORGE_DYNAMODB_NAME", "LLOYD_GEORGE_BUCKET_NAME"]
+    names=[
+        "LLOYD_GEORGE_DYNAMODB_NAME",
+        "LLOYD_GEORGE_BUCKET_NAME",
+        "PRESIGNED_ASSUME_ROLE",
+    ]
 )
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.VIEW_LG_RECORD.value

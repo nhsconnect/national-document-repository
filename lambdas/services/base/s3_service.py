@@ -32,7 +32,6 @@ class S3Service:
             self.custom_client = None
             if custom_aws_role:
                 iam_service = IAMService()
-                print(iam_service)
                 self.custom_client = iam_service.assume_role(
                     custom_aws_role, "s3", config=config
                 )

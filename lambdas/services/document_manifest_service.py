@@ -30,7 +30,7 @@ logger = LoggingService(__name__)
 class DocumentManifestService:
     def __init__(self, nhs_number):
         self.nhs_number = nhs_number
-        create_document_aws_role_arn = os.getenv("PRE_SIGN_ASSUME_ROLE")
+        create_document_aws_role_arn = os.getenv("PRESIGNED_ASSUME_ROLE")
         self.s3_service = S3Service(custom_aws_role=create_document_aws_role_arn)
         self.dynamo_service = DynamoDBService()
         self.document_service = DocumentService()

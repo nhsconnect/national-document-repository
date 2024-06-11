@@ -34,8 +34,10 @@ class LloydGeorgeStitchService:
             "STITCHED_FILE_LIFECYCLE_POLICY_TAG", "autodelete"
         )
 
-        create_document_aws_role_arn = os.getenv("PRE_SIGN_ASSUME_ROLE")
-        self.s3_service = S3Service(custom_aws_role=create_document_aws_role_arn)
+        get_document_presign_url_aws_role_arn = os.getenv("PRESIGNED_ASSUME_ROLE")
+        self.s3_service = S3Service(
+            custom_aws_role=get_document_presign_url_aws_role_arn
+        )
         self.document_service = DocumentService()
         self.temp_folder = tempfile.mkdtemp()
 

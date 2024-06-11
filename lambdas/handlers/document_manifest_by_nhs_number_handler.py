@@ -23,6 +23,7 @@ logger = LoggingService(__name__)
         "LLOYD_GEORGE_DYNAMODB_NAME",
         "ZIPPED_STORE_BUCKET_NAME",
         "ZIPPED_STORE_DYNAMODB_NAME",
+        "PRESIGNED_ASSUME_ROLE",
     ]
 )
 @override_error_check
