@@ -397,7 +397,7 @@ def test_get_number_of_document_types(mock_service):
 
 
 def test_get_average_number_of_file_per_patient(mock_service):
-    actual = mock_service.get_average_number_of_file_per_patient(
+    actual = mock_service.get_average_number_of_files_per_patient(
         MOCK_ARF_SCAN_RESULT + MOCK_LG_SCAN_RESULT
     )
     expected = unordered(
@@ -415,7 +415,7 @@ def test_get_average_number_of_file_per_patient_larger_mock_data(
 ):
     mock_dynamo_scan_result, _ = larger_mock_data
 
-    actual = mock_service.get_average_number_of_file_per_patient(
+    actual = mock_service.get_average_number_of_files_per_patient(
         mock_dynamo_scan_result
     )
     expected = unordered(

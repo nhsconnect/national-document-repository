@@ -4,6 +4,7 @@ from collections import Counter, defaultdict
 from datetime import datetime
 
 import polars as pl
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from models.statistics import (
     ApplicationData,
@@ -27,6 +28,12 @@ from utils.common_query_filters import UploadCompleted
 from utils.utilities import flatten, get_file_key_from_s3_url
 
 logger = LoggingService(__name__)
+
+Fields = DocumentReferenceMetadataFields
+OdsCodeFieldName: str = Fields.CURRENT_GP_ODS.value
+NhsNumberFieldName: str = Fields.NHS_NUMBER.value
+FileLocationFieldName: str = Fields.FILE_LOCATION.value
+ContentTypeFieldName: str = Fields.CONTENT_TYPE.value
 
 
 class DataCollectionService:
@@ -85,7 +92,13 @@ class DataCollectionService:
     def scan_dynamodb_tables(self) -> list[dict]:
         all_results = []
 
-        project_expression = "CurrentGpOds,NhsNumber,FileLocation,ContentType"
+        field_names_to_fetch = [
+            OdsCodeFieldName,
+            NhsNumberFieldName,
+            FileLocationFieldName,
+            ContentTypeFieldName,
+        ]
+        project_expression = ",".join(field_names_to_fetch)
         filter_expression = UploadCompleted
 
         for doc_type in SupportedDocumentTypes.list():
@@ -147,7 +160,7 @@ class DataCollectionService:
         self, dynamodb_scan_result: list[dict]
     ) -> list[OrganisationData]:
         number_of_patients = self.get_number_of_patients(dynamodb_scan_result)
-        average_records_per_patient = self.get_average_number_of_file_per_patient(
+        average_records_per_patient = self.get_average_number_of_files_per_patient(
             dynamodb_scan_result
         )
         daily_count_viewed = self.get_cloud_watch_query_result(LloydGeorgeRecordsViewed)
@@ -215,7 +228,7 @@ class DataCollectionService:
         self, dynamodb_scan_result: list[dict]
     ) -> list[dict]:
         ods_code_for_every_document = [
-            item["CurrentGpOds"] for item in dynamodb_scan_result
+            item[OdsCodeFieldName] for item in dynamodb_scan_result
         ]
         counted_by_ods_code = Counter(ods_code_for_every_document)
         count_result_in_list_of_dict = [
@@ -227,8 +240,8 @@ class DataCollectionService:
     def get_number_of_patients(self, dynamodb_scan_result: list[dict]) -> list[dict]:
         patients_grouped_by_ods_code = defaultdict(set)
         for item in dynamodb_scan_result:
-            ods_code = item["CurrentGpOds"]
-            patients_grouped_by_ods_code[ods_code].add(item["NhsNumber"])
+            ods_code = item[OdsCodeFieldName]
+            patients_grouped_by_ods_code[ods_code].add(item[NhsNumberFieldName])
 
         return [
             {"ods_code": ods_code, "number_of_patients": len(patients)}
@@ -244,7 +257,7 @@ class DataCollectionService:
         s3_df = pl.DataFrame(s3_list_objects_result)
 
         dynamodb_df_with_file_key = dynamodb_df.with_columns(
-            pl.col("FileLocation")
+            pl.col(FileLocationFieldName)
             .map_elements(get_file_key_from_s3_url, return_dtype=pl.String)
             .alias("S3FileKey")
         )
@@ -269,11 +282,11 @@ class DataCollectionService:
         )
 
         result = (
-            joined_df.group_by("CurrentGpOds", "NhsNumber")
+            joined_df.group_by(OdsCodeFieldName, NhsNumberFieldName)
             .agg(get_total_size)
-            .group_by("CurrentGpOds")
+            .group_by(OdsCodeFieldName)
             .agg(get_average_file_size_per_patient, get_total_file_size_for_ods_code)
-            .rename({"CurrentGpOds": "ods_code"})
+            .rename({OdsCodeFieldName: "ods_code"})
         )
 
         return result.to_dicts()
@@ -283,8 +296,8 @@ class DataCollectionService:
     ) -> list[dict]:
         file_types_grouped_by_ods_code = defaultdict(set)
         for item in dynamodb_scan_result:
-            ods_code = item["CurrentGpOds"]
-            file_type = item["ContentType"]
+            ods_code = item[OdsCodeFieldName]
+            file_type = item[ContentTypeFieldName]
             file_types_grouped_by_ods_code[ods_code].add(file_type)
 
         return [
@@ -292,7 +305,7 @@ class DataCollectionService:
             for ods_code, file_types in file_types_grouped_by_ods_code.items()
         ]
 
-    def get_average_number_of_file_per_patient(
+    def get_average_number_of_files_per_patient(
         self,
         dynamodb_scan_result: list[dict],
     ) -> list[dict]:
@@ -304,11 +317,11 @@ class DataCollectionService:
         )
 
         result = (
-            dynamodb_df.group_by("CurrentGpOds", "NhsNumber")
+            dynamodb_df.group_by(OdsCodeFieldName, NhsNumberFieldName)
             .agg(count_records)
-            .group_by("CurrentGpOds")
+            .group_by(OdsCodeFieldName)
             .agg(take_average_of_record_count)
-            .rename({"CurrentGpOds": "ods_code"})
+            .rename({OdsCodeFieldName: "ods_code"})
         )
         return result.to_dicts()
 
