@@ -43,7 +43,6 @@ describe('LloydGeorgeDownloadComplete', () => {
                     deleteAfterDownload={true}
                     numberOfFiles={numberOfFiles}
                     setDownloadStage={mockSetDownloadStage}
-                    searchResults={[]}
                 />,
             );
 
@@ -153,7 +152,6 @@ describe('LloydGeorgeDownloadComplete', () => {
                         numberOfFiles={numberOfFiles}
                         deleteAfterDownload={deleteAfterDownload}
                         setDownloadStage={mockSetDownloadStage}
-                        searchResults={[]}
                     />,
                 );
 
