@@ -117,11 +117,13 @@ function LloydGeorgeSelectDownloadStage({
             mounted.current = true;
             void onPageLoad();
         }
-        numberOfFilesForDownload.current = selectedDocuments?.length
+
+        const numberOfDocumentsSelected = selectedDocuments?.length
             ? selectedDocuments.length
-            : searchResults.length
-            ? searchResults.length
-            : numberOfFilesForDownload.current;
+            : searchResults.length;
+        if (numberOfDocumentsSelected) {
+            numberOfFilesForDownload.current = numberOfDocumentsSelected;
+        }
     }, [
         patientDetails,
         searchResults,
