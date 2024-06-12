@@ -72,6 +72,7 @@ function LloydGeorgeDownloadComplete({
             return <div data-testid="download-complete-card-header">Download complete</div>;
         }
     };
+    const pageDownloadCountId = 'downloaded-files-' + numberOfFiles + '-files';
 
     return (
         <div className="lloydgeorge_download-complete">
@@ -100,7 +101,9 @@ function LloydGeorgeDownloadComplete({
             </Card>
             {selectedFilesDownload && (
                 <>
-                    <p>You have successfully downloaded {numberOfFiles} file(s)</p>
+                    <p data-testid={pageDownloadCountId}>
+                        You have successfully downloaded {numberOfFiles} file(s)
+                    </p>
                     <DocumentsListView
                         documentsList={documentsList}
                         ariaLabel={'selected-document-list'}

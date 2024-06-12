@@ -2,10 +2,7 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import { render, screen } from '@testing-library/react';
 import LloydGeorgeDownloadComplete from './LloydGeorgeDownloadComplete';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
-import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import LgDownloadComplete from './LloydGeorgeDownloadComplete';
-import userEvent from '@testing-library/user-event';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import React from 'react';
 

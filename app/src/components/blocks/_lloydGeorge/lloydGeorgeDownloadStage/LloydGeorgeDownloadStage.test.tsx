@@ -22,7 +22,6 @@ const mockedUsePatient = usePatient as jest.Mock;
 const mockUseConfig = useConfig as jest.Mock;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
-const mockDownloadStage = jest.fn();
 
 jest.mock('react-router-dom', () => ({
     __esModule: true,
@@ -209,7 +208,7 @@ const renderComponent = (history: MemoryHistory, propsOverride?: Partial<Props>)
 
     return render(
         <ReactRouter.Router navigator={history} location={history.location}>
-            <LloydGeorgeDownloadStage {...props} setDownloadStage={mockDownloadStage} />
+            <LloydGeorgeDownloadStage {...props} />
         </ReactRouter.Router>,
     );
 };

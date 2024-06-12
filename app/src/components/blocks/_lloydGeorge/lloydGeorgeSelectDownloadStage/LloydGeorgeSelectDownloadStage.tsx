@@ -78,14 +78,13 @@ function LloydGeorgeSelectDownloadStage({
     const [selectedDocuments, setSelectedDocuments] = useState<Array<string>>([]);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-    let numberOfFilesForDownload = useRef(numberOfFiles);
-
+    const numberOfFilesForDownload =
+        selectedDocuments?.length || searchResults.length || numberOfFiles;
     useTitle({ pageTitle: PageHeader });
 
     useEffect(() => {
         const onPageLoad = async () => {
             setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_PENDING);
-
             try {
                 // This check is in place for when we navigate directly to a full download,
                 // in that instance we do not need to get a list of selectable files as we will download all files
@@ -97,7 +96,6 @@ function LloydGeorgeSelectDownloadStage({
                         docType: DOCUMENT_TYPE.LLOYD_GEORGE,
                     });
                     setSearchResults(results ?? []);
-                    numberOfFilesForDownload.current = searchResults.length;
                     setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
                 }
             } catch (e) {
@@ -106,6 +104,7 @@ function LloydGeorgeSelectDownloadStage({
                     setSearchResults([
                         buildSearchResult(),
                         buildSearchResult({ fileName: 'fileName2.pdf', ID: '1234qwer-241ewewr-2' }),
+                        buildSearchResult({ fileName: 'fileName3.pdf', ID: '1234qwer-241ewewr-3' }),
                     ]);
                     setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
                 } else if (error.response?.status === 403) {
@@ -122,6 +121,7 @@ function LloydGeorgeSelectDownloadStage({
     }, [
         patientDetails,
         searchResults,
+        selectedDocuments,
         nhsNumber,
         setSearchResults,
         navigate,
@@ -150,9 +150,7 @@ function LloydGeorgeSelectDownloadStage({
                         <LloydGeorgeDownloadStage
                             deleteAfterDownload={deleteAfterDownload}
                             selectedDocuments={selectedDocuments}
-                            searchResults={searchResults}
-                            numberOfFiles={numberOfFilesForDownload.current}
-                            setDownloadStage={setDownloadStage}
+                            numberOfFiles={numberOfFilesForDownload}
                         />
                     }
                 />
@@ -161,7 +159,7 @@ function LloydGeorgeSelectDownloadStage({
                     element={
                         <LgDownloadComplete
                             deleteAfterDownload={deleteAfterDownload}
-                            numberOfFiles={numberOfFilesForDownload.current}
+                            numberOfFiles={numberOfFilesForDownload}
                             selectedDocuments={selectedDocuments}
                             searchResults={searchResults}
                             setDownloadStage={setDownloadStage}
