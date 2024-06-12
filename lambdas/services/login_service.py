@@ -142,7 +142,7 @@ class LoginService:
     def have_matching_state_value_in_record(self, state: str) -> bool:
         state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
 
-        query_response = self.db_service.simple_query(
+        query_response = self.db_service.query_all_fields(
             table_name=state_table_name, key_condition_expression=Key("State").eq(state)
         )
 

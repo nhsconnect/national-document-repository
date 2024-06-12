@@ -102,3 +102,6 @@ lambdas/tests/unit/helpers/data/pdf/tmp
 /lambdas/package_/
 
 batch_update_progress.json
+
+# jupyter notebook files
+*.ipynb

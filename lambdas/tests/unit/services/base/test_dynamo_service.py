@@ -1,3 +1,6 @@
+from typing import Optional
+from unittest.mock import call
+
 import pytest
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
@@ -6,6 +9,13 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from services.base.dynamo_service import DynamoDBService
 from tests.unit.conftest import MOCK_TABLE_NAME, TEST_NHS_NUMBER
 from tests.unit.helpers.data.dynamo_responses import MOCK_SEARCH_RESPONSE
+from tests.unit.helpers.data.dynamo_scan_response import (
+    EXPECTED_ITEMS_FOR_PAGINATED_RESULTS,
+    MOCK_PAGINATED_RESPONSE_1,
+    MOCK_PAGINATED_RESPONSE_2,
+    MOCK_PAGINATED_RESPONSE_3,
+    MOCK_RESPONSE,
+)
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 from utils.exceptions import DynamoServiceException
 
@@ -30,6 +40,13 @@ def mock_dynamo_service(mocker, mock_service):
 @pytest.fixture
 def mock_table(mocker, mock_service):
     yield mocker.patch.object(mock_service, "get_table")
+
+
+@pytest.fixture
+def mock_scan_method(mock_table):
+    table_instance = mock_table.return_value
+    scan_method = table_instance.scan
+    yield scan_method
 
 
 @pytest.fixture
@@ -163,13 +180,13 @@ def test_query_with_requested_fields_client_error_raises_exception(
     assert expected_response == actual_response.value
 
 
-def test_simple_query_is_called_with_correct_parameters(mock_service, mock_table):
+def test_query_all_fields_is_called_with_correct_parameters(mock_service, mock_table):
     mock_table.return_value.query.return_value = {
         "Items": [{"id": "fake_test_item"}],
         "Counts": 1,
     }
 
-    mock_service.simple_query(MOCK_TABLE_NAME, "test_key_condition_expression")
+    mock_service.query_all_fields(MOCK_TABLE_NAME, "test_key_condition_expression")
 
     mock_table.assert_called_with(MOCK_TABLE_NAME)
     mock_table.return_value.query.assert_called_once_with(
@@ -177,11 +194,13 @@ def test_simple_query_is_called_with_correct_parameters(mock_service, mock_table
     )
 
 
-def test_simple_query_raises_exception_when_results_are_empty(mock_service, mock_table):
+def test_query_all_fields_raises_exception_when_results_are_empty(
+    mock_service, mock_table
+):
     mock_table.return_value.query.return_value = []
 
     with pytest.raises(DynamoServiceException):
-        mock_service.simple_query(MOCK_TABLE_NAME, "test_key_condition_expression")
+        mock_service.query_all_fields(MOCK_TABLE_NAME, "test_key_condition_expression")
 
     mock_table.assert_called_with(MOCK_TABLE_NAME)
     mock_table.return_value.query.assert_called_once_with(
@@ -189,12 +208,12 @@ def test_simple_query_raises_exception_when_results_are_empty(mock_service, mock
     )
 
 
-def test_simple_query_client_error_raises_exception(mock_service, mock_table):
+def test_query_all_fields_client_error_raises_exception(mock_service, mock_table):
     expected_response = MOCK_CLIENT_ERROR
     mock_table.return_value.query.side_effect = MOCK_CLIENT_ERROR
 
     with pytest.raises(ClientError) as actual_response:
-        mock_service.simple_query(MOCK_TABLE_NAME, "test_key_condition_expression")
+        mock_service.query_all_fields(MOCK_TABLE_NAME, "test_key_condition_expression")
 
     assert expected_response == actual_response.value
 
@@ -344,6 +363,85 @@ def test_scan_table_client_error_raises_exception(mock_service, mock_table):
         )
 
     assert expected_response == actual_response.value
+
+
+def test_scan_whole_table_return_items_in_response(
+    mock_service, mock_scan_method, mock_filter_expression
+):
+    mock_project_expression = "mock_project_expression"
+    mock_scan_method.return_value = MOCK_RESPONSE
+
+    expected = MOCK_RESPONSE["Items"]
+    actual = mock_service.scan_whole_table(
+        table_name=MOCK_TABLE_NAME,
+        project_expression=mock_project_expression,
+        filter_expression=mock_filter_expression,
+    )
+
+    assert expected == actual
+
+    mock_service.get_table.assert_called_with(MOCK_TABLE_NAME)
+    mock_scan_method.assert_called_with(
+        ProjectionExpression=mock_project_expression,
+        FilterExpression=mock_filter_expression,
+    )
+
+
+def test_scan_whole_table_handles_pagination(
+    mock_service, mock_scan_method, mock_filter_expression
+):
+    def mock_scan_implementation(
+        ExclusiveStartKey: Optional[dict[str, str]] = None, **_kwargs
+    ):
+        if not ExclusiveStartKey:
+            return MOCK_PAGINATED_RESPONSE_1
+        elif ExclusiveStartKey.get("ID") == "id_token_for_page_2":
+            return MOCK_PAGINATED_RESPONSE_2
+        elif ExclusiveStartKey.get("ID") == "id_token_for_page_3":
+            return MOCK_PAGINATED_RESPONSE_3
+
+    mock_project_expression = "mock_project_expression"
+    mock_scan_method.side_effect = mock_scan_implementation
+
+    expected_result = EXPECTED_ITEMS_FOR_PAGINATED_RESULTS
+    expected_calls = [
+        call(
+            ProjectionExpression=mock_project_expression,
+            FilterExpression=mock_filter_expression,
+        ),
+        call(
+            ProjectionExpression=mock_project_expression,
+            FilterExpression=mock_filter_expression,
+            ExclusiveStartKey={"ID": "id_token_for_page_2"},
+        ),
+        call(
+            ProjectionExpression=mock_project_expression,
+            FilterExpression=mock_filter_expression,
+            ExclusiveStartKey={"ID": "id_token_for_page_3"},
+        ),
+    ]
+
+    actual = mock_service.scan_whole_table(
+        table_name=MOCK_TABLE_NAME,
+        project_expression=mock_project_expression,
+        filter_expression=mock_filter_expression,
+    )
+
+    assert expected_result == actual
+
+    mock_service.get_table.assert_called_with(MOCK_TABLE_NAME)
+    mock_scan_method.assert_has_calls(expected_calls)
+
+
+def test_scan_whole_table_omit_expression_arguments_if_not_given(
+    mock_service, mock_scan_method
+):
+    mock_service.scan_whole_table(
+        table_name=MOCK_TABLE_NAME,
+    )
+
+    mock_service.get_table.assert_called_with(MOCK_TABLE_NAME)
+    mock_scan_method.assert_called_with()
 
 
 def test_get_table_when_table_exists_then_table_is_returned_successfully(
