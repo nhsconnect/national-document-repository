@@ -30,7 +30,8 @@ logger = LoggingService(__name__)
 
 class CreateDocumentReferenceService:
     def __init__(self):
-        self.s3_service = S3Service()
+        create_document_aws_role_arn = os.getenv("PRESIGNED_ASSUME_ROLE")
+        self.s3_service = S3Service(custom_aws_role=create_document_aws_role_arn)
         self.dynamo_service = DynamoDBService()
         self.document_service = DocumentService()
         self.document_deletion_service = DocumentDeletionService()
@@ -71,9 +72,9 @@ class CreateDocumentReferenceService:
                             400, LambdaError.CreateDocInvalidType
                         )
 
-                url_responses[document_reference.file_name] = (
-                    self.prepare_pre_signed_url(document_reference)
-                )
+                url_responses[
+                    document_reference.file_name
+                ] = self.prepare_pre_signed_url(document_reference)
 
             if lg_documents:
                 validate_lg_files(lg_documents, nhs_number)

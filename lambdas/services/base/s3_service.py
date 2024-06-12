@@ -3,6 +3,7 @@ from typing import Any, Mapping
 import boto3
 from botocore.client import Config as BotoConfig
 from botocore.exceptions import ClientError
+from services.base.iam_service import IAMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import TagNotFoundException
 
@@ -12,41 +13,49 @@ logger = LoggingService(__name__)
 class S3Service:
     _instance = None
 
-    def __new__(cls):
+    def __new__(cls, *args, **kwargs):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
             cls._instance.initialised = False
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, custom_aws_role=None):
         if not self.initialised:
             config = BotoConfig(
                 retries={"max_attempts": 3, "mode": "standard"},
                 s3={"addressing_style": "virtual"},
                 signature_version="s3v4",
             )
-            self.client = boto3.client("s3", config=config)
             self.presigned_url_expiry = 1800
+            self.client = boto3.client("s3", config=config)
             self.initialised = True
+            self.custom_client = None
+            if custom_aws_role:
+                iam_service = IAMService()
+                self.custom_client = iam_service.assume_role(
+                    custom_aws_role, "s3", config=config
+                )
 
     # S3 Location should be a minimum of a s3_object_key but can also be a directory location in the form of
     # {{directory}}/{{s3_object_key}}
     def create_upload_presigned_url(self, s3_bucket_name: str, s3_object_location: str):
-        return self.client.generate_presigned_post(
-            s3_bucket_name,
-            s3_object_location,
-            Fields=None,
-            Conditions=None,
-            ExpiresIn=self.presigned_url_expiry,
-        )
+        if self.custom_client:
+            return self.custom_client.generate_presigned_post(
+                s3_bucket_name,
+                s3_object_location,
+                Fields=None,
+                Conditions=None,
+                ExpiresIn=self.presigned_url_expiry,
+            )
 
     def create_download_presigned_url(self, s3_bucket_name: str, file_key: str):
-        logger.info("Generating presigned URL for manifest")
-        return self.client.generate_presigned_url(
-            "get_object",
-            Params={"Bucket": s3_bucket_name, "Key": file_key},
-            ExpiresIn=self.presigned_url_expiry,
-        )
+        if self.custom_client:
+            logger.info("Generating presigned URL for manifest")
+            return self.custom_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": s3_bucket_name, "Key": file_key},
+                ExpiresIn=self.presigned_url_expiry,
+            )
 
     def download_file(self, s3_bucket_name: str, file_key: str, download_path: str):
         return self.client.download_file(s3_bucket_name, file_key, download_path)

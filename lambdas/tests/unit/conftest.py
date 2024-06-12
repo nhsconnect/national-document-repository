@@ -96,6 +96,9 @@ MOCK_APPCONFIG_APPLICATION_ID = "A1234"
 MOCK_APPCONFIG_ENVIRONMENT_ID = "B1234"
 MOCK_APPCONFIG_CONFIGURATION_ID = "C1234"
 
+MOCK_PRESIGNED_URL_ROLE_ARN_KEY = "PRESIGNED_ASSUME_ROLE"
+MOCK_PRESIGNED_URL_ROLE_ARN_VALUE = "arn:aws:iam::test123"
+
 
 @pytest.fixture
 def set_env(monkeypatch):
@@ -145,6 +148,9 @@ def set_env(monkeypatch):
     )
     monkeypatch.setenv(
         MOCK_APPCONFIG_CONFIGURATION_ENV_NAME, MOCK_APPCONFIG_CONFIGURATION_ID
+    )
+    monkeypatch.setenv(
+        MOCK_PRESIGNED_URL_ROLE_ARN_KEY, MOCK_PRESIGNED_URL_ROLE_ARN_VALUE
     )
     monkeypatch.setenv(MOCK_STATISTICS_TABLE_NAME, MOCK_STATISTICS_TABLE)
     monkeypatch.setenv(
