@@ -78,8 +78,8 @@ function LloydGeorgeSelectDownloadStage({
     const [selectedDocuments, setSelectedDocuments] = useState<Array<string>>([]);
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
-    let numberOfFilesForDownload = useRef(numberOfFiles);
-
+    const numberOfFilesForDownload =
+        selectedDocuments?.length || searchResults.length || numberOfFiles;
     useTitle({ pageTitle: PageHeader });
 
     useEffect(() => {
@@ -104,6 +104,7 @@ function LloydGeorgeSelectDownloadStage({
                     setSearchResults([
                         buildSearchResult(),
                         buildSearchResult({ fileName: 'fileName2.pdf', ID: '1234qwer-241ewewr-2' }),
+                        buildSearchResult({ fileName: 'fileName3.pdf', ID: '1234qwer-241ewewr-3' }),
                     ]);
                     setSubmissionSearchState(SEARCH_AND_DOWNLOAD_STATE.SEARCH_SUCCEEDED);
                 } else if (error.response?.status === 403) {
@@ -116,13 +117,6 @@ function LloydGeorgeSelectDownloadStage({
         if (!mounted.current) {
             mounted.current = true;
             void onPageLoad();
-        }
-
-        const numberOfDocumentsSelected = selectedDocuments?.length
-            ? selectedDocuments.length
-            : searchResults.length;
-        if (numberOfDocumentsSelected) {
-            numberOfFilesForDownload.current = numberOfDocumentsSelected;
         }
     }, [
         patientDetails,
@@ -156,7 +150,7 @@ function LloydGeorgeSelectDownloadStage({
                         <LloydGeorgeDownloadStage
                             deleteAfterDownload={deleteAfterDownload}
                             selectedDocuments={selectedDocuments}
-                            numberOfFiles={numberOfFilesForDownload.current}
+                            numberOfFiles={numberOfFilesForDownload}
                         />
                     }
                 />
@@ -165,7 +159,7 @@ function LloydGeorgeSelectDownloadStage({
                     element={
                         <LgDownloadComplete
                             deleteAfterDownload={deleteAfterDownload}
-                            numberOfFiles={numberOfFilesForDownload.current}
+                            numberOfFiles={numberOfFilesForDownload}
                             selectedDocuments={selectedDocuments}
                             searchResults={searchResults}
                             setDownloadStage={setDownloadStage}
