@@ -1,3 +1,5 @@
+from typing import Optional
+
 import boto3
 from boto3.dynamodb.conditions import Attr, ConditionBase, Key
 from botocore.exceptions import ClientError
@@ -76,7 +78,7 @@ class DynamoDBService:
             logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
             raise e
 
-    def simple_query(self, table_name: str, key_condition_expression):
+    def query_all_fields(self, table_name: str, key_condition_expression):
         """
         Allow querying dynamodb table without explicitly defining the fields to retrieve.
         :param table_name: Dynamodb table name
@@ -85,7 +87,7 @@ class DynamoDBService:
         example usage:
             from boto3.dynamodb.conditions import Key
 
-            query_response = db_service.simple_query(
+            query_response = db_service.query_all_fields(
                 table_name=session_table_name,
                 key_condition_expression=Key("NDRSessionId").eq(ndr_session_id)
             )
@@ -157,6 +159,35 @@ class DynamoDBService:
                 FilterExpression=filter_expression,
                 ExclusiveStartKey=exclusive_start_key,
             )
+        except ClientError as e:
+            logger.error(str(e), {"Result": f"Unable to scan table: {table_name}"})
+            raise e
+
+    def scan_whole_table(
+        self,
+        table_name: str,
+        project_expression: Optional[str] = None,
+        filter_expression: Optional[str] = None,
+    ) -> list[dict]:
+        try:
+            table = self.get_table(table_name)
+            scan_arguments = {}
+            if project_expression:
+                scan_arguments["ProjectionExpression"] = project_expression
+            if filter_expression:
+                scan_arguments["FilterExpression"] = filter_expression
+
+            paginated_result = table.scan(**scan_arguments)
+            dynamodb_scan_result = paginated_result.get("Items", [])
+            while "LastEvaluatedKey" in paginated_result:
+                start_key_for_next_page = paginated_result["LastEvaluatedKey"]
+                paginated_result = table.scan(
+                    **scan_arguments,
+                    ExclusiveStartKey=start_key_for_next_page,
+                )
+                dynamodb_scan_result += paginated_result["Items"]
+            return dynamodb_scan_result
+
         except ClientError as e:
             logger.error(str(e), {"Result": f"Unable to scan table: {table_name}"})
             raise e

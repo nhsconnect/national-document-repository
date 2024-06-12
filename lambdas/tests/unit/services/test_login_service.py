@@ -115,7 +115,7 @@ def test_exchange_token_respond_with_auth_token_and_repo_role(
     dynamo_state_query_result = {"Count": 1, "Items": [{"id": "state"}]}
 
     mocker.patch.object(
-        DynamoDBService, "simple_query", return_value=dynamo_state_query_result
+        DynamoDBService, "query_all_fields", return_value=dynamo_state_query_result
     )
 
     mocker.patch.object(DynamoDBService, "delete_item")
@@ -163,7 +163,7 @@ def test_exchange_token_raises_login_error_when_given_state_is_not_in_state_tabl
     mock_aws_infras, mock_oidc_service, mocker
 ):
     mocker.patch.object(
-        DynamoDBService, "simple_query", return_value={"Count": 0, "Items": []}
+        DynamoDBService, "query_all_fields", return_value={"Count": 0, "Items": []}
     )
 
     login_service = LoginService()
@@ -190,7 +190,7 @@ def test_exchange_token_raises_login_error_when_user_doesnt_have_a_valid_role_to
     dynamo_state_query_result = {"Count": 1, "Items": [{"id": "state"}]}
 
     mocker.patch.object(
-        DynamoDBService, "simple_query", return_value=dynamo_state_query_result
+        DynamoDBService, "query_all_fields", return_value=dynamo_state_query_result
     )
 
     mocker.patch.object(DynamoDBService, "delete_item")
@@ -213,7 +213,7 @@ def test_exchange_token_raises_error_when_encounter_boto3_error(
 ):
     mocker.patch.object(
         DynamoDBService,
-        "simple_query",
+        "query_all_fields",
         side_effect=ClientError(
             {"Error": {"Code": "500", "Message": "mocked error"}}, "test"
         ),

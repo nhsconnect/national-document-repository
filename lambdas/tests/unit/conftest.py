@@ -1,4 +1,5 @@
 import json
+import tempfile
 from dataclasses import dataclass
 from enum import Enum
 from unittest import mock
@@ -44,6 +45,8 @@ MOCK_EMAIL_RECIPIENT_SSM_PARAM_KEY_ENV_NAME = "EMAIL_RECIPIENT_SSM_PARAM_KEY"
 MOCK_APPCONFIG_APPLICATION_ENV_NAME = "APPCONFIG_APPLICATION"
 MOCK_APPCONFIG_ENVIRONMENT_ENV_NAME = "APPCONFIG_ENVIRONMENT"
 MOCK_APPCONFIG_CONFIGURATION_ENV_NAME = "APPCONFIG_CONFIGURATION"
+MOCK_STATISTICS_TABLE_NAME = "STATISTICS_TABLE"
+MOCK_STATISTICS_REPORT_BUCKET_NAME = "STATISTICAL_REPORTS_BUCKET"
 
 MOCK_ARF_TABLE_NAME = "test_arf_dynamoDB_table"
 MOCK_LG_TABLE_NAME = "test_lg_dynamoDB_table"
@@ -55,6 +58,8 @@ MOCK_ZIP_TRACE_TABLE = "test_zip_table"
 MOCK_LG_STAGING_STORE_BUCKET = "test_staging_bulk_store"
 MOCK_LG_METADATA_SQS_QUEUE = "test_bulk_upload_metadata_queue"
 MOCK_LG_INVALID_SQS_QUEUE = "INVALID_SQS_QUEUE_URL"
+MOCK_STATISTICS_TABLE = "test_statistics_table"
+MOCK_STATISTICS_REPORT_BUCKET = "test_statistics_report_bucket"
 
 TEST_NHS_NUMBER = "9000000009"
 TEST_OBJECT_KEY = "1234-4567-8912-HSDF-TEST"
@@ -134,12 +139,16 @@ def set_env(monkeypatch):
     )
     monkeypatch.setenv(
         MOCK_APPCONFIG_APPLICATION_ENV_NAME, MOCK_APPCONFIG_APPLICATION_ID
-    ),
+    )
     monkeypatch.setenv(
         MOCK_APPCONFIG_ENVIRONMENT_ENV_NAME, MOCK_APPCONFIG_ENVIRONMENT_ID
-    ),
+    )
     monkeypatch.setenv(
         MOCK_APPCONFIG_CONFIGURATION_ENV_NAME, MOCK_APPCONFIG_CONFIGURATION_ID
+    )
+    monkeypatch.setenv(MOCK_STATISTICS_TABLE_NAME, MOCK_STATISTICS_TABLE)
+    monkeypatch.setenv(
+        MOCK_STATISTICS_REPORT_BUCKET_NAME, MOCK_STATISTICS_REPORT_BUCKET
     )
 
 
@@ -229,3 +238,10 @@ class MockError(Enum):
         "err_code": "AB_XXXX",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
+
+
+@pytest.fixture
+def mock_temp_folder(mocker):
+    temp_folder = tempfile.mkdtemp()
+    mocker.patch.object(tempfile, "mkdtemp", return_value=temp_folder)
+    yield temp_folder

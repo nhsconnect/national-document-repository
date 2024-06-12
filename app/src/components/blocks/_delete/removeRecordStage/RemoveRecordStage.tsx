@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import useTitle from '../../../../helpers/hooks/useTitle';
-import { BackLink, Button, Table, WarningCallout } from 'nhsuk-react-components';
+import { Button, Table, WarningCallout } from 'nhsuk-react-components';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { SearchResult } from '../../../../types/generic/searchResult';
 import getDocumentSearchResults from '../../../../helpers/requests/getDocumentSearchResults';
@@ -23,6 +23,7 @@ import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types
 import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import BackButton from '../../../generic/backButton/BackButton';
 
 export type Props = {
     numberOfFiles: number;
@@ -89,16 +90,7 @@ function RemoveRecordStage({ numberOfFiles, recordType, setDownloadStage }: Prop
 
     const PageIndexView = () => (
         <>
-            <BackLink
-                data-testid="back-link"
-                href="#"
-                onClick={(e) => {
-                    e.preventDefault();
-                    navigate(routes.LLOYD_GEORGE);
-                }}
-            >
-                Go back
-            </BackLink>
+            <BackButton />
             <h1>Remove this {recordType} record</h1>
             <WarningCallout>
                 <WarningCallout.Label>Before removing</WarningCallout.Label>

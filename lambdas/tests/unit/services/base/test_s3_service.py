@@ -8,8 +8,13 @@ from tests.unit.conftest import (
     TEST_NHS_NUMBER,
     TEST_OBJECT_KEY,
 )
-from tests.unit.helpers.data.s3_responses import MOCK_PRESIGNED_URL_RESPONSE
+from tests.unit.helpers.data.s3_responses import (
+    MOCK_LIST_OBJECTS_PAGINATED_RESPONSES,
+    MOCK_LIST_OBJECTS_RESPONSE,
+    MOCK_PRESIGNED_URL_RESPONSE,
+)
 from utils.exceptions import TagNotFoundException
+from utils.utilities import flatten
 
 TEST_DOWNLOAD_PATH = "test_path"
 MOCK_EVENT_BODY = {
@@ -31,6 +36,12 @@ def mock_service(mocker, set_env):
 def mock_client(mocker, mock_service):
     client = mocker.patch.object(mock_service, "client")
     yield client
+
+
+@pytest.fixture()
+def mock_list_objects_paginate(mock_client):
+    mock_paginator_method = mock_client.get_paginator.return_value.paginate
+    return mock_paginator_method
 
 
 def test_create_upload_presigned_url(mock_service, mock_client):
@@ -244,3 +255,45 @@ def test_s3_service_singleton_instance(mocker):
     instance_2 = S3Service()
 
     assert instance_1 is instance_2
+
+
+def test_list_all_objects_return_a_list_of_file_details(
+    mock_service, mock_client, mock_list_objects_paginate
+):
+    mock_list_objects_paginate.return_value = [MOCK_LIST_OBJECTS_RESPONSE]
+    expected = MOCK_LIST_OBJECTS_RESPONSE["Contents"]
+
+    actual = mock_service.list_all_objects(MOCK_BUCKET)
+
+    assert actual == expected
+
+    mock_client.get_paginator.assert_called_with("list_objects_v2")
+    mock_list_objects_paginate.assert_called_with(Bucket=MOCK_BUCKET)
+
+
+def test_list_all_objects_handles_paginated_responses(
+    mock_service, mock_client, mock_list_objects_paginate
+):
+    mock_list_objects_paginate.return_value = MOCK_LIST_OBJECTS_PAGINATED_RESPONSES
+
+    expected = flatten(
+        [page["Contents"] for page in MOCK_LIST_OBJECTS_PAGINATED_RESPONSES]
+    )
+
+    actual = mock_service.list_all_objects(MOCK_BUCKET)
+
+    assert actual == expected
+
+
+def test_list_all_objects_raises_client_error_if_unexpected_response(
+    mock_service, mock_client, mock_list_objects_paginate
+):
+    mock_error = ClientError(
+        {"Error": {"Code": "500", "Message": "Internal Server Error"}},
+        "S3:ListObjectsV2",
+    )
+
+    mock_list_objects_paginate.side_effect = mock_error
+
+    with pytest.raises(ClientError):
+        mock_service.list_all_objects(MOCK_BUCKET)

@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+from utils.utilities import flatten
+
 MOCK_RESPONSE = {
     "Items": [
         {
@@ -106,3 +108,78 @@ UNEXPECTED_RESPONSE = {
         "RetryAttempts": 0,
     },
 }
+
+MOCK_PAGINATED_RESPONSE_1 = {
+    "Items": [
+        {
+            "FileName": "1of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "FileName": "3of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "FileName": "5of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "FileName": "7of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+            "VirusScannerResult": "Clean",
+        },
+    ],
+    "Count": 4,
+    "ScannedCount": 4,
+    "LastEvaluatedKey": {"ID": "id_token_for_page_2"},
+}
+
+
+MOCK_PAGINATED_RESPONSE_2 = {
+    "Items": [
+        {
+            "FileName": "2of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "FileName": "10of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "FileName": "8of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "FileName": "6of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+            "VirusScannerResult": "Clean",
+        },
+    ],
+    "Count": 4,
+    "ScannedCount": 4,
+    "LastEvaluatedKey": {"ID": "id_token_for_page_3"},
+}
+
+MOCK_PAGINATED_RESPONSE_3 = {
+    "Items": [
+        {
+            "FileName": "9of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+            "VirusScannerResult": "Clean",
+        },
+        {
+            "FileName": "4of10_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
+            "VirusScannerResult": "Clean",
+        },
+    ],
+    "Count": 2,
+    "ScannedCount": 2,
+}
+
+EXPECTED_ITEMS_FOR_PAGINATED_RESULTS = flatten(
+    [
+        response["Items"]
+        for response in [
+            MOCK_PAGINATED_RESPONSE_1,
+            MOCK_PAGINATED_RESPONSE_2,
+            MOCK_PAGINATED_RESPONSE_3,
+        ]
+    ]
+)
