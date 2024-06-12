@@ -341,7 +341,7 @@ describe('Navigation', () => {
 });
 
 const renderComponent = (docType: DOCUMENT_TYPE, history: MemoryHistory) => {
-    const props: Omit<Props, 'setStage' | 'setIsDeletingDocuments' | 'setDownloadStage'> = {
+    const props: Omit<Props, 'setStage' | 'setDownloadStage'> = {
         numberOfFiles: mockLgSearchResult.number_of_files,
         docType,
         recordType: docType.toString(),
@@ -349,7 +349,7 @@ const renderComponent = (docType: DOCUMENT_TYPE, history: MemoryHistory) => {
 
     return render(
         <ReactRouter.Router navigator={history} location={history.location}>
-            <DeleteSubmitStage {...props} setIsDeletingDocuments={mockSetIsDeletingDocuments} />,
+            <DeleteSubmitStage {...props} />,
         </ReactRouter.Router>,
     );
 };
