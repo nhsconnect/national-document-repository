@@ -73,6 +73,7 @@ function DeleteSubmitStage({
             }
         };
         try {
+            setDeletionStage(SUBMISSION_STATE.PENDING);
             const response: DeleteResponse = await deleteAllDocuments({
                 docType: docType,
                 nhsNumber: nhsNumber,
@@ -177,7 +178,12 @@ function DeleteSubmitStage({
                     </Radios>
                 </Fieldset>
                 {deletionStage === SUBMISSION_STATE.PENDING ? (
-                    <SpinnerButton id="delete-docs-spinner" status="Deleting..." disabled={true} />
+                    <SpinnerButton
+                        id="delete-docs-spinner"
+                        dataTestId="delete-submit-spinner-btn"
+                        status="Deleting..."
+                        disabled={true}
+                    />
                 ) : (
                     <Button type="submit" id="delete-submit-button" data-testid="delete-submit-btn">
                         Continue

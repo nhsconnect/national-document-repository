@@ -13,6 +13,7 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router';
+import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
 
 jest.mock('../../../../helpers/hooks/useConfig');
 jest.mock('../deleteResultStage/DeleteResultStage', () => () => <div>Deletion complete</div>);
@@ -45,7 +46,6 @@ const mockLgSearchResult = buildLgSearchResult();
 
 const mockSetStage = jest.fn();
 const mockSetIsDeletingDocuments = jest.fn();
-const mockSetDownloadStage = jest.fn();
 
 describe('DeleteSubmitStage', () => {
     beforeEach(() => {
@@ -260,6 +260,22 @@ describe('DeleteSubmitStage', () => {
                     'Select whether you want to permanently delete these patient files',
                 ),
             ).toBeInTheDocument();
+        });
+
+        it('change the button to spinner button when deletion is taken place in background', async () => {
+            mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
+            mockedAxios.delete.mockReturnValue(waitForSeconds(1));
+
+            renderComponent(DOCUMENT_TYPE.LLOYD_GEORGE, history);
+
+            act(() => {
+                userEvent.click(screen.getByRole('radio', { name: 'Yes' }));
+                userEvent.click(screen.getByRole('button', { name: 'Continue' }));
+            });
+
+            await waitFor(() => {
+                expect(screen.getByTestId('delete-submit-spinner-btn')).toBeInTheDocument();
+            });
         });
     });
 
