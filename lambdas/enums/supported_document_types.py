@@ -39,3 +39,10 @@ class SupportedDocumentTypes(str, Enum):
             SupportedDocumentTypes.LG: os.getenv("LLOYD_GEORGE_DYNAMODB_NAME"),
         }
         return document_type_to_table_name[self]
+
+    def get_s3_bucket_name(self) -> str:
+        lookup_dict = {
+            SupportedDocumentTypes.ARF: os.getenv("DOCUMENT_STORE_BUCKET_NAME"),
+            SupportedDocumentTypes.LG: os.getenv("LLOYD_GEORGE_BUCKET_NAME"),
+        }
+        return lookup_dict[self]

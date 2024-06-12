@@ -114,3 +114,11 @@ class FhirResourceNotFound(Exception):
 
 class FileUploadInProgress(Exception):
     pass
+
+
+class LogsQueryException(Exception):
+    pass
+
+
+class StatisticDataNotFoundException(Exception):
+    pass

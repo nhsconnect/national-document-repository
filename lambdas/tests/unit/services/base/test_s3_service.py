@@ -8,8 +8,13 @@ from tests.unit.conftest import (
     TEST_NHS_NUMBER,
     TEST_OBJECT_KEY,
 )
-from tests.unit.helpers.data.s3_responses import MOCK_PRESIGNED_URL_RESPONSE
+from tests.unit.helpers.data.s3_responses import (
+    MOCK_LIST_OBJECTS_PAGINATED_RESPONSES,
+    MOCK_LIST_OBJECTS_RESPONSE,
+    MOCK_PRESIGNED_URL_RESPONSE,
+)
 from utils.exceptions import TagNotFoundException
+from utils.utilities import flatten
 
 TEST_DOWNLOAD_PATH = "test_path"
 MOCK_EVENT_BODY = {
@@ -26,6 +31,7 @@ def mock_service(mocker, set_env):
     mocker.patch("services.base.iam_service.IAMService")
     service = S3Service(custom_aws_role="mock_arn_custom_role")
     yield service
+    S3Service._instance = None
 
 
 @pytest.fixture
@@ -38,6 +44,12 @@ def mock_client(mocker, mock_service):
 def mock_custom_client(mocker, mock_service):
     client = mocker.patch.object(mock_service, "custom_client")
     yield client
+
+
+@pytest.fixture
+def mock_list_objects_paginate(mock_client):
+    mock_paginator_method = mock_client.get_paginator.return_value.paginate
+    return mock_paginator_method
 
 
 def test_create_upload_presigned_url(mock_service, mock_custom_client):
@@ -248,7 +260,6 @@ def test_file_exist_on_s3_raises_client_error_if_unexpected_response(
 
 def test_s3_service_singleton_instance(mocker):
     mocker.patch("boto3.client")
-    S3Service._instance = None
 
     instance_1 = S3Service()
     instance_2 = S3Service()
@@ -257,8 +268,6 @@ def test_s3_service_singleton_instance(mocker):
 
 
 def test_not_created_presigned_url_without_custom_client(mocker):
-    S3Service._instance = None
-
     mocker.patch("boto3.client")
     mock_service = S3Service()
 
@@ -268,8 +277,6 @@ def test_not_created_presigned_url_without_custom_client(mocker):
 
 
 def test_not_created_custom_client_without_client_role(mocker):
-    S3Service._instance = None
-
     mocker.patch("boto3.client")
     iam_service = mocker.patch("services.base.iam_service.IAMService")
 
@@ -296,3 +303,45 @@ def test_created_custom_client_when_client_role_is_passed(mocker):
     iam_service.assert_called()
     assert mock_service.custom_client == custom_client_mock
     iam_service_instance.assume_role.assert_called()
+
+
+def test_list_all_objects_return_a_list_of_file_details(
+    mock_service, mock_client, mock_list_objects_paginate
+):
+    mock_list_objects_paginate.return_value = [MOCK_LIST_OBJECTS_RESPONSE]
+    expected = MOCK_LIST_OBJECTS_RESPONSE["Contents"]
+
+    actual = mock_service.list_all_objects(MOCK_BUCKET)
+
+    assert actual == expected
+
+    mock_client.get_paginator.assert_called_with("list_objects_v2")
+    mock_list_objects_paginate.assert_called_with(Bucket=MOCK_BUCKET)
+
+
+def test_list_all_objects_handles_paginated_responses(
+    mock_service, mock_client, mock_list_objects_paginate
+):
+    mock_list_objects_paginate.return_value = MOCK_LIST_OBJECTS_PAGINATED_RESPONSES
+
+    expected = flatten(
+        [page["Contents"] for page in MOCK_LIST_OBJECTS_PAGINATED_RESPONSES]
+    )
+
+    actual = mock_service.list_all_objects(MOCK_BUCKET)
+
+    assert actual == expected
+
+
+def test_list_all_objects_raises_client_error_if_unexpected_response(
+    mock_service, mock_client, mock_list_objects_paginate
+):
+    mock_error = ClientError(
+        {"Error": {"Code": "500", "Message": "Internal Server Error"}},
+        "S3:ListObjectsV2",
+    )
+
+    mock_list_objects_paginate.side_effect = mock_error
+
+    with pytest.raises(ClientError):
+        mock_service.list_all_objects(MOCK_BUCKET)

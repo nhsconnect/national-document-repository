@@ -1,3 +1,4 @@
+import itertools
 import os
 import re
 import uuid
@@ -54,3 +55,7 @@ def redact_id_to_last_4_chars(str_id: str) -> str:
 
 def get_file_key_from_s3_url(s3_url: str) -> str:
     return urlparse(s3_url).path.lstrip("/")
+
+
+def flatten(nested_list: list[list]) -> list:
+    return list(itertools.chain(*nested_list))
