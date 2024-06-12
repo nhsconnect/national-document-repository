@@ -1,3 +1,5 @@
+import uuid
+
 import boto3
 from botocore.exceptions import ClientError
 from utils.audit_logging_setup import LoggingService
@@ -21,9 +23,8 @@ class IAMService:
 
     def assume_role(self, assume_role_arn, resource_name, config=None):
         try:
-            session_name = resource_name + " " + assume_role_arn.split(":")[-1]
             response = self.sts_client.assume_role(
-                RoleArn=assume_role_arn, RoleSessionName=session_name
+                RoleArn=assume_role_arn, RoleSessionName=str(uuid.uuid4())
             )
             temp_credentials = response["Credentials"]
             aws_client = boto3.client(

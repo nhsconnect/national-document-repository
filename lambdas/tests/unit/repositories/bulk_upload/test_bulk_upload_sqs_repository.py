@@ -2,7 +2,7 @@ import copy
 
 import pytest
 from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRepository
-from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, TEST_OBJECT_KEY
+from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
     TEST_SQS_MESSAGE,
@@ -15,12 +15,6 @@ def repo_under_test(mocker, set_env):
     repo = BulkUploadSqsRepository()
     mocker.patch.object(repo, "sqs_repository")
     yield repo
-
-
-@pytest.fixture
-def mock_uuid(mocker):
-    mocker.patch("uuid.uuid4", return_value=TEST_OBJECT_KEY)
-    yield TEST_OBJECT_KEY
 
 
 def test_put_staging_metadata_back_to_queue_and_increases_retries(

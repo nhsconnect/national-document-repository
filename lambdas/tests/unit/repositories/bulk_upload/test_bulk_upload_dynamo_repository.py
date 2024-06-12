@@ -3,24 +3,13 @@ from freezegun import freeze_time
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
 )
-from tests.unit.conftest import (
-    MOCK_BULK_REPORT_TABLE_NAME,
-    MOCK_LG_TABLE_NAME,
-    TEST_OBJECT_KEY,
-)
+from tests.unit.conftest import MOCK_BULK_REPORT_TABLE_NAME, MOCK_LG_TABLE_NAME
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_DOCUMENT_REFERENCE,
     TEST_DOCUMENT_REFERENCE_LIST,
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
     TEST_STAGING_METADATA,
 )
-
-
-@pytest.fixture
-def mock_uuid(mocker):
-    test_uuid = TEST_OBJECT_KEY
-    mocker.patch("uuid.uuid4", return_value=test_uuid)
-    yield test_uuid
 
 
 @pytest.fixture

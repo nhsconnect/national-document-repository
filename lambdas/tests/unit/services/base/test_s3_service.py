@@ -6,7 +6,7 @@ from tests.unit.conftest import (
     TEST_FILE_KEY,
     TEST_FILE_NAME,
     TEST_NHS_NUMBER,
-    TEST_OBJECT_KEY,
+    TEST_UUID,
 )
 from tests.unit.helpers.data.s3_responses import (
     MOCK_LIST_OBJECTS_PAGINATED_RESPONSES,
@@ -56,7 +56,7 @@ def test_create_upload_presigned_url(mock_service, mock_custom_client):
     mock_custom_client.generate_presigned_post.return_value = (
         MOCK_PRESIGNED_URL_RESPONSE
     )
-    response = mock_service.create_upload_presigned_url(MOCK_BUCKET, TEST_OBJECT_KEY)
+    response = mock_service.create_upload_presigned_url(MOCK_BUCKET, TEST_UUID)
 
     assert response == MOCK_PRESIGNED_URL_RESPONSE
     mock_custom_client.generate_presigned_post.assert_called_once()
@@ -104,12 +104,12 @@ def test_copy_across_bucket(mock_service, mock_client):
         source_bucket="bucket_to_copy_from",
         source_file_key=TEST_FILE_KEY,
         dest_bucket="bucket_to_copy_to",
-        dest_file_key=f"{TEST_NHS_NUMBER}/{TEST_OBJECT_KEY}",
+        dest_file_key=f"{TEST_NHS_NUMBER}/{TEST_UUID}",
     )
 
     mock_client.copy_object.assert_called_once_with(
         Bucket="bucket_to_copy_to",
-        Key=f"{TEST_NHS_NUMBER}/{TEST_OBJECT_KEY}",
+        Key=f"{TEST_NHS_NUMBER}/{TEST_UUID}",
         CopySource={"Bucket": "bucket_to_copy_from", "Key": TEST_FILE_KEY},
     )
 
