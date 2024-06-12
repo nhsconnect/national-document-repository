@@ -13,7 +13,6 @@ from tests.unit.conftest import (
     MOCK_LG_BUCKET,
     MOCK_LG_STAGING_STORE_BUCKET,
     TEST_CURRENT_GP_ODS,
-    TEST_OBJECT_KEY,
 )
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_DOCUMENT_REFERENCE,
@@ -44,13 +43,6 @@ from utils.exceptions import (
     VirusScanNoResultException,
 )
 from utils.lloyd_george_validator import LGInvalidFilesException
-
-
-@pytest.fixture
-def mock_uuid(mocker):
-    test_uuid = TEST_OBJECT_KEY
-    mocker.patch("uuid.uuid4", return_value=test_uuid)
-    yield test_uuid
 
 
 @pytest.fixture

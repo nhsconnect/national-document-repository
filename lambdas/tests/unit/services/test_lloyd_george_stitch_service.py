@@ -10,7 +10,7 @@ from models.document_reference import DocumentReference
 from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
-from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_OBJECT_KEY
+from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_UUID
 from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.lambda_exceptions import LGStitchServiceException
 
@@ -36,7 +36,7 @@ def build_lg_doc_ref(
             "ContentType": "type",
             "Created": "2023-08-23T13:38:04.095Z",
             "Deleted": "",
-            "FileLocation": f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/{TEST_OBJECT_KEY}",
+            "FileLocation": f"s3://{MOCK_LG_BUCKET}/{TEST_NHS_NUMBER}/{TEST_UUID}",
             "FileName": file_name,
             "NhsNumber": TEST_NHS_NUMBER,
             "VirusScannerResult": "Clean",
@@ -115,13 +115,6 @@ def mock_s3(mocker, mock_tempfile):
 def mock_tempfile(mocker):
     mocker.patch("shutil.rmtree")
     yield mocker.patch.object(tempfile, "mkdtemp", return_value=MOCK_TEMP_FOLDER)
-
-
-@pytest.fixture
-def mock_uuid(mocker):
-    uuid = "12345678-ABCD-8765-43210EDC"
-    mocker.patch("uuid.uuid4", return_value=uuid)
-    return uuid
 
 
 @pytest.fixture
@@ -322,7 +315,7 @@ def test_sort_documents_by_filenames_for_more_than_10_files(stitch_service):
 
 
 def test_download_lloyd_george_files(mock_s3, stitch_service, mock_uuid):
-    expected_file_path_on_s3 = f"{TEST_NHS_NUMBER}/{TEST_OBJECT_KEY}"
+    expected_file_path_on_s3 = f"{TEST_NHS_NUMBER}/{TEST_UUID}"
     expected_downloaded_file = f"/tmp/{mock_uuid}"
 
     expected = [expected_downloaded_file] * 3

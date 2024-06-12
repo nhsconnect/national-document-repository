@@ -62,11 +62,11 @@ MOCK_STATISTICS_TABLE = "test_statistics_table"
 MOCK_STATISTICS_REPORT_BUCKET = "test_statistics_report_bucket"
 
 TEST_NHS_NUMBER = "9000000009"
-TEST_OBJECT_KEY = "1234-4567-8912-HSDF-TEST"
+TEST_UUID = "1234-4567-8912-HSDF-TEST"
 TEST_FILE_KEY = "test_file_key"
 TEST_FILE_NAME = "test.pdf"
 TEST_VIRUS_SCANNER_RESULT = "not_scanned"
-TEST_DOCUMENT_LOCATION = f"s3://{MOCK_BUCKET}/{TEST_OBJECT_KEY}"
+TEST_DOCUMENT_LOCATION = f"s3://{MOCK_BUCKET}/{TEST_FILE_KEY}"
 TEST_CURRENT_GP_ODS = "Y12345"
 
 AUTH_STATE_TABLE_NAME = "test_state_table"
@@ -251,3 +251,9 @@ def mock_temp_folder(mocker):
     temp_folder = tempfile.mkdtemp()
     mocker.patch.object(tempfile, "mkdtemp", return_value=temp_folder)
     yield temp_folder
+
+
+@pytest.fixture
+def mock_uuid(mocker):
+    mocker.patch("uuid.uuid4", return_value=TEST_UUID)
+    yield TEST_UUID

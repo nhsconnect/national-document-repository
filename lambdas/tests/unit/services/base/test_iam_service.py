@@ -3,6 +3,7 @@ from datetime import datetime
 import pytest
 from botocore.exceptions import ClientError
 from services.base.iam_service import IAMService
+from tests.unit.conftest import TEST_UUID
 
 
 @pytest.fixture
@@ -18,7 +19,7 @@ def mock_client(mocker):
     yield client
 
 
-def test_assume_role(mock_client, mock_service):
+def test_assume_role(mock_client, mock_service, mock_uuid):
     assume_role_arn = "arn:aws:tests"
     resource_name = "test_resource_name"
     mock_service.sts_client.assume_role.return_value = ASSUME_ROLE_RESPONSE
@@ -28,7 +29,7 @@ def test_assume_role(mock_client, mock_service):
     )
 
     mock_service.sts_client.assume_role.assert_called_once_with(
-        RoleArn=assume_role_arn, RoleSessionName=resource_name + " tests"
+        RoleArn=assume_role_arn, RoleSessionName=TEST_UUID
     )
     mock_client.assert_called_with(
         resource_name,
@@ -39,7 +40,7 @@ def test_assume_role(mock_client, mock_service):
     )
 
 
-def test_assume_role_raise_error(mock_client, mock_service):
+def test_assume_role_raise_error(mock_client, mock_service, mock_uuid):
     assume_role_arn = "arn:aws:tests"
     resource_name = "test_resource_name"
     mock_service.sts_client.assume_role.side_effect = ClientError(
@@ -57,7 +58,7 @@ def test_assume_role_raise_error(mock_client, mock_service):
         )
 
     mock_service.sts_client.assume_role.assert_called_once_with(
-        RoleArn=assume_role_arn, RoleSessionName=resource_name + " tests"
+        RoleArn=assume_role_arn, RoleSessionName=TEST_UUID
     )
 
 

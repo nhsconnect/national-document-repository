@@ -4,7 +4,7 @@ from enums.virus_scan_result import VirusScanResult
 from freezegun import freeze_time
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import MetadataFile, StagingMetadata
-from tests.unit.conftest import MOCK_LG_BUCKET, TEST_CURRENT_GP_ODS, TEST_OBJECT_KEY
+from tests.unit.conftest import MOCK_LG_BUCKET, TEST_CURRENT_GP_ODS, TEST_UUID
 
 sample_metadata_model = MetadataFile(
     file_path="/1234567890/1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf",
@@ -135,7 +135,7 @@ def build_test_document_reference(file_name: str, nhs_number: str = "9000000009"
         nhs_number=nhs_number,
         content_type="application/pdf",
         file_name=file_name,
-        reference_id=TEST_OBJECT_KEY,
+        reference_id=TEST_UUID,
         s3_bucket_name=MOCK_LG_BUCKET,
         current_gp_ods=TEST_CURRENT_GP_ODS,
     )

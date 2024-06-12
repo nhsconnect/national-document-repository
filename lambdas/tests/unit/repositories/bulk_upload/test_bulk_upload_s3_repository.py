@@ -4,11 +4,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import VirusScanResult
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
-from tests.unit.conftest import (
-    MOCK_LG_BUCKET,
-    MOCK_LG_STAGING_STORE_BUCKET,
-    TEST_OBJECT_KEY,
-)
+from tests.unit.conftest import MOCK_LG_BUCKET, MOCK_LG_STAGING_STORE_BUCKET
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_DOCUMENT_REFERENCE,
     TEST_DOCUMENT_REFERENCE_LIST,
@@ -29,13 +25,6 @@ def repo_under_test(mocker, set_env):
     repo = BulkUploadS3Repository()
     mocker.patch.object(repo, "s3_repository")
     yield repo
-
-
-@pytest.fixture
-def mock_uuid(mocker):
-    test_uuid = TEST_OBJECT_KEY
-    mocker.patch("uuid.uuid4", return_value=test_uuid)
-    yield test_uuid
 
 
 @pytest.fixture
