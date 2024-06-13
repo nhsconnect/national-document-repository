@@ -2,6 +2,7 @@ import os
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
+from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
@@ -14,7 +15,11 @@ from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_exceptions import CreateDocumentRefException
-from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_files
+from utils.lloyd_george_validator import (
+    LGInvalidFilesException,
+    getting_patient_info_from_pds,
+    validate_lg_files,
+)
 from utils.utilities import create_reference_id, validate_nhs_number
 
 FAILED_CREATE_REFERENCE_MESSAGE = "Create document reference failed"
@@ -77,7 +82,8 @@ class CreateDocumentReferenceService:
                 )
 
             if lg_documents:
-                validate_lg_files(lg_documents, nhs_number)
+                pds_patient_details = getting_patient_info_from_pds(nhs_number)
+                validate_lg_files(lg_documents, pds_patient_details)
                 self.check_existing_lloyd_george_records(nhs_number)
 
                 self.create_reference_in_dynamodb(
@@ -156,6 +162,17 @@ class CreateDocumentReferenceService:
             uploading=True,
         )
         return document_reference
+
+    def add_ods_code_to_document_reference(
+        self, lg_documents_dict_format: list[dict], ods_code: str
+    ) -> list[dict]:
+        result = []
+        for lg_document in lg_documents_dict_format:
+            ods_code_field_name = DocumentReferenceMetadataFields.CURRENT_GP_ODS.value
+            lg_document_with_ods_code = {**lg_document, ods_code_field_name: ods_code}
+            result.append(lg_document_with_ods_code)
+
+        return result
 
     def prepare_pre_signed_url(self, document_reference: NHSDocumentReference):
         try:

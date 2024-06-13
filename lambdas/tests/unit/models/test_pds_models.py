@@ -14,6 +14,7 @@ from tests.unit.helpers.data.pds.pds_patient_response import (
 from tests.unit.helpers.data.pds.utils import create_patient
 from utils.utilities import validate_nhs_number
 
+# TODO: try move this to conftest
 EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
     givenName=["Jane"],
     familyName="Smith",

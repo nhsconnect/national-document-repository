@@ -76,9 +76,10 @@ def check_for_patient_already_exist_in_repo(nhs_number: str):
         )
 
 
-def validate_lg_files(file_list: list[NHSDocumentReference], nhs_number: str):
-    pds_patient_details = getting_patient_info_from_pds(nhs_number)
-
+def validate_lg_files(
+    file_list: list[NHSDocumentReference], pds_patient_details: PatientDetails
+):
+    nhs_number = pds_patient_details.nhs_number
     files_name_list = []
 
     for doc in file_list:

@@ -9,6 +9,7 @@ from tests.unit.helpers.data.create_document_reference import (
     LG_FILE_LIST,
 )
 from tests.unit.helpers.data.test_documents import (
+    create_test_doc_refs_as_dict,
     create_test_lloyd_george_doc_store_refs,
 )
 from utils.lambda_exceptions import CreateDocumentRefException
@@ -27,6 +28,8 @@ NA_STRING = "Not Test Important"
 
 @pytest.fixture
 def mock_create_doc_ref_service(mocker, set_env):
+    mocker.patch("services.base.s3_service.IAMService")
+
     create_doc_ref_service = CreateDocumentReferenceService()
     mocker.patch.object(create_doc_ref_service, "s3_service")
     mocker.patch.object(create_doc_ref_service, "dynamo_service")
@@ -67,8 +70,16 @@ def mock_create_reference_in_dynamodb(mock_create_doc_ref_service, mocker):
 
 
 @pytest.fixture()
-def mock_validate_lg(mocker):
+def mock_validate_lg(mocker, mock_getting_patient_info_from_pds):
     yield mocker.patch("services.create_document_reference_service.validate_lg_files")
+
+
+@pytest.fixture()
+def mock_getting_patient_info_from_pds(mocker, mock_patient_details):
+    yield mocker.patch(
+        "services.create_document_reference_service.getting_patient_info_from_pds",
+        return_value=mock_patient_details,
+    )
 
 
 @pytest.fixture
@@ -150,6 +161,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
     mock_fetch_document,
+    mock_patient_details,
 ):
     document_references = []
     side_effects = []
@@ -185,7 +197,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     )
 
     mock_create_reference_in_dynamodb.assert_called_once()
-    mock_validate_lg.assert_called_with(document_references, TEST_NHS_NUMBER)
+    mock_validate_lg.assert_called_with(document_references, mock_patient_details)
 
 
 def test_create_document_reference_request_with_both_list(
@@ -258,6 +270,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
+    mock_patient_details,
 ):
     document_references = []
     side_effects = []
@@ -295,7 +308,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     )
 
     mock_create_reference_in_dynamodb.assert_not_called()
-    mock_validate_lg.assert_called_with(document_references, TEST_NHS_NUMBER)
+    mock_validate_lg.assert_called_with(document_references, mock_patient_details)
 
 
 def test_create_document_reference_invalid_nhs_number(
@@ -603,3 +616,19 @@ def test_remove_records_of_failed_lloyd_george_upload(
         table_name=MOCK_LG_TABLE_NAME,
         document_references=mock_doc_refs_of_failed_upload,
     )
+
+
+@freeze_time("2023-10-30T10:25:00")
+def test_add_ods_code_to_document_reference_return_a_list_of_doc_ref_dict_with_ods_code_added(
+    mock_create_doc_ref_service,
+):
+    mock_ods_code = "Y12345"
+    mock_input_data = create_test_doc_refs_as_dict(override={"current_gp_ods": ""})
+
+    expected = create_test_doc_refs_as_dict(override={"current_gp_ods": "Y12345"})
+
+    actual = mock_create_doc_ref_service.add_ods_code_to_document_reference(
+        mock_input_data, mock_ods_code
+    )
+
+    assert actual == expected
