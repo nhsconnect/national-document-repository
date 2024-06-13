@@ -138,3 +138,27 @@ def test_lambda_handler_responds_with_400_when_no_doc_type_in_document_reference
 
     assert actual == expected
     mock_virus_scan_service.scan_file.assert_not_called()
+
+
+def test_no_event_processing_when_upload_lambda_flag_not_enabled(
+    set_env, context, mock_upload_lambda_disabled
+):
+
+    valid_event = {
+        "httpMethod": "POST",
+        "body": json.dumps(VALID_DOCUMENT_REFERENCE_LOWERCASE),
+    }
+    expected_body = json.dumps(
+        {
+            "message": "Feature is not enabled",
+            "err_code": "FFL_5003",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
+    expected = ApiGatewayResponse(
+        500, expected_body, "POST"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(valid_event, context)
+
+    assert actual == expected

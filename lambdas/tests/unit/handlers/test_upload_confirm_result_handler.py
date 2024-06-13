@@ -215,3 +215,23 @@ def test_lambda_handler_service_raises_error(
         MOCK_ARF_DOCUMENTS
     )
     mock_processing_event_details.assert_called_with(MOCK_VALID_ARF_EVENT)
+
+
+def test_no_event_processing_when_upload_lambda_flag_not_enabled(
+    set_env, context, mock_upload_lambda_disabled
+):
+
+    expected_body = json.dumps(
+        {
+            "message": "Feature is not enabled",
+            "err_code": "FFL_5003",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
+    expected = ApiGatewayResponse(
+        500, expected_body, "POST"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(MOCK_VALID_ARF_EVENT, context)
+
+    assert actual == expected
