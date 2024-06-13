@@ -45,7 +45,6 @@ const mockPatientDetails = buildPatientDetails();
 const mockLgSearchResult = buildLgSearchResult();
 
 const mockSetStage = jest.fn();
-const mockSetIsDeletingDocuments = jest.fn();
 
 describe('DeleteSubmitStage', () => {
     beforeEach(() => {
