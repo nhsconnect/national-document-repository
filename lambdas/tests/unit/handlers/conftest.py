@@ -1,4 +1,5 @@
 import pytest
+from services.feature_flags_service import FeatureFlagService
 
 
 @pytest.fixture
@@ -95,3 +96,12 @@ def missing_id_event():
         "queryStringParameters": {"invalid": ""},
     }
     return api_gateway_proxy_event
+
+
+@pytest.fixture
+def mock_upload_lambda_enabled(mocker):
+    mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
+    mock_upload_lambda_feature_flag = mock_function.return_value = {
+        "uploadLambdaEnabled": True
+    }
+    yield mock_upload_lambda_feature_flag

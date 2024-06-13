@@ -31,7 +31,7 @@ class MockError(Enum):
 
 
 @pytest.fixture
-def mock_upload_confirm_result_service(mocker):
+def mock_upload_confirm_result_service(mocker, mock_upload_lambda_enabled):
     mocked_class = mocker.patch(
         "handlers.upload_confirm_result_handler.UploadConfirmResultService"
     )
@@ -180,9 +180,7 @@ def test_processing_event_details_returns_nhs_number_and_documents():
 
 
 def test_lambda_handler_processing_event_details_raises_error(
-    context,
-    set_env,
-    mock_processing_event_details,
+    context, set_env, mock_processing_event_details, mock_upload_lambda_enabled
 ):
     mock_processing_event_details.side_effect = UploadConfirmResultException(
         400, MockError.Error

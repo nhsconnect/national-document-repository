@@ -12,7 +12,10 @@ VALID_DOCUMENT_REFERENCE_LOWERCASE = {"documentReference": "test/arf/1111111111"
 
 
 @pytest.fixture
-def mock_virus_scan_service(mocker):
+def mock_virus_scan_service(
+    mocker,
+    mock_upload_lambda_enabled,
+):
     mocked_class = mocker.patch("handlers.virus_scan_result_handler.VirusScanService")
     mocked_service = mocked_class.return_value
     yield mocked_service
