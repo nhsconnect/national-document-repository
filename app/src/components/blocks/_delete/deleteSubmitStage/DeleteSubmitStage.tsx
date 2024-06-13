@@ -30,7 +30,6 @@ import DeleteResultStage from '../deleteResultStage/DeleteResultStage';
 export type Props = {
     docType: DOCUMENT_TYPE;
     numberOfFiles: number;
-    setIsDeletingDocuments?: Dispatch<boolean>;
     setDownloadStage?: Dispatch<SetStateAction<DOWNLOAD_STAGE>>;
     recordType: string;
 };
@@ -40,13 +39,7 @@ enum DELETE_DOCUMENTS_OPTION {
     NO = 'no',
 }
 
-function DeleteSubmitStage({
-    docType,
-    numberOfFiles,
-    setIsDeletingDocuments,
-    setDownloadStage,
-    recordType,
-}: Props) {
+function DeleteSubmitStage({ docType, numberOfFiles, setDownloadStage, recordType }: Props) {
     const patientDetails = usePatient();
     const role = useRole();
     const { register, handleSubmit } = useForm();
@@ -73,6 +66,7 @@ function DeleteSubmitStage({
             }
         };
         try {
+            setDeletionStage(SUBMISSION_STATE.PENDING);
             const response: DeleteResponse = await deleteAllDocuments({
                 docType: docType,
                 nhsNumber: nhsNumber,
@@ -177,7 +171,12 @@ function DeleteSubmitStage({
                     </Radios>
                 </Fieldset>
                 {deletionStage === SUBMISSION_STATE.PENDING ? (
-                    <SpinnerButton id="delete-docs-spinner" status="Deleting..." disabled={true} />
+                    <SpinnerButton
+                        id="delete-docs-spinner"
+                        dataTestId="delete-submit-spinner-btn"
+                        status="Deleting..."
+                        disabled={true}
+                    />
                 ) : (
                     <Button type="submit" id="delete-submit-button" data-testid="delete-submit-btn">
                         Continue

@@ -152,7 +152,6 @@ function DocumentSearchResultsPage() {
                             <DeleteSubmitStage
                                 recordType="ARF"
                                 numberOfFiles={searchResults.length}
-                                setIsDeletingDocuments={setIsDeletingDocuments}
                                 docType={DOCUMENT_TYPE.ALL}
                             />
                         }
