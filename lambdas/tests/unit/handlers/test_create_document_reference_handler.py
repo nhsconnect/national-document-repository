@@ -6,7 +6,11 @@ from handlers.create_document_reference_handler import (
     lambda_handler,
     processing_event_details,
 )
-from tests.unit.conftest import MOCK_LG_STAGING_STORE_BUCKET, TEST_NHS_NUMBER, TEST_UUID
+from tests.unit.conftest import (
+    MOCK_LG_STAGING_STORE_BUCKET,
+    TEST_NHS_NUMBER,
+    TEST_OBJECT_KEY,
+)
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
     ARF_MOCK_EVENT_BODY,
@@ -18,8 +22,8 @@ from tests.unit.helpers.data.create_document_reference import (
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lambda_response import ApiGatewayResponse
 
-TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_LG_STAGING_STORE_BUCKET}/{TEST_UUID}"
-TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_LG_STAGING_STORE_BUCKET}/{TEST_UUID}"
+TEST_DOCUMENT_LOCATION_ARF = f"s3://{MOCK_LG_STAGING_STORE_BUCKET}/{TEST_OBJECT_KEY}"
+TEST_DOCUMENT_LOCATION_LG = f"s3://{MOCK_LG_STAGING_STORE_BUCKET}/{TEST_OBJECT_KEY}"
 
 
 class MockError(Enum):
