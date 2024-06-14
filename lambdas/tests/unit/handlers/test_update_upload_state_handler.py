@@ -22,7 +22,7 @@ class MockError(Enum):
 
 
 @pytest.fixture
-def mock_update_upload_state_service(mocker):
+def mock_update_upload_state_service(mocker, mock_upload_lambda_enabled):
     mocked_class = mocker.patch(
         "handlers.update_upload_state_handler.UpdateUploadStateService"
     )
@@ -51,7 +51,9 @@ def test_update_upload_state_handler_success_arf(
     assert expected == actual
 
 
-def test_update_upload_state_handler_both_doc_types_raise_error(set_env, context):
+def test_update_upload_state_handler_both_doc_types_raise_error(
+    set_env, context, mock_upload_lambda_enabled
+):
     expected_body = {
         "message": "Missing fields",
         "err_code": "US_4002",
@@ -98,7 +100,11 @@ def test_lambda_handler_missing_environment_variables_returns_500(
     assert expected == actual
 
 
-def test_lambda_handler_invalid_body_raises_exception(set_env, context):
+def test_lambda_handler_invalid_body_raises_exception(
+    set_env,
+    context,
+    mock_upload_lambda_enabled,
+):
     expected_body = {
         "message": "Invalid request body",
         "err_code": "US_4005",
@@ -113,7 +119,9 @@ def test_lambda_handler_invalid_body_raises_exception(set_env, context):
     assert expected == actual
 
 
-def test_lambda_handler_missing_body_raises_exception(set_env, context):
+def test_lambda_handler_missing_body_raises_exception(
+    set_env, context, mock_upload_lambda_enabled
+):
     expected_body = {
         "message": "Missing request body",
         "err_code": "US_4001",
@@ -126,3 +134,23 @@ def test_lambda_handler_missing_body_raises_exception(set_env, context):
     ).create_api_gateway_response()
     actual = lambda_handler(MOCK_NO_BODY_EVENT, context)
     assert expected == actual
+
+
+def test_no_event_processing_when_upload_lambda_flag_not_enabled(
+    set_env, context, mock_upload_lambda_disabled
+):
+
+    expected_body = json.dumps(
+        {
+            "message": "Feature is not enabled",
+            "err_code": "FFL_5003",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
+    expected = ApiGatewayResponse(
+        500, expected_body, "POST"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(MOCK_VALID_ARF_EVENT, context)
+
+    assert actual == expected

@@ -31,7 +31,7 @@ class MockError(Enum):
 
 
 @pytest.fixture
-def mock_upload_confirm_result_service(mocker):
+def mock_upload_confirm_result_service(mocker, mock_upload_lambda_enabled):
     mocked_class = mocker.patch(
         "handlers.upload_confirm_result_handler.UploadConfirmResultService"
     )
@@ -180,9 +180,7 @@ def test_processing_event_details_returns_nhs_number_and_documents():
 
 
 def test_lambda_handler_processing_event_details_raises_error(
-    context,
-    set_env,
-    mock_processing_event_details,
+    context, set_env, mock_processing_event_details, mock_upload_lambda_enabled
 ):
     mock_processing_event_details.side_effect = UploadConfirmResultException(
         400, MockError.Error
@@ -217,3 +215,23 @@ def test_lambda_handler_service_raises_error(
         MOCK_ARF_DOCUMENTS
     )
     mock_processing_event_details.assert_called_with(MOCK_VALID_ARF_EVENT)
+
+
+def test_no_event_processing_when_upload_lambda_flag_not_enabled(
+    set_env, context, mock_upload_lambda_disabled
+):
+
+    expected_body = json.dumps(
+        {
+            "message": "Feature is not enabled",
+            "err_code": "FFL_5003",
+            "interaction_id": "88888888-4444-4444-4444-121212121212",
+        }
+    )
+    expected = ApiGatewayResponse(
+        500, expected_body, "POST"
+    ).create_api_gateway_response()
+
+    actual = lambda_handler(MOCK_VALID_ARF_EVENT, context)
+
+    assert actual == expected
