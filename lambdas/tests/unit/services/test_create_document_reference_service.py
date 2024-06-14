@@ -9,6 +9,7 @@ from tests.unit.helpers.data.create_document_reference import (
     LG_FILE_LIST,
 )
 from tests.unit.helpers.data.test_documents import (
+    create_test_doc_refs,
     create_test_doc_refs_as_dict,
     create_test_lloyd_george_doc_store_refs,
 )
@@ -20,6 +21,7 @@ from lambdas.tests.unit.conftest import (
     MOCK_ARF_BUCKET,
     MOCK_LG_BUCKET,
     MOCK_LG_TABLE_NAME,
+    TEST_CURRENT_GP_ODS,
     TEST_NHS_NUMBER,
 )
 
@@ -200,6 +202,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     mock_validate_lg.assert_called_with(document_references, mock_patient_details)
 
 
+@freeze_time("2023-10-30T10:25:00")
 def test_create_document_reference_request_with_both_list(
     mock_create_doc_ref_service,
     mocker,
@@ -209,40 +212,30 @@ def test_create_document_reference_request_with_both_list(
     mock_validate_lg,
     mock_fetch_document,
 ):
-    document_references = []
-    lg_dictionaries = []
-    arf_dictionaries = []
-    side_effects = []
     files_list = ARF_FILE_LIST + LG_FILE_LIST
+    lg_file_names = [file["fileName"] for file in LG_FILE_LIST]
+    arf_file_names = [file["fileName"] for file in ARF_FILE_LIST]
 
-    for (
-        index,
-        file,
-    ) in enumerate(files_list):
-        is_lg_file = index >= len(ARF_FILE_LIST)
+    lg_doc_refs = create_test_doc_refs(
+        override={"current_gp_ods": ""}, file_names=lg_file_names
+    )
+    arf_doc_refs = create_test_doc_refs(
+        override={"doc_type": "ARF"}, file_names=arf_file_names
+    )
+    document_references = lg_doc_refs + arf_doc_refs
+    prepare_doc_object_mock_return_values = document_references
 
-        doc_type = SupportedDocumentTypes.ARF.value
-        if is_lg_file:
-            doc_type = SupportedDocumentTypes.LG.value
+    lg_dictionaries = create_test_doc_refs_as_dict(
+        override={"current_gp_ods": TEST_CURRENT_GP_ODS},
+        file_names=lg_file_names,
+    )
+    arf_dictionaries = create_test_doc_refs_as_dict(
+        override={"doc_type": "ARF"},
+        file_names=arf_file_names,
+    )
 
-        document_reference = NHSDocumentReference(
-            nhs_number=TEST_NHS_NUMBER,
-            s3_bucket_name=NA_STRING,
-            reference_id=NA_STRING,
-            content_type=NA_STRING,
-            file_name=file["fileName"],
-            doc_type=doc_type,
-        )
-        document_references.append(document_reference)
+    mock_prepare_doc_object.side_effect = prepare_doc_object_mock_return_values
 
-        if is_lg_file:
-            lg_dictionaries.append(document_reference.to_dict())
-        else:
-            arf_dictionaries.append(document_reference.to_dict())
-
-        side_effects.append(document_reference)
-
-    mock_prepare_doc_object.side_effect = side_effects
     mock_create_doc_ref_service.create_document_reference_request(
         TEST_NHS_NUMBER, files_list
     )

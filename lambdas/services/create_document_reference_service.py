@@ -86,8 +86,15 @@ class CreateDocumentReferenceService:
                 validate_lg_files(lg_documents, pds_patient_details)
                 self.check_existing_lloyd_george_records(nhs_number)
 
+                lg_documents_dict_format_with_ods_code = (
+                    self.add_ods_code_to_document_reference(
+                        lg_documents_dict_format,
+                        pds_patient_details.general_practice_ods,
+                    )
+                )
+
                 self.create_reference_in_dynamodb(
-                    self.lg_dynamo_table, lg_documents_dict_format
+                    self.lg_dynamo_table, lg_documents_dict_format_with_ods_code
                 )
 
             if arf_documents:

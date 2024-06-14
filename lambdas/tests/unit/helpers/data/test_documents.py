@@ -40,11 +40,15 @@ def create_test_lloyd_george_doc_store_refs(
     return refs
 
 
-def create_test_doc_refs(override: Optional[Dict] = None) -> List[NHSDocumentReference]:
-    file_names = [
-        f"{i}of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[30-12-2019].pdf"
-        for i in range(1, 4)
-    ]
+def create_test_doc_refs(
+    override: Optional[Dict] = None, file_names: Optional[List[str]] = None
+) -> List[NHSDocumentReference]:
+    if not file_names:
+        file_names = [
+            f"{i}of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[30-12-2019].pdf"
+            for i in range(1, 4)
+        ]
+
     override = override or {}
     arguments = {
         "nhs_number": TEST_NHS_NUMBER,
@@ -65,6 +69,8 @@ def create_test_doc_refs(override: Optional[Dict] = None) -> List[NHSDocumentRef
     return list_of_doc_ref
 
 
-def create_test_doc_refs_as_dict(override: Optional[Dict] = None) -> List[Dict]:
-    test_doc_refs = create_test_doc_refs(override)
+def create_test_doc_refs_as_dict(
+    override: Optional[Dict] = None, file_names: Optional[List[str]] = None
+) -> List[Dict]:
+    test_doc_refs = create_test_doc_refs(override, file_names)
     return [doc_ref.to_dict() for doc_ref in test_doc_refs]
