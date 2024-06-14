@@ -45,6 +45,7 @@ def create_test_doc_refs(override: Optional[Dict] = None) -> List[NHSDocumentRef
         f"{i}of3_Lloyd_George_Record_[Joe Bloggs]_[9000000009]_[30-12-2019].pdf"
         for i in range(1, 4)
     ]
+    override = override or {}
     arguments = {
         "nhs_number": TEST_NHS_NUMBER,
         "s3_bucket_name": MOCK_LG_STAGING_STORE_BUCKET_ENV_NAME,
