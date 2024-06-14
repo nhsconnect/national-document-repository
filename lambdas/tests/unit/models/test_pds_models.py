@@ -1,5 +1,6 @@
 from freezegun import freeze_time
 from models.pds_models import PatientDetails
+from tests.unit.conftest import EXPECTED_PARSED_PATIENT_BASE_CASE
 from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT,
     PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME,
@@ -13,19 +14,6 @@ from tests.unit.helpers.data.pds.pds_patient_response import (
 )
 from tests.unit.helpers.data.pds.utils import create_patient
 from utils.utilities import validate_nhs_number
-
-# TODO: try move this to conftest
-EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
-    givenName=["Jane"],
-    familyName="Smith",
-    birthDate="2010-10-22",
-    postalCode="LS1 6AE",
-    nhsNumber="9000000009",
-    superseded=False,
-    restricted=False,
-    generalPracticeOds="Y12345",
-    active=True,
-)
 
 
 def test_validate_nhs_number_with_valid_id_returns_true():
