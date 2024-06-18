@@ -114,18 +114,15 @@ class CreateDocumentReferenceService:
 
         logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
-        if validated_doc.docType == SupportedDocumentTypes.LG.value:
+        if validated_doc.docType in [
+            SupportedDocumentTypes.LG.value,
+            SupportedDocumentTypes.ARF.value,
+        ]:
             document_reference = self.create_document_reference(
                 nhs_number,
                 validated_doc,
                 s3_bucket_name=self.staging_bucket_name,
                 sub_folder=self.upload_sub_folder,
-            )
-        elif validated_doc.docType == SupportedDocumentTypes.ARF.value:
-            document_reference = self.create_document_reference(
-                nhs_number,
-                validated_doc,
-                s3_bucket_name=self.staging_bucket_name,
             )
         else:
             logger.error(

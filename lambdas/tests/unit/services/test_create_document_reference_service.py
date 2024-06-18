@@ -422,7 +422,7 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
     nhs_doc_class.assert_called_with(
         nhs_number=nhs_number,
         s3_bucket_name=MOCK_STAGING_STORE_BUCKET,
-        sub_folder="",
+        sub_folder=mock_create_doc_ref_service.upload_sub_folder,
         reference_id=reference_id,
         content_type="text/plain",
         file_name="test1.txt",
