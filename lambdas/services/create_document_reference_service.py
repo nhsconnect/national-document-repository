@@ -56,6 +56,18 @@ class CreateDocumentReferenceService:
         lg_documents_dict_format: list = []
         url_responses = {}
 
+        upload_request_documents = self.parse_documents_list(documents_list)
+
+        has_lg_document = any(
+            document.docType == SupportedDocumentTypes.LG
+            for document in upload_request_documents
+        )
+
+        _patient_ods_code = ""
+        if has_lg_document:
+            pds_patient_details = getting_patient_info_from_pds(nhs_number)
+            _patient_ods_code = pds_patient_details.general_practice_ods
+
         try:
             validate_nhs_number(nhs_number)
             for document in documents_list:
@@ -110,6 +122,25 @@ class CreateDocumentReferenceService:
                 {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
+
+    def parse_documents_list(
+        self, document_list: list[dict]
+    ) -> list[UploadRequestDocument]:
+        upload_request_document_list = []
+        for document in document_list:
+            try:
+                validated_doc: UploadRequestDocument = (
+                    UploadRequestDocument.model_validate(document)
+                )
+                upload_request_document_list.append(validated_doc)
+            except ValidationError as e:
+                logger.error(
+                    f"{LambdaError.CreateDocNoParse.to_str()} :{str(e)}",
+                    {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
+                )
+                raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
+
+        return upload_request_document_list
 
     def prepare_doc_object(
         self, nhs_number: str, document: dict

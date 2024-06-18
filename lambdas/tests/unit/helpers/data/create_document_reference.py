@@ -1,3 +1,4 @@
+from models.nhs_document_reference import UploadRequestDocument
 from tests.unit.conftest import TEST_NHS_NUMBER
 from tests.unit.helpers.data.s3_responses import MOCK_PRESIGNED_URL_RESPONSE
 
@@ -58,6 +59,15 @@ LG_FILE_LIST = [
         "contentType": "application/pdf",
         "docType": "LG",
     },
+]
+
+PARSED_LG_FILE_LIST = [
+    UploadRequestDocument(
+        fileName=f"{i}of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
+        contentType="application/pdf",
+        docType="LG",
+    )
+    for i in [1, 2, 3]
 ]
 
 LG_MOCK_EVENT_BODY = {
@@ -159,6 +169,15 @@ ARF_FILE_LIST = [
         "contentType": "text/plain",
         "docType": "ARF",
     },
+]
+
+PARSED_ARF_FILE_LIST = [
+    UploadRequestDocument(
+        fileName=f"test{i}.txt",
+        contentType="text/plain",
+        docType="ARF",
+    )
+    for i in [1, 2, 3]
 ]
 
 ARF_MOCK_EVENT_BODY = {

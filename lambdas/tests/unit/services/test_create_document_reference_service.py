@@ -7,6 +7,8 @@ from services.create_document_reference_service import CreateDocumentReferenceSe
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
     LG_FILE_LIST,
+    PARSED_ARF_FILE_LIST,
+    PARSED_LG_FILE_LIST,
 )
 from tests.unit.helpers.data.test_documents import (
     create_test_doc_refs,
@@ -401,6 +403,44 @@ def test_prepare_doc_object_raise_error_when_invalid_type(
 
     with pytest.raises(CreateDocumentRefException):
         mock_create_doc_ref_service.prepare_doc_object(TEST_NHS_NUMBER, document)
+
+
+def test_parse_documents_list_for_valid_input(mock_create_doc_ref_service):
+    mock_input = LG_FILE_LIST + ARF_FILE_LIST
+    expected = PARSED_LG_FILE_LIST + PARSED_ARF_FILE_LIST
+
+    actual = mock_create_doc_ref_service.parse_documents_list(mock_input)
+
+    assert actual == expected
+
+
+def test_parse_documents_list_raise_lambda_error_when_no_type(
+    mock_create_doc_ref_service,
+):
+    mock_input_no_file_type = [
+        {
+            "fileName": "test1.txt",
+            "contentType": "text/plain",
+        }
+    ]
+
+    with pytest.raises(CreateDocumentRefException):
+        mock_create_doc_ref_service.parse_documents_list(mock_input_no_file_type)
+
+
+def test_parse_documents_list_raise_lambda_error_when_doc_type_is_invalid(
+    mock_create_doc_ref_service,
+):
+    mock_input_wrong_doc_type = [
+        {
+            "fileName": "test1.txt",
+            "contentType": "text/plain",
+            "docType": "banana",
+        }
+    ]
+
+    with pytest.raises(CreateDocumentRefException):
+        mock_create_doc_ref_service.parse_documents_list(mock_input_wrong_doc_type)
 
 
 def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
