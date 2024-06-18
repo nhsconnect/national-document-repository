@@ -125,7 +125,7 @@ class CreateDocumentReferenceService:
             document_reference = self.create_document_reference(
                 nhs_number,
                 validated_doc,
-                s3_bucket_name=self.arf_bucket_name,
+                s3_bucket_name=self.staging_bucket_name,
             )
         else:
             logger.error(

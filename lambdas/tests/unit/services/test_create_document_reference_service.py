@@ -16,9 +16,9 @@ from utils.lloyd_george_validator import LGInvalidFilesException
 
 from lambdas.enums.supported_document_types import SupportedDocumentTypes
 from lambdas.tests.unit.conftest import (
-    MOCK_ARF_BUCKET,
     MOCK_LG_BUCKET,
     MOCK_LG_TABLE_NAME,
+    MOCK_STAGING_STORE_BUCKET,
     TEST_NHS_NUMBER,
 )
 
@@ -27,6 +27,7 @@ NA_STRING = "Not Test Important"
 
 @pytest.fixture
 def mock_create_doc_ref_service(mocker, set_env):
+    mocker.patch("services.base.s3_service.IAMService")
     create_doc_ref_service = CreateDocumentReferenceService()
     mocker.patch.object(create_doc_ref_service, "s3_service")
     mocker.patch.object(create_doc_ref_service, "dynamo_service")
@@ -420,7 +421,7 @@ def test_prepare_doc_object_arf_happy_path(mocker, mock_create_doc_ref_service):
     assert actual_document_reference == mocked_doc
     nhs_doc_class.assert_called_with(
         nhs_number=nhs_number,
-        s3_bucket_name=MOCK_ARF_BUCKET,
+        s3_bucket_name=MOCK_STAGING_STORE_BUCKET,
         sub_folder="",
         reference_id=reference_id,
         content_type="text/plain",

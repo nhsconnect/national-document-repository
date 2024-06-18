@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 from models.staging_metadata import METADATA_FILENAME
 from pydantic import ValidationError
 from services.bulk_upload_metadata_service import BulkUploadMetadataService
-from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, MOCK_LG_STAGING_STORE_BUCKET
+from tests.unit.conftest import MOCK_LG_METADATA_SQS_QUEUE, MOCK_STAGING_STORE_BUCKET
 from tests.unit.helpers.data.bulk_upload.test_data import (
     EXPECTED_PARSED_METADATA,
     EXPECTED_SQS_MSG_FOR_PATIENT_1234567890,
@@ -170,7 +170,7 @@ def test_download_metadata_from_s3(
     expected = MOCK_METADATA_CSV
 
     mock_s3_service.download_file.assert_called_with(
-        s3_bucket_name=MOCK_LG_STAGING_STORE_BUCKET,
+        s3_bucket_name=MOCK_STAGING_STORE_BUCKET,
         file_key=metadata_filename,
         download_path=f"{MOCK_TEMP_FOLDER}/{metadata_filename}",
     )
