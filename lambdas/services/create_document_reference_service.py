@@ -95,7 +95,6 @@ class CreateDocumentReferenceService:
                 )
 
             if lg_documents:
-                pds_patient_details = getting_patient_info_from_pds(nhs_number)
                 validate_lg_files(lg_documents, pds_patient_details)
                 self.check_existing_lloyd_george_records(nhs_number)
 
