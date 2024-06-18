@@ -2,7 +2,6 @@ import os
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
-from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
@@ -63,15 +62,17 @@ class CreateDocumentReferenceService:
             for document in upload_request_documents
         )
 
-        _patient_ods_code = ""
+        current_gp_ods = ""
         if has_lg_document:
             pds_patient_details = getting_patient_info_from_pds(nhs_number)
-            _patient_ods_code = pds_patient_details.general_practice_ods
+            current_gp_ods = pds_patient_details.general_practice_ods
 
         try:
             validate_nhs_number(nhs_number)
-            for document in documents_list:
-                document_reference = self.prepare_doc_object(nhs_number, document)
+            for validated_doc in upload_request_documents:
+                document_reference = self.prepare_doc_object(
+                    nhs_number, current_gp_ods, validated_doc
+                )
 
                 match document_reference.doc_type:
                     case SupportedDocumentTypes.ARF.value:
@@ -98,15 +99,8 @@ class CreateDocumentReferenceService:
                 validate_lg_files(lg_documents, pds_patient_details)
                 self.check_existing_lloyd_george_records(nhs_number)
 
-                lg_documents_dict_format_with_ods_code = (
-                    self.add_ods_code_to_document_reference(
-                        lg_documents_dict_format,
-                        pds_patient_details.general_practice_ods,
-                    )
-                )
-
                 self.create_reference_in_dynamodb(
-                    self.lg_dynamo_table, lg_documents_dict_format_with_ods_code
+                    self.lg_dynamo_table, lg_documents_dict_format
                 )
 
             if arf_documents:
@@ -143,24 +137,15 @@ class CreateDocumentReferenceService:
         return upload_request_document_list
 
     def prepare_doc_object(
-        self, nhs_number: str, document: dict
+        self, nhs_number: str, current_gp_ods: str, validated_doc: UploadRequestDocument
     ) -> NHSDocumentReference:
-        try:
-            validated_doc: UploadRequestDocument = UploadRequestDocument.model_validate(
-                document
-            )
-        except ValidationError as e:
-            logger.error(
-                f"{LambdaError.CreateDocNoParse.to_str()} :{str(e)}",
-                {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
-            )
-            raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
 
         logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
         if validated_doc.docType == SupportedDocumentTypes.LG.value:
             document_reference = self.create_document_reference(
                 nhs_number,
+                current_gp_ods,
                 validated_doc,
                 s3_bucket_name=self.staging_bucket_name,
                 sub_folder=self.upload_sub_folder,
@@ -168,6 +153,7 @@ class CreateDocumentReferenceService:
         elif validated_doc.docType == SupportedDocumentTypes.ARF.value:
             document_reference = self.create_document_reference(
                 nhs_number,
+                current_gp_ods,
                 validated_doc,
                 s3_bucket_name=self.arf_bucket_name,
             )
@@ -183,14 +169,16 @@ class CreateDocumentReferenceService:
     def create_document_reference(
         self,
         nhs_number: str,
+        current_gp_ods: str,
         validated_doc: UploadRequestDocument,
-        s3_bucket_name,
+        s3_bucket_name: str,
         sub_folder="",
     ) -> NHSDocumentReference:
         s3_object_key = create_reference_id()
 
         document_reference = NHSDocumentReference(
             nhs_number=nhs_number,
+            current_gp_ods=current_gp_ods,
             s3_bucket_name=s3_bucket_name,
             sub_folder=sub_folder,
             reference_id=s3_object_key,
@@ -200,17 +188,6 @@ class CreateDocumentReferenceService:
             uploading=True,
         )
         return document_reference
-
-    def add_ods_code_to_document_reference(
-        self, lg_documents_dict_format: list[dict], ods_code: str
-    ) -> list[dict]:
-        result = []
-        for lg_document in lg_documents_dict_format:
-            ods_code_field_name = DocumentReferenceMetadataFields.CURRENT_GP_ODS.value
-            lg_document_with_ods_code = {**lg_document, ods_code_field_name: ods_code}
-            result.append(lg_document_with_ods_code)
-
-        return result
 
     def prepare_pre_signed_url(self, document_reference: NHSDocumentReference):
         try:
