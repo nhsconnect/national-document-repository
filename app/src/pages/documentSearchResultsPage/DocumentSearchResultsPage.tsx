@@ -89,6 +89,7 @@ function DocumentSearchResultsPage() {
         navigate,
         baseUrl,
         baseHeaders,
+        config,
     ]);
     const pageHeader = 'Download electronic health records and attachments';
     useTitle({ pageTitle: pageHeader });
