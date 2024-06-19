@@ -124,3 +124,12 @@ class DocumentService:
             primary_key_value = reference.id
             deletion_key = {primary_key_name: primary_key_value}
             self.dynamo_service.delete_item(table_name, deletion_key)
+
+    @staticmethod
+    def is_upload_in_process(records: list[DocumentReference]):
+        return any(
+            not record.uploaded
+            and record.uploading
+            and record.last_updated_within_three_minutes()
+            for record in records
+        )
