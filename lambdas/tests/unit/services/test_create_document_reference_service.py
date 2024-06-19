@@ -13,6 +13,7 @@ from tests.unit.helpers.data.create_document_reference import (
 from tests.unit.helpers.data.test_documents import (
     create_test_doc_refs,
     create_test_doc_refs_as_dict,
+    create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
 )
 from utils.lambda_exceptions import CreateDocumentRefException
@@ -20,6 +21,7 @@ from utils.lloyd_george_validator import LGInvalidFilesException
 
 from lambdas.enums.supported_document_types import SupportedDocumentTypes
 from lambdas.tests.unit.conftest import (
+    MOCK_ARF_TABLE_NAME,
     MOCK_LG_BUCKET,
     MOCK_LG_TABLE_NAME,
     MOCK_STAGING_STORE_BUCKET,
@@ -61,7 +63,7 @@ def mock_prepare_pre_signed_url(mock_create_doc_ref_service, mocker):
 @pytest.fixture()
 def mock_remove_records(mock_create_doc_ref_service, mocker):
     yield mocker.patch.object(
-        mock_create_doc_ref_service, "remove_records_of_failed_lloyd_george_upload"
+        mock_create_doc_ref_service, "remove_records_of_failed_upload"
     )
 
 
@@ -399,7 +401,9 @@ def test_create_document_reference_request_remove_previous_failed_upload_and_con
         TEST_NHS_NUMBER, LG_FILE_LIST
     )
 
-    mock_remove_records.assert_called_with(mock_doc_refs_of_failed_upload)
+    mock_remove_records.assert_called_with(
+        MOCK_LG_TABLE_NAME, mock_doc_refs_of_failed_upload
+    )
     mock_create_reference_in_dynamodb.assert_called_once()
 
 
@@ -632,14 +636,14 @@ def test_stop_if_all_records_uploaded_raise_lambda_error(mock_create_doc_ref_ser
     )
 
 
-def test_remove_records_of_failed_lloyd_george_upload(
-    mock_create_doc_ref_service, mocker
-):
+def test_remove_records_of_failed_upload(mock_create_doc_ref_service, mocker):
     mock_doc_refs_of_failed_upload = create_test_lloyd_george_doc_store_refs(
         override={"uploaded": False}
     )
-    mock_create_doc_ref_service.remove_records_of_failed_lloyd_george_upload(
-        mock_doc_refs_of_failed_upload
+
+    mock_create_doc_ref_service.remove_records_of_failed_upload(
+        table_name=MOCK_LG_TABLE_NAME,
+        failed_upload_records=mock_doc_refs_of_failed_upload,
     )
     file_keys = [record.get_file_key() for record in mock_doc_refs_of_failed_upload]
 
@@ -651,3 +655,14 @@ def test_remove_records_of_failed_lloyd_george_upload(
         table_name=MOCK_LG_TABLE_NAME,
         document_references=mock_doc_refs_of_failed_upload,
     )
+
+
+def test_remove_incomplete_arf_records(
+    mock_create_doc_ref_service, mock_fetch_document, mock_remove_records
+):
+    mock_incomplete_record = create_test_doc_store_refs()
+    mock_fetch_document.return_value = mock_incomplete_record
+
+    mock_create_doc_ref_service.remove_incomplete_arf_records(TEST_NHS_NUMBER)
+
+    mock_remove_records.assert_called_with(MOCK_ARF_TABLE_NAME, mock_incomplete_record)

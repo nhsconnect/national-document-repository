@@ -11,7 +11,7 @@ from services.base.s3_service import S3Service
 from services.document_deletion_service import DocumentDeletionService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.common_query_filters import NotDeleted
+from utils.common_query_filters import NotDeleted, UploadIncomplete
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import (
@@ -235,7 +235,7 @@ class CreateDocumentReferenceService:
 
         self.stop_if_all_records_uploaded(previous_records)
         self.stop_if_upload_is_in_process(previous_records)
-        self.remove_records_of_failed_lloyd_george_upload(previous_records)
+        self.remove_records_of_failed_upload(self.lg_dynamo_table, previous_records)
 
     def stop_if_upload_is_in_process(self, previous_records: list[DocumentReference]):
         upload_is_in_process = any(
@@ -266,8 +266,9 @@ class CreateDocumentReferenceService:
                 400, LambdaError.CreateDocRecordAlreadyInPlace
             )
 
-    def remove_records_of_failed_lloyd_george_upload(
+    def remove_records_of_failed_upload(
         self,
+        table_name: str,
         failed_upload_records: list[DocumentReference],
     ):
         logger.info(
@@ -283,7 +284,19 @@ class CreateDocumentReferenceService:
 
         logger.info("Deleting dynamodb record...")
         self.document_service.hard_delete_metadata_records(
-            table_name=self.lg_dynamo_table, document_references=failed_upload_records
+            table_name=table_name, document_references=failed_upload_records
         )
 
         logger.info("Previous failed records are deleted.")
+
+    def remove_incomplete_arf_records(self, nhs_number: str) -> None:
+        incomplete_upload_records = (
+            self.document_service.fetch_available_document_references_by_type(
+                nhs_number=nhs_number,
+                doc_type=SupportedDocumentTypes.ARF,
+                query_filter=UploadIncomplete,
+            )
+        )
+        self.remove_records_of_failed_upload(
+            self.arf_dynamo_table, incomplete_upload_records
+        )
