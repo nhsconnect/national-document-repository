@@ -4,6 +4,7 @@ from enums.supported_document_types import SupportedDocumentTypes
 from models.document_reference import DocumentReference
 from models.nhs_document_reference import NHSDocumentReference
 from tests.unit.conftest import (
+    MOCK_ARF_BUCKET,
     MOCK_LG_BUCKET,
     MOCK_LG_STAGING_STORE_BUCKET_ENV_NAME,
     TEST_NHS_NUMBER,
@@ -34,6 +35,22 @@ def create_test_lloyd_george_doc_store_refs(
     refs[1].file_location = f"s3://{MOCK_LG_BUCKET}/test-key-523"
     refs[2].file_name = filename_3
     refs[2].file_location = f"s3://{MOCK_LG_BUCKET}/test-key-623"
+
+    if override:
+        refs = [doc_ref.model_copy(update=override) for doc_ref in refs]
+    return refs
+
+
+def create_test_arf_doc_store_refs(
+    override: Optional[Dict] = None,
+) -> List[DocumentReference]:
+    refs = create_test_doc_store_refs()
+
+    for index in range(3):
+        file_name = f"test{index + 1 }.txt"
+        file_location = f"s3://{MOCK_ARF_BUCKET}/test-key-{index + 1}23"
+        refs[index].file_name = file_name
+        refs[index].file_location = file_location
 
     if override:
         refs = [doc_ref.model_copy(update=override) for doc_ref in refs]

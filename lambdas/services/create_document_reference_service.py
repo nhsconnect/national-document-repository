@@ -103,6 +103,15 @@ class CreateDocumentReferenceService:
                 )
 
             if arf_documents:
+                incomplete_arf_upload_records = (
+                    self.fetch_incomplete_arf_upload_records(nhs_number)
+                )
+
+                self.stop_if_upload_is_in_process(incomplete_arf_upload_records)
+                self.remove_records_of_failed_upload(
+                    self.arf_dynamo_table, incomplete_arf_upload_records
+                )
+
                 self.create_reference_in_dynamodb(
                     self.arf_dynamo_table, arf_documents_dict_format
                 )
@@ -115,6 +124,15 @@ class CreateDocumentReferenceService:
                 {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
+
+    def fetch_incomplete_arf_upload_records(
+        self, nhs_number
+    ) -> list[DocumentReference]:
+        return self.document_service.fetch_available_document_references_by_type(
+            nhs_number=nhs_number,
+            doc_type=SupportedDocumentTypes.ARF,
+            query_filter=UploadIncomplete,
+        )
 
     def parse_documents_list(
         self, document_list: list[dict]
@@ -288,15 +306,3 @@ class CreateDocumentReferenceService:
         )
 
         logger.info("Previous failed records are deleted.")
-
-    def remove_incomplete_arf_records(self, nhs_number: str) -> None:
-        incomplete_upload_records = (
-            self.document_service.fetch_available_document_references_by_type(
-                nhs_number=nhs_number,
-                doc_type=SupportedDocumentTypes.ARF,
-                query_filter=UploadIncomplete,
-            )
-        )
-        self.remove_records_of_failed_upload(
-            self.arf_dynamo_table, incomplete_upload_records
-        )

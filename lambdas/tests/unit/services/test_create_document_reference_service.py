@@ -11,9 +11,9 @@ from tests.unit.helpers.data.create_document_reference import (
     PARSED_LG_FILE_LIST,
 )
 from tests.unit.helpers.data.test_documents import (
+    create_test_arf_doc_store_refs,
     create_test_doc_refs,
     create_test_doc_refs_as_dict,
-    create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
 )
 from utils.lambda_exceptions import CreateDocumentRefException
@@ -343,7 +343,7 @@ def test_create_document_reference_invalid_nhs_number(
 
 
 @freeze_time("2023-10-30T10:25:00")
-def test_create_document_reference_request_throw_lambda_error_if_upload_in_progress(
+def test_create_document_reference_request_lg_upload_throw_lambda_error_if_upload_in_progress(
     mock_create_doc_ref_service,
     mock_validate_lg,
     mock_fetch_document,
@@ -364,7 +364,7 @@ def test_create_document_reference_request_throw_lambda_error_if_upload_in_progr
     mock_create_reference_in_dynamodb.assert_not_called()
 
 
-def test_create_document_reference_request_throw_lambda_error_if_got_a_full_set_of_uploaded_record(
+def test_create_document_reference_request_lg_upload_throw_lambda_error_if_got_a_full_set_of_uploaded_record(
     mock_create_doc_ref_service,
     mock_validate_lg,
     mock_fetch_document,
@@ -385,7 +385,7 @@ def test_create_document_reference_request_throw_lambda_error_if_got_a_full_set_
     mock_create_reference_in_dynamodb.assert_not_called()
 
 
-def test_create_document_reference_request_remove_previous_failed_upload_and_continue(
+def test_create_document_reference_request_lg_upload_remove_previous_failed_upload_and_continue(
     mock_create_doc_ref_service,
     mock_validate_lg,
     mock_fetch_document,
@@ -403,6 +403,48 @@ def test_create_document_reference_request_remove_previous_failed_upload_and_con
 
     mock_remove_records.assert_called_with(
         MOCK_LG_TABLE_NAME, mock_doc_refs_of_failed_upload
+    )
+    mock_create_reference_in_dynamodb.assert_called_once()
+
+
+@freeze_time("2023-10-30T10:25:00")
+def test_create_document_reference_request_arf_upload_throw_lambda_error_if_upload_in_progress(
+    mock_create_doc_ref_service,
+    mock_fetch_document,
+    mock_create_reference_in_dynamodb,
+):
+    two_minutes_ago = 1698661380  # 2023-10-30T10:23:00
+    mock_records_upload_in_process = create_test_arf_doc_store_refs(
+        override={"uploaded": False, "uploading": True, "last_updated": two_minutes_ago}
+    )
+    mock_fetch_document.return_value = mock_records_upload_in_process
+
+    with pytest.raises(CreateDocumentRefException) as e:
+        mock_create_doc_ref_service.create_document_reference_request(
+            TEST_NHS_NUMBER, ARF_FILE_LIST
+        )
+    assert e.value == CreateDocumentRefException(423, LambdaError.UploadInProgressError)
+
+    mock_create_reference_in_dynamodb.assert_not_called()
+
+
+def test_create_document_reference_request_arf_upload_remove_previous_failed_upload_and_continue(
+    mock_create_doc_ref_service,
+    mock_fetch_document,
+    mock_remove_records,
+    mock_create_reference_in_dynamodb,
+):
+    mock_doc_refs_of_failed_upload = create_test_arf_doc_store_refs(
+        override={"uploaded": False}
+    )
+    mock_fetch_document.return_value = mock_doc_refs_of_failed_upload
+
+    mock_create_doc_ref_service.create_document_reference_request(
+        TEST_NHS_NUMBER, ARF_FILE_LIST
+    )
+
+    mock_remove_records.assert_called_with(
+        MOCK_ARF_TABLE_NAME, mock_doc_refs_of_failed_upload
     )
     mock_create_reference_in_dynamodb.assert_called_once()
 
@@ -657,12 +699,14 @@ def test_remove_records_of_failed_upload(mock_create_doc_ref_service, mocker):
     )
 
 
-def test_remove_incomplete_arf_records(
-    mock_create_doc_ref_service, mock_fetch_document, mock_remove_records
-):
-    mock_incomplete_record = create_test_doc_store_refs()
-    mock_fetch_document.return_value = mock_incomplete_record
-
-    mock_create_doc_ref_service.remove_incomplete_arf_records(TEST_NHS_NUMBER)
-
-    mock_remove_records.assert_called_with(MOCK_ARF_TABLE_NAME, mock_incomplete_record)
+#
+#
+# def test_remove_incomplete_arf_records(
+#     mock_create_doc_ref_service, mock_fetch_document, mock_remove_records
+# ):
+#     mock_incomplete_record = create_test_doc_store_refs()
+#     mock_fetch_document.return_value = mock_incomplete_record
+#
+#     mock_create_doc_ref_service.remove_incomplete_arf_records(TEST_NHS_NUMBER)
+#
+#     mock_remove_records.assert_called_with(MOCK_ARF_TABLE_NAME, mock_incomplete_record)
