@@ -43,7 +43,6 @@ class CreateDocumentReferenceService:
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
         self.staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
-        self.arf_bucket_name = os.getenv("DOCUMENT_STORE_BUCKET_NAME")
         self.upload_sub_folder = "user_upload"
 
     def create_document_reference_request(
