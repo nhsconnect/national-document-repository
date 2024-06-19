@@ -557,6 +557,18 @@ def test_prepare_doc_object_lg_happy_path(mocker, mock_create_doc_ref_service):
     )
 
 
+def test_prepare_doc_object_raise_error_on_invalid_doc_type(
+    mock_create_doc_ref_service,
+):
+    mock_invalid_doc = UploadRequestDocument.model_validate(ARF_FILE_LIST[0])
+    mock_invalid_doc.docType = "someInvalidValue"
+
+    with pytest.raises(CreateDocumentRefException):
+        mock_create_doc_ref_service.prepare_doc_object(
+            TEST_NHS_NUMBER, TEST_CURRENT_GP_ODS, mock_invalid_doc
+        )
+
+
 def test_prepare_pre_signed_url(mock_create_doc_ref_service, mocker, mock_s3):
     mock_s3.create_upload_presigned_url.return_value = "test_url"
     mock_document = mocker.MagicMock()
