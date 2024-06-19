@@ -67,6 +67,13 @@ def mock_remove_records(mock_create_doc_ref_service, mocker):
 
 
 @pytest.fixture()
+def mock_check_existing_lloyd_george_records(mock_create_doc_ref_service, mocker):
+    yield mocker.patch.object(
+        mock_create_doc_ref_service, "check_existing_lloyd_george_records"
+    )
+
+
+@pytest.fixture()
 def mock_create_reference_in_dynamodb(mock_create_doc_ref_service, mocker):
     yield mocker.patch.object(
         mock_create_doc_ref_service, "create_reference_in_dynamodb"
@@ -384,24 +391,33 @@ def test_create_document_reference_request_throw_lambda_error_if_got_a_full_set_
     mock_create_reference_in_dynamodb.assert_not_called()
 
 
-def test_create_document_reference_request_remove_previous_failed_upload_and_continue(
+def test_create_document_reference_request_check_existing_lloyd_george_records_and_continue(
     mock_create_doc_ref_service,
     mock_validate_lg,
-    mock_fetch_document,
-    mock_remove_records,
     mock_create_reference_in_dynamodb,
+    mock_check_existing_lloyd_george_records,
 ):
-    mock_doc_refs_of_failed_upload = create_test_lloyd_george_doc_store_refs(
-        override={"uploaded": False}
-    )
-    mock_fetch_document.return_value = mock_doc_refs_of_failed_upload
 
     mock_create_doc_ref_service.create_document_reference_request(
         TEST_NHS_NUMBER, LG_FILE_LIST
     )
 
-    mock_remove_records.assert_called_with(mock_doc_refs_of_failed_upload)
+    mock_check_existing_lloyd_george_records.assert_called_once()
     mock_create_reference_in_dynamodb.assert_called_once()
+
+
+def test_check_existing_lloyd_george_records_remove_previous_failed_upload_and_continue(
+    mock_create_doc_ref_service, mock_fetch_document, mock_remove_records, mocker
+):
+    mock_doc_refs_of_failed_upload = create_test_lloyd_george_doc_store_refs(
+        override={"uploaded": False}
+    )
+    mock_fetch_document.return_value = mock_doc_refs_of_failed_upload
+    mock_create_doc_ref_service.stop_if_all_records_uploaded = mocker.MagicMock()
+    mock_create_doc_ref_service.stop_if_upload_is_in_process = mocker.MagicMock()
+
+    mock_create_doc_ref_service.check_existing_lloyd_george_records(TEST_NHS_NUMBER)
+    mock_remove_records.assert_called_with(mock_doc_refs_of_failed_upload)
 
 
 def test_parse_documents_list_for_valid_input(mock_create_doc_ref_service):
