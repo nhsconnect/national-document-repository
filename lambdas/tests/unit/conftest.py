@@ -6,6 +6,7 @@ from unittest import mock
 
 import pytest
 from models.document_reference import DocumentReference
+from models.pds_models import PatientDetails
 from pydantic import ValidationError
 
 REGION_NAME = "eu-west-2"
@@ -156,6 +157,24 @@ def set_env(monkeypatch):
     monkeypatch.setenv(
         MOCK_STATISTICS_REPORT_BUCKET_NAME, MOCK_STATISTICS_REPORT_BUCKET
     )
+
+
+EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
+    givenName=["Jane"],
+    familyName="Smith",
+    birthDate="2010-10-22",
+    postalCode="LS1 6AE",
+    nhsNumber="9000000009",
+    superseded=False,
+    restricted=False,
+    generalPracticeOds="Y12345",
+    active=True,
+)
+
+
+@pytest.fixture
+def mock_patient_details():
+    yield EXPECTED_PARSED_PATIENT_BASE_CASE
 
 
 @pytest.fixture(scope="session", autouse=True)

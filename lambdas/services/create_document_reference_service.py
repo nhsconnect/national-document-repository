@@ -14,7 +14,11 @@ from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted
 from utils.exceptions import InvalidResourceIdException
 from utils.lambda_exceptions import CreateDocumentRefException
-from utils.lloyd_george_validator import LGInvalidFilesException, validate_lg_files
+from utils.lloyd_george_validator import (
+    LGInvalidFilesException,
+    getting_patient_info_from_pds,
+    validate_lg_files,
+)
 from utils.utilities import create_reference_id, validate_nhs_number
 
 FAILED_CREATE_REFERENCE_MESSAGE = "Create document reference failed"
@@ -51,10 +55,24 @@ class CreateDocumentReferenceService:
         lg_documents_dict_format: list = []
         url_responses = {}
 
+        upload_request_documents = self.parse_documents_list(documents_list)
+
+        has_lg_document = any(
+            document.docType == SupportedDocumentTypes.LG
+            for document in upload_request_documents
+        )
+
+        current_gp_ods = ""
+        if has_lg_document:
+            pds_patient_details = getting_patient_info_from_pds(nhs_number)
+            current_gp_ods = pds_patient_details.general_practice_ods
+
         try:
             validate_nhs_number(nhs_number)
-            for document in documents_list:
-                document_reference = self.prepare_doc_object(nhs_number, document)
+            for validated_doc in upload_request_documents:
+                document_reference = self.prepare_doc_object(
+                    nhs_number, current_gp_ods, validated_doc
+                )
 
                 match document_reference.doc_type:
                     case SupportedDocumentTypes.ARF.value:
@@ -77,7 +95,7 @@ class CreateDocumentReferenceService:
                 )
 
             if lg_documents:
-                validate_lg_files(lg_documents, nhs_number)
+                validate_lg_files(lg_documents, pds_patient_details)
                 self.check_existing_lloyd_george_records(nhs_number)
 
                 self.create_reference_in_dynamodb(
@@ -98,25 +116,35 @@ class CreateDocumentReferenceService:
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
 
+    def parse_documents_list(
+        self, document_list: list[dict]
+    ) -> list[UploadRequestDocument]:
+        upload_request_document_list = []
+        for document in document_list:
+            try:
+                validated_doc: UploadRequestDocument = (
+                    UploadRequestDocument.model_validate(document)
+                )
+                upload_request_document_list.append(validated_doc)
+            except ValidationError as e:
+                logger.error(
+                    f"{LambdaError.CreateDocNoParse.to_str()} :{str(e)}",
+                    {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
+                )
+                raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
+
+        return upload_request_document_list
+
     def prepare_doc_object(
-        self, nhs_number: str, document: dict
+        self, nhs_number: str, current_gp_ods: str, validated_doc: UploadRequestDocument
     ) -> NHSDocumentReference:
-        try:
-            validated_doc: UploadRequestDocument = UploadRequestDocument.model_validate(
-                document
-            )
-        except ValidationError as e:
-            logger.error(
-                f"{LambdaError.CreateDocNoParse.to_str()} :{str(e)}",
-                {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
-            )
-            raise CreateDocumentRefException(400, LambdaError.CreateDocNoParse)
 
         logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
         if validated_doc.docType == SupportedDocumentTypes.LG.value:
             document_reference = self.create_document_reference(
                 nhs_number,
+                current_gp_ods,
                 validated_doc,
                 s3_bucket_name=self.staging_bucket_name,
                 sub_folder=self.upload_sub_folder,
@@ -124,6 +152,7 @@ class CreateDocumentReferenceService:
         elif validated_doc.docType == SupportedDocumentTypes.ARF.value:
             document_reference = self.create_document_reference(
                 nhs_number,
+                current_gp_ods,
                 validated_doc,
                 s3_bucket_name=self.arf_bucket_name,
             )
@@ -139,14 +168,16 @@ class CreateDocumentReferenceService:
     def create_document_reference(
         self,
         nhs_number: str,
+        current_gp_ods: str,
         validated_doc: UploadRequestDocument,
-        s3_bucket_name,
+        s3_bucket_name: str,
         sub_folder="",
     ) -> NHSDocumentReference:
         s3_object_key = create_reference_id()
 
         document_reference = NHSDocumentReference(
             nhs_number=nhs_number,
+            current_gp_ods=current_gp_ods,
             s3_bucket_name=s3_bucket_name,
             sub_folder=sub_folder,
             reference_id=s3_object_key,
