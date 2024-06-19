@@ -697,16 +697,3 @@ def test_remove_records_of_failed_upload(mock_create_doc_ref_service, mocker):
         table_name=MOCK_LG_TABLE_NAME,
         document_references=mock_doc_refs_of_failed_upload,
     )
-
-
-#
-#
-# def test_remove_incomplete_arf_records(
-#     mock_create_doc_ref_service, mock_fetch_document, mock_remove_records
-# ):
-#     mock_incomplete_record = create_test_doc_store_refs()
-#     mock_fetch_document.return_value = mock_incomplete_record
-#
-#     mock_create_doc_ref_service.remove_incomplete_arf_records(TEST_NHS_NUMBER)
-#
-#     mock_remove_records.assert_called_with(MOCK_ARF_TABLE_NAME, mock_incomplete_record)
