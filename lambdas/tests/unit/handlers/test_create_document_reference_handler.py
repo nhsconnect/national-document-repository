@@ -6,7 +6,6 @@ from handlers.create_document_reference_handler import (
     lambda_handler,
     processing_event_details,
 )
-from services.feature_flags_service import FeatureFlagService
 from tests.unit.conftest import MOCK_LG_STAGING_STORE_BUCKET, TEST_NHS_NUMBER, TEST_UUID
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
@@ -52,24 +51,6 @@ def mock_processing_event_details(mocker):
         "handlers.create_document_reference_handler.processing_event_details",
         return_value=(TEST_NHS_NUMBER, ARF_FILE_LIST),
     )
-
-
-@pytest.fixture
-def mock_upload_lambda_enabled(mocker):
-    mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
-    mock_upload_lambda_feature_flag = mock_function.return_value = {
-        "uploadLambdaEnabled": True
-    }
-    yield mock_upload_lambda_feature_flag
-
-
-@pytest.fixture
-def mock_upload_lambda_disabled(mocker):
-    mock_function = mocker.patch.object(FeatureFlagService, "get_feature_flags_by_flag")
-    mock_upload_lambda_feature_flag = mock_function.return_value = {
-        "uploadLambdaEnabled": False
-    }
-    yield mock_upload_lambda_feature_flag
 
 
 def test_create_document_reference_valid_both_lg_and_arf_type_returns_200(
