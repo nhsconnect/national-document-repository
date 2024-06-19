@@ -3,6 +3,7 @@ export enum SUBMISSION_STATE {
     PENDING = 'PENDING',
     SUCCEEDED = 'SUCCEEDED',
     FAILED = 'FAILED',
+    BLOCKED = 'BLOCKED',
 }
 
 export enum SEARCH_AND_DOWNLOAD_STATE {
