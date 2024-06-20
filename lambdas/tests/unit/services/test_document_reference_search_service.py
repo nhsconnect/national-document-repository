@@ -26,7 +26,7 @@ def patched_service(mocker, set_env):
     mocker.patch.object(service, "s3_service")
     mocker.patch.object(service, "dynamo_service")
     mocker.patch.object(service, "fetch_documents_from_table_with_filter")
-    mocker.patch.object(service, "is_upload_in_process")
+    mocker.patch.object(service, "is_upload_in_process", return_value=False)
     yield service
 
 
