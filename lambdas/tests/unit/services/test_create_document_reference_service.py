@@ -16,6 +16,7 @@ from tests.unit.helpers.data.test_documents import (
     create_test_doc_refs_as_dict,
     create_test_lloyd_george_doc_store_refs,
 )
+from utils.common_query_filters import UploadIncomplete
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import LGInvalidFilesException
 
@@ -426,6 +427,11 @@ def test_create_document_reference_request_arf_upload_throw_lambda_error_if_uplo
     assert e.value == CreateDocumentRefException(423, LambdaError.UploadInProgressError)
 
     mock_create_reference_in_dynamodb.assert_not_called()
+    mock_fetch_document.assert_called_with(
+        doc_type=SupportedDocumentTypes.ARF,
+        nhs_number=TEST_NHS_NUMBER,
+        query_filter=UploadIncomplete,
+    )
 
 
 def test_create_document_reference_request_arf_upload_remove_previous_failed_upload_and_continue(
@@ -447,6 +453,11 @@ def test_create_document_reference_request_arf_upload_remove_previous_failed_upl
         MOCK_ARF_TABLE_NAME, mock_doc_refs_of_failed_upload
     )
     mock_create_reference_in_dynamodb.assert_called_once()
+    mock_fetch_document.assert_called_with(
+        doc_type=SupportedDocumentTypes.ARF,
+        nhs_number=TEST_NHS_NUMBER,
+        query_filter=UploadIncomplete,
+    )
 
 
 def test_parse_documents_list_for_valid_input(mock_create_doc_ref_service):
