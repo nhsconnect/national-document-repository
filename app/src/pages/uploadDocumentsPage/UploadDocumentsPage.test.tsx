@@ -8,7 +8,6 @@ import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import uploadDocuments, { uploadDocumentToS3 } from '../../helpers/requests/uploadDocuments';
 
 const mockConfigContext = useConfig as jest.Mock;
 const mockedUseNavigate = jest.fn();

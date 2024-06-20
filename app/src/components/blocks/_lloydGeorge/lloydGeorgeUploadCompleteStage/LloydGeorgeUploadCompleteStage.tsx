@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
 import {
     DOCUMENT_UPLOAD_STATE,

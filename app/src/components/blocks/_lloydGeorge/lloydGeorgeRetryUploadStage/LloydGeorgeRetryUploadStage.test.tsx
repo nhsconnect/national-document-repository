@@ -1,11 +1,9 @@
 import { render, screen } from '@testing-library/react';
 import LloydGeorgeRetryUploadStage from './LloydGeorgeRetryUploadStage';
 import userEvent from '@testing-library/user-event';
-import { LG_UPLOAD_STAGE } from '../../../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import { routes } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
-const mockSetStage = jest.fn();
 const mockUseNavigate = jest.fn();
 jest.mock('react-router', () => ({
     useNavigate: () => mockUseNavigate,

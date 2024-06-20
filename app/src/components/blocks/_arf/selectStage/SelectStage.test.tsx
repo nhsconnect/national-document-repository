@@ -11,7 +11,6 @@ import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
     DOCUMENT_UPLOAD_STATE,
-    UPLOAD_STAGE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { act } from 'react-dom/test-utils';

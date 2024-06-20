@@ -4,7 +4,6 @@ import { LinkProps } from 'react-router-dom';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
-import UnauthorisedLoginPage from '../unauthorisedLoginPage/UnauthorisedLoginPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();

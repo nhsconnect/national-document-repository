@@ -75,7 +75,6 @@ function LloydGeorgeUploadPage() {
             if (!uploadSession) {
                 return;
             }
-            console.log();
             navigate(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION);
             try {
                 const confirmDocumentState = await uploadConfirmation({

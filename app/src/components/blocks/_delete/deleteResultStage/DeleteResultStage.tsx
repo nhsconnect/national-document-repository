@@ -1,4 +1,4 @@
-import React, { Dispatch, MouseEvent, SetStateAction, useEffect } from 'react';
+import React, { Dispatch, MouseEvent, SetStateAction } from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
 import { routes } from '../../../../types/generic/routes';
 import { Link } from 'react-router-dom';
