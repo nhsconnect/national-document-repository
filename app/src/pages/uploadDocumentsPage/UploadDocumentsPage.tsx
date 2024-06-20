@@ -42,7 +42,7 @@ function UploadDocumentsPage() {
         if (isUploading && allDocumentsSucceeded) {
             navigate(routeChildren.ARF_UPLOAD_COMPLETED);
         }
-    }, [isUploading, allDocumentsSucceeded]);
+    }, [navigate, isUploading, allDocumentsSucceeded]);
 
     return (
         <>

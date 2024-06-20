@@ -26,6 +26,7 @@ import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import waitForSeconds from '../../helpers/utils/waitForSeconds';
 import {
     addMetadataAndMarkDocumentAsUploading,
+    DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS,
     setSingleDocument,
 } from '../../helpers/requests/uploadDocumentsHelper';
 
@@ -37,13 +38,6 @@ export enum LG_UPLOAD_STAGE {
     FAILED = 4,
     CONFIRMATION = 5,
 }
-
-const isRunningInCypress = () => {
-    //@ts-ignore
-    return Boolean(window?.Cypress);
-};
-
-const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = isRunningInCypress() ? 0 : 3;
 
 function LloydGeorgeUploadPage() {
     const patientDetails = usePatient();
@@ -157,20 +151,24 @@ function LloydGeorgeUploadPage() {
             });
         } catch (e) {
             window.clearInterval(intervalTimer);
-            setSingleDocument(setDocuments, {
-                id: document.id,
-                state: DOCUMENT_UPLOAD_STATE.FAILED,
-                attempts: document.attempts + 1,
-                progress: 0,
-            });
-            void updateDocumentState({
-                documents,
-                uploadingState: false,
-                baseUrl,
-                baseHeaders,
-            });
+            markSingleDocumentAsFailed(document);
         }
     };
+
+    function markSingleDocumentAsFailed(document: UploadDocument) {
+        setSingleDocument(setDocuments, {
+            id: document.id,
+            state: DOCUMENT_UPLOAD_STATE.FAILED,
+            attempts: document.attempts + 1,
+            progress: 0,
+        });
+        void updateDocumentState({
+            documents,
+            uploadingState: false,
+            baseUrl,
+            baseHeaders,
+        });
+    }
 
     const uploadAndScanDocuments = (
         uploadDocuments: Array<UploadDocument>,

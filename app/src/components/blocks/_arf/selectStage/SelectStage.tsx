@@ -12,7 +12,10 @@ import toFileList from '../../../../helpers/utils/toFileList';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
-import uploadDocuments, { uploadDocumentToS3 } from '../../../../helpers/requests/uploadDocuments';
+import uploadDocuments, {
+    uploadDocumentToS3,
+    virusScanResult,
+} from '../../../../helpers/requests/uploadDocuments';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
@@ -24,7 +27,11 @@ import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import { useNavigate } from 'react-router';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
-import { addMetadataAndMarkDocumentAsUploading } from '../../../../helpers/requests/uploadDocumentsHelper';
+import {
+    addMetadataAndMarkDocumentAsUploading,
+    DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS,
+} from '../../../../helpers/requests/uploadDocumentsHelper';
+import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
 
 interface Props {
     setDocuments: SetUploadDocuments;
@@ -90,9 +97,16 @@ function SelectStage({ setDocuments, documents }: Props) {
         uploadSession: UploadSession,
     ) => {
         const allUploadPromises = uploadingDocuments.map((document) =>
-            uploadDocumentToS3({ setDocuments, document, uploadSession }).catch(() =>
-                markDocumentAsFailed(document),
-            ),
+            uploadDocumentToS3({ setDocuments, document, uploadSession })
+                .then(() => waitForSeconds(DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS))
+                .then(() =>
+                    virusScanResult({
+                        documentReference: document.key ?? '',
+                        baseUrl,
+                        baseHeaders,
+                    }),
+                )
+                .catch(() => markDocumentAsFailed(document)),
         );
         return Promise.all(allUploadPromises);
     };

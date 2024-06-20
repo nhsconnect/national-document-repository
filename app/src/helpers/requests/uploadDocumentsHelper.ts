@@ -42,3 +42,8 @@ export const addMetadataAndMarkDocumentAsUploading = (
         };
     });
 };
+const isRunningInCypress = () => {
+    //@ts-ignore
+    return Boolean(window?.Cypress);
+};
+export const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = isRunningInCypress() ? 0 : 3;
