@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
+import { UploadSession } from '../../types/generic/uploadResult';
 
 type UpdateDocumentArgs = {
     id: string;
@@ -25,4 +26,19 @@ export const setSingleDocument = (
             return document;
         }),
     );
+};
+export const addMetadataAndMarkDocumentAsUploading = (
+    documents: UploadDocument[],
+    uploadSession: UploadSession,
+) => {
+    return documents.map((doc) => {
+        const documentMetadata = uploadSession[doc.file.name];
+        const documentReference = documentMetadata.fields.key;
+        return {
+            ...doc,
+            state: DOCUMENT_UPLOAD_STATE.UPLOADING,
+            key: documentReference,
+            ref: documentReference.split('/').at(-1),
+        };
+    });
 };

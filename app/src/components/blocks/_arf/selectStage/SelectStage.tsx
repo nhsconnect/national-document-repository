@@ -24,6 +24,7 @@ import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import { isMock } from '../../../../helpers/utils/isLocal';
 import { useNavigate } from 'react-router';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
+import { addMetadataAndMarkDocumentAsUploading } from '../../../../helpers/requests/uploadDocumentsHelper';
 
 interface Props {
     setDocuments: SetUploadDocuments;
@@ -57,8 +58,10 @@ function SelectStage({ setDocuments, documents }: Props) {
                 baseUrl,
                 baseHeaders,
             });
-            const uploadingDocuments: UploadDocument[] =
-                addMetadataAndMarkDocumentAsUploading(uploadSession);
+            const uploadingDocuments: UploadDocument[] = addMetadataAndMarkDocumentAsUploading(
+                documents,
+                uploadSession,
+            );
             setDocuments(uploadingDocuments);
 
             await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
@@ -108,19 +111,6 @@ function SelectStage({ setDocuments, documents }: Props) {
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
-    };
-
-    const addMetadataAndMarkDocumentAsUploading = (uploadSession: UploadSession) => {
-        return documents.map((doc) => {
-            const documentMetadata = uploadSession[doc.file.name];
-            const documentReference = documentMetadata.fields.key;
-            return {
-                ...doc,
-                state: DOCUMENT_UPLOAD_STATE.UPLOADING,
-                key: documentReference,
-                ref: documentReference.split('/').at(-1),
-            };
-        });
     };
 
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {

@@ -24,7 +24,10 @@ import { errorToParams } from '../../helpers/utils/errorToParams';
 import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import waitForSeconds from '../../helpers/utils/waitForSeconds';
-import { setSingleDocument } from '../../helpers/requests/uploadDocumentsHelper';
+import {
+    addMetadataAndMarkDocumentAsUploading,
+    setSingleDocument,
+} from '../../helpers/requests/uploadDocumentsHelper';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
@@ -188,16 +191,10 @@ function LloydGeorgeUploadPage() {
                 baseHeaders,
             });
             setUploadSession(uploadSession);
-            const uploadingDocuments = documents.map((doc) => {
-                const documentMetadata = uploadSession[doc.file.name];
-                const documentReference = documentMetadata.fields.key;
-                return {
-                    ...doc,
-                    state: DOCUMENT_UPLOAD_STATE.UPLOADING,
-                    key: documentReference,
-                    ref: documentReference.split('/')[3],
-                };
-            });
+            const uploadingDocuments = addMetadataAndMarkDocumentAsUploading(
+                documents,
+                uploadSession,
+            );
             const updateStateInterval = startIntervalTimer(uploadingDocuments);
             setIntervalTimer(updateStateInterval);
             setDocuments(uploadingDocuments);
