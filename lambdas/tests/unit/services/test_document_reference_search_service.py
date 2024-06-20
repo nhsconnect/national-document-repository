@@ -87,10 +87,12 @@ def test_get_document_references_dynamo_return_successful_response_single_table(
         MOCK_DOCUMENT_REFERENCE
     )
     expected_results = [EXPECTED_RESPONSE]
+    try:
+        actual = patched_service.get_document_references("1111111111")
 
-    actual = patched_service.get_document_references("1111111111")
-
-    assert actual == expected_results
+        assert actual == expected_results
+    except DocumentRefSearchException:
+        assert False, "test"
 
 
 def test_get_document_references_dynamo_return_successful_response_multiple_tables(
@@ -104,3 +106,15 @@ def test_get_document_references_dynamo_return_successful_response_multiple_tabl
     actual = patched_service.get_document_references("1111111111")
 
     assert actual == expected_results
+
+
+def test_get_document_references_raise_error_when_upload_is_in_process(
+    patched_service,
+):
+    patched_service.fetch_documents_from_table_with_filter.return_value = (
+        MOCK_DOCUMENT_REFERENCE
+    )
+    patched_service.is_upload_in_process.return_value = True
+
+    with pytest.raises(DocumentRefSearchException):
+        patched_service.get_document_references("111111111")

@@ -58,9 +58,9 @@ function DocumentSearchResultsPage() {
             } catch (e) {
                 const error = e as AxiosError;
                 if (isMock(error)) {
-                    if (!!config.mockLocal.uploading) {
+                    if (config.mockLocal.uploading) {
                         setSubmissionState(SUBMISSION_STATE.BLOCKED);
-                    } else if (!!config.mockLocal.recordUploaded) {
+                    } else if (config.mockLocal.recordUploaded) {
                         setSearchResults([buildSearchResult(), buildSearchResult()]);
                         setSubmissionState(SUBMISSION_STATE.SUCCEEDED);
                     }

@@ -73,7 +73,7 @@ function LloydGeorgeRecordPage() {
                 const errorResponse = (error.response?.data as ErrorResponse) ?? {};
 
                 if (isMock(error)) {
-                    if (!!config.mockLocal.recordUploaded) {
+                    if (config.mockLocal.recordUploaded) {
                         onSuccess(1, moment().format(), '/dev/testFile.pdf', 59000);
                     } else {
                         setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
