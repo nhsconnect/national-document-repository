@@ -9,7 +9,6 @@ import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { UploadSession } from '../../../../types/generic/uploadResult';
-import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
 
 export type Props = {
@@ -42,11 +41,6 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
             ![DOCUMENT_UPLOAD_STATE.UPLOADING, DOCUMENT_UPLOAD_STATE.SCANNING].includes(d.state),
     );
 
-    // temp solution to focus on layout div so that skip-link can be selected.
-    // we should remove this if this component become a separate route.
-    useEffect(() => {
-        focusLayoutDiv();
-    }, []);
     const pageHeader = 'Uploading record';
     useTitle({ pageTitle: pageHeader });
     return (

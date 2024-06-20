@@ -9,8 +9,8 @@ import {
 import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
-import { setDocument } from '../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import waitForSeconds from '../utils/waitForSeconds';
+import { setSingleDocument } from './uploadDocumentsHelper';
 
 const VIRUS_SCAN_RETRY_LIMIT = 3;
 const DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS = 5;
@@ -99,12 +99,12 @@ export const uploadConfirmation = async ({
 }: UploadConfirmationArgs) => {
     const fileKeyBuilder = documents.reduce((acc, doc) => {
         const documentMetadata = uploadSession[doc.file.name];
-        const fileKey = documentMetadata.fields.key.split('/');
+        const fileUUID = documentMetadata.fields.key.split('/').at(-1);
         const previousKeys = acc[doc.docType] ?? [];
 
         return {
             ...acc,
-            [doc.docType]: [...previousKeys, fileKey[3]],
+            [doc.docType]: [...previousKeys, fileUUID],
         };
     }, {} as FileKeyBuilder);
 
@@ -144,7 +144,7 @@ export const uploadDocumentToS3 = async ({
             onUploadProgress: (progress) => {
                 const { loaded, total } = progress;
                 if (total) {
-                    setDocument(setDocuments, {
+                    setSingleDocument(setDocuments, {
                         id: document.id,
                         state: DOCUMENT_UPLOAD_STATE.UPLOADING,
                         progress: (loaded / total) * 100,
