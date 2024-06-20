@@ -88,12 +88,9 @@ def test_get_document_references_dynamo_return_successful_response_single_table(
         MOCK_DOCUMENT_REFERENCE
     )
     expected_results = [EXPECTED_RESPONSE]
-    try:
-        actual = patched_service.get_document_references("1111111111")
+    actual = patched_service.get_document_references("1111111111")
 
-        assert actual == expected_results
-    except DocumentRefSearchException:
-        assert False, "test"
+    assert actual == expected_results
 
 
 def test_get_document_references_dynamo_return_successful_response_multiple_tables(
