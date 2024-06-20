@@ -124,15 +124,6 @@ class CreateDocumentReferenceService:
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
 
-    def fetch_incomplete_arf_upload_records(
-        self, nhs_number
-    ) -> list[DocumentReference]:
-        return self.document_service.fetch_available_document_references_by_type(
-            nhs_number=nhs_number,
-            doc_type=SupportedDocumentTypes.ARF,
-            query_filter=UploadIncomplete,
-        )
-
     def parse_documents_list(
         self, document_list: list[dict]
     ) -> list[UploadRequestDocument]:
@@ -305,3 +296,12 @@ class CreateDocumentReferenceService:
         )
 
         logger.info("Previous failed records are deleted.")
+
+    def fetch_incomplete_arf_upload_records(
+        self, nhs_number
+    ) -> list[DocumentReference]:
+        return self.document_service.fetch_available_document_references_by_type(
+            nhs_number=nhs_number,
+            doc_type=SupportedDocumentTypes.ARF,
+            query_filter=UploadIncomplete,
+        )
