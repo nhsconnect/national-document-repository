@@ -66,7 +66,9 @@ function SelectStage({ setDocuments, documents }: Props) {
 
             await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
 
-            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+            setDocuments((prevState) => {
+                return prevState.map((doc) => ({ ...doc, state: DOCUMENT_UPLOAD_STATE.SUCCEEDED }));
+            });
         } catch (error) {
             handleUploadError(error as AxiosError);
         }
@@ -106,8 +108,6 @@ function SelectStage({ setDocuments, documents }: Props) {
                     state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
                 })),
             );
-            /* istanbul ignore next */
-            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
