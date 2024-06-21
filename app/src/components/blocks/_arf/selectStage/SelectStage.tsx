@@ -28,7 +28,7 @@ import { isMock } from '../../../../helpers/utils/isLocal';
 import { useNavigate } from 'react-router';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import {
-    addMetadataAndMarkDocumentAsUploading,
+    markDocumentsAsUploading,
     DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS,
 } from '../../../../helpers/requests/uploadDocumentsHelper';
 import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
@@ -65,7 +65,7 @@ function SelectStage({ setDocuments, documents }: Props) {
                 baseUrl,
                 baseHeaders,
             });
-            const uploadingDocuments: UploadDocument[] = addMetadataAndMarkDocumentAsUploading(
+            const uploadingDocuments: UploadDocument[] = markDocumentsAsUploading(
                 documents,
                 uploadSession,
             );

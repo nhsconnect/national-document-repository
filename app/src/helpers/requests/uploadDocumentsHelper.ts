@@ -1,6 +1,10 @@
 import { Dispatch, SetStateAction } from 'react';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import { UploadSession } from '../../types/generic/uploadResult';
+import { isRunningInCypress } from '../utils/isLocal';
+
+export const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = isRunningInCypress() ? 0 : 3;
+export const DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS = isRunningInCypress() ? 0 : 5;
 
 type UpdateDocumentArgs = {
     id: string;
@@ -9,6 +13,7 @@ type UpdateDocumentArgs = {
     attempts?: number;
     ref?: string;
 };
+
 export const setSingleDocument = (
     setDocuments: Dispatch<SetStateAction<UploadDocument[]>>,
     { id, state, progress, attempts, ref }: UpdateDocumentArgs,
@@ -27,7 +32,7 @@ export const setSingleDocument = (
         }),
     );
 };
-export const addMetadataAndMarkDocumentAsUploading = (
+export const markDocumentsAsUploading = (
     documents: UploadDocument[],
     uploadSession: UploadSession,
 ) => {
@@ -42,8 +47,3 @@ export const addMetadataAndMarkDocumentAsUploading = (
         };
     });
 };
-const isRunningInCypress = () => {
-    //@ts-ignore
-    return Boolean(window?.Cypress);
-};
-export const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = isRunningInCypress() ? 0 : 3;

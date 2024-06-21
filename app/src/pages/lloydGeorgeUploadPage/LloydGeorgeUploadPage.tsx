@@ -25,7 +25,7 @@ import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/ll
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import waitForSeconds from '../../helpers/utils/waitForSeconds';
 import {
-    addMetadataAndMarkDocumentAsUploading,
+    markDocumentsAsUploading,
     DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS,
     setSingleDocument,
 } from '../../helpers/requests/uploadDocumentsHelper';
@@ -151,11 +151,11 @@ function LloydGeorgeUploadPage() {
             });
         } catch (e) {
             window.clearInterval(intervalTimer);
-            markSingleDocumentAsFailed(document);
+            markDocumentAsFailed(document);
         }
     };
 
-    function markSingleDocumentAsFailed(document: UploadDocument) {
+    function markDocumentAsFailed(document: UploadDocument) {
         setSingleDocument(setDocuments, {
             id: document.id,
             state: DOCUMENT_UPLOAD_STATE.FAILED,
@@ -189,10 +189,7 @@ function LloydGeorgeUploadPage() {
                 baseHeaders,
             });
             setUploadSession(uploadSession);
-            const uploadingDocuments = addMetadataAndMarkDocumentAsUploading(
-                documents,
-                uploadSession,
-            );
+            const uploadingDocuments = markDocumentsAsUploading(documents, uploadSession);
             const updateStateInterval = startIntervalTimer(uploadingDocuments);
             setIntervalTimer(updateStateInterval);
             setDocuments(uploadingDocuments);

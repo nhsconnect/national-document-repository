@@ -10,10 +10,12 @@ import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
 import waitForSeconds from '../utils/waitForSeconds';
-import { setSingleDocument } from './uploadDocumentsHelper';
+import {
+    DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS,
+    setSingleDocument,
+} from './uploadDocumentsHelper';
 
 const VIRUS_SCAN_RETRY_LIMIT = 3;
-const DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS = 5;
 const TIMEOUT_ERROR_STATUS_CODE = 504;
 const TIMEOUT_ERROR = 'TIMEOUT_ERROR';
 
