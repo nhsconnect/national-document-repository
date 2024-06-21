@@ -9,8 +9,6 @@ import { UploadSession } from '../../types/generic/uploadResult';
 import uploadDocuments, {
     updateDocumentState,
     uploadConfirmation,
-    uploadDocumentToS3,
-    virusScanResult,
 } from '../../helpers/requests/uploadDocuments';
 import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
@@ -23,11 +21,10 @@ import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
-import waitForSeconds from '../../helpers/utils/waitForSeconds';
 import {
     markDocumentsAsUploading,
-    DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS,
     setSingleDocument,
+    uploadAndScanSingleDocument,
 } from '../../helpers/requests/uploadDocumentsHelper';
 
 export enum LG_UPLOAD_STAGE {
@@ -128,26 +125,17 @@ function LloydGeorgeUploadPage() {
         };
     }, [intervalTimer]);
 
-    const uploadAndScanSingleDocument = async (
+    const uploadAndScanSingleLloydGeorgeDocument = async (
         document: UploadDocument,
         uploadSession: UploadSession,
     ) => {
         try {
-            await uploadDocumentToS3({ setDocuments, document, uploadSession });
-            setSingleDocument(setDocuments, {
-                id: document.id,
-                state: DOCUMENT_UPLOAD_STATE.SCANNING,
-            });
-            await waitForSeconds(DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS);
-            const virusDocumentState = await virusScanResult({
-                documentReference: document.key ?? '',
+            await uploadAndScanSingleDocument({
+                document,
+                uploadSession,
+                setDocuments,
                 baseUrl,
                 baseHeaders,
-            });
-            setSingleDocument(setDocuments, {
-                id: document.id,
-                state: virusDocumentState,
-                progress: 100,
             });
         } catch (e) {
             window.clearInterval(intervalTimer);
@@ -170,12 +158,12 @@ function LloydGeorgeUploadPage() {
         });
     }
 
-    const uploadAndScanDocuments = (
+    const uploadAndScanAllDocuments = (
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
         uploadDocuments.forEach((document) => {
-            void uploadAndScanSingleDocument(document, uploadSession);
+            void uploadAndScanSingleLloydGeorgeDocument(document, uploadSession);
         });
     };
 
@@ -193,7 +181,7 @@ function LloydGeorgeUploadPage() {
             const updateStateInterval = startIntervalTimer(uploadingDocuments);
             setIntervalTimer(updateStateInterval);
             setDocuments(uploadingDocuments);
-            uploadAndScanDocuments(uploadingDocuments, uploadSession);
+            uploadAndScanAllDocuments(uploadingDocuments, uploadSession);
             navigate(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING);
         } catch (e) {
             const error = e as AxiosError;
@@ -262,7 +250,7 @@ function LloydGeorgeUploadPage() {
                             <LloydGeorgeUploadingStage
                                 documents={documents}
                                 uploadSession={uploadSession}
-                                uploadAndScanDocuments={uploadAndScanDocuments}
+                                uploadAndScanDocuments={uploadAndScanAllDocuments}
                             />
                         }
                     />

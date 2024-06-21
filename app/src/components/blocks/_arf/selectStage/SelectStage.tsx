@@ -29,9 +29,9 @@ import { useNavigate } from 'react-router';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 import {
     markDocumentsAsUploading,
-    DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS,
+    uploadAndScanSingleDocument,
+    setSingleDocument,
 } from '../../../../helpers/requests/uploadDocumentsHelper';
-import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
 
 interface Props {
     setDocuments: SetUploadDocuments;
@@ -71,44 +71,36 @@ function SelectStage({ setDocuments, documents }: Props) {
             );
             setDocuments(uploadingDocuments);
 
-            await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
-
-            setDocuments((prevState) => {
-                return prevState.map((doc) => ({ ...doc, state: DOCUMENT_UPLOAD_STATE.SUCCEEDED }));
-            });
+            uploadAndScanAllDocuments(uploadingDocuments, uploadSession);
         } catch (error) {
             handleUploadError(error as AxiosError);
         }
     };
 
-    const markDocumentAsFailed = (failedDocument: UploadDocument) => {
-        setDocuments((prevState) =>
-            prevState.map((prevStateDocument) => {
-                if (prevStateDocument.id !== failedDocument.id) {
-                    return prevStateDocument;
-                }
-                return { ...prevStateDocument, state: DOCUMENT_UPLOAD_STATE.FAILED, progress: 0 };
-            }),
-        );
-    };
-
-    const uploadAllDocumentsToS3 = (
+    const uploadAndScanAllDocuments = (
         uploadingDocuments: UploadDocument[],
         uploadSession: UploadSession,
     ) => {
-        const allUploadPromises = uploadingDocuments.map((document) =>
-            uploadDocumentToS3({ setDocuments, document, uploadSession })
-                .then(() => waitForSeconds(DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS))
-                .then(() =>
-                    virusScanResult({
-                        documentReference: document.key ?? '',
-                        baseUrl,
-                        baseHeaders,
-                    }),
-                )
-                .catch(() => markDocumentAsFailed(document)),
-        );
-        return Promise.all(allUploadPromises);
+        uploadingDocuments.forEach((document) => {
+            void uploadAndScanSingleArfDocument(document, uploadSession);
+        });
+    };
+
+    const uploadAndScanSingleArfDocument = async (
+        document: UploadDocument,
+        uploadSession: UploadSession,
+    ) => {
+        try {
+            await uploadAndScanSingleDocument({
+                document,
+                uploadSession,
+                setDocuments,
+                baseUrl,
+                baseHeaders,
+            });
+        } catch (e) {
+            markDocumentAsFailed(document);
+        }
     };
 
     const handleUploadError = (error: AxiosError) => {
@@ -119,12 +111,20 @@ function SelectStage({ setDocuments, documents }: Props) {
             setDocuments((prevState) =>
                 prevState.map((doc) => ({
                     ...doc,
-                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                    state: DOCUMENT_UPLOAD_STATE.CLEAN,
                 })),
             );
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
+    };
+
+    const markDocumentAsFailed = (failedDocument: UploadDocument) => {
+        setSingleDocument(setDocuments, {
+            id: failedDocument.id,
+            state: DOCUMENT_UPLOAD_STATE.FAILED,
+            progress: 0,
+        });
     };
 
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {
