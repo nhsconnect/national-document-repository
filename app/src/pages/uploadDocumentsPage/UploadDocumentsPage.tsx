@@ -22,6 +22,7 @@ import { UploadSession } from '../../types/generic/uploadResult';
 import { isMock } from '../../helpers/utils/isLocal';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import usePatient from '../../helpers/hooks/usePatient';
+import { buildUploadSession } from '../../helpers/test/testBuilders';
 
 function UploadDocumentsPage() {
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
@@ -40,27 +41,32 @@ function UploadDocumentsPage() {
 
     const confirmUpload = useCallback(
         async (documents: UploadDocument[], uploadSession: UploadSession) => {
-            const cleanDocuments = documents.filter(
-                (doc) => doc.state === DOCUMENT_UPLOAD_STATE.CLEAN,
-            );
+            try {
+                const cleanDocuments = documents.filter(
+                    (doc) => doc.state === DOCUMENT_UPLOAD_STATE.CLEAN,
+                );
 
-            const confirmDocumentState = await uploadConfirmation({
-                baseUrl,
-                baseHeaders,
-                nhsNumber,
-                uploadSession,
-                documents: cleanDocuments,
-            });
+                const confirmDocumentState = await uploadConfirmation({
+                    baseUrl,
+                    baseHeaders,
+                    nhsNumber,
+                    uploadSession,
+                    documents: cleanDocuments,
+                });
 
-            cleanDocuments.forEach((doc) =>
-                setSingleDocument(setDocuments, {
-                    id: doc.id,
-                    state: confirmDocumentState,
-                }),
-            );
+                cleanDocuments.forEach((doc) =>
+                    setSingleDocument(setDocuments, {
+                        id: doc.id,
+                        state: confirmDocumentState,
+                    }),
+                );
 
-            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+                navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+            } catch (error) {
+                handleUploadConfirmationError(error as AxiosError);
+            }
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [baseHeaders, baseUrl, nhsNumber, navigate],
     );
 
@@ -100,7 +106,7 @@ function UploadDocumentsPage() {
                 (document) => document.state === DOCUMENT_UPLOAD_STATE.CLEAN,
             );
             if (cleanDocuments.length > 0) {
-                navigate(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION);
+                navigate(routeChildren.ARF_UPLOAD_CONFIRMATION);
                 void confirmUpload(documents, uploadSession);
             } else {
                 navigate(routeChildren.ARF_UPLOAD_FAILED);
@@ -153,16 +159,36 @@ function UploadDocumentsPage() {
             navigate(routes.SESSION_EXPIRED);
         } else if (isMock(error)) {
             /* istanbul ignore next */
+            setUploadSession(buildUploadSession(documents));
             setDocuments((prevState) =>
                 prevState.map((doc) => ({
                     ...doc,
                     state: DOCUMENT_UPLOAD_STATE.CLEAN,
+                    progress: 100,
                 })),
             );
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
     };
+
+    const handleUploadConfirmationError = (error: AxiosError) => {
+        if (error.response?.status === 403) {
+            navigate(routes.SESSION_EXPIRED);
+        } else if (isMock(error)) {
+            /* istanbul ignore next */
+            setDocuments((prevState) =>
+                prevState.map((doc) => ({
+                    ...doc,
+                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                })),
+            );
+            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+        } else {
+            navigate(routes.SERVER_ERROR + errorToParams(error));
+        }
+    };
+
     const markDocumentAsFailed = (failedDocument: UploadDocument) => {
         setSingleDocument(setDocuments, {
             id: failedDocument.id,

@@ -102,7 +102,7 @@ const buildUploadSession = (documents: Array<UploadDocument>) => {
             ...acc,
             [doc.file.name]: {
                 fields: {
-                    key: 'string',
+                    key: 'bucket/sub_folder/uuid',
                     'x-amz-algorithm': 'string',
                     'x-amz-credential': 'string',
                     'x-amz-date': 'string',
