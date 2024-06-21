@@ -61,13 +61,14 @@ class CreateDocumentReferenceService:
             for document in upload_request_documents
         )
 
-        current_gp_ods = ""
-        if has_lg_document:
-            pds_patient_details = getting_patient_info_from_pds(nhs_number)
-            current_gp_ods = pds_patient_details.general_practice_ods
-
         try:
             validate_nhs_number(nhs_number)
+
+            current_gp_ods = ""
+            if has_lg_document:
+                pds_patient_details = getting_patient_info_from_pds(nhs_number)
+                current_gp_ods = pds_patient_details.general_practice_ods
+
             for validated_doc in upload_request_documents:
                 document_reference = self.prepare_doc_object(
                     nhs_number, current_gp_ods, validated_doc
