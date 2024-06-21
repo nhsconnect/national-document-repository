@@ -12,10 +12,7 @@ import toFileList from '../../../../helpers/utils/toFileList';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
-import uploadDocuments, {
-    uploadDocumentToS3,
-    virusScanResult,
-} from '../../../../helpers/requests/uploadDocuments';
+import uploadDocuments from '../../../../helpers/requests/uploadDocuments';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
@@ -31,7 +28,7 @@ import {
     markDocumentsAsUploading,
     uploadAndScanSingleDocument,
     setSingleDocument,
-} from '../../../../helpers/requests/uploadDocumentsHelper';
+} from '../../../../helpers/utils/uploadAndScanDocumentHelpers';
 
 interface Props {
     setDocuments: SetUploadDocuments;

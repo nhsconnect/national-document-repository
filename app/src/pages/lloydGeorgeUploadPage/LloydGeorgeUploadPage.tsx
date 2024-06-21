@@ -25,7 +25,7 @@ import {
     markDocumentsAsUploading,
     setSingleDocument,
     uploadAndScanSingleDocument,
-} from '../../helpers/requests/uploadDocumentsHelper';
+} from '../../helpers/utils/uploadAndScanDocumentHelpers';
 
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,

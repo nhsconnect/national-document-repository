@@ -13,7 +13,7 @@ import waitForSeconds from '../utils/waitForSeconds';
 import {
     DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS,
     setSingleDocument,
-} from './uploadDocumentsHelper';
+} from '../utils/uploadAndScanDocumentHelpers';
 
 const VIRUS_SCAN_RETRY_LIMIT = 3;
 const TIMEOUT_ERROR_STATUS_CODE = 504;
