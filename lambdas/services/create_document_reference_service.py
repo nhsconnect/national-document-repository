@@ -12,7 +12,7 @@ from services.document_deletion_service import DocumentDeletionService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import NotDeleted, UploadIncomplete
-from utils.exceptions import InvalidResourceIdException
+from utils.exceptions import InvalidResourceIdException, PdsTooManyRequestsException
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import (
     LGInvalidFilesException,
@@ -113,7 +113,11 @@ class CreateDocumentReferenceService:
 
             return url_responses
 
-        except (InvalidResourceIdException, LGInvalidFilesException) as e:
+        except (
+            InvalidResourceIdException,
+            LGInvalidFilesException,
+            PdsTooManyRequestsException,
+        ) as e:
             logger.error(
                 f"{LambdaError.CreateDocFiles.to_str()} :{str(e)}",
                 {"Result": FAILED_CREATE_REFERENCE_MESSAGE},

@@ -343,6 +343,27 @@ def test_create_document_reference_invalid_nhs_number(
     mock_create_reference_in_dynamodb.assert_not_called()
 
 
+def test_create_document_reference_failed_to_parse_pds_response(
+    mock_prepare_doc_object,
+    mock_prepare_pre_signed_url,
+    mock_create_reference_in_dynamodb,
+    mock_getting_patient_info_from_pds,
+    mocker,
+):
+    create_doc_ref_service = CreateDocumentReferenceService()
+    mocker.patch("services.base.s3_service.IAMService")
+    mock_getting_patient_info_from_pds.side_effect = LGInvalidFilesException
+
+    with pytest.raises(CreateDocumentRefException):
+        create_doc_ref_service.create_document_reference_request(
+            TEST_NHS_NUMBER, LG_FILE_LIST
+        )
+
+    mock_prepare_doc_object.assert_not_called()
+    mock_prepare_pre_signed_url.assert_not_called()
+    mock_create_reference_in_dynamodb.assert_not_called()
+
+
 @freeze_time("2023-10-30T10:25:00")
 def test_create_document_reference_request_lg_upload_throw_lambda_error_if_upload_in_progress(
     mock_create_doc_ref_service,

@@ -8,6 +8,7 @@ import pytest
 from models.document_reference import DocumentReference
 from models.pds_models import PatientDetails
 from pydantic import ValidationError
+from requests import Response
 
 REGION_NAME = "eu-west-2"
 
@@ -173,6 +174,16 @@ EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
 @pytest.fixture
 def mock_patient_details():
     yield EXPECTED_PARSED_PATIENT_BASE_CASE
+
+
+@pytest.fixture
+def mock_valid_pds_response():
+    mock_response = Response()
+    mock_response.status_code = 200
+    with open("services/mock_data/pds_patient_9000000002_H81109_gp.json", "rb") as f:
+        mock_data = f.read()
+        mock_response._content = mock_data
+    yield mock_response
 
 
 @pytest.fixture(scope="session", autouse=True)

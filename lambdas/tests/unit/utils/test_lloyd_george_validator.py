@@ -32,6 +32,7 @@ from utils.lloyd_george_validator import (
     extract_info_from_filename,
     get_allowed_ods_codes,
     getting_patient_info_from_pds,
+    parse_pds_response,
     validate_file_name,
     validate_filename_with_patient_details,
     validate_lg_file_names,
@@ -466,6 +467,28 @@ def test_check_pds_response_200_status_not_raise_exception():
         check_pds_response_status(response)
     except LGInvalidFilesException:
         assert False
+
+
+def test_parse_pds_response_return_the_patient_object(
+    mock_pds_call, mock_valid_pds_response
+):
+    actual = parse_pds_response(mock_valid_pds_response)
+    assert actual.id == "9000000002"
+    assert actual.name[0].given == ["Jane"]
+    assert actual.name[0].family == "Smith"
+
+
+def test_parse_pds_response_raise_error_when_model_validation_failed():
+    mock_invalid_pds_response = Response()
+    mock_invalid_pds_response.status_code = 200
+    mock_invalid_pds_response._content = (
+        b"""{"body": "some data that pydantic cannot parse"}"""
+    )
+
+    with pytest.raises(LGInvalidFilesException) as error:
+        parse_pds_response(mock_invalid_pds_response)
+
+    assert str(error.value) == "Fail to parse the patient detail response from PDS API."
 
 
 def test_check_for_patient_already_exist_in_repo_return_none_when_patient_record_not_exist(
