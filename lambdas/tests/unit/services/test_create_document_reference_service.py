@@ -638,7 +638,9 @@ def test_check_existing_lloyd_george_records_does_nothing_if_no_record_exist(
     mock_fetch_document.return_value = []
 
     assert (
-        mock_create_doc_ref_service.check_existing_lloyd_george_records(TEST_NHS_NUMBER)
+        mock_create_doc_ref_service.check_existing_lloyd_george_records_and_remove_failed_upload(
+            TEST_NHS_NUMBER
+        )
         is None
     )
     mock_remove_records.assert_not_called()

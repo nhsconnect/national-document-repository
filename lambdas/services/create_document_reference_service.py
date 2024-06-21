@@ -95,7 +95,9 @@ class CreateDocumentReferenceService:
 
             if lg_documents:
                 validate_lg_files(lg_documents, pds_patient_details)
-                self.check_existing_lloyd_george_records(nhs_number)
+                self.check_existing_lloyd_george_records_and_remove_failed_upload(
+                    nhs_number
+                )
 
                 self.create_reference_in_dynamodb(
                     self.lg_dynamo_table, lg_documents_dict_format
@@ -222,7 +224,7 @@ class CreateDocumentReferenceService:
             )
             raise CreateDocumentRefException(500, LambdaError.CreateDocUpload)
 
-    def check_existing_lloyd_george_records(
+    def check_existing_lloyd_george_records_and_remove_failed_upload(
         self,
         nhs_number: str,
     ) -> None:
