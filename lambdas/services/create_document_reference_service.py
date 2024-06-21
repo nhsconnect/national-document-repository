@@ -153,23 +153,13 @@ class CreateDocumentReferenceService:
 
         logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
-        if validated_doc.docType in [
-            SupportedDocumentTypes.LG.value,
-            SupportedDocumentTypes.ARF.value,
-        ]:
-            document_reference = self.create_document_reference(
-                nhs_number,
-                current_gp_ods,
-                validated_doc,
-                s3_bucket_name=self.staging_bucket_name,
-                sub_folder=self.upload_sub_folder,
-            )
-        else:
-            logger.error(
-                f"{LambdaError.CreateDocNoType.to_str()}",
-                {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
-            )
-            raise CreateDocumentRefException(400, LambdaError.CreateDocNoType)
+        document_reference = self.create_document_reference(
+            nhs_number,
+            current_gp_ods,
+            validated_doc,
+            s3_bucket_name=self.staging_bucket_name,
+            sub_folder=self.upload_sub_folder,
+        )
 
         return document_reference
 
