@@ -101,12 +101,12 @@ export const uploadConfirmation = async ({
 }: UploadConfirmationArgs) => {
     const fileKeyBuilder = documents.reduce((acc, doc) => {
         const documentMetadata = uploadSession[doc.file.name];
-        const fileUUID = documentMetadata.fields.key.split('/').at(-1);
+        const fileReferenceUUID = documentMetadata.fields.key.split('/').at(-1);
         const previousKeys = acc[doc.docType] ?? [];
 
         return {
             ...acc,
-            [doc.docType]: [...previousKeys, fileUUID],
+            [doc.docType]: [...previousKeys, fileReferenceUUID],
         };
     }, {} as FileKeyBuilder);
 

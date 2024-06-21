@@ -12,40 +12,24 @@ import toFileList from '../../../../helpers/utils/toFileList';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
-import uploadDocuments from '../../../../helpers/requests/uploadDocuments';
-import usePatient from '../../../../helpers/hooks/usePatient';
-import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
-import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import BackButton from '../../../generic/backButton/BackButton';
-import { UploadSession } from '../../../../types/generic/uploadResult';
-import { AxiosError } from 'axios';
-import { routeChildren, routes } from '../../../../types/generic/routes';
-import { errorToParams } from '../../../../helpers/utils/errorToParams';
-import { isMock } from '../../../../helpers/utils/isLocal';
+import { routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
-import {
-    markDocumentsAsUploading,
-    uploadAndScanSingleDocument,
-    setSingleDocument,
-} from '../../../../helpers/utils/uploadAndScanDocumentHelpers';
 
 interface Props {
     setDocuments: SetUploadDocuments;
     documents: Array<UploadDocument>;
+    startUpload: () => Promise<void>;
 }
 
-function SelectStage({ setDocuments, documents }: Props) {
-    const baseUrl = useBaseAPIUrl();
-    const baseHeaders = useBaseAPIHeaders();
+function SelectStage({ setDocuments, documents, startUpload }: Props) {
     const navigate = useNavigate();
     const arfInputRef = useRef<HTMLInputElement | null>(null);
-    const patientDetails = usePatient();
-    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
+
     const hasFileInput = documents.length > 0;
 
     const { handleSubmit, control, formState, setError } = useForm();
-
     const arfController = useController(ARFFormConfig(control));
 
     const submitDocuments = async () => {
@@ -55,73 +39,7 @@ function SelectStage({ setDocuments, documents }: Props) {
         }
 
         navigate(routeChildren.ARF_UPLOAD_UPLOADING);
-        try {
-            const uploadSession = await uploadDocuments({
-                nhsNumber,
-                documents,
-                baseUrl,
-                baseHeaders,
-            });
-            const uploadingDocuments: UploadDocument[] = markDocumentsAsUploading(
-                documents,
-                uploadSession,
-            );
-            setDocuments(uploadingDocuments);
-
-            uploadAndScanAllDocuments(uploadingDocuments, uploadSession);
-        } catch (error) {
-            handleUploadError(error as AxiosError);
-        }
-    };
-
-    const uploadAndScanAllDocuments = (
-        uploadingDocuments: UploadDocument[],
-        uploadSession: UploadSession,
-    ) => {
-        uploadingDocuments.forEach((document) => {
-            void uploadAndScanSingleArfDocument(document, uploadSession);
-        });
-    };
-
-    const uploadAndScanSingleArfDocument = async (
-        document: UploadDocument,
-        uploadSession: UploadSession,
-    ) => {
-        try {
-            await uploadAndScanSingleDocument({
-                document,
-                uploadSession,
-                setDocuments,
-                baseUrl,
-                baseHeaders,
-            });
-        } catch (e) {
-            markDocumentAsFailed(document);
-        }
-    };
-
-    const handleUploadError = (error: AxiosError) => {
-        if (error.response?.status === 403) {
-            navigate(routes.SESSION_EXPIRED);
-        } else if (isMock(error)) {
-            /* istanbul ignore next */
-            setDocuments((prevState) =>
-                prevState.map((doc) => ({
-                    ...doc,
-                    state: DOCUMENT_UPLOAD_STATE.CLEAN,
-                })),
-            );
-        } else {
-            navigate(routes.SERVER_ERROR + errorToParams(error));
-        }
-    };
-
-    const markDocumentAsFailed = (failedDocument: UploadDocument) => {
-        setSingleDocument(setDocuments, {
-            id: failedDocument.id,
-            state: DOCUMENT_UPLOAD_STATE.FAILED,
-            progress: 0,
-        });
+        await startUpload();
     };
 
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {

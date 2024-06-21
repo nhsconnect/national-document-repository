@@ -1,30 +1,21 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import SelectStage from './SelectStage';
-import {
-    buildDocument,
-    buildPatientDetails,
-    buildTextFile,
-    buildUploadSession,
-} from '../../../../helpers/test/testBuilders';
+import { buildPatientDetails, buildTextFile } from '../../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
 import {
-    DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
-    DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { act } from 'react-dom/test-utils';
 import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
-import uploadDocuments, { uploadDocumentToS3 } from '../../../../helpers/requests/uploadDocuments';
 import { useState } from 'react';
-import { routeChildren, routes } from '../../../../types/generic/routes';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import { routeChildren } from '../../../../types/generic/routes';
 
 const mockedUseNavigate = jest.fn();
 
 jest.mock('../../../../helpers/requests/uploadDocuments');
-const mockSetStage = jest.fn();
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/utils/toFileList', () => ({
@@ -44,14 +35,13 @@ const documentTwo = buildTextFile('two', 200);
 const documentThree = buildTextFile('three', 100);
 const arfDocuments = [documentOne, documentTwo, documentThree];
 
-const mockUploadDocument = uploadDocuments as jest.Mock;
-const mockS3Upload = uploadDocumentToS3 as jest.Mock;
-
 const setDocumentMock = jest.fn();
 setDocumentMock.mockImplementation((document) => {
     document.state = documentUploadStates.SELECTED;
     document.id = '1';
 });
+
+const mockStartUpload = jest.fn();
 
 const mockPatientDetails: PatientDetails = buildPatientDetails();
 describe('<SelectStage />', () => {
@@ -195,83 +185,102 @@ describe('<SelectStage />', () => {
     });
 
     describe('Navigation', () => {
-        it('sets stage to uploading and complete when upload files is triggered', async () => {
-            const response = {
-                response: {
-                    status: 200,
-                },
-            };
-            const uploadDocs = [documentOne, documentTwo, documentThree].map((doc) =>
-                buildDocument(doc, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.ARF),
-            );
-            const uploadSession = buildUploadSession(uploadDocs);
-            mockUploadDocument.mockResolvedValueOnce(uploadSession);
-            mockS3Upload.mockResolvedValue(response);
-
+        it('calls startUpload and navigate to uploading page if user selected some files and clicked upload button', async () => {
             renderApp();
-
             act(() => {
                 userEvent.upload(screen.getByTestId('ARF-input'), [
                     documentOne,
                     documentTwo,
                     documentThree,
                 ]);
-            });
-
-            expect(await screen.findAllByText(documentOne.name)).toHaveLength(1);
-            expect(await screen.findAllByText(documentTwo.name)).toHaveLength(1);
-            expect(await screen.findAllByText(documentThree.name)).toHaveLength(1);
-
-            expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
-            act(() => {
                 userEvent.click(screen.getByRole('button', { name: 'Upload' }));
             });
 
             await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_UPLOADING);
+                expect(mockStartUpload).toHaveBeenCalledTimes(1);
             });
+            expect(mockedUseNavigate).toHaveBeenCalledWith(
+                expect.stringContaining(routeChildren.ARF_UPLOAD_UPLOADING),
+            );
         });
 
-        it('navigates to session expire page when API returns 403', async () => {
-            const errorResponse = {
-                response: {
-                    status: 403,
-                    message: 'Forbidden',
-                },
-            };
-            mockUploadDocument.mockRejectedValue(errorResponse);
-
-            renderApp();
-            act(() => {
-                userEvent.upload(screen.getByTestId('ARF-input'), [documentOne]);
-                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
-            });
-
-            await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
-            });
-        });
-
-        it('navigates to error page when API returns other error', async () => {
-            const errorResponse = {
-                response: {
-                    status: 502,
-                },
-            };
-            mockUploadDocument.mockRejectedValue(errorResponse);
-
-            renderApp();
-            act(() => {
-                userEvent.upload(screen.getByTestId('ARF-input'), [documentOne]);
-                userEvent.click(screen.getByRole('button', { name: 'Upload' }));
-            });
-
-            await waitFor(() => {
-                expect(mockedUseNavigate).toHaveBeenCalledWith(
-                    expect.stringContaining('/server-error?encodedError='),
-                );
-            });
-        });
+        // it('sets stage to uploading and complete when upload files is triggered', async () => {
+        //     const response = {
+        //         response: {
+        //             status: 200,
+        //         },
+        //     };
+        //     const uploadDocs = [documentOne, documentTwo, documentThree].map((doc) =>
+        //         buildDocument(doc, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.ARF),
+        //     );
+        //     const uploadSession = buildUploadSession(uploadDocs);
+        //     mockUploadDocument.mockResolvedValueOnce(uploadSession);
+        //     mockS3Upload.mockResolvedValue(response);
+        //
+        //     renderApp();
+        //
+        //     act(() => {
+        //         userEvent.upload(screen.getByTestId('ARF-input'), [
+        //             documentOne,
+        //             documentTwo,
+        //             documentThree,
+        //         ]);
+        //     });
+        //
+        //     expect(await screen.findAllByText(documentOne.name)).toHaveLength(1);
+        //     expect(await screen.findAllByText(documentTwo.name)).toHaveLength(1);
+        //     expect(await screen.findAllByText(documentThree.name)).toHaveLength(1);
+        //
+        //     expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
+        //     act(() => {
+        //         userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+        //     });
+        //
+        //     await waitFor(() => {
+        //         expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_UPLOADING);
+        //     });
+        // });
+        //
+        // it('navigates to session expire page when API returns 403', async () => {
+        //     const errorResponse = {
+        //         response: {
+        //             status: 403,
+        //             message: 'Forbidden',
+        //         },
+        //     };
+        //     mockUploadDocument.mockRejectedValue(errorResponse);
+        //
+        //     renderApp();
+        //     act(() => {
+        //         userEvent.upload(screen.getByTestId('ARF-input'), [documentOne]);
+        //         userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+        //     });
+        //
+        //     await waitFor(() => {
+        //         expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
+        //     });
+        // });
+        //
+        // it('navigates to error page when API returns other error', async () => {
+        //     const errorResponse = {
+        //         response: {
+        //             status: 502,
+        //         },
+        //     };
+        //     mockUploadDocument.mockRejectedValue(errorResponse);
+        //
+        //     renderApp();
+        //     act(() => {
+        //         userEvent.upload(screen.getByTestId('ARF-input'), [documentOne]);
+        //         userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+        //     });
+        //
+        //     await waitFor(() => {
+        //         expect(mockedUseNavigate).toHaveBeenCalledWith(
+        //             expect.stringContaining('/server-error?encodedError='),
+        //         );
+        //     });
+        // });
     });
 
     const renderApp = () => {
@@ -280,6 +289,12 @@ describe('<SelectStage />', () => {
 
     const TestApp = () => {
         const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
-        return <SelectStage setDocuments={setDocuments} documents={documents} />;
+        return (
+            <SelectStage
+                setDocuments={setDocuments}
+                documents={documents}
+                startUpload={mockStartUpload}
+            />
+        );
     };
 });

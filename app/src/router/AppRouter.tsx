@@ -129,6 +129,14 @@ export const childRoutes = [
         route: routeChildren.ARF_UPLOAD_COMPLETED,
         parent: ARF_UPLOAD_DOCUMENTS,
     },
+    {
+        route: routeChildren.ARF_UPLOAD_FAILED,
+        parent: ARF_UPLOAD_DOCUMENTS,
+    },
+    {
+        route: routeChildren.ARF_UPLOAD_CONFIRMATION,
+        parent: ARF_UPLOAD_DOCUMENTS,
+    },
 ];
 
 export const routeMap: Routes = {
