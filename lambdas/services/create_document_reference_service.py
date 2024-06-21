@@ -104,14 +104,7 @@ class CreateDocumentReferenceService:
                 )
 
             if arf_documents:
-                incomplete_arf_upload_records = (
-                    self.fetch_incomplete_arf_upload_records(nhs_number)
-                )
-
-                self.stop_if_upload_is_in_process(incomplete_arf_upload_records)
-                self.remove_records_of_failed_upload(
-                    self.arf_dynamo_table, incomplete_arf_upload_records
-                )
+                self.check_existing_arf_record_and_remove_failed_upload(nhs_number)
 
                 self.create_reference_in_dynamodb(
                     self.arf_dynamo_table, arf_documents_dict_format
@@ -125,6 +118,15 @@ class CreateDocumentReferenceService:
                 {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
+
+    def check_existing_arf_record_and_remove_failed_upload(self, nhs_number):
+        incomplete_arf_upload_records = self.fetch_incomplete_arf_upload_records(
+            nhs_number
+        )
+        self.stop_if_upload_is_in_process(incomplete_arf_upload_records)
+        self.remove_records_of_failed_upload(
+            self.arf_dynamo_table, incomplete_arf_upload_records
+        )
 
     def parse_documents_list(
         self, document_list: list[dict]
