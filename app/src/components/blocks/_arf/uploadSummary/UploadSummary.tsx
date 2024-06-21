@@ -17,8 +17,11 @@ const UploadSummary = ({ documents }: Props) => {
     const successfulUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED;
     });
+
     const failedUploads = documents.filter((document) => {
-        return document.state === DOCUMENT_UPLOAD_STATE.FAILED;
+        return [DOCUMENT_UPLOAD_STATE.FAILED, DOCUMENT_UPLOAD_STATE.INFECTED].includes(
+            document.state,
+        );
     });
 
     const tableMargin = { marginBottom: 50 };

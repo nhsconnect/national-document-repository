@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import SelectStage from '../../components/blocks/_arf/selectStage/SelectStage';
 import UploadingStage from '../../components/blocks/_arf/uploadingStage/UploadingStage';
@@ -16,7 +16,7 @@ import {
 } from '../../helpers/utils/uploadAndScanDocumentHelpers';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import uploadDocuments from '../../helpers/requests/uploadDocuments';
+import uploadDocuments, { uploadConfirmation } from '../../helpers/requests/uploadDocuments';
 import { AxiosError } from 'axios';
 import { UploadSession } from '../../types/generic/uploadResult';
 import { isMock } from '../../helpers/utils/isLocal';
@@ -25,6 +25,7 @@ import usePatient from '../../helpers/hooks/usePatient';
 
 function UploadDocumentsPage() {
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
+    const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
     const config = useConfig();
     const navigate = useNavigate();
     const location = useLocation();
@@ -36,19 +37,32 @@ function UploadDocumentsPage() {
     const mounted = useRef(false);
 
     const isUploading = location.pathname === routeChildren.ARF_UPLOAD_UPLOADING;
-    const someDocumentsAreClean = documents.some(
-        (document) => document.state === DOCUMENT_UPLOAD_STATE.CLEAN,
-    );
 
-    const allDocumentsFinishedVirusScan =
-        documents.length > 0 &&
-        documents.every((document) =>
-            [
-                DOCUMENT_UPLOAD_STATE.CLEAN,
-                DOCUMENT_UPLOAD_STATE.INFECTED,
-                DOCUMENT_UPLOAD_STATE.FAILED,
-            ].includes(document.state),
-        );
+    const confirmUpload = useCallback(
+        async (documents: UploadDocument[], uploadSession: UploadSession) => {
+            const cleanDocuments = documents.filter(
+                (doc) => doc.state === DOCUMENT_UPLOAD_STATE.CLEAN,
+            );
+
+            const confirmDocumentState = await uploadConfirmation({
+                baseUrl,
+                baseHeaders,
+                nhsNumber,
+                uploadSession,
+                documents: cleanDocuments,
+            });
+
+            cleanDocuments.forEach((doc) =>
+                setSingleDocument(setDocuments, {
+                    id: doc.id,
+                    state: confirmDocumentState,
+                }),
+            );
+
+            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+        },
+        [baseHeaders, baseUrl, nhsNumber, navigate],
+    );
 
     useEffect(() => {
         const onPageLoad = () => {
@@ -67,34 +81,32 @@ function UploadDocumentsPage() {
     }, [navigate, config]);
 
     useEffect(() => {
-        const confirmUpload = async () => {
-            navigate(routeChildren.ARF_UPLOAD_CONFIRMATION);
-            const documentsToConfirm = documents.filter(
-                (doc) => doc.state === DOCUMENT_UPLOAD_STATE.CLEAN,
-            );
-            // eslint-disable-next-line no-console
-            console.log('calling confirm upload API here...');
-            documentsToConfirm.forEach((doc) =>
-                setSingleDocument(setDocuments, {
-                    id: doc.id,
-                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                }),
-            );
-
-            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
-        };
-
-        if (!isUploading) {
+        if (!isUploading || !uploadSession) {
             return;
         }
+
+        const allDocumentsFinishedVirusScan =
+            documents.length > 0 &&
+            documents.every((document) => {
+                return [
+                    DOCUMENT_UPLOAD_STATE.CLEAN,
+                    DOCUMENT_UPLOAD_STATE.INFECTED,
+                    DOCUMENT_UPLOAD_STATE.FAILED,
+                ].includes(document.state);
+            });
+
         if (allDocumentsFinishedVirusScan) {
-            if (someDocumentsAreClean) {
-                void confirmUpload();
+            const cleanDocuments = documents.filter(
+                (document) => document.state === DOCUMENT_UPLOAD_STATE.CLEAN,
+            );
+            if (cleanDocuments.length > 0) {
+                navigate(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION);
+                void confirmUpload(documents, uploadSession);
             } else {
                 navigate(routeChildren.ARF_UPLOAD_FAILED);
             }
         }
-    }, [documents, isUploading, someDocumentsAreClean, allDocumentsFinishedVirusScan, navigate]);
+    }, [confirmUpload, documents, uploadSession, isUploading, navigate]);
 
     const startUpload = async () => {
         try {
@@ -104,6 +116,7 @@ function UploadDocumentsPage() {
                 baseUrl,
                 baseHeaders,
             });
+            setUploadSession(uploadSession);
             const uploadingDocuments: UploadDocument[] = markDocumentsAsUploading(
                 documents,
                 uploadSession,
@@ -150,7 +163,6 @@ function UploadDocumentsPage() {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
     };
-
     const markDocumentAsFailed = (failedDocument: UploadDocument) => {
         setSingleDocument(setDocuments, {
             id: failedDocument.id,
@@ -177,16 +189,16 @@ function UploadDocumentsPage() {
                     element={<UploadingStage documents={documents} />}
                 ></Route>
                 <Route
-                    path={getLastURLPath(routeChildren.ARF_UPLOAD_COMPLETED)}
-                    element={<CompleteStage documents={documents} />}
-                ></Route>
-                <Route
                     path={getLastURLPath(routeChildren.ARF_UPLOAD_CONFIRMATION)}
                     element={
                         <div>
                             <Spinner status="Checking uploads..." />
                         </div>
                     }
+                ></Route>
+                <Route
+                    path={getLastURLPath(routeChildren.ARF_UPLOAD_COMPLETED)}
+                    element={<CompleteStage documents={documents} />}
                 ></Route>
                 <Route
                     path={getLastURLPath(routeChildren.ARF_UPLOAD_FAILED)}
