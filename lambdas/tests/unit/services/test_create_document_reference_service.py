@@ -4,6 +4,7 @@ from enums.lambda_error import LambdaError
 from freezegun import freeze_time
 from models.nhs_document_reference import NHSDocumentReference, UploadRequestDocument
 from services.create_document_reference_service import CreateDocumentReferenceService
+from services.document_service import DocumentService
 from tests.unit.helpers.data.create_document_reference import (
     ARF_FILE_LIST,
     LG_FILE_LIST,
@@ -70,9 +71,12 @@ def mock_remove_records(mock_create_doc_ref_service, mocker):
 
 
 @pytest.fixture()
-def mock_check_existing_lloyd_george_records(mock_create_doc_ref_service, mocker):
+def mock_check_existing_lloyd_george_records_and_remove_failed_upload(
+    mock_create_doc_ref_service, mocker
+):
     yield mocker.patch.object(
-        mock_create_doc_ref_service, "check_existing_lloyd_george_records"
+        mock_create_doc_ref_service,
+        "check_existing_lloyd_george_records_and_remove_failed_upload",
     )
 
 
@@ -106,6 +110,13 @@ def mock_fetch_document(mocker, mock_create_doc_ref_service):
     yield mock
 
 
+@pytest.fixture
+def undo_mocking_for_is_upload_in_process(mock_create_doc_ref_service):
+    mock_create_doc_ref_service.document_service.is_upload_in_process = (
+        DocumentService.is_upload_in_process
+    )
+
+
 def test_create_document_reference_request_empty_list(
     mock_create_doc_ref_service,
     mock_prepare_doc_object,
@@ -126,6 +137,7 @@ def test_create_document_reference_request_with_arf_list_happy_path(
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
+    undo_mocking_for_is_upload_in_process,
 ):
     document_references = []
     side_effects = []
@@ -231,6 +243,7 @@ def test_create_document_reference_request_with_both_list(
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
     mock_fetch_document,
+    undo_mocking_for_is_upload_in_process,
 ):
     files_list = ARF_FILE_LIST + LG_FILE_LIST
     lg_file_names = [file["fileName"] for file in LG_FILE_LIST]
@@ -415,23 +428,12 @@ def test_create_document_reference_request_lg_upload_throw_lambda_error_if_got_a
     mock_create_reference_in_dynamodb.assert_not_called()
 
 
-def test_create_document_reference_request_lg_upload_remove_previous_failed_upload_and_continue(
-    mock_create_doc_ref_service,
-    mock_validate_lg,
-    mock_create_reference_in_dynamodb,
-    mock_check_existing_lloyd_george_records,
-):
-
-    mock_create_doc_ref_service.create_document_reference_request(
-        TEST_NHS_NUMBER, LG_FILE_LIST
-    )
-
-    mock_check_existing_lloyd_george_records.assert_called_once()
-    mock_create_reference_in_dynamodb.assert_called_once()
-
-
 def test_check_existing_lloyd_george_records_remove_previous_failed_upload_and_continue(
-    mock_create_doc_ref_service, mock_fetch_document, mock_remove_records, mocker
+    mock_create_doc_ref_service,
+    mock_fetch_document,
+    mock_remove_records,
+    mocker,
+    mock_create_reference_in_dynamodb,
 ):
     mock_doc_refs_of_failed_upload = create_test_lloyd_george_doc_store_refs(
         override={"uploaded": False}
@@ -440,16 +442,12 @@ def test_check_existing_lloyd_george_records_remove_previous_failed_upload_and_c
     mock_create_doc_ref_service.stop_if_all_records_uploaded = mocker.MagicMock()
     mock_create_doc_ref_service.stop_if_upload_is_in_process = mocker.MagicMock()
 
-    mock_create_doc_ref_service.check_existing_lloyd_george_records(TEST_NHS_NUMBER)
-    mock_remove_records.assert_called_with(mock_doc_refs_of_failed_upload)
-    mock_create_doc_ref_service.create_document_reference_request(
-        TEST_NHS_NUMBER, LG_FILE_LIST
+    mock_create_doc_ref_service.check_existing_lloyd_george_records_and_remove_failed_upload(
+        TEST_NHS_NUMBER
     )
-
     mock_remove_records.assert_called_with(
         MOCK_LG_TABLE_NAME, mock_doc_refs_of_failed_upload
     )
-    mock_create_reference_in_dynamodb.assert_called_once()
 
 
 @freeze_time("2023-10-30T10:25:00")
@@ -483,6 +481,7 @@ def test_create_document_reference_request_arf_upload_remove_previous_failed_upl
     mock_fetch_document,
     mock_remove_records,
     mock_create_reference_in_dynamodb,
+    undo_mocking_for_is_upload_in_process,
 ):
     mock_doc_refs_of_failed_upload = create_test_arf_doc_store_refs(
         override={"uploaded": False}
