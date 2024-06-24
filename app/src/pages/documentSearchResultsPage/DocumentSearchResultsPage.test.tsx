@@ -27,6 +27,7 @@ jest.mock('moment', () => {
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('axios');
 jest.mock('../../helpers/hooks/usePatient');
+jest.mock('../../helpers/hooks/useConfig');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockedUsePatient = usePatient as jest.Mock;
@@ -174,6 +175,24 @@ describe('<DocumentSearchResultsPage />', () => {
                 screen.getByRole('button', { name: 'Delete All Documents' }),
             ).toBeInTheDocument();
             expect(screen.getByRole('link', { name: 'Start Again' })).toBeInTheDocument();
+        });
+
+        it('displays a message when a document search return 423 locked error', async () => {
+            const errorResponse = {
+                response: {
+                    status: 423,
+                    message: 'An error occurred',
+                },
+            };
+            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+
+            renderPage(history);
+
+            expect(
+                await screen.findByText(
+                    'There are already files being uploaded for this patient, please try again in a few minutes.',
+                ),
+            ).toBeInTheDocument();
         });
     });
 

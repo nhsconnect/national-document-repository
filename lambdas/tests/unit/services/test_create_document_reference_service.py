@@ -36,6 +36,7 @@ NA_STRING = "Not Test Important"
 @pytest.fixture
 def mock_create_doc_ref_service(mocker, set_env):
     mocker.patch("services.base.s3_service.IAMService")
+
     create_doc_ref_service = CreateDocumentReferenceService()
     mocker.patch.object(create_doc_ref_service, "s3_service")
     mocker.patch.object(create_doc_ref_service, "dynamo_service")
@@ -65,6 +66,13 @@ def mock_prepare_pre_signed_url(mock_create_doc_ref_service, mocker):
 def mock_remove_records(mock_create_doc_ref_service, mocker):
     yield mocker.patch.object(
         mock_create_doc_ref_service, "remove_records_of_failed_upload"
+    )
+
+
+@pytest.fixture()
+def mock_check_existing_lloyd_george_records(mock_create_doc_ref_service, mocker):
+    yield mocker.patch.object(
+        mock_create_doc_ref_service, "check_existing_lloyd_george_records"
     )
 
 
@@ -410,15 +418,30 @@ def test_create_document_reference_request_lg_upload_throw_lambda_error_if_got_a
 def test_create_document_reference_request_lg_upload_remove_previous_failed_upload_and_continue(
     mock_create_doc_ref_service,
     mock_validate_lg,
-    mock_fetch_document,
-    mock_remove_records,
     mock_create_reference_in_dynamodb,
+    mock_check_existing_lloyd_george_records,
+):
+
+    mock_create_doc_ref_service.create_document_reference_request(
+        TEST_NHS_NUMBER, LG_FILE_LIST
+    )
+
+    mock_check_existing_lloyd_george_records.assert_called_once()
+    mock_create_reference_in_dynamodb.assert_called_once()
+
+
+def test_check_existing_lloyd_george_records_remove_previous_failed_upload_and_continue(
+    mock_create_doc_ref_service, mock_fetch_document, mock_remove_records, mocker
 ):
     mock_doc_refs_of_failed_upload = create_test_lloyd_george_doc_store_refs(
         override={"uploaded": False}
     )
     mock_fetch_document.return_value = mock_doc_refs_of_failed_upload
+    mock_create_doc_ref_service.stop_if_all_records_uploaded = mocker.MagicMock()
+    mock_create_doc_ref_service.stop_if_upload_is_in_process = mocker.MagicMock()
 
+    mock_create_doc_ref_service.check_existing_lloyd_george_records(TEST_NHS_NUMBER)
+    mock_remove_records.assert_called_with(mock_doc_refs_of_failed_upload)
     mock_create_doc_ref_service.create_document_reference_request(
         TEST_NHS_NUMBER, LG_FILE_LIST
     )
