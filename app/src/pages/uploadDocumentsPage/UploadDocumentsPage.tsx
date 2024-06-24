@@ -67,7 +67,7 @@ function UploadDocumentsPage() {
             }
         },
         // eslint-disable-next-line react-hooks/exhaustive-deps
-        [baseHeaders, baseUrl, nhsNumber, navigate],
+        [baseHeaders, baseUrl, nhsNumber],
     );
 
     useEffect(() => {
@@ -116,6 +116,8 @@ function UploadDocumentsPage() {
 
     const startUpload = async () => {
         try {
+            navigate(routeChildren.ARF_UPLOAD_UPLOADING);
+
             const uploadSession = await uploadDocuments({
                 nhsNumber,
                 documents,

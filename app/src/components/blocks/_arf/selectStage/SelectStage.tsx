@@ -13,7 +13,6 @@ import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
 import BackButton from '../../../generic/backButton/BackButton';
-import { routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
@@ -38,7 +37,6 @@ function SelectStage({ setDocuments, documents, startUpload }: Props) {
             return;
         }
 
-        navigate(routeChildren.ARF_UPLOAD_UPLOADING);
         await startUpload();
     };
 
