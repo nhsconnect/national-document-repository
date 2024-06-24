@@ -281,6 +281,48 @@ describe('<SelectStage />', () => {
         //         );
         //     });
         // });
+
+        //  it('navigates to error page when API returns other error', async () => {
+        //     const errorResponse = {
+        //         response: {
+        //             status: 502,
+        //         },
+        //     };
+        //     mockUploadDocument.mockRejectedValue(errorResponse);
+        //
+        //     renderApp();
+        //     act(() => {
+        //         userEvent.upload(screen.getByTestId('ARF-input'), [documentOne]);
+        //         userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+        //     });
+        //
+        //     await waitFor(() => {
+        //         expect(mockedUseNavigate).toHaveBeenCalledWith(
+        //             expect.stringContaining('/server-error?encodedError='),
+        //         );
+        //     });
+        // });
+
+        // it('navigates to error page when API returns 423', async () => {
+        //     const errorResponse = {
+        //         response: {
+        //             status: 423,
+        //         },
+        //     };
+        //     mockUploadDocument.mockRejectedValue(errorResponse);
+        //
+        //     renderApp();
+        //     act(() => {
+        //         userEvent.upload(screen.getByTestId('ARF-input'), [documentOne]);
+        //         userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+        //     });
+        //
+        //     await waitFor(() => {
+        //         expect(mockedUseNavigate).toHaveBeenCalledWith(
+        //             expect.stringContaining('/server-error?encodedError='),
+        //         );
+        //     });
+        // });
     });
 
     const renderApp = () => {

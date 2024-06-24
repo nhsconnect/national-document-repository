@@ -17,6 +17,7 @@ export type LocalFlags = {
     recordUploaded?: boolean;
     userRole?: REPOSITORY_ROLE;
     patientIsActive?: boolean;
+    uploading?: boolean;
 };
 
 export type GlobalConfig = {

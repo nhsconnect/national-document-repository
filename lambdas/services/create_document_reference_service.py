@@ -242,13 +242,7 @@ class CreateDocumentReferenceService:
         self.remove_records_of_failed_lloyd_george_upload(previous_records)
 
     def stop_if_upload_is_in_process(self, previous_records: list[DocumentReference]):
-        upload_is_in_process = any(
-            not record.uploaded
-            and record.uploading
-            and record.last_updated_within_three_minutes()
-            for record in previous_records
-        )
-        if upload_is_in_process:
+        if self.document_service.is_upload_in_process(previous_records):
             logger.error(
                 "Records are in the process of being uploaded. Will not process the new upload.",
                 {"Result": UPLOAD_REFERENCE_FAILED_MESSAGE},
