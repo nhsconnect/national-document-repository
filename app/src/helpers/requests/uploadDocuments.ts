@@ -60,7 +60,7 @@ type UploadConfirmationArgs = {
     uploadSession: UploadSession;
 };
 
-export const virusScanResult = async (virusScanArgs: VirusScanArgs) => {
+export const virusScan = async (virusScanArgs: VirusScanArgs) => {
     for (let i = 0; i < VIRUS_SCAN_RETRY_LIMIT; i++) {
         const scanResult = await requestVirusScan(virusScanArgs);
         if (scanResult === TIMEOUT_ERROR) {

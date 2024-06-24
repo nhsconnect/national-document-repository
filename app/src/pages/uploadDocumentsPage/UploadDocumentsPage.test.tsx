@@ -14,12 +14,18 @@ import * as ReactRouter from 'react-router';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
-import uploadDocuments, { uploadDocumentToS3 } from '../../helpers/requests/uploadDocuments';
+import uploadDocuments, {
+    uploadConfirmation,
+    uploadDocumentToS3,
+    virusScan,
+} from '../../helpers/requests/uploadDocuments';
 
 const mockConfigContext = useConfig as jest.Mock;
 const mockedUseNavigate = jest.fn();
-const mockS3Upload = uploadDocumentToS3 as jest.Mock;
 const mockUploadDocument = uploadDocuments as jest.Mock;
+const mockS3Upload = uploadDocumentToS3 as jest.Mock;
+const mockVirusScan = virusScan as jest.Mock;
+const mockUploadConfirmation = uploadConfirmation as jest.Mock;
 
 jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
@@ -29,8 +35,8 @@ jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/usePatient');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
-
 jest.mock('../../helpers/hooks/useConfig');
+jest.mock('../../helpers/utils/waitForSeconds');
 
 const documentOne = buildTextFile('one', 100);
 const documentTwo = buildTextFile('two', 200);
@@ -38,14 +44,14 @@ const documentThree = buildTextFile('three', 100);
 const arfDocuments = [documentOne, documentTwo, documentThree];
 
 let history = createMemoryHistory({
-    initialEntries: ['/'],
+    initialEntries: [routes.ARF_UPLOAD_DOCUMENTS],
     initialIndex: 0,
 });
 
 describe('UploadDocumentsPage', () => {
     beforeEach(() => {
         history = createMemoryHistory({
-            initialEntries: ['/'],
+            initialEntries: [routes.ARF_UPLOAD_DOCUMENTS],
             initialIndex: 0,
         });
 
@@ -58,11 +64,13 @@ describe('UploadDocumentsPage', () => {
         jest.clearAllMocks();
     });
 
-    const setFileAndClickUpload = () => {
-        const arfFile = buildTextFile('arf-test.txt', 100);
+    const setFilesAndClickUpload = (filesToUpload: File[] = []) => {
+        if (filesToUpload?.length < 1) {
+            filesToUpload = [buildTextFile('arf-test.txt', 100)];
+        }
 
         act(() => {
-            userEvent.upload(screen.getByTestId(`ARF-input`), [arfFile]);
+            userEvent.upload(screen.getByTestId(`ARF-input`), filesToUpload);
             userEvent.click(screen.getByTestId('arf-upload-submit-btn'));
         });
     };
@@ -75,6 +83,13 @@ describe('UploadDocumentsPage', () => {
             await waitFor(() => {
                 expect(mockedUseNavigate).not.toHaveBeenCalledWith(routes.UNAUTHORISED);
             });
+        });
+
+        it('renders a loading screen when upload confirmation is in process', async () => {
+            history.push(routeChildren.ARF_UPLOAD_CONFIRMATION);
+            renderPage(history);
+
+            expect(screen.getByText('Checking uploads...')).toBeInTheDocument();
         });
 
         it('pass accessibility checks', async () => {
@@ -126,19 +141,9 @@ describe('UploadDocumentsPage', () => {
         });
 
         describe('Upload journey', () => {
-            it('navigate to uploading page when upload is triggered', async () => {
-                renderPage(history);
-                setFileAndClickUpload();
-
-                await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(
-                        routeChildren.ARF_UPLOAD_UPLOADING,
-                    );
-                });
-            });
-
-            it('calls the upload request functions when files are being uploaded', async () => {
-                const response = {
+            beforeEach(() => {
+                mockedUseNavigate.mockImplementation((path) => history.push(path));
+                const successResponse = {
                     response: {
                         status: 200,
                     },
@@ -149,18 +154,26 @@ describe('UploadDocumentsPage', () => {
                 const uploadSession = buildUploadSession(uploadDocs);
 
                 mockUploadDocument.mockResolvedValueOnce(uploadSession);
-                mockS3Upload.mockResolvedValue(response);
+                mockS3Upload.mockResolvedValue(successResponse);
+            });
 
+            it('navigate to uploading page when upload is triggered', async () => {
                 renderPage(history);
+                setFilesAndClickUpload();
 
-                act(() => {
-                    userEvent.upload(screen.getByTestId('ARF-input'), [
-                        documentOne,
-                        documentTwo,
-                        documentThree,
-                    ]);
-                    userEvent.click(screen.getByRole('button', { name: 'Upload' }));
+                await waitFor(() => {
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(
+                        routeChildren.ARF_UPLOAD_UPLOADING,
+                    );
                 });
+            });
+
+            it('[happy path] navigate to confirmation page if all files are clean', async () => {
+                mockVirusScan.mockResolvedValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+
+                const { rerender } = renderPage(history);
+
+                setFilesAndClickUpload(arfDocuments);
 
                 await waitFor(() => {
                     expect(mockedUseNavigate).toHaveBeenCalledWith(
@@ -170,6 +183,78 @@ describe('UploadDocumentsPage', () => {
 
                 expect(mockUploadDocument).toHaveBeenCalledTimes(1);
                 expect(mockS3Upload).toHaveBeenCalledTimes(arfDocuments.length);
+                expect(mockVirusScan).toHaveBeenCalledTimes(arfDocuments.length);
+
+                rerender(<App history={history} />);
+
+                await waitFor(() => {
+                    expect(screen.getByText('Stay on this page')).toBeInTheDocument();
+                });
+                expect(mockUploadConfirmation).toHaveBeenCalledTimes(1);
+
+                const confirmedDocuments = mockUploadConfirmation.mock.calls[0][0].documents;
+                expect(confirmedDocuments.length).toEqual(arfDocuments.length);
+
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routeChildren.ARF_UPLOAD_CONFIRMATION,
+                );
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_COMPLETED);
+            });
+
+            it('[semi-happy path] navigate to confirmation page if files are a mix of clean and infected', async () => {
+                mockVirusScan
+                    .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.CLEAN)
+                    .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.INFECTED)
+                    .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.CLEAN);
+
+                const expectedConfirmFilesCount = 2;
+
+                const { rerender } = renderPage(history);
+
+                setFilesAndClickUpload(arfDocuments);
+
+                await waitFor(() => {
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(
+                        routeChildren.ARF_UPLOAD_UPLOADING,
+                    );
+                });
+
+                expect(mockUploadDocument).toHaveBeenCalledTimes(1);
+                expect(mockS3Upload).toHaveBeenCalledTimes(arfDocuments.length);
+                expect(mockVirusScan).toHaveBeenCalledTimes(arfDocuments.length);
+
+                rerender(<App history={history} />);
+
+                await waitFor(() => {
+                    expect(screen.getByText('Stay on this page')).toBeInTheDocument();
+                });
+                expect(mockUploadConfirmation).toHaveBeenCalledTimes(1);
+
+                const confirmedDocuments = mockUploadConfirmation.mock.calls[0][0].documents;
+                expect(confirmedDocuments.length).toEqual(expectedConfirmFilesCount);
+
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    routeChildren.ARF_UPLOAD_CONFIRMATION,
+                );
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_COMPLETED);
+            });
+
+            it('[unhappy path] navigate to failed page if all files are infected', async () => {
+                mockVirusScan.mockResolvedValue(DOCUMENT_UPLOAD_STATE.INFECTED);
+
+                const { rerender } = renderPage(history);
+
+                setFilesAndClickUpload(arfDocuments);
+
+                await waitFor(() => {
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(
+                        routeChildren.ARF_UPLOAD_UPLOADING,
+                    );
+                });
+                rerender(<App history={history} />);
+
+                expect(mockUploadConfirmation).not.toHaveBeenCalled();
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_FAILED);
             });
         });
 
@@ -185,7 +270,7 @@ describe('UploadDocumentsPage', () => {
 
                 renderPage(history);
 
-                setFileAndClickUpload();
+                setFilesAndClickUpload();
 
                 await waitFor(() => {
                     expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
@@ -202,7 +287,7 @@ describe('UploadDocumentsPage', () => {
 
                 renderPage(history);
 
-                setFileAndClickUpload();
+                setFilesAndClickUpload();
 
                 await waitFor(() => {
                     expect(mockedUseNavigate).toHaveBeenCalledWith(
@@ -221,7 +306,7 @@ describe('UploadDocumentsPage', () => {
 
                 renderPage(history);
 
-                setFileAndClickUpload();
+                setFilesAndClickUpload();
 
                 await waitFor(() => {
                     expect(mockedUseNavigate).toHaveBeenCalledWith(
@@ -233,10 +318,21 @@ describe('UploadDocumentsPage', () => {
     });
 });
 
-const renderPage = (history: History) => {
-    return render(
+type Args = { history: History };
+
+const App = ({ history }: Args) => {
+    return (
         <ReactRouter.Router navigator={history} location={history.location}>
-            <UploadDocumentsPage />
-        </ReactRouter.Router>,
+            <ReactRouter.Routes>
+                <ReactRouter.Route
+                    path={routes.ARF_UPLOAD_DOCUMENTS + '/*'}
+                    element={<UploadDocumentsPage />}
+                ></ReactRouter.Route>
+            </ReactRouter.Routes>
+        </ReactRouter.Router>
     );
+};
+
+const renderPage = (history: History) => {
+    return render(<App history={history} />);
 };

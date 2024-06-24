@@ -233,6 +233,10 @@ function UploadDocumentsPage() {
                     element={
                         <div>
                             <h1>Failed to upload documents</h1>
+                            <p>
+                                This page is a placeholder. This is a page to display result when
+                                every file failed to upload or didn't pass virus scanner check.
+                            </p>
                         </div>
                     }
                 ></Route>
