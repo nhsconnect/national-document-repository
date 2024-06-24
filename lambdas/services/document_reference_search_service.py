@@ -40,7 +40,14 @@ class DocumentReferenceSearchService(DocumentService):
                         query_filter=delete_filter_expression,
                     )
                 )
-
+                if self.is_upload_in_process(documents):
+                    logger.error(
+                        "Records are in the process of being uploaded. Will not process the new upload.",
+                        {"Result": "Document reference search failed"},
+                    )
+                    raise DocumentRefSearchException(
+                        423, LambdaError.UploadInProgressError
+                    )
                 results.extend(
                     document.model_dump(
                         include={"file_name", "created", "virus_scanner_result", "id"},

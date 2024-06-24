@@ -20,6 +20,9 @@ import { errorToParams } from '../../helpers/utils/errorToParams';
 import useTitle from '../../helpers/hooks/useTitle';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import PatientSummary from '../../components/generic/patientSummary/PatientSummary';
+import { isMock } from '../../helpers/utils/isLocal';
+import useConfig from '../../helpers/hooks/useConfig';
+import { buildSearchResult } from '../../helpers/test/testBuilders';
 
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
@@ -32,6 +35,7 @@ function DocumentSearchResultsPage() {
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
+    const config = useConfig();
 
     const handleUpdateDownloadState = (newState: SUBMISSION_STATE) => {
         setDownloadState(newState);
@@ -53,10 +57,19 @@ function DocumentSearchResultsPage() {
                 setSubmissionState(SUBMISSION_STATE.SUCCEEDED);
             } catch (e) {
                 const error = e as AxiosError;
-                if (error.response?.status === 403) {
+                if (isMock(error)) {
+                    if (config.mockLocal.uploading) {
+                        setSubmissionState(SUBMISSION_STATE.BLOCKED);
+                    } else if (config.mockLocal.recordUploaded) {
+                        setSearchResults([buildSearchResult(), buildSearchResult()]);
+                        setSubmissionState(SUBMISSION_STATE.SUCCEEDED);
+                    }
+                } else if (error.response?.status === 403) {
                     navigate(routes.SESSION_EXPIRED);
                 } else if (error.response?.status && error.response?.status >= 500) {
                     navigate(routes.SERVER_ERROR + errorToParams(error));
+                } else if (error.response?.status === 423) {
+                    setSubmissionState(SUBMISSION_STATE.BLOCKED);
                 } else {
                     setSubmissionState(SUBMISSION_STATE.FAILED);
                 }
@@ -76,6 +89,7 @@ function DocumentSearchResultsPage() {
         navigate,
         baseUrl,
         baseHeaders,
+        config,
     ]);
     const pageHeader = 'Download electronic health records and attachments';
     useTitle({ pageTitle: pageHeader });
@@ -91,6 +105,12 @@ function DocumentSearchResultsPage() {
 
             {submissionState === SUBMISSION_STATE.PENDING && (
                 <ProgressBar status="Loading..."></ProgressBar>
+            )}
+            {submissionState === SUBMISSION_STATE.BLOCKED && (
+                <p>
+                    There are already files being uploaded for this patient, please try again in a
+                    few minutes.
+                </p>
             )}
 
             {submissionState === SUBMISSION_STATE.SUCCEEDED && (

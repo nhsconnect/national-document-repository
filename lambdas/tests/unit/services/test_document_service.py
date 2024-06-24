@@ -19,6 +19,9 @@ from tests.unit.helpers.data.dynamo_responses import (
     MOCK_EMPTY_RESPONSE,
     MOCK_SEARCH_RESPONSE,
 )
+from tests.unit.helpers.data.test_documents import (
+    create_test_lloyd_george_doc_store_refs,
+)
 from utils.dynamo_query_filter_builder import DynamoQueryFilterBuilder
 
 MOCK_DOCUMENT = MOCK_SEARCH_RESPONSE["Items"][0]
@@ -279,3 +282,17 @@ def test_hard_delete_metadata_records(mock_service, mock_dynamo_service):
             call(MOCK_TABLE_NAME, expected_deletion_keys[1]),
         ]
     )
+
+
+@freeze_time("2023-10-30T10:25:00")
+def test_check_existing_lloyd_george_records_return_true_if_upload_in_progress(
+    mock_service,
+):
+    two_minutes_ago = 1698661380  # 2023-10-30T10:23:00
+    mock_records_upload_in_process = create_test_lloyd_george_doc_store_refs(
+        override={"uploaded": False, "uploading": True, "last_updated": two_minutes_ago}
+    )
+
+    response = mock_service.is_upload_in_process(mock_records_upload_in_process)
+
+    assert response

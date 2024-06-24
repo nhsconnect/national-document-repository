@@ -105,6 +105,9 @@ function SelectStage({ setDocuments, documents }: Props) {
             );
             /* istanbul ignore next */
             navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+        } else if (error.response?.status === 423) {
+            /* navigate as place holder until new design*/
+            navigate(routes.SERVER_ERROR + errorToParams(error));
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
