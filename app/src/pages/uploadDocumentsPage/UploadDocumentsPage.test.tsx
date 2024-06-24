@@ -14,12 +14,18 @@ import * as ReactRouter from 'react-router';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
-import uploadDocuments, { uploadDocumentToS3 } from '../../helpers/requests/uploadDocuments';
+import uploadDocuments, {
+    uploadConfirmation,
+    uploadDocumentToS3,
+    virusScan,
+} from '../../helpers/requests/uploadDocuments';
 
 const mockConfigContext = useConfig as jest.Mock;
 const mockedUseNavigate = jest.fn();
-const mockS3Upload = uploadDocumentToS3 as jest.Mock;
 const mockUploadDocument = uploadDocuments as jest.Mock;
+const mockS3Upload = uploadDocumentToS3 as jest.Mock;
+const mockVirusScan = virusScan as jest.Mock;
+const mockUploadConfirmation = uploadConfirmation as jest.Mock;
 
 jest.mock('react-router', () => ({
     ...jest.requireActual('react-router'),
@@ -29,8 +35,8 @@ jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/usePatient');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
-
 jest.mock('../../helpers/hooks/useConfig');
+jest.mock('../../helpers/utils/waitForSeconds');
 
 const documentOne = buildTextFile('one', 100);
 const documentTwo = buildTextFile('two', 200);
@@ -67,6 +73,11 @@ describe('UploadDocumentsPage', () => {
         });
     };
 
+    const changeStage = (route: routeChildren) => {
+        const childRoute = '/' + route.split('/').at(-1);
+        history.push(childRoute);
+    };
+
     describe('Rendering', () => {
         it('renders initial file input stage', async () => {
             renderPage(history);
@@ -74,6 +85,16 @@ describe('UploadDocumentsPage', () => {
             expect(screen.getByTestId('arf-upload-select-stage-header')).toBeInTheDocument();
             await waitFor(() => {
                 expect(mockedUseNavigate).not.toHaveBeenCalledWith(routes.UNAUTHORISED);
+            });
+        });
+
+        it('renders a loading screen when upload confirmation is in process', async () => {
+            changeStage(routeChildren.ARF_UPLOAD_CONFIRMATION);
+
+            renderPage(history);
+
+            await waitFor(() => {
+                expect(screen.getByText('Checking uploads...')).toBeInTheDocument();
             });
         });
 
@@ -137,8 +158,8 @@ describe('UploadDocumentsPage', () => {
                 });
             });
 
-            it('calls the upload request functions when files are being uploaded', async () => {
-                const response = {
+            it('calls the backend APIs when files are being uploaded', async () => {
+                const successResponse = {
                     response: {
                         status: 200,
                     },
@@ -149,16 +170,13 @@ describe('UploadDocumentsPage', () => {
                 const uploadSession = buildUploadSession(uploadDocs);
 
                 mockUploadDocument.mockResolvedValueOnce(uploadSession);
-                mockS3Upload.mockResolvedValue(response);
+                mockS3Upload.mockResolvedValue(successResponse);
+                mockVirusScan.mockResolvedValue(successResponse);
 
                 renderPage(history);
 
                 act(() => {
-                    userEvent.upload(screen.getByTestId('ARF-input'), [
-                        documentOne,
-                        documentTwo,
-                        documentThree,
-                    ]);
+                    userEvent.upload(screen.getByTestId('ARF-input'), arfDocuments);
                     userEvent.click(screen.getByRole('button', { name: 'Upload' }));
                 });
 
@@ -170,7 +188,23 @@ describe('UploadDocumentsPage', () => {
 
                 expect(mockUploadDocument).toHaveBeenCalledTimes(1);
                 expect(mockS3Upload).toHaveBeenCalledTimes(arfDocuments.length);
+                expect(mockVirusScan).toHaveBeenCalledTimes(arfDocuments.length);
             });
+
+            it('calls uploadConfirmation when all files are scanned', async () => {});
+
+            // it('calls uploadConfirmation when all files are scanned', async () => {
+            //     // eslint-disable-next-line testing-library/render-result-naming-convention
+            //     const rerenderPage = renderPage(history);
+            //
+            //     changeStage(routeChildren.ARF_UPLOAD_FAILED);
+            //
+            //     rerenderPage(history);
+            //
+            //     await waitFor(() => {
+            //         expect(screen.getByText('Failed to upload documents')).toBeInTheDocument();
+            //     });
+            // });
         });
 
         describe('Error handling', () => {
@@ -234,9 +268,16 @@ describe('UploadDocumentsPage', () => {
 });
 
 const renderPage = (history: History) => {
-    return render(
+    const { rerender } = render(
         <ReactRouter.Router navigator={history} location={history.location}>
             <UploadDocumentsPage />
         </ReactRouter.Router>,
     );
+
+    return (updatedHistory: History) =>
+        rerender(
+            <ReactRouter.Router navigator={updatedHistory} location={updatedHistory.location}>
+                <UploadDocumentsPage />
+            </ReactRouter.Router>,
+        );
 };

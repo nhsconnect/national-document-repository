@@ -3,7 +3,7 @@ import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadD
 import { UploadSession } from '../../types/generic/uploadResult';
 import { isRunningInCypress } from './isLocal';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
-import { uploadDocumentToS3, virusScanResult } from '../requests/uploadDocuments';
+import { uploadDocumentToS3, virusScan } from '../requests/uploadDocuments';
 import waitForSeconds from './waitForSeconds';
 
 export const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = isRunningInCypress() ? 0 : 3;
@@ -72,7 +72,7 @@ export async function uploadAndScanSingleDocument({
         state: DOCUMENT_UPLOAD_STATE.SCANNING,
     });
     await waitForSeconds(DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS);
-    const virusDocumentState = await virusScanResult({
+    const virusDocumentState = await virusScan({
         documentReference: document.key ?? '',
         baseUrl,
         baseHeaders,

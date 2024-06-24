@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     UploadDocument,
     DOCUMENT_UPLOAD_STATE,
@@ -6,12 +6,17 @@ import {
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { routeChildren } from '../../../../types/generic/routes';
+import { UploadSession } from '../../../../types/generic/uploadResult';
+import { useNavigate } from 'react-router';
 
 interface Props {
     documents: Array<UploadDocument>;
+    uploadSession: UploadSession | null;
+    confirmUpload: (documents: UploadDocument[], uploadSession: UploadSession) => Promise<void>;
 }
 
-function UploadingStage({ documents }: Props) {
+function UploadingStage({ documents, uploadSession, confirmUpload }: Props) {
     const getUploadMessage = (type: DOCUMENT_UPLOAD_STATE) => {
         if (type === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
         else if (type === DOCUMENT_UPLOAD_STATE.UPLOADING) return 'Uploading...';
@@ -22,6 +27,35 @@ function UploadingStage({ documents }: Props) {
     };
     const pageHeader = 'Your documents are uploading';
     useTitle({ pageTitle: 'Uploading documents' });
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!uploadSession) {
+            return;
+        }
+
+        const allDocumentsFinishedVirusScan =
+            documents.length > 0 &&
+            documents.every((document) => {
+                return [
+                    DOCUMENT_UPLOAD_STATE.CLEAN,
+                    DOCUMENT_UPLOAD_STATE.INFECTED,
+                    DOCUMENT_UPLOAD_STATE.FAILED,
+                ].includes(document.state);
+            });
+
+        if (allDocumentsFinishedVirusScan) {
+            const cleanDocuments = documents.filter(
+                (document) => document.state === DOCUMENT_UPLOAD_STATE.CLEAN,
+            );
+            if (cleanDocuments.length > 0) {
+                navigate(routeChildren.ARF_UPLOAD_CONFIRMATION);
+                void confirmUpload(documents, uploadSession);
+            } else {
+                navigate(routeChildren.ARF_UPLOAD_FAILED);
+            }
+        }
+    }, [confirmUpload, documents, navigate, uploadSession]);
 
     return (
         <>
