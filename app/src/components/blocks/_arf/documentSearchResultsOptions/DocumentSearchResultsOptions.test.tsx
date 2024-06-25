@@ -21,7 +21,6 @@ jest.mock('moment', () => {
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const updateDownloadState = jest.fn();
-const mockSetIsDeletingDocuments = jest.fn();
 
 describe('DocumentSearchResultsOptions', () => {
     beforeEach(() => {
@@ -208,7 +207,6 @@ const renderDocumentSearchResultsOptions = (downloadState: SUBMISSION_STATE) => 
             nhsNumber={patient.nhsNumber}
             downloadState={downloadState}
             updateDownloadState={updateDownloadState}
-            setIsDeletingDocuments={mockSetIsDeletingDocuments}
         />,
     );
 };

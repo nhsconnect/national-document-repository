@@ -15,7 +15,6 @@ type Props = {
     nhsNumber: string;
     downloadState: string;
     updateDownloadState: (newState: SUBMISSION_STATE) => void;
-    setIsDeletingDocuments: Dispatch<boolean>;
 };
 
 interface DownloadLinkAttributes {
