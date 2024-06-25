@@ -53,7 +53,7 @@ CleanFiles = (
     .add_condition(
         attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
         attr_operator=AttributeOperator.EQUAL,
-        filter_value=False,
+        filter_value=True,
     )
     .add_condition(
         attribute=str(DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT.value),
