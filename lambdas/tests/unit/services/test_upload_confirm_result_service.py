@@ -290,7 +290,7 @@ def test_verify_virus_scan_result_raise_error_if_files_are_not_clean(patched_ser
         override={"virus_scanner_result": VirusScanResult.INFECTED.value}
     )
     patched_service.document_service.fetch_available_document_references_by_type.return_value = (
-        mock_unclean_records
+        []
     )
 
     test_document_references = [record.id for record in mock_unclean_records]
@@ -316,8 +316,16 @@ def test_verify_virus_scan_result_should_raise_error_if_newly_uploaded_files_has
         else:
             record.virus_scanner_result = VirusScanResult.CLEAN.value
 
-    patched_service.document_service.fetch_available_document_references_by_type.return_value = (
+    all_existing_records = (
         mock_clean_records_of_previous_upload + mock_new_records_of_upload
+    )
+    all_clean_records = [
+        record
+        for record in all_existing_records
+        if record.virus_scanner_result == VirusScanResult.CLEAN.value
+    ]
+    patched_service.document_service.fetch_available_document_references_by_type.return_value = (
+        all_clean_records
     )
 
     test_document_references = [record.id for record in mock_new_records_of_upload]

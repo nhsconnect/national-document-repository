@@ -3,12 +3,11 @@ import os
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
-from enums.virus_scan_result import VirusScanResult
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.common_query_filters import NotDeleted
+from utils.common_query_filters import CleanFiles, NotDeleted
 from utils.lambda_exceptions import UploadConfirmResultException
 
 logger = LoggingService(__name__)
@@ -148,16 +147,17 @@ class UploadConfirmResultService:
     def verify_virus_scan_result(
         self, doc_type: SupportedDocumentTypes, document_references: list[str]
     ):
-        all_records = self.document_service.fetch_available_document_references_by_type(
-            nhs_number=self.nhs_number, doc_type=doc_type, query_filter=NotDeleted
+        all_clean_records = (
+            self.document_service.fetch_available_document_references_by_type(
+                nhs_number=self.nhs_number, doc_type=doc_type, query_filter=CleanFiles
+            )
         )
-        ids_of_clean_records = [
-            record.id
-            for record in all_records
-            if record.virus_scanner_result == VirusScanResult.CLEAN.value
-        ]
+        ids_of_clean_records = [record.id for record in all_clean_records]
+        all_incoming_doc_ref_are_clean = set(document_references).issubset(
+            ids_of_clean_records
+        )
 
-        if not (set(ids_of_clean_records) >= set(document_references)):
+        if not all_incoming_doc_ref_are_clean:
             raise UploadConfirmResultException(
                 400, LambdaError.UploadConfirmResultFilesNotClean
             )
