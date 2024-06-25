@@ -7,8 +7,8 @@ from tests.unit.conftest import (
     MOCK_ARF_BUCKET,
     MOCK_ARF_TABLE_NAME,
     MOCK_LG_BUCKET,
-    MOCK_LG_STAGING_STORE_BUCKET,
     MOCK_LG_TABLE_NAME,
+    MOCK_STAGING_STORE_BUCKET,
     TEST_FILE_KEY,
     TEST_NHS_NUMBER,
     MockError,
@@ -221,7 +221,7 @@ def test_delete_file_from_staging_bucket(patched_service):
     )
 
     patched_service.s3_service.delete_object.assert_called_with(
-        MOCK_LG_STAGING_STORE_BUCKET, complete_file_key
+        MOCK_STAGING_STORE_BUCKET, complete_file_key
     )
 
 

@@ -6,10 +6,7 @@ import pytest
 from boto3.dynamodb.conditions import Attr
 from freezegun import freeze_time
 from services.bulk_upload_report_service import BulkUploadReportService
-from tests.unit.conftest import (
-    MOCK_BULK_REPORT_TABLE_NAME,
-    MOCK_LG_STAGING_STORE_BUCKET,
-)
+from tests.unit.conftest import MOCK_BULK_REPORT_TABLE_NAME, MOCK_STAGING_STORE_BUCKET
 from tests.unit.helpers.data.bulk_upload.test_data import readfile
 from tests.unit.helpers.data.dynamo_scan_response import (
     EXPECTED_RESPONSE,
@@ -195,7 +192,7 @@ def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_serv
     )
     mock_write_empty_csv.assert_called_once()
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
-        s3_bucket_name=MOCK_LG_STAGING_STORE_BUCKET,
+        s3_bucket_name=MOCK_STAGING_STORE_BUCKET,
         file_key=f"reports/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )
@@ -232,7 +229,7 @@ def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
     mock_write_csv.assert_called_once()
     mock_write_csv.assert_called_with([{"test": "dsfsf"}], f"/tmp/{mock_file_name}")
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
-        s3_bucket_name=MOCK_LG_STAGING_STORE_BUCKET,
+        s3_bucket_name=MOCK_STAGING_STORE_BUCKET,
         file_key=f"reports/{mock_file_name}",
         file_name=f"/tmp/{mock_file_name}",
     )

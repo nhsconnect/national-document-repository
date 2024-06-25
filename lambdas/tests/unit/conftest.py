@@ -8,6 +8,7 @@ import pytest
 from models.document_reference import DocumentReference
 from models.pds_models import PatientDetails
 from pydantic import ValidationError
+from requests import Response
 
 REGION_NAME = "eu-west-2"
 
@@ -56,7 +57,7 @@ MOCK_ARF_BUCKET = "test_arf_s3_bucket"
 MOCK_LG_BUCKET = "test_lg_s3_bucket"
 MOCK_ZIP_OUTPUT_BUCKET = "test_s3_output_bucket"
 MOCK_ZIP_TRACE_TABLE = "test_zip_table"
-MOCK_LG_STAGING_STORE_BUCKET = "test_staging_bulk_store"
+MOCK_STAGING_STORE_BUCKET = "test_staging_bulk_store"
 MOCK_LG_METADATA_SQS_QUEUE = "test_bulk_upload_metadata_queue"
 MOCK_LG_INVALID_SQS_QUEUE = "INVALID_SQS_QUEUE_URL"
 MOCK_STATISTICS_TABLE = "test_statistics_table"
@@ -113,9 +114,7 @@ def set_env(monkeypatch):
     )
     monkeypatch.setenv(MOCK_ZIP_OUTPUT_BUCKET_ENV_NAME, MOCK_ZIP_OUTPUT_BUCKET)
     monkeypatch.setenv(MOCK_ZIP_TRACE_TABLE_ENV_NAME, MOCK_ZIP_TRACE_TABLE)
-    monkeypatch.setenv(
-        MOCK_LG_STAGING_STORE_BUCKET_ENV_NAME, MOCK_LG_STAGING_STORE_BUCKET
-    )
+    monkeypatch.setenv(MOCK_LG_STAGING_STORE_BUCKET_ENV_NAME, MOCK_STAGING_STORE_BUCKET)
     monkeypatch.setenv(MOCK_LG_METADATA_SQS_QUEUE_ENV_NAME, MOCK_LG_METADATA_SQS_QUEUE)
     monkeypatch.setenv(MOCK_LG_INVALID_SQS_QUEUE_ENV_NAME, MOCK_LG_INVALID_SQS_QUEUE)
     monkeypatch.setenv(MOCK_AUTH_STATE_TABLE_NAME_ENV_NAME, AUTH_STATE_TABLE_NAME)
@@ -175,6 +174,16 @@ EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
 @pytest.fixture
 def mock_patient_details():
     yield EXPECTED_PARSED_PATIENT_BASE_CASE
+
+
+@pytest.fixture
+def mock_valid_pds_response():
+    mock_response = Response()
+    mock_response.status_code = 200
+    with open("services/mock_data/pds_patient_9000000002_H81109_gp.json", "rb") as f:
+        mock_data = f.read()
+        mock_response._content = mock_data
+    yield mock_response
 
 
 @pytest.fixture(scope="session", autouse=True)
