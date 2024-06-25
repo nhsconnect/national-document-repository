@@ -23,7 +23,6 @@ interface Props {
 }
 
 function SelectStage({ setDocuments, documents, startUpload }: Props) {
-    const navigate = useNavigate();
     const arfInputRef = useRef<HTMLInputElement | null>(null);
 
     const hasFileInput = documents.length > 0;
