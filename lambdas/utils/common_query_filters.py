@@ -26,3 +26,18 @@ UploadCompleted = (
     )
     .build()
 )
+
+UploadIncomplete = (
+    DynamoQueryFilterBuilder()
+    .add_condition(
+        attribute=str(DocumentReferenceMetadataFields.DELETED.value),
+        attr_operator=AttributeOperator.EQUAL,
+        filter_value="",
+    )
+    .add_condition(
+        attribute=str(DocumentReferenceMetadataFields.UPLOADED.value),
+        attr_operator=AttributeOperator.EQUAL,
+        filter_value=False,
+    )
+    .build()
+)

@@ -4,7 +4,7 @@ import pytest
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import VirusScanResult
 from repositories.bulk_upload.bulk_upload_s3_repository import BulkUploadS3Repository
-from tests.unit.conftest import MOCK_LG_BUCKET, MOCK_LG_STAGING_STORE_BUCKET
+from tests.unit.conftest import MOCK_LG_BUCKET, MOCK_STAGING_STORE_BUCKET
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_DOCUMENT_REFERENCE,
     TEST_DOCUMENT_REFERENCE_LIST,
@@ -117,7 +117,7 @@ def test_remove_ingested_file_from_source_bucket(repo_under_test, set_env):
     repo_under_test.source_bucket_files_in_transaction = mock_source_file_keys
 
     expected_deletion_calls = [
-        call(s3_bucket_name=MOCK_LG_STAGING_STORE_BUCKET, file_key=file_key)
+        call(s3_bucket_name=MOCK_STAGING_STORE_BUCKET, file_key=file_key)
         for file_key in mock_source_file_keys
     ]
 

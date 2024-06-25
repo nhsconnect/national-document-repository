@@ -11,8 +11,8 @@ from services.base.s3_service import S3Service
 from services.document_deletion_service import DocumentDeletionService
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
-from utils.common_query_filters import NotDeleted
-from utils.exceptions import InvalidResourceIdException
+from utils.common_query_filters import NotDeleted, UploadIncomplete
+from utils.exceptions import InvalidResourceIdException, PdsTooManyRequestsException
 from utils.lambda_exceptions import CreateDocumentRefException
 from utils.lloyd_george_validator import (
     LGInvalidFilesException,
@@ -43,7 +43,6 @@ class CreateDocumentReferenceService:
         self.lg_dynamo_table = os.getenv("LLOYD_GEORGE_DYNAMODB_NAME")
         self.arf_dynamo_table = os.getenv("DOCUMENT_STORE_DYNAMODB_NAME")
         self.staging_bucket_name = os.getenv("STAGING_STORE_BUCKET_NAME")
-        self.arf_bucket_name = os.getenv("DOCUMENT_STORE_BUCKET_NAME")
         self.upload_sub_folder = "user_upload"
 
     def create_document_reference_request(
@@ -62,13 +61,14 @@ class CreateDocumentReferenceService:
             for document in upload_request_documents
         )
 
-        current_gp_ods = ""
-        if has_lg_document:
-            pds_patient_details = getting_patient_info_from_pds(nhs_number)
-            current_gp_ods = pds_patient_details.general_practice_ods
-
         try:
             validate_nhs_number(nhs_number)
+
+            current_gp_ods = ""
+            if has_lg_document:
+                pds_patient_details = getting_patient_info_from_pds(nhs_number)
+                current_gp_ods = pds_patient_details.general_practice_ods
+
             for validated_doc in upload_request_documents:
                 document_reference = self.prepare_doc_object(
                     nhs_number, current_gp_ods, validated_doc
@@ -96,25 +96,42 @@ class CreateDocumentReferenceService:
 
             if lg_documents:
                 validate_lg_files(lg_documents, pds_patient_details)
-                self.check_existing_lloyd_george_records(nhs_number)
+                self.check_existing_lloyd_george_records_and_remove_failed_upload(
+                    nhs_number
+                )
 
                 self.create_reference_in_dynamodb(
                     self.lg_dynamo_table, lg_documents_dict_format
                 )
 
             if arf_documents:
+                self.check_existing_arf_record_and_remove_failed_upload(nhs_number)
+
                 self.create_reference_in_dynamodb(
                     self.arf_dynamo_table, arf_documents_dict_format
                 )
 
             return url_responses
 
-        except (InvalidResourceIdException, LGInvalidFilesException) as e:
+        except (
+            InvalidResourceIdException,
+            LGInvalidFilesException,
+            PdsTooManyRequestsException,
+        ) as e:
             logger.error(
                 f"{LambdaError.CreateDocFiles.to_str()} :{str(e)}",
                 {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
             )
             raise CreateDocumentRefException(400, LambdaError.CreateDocFiles)
+
+    def check_existing_arf_record_and_remove_failed_upload(self, nhs_number):
+        incomplete_arf_upload_records = self.fetch_incomplete_arf_upload_records(
+            nhs_number
+        )
+        self.stop_if_upload_is_in_process(incomplete_arf_upload_records)
+        self.remove_records_of_failed_upload(
+            self.arf_dynamo_table, incomplete_arf_upload_records
+        )
 
     def parse_documents_list(
         self, document_list: list[dict]
@@ -141,27 +158,13 @@ class CreateDocumentReferenceService:
 
         logger.info(PROVIDED_DOCUMENT_SUPPORTED_MESSAGE)
 
-        if validated_doc.docType == SupportedDocumentTypes.LG.value:
-            document_reference = self.create_document_reference(
-                nhs_number,
-                current_gp_ods,
-                validated_doc,
-                s3_bucket_name=self.staging_bucket_name,
-                sub_folder=self.upload_sub_folder,
-            )
-        elif validated_doc.docType == SupportedDocumentTypes.ARF.value:
-            document_reference = self.create_document_reference(
-                nhs_number,
-                current_gp_ods,
-                validated_doc,
-                s3_bucket_name=self.arf_bucket_name,
-            )
-        else:
-            logger.error(
-                f"{LambdaError.CreateDocNoType.to_str()}",
-                {"Result": FAILED_CREATE_REFERENCE_MESSAGE},
-            )
-            raise CreateDocumentRefException(400, LambdaError.CreateDocNoType)
+        document_reference = self.create_document_reference(
+            nhs_number,
+            current_gp_ods,
+            validated_doc,
+            s3_bucket_name=self.staging_bucket_name,
+            sub_folder=self.upload_sub_folder,
+        )
 
         return document_reference
 
@@ -218,7 +221,7 @@ class CreateDocumentReferenceService:
             )
             raise CreateDocumentRefException(500, LambdaError.CreateDocUpload)
 
-    def check_existing_lloyd_george_records(
+    def check_existing_lloyd_george_records_and_remove_failed_upload(
         self,
         nhs_number: str,
     ) -> None:
@@ -239,7 +242,7 @@ class CreateDocumentReferenceService:
 
         self.stop_if_all_records_uploaded(previous_records)
         self.stop_if_upload_is_in_process(previous_records)
-        self.remove_records_of_failed_lloyd_george_upload(previous_records)
+        self.remove_records_of_failed_upload(self.lg_dynamo_table, previous_records)
 
     def stop_if_upload_is_in_process(self, previous_records: list[DocumentReference]):
         if self.document_service.is_upload_in_process(previous_records):
@@ -264,8 +267,9 @@ class CreateDocumentReferenceService:
                 400, LambdaError.CreateDocRecordAlreadyInPlace
             )
 
-    def remove_records_of_failed_lloyd_george_upload(
+    def remove_records_of_failed_upload(
         self,
+        table_name: str,
         failed_upload_records: list[DocumentReference],
     ):
         logger.info(
@@ -281,7 +285,16 @@ class CreateDocumentReferenceService:
 
         logger.info("Deleting dynamodb record...")
         self.document_service.hard_delete_metadata_records(
-            table_name=self.lg_dynamo_table, document_references=failed_upload_records
+            table_name=table_name, document_references=failed_upload_records
         )
 
         logger.info("Previous failed records are deleted.")
+
+    def fetch_incomplete_arf_upload_records(
+        self, nhs_number
+    ) -> list[DocumentReference]:
+        return self.document_service.fetch_available_document_references_by_type(
+            nhs_number=nhs_number,
+            doc_type=SupportedDocumentTypes.ARF,
+            query_filter=UploadIncomplete,
+        )

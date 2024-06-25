@@ -11,7 +11,7 @@ from repositories.bulk_upload.bulk_upload_sqs_repository import BulkUploadSqsRep
 from services.bulk_upload_service import BulkUploadService
 from tests.unit.conftest import (
     MOCK_LG_BUCKET,
-    MOCK_LG_STAGING_STORE_BUCKET,
+    MOCK_STAGING_STORE_BUCKET,
     TEST_CURRENT_GP_ODS,
 )
 from tests.unit.helpers.data.bulk_upload.test_data import (
@@ -199,7 +199,7 @@ def set_up_mocks_for_non_ascii_files(
 
     def mock_get_tag_value(s3_bucket_name: str, file_key: str, tag_key: str) -> str:
         if (
-            s3_bucket_name == MOCK_LG_STAGING_STORE_BUCKET
+            s3_bucket_name == MOCK_STAGING_STORE_BUCKET
             and tag_key == SCAN_RESULT_TAG_KEY
             and file_key in expected_s3_file_paths
         ):
@@ -213,7 +213,7 @@ def set_up_mocks_for_non_ascii_files(
         source_bucket: str, source_file_key: str, dest_bucket: str, **_kwargs
     ):
         if (
-            source_bucket == MOCK_LG_STAGING_STORE_BUCKET
+            source_bucket == MOCK_STAGING_STORE_BUCKET
             and dest_bucket == MOCK_LG_BUCKET
             and source_file_key in expected_s3_file_paths
         ):

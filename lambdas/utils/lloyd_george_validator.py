@@ -2,6 +2,8 @@ import datetime
 import os
 import re
 
+import pydantic
+import requests
 from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
 from enums.supported_document_types import SupportedDocumentTypes
@@ -185,12 +187,12 @@ def getting_patient_info_from_pds(nhs_number: str) -> PatientDetails:
     pds_service = pds_service_class(SSMService())
     pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)
     check_pds_response_status(pds_response)
-    patient = Patient.model_validate(pds_response.json())
+    patient = parse_pds_response(pds_response)
     patient_details = patient.get_minimum_patient_details(nhs_number)
     return patient_details
 
 
-def check_pds_response_status(pds_response):
+def check_pds_response_status(pds_response: requests.Response):
     if pds_response.status_code == 429:
         logger.error("Got 429 Too Many Requests error from PDS.")
         raise PdsTooManyRequestsException(
@@ -204,6 +206,16 @@ def check_pds_response_status(pds_response):
     except HTTPError as e:
         logger.error(e)
         raise LGInvalidFilesException("Failed to retrieve patient data from PDS")
+
+
+def parse_pds_response(pds_response: requests.Response) -> Patient:
+    try:
+        patient = Patient.model_validate(pds_response.json())
+        return patient
+    except pydantic.ValidationError:
+        error_msg = "Fail to parse the patient detail response from PDS API."
+        logger.error(error_msg)
+        raise LGInvalidFilesException(error_msg)
 
 
 def get_allowed_ods_codes() -> list[str]:
