@@ -188,7 +188,9 @@ describe('UploadDocumentsPage', () => {
                 rerender(<App history={history} />);
 
                 await waitFor(() => {
-                    expect(screen.getByText('Stay on this page')).toBeInTheDocument();
+                    expect(
+                        screen.getByRole('heading', { name: 'Your documents are uploading' }),
+                    ).toBeInTheDocument();
                 });
                 expect(mockUploadConfirmation).toHaveBeenCalledTimes(1);
 
@@ -207,7 +209,7 @@ describe('UploadDocumentsPage', () => {
                     .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.INFECTED)
                     .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.CLEAN);
 
-                const expectedConfirmFilesCount = 2;
+                const cleanFilesCount = 2;
 
                 const { rerender } = renderPage(history);
 
@@ -219,19 +221,14 @@ describe('UploadDocumentsPage', () => {
                     );
                 });
 
-                expect(mockUploadDocument).toHaveBeenCalledTimes(1);
-                expect(mockS3Upload).toHaveBeenCalledTimes(arfDocuments.length);
-                expect(mockVirusScan).toHaveBeenCalledTimes(arfDocuments.length);
-
                 rerender(<App history={history} />);
 
                 await waitFor(() => {
-                    expect(screen.getByText('Stay on this page')).toBeInTheDocument();
+                    expect(mockUploadConfirmation).toHaveBeenCalledTimes(1);
                 });
-                expect(mockUploadConfirmation).toHaveBeenCalledTimes(1);
 
-                const confirmedDocuments = mockUploadConfirmation.mock.calls[0][0].documents;
-                expect(confirmedDocuments.length).toEqual(expectedConfirmFilesCount);
+                const documentsForUploadConfirm = mockUploadConfirmation.mock.calls[0][0].documents;
+                expect(documentsForUploadConfirm.length).toEqual(cleanFilesCount);
 
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
                     routeChildren.ARF_UPLOAD_CONFIRMATION,

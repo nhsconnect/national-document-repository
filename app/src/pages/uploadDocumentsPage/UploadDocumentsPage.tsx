@@ -40,12 +40,8 @@ function UploadDocumentsPage() {
     const isUploading = location.pathname === routeChildren.ARF_UPLOAD_UPLOADING;
 
     const confirmUpload = useCallback(
-        async (documents: UploadDocument[], uploadSession: UploadSession) => {
+        async (cleanDocuments: UploadDocument[], uploadSession: UploadSession) => {
             try {
-                const cleanDocuments = documents.filter(
-                    (doc) => doc.state === DOCUMENT_UPLOAD_STATE.CLEAN,
-                );
-
                 const confirmDocumentState = await uploadConfirmation({
                     baseUrl,
                     baseHeaders,
@@ -107,7 +103,7 @@ function UploadDocumentsPage() {
             );
             if (cleanDocuments.length > 0) {
                 navigate(routeChildren.ARF_UPLOAD_CONFIRMATION);
-                void confirmUpload(documents, uploadSession);
+                void confirmUpload(cleanDocuments, uploadSession);
             } else {
                 navigate(routeChildren.ARF_UPLOAD_FAILED);
             }
