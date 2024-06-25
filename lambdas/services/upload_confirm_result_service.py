@@ -3,6 +3,7 @@ import os
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
+from enums.virus_scan_result import VirusScanResult
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
@@ -41,6 +42,11 @@ class UploadConfirmResultService:
 
         try:
             if arf_document_references:
+                self.verify_virus_scan_result(
+                    doc_type=SupportedDocumentTypes.ARF,
+                    document_references=arf_document_references,
+                )
+
                 self.move_files_and_update_dynamo(
                     arf_document_references,
                     arf_bucket_name,
@@ -49,6 +55,10 @@ class UploadConfirmResultService:
                 )
 
             if lg_document_references:
+                self.verify_virus_scan_result(
+                    doc_type=SupportedDocumentTypes.LG,
+                    document_references=arf_document_references,
+                )
                 self.validate_number_of_documents(
                     SupportedDocumentTypes.LG, lg_document_references
                 )
@@ -133,4 +143,21 @@ class UploadConfirmResultService:
             )
             raise UploadConfirmResultException(
                 400, LambdaError.UploadConfirmResultBadRequest
+            )
+
+    def verify_virus_scan_result(
+        self, doc_type: SupportedDocumentTypes, document_references: list[str]
+    ):
+        all_records = self.document_service.fetch_available_document_references_by_type(
+            nhs_number=self.nhs_number, doc_type=doc_type, query_filter=NotDeleted
+        )
+        ids_of_clean_records = [
+            record.id
+            for record in all_records
+            if record.virus_scanner_result == VirusScanResult.CLEAN.value
+        ]
+
+        if not (set(ids_of_clean_records) >= set(document_references)):
+            raise UploadConfirmResultException(
+                400, LambdaError.UploadConfirmResultFilesNotClean
             )

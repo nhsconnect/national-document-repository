@@ -315,6 +315,10 @@ class LambdaError(Enum):
         "err_code": "UC_4004",
         "message": "Number of document references not equal to number of documents in dynamo table for this nhs number",
     }
+    UploadConfirmResultFilesNotClean = {
+        "err_code": "UC_4005",
+        "message": "Some of the given document references are not referring to clean files",
+    }
     UploadConfirmResultAWSFailure = {
         "err_code": "UC_5004",
         "message": "Error occurred with an AWS service",
