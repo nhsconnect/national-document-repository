@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, RenderResult, screen, waitFor } from '@testing-library/react';
 import UploadDocumentsPage from './UploadDocumentsPage';
 import {
     buildConfig,
@@ -13,7 +13,11 @@ import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
+import {
+    DOCUMENT_TYPE,
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../types/pages/UploadDocumentsPage/types';
 import uploadDocuments, {
     uploadConfirmation,
     uploadDocumentToS3,
@@ -22,7 +26,7 @@ import uploadDocuments, {
 
 const mockConfigContext = useConfig as jest.Mock;
 const mockedUseNavigate = jest.fn();
-const mockUploadDocument = uploadDocuments as jest.Mock;
+const mockUploadDocuments = uploadDocuments as jest.Mock;
 const mockS3Upload = uploadDocumentToS3 as jest.Mock;
 const mockVirusScan = virusScan as jest.Mock;
 const mockUploadConfirmation = uploadConfirmation as jest.Mock;
@@ -140,20 +144,30 @@ describe('UploadDocumentsPage', () => {
             });
         });
 
+        async function uploadFileAndWaitForLoadingScreen(files: File[]) {
+            setFilesAndClickUpload(files);
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_UPLOADING);
+            });
+        }
+
         describe('Upload journey', () => {
+            const successResponse = {
+                response: {
+                    status: 200,
+                },
+            };
+
             beforeEach(() => {
                 mockedUseNavigate.mockImplementation((path) => history.push(path));
-                const successResponse = {
-                    response: {
-                        status: 200,
-                    },
-                };
+
                 const uploadDocs = arfDocuments.map((doc) =>
                     buildDocument(doc, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.ARF),
                 );
                 const uploadSession = buildUploadSession(uploadDocs);
 
-                mockUploadDocument.mockResolvedValueOnce(uploadSession);
+                mockUploadDocuments.mockResolvedValue(uploadSession);
                 mockS3Upload.mockResolvedValue(successResponse);
             });
 
@@ -173,15 +187,9 @@ describe('UploadDocumentsPage', () => {
 
                 const { rerender } = renderPage(history);
 
-                setFilesAndClickUpload(arfDocuments);
+                await uploadFileAndWaitForLoadingScreen(arfDocuments);
 
-                await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(
-                        routeChildren.ARF_UPLOAD_UPLOADING,
-                    );
-                });
-
-                expect(mockUploadDocument).toHaveBeenCalledTimes(1);
+                expect(mockUploadDocuments).toHaveBeenCalledTimes(1);
                 expect(mockS3Upload).toHaveBeenCalledTimes(arfDocuments.length);
                 expect(mockVirusScan).toHaveBeenCalledTimes(arfDocuments.length);
 
@@ -213,13 +221,7 @@ describe('UploadDocumentsPage', () => {
 
                 const { rerender } = renderPage(history);
 
-                setFilesAndClickUpload(arfDocuments);
-
-                await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(
-                        routeChildren.ARF_UPLOAD_UPLOADING,
-                    );
-                });
+                await uploadFileAndWaitForLoadingScreen(arfDocuments);
 
                 rerender(<App history={history} />);
 
@@ -236,76 +238,125 @@ describe('UploadDocumentsPage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_COMPLETED);
             });
 
-            it('[unhappy path] navigate to failed page if all files are infected', async () => {
-                mockVirusScan.mockResolvedValue(DOCUMENT_UPLOAD_STATE.INFECTED);
-
-                const { rerender } = renderPage(history);
-
-                setFilesAndClickUpload(arfDocuments);
-
-                await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(
-                        routeChildren.ARF_UPLOAD_UPLOADING,
-                    );
-                });
-                rerender(<App history={history} />);
-
-                expect(mockUploadConfirmation).not.toHaveBeenCalled();
-                expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_FAILED);
-            });
-        });
-
-        describe('Error handling', () => {
-            it('navigates to session expire page when API returns 403', async () => {
-                const errorResponse = {
+            describe('Error handling', () => {
+                const badRequestResponse400 = {
+                    response: {
+                        status: 400,
+                    },
+                };
+                const unauthorisedResponse403 = {
                     response: {
                         status: 403,
                         message: 'Forbidden',
                     },
                 };
-                mockUploadDocument.mockRejectedValue(errorResponse);
-
-                renderPage(history);
-
-                setFilesAndClickUpload();
-
-                await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
-                });
-            });
-
-            it('navigates to error page when API returns other error', async () => {
-                const errorResponse = {
-                    response: {
-                        status: 502,
-                    },
-                };
-                mockUploadDocument.mockRejectedValue(errorResponse);
-
-                renderPage(history);
-
-                setFilesAndClickUpload();
-
-                await waitFor(() => {
-                    expect(mockedUseNavigate).toHaveBeenCalledWith(
-                        expect.stringContaining('/server-error?encodedError='),
-                    );
-                });
-            });
-
-            it('navigates to error page when API returns 423', async () => {
-                const errorResponse = {
+                const uploadLockedResponse423 = {
                     response: {
                         status: 423,
                     },
                 };
-                mockUploadDocument.mockRejectedValue(errorResponse);
+                const badGatewayResponse502 = {
+                    response: {
+                        status: 502,
+                    },
+                };
 
-                renderPage(history);
+                it('navigates to session expire page when createDocRef call returns 403', async () => {
+                    mockUploadDocuments.mockRejectedValue(unauthorisedResponse403);
 
-                setFilesAndClickUpload();
+                    renderPage(history);
 
-                await waitFor(() => {
+                    setFilesAndClickUpload();
+
+                    await waitFor(() => {
+                        expect(mockedUseNavigate).toHaveBeenLastCalledWith(routes.SESSION_EXPIRED);
+                    });
+                });
+
+                it('navigates to error page when createDocRef call returns other error', async () => {
+                    mockUploadDocuments.mockRejectedValue(badGatewayResponse502);
+
+                    renderPage(history);
+
+                    setFilesAndClickUpload();
+
+                    await waitFor(() => {
+                        expect(mockedUseNavigate).toHaveBeenCalledWith(
+                            expect.stringContaining('/server-error?encodedError='),
+                        );
+                    });
+                });
+
+                it('navigates to error page when createDocRef call returns 423', async () => {
+                    mockUploadDocuments.mockRejectedValue(uploadLockedResponse423);
+
+                    renderPage(history);
+
+                    setFilesAndClickUpload();
+
+                    await waitFor(() => {
+                        expect(mockedUseNavigate).toHaveBeenCalledWith(
+                            expect.stringContaining('/server-error?encodedError='),
+                        );
+                    });
+                });
+
+                it('navigates to failed stage if all files could not be uploaded to s3', async () => {
+                    mockS3Upload.mockRejectedValue(badRequestResponse400);
+
+                    const { rerender } = renderPage(history);
+
+                    await uploadFileAndWaitForLoadingScreen(arfDocuments);
+
+                    rerender(<App history={history} />);
+
+                    expect(mockUploadConfirmation).not.toHaveBeenCalled();
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_FAILED);
+                });
+
+                it('navigates to failed stage if all files are infected', async () => {
+                    mockVirusScan.mockResolvedValue(DOCUMENT_UPLOAD_STATE.INFECTED);
+
+                    const { rerender } = renderPage(history);
+
+                    await uploadFileAndWaitForLoadingScreen(arfDocuments);
+
+                    rerender(<App history={history} />);
+
+                    expect(mockUploadConfirmation).not.toHaveBeenCalled();
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_FAILED);
+                });
+
+                const uploadFilesAndWaitUntilConfirmationCall = async (
+                    files: File[],
+                    rerender: RenderResult['rerender'],
+                ) => {
+                    mockVirusScan.mockResolvedValue(DOCUMENT_UPLOAD_STATE.CLEAN);
+
+                    await uploadFileAndWaitForLoadingScreen(files);
+                    rerender(<App history={history} />);
+                    await waitFor(() => {
+                        expect(mockUploadConfirmation).toHaveBeenCalled();
+                    });
+                };
+
+                it('navigates to session expire page when uploadConfirmation returns 403', async () => {
+                    mockUploadConfirmation.mockRejectedValue(unauthorisedResponse403);
+
+                    const { rerender } = renderPage(history);
+
+                    await uploadFilesAndWaitUntilConfirmationCall(arfDocuments, rerender);
+
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
+                });
+
+                it('navigates to session expire page error page when uploadConfirmation returns other error', async () => {
+                    mockUploadConfirmation.mockRejectedValue(badRequestResponse400);
+
+                    const { rerender } = renderPage(history);
+
+                    await uploadFilesAndWaitUntilConfirmationCall(arfDocuments, rerender);
+
                     expect(mockedUseNavigate).toHaveBeenCalledWith(
                         expect.stringContaining('/server-error?encodedError='),
                     );

@@ -155,7 +155,7 @@ function UploadDocumentsPage() {
     const handleUploadError = (error: AxiosError) => {
         if (error.response?.status === 403) {
             navigate(routes.SESSION_EXPIRED);
-            /* istanbul ignore if */
+            /* istanbul ignore next */
         } else if (isMock(error)) {
             setUploadSession(buildUploadSession(documents));
             setDocuments((prevState) =>
@@ -173,7 +173,7 @@ function UploadDocumentsPage() {
     const handleUploadConfirmationError = (error: AxiosError) => {
         if (error.response?.status === 403) {
             navigate(routes.SESSION_EXPIRED);
-            /* istanbul ignore if */
+            /* istanbul ignore next */
         } else if (isMock(error)) {
             setDocuments((prevState) =>
                 prevState.map((doc) => ({
