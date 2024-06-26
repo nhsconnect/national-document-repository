@@ -27,9 +27,9 @@ const UploadSummary = ({ documents }: Props) => {
     const tableMargin = { marginBottom: 50 };
     const tableCaption = (
         <>
-            <h3>
+            <h2 className="nhsuk-heading-m">
                 {failedUploads.length} of {documents.length} files failed to upload
-            </h3>
+            </h2>
             <span className="nhsuk-error-message" id="example-error">
                 <span className="nhsuk-u-visually-hidden">Error:</span> Documents that have failed
                 to upload
