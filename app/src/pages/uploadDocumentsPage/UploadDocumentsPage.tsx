@@ -155,9 +155,10 @@ function UploadDocumentsPage() {
     const handleUploadError = (error: AxiosError) => {
         if (error.response?.status === 403) {
             navigate(routes.SESSION_EXPIRED);
-            /* istanbul ignore next */
         } else if (isMock(error)) {
+            /* istanbul ignore next */
             setUploadSession(buildUploadSession(documents));
+            /* istanbul ignore next */
             setDocuments((prevState) =>
                 prevState.map((doc) => ({
                     ...doc,
@@ -173,14 +174,15 @@ function UploadDocumentsPage() {
     const handleUploadConfirmationError = (error: AxiosError) => {
         if (error.response?.status === 403) {
             navigate(routes.SESSION_EXPIRED);
-            /* istanbul ignore next */
         } else if (isMock(error)) {
+            /* istanbul ignore next */
             setDocuments((prevState) =>
                 prevState.map((doc) => ({
                     ...doc,
                     state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
                 })),
             );
+            /* istanbul ignore next */
             navigate(routeChildren.ARF_UPLOAD_COMPLETED);
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
