@@ -56,7 +56,7 @@ class UploadConfirmResultService:
             if lg_document_references:
                 self.verify_virus_scan_result(
                     doc_type=SupportedDocumentTypes.LG,
-                    document_references=arf_document_references,
+                    document_references=lg_document_references,
                 )
                 self.validate_number_of_documents(
                     SupportedDocumentTypes.LG, lg_document_references

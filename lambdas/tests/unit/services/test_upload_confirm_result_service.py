@@ -156,12 +156,15 @@ def test_process_documents_raise_error_when_some_given_arf_files_are_not_clean(
     with pytest.raises(UploadConfirmResultException):
         patched_service.process_documents(MOCK_ARF_DOCUMENTS)
 
+    mock_verify_virus_scan_result.assert_called_with(
+        doc_type=SupportedDocumentTypes.ARF,
+        document_references=MOCK_ARF_DOCUMENT_REFERENCES,
+    )
     mock_update_dynamo_table.assert_not_called()
     mock_move_files_and_update_dynamo.assert_not_called()
 
 
 def test_process_documents_raise_error_when_some_given_lg_files_are_not_clean(
-    mocker,
     patched_service,
     mock_update_dynamo_table,
     mock_move_files_and_update_dynamo,
@@ -175,6 +178,10 @@ def test_process_documents_raise_error_when_some_given_lg_files_are_not_clean(
     with pytest.raises(UploadConfirmResultException):
         patched_service.process_documents(MOCK_LG_DOCUMENTS)
 
+    mock_verify_virus_scan_result.assert_called_with(
+        doc_type=SupportedDocumentTypes.LG,
+        document_references=MOCK_LG_DOCUMENT_REFERENCES,
+    )
     mock_update_dynamo_table.assert_not_called()
     mock_move_files_and_update_dynamo.assert_not_called()
 
