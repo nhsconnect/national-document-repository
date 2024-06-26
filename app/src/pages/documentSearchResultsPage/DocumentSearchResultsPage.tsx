@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/_arf/documentSearchResults/DocumentSearchResults';
 import { Outlet, Route, Routes, useNavigate } from 'react-router';
@@ -24,6 +24,91 @@ import { isMock } from '../../helpers/utils/isLocal';
 import useConfig from '../../helpers/hooks/useConfig';
 import { buildSearchResult } from '../../helpers/test/testBuilders';
 
+type PageIndexArgs = {
+    submissionState: SUBMISSION_STATE;
+    downloadState: SUBMISSION_STATE;
+    setDownloadState: Dispatch<SetStateAction<SUBMISSION_STATE>>;
+    searchResults: SearchResult[];
+    pageHeader: string;
+    nhsNumber: string;
+};
+const DocumentSearchResultsPageIndex = ({
+    submissionState,
+    downloadState,
+    searchResults,
+    pageHeader,
+    nhsNumber,
+    setDownloadState,
+}: PageIndexArgs) => {
+    const navigate = useNavigate();
+
+    return (
+        <>
+            <h1 id="download-page-title">{pageHeader}</h1>
+
+            {(submissionState === SUBMISSION_STATE.FAILED ||
+                downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
+
+            <PatientSummary />
+
+            {submissionState === SUBMISSION_STATE.PENDING && (
+                <ProgressBar status="Loading..."></ProgressBar>
+            )}
+            {submissionState === SUBMISSION_STATE.BLOCKED && (
+                <p>
+                    There are already files being uploaded for this patient, please try again in a
+                    few minutes.
+                </p>
+            )}
+
+            {submissionState === SUBMISSION_STATE.SUCCEEDED && (
+                <>
+                    {searchResults.length && nhsNumber ? (
+                        <>
+                            <DocumentSearchResults searchResults={searchResults} />
+                            <DocumentSearchResultsOptions
+                                nhsNumber={nhsNumber}
+                                downloadState={downloadState}
+                                updateDownloadState={setDownloadState}
+                            />
+                        </>
+                    ) : (
+                        <p>
+                            <strong id="no-files-message">
+                                There are no documents available for this patient.
+                            </strong>
+                        </p>
+                    )}
+                </>
+            )}
+
+            {downloadState === SUBMISSION_STATE.FAILED && (
+                <ErrorBox
+                    messageTitle={'There is a problem with the documents'}
+                    messageBody={'An error has occurred while preparing your download'}
+                    errorBoxSummaryId={'error-box-summary'}
+                />
+            )}
+
+            {(submissionState === SUBMISSION_STATE.FAILED ||
+                submissionState === SUBMISSION_STATE.SUCCEEDED) && (
+                <p>
+                    <Link
+                        id="start-again-link"
+                        to=""
+                        onClick={(e) => {
+                            e.preventDefault();
+                            navigate(routes.START);
+                        }}
+                    >
+                        Start Again
+                    </Link>
+                </p>
+            )}
+        </>
+    );
+};
+
 function DocumentSearchResultsPage() {
     const patientDetails = usePatient();
 
@@ -31,15 +116,10 @@ function DocumentSearchResultsPage() {
     const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.INITIAL);
     const [downloadState, setDownloadState] = useState(SUBMISSION_STATE.INITIAL);
-    const [isDeletingDocuments, setIsDeletingDocuments] = useState(false);
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const config = useConfig();
-
-    const handleUpdateDownloadState = (newState: SUBMISSION_STATE) => {
-        setDownloadState(newState);
-    };
 
     const mounted = useRef(false);
     useEffect(() => {
@@ -79,93 +159,27 @@ function DocumentSearchResultsPage() {
             mounted.current = true;
             void onPageLoad();
         }
-    }, [
-        patientDetails,
-        searchResults,
-        nhsNumber,
-        setSearchResults,
-        setSubmissionState,
-        isDeletingDocuments,
-        navigate,
-        baseUrl,
-        baseHeaders,
-        config,
-    ]);
+    }, [nhsNumber, navigate, baseUrl, baseHeaders, config]);
     const pageHeader = 'Download electronic health records and attachments';
     useTitle({ pageTitle: pageHeader });
-
-    const PageIndexView = () => (
-        <>
-            <h1 id="download-page-title">{pageHeader}</h1>
-
-            {(submissionState === SUBMISSION_STATE.FAILED ||
-                downloadState === SUBMISSION_STATE.FAILED) && <ServiceError />}
-
-            <PatientSummary />
-
-            {submissionState === SUBMISSION_STATE.PENDING && (
-                <ProgressBar status="Loading..."></ProgressBar>
-            )}
-            {submissionState === SUBMISSION_STATE.BLOCKED && (
-                <p>
-                    There are already files being uploaded for this patient, please try again in a
-                    few minutes.
-                </p>
-            )}
-
-            {submissionState === SUBMISSION_STATE.SUCCEEDED && (
-                <>
-                    {searchResults.length && patientDetails ? (
-                        <>
-                            <DocumentSearchResults searchResults={searchResults} />
-                            <DocumentSearchResultsOptions
-                                nhsNumber={nhsNumber}
-                                downloadState={downloadState}
-                                updateDownloadState={handleUpdateDownloadState}
-                                setIsDeletingDocuments={setIsDeletingDocuments}
-                            />
-                        </>
-                    ) : (
-                        <p>
-                            <strong id="no-files-message">
-                                There are no documents available for this patient.
-                            </strong>
-                        </p>
-                    )}
-                </>
-            )}
-
-            {downloadState === SUBMISSION_STATE.FAILED && (
-                <ErrorBox
-                    messageTitle={'There is a problem with the documents'}
-                    messageBody={'An error has occurred while preparing your download'}
-                    errorBoxSummaryId={'error-box-summary'}
-                />
-            )}
-
-            {(submissionState === SUBMISSION_STATE.FAILED ||
-                submissionState === SUBMISSION_STATE.SUCCEEDED) && (
-                <p>
-                    <Link
-                        id="start-again-link"
-                        to=""
-                        onClick={(e) => {
-                            e.preventDefault();
-                            navigate(routes.START);
-                        }}
-                    >
-                        Start Again
-                    </Link>
-                </p>
-            )}
-        </>
-    );
 
     return (
         <>
             <div>
                 <Routes>
-                    <Route index element={<PageIndexView />} />
+                    <Route
+                        index
+                        element={
+                            <DocumentSearchResultsPageIndex
+                                submissionState={submissionState}
+                                nhsNumber={nhsNumber}
+                                downloadState={downloadState}
+                                setDownloadState={setDownloadState}
+                                searchResults={searchResults}
+                                pageHeader={pageHeader}
+                            />
+                        }
+                    />
                     <Route
                         path={getLastURLPath(routeChildren.ARF_DELETE) + '/*'}
                         element={
