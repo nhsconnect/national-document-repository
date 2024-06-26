@@ -121,10 +121,6 @@ function DocumentSearchResultsPage() {
     const baseHeaders = useBaseAPIHeaders();
     const config = useConfig();
 
-    // const handleUpdateDownloadState = (newState: SUBMISSION_STATE) => {
-    //     setDownloadState(newState);
-    // };
-
     const mounted = useRef(false);
     useEffect(() => {
         const onPageLoad = async () => {
