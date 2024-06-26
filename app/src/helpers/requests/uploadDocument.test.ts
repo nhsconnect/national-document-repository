@@ -1,7 +1,16 @@
 import axios, { AxiosError } from 'axios';
-import { buildDocument, buildTextFile } from '../test/testBuilders';
-import { DOCUMENT_UPLOAD_STATE as documentUploadStates } from '../../types/pages/UploadDocumentsPage/types';
-import { UpdateStateArgs, updateDocumentState, virusScan } from './uploadDocuments';
+import { buildDocument, buildTextFile, buildUploadSession } from '../test/testBuilders';
+import {
+    DOCUMENT_TYPE,
+    DOCUMENT_UPLOAD_STATE,
+    DOCUMENT_UPLOAD_STATE as documentUploadStates,
+} from '../../types/pages/UploadDocumentsPage/types';
+import {
+    UpdateStateArgs,
+    updateDocumentState,
+    virusScan,
+    uploadConfirmation,
+} from './uploadDocuments';
 import waitForSeconds from '../utils/waitForSeconds';
 
 // Mock out all top level functions, such as get, put, delete and post:
@@ -82,5 +91,48 @@ describe('virusScanResult', () => {
 
         expect(mockedAxios.post).toBeCalledTimes(3);
         expect(mockedWaitForSeconds).toBeCalledTimes(3);
+    });
+});
+
+describe('uploadConfirmation', () => {
+    const mockDocuments = [
+        {
+            file: buildTextFile('file_one', 100),
+            state: DOCUMENT_UPLOAD_STATE.SCANNING,
+            id: '1',
+            progress: 50,
+            docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+            attempts: 0,
+        },
+        {
+            file: buildTextFile('file_two', 100),
+            state: DOCUMENT_UPLOAD_STATE.SCANNING,
+            id: '2',
+            progress: 50,
+            docType: DOCUMENT_TYPE.LLOYD_GEORGE,
+            attempts: 0,
+        },
+    ];
+    const uploadConfirmationArgs = {
+        nhsNumber: 'mock_nhs_number',
+        baseUrl: '/test',
+        baseHeaders: { 'Content-Type': 'application/json', test: 'test' },
+        documents: mockDocuments,
+        uploadSession: buildUploadSession(mockDocuments),
+    };
+
+    const succeedResponse = { status: 200 };
+    const mockError = new Error('bad request');
+
+    it('return SUCCEED if upload confirmation call was successful', async () => {
+        mockedAxios.post.mockResolvedValueOnce(succeedResponse);
+        const result = await uploadConfirmation(uploadConfirmationArgs);
+
+        expect(result).toEqual(documentUploadStates.SUCCEEDED);
+    });
+
+    it('throw error if upload confirmation call failed', async () => {
+        mockedAxios.post.mockRejectedValueOnce(mockError);
+        await expect(uploadConfirmation(uploadConfirmationArgs)).rejects.toThrowError(mockError);
     });
 });

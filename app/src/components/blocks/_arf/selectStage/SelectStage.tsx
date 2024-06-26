@@ -21,7 +21,7 @@ interface Props {
     startUpload: () => Promise<void>;
 }
 
-function SelectStage({ setDocuments, documents, startUpload }: Props) {
+function SelectStage({ setDocuments, documents, startUpload }: Readonly<Props>) {
     const arfInputRef = useRef<HTMLInputElement | null>(null);
 
     const hasFileInput = documents.length > 0;

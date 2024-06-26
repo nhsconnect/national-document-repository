@@ -14,6 +14,7 @@ import {
     DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS,
     setSingleDocument,
 } from '../utils/uploadAndScanDocumentHelpers';
+import { getLastURLPath } from '../utils/urlManipulations';
 
 const VIRUS_SCAN_RETRY_LIMIT = 3;
 const TIMEOUT_ERROR_STATUS_CODE = 504;
@@ -101,7 +102,7 @@ export const uploadConfirmation = async ({
 }: UploadConfirmationArgs) => {
     const fileKeyBuilder = documents.reduce((acc, doc) => {
         const documentMetadata = uploadSession[doc.file.name];
-        const fileReferenceUUID = documentMetadata.fields.key.split('/').at(-1);
+        const fileReferenceUUID = getLastURLPath(documentMetadata.fields.key);
         const previousKeys = acc[doc.docType] ?? [];
 
         return {

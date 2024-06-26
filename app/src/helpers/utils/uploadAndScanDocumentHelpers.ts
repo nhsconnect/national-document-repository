@@ -5,6 +5,7 @@ import { isRunningInCypress } from './isLocal';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { uploadDocumentToS3, virusScan } from '../requests/uploadDocuments';
 import waitForSeconds from './waitForSeconds';
+import { getLastURLPath } from './urlManipulations';
 
 export const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = isRunningInCypress() ? 0 : 3;
 export const DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS = isRunningInCypress() ? 0 : 5;
@@ -46,7 +47,7 @@ export const markDocumentsAsUploading = (
             ...doc,
             state: DOCUMENT_UPLOAD_STATE.UPLOADING,
             key: documentReference,
-            ref: documentReference.split('/').at(-1),
+            ref: getLastURLPath(documentReference),
         };
     });
 };
