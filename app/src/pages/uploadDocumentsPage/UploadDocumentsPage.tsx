@@ -12,11 +12,15 @@ import Spinner from '../../components/generic/spinner/Spinner';
 import {
     markDocumentsAsUploading,
     setSingleDocument,
+    FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD,
     uploadAndScanSingleDocument,
 } from '../../helpers/utils/uploadAndScanDocumentHelpers';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
-import uploadDocuments, { uploadConfirmation } from '../../helpers/requests/uploadDocuments';
+import uploadDocuments, {
+    updateDocumentState,
+    uploadConfirmation,
+} from '../../helpers/requests/uploadDocuments';
 import { AxiosError } from 'axios';
 import { UploadSession } from '../../types/generic/uploadResult';
 import { isMock } from '../../helpers/utils/isLocal';
@@ -27,6 +31,8 @@ import { buildUploadSession } from '../../helpers/test/testBuilders';
 function UploadDocumentsPage() {
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
     const [uploadSession, setUploadSession] = useState<UploadSession | null>(null);
+    const [intervalTimer, setIntervalTimer] = useState(0);
+
     const config = useConfig();
     const navigate = useNavigate();
     const location = useLocation();
@@ -66,6 +72,22 @@ function UploadDocumentsPage() {
         [baseHeaders, baseUrl, nhsNumber],
     );
 
+    const startIntervalTimer = (uploadDocuments: Array<UploadDocument>): number => {
+        const setAllDocumentStatesToUploading = () => {
+            void updateDocumentState({
+                documents: uploadDocuments,
+                uploadingState: true,
+                baseUrl,
+                baseHeaders,
+            });
+        };
+
+        return window.setInterval(
+            setAllDocumentStatesToUploading,
+            FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD,
+        );
+    };
+
     useEffect(() => {
         const onPageLoad = () => {
             if (
@@ -83,6 +105,12 @@ function UploadDocumentsPage() {
     }, [navigate, config]);
 
     useEffect(() => {
+        return () => {
+            window.clearInterval(intervalTimer);
+        };
+    }, [intervalTimer]);
+
+    useEffect(() => {
         if (!isUploading || !uploadSession) {
             return;
         }
@@ -98,6 +126,8 @@ function UploadDocumentsPage() {
             });
 
         if (allDocumentsFinishedVirusScan) {
+            window.clearInterval(intervalTimer);
+
             const cleanDocuments = documents.filter(
                 (document) => document.state === DOCUMENT_UPLOAD_STATE.CLEAN,
             );
@@ -108,9 +138,10 @@ function UploadDocumentsPage() {
                 navigate(routeChildren.ARF_UPLOAD_FAILED);
             }
         }
-    }, [confirmUpload, documents, uploadSession, isUploading, navigate]);
+    }, [confirmUpload, documents, uploadSession, isUploading, navigate, intervalTimer]);
 
     const startUpload = async () => {
+        let timerId;
         try {
             navigate(routeChildren.ARF_UPLOAD_UPLOADING);
 
@@ -127,10 +158,14 @@ function UploadDocumentsPage() {
             );
             setDocuments(uploadingDocuments);
 
+            timerId = startIntervalTimer(uploadingDocuments);
+            setIntervalTimer(timerId);
+
             uploadingDocuments.forEach((document) => {
                 void uploadAndScanSingleArfDocument(document, uploadSession);
             });
         } catch (error) {
+            window.clearInterval(timerId);
             handleUploadError(error as AxiosError);
         }
     };
