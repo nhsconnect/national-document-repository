@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import SelectStage from '../../components/blocks/_arf/selectStage/SelectStage';
 import UploadingStage from '../../components/blocks/_arf/uploadingStage/UploadingStage';
@@ -44,33 +44,6 @@ function UploadDocumentsPage() {
     const mounted = useRef(false);
 
     const isUploading = location.pathname === routeChildren.ARF_UPLOAD_UPLOADING;
-
-    const confirmUpload = useCallback(
-        async (cleanDocuments: UploadDocument[], uploadSession: UploadSession) => {
-            try {
-                const confirmDocumentState = await uploadConfirmation({
-                    baseUrl,
-                    baseHeaders,
-                    nhsNumber,
-                    uploadSession,
-                    documents: cleanDocuments,
-                });
-
-                cleanDocuments.forEach((doc) =>
-                    setSingleDocument(setDocuments, {
-                        id: doc.id,
-                        state: confirmDocumentState,
-                    }),
-                );
-
-                navigate(routeChildren.ARF_UPLOAD_COMPLETED);
-            } catch (error) {
-                handleUploadConfirmationError(error as AxiosError);
-            }
-        },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [baseHeaders, baseUrl, nhsNumber],
-    );
 
     const startIntervalTimer = (uploadDocuments: Array<UploadDocument>): number => {
         const setAllDocumentStatesToUploading = () => {
@@ -125,20 +98,78 @@ function UploadDocumentsPage() {
                 ].includes(document.state);
             });
 
-        if (allDocumentsFinishedVirusScan) {
-            window.clearInterval(intervalTimer);
-
-            const cleanDocuments = documents.filter(
-                (document) => document.state === DOCUMENT_UPLOAD_STATE.CLEAN,
-            );
-            if (cleanDocuments.length > 0) {
-                navigate(routeChildren.ARF_UPLOAD_CONFIRMATION);
-                void confirmUpload(cleanDocuments, uploadSession);
-            } else {
-                navigate(routeChildren.ARF_UPLOAD_FAILED);
-            }
+        if (!allDocumentsFinishedVirusScan) {
+            return;
         }
-    }, [confirmUpload, documents, uploadSession, isUploading, navigate, intervalTimer]);
+
+        const confirmUpload = async (cleanDocuments: UploadDocument[]) => {
+            try {
+                const confirmDocumentState = await uploadConfirmation({
+                    baseUrl,
+                    baseHeaders,
+                    nhsNumber,
+                    uploadSession,
+                    documents: cleanDocuments,
+                });
+
+                cleanDocuments.forEach((doc) =>
+                    setSingleDocument(setDocuments, {
+                        id: doc.id,
+                        state: confirmDocumentState,
+                    }),
+                );
+
+                navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+            } catch (error) {
+                handleUploadConfirmationError(error as AxiosError);
+            }
+        };
+
+        const handleUploadConfirmationError = (error: AxiosError) => {
+            if (error.response?.status === 403) {
+                navigate(routes.SESSION_EXPIRED);
+            } else if (isMock(error)) {
+                /* istanbul ignore next */
+                setDocuments((prevState) =>
+                    prevState.map((doc) => ({
+                        ...doc,
+                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+                    })),
+                );
+                /* istanbul ignore next */
+                navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+            } else {
+                navigate(routes.SERVER_ERROR + errorToParams(error));
+            }
+        };
+
+        window.clearInterval(intervalTimer);
+
+        const cleanDocuments = documents.filter(
+            (document) => document.state === DOCUMENT_UPLOAD_STATE.CLEAN,
+        );
+        if (cleanDocuments.length > 0) {
+            navigate(routeChildren.ARF_UPLOAD_CONFIRMATION);
+            void confirmUpload(cleanDocuments);
+        } else {
+            navigate(routeChildren.ARF_UPLOAD_FAILED);
+            void updateDocumentState({
+                documents,
+                baseUrl,
+                baseHeaders,
+                uploadingState: false,
+            });
+        }
+    }, [
+        isUploading,
+        documents,
+        uploadSession,
+        intervalTimer,
+        navigate,
+        baseUrl,
+        baseHeaders,
+        nhsNumber,
+    ]);
 
     const startUpload = async () => {
         let timerId;
@@ -201,24 +232,6 @@ function UploadDocumentsPage() {
                     progress: 100,
                 })),
             );
-        } else {
-            navigate(routes.SERVER_ERROR + errorToParams(error));
-        }
-    };
-
-    const handleUploadConfirmationError = (error: AxiosError) => {
-        if (error.response?.status === 403) {
-            navigate(routes.SESSION_EXPIRED);
-        } else if (isMock(error)) {
-            /* istanbul ignore next */
-            setDocuments((prevState) =>
-                prevState.map((doc) => ({
-                    ...doc,
-                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                })),
-            );
-            /* istanbul ignore next */
-            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }

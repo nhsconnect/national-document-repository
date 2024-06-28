@@ -241,7 +241,7 @@ describe('UploadDocumentsPage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_COMPLETED);
             });
 
-            describe('updateDocumentState related logics', () => {
+            describe('setInterval related logics', () => {
                 beforeAll(() => {
                     jest.useFakeTimers();
                 });
@@ -384,6 +384,12 @@ describe('UploadDocumentsPage', () => {
 
                     expect(mockUploadConfirmation).not.toHaveBeenCalled();
                     expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_FAILED);
+
+                    expect(mockUpdateDocumentState).toHaveBeenCalledWith(
+                        expect.objectContaining({
+                            uploadingState: false,
+                        }),
+                    );
                 });
 
                 it('navigates to failed stage if all files are infected', async () => {
@@ -397,6 +403,12 @@ describe('UploadDocumentsPage', () => {
 
                     expect(mockUploadConfirmation).not.toHaveBeenCalled();
                     expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_FAILED);
+
+                    expect(mockUpdateDocumentState).toHaveBeenCalledWith(
+                        expect.objectContaining({
+                            uploadingState: false,
+                        }),
+                    );
                 });
 
                 const uploadFilesAndWaitUntilConfirmationCall = async (
