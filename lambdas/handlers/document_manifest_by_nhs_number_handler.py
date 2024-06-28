@@ -36,6 +36,7 @@ def lambda_handler(event, context):
     document_types = extract_document_type_to_enum(
         event["queryStringParameters"]["docType"]
     )
+    # document_references = event["multiValueQueryStringParameters"].get("docReference")
     if document_references := event["queryStringParameters"].get("docReferences"):
         document_references = document_references.split(",")
 
