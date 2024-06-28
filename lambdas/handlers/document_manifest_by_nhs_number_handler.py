@@ -14,6 +14,46 @@ from utils.request_context import request_context
 logger = LoggingService(__name__)
 
 
+def handle_post(event, context):
+    logger.info("Starting document manifest process")
+    # Create job ID
+    # Write Job id to dynamo
+
+    nhs_number = event["queryStringParameters"]["patientId"]
+    document_types = extract_document_type_to_enum(
+        event["queryStringParameters"]["docType"]
+    )
+    # document_references = event["multiValueQueryStringParameters"].get("docReference")
+    if document_references := event["queryStringParameters"].get("docReferences"):
+        document_references = document_references.split(",")
+
+    request_context.patient_nhs_no = nhs_number
+
+    document_manifest_service = DocumentManifestService(nhs_number)
+    response = document_manifest_service.create_document_manifest_presigned_url(
+        document_types, document_references
+    )
+
+    return ApiGatewayResponse(200, response, "POST").create_api_gateway_response()
+
+
+def handle_get(event, context):
+    logger.info("Retrieving document manifest")
+
+    event["queryStringParameters"]["jobId"]
+    response = ""
+
+    logger.audit_splunk_info(
+        "User has downloaded Lloyd George records",
+        {"Result": "Successful download"},
+    )
+
+    return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
+
+
+method_handler = {"GET": handle_get, "POST": handle_post}
+
+
 @set_request_context_for_logging
 @validate_patient_id
 @validate_document_type
@@ -29,34 +69,8 @@ logger = LoggingService(__name__)
 @override_error_check
 @handle_lambda_exceptions
 def lambda_handler(event, context):
+    request_context.app_interaction = LoggingAppInteraction.DOWNLOAD_RECORD.value
+    http_method = event["httpMethod"]
+    handler = method_handler[http_method]
 
-    if event["httpMethod"] == "GET":
-        request_context.app_interaction = LoggingAppInteraction.DOWNLOAD_RECORD.value
-        logger.info("Starting document manifest process")
-
-        nhs_number = event["queryStringParameters"]["patientId"]
-        document_types = extract_document_type_to_enum(
-            event["queryStringParameters"]["docType"]
-        )
-        # document_references = event["multiValueQueryStringParameters"].get("docReference")
-        if document_references := event["queryStringParameters"].get("docReferences"):
-            document_references = document_references.split(",")
-
-        request_context.patient_nhs_no = nhs_number
-
-        document_manifest_service = DocumentManifestService(nhs_number)
-        response = document_manifest_service.create_document_manifest_presigned_url(
-            document_types, document_references
-        )
-
-        logger.audit_splunk_info(
-            "User has downloaded Lloyd George records",
-            {"Result": "Successful download"},
-        )
-
-        return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
-
-    if event["httpMethod"] == "POST":
-
-        # return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
-        pass
+    return handler(event, context)
