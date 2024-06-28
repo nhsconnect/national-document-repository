@@ -43,8 +43,10 @@ function UploadingStage({ documents }: Props) {
                         return (
                             <Table.Row key={document.id}>
                                 <Table.Cell>{document.file.name}</Table.Cell>
-                                <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
-                                <Table.Cell>
+                                <Table.Cell style={{ width: '140px' }}>
+                                    {formatFileSize(document.file.size)}
+                                </Table.Cell>
+                                <Table.Cell style={{ width: '200px' }}>
                                     <progress
                                         aria-label={`Uploading ${document.file.name}`}
                                         max="100"
