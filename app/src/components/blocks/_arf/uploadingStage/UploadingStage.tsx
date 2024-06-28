@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-    UploadDocument,
-    DOCUMENT_UPLOAD_STATE,
-} from '../../../../types/pages/UploadDocumentsPage/types';
+import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import useTitle from '../../../../helpers/hooks/useTitle';
