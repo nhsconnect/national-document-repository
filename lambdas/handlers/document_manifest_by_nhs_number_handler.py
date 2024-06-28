@@ -29,27 +29,34 @@ logger = LoggingService(__name__)
 @override_error_check
 @handle_lambda_exceptions
 def lambda_handler(event, context):
-    request_context.app_interaction = LoggingAppInteraction.DOWNLOAD_RECORD.value
-    logger.info("Starting document manifest process")
 
-    nhs_number = event["queryStringParameters"]["patientId"]
-    document_types = extract_document_type_to_enum(
-        event["queryStringParameters"]["docType"]
-    )
-    # document_references = event["multiValueQueryStringParameters"].get("docReference")
-    if document_references := event["queryStringParameters"].get("docReferences"):
-        document_references = document_references.split(",")
+    if event["httpMethod"] == "GET":
+        request_context.app_interaction = LoggingAppInteraction.DOWNLOAD_RECORD.value
+        logger.info("Starting document manifest process")
 
-    request_context.patient_nhs_no = nhs_number
+        nhs_number = event["queryStringParameters"]["patientId"]
+        document_types = extract_document_type_to_enum(
+            event["queryStringParameters"]["docType"]
+        )
+        # document_references = event["multiValueQueryStringParameters"].get("docReference")
+        if document_references := event["queryStringParameters"].get("docReferences"):
+            document_references = document_references.split(",")
 
-    document_manifest_service = DocumentManifestService(nhs_number)
-    response = document_manifest_service.create_document_manifest_presigned_url(
-        document_types, document_references
-    )
+        request_context.patient_nhs_no = nhs_number
 
-    logger.audit_splunk_info(
-        "User has downloaded Lloyd George records",
-        {"Result": "Successful download"},
-    )
+        document_manifest_service = DocumentManifestService(nhs_number)
+        response = document_manifest_service.create_document_manifest_presigned_url(
+            document_types, document_references
+        )
 
-    return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
+        logger.audit_splunk_info(
+            "User has downloaded Lloyd George records",
+            {"Result": "Successful download"},
+        )
+
+        return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
+
+    if event["httpMethod"] == "POST":
+
+        # return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
+        pass
