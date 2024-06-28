@@ -82,6 +82,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                             DOCUMENT_UPLOAD_STATE.UPLOADING,
                             DOCUMENT_UPLOAD_STATE.SCANNING,
                         ].includes(document.state);
+                        const isScanning = document.state === DOCUMENT_UPLOAD_STATE.SCANNING;
 
                         const uploadFailed = !!document.attempts && notInProgress;
 
@@ -102,7 +103,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                                     <progress
                                         aria-label={`Uploading ${document.file.name}`}
                                         max="100"
-                                        value={document.progress}
+                                        value={isScanning ? undefined : document.progress}
                                     ></progress>
                                     <output aria-label={`${document.file.name} upload status`}>
                                         {getUploadMessage(document)}
