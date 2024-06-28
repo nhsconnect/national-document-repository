@@ -71,7 +71,6 @@ export async function uploadAndScanSingleDocument({
     setSingleDocument(setDocuments, {
         id: document.id,
         state: DOCUMENT_UPLOAD_STATE.SCANNING,
-        progress: undefined,
     });
     await waitForSeconds(DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS);
     const virusDocumentState = await virusScan({

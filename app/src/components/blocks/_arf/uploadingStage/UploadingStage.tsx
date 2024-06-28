@@ -1,5 +1,8 @@
 import React from 'react';
-import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';
+import {
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../../../types/pages/UploadDocumentsPage/types';
 import { Table, WarningCallout } from 'nhsuk-react-components';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import useTitle from '../../../../helpers/hooks/useTitle';
@@ -35,22 +38,25 @@ function UploadingStage({ documents }: Props) {
                     </Table.Row>
                 </Table.Head>
                 <Table.Body>
-                    {documents.map((document) => (
-                        <Table.Row key={document.id}>
-                            <Table.Cell>{document.file.name}</Table.Cell>
-                            <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
-                            <Table.Cell>
-                                <progress
-                                    aria-label={`Uploading ${document.file.name}`}
-                                    max="100"
-                                    {...(document.progress ? { value: document.progress } : {})}
-                                ></progress>
-                                <output aria-label={`${document.file.name} upload status`}>
-                                    {getUploadMessage(document)}
-                                </output>
-                            </Table.Cell>
-                        </Table.Row>
-                    ))}
+                    {documents.map((document) => {
+                        const isScanning = document.state === DOCUMENT_UPLOAD_STATE.SCANNING;
+                        return (
+                            <Table.Row key={document.id}>
+                                <Table.Cell>{document.file.name}</Table.Cell>
+                                <Table.Cell>{formatFileSize(document.file.size)}</Table.Cell>
+                                <Table.Cell>
+                                    <progress
+                                        aria-label={`Uploading ${document.file.name}`}
+                                        max="100"
+                                        value={isScanning ? undefined : document.progress}
+                                    ></progress>
+                                    <output aria-label={`${document.file.name} upload status`}>
+                                        {getUploadMessage(document)}
+                                    </output>
+                                </Table.Cell>
+                            </Table.Row>
+                        );
+                    })}
                 </Table.Body>
             </Table>
         </>
