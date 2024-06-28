@@ -230,10 +230,14 @@ function UploadDocumentsPage() {
                     path={getLastURLPath(routeChildren.ARF_UPLOAD_FAILED)}
                     element={
                         <div>
-                            <h1>Failed to upload documents</h1>
+                            <h1>All files failed to upload</h1>
                             <p>
-                                This page is a placeholder. This is a page to display result when
-                                every file failed to upload or didn't pass virus scanner check.
+                                The electronic health record was not uploaded for this patient. You
+                                will need to check your files and try again.
+                            </p>
+                            <p>
+                                Make sure to safely store the electronic health record until it's
+                                completely uploaded to this storage.
                             </p>
                         </div>
                     }

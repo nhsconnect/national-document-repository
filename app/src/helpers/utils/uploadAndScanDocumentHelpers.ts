@@ -71,6 +71,7 @@ export async function uploadAndScanSingleDocument({
     setSingleDocument(setDocuments, {
         id: document.id,
         state: DOCUMENT_UPLOAD_STATE.SCANNING,
+        progress: undefined,
     });
     await waitForSeconds(DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS);
     const virusDocumentState = await virusScan({
@@ -84,3 +85,18 @@ export async function uploadAndScanSingleDocument({
         progress: 100,
     });
 }
+
+export const getUploadMessage = ({ state, progress }: UploadDocument) => {
+    const showProgress = state === DOCUMENT_UPLOAD_STATE.UPLOADING && progress !== undefined;
+
+    if (state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
+    else if (showProgress) return `${Math.round(progress)}% uploaded...`;
+    else if (state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
+    else if (state === DOCUMENT_UPLOAD_STATE.INFECTED) return 'File has failed a virus scan';
+    else if (state === DOCUMENT_UPLOAD_STATE.CLEAN) return 'Virus scan complete';
+    else if (state === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
+    else if (state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload succeeded';
+    else {
+        return 'Upload failed';
+    }
+};
