@@ -241,6 +241,33 @@ describe('UploadDocumentsPage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_COMPLETED);
             });
 
+            it('only navigate to confirmation page when every files are scanned', async () => {
+                const waitForSeconds = jest.requireActual(
+                    '../../helpers/utils/waitForSeconds',
+                ).default;
+
+                mockVirusScan
+                    .mockImplementationOnce(() => waitForSeconds(99999))
+                    .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.CLEAN)
+                    .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.CLEAN);
+
+                const { rerender } = renderPage(history);
+
+                await uploadFileAndWaitForLoadingScreen(arfDocuments);
+
+                rerender(<App history={history} />);
+
+                await waitFor(() => {
+                    expect(mockUploadConfirmation).not.toHaveBeenCalled();
+                });
+                expect(mockedUseNavigate).not.toHaveBeenCalledWith(
+                    routeChildren.ARF_UPLOAD_CONFIRMATION,
+                );
+                expect(mockedUseNavigate).not.toHaveBeenCalledWith(
+                    routeChildren.ARF_UPLOAD_COMPLETED,
+                );
+            });
+
             describe('setInterval related logics', () => {
                 beforeAll(() => {
                     jest.useFakeTimers();

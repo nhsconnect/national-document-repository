@@ -129,6 +129,7 @@ function UploadDocumentsPage() {
             if (error.response?.status === 403) {
                 navigate(routes.SESSION_EXPIRED);
             } else if (isMock(error)) {
+                /* istanbul ignore next */
                 mockUploadConfirmationSucceed(setDocuments, navigate);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
@@ -214,6 +215,7 @@ function UploadDocumentsPage() {
         if (error.response?.status === 403) {
             navigate(routes.SESSION_EXPIRED);
         } else if (isMock(error)) {
+            /* istanbul ignore next */
             mockVirusScanClean(documents, setDocuments, setUploadSession);
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
