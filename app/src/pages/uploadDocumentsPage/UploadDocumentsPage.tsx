@@ -4,7 +4,7 @@ import SelectStage from '../../components/blocks/_arf/selectStage/SelectStage';
 import UploadingStage from '../../components/blocks/_arf/uploadingStage/UploadingStage';
 import CompleteStage from '../../components/blocks/_arf/completeStage/CompleteStage';
 import { routeChildren, routes } from '../../types/generic/routes';
-import { Outlet, Route, Routes, useNavigate } from 'react-router';
+import { NavigateFunction, Outlet, Route, Routes, useNavigate } from 'react-router';
 import useConfig from '../../helpers/hooks/useConfig';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import { useLocation } from 'react-router-dom';
@@ -129,15 +129,7 @@ function UploadDocumentsPage() {
             if (error.response?.status === 403) {
                 navigate(routes.SESSION_EXPIRED);
             } else if (isMock(error)) {
-                /* istanbul ignore next */
-                setDocuments((prevState) =>
-                    prevState.map((doc) => ({
-                        ...doc,
-                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                    })),
-                );
-                /* istanbul ignore next */
-                navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+                mockUploadConfirmationSucceed(setDocuments, navigate);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
             }
@@ -222,16 +214,7 @@ function UploadDocumentsPage() {
         if (error.response?.status === 403) {
             navigate(routes.SESSION_EXPIRED);
         } else if (isMock(error)) {
-            /* istanbul ignore next */
-            setUploadSession(buildUploadSession(documents));
-            /* istanbul ignore next */
-            setDocuments((prevState) =>
-                prevState.map((doc) => ({
-                    ...doc,
-                    state: DOCUMENT_UPLOAD_STATE.CLEAN,
-                    progress: 100,
-                })),
-            );
+            mockVirusScanClean(documents, setDocuments, setUploadSession);
         } else {
             navigate(routes.SERVER_ERROR + errorToParams(error));
         }
@@ -293,6 +276,36 @@ function UploadDocumentsPage() {
             </Routes>
             <Outlet></Outlet>
         </>
+    );
+}
+
+/* istanbul ignore next */
+function mockUploadConfirmationSucceed(
+    setDocuments: React.Dispatch<React.SetStateAction<UploadDocument[]>>,
+    navigate: NavigateFunction,
+) {
+    setDocuments((prevState) =>
+        prevState.map((doc) => ({
+            ...doc,
+            state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
+        })),
+    );
+    navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+}
+
+/* istanbul ignore next */
+function mockVirusScanClean(
+    documents: Array<UploadDocument>,
+    setDocuments: React.Dispatch<React.SetStateAction<UploadDocument[]>>,
+    setUploadSession: React.Dispatch<React.SetStateAction<UploadSession | null>>,
+) {
+    setUploadSession(buildUploadSession(documents));
+    setDocuments((prevState) =>
+        prevState.map((doc) => ({
+            ...doc,
+            state: DOCUMENT_UPLOAD_STATE.CLEAN,
+            progress: 100,
+        })),
     );
 }
 
