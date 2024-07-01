@@ -13,11 +13,7 @@ import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import {
-    DOCUMENT_TYPE,
-    DOCUMENT_UPLOAD_STATE,
-    UploadDocument,
-} from '../../types/pages/UploadDocumentsPage/types';
+import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
 import uploadDocuments, {
     uploadConfirmation,
     uploadDocumentToS3,
@@ -348,6 +344,18 @@ describe('UploadDocumentsPage', () => {
                     await uploadFilesAndWaitUntilConfirmationCall(arfDocuments, rerender);
 
                     expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
+                });
+
+                it('navigates to upload confirmation failed page when uploadConfirmation returns a 5xx error', async () => {
+                    mockUploadConfirmation.mockRejectedValue(badGatewayResponse502);
+
+                    const { rerender } = renderPage(history);
+
+                    await uploadFilesAndWaitUntilConfirmationCall(arfDocuments, rerender);
+
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(
+                        routeChildren.ARF_UPLOAD_CONFIRMATION_FAILED,
+                    );
                 });
 
                 it('navigates to session expire page error page when uploadConfirmation returns other error', async () => {

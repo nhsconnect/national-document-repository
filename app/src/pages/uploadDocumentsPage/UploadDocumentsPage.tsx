@@ -23,6 +23,7 @@ import { isMock } from '../../helpers/utils/isLocal';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import usePatient from '../../helpers/hooks/usePatient';
 import { buildUploadSession } from '../../helpers/test/testBuilders';
+import UploadConfirmationFailed from '../../components/blocks/_arf/uploadConfirmationFailed/uploadConfirmationFailed';
 
 function UploadDocumentsPage() {
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
@@ -174,6 +175,8 @@ function UploadDocumentsPage() {
     const handleUploadConfirmationError = (error: AxiosError) => {
         if (error.response?.status === 403) {
             navigate(routes.SESSION_EXPIRED);
+        } else if (error.response?.status && error.response?.status >= 500) {
+            navigate(routeChildren.ARF_UPLOAD_CONFIRMATION_FAILED);
         } else if (isMock(error)) {
             /* istanbul ignore next */
             setDocuments((prevState) =>
@@ -241,6 +244,10 @@ function UploadDocumentsPage() {
                             </p>
                         </div>
                     }
+                ></Route>
+                <Route
+                    path={getLastURLPath(routeChildren.ARF_UPLOAD_CONFIRMATION_FAILED)}
+                    element={<UploadConfirmationFailed />}
                 ></Route>
             </Routes>
             <Outlet></Outlet>
