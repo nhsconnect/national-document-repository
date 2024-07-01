@@ -1,8 +1,7 @@
 import { Button, ButtonLink, WarningCallout } from 'nhsuk-react-components';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router';
 import { routes } from '../../../../types/generic/routes';
-import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import ServiceDeskLink from '../../../generic/serviceDeskLink/ServiceDeskLink';
 
 type Props = {
@@ -11,12 +10,6 @@ type Props = {
 
 function LloydGeorgeUploadFailedStage({ restartUpload }: Props) {
     const navigate = useNavigate();
-
-    // temp solution to focus on layout div so that skip-link can be selected.
-    // we should remove this if this component become a separate route.
-    useEffect(() => {
-        focusLayoutDiv();
-    }, []);
 
     return (
         <>

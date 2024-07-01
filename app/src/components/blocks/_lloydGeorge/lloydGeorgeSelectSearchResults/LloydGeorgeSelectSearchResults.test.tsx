@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
-import React, { useState } from 'react';
+import React from 'react';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';

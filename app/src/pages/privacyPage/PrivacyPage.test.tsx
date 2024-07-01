@@ -6,7 +6,6 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import userEvent from '@testing-library/user-event';
 import { act } from 'react-dom/test-utils';
 import { routes } from '../../types/generic/routes';
-import ServerErrorPage from '../serverErrorPage/ServerErrorPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 const mockedUseNavigate = jest.fn();
 jest.mock('../../helpers/hooks/useRole');

@@ -1,4 +1,4 @@
-import { Roles, roleName } from '../../../support/roles';
+import { Roles } from '../../../support/roles';
 
 // env vars
 const baseUrl = Cypress.config('baseUrl');

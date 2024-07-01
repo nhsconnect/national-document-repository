@@ -9,11 +9,14 @@ import {
 import axios, { AxiosError } from 'axios';
 import { S3Upload, S3UploadFields, UploadSession } from '../../types/generic/uploadResult';
 import { Dispatch, SetStateAction } from 'react';
-import { setDocument } from '../../pages/lloydGeorgeUploadPage/LloydGeorgeUploadPage';
 import waitForSeconds from '../utils/waitForSeconds';
+import {
+    DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS,
+    setSingleDocument,
+} from '../utils/uploadAndScanDocumentHelpers';
+import { getLastURLPath } from '../utils/urlManipulations';
 
 const VIRUS_SCAN_RETRY_LIMIT = 3;
-const DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS = 5;
 const TIMEOUT_ERROR_STATUS_CODE = 504;
 const TIMEOUT_ERROR = 'TIMEOUT_ERROR';
 
@@ -58,7 +61,7 @@ type UploadConfirmationArgs = {
     uploadSession: UploadSession;
 };
 
-export const virusScanResult = async (virusScanArgs: VirusScanArgs) => {
+export const virusScan = async (virusScanArgs: VirusScanArgs) => {
     for (let i = 0; i < VIRUS_SCAN_RETRY_LIMIT; i++) {
         const scanResult = await requestVirusScan(virusScanArgs);
         if (scanResult === TIMEOUT_ERROR) {
@@ -99,12 +102,12 @@ export const uploadConfirmation = async ({
 }: UploadConfirmationArgs) => {
     const fileKeyBuilder = documents.reduce((acc, doc) => {
         const documentMetadata = uploadSession[doc.file.name];
-        const fileKey = documentMetadata.fields.key.split('/');
+        const fileReferenceUUID = getLastURLPath(documentMetadata.fields.key);
         const previousKeys = acc[doc.docType] ?? [];
 
         return {
             ...acc,
-            [doc.docType]: [...previousKeys, fileKey[3]],
+            [doc.docType]: [...previousKeys, fileReferenceUUID],
         };
     }, {} as FileKeyBuilder);
 
@@ -144,7 +147,7 @@ export const uploadDocumentToS3 = async ({
             onUploadProgress: (progress) => {
                 const { loaded, total } = progress;
                 if (total) {
-                    setDocument(setDocuments, {
+                    setSingleDocument(setDocuments, {
                         id: document.id,
                         state: DOCUMENT_UPLOAD_STATE.UPLOADING,
                         progress: (loaded / total) * 100,

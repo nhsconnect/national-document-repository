@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import LloydGeorgeUploadingStage from '../../components/blocks/_lloydGeorge/lloydGeorgeUploadingStage/LloydGeorgeUploadingStage';
 import { DOCUMENT_UPLOAD_STATE, UploadDocument } from '../../types/pages/UploadDocumentsPage/types';
 import LloydGeorgeFileInputStage from '../../components/blocks/_lloydGeorge/lloydGeorgeFileInputStage/LloydGeorgeFileInputStage';
@@ -9,8 +9,6 @@ import { UploadSession } from '../../types/generic/uploadResult';
 import uploadDocuments, {
     updateDocumentState,
     uploadConfirmation,
-    uploadDocumentToS3,
-    virusScanResult,
 } from '../../helpers/requests/uploadDocuments';
 import usePatient from '../../helpers/hooks/usePatient';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
@@ -18,12 +16,17 @@ import useBaseAPIHeaders from '../../helpers/hooks/useBaseAPIHeaders';
 import { AxiosError } from 'axios';
 import { isMock } from '../../helpers/utils/isLocal';
 import Spinner from '../../components/generic/spinner/Spinner';
-import { routes, routeChildren } from '../../types/generic/routes';
+import { routeChildren, routes } from '../../types/generic/routes';
 import { Outlet, Route, Routes, useNavigate } from 'react-router';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
-import waitForSeconds from '../../helpers/utils/waitForSeconds';
+import {
+    markDocumentsAsUploading,
+    setSingleDocument,
+    uploadAndScanSingleDocument,
+} from '../../helpers/utils/uploadAndScanDocumentHelpers';
+
 export enum LG_UPLOAD_STAGE {
     SELECT = 0,
     UPLOAD = 1,
@@ -32,39 +35,6 @@ export enum LG_UPLOAD_STAGE {
     FAILED = 4,
     CONFIRMATION = 5,
 }
-
-type UpdateDocumentArgs = {
-    id: string;
-    state: DOCUMENT_UPLOAD_STATE;
-    progress?: number | 'scan';
-    attempts?: number;
-    ref?: string;
-};
-
-const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = 3;
-
-export const setDocument = (
-    setDocuments: Dispatch<SetStateAction<UploadDocument[]>>,
-    { id, state, progress, attempts, ref }: UpdateDocumentArgs,
-) => {
-    setDocuments((prevState) =>
-        prevState.map((document) => {
-            if (document.id === id) {
-                if (progress === 'scan') {
-                    progress = undefined;
-                } else {
-                    progress = progress ?? document.progress;
-                }
-                attempts = attempts ?? document.attempts;
-                state = state ?? document.state;
-                ref = ref ?? document.ref;
-
-                return { ...document, state, progress, attempts };
-            }
-            return document;
-        }),
-    );
-};
 
 function LloydGeorgeUploadPage() {
     const patientDetails = usePatient();
@@ -83,9 +53,9 @@ function LloydGeorgeUploadPage() {
         const hasExceededUploadAttempts = documents.some((d) => d.attempts > 1);
         const hasVirus = documents.some((d) => d.state === DOCUMENT_UPLOAD_STATE.INFECTED);
         const hasNoVirus =
-            documents.length && documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
+            documents.length > 0 && documents.every((d) => d.state === DOCUMENT_UPLOAD_STATE.CLEAN);
 
-        const setUploadStateFailed = async () => {
+        const handleUploadFailure = async () => {
             await updateDocumentState({
                 documents: documents,
                 uploadingState: false,
@@ -96,39 +66,40 @@ function LloydGeorgeUploadPage() {
         };
 
         const confirmUpload = async () => {
-            if (uploadSession) {
-                navigate(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION);
-                try {
-                    const confirmDocumentState = await uploadConfirmation({
-                        baseUrl,
-                        baseHeaders,
-                        nhsNumber,
-                        uploadSession,
-                        documents,
-                    });
-                    setDocuments((prevState) =>
-                        prevState.map((document) => ({
-                            ...document,
-                            state: confirmDocumentState,
-                        })),
-                    );
-                    window.clearInterval(intervalTimer);
-                    navigate(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED);
-                } catch (e) {
-                    const error = e as AxiosError;
-                    if (error.response?.status === 403) {
-                        navigate(routes.SESSION_EXPIRED);
-                        return;
-                    }
-                    void setUploadStateFailed();
+            if (!uploadSession) {
+                return;
+            }
+            navigate(routeChildren.LLOYD_GEORGE_UPLOAD_CONFIRMATION);
+            try {
+                const confirmDocumentState = await uploadConfirmation({
+                    baseUrl,
+                    baseHeaders,
+                    nhsNumber,
+                    uploadSession,
+                    documents,
+                });
+                setDocuments((prevState) =>
+                    prevState.map((document) => ({
+                        ...document,
+                        state: confirmDocumentState,
+                    })),
+                );
+                window.clearInterval(intervalTimer);
+                navigate(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED);
+            } catch (e) {
+                const error = e as AxiosError;
+                if (error.response?.status === 403) {
+                    navigate(routes.SESSION_EXPIRED);
+                    return;
                 }
+                void handleUploadFailure();
             }
         };
 
         if (hasExceededUploadAttempts && !exceededReference.current) {
             exceededReference.current = true;
             window.clearInterval(intervalTimer);
-            void setUploadStateFailed();
+            void handleUploadFailure();
         } else if (hasVirus && !virusReference.current) {
             virusReference.current = true;
             window.clearInterval(intervalTimer);
@@ -154,44 +125,45 @@ function LloydGeorgeUploadPage() {
         };
     }, [intervalTimer]);
 
-    const uploadAndScanDocuments = (
+    const uploadAndScanSingleLloydGeorgeDocument = async (
+        document: UploadDocument,
+        uploadSession: UploadSession,
+    ) => {
+        try {
+            await uploadAndScanSingleDocument({
+                document,
+                uploadSession,
+                setDocuments,
+                baseUrl,
+                baseHeaders,
+            });
+        } catch (e) {
+            window.clearInterval(intervalTimer);
+            markDocumentAsFailed(document);
+        }
+    };
+
+    function markDocumentAsFailed(document: UploadDocument) {
+        setSingleDocument(setDocuments, {
+            id: document.id,
+            state: DOCUMENT_UPLOAD_STATE.FAILED,
+            attempts: document.attempts + 1,
+            progress: 0,
+        });
+        void updateDocumentState({
+            documents,
+            uploadingState: false,
+            baseUrl,
+            baseHeaders,
+        });
+    }
+
+    const uploadAndScanAllDocuments = (
         uploadDocuments: Array<UploadDocument>,
         uploadSession: UploadSession,
     ) => {
-        uploadDocuments.forEach(async (document) => {
-            try {
-                await uploadDocumentToS3({ setDocuments, document, uploadSession });
-                setDocument(setDocuments, {
-                    id: document.id,
-                    state: DOCUMENT_UPLOAD_STATE.SCANNING,
-                    progress: 'scan',
-                });
-                await waitForSeconds(DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS);
-                const virusDocumentState = await virusScanResult({
-                    documentReference: document.key ?? '',
-                    baseUrl,
-                    baseHeaders,
-                });
-                setDocument(setDocuments, {
-                    id: document.id,
-                    state: virusDocumentState,
-                    progress: 100,
-                });
-            } catch (e) {
-                window.clearInterval(intervalTimer);
-                setDocument(setDocuments, {
-                    id: document.id,
-                    state: DOCUMENT_UPLOAD_STATE.FAILED,
-                    attempts: document.attempts + 1,
-                    progress: 0,
-                });
-                await updateDocumentState({
-                    documents,
-                    uploadingState: false,
-                    baseUrl,
-                    baseHeaders,
-                });
-            }
+        uploadDocuments.forEach((document) => {
+            void uploadAndScanSingleLloydGeorgeDocument(document, uploadSession);
         });
     };
 
@@ -205,20 +177,11 @@ function LloydGeorgeUploadPage() {
                 baseHeaders,
             });
             setUploadSession(uploadSession);
-            const uploadingDocuments = documents.map((doc) => {
-                const documentMetadata = uploadSession[doc.file.name];
-                const documentReference = documentMetadata.fields.key;
-                return {
-                    ...doc,
-                    state: DOCUMENT_UPLOAD_STATE.UPLOADING,
-                    key: documentReference,
-                    ref: documentReference.split('/')[3],
-                };
-            });
+            const uploadingDocuments = markDocumentsAsUploading(documents, uploadSession);
             const updateStateInterval = startIntervalTimer(uploadingDocuments);
             setIntervalTimer(updateStateInterval);
             setDocuments(uploadingDocuments);
-            uploadAndScanDocuments(uploadingDocuments, uploadSession);
+            uploadAndScanAllDocuments(uploadingDocuments, uploadSession);
             navigate(routeChildren.LLOYD_GEORGE_UPLOAD_UPLOADING);
         } catch (e) {
             const error = e as AxiosError;
@@ -287,7 +250,7 @@ function LloydGeorgeUploadPage() {
                             <LloydGeorgeUploadingStage
                                 documents={documents}
                                 uploadSession={uploadSession}
-                                uploadAndScanDocuments={uploadAndScanDocuments}
+                                uploadAndScanDocuments={uploadAndScanAllDocuments}
                             />
                         }
                     />

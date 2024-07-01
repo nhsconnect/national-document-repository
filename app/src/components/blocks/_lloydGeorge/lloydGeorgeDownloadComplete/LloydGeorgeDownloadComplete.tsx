@@ -1,7 +1,6 @@
-import React, { Dispatch, SetStateAction, useEffect } from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { Button, Card } from 'nhsuk-react-components';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
-import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
@@ -25,14 +24,7 @@ function LloydGeorgeDownloadComplete({
     searchResults,
     setDownloadStage,
 }: Props) {
-    // temp solution to focus on layout div so that skip-link can be selected.
-    // we should remove this when this component become a separate route.
-
     const navigate = useNavigate();
-
-    useEffect(() => {
-        focusLayoutDiv();
-    }, []);
 
     const selectedFilesDownload = !!selectedDocuments?.length;
     const pageHeader = 'Download complete';
