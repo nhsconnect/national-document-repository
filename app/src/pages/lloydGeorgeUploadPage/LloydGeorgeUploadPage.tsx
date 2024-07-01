@@ -22,6 +22,7 @@ import { errorToParams } from '../../helpers/utils/errorToParams';
 import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
 import {
+    FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD,
     markDocumentsAsUploading,
     setSingleDocument,
     uploadAndScanSingleDocument,
@@ -223,7 +224,7 @@ function LloydGeorgeUploadPage() {
                 baseUrl,
                 baseHeaders,
             });
-        }, 120000);
+        }, FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD);
     };
 
     return (

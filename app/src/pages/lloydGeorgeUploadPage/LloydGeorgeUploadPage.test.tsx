@@ -24,6 +24,7 @@ import { MomentInput } from 'moment/moment';
 import * as ReactRouter from 'react-router';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
 
 jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
@@ -183,7 +184,8 @@ describe('LloydGeorgeUploadPage', () => {
             async (numberOfTimes: number) => {
                 jest.useFakeTimers();
 
-                const expectedTimeTaken = 120001 * numberOfTimes;
+                const expectedTimeTaken =
+                    (FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD + 1) * numberOfTimes;
                 mockS3Upload.mockImplementationOnce(() => {
                     jest.advanceTimersByTime(expectedTimeTaken + 100);
                     return Promise.resolve();
@@ -309,9 +311,6 @@ describe('LloydGeorgeUploadPage', () => {
             await waitFor(() => {
                 expect(mockUploadConfirmation).toHaveBeenCalled();
             });
-            /**
-             * Replace the 'getByText mock bla bla' in other tests
-             */
             expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED);
         });
 
