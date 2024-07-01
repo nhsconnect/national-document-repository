@@ -24,6 +24,7 @@ import { errorToParams } from '../../helpers/utils/errorToParams';
 import usePatient from '../../helpers/hooks/usePatient';
 import { buildUploadSession } from '../../helpers/test/testBuilders';
 import UploadConfirmationFailed from '../../components/blocks/_arf/uploadConfirmationFailed/uploadConfirmationFailed';
+import UploadFailedStage from '../../components/blocks/_arf/uploadFailedStage/uploadFailedStage';
 
 function UploadDocumentsPage() {
     const [documents, setDocuments] = useState<Array<UploadDocument>>([]);
@@ -231,19 +232,7 @@ function UploadDocumentsPage() {
                 ></Route>
                 <Route
                     path={getLastURLPath(routeChildren.ARF_UPLOAD_FAILED)}
-                    element={
-                        <div>
-                            <h1>All files failed to upload</h1>
-                            <p>
-                                The electronic health record was not uploaded for this patient. You
-                                will need to check your files and try again.
-                            </p>
-                            <p>
-                                Make sure to safely store the electronic health record until it's
-                                completely uploaded to this storage.
-                            </p>
-                        </div>
-                    }
+                    element={<UploadFailedStage />}
                 ></Route>
                 <Route
                     path={getLastURLPath(routeChildren.ARF_UPLOAD_CONFIRMATION_FAILED)}
