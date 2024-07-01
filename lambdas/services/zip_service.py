@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from models.document_reference import DocumentReference
 from models.zip_trace import ZipTrace
+from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -106,3 +107,30 @@ class DocumentZipService:
             search_key="JobId",
             search_condition=job_id,
         )
+
+    def extract_item_from_dynamo_response(self, dynamo_response):
+        response = dynamo_response["Items"]
+        if len(response) > 1:
+            raise DocumentManifestServiceException(
+                status_code=500, error=LambdaError.ManifestClient
+            )
+
+        elif len(response) == 0:
+            raise DocumentManifestServiceException(
+                status_code=404, error=LambdaError.ManifestClient
+            )
+
+        return response
+
+    def create_zip_trace_object(self, dynamodb_item):
+        try:
+            return ZipTrace.model_validate(dynamodb_item)
+
+        except ValidationError as e:
+            logger.error(
+                f"{LambdaError.ManifestValidation.to_str()}: {str(e)}",
+                {"Result": "Failed to create document manifest"},
+            )
+            raise DocumentManifestServiceException(
+                status_code=500, error=LambdaError.ManifestValidation
+            )
