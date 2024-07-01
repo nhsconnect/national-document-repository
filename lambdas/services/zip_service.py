@@ -1,0 +1,108 @@
+import os
+import shutil
+import tempfile
+import zipfile
+
+from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
+from models.document_reference import DocumentReference
+from models.zip_trace import ZipTrace
+from services.base.dynamo_service import DynamoDBService
+from services.base.s3_service import S3Service
+from utils.audit_logging_setup import LoggingService
+from utils.lambda_exceptions import DocumentManifestServiceException
+
+logger = LoggingService(__name__)
+
+
+class DocumentZipService:
+    def __init__(self):
+        self.s3_service = S3Service()
+        self.dynamo_service = DynamoDBService()
+        self.temp_output_dir = tempfile.mkdtemp()
+        self.temp_downloads_dir = tempfile.mkdtemp()
+        self.zip_file_name = "patient-record-{}.zip"
+
+        self.zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
+        self.zip_trace_table = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
+        self.zip_file_path = os.path.join(self.temp_output_dir, self.zip_file_name)
+        self.file_names_to_be_zipped = {}
+
+    def handle_zip_request(self, job_id: str):
+        documents = self.get_document_locations_list_from_dynamo(job_id)
+        self.download_documents_to_be_zipped(documents)
+        self.upload_zip_file()
+        self.remove_temp_files()
+
+    def download_documents_to_be_zipped(self, documents: list[DocumentReference]):
+        logger.info("Downloading documents to be zipped")
+
+        for document in documents:
+            self.handle_duplication_in_filename(document)
+            self.download_file(document)
+
+    def download_file(self, document):
+        download_path = os.path.join(self.temp_downloads_dir, document.file_name)
+
+        try:
+            self.s3_service.download_file(
+                document.get_file_bucket(), document.get_file_key(), download_path
+            )
+        except ClientError as e:
+            msg = f"{document.get_file_key()} may reference missing file in s3 bucket: {document.get_file_bucket()}"
+            logger.error(
+                f"{LambdaError.ManifestClient.to_str()} {msg + str(e)}",
+                {"Result": "Failed to create document manifest"},
+            )
+            raise DocumentManifestServiceException(
+                status_code=500, error=LambdaError.ManifestClient
+            )
+
+    def handle_duplication_in_filename(self, document):
+        duplicated_filename = document.file_name in self.file_names_to_be_zipped
+
+        if duplicated_filename:
+            self.file_names_to_be_zipped[document.file_name] += 1
+            document.file_name = document.create_unique_filename(
+                self.file_names_to_be_zipped[document.file_name]
+            )
+
+        else:
+            self.file_names_to_be_zipped[document.file_name] = 1
+
+    def upload_zip_file(self):
+        logger.info("Uploading zip file to s3")
+        self.s3_service.upload_file(
+            file_name=self.zip_file_path,
+            s3_bucket_name=self.zip_output_bucket,
+            file_key=f"{self.zip_file_name}",
+        )
+
+    def zip_file(self):
+        logger.info("Creating zip from files")
+        with zipfile.ZipFile(self.zip_file_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for root, _, files in os.walk(self.temp_downloads_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    arc_name = os.path.relpath(file_path, self.temp_downloads_dir)
+                    zipf.write(file_path, arc_name)
+
+    def update_dynamo_with_zip_location(self):
+        logger.info("Writing zip trace to db")
+        zip_trace = ZipTrace(
+            f"s3://{self.zip_output_bucket}/{self.zip_file_name}",
+        )
+        self.dynamo_service.create_item(self.zip_trace_table, zip_trace.to_dict())
+
+    def remove_temp_files(self):
+        # Removes the parent of each removed directory until the parent does not exist or the parent is not empty
+        shutil.rmtree(self.temp_downloads_dir)
+        shutil.rmtree(self.temp_output_dir)
+
+    def get_document_locations_list_from_dynamo(self, job_id):
+        return self.dynamo_service.query_with_requested_fields(
+            table_name=self.zip_trace_table,
+            index_name="JobIdIndex",
+            search_key="JobId",
+            search_condition=job_id,
+        )
