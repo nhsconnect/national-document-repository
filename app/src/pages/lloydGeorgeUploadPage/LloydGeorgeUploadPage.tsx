@@ -217,15 +217,11 @@ function LloydGeorgeUploadPage() {
 
     const startIntervalTimer = (uploadDocuments: Array<UploadDocument>) => {
         return window.setInterval(() => {
-            uploadDocuments.forEach(async (document) => {
-                try {
-                    await updateDocumentState({
-                        documents,
-                        uploadingState: true,
-                        baseUrl,
-                        baseHeaders,
-                    });
-                } catch (e) {}
+            void updateDocumentState({
+                documents: uploadDocuments,
+                uploadingState: true,
+                baseUrl,
+                baseHeaders,
             });
         }, 120000);
     };

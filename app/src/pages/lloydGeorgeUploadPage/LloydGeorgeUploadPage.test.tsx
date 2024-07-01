@@ -208,6 +208,13 @@ describe('LloydGeorgeUploadPage', () => {
                 });
 
                 expect(mockUpdateDocumentState).toHaveBeenCalledTimes(numberOfTimes);
+                const updateDocumentStateArguments = mockUpdateDocumentState.mock.calls[0][0];
+                updateDocumentStateArguments.documents.forEach((doc: UploadDocument) => {
+                    expect(doc).toMatchObject({
+                        docType: 'LG',
+                        ref: expect.stringContaining('uuid_for_file'),
+                    });
+                });
                 expect(mockVirusScan).toHaveBeenCalled();
                 expect(mockUploadConfirmation).toHaveBeenCalled();
                 expect(mockNavigate).toHaveBeenCalledWith(
