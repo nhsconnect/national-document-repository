@@ -10,6 +10,8 @@ import { getLastURLPath } from './urlManipulations';
 export const DELAY_BEFORE_VIRUS_SCAN_IN_SECONDS = isRunningInCypress() ? 0 : 3;
 export const DELAY_BETWEEN_VIRUS_SCAN_RETRY_IN_SECONDS = isRunningInCypress() ? 0 : 5;
 
+export const FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD = 2 * 60 * 1000; // 2 minutes
+
 type UpdateDocumentArgs = {
     id: string;
     state: DOCUMENT_UPLOAD_STATE;
