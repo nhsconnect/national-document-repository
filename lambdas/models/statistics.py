@@ -2,14 +2,12 @@ import uuid
 from decimal import Decimal
 from typing import NamedTuple
 
-from models.config import to_capitalized_camel
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
+from pydantic.alias_generators import to_pascal
 
 
 class StatisticData(BaseModel):
-    model_config = ConfigDict(
-        alias_generator=to_capitalized_camel, populate_by_name=True
-    )
+    model_config = ConfigDict(alias_generator=to_pascal, populate_by_name=True)
     statistic_id: str = Field(
         default_factory=lambda: str(uuid.uuid4()), alias="StatisticID"
     )

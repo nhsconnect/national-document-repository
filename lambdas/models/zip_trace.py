@@ -1,7 +1,10 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+from typing import Dict
 
 from enums.metadata_field_names import DocumentZipTraceFields
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 
 class ZipTrace:
@@ -17,3 +20,14 @@ class ZipTrace:
             DocumentZipTraceFields.CREATED.value: self.created,
         }
         return zip_trace_metadata
+
+
+class ZipTraceModel(BaseModel):
+    conf = ConfigDict(alias_generator=to_camel)
+
+    id: str
+    job_id: str
+    created: date
+    files_to_download: Dict[str, str]
+    status: str
+    zip_file_location: str

@@ -1,11 +1,12 @@
 from datetime import date
 from typing import Optional, Tuple
 
-from models.config import conf
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
+conf = ConfigDict(alias_generator=to_camel)
 
 
 class Period(BaseModel):

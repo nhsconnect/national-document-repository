@@ -1,7 +1,7 @@
 import html
 
-from models.config import to_camel
 from pydantic import BaseModel, ConfigDict, Field, field_validator, validate_email
+from pydantic.alias_generators import to_camel
 
 
 class Feedback(BaseModel):
