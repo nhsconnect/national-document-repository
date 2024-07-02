@@ -15,7 +15,7 @@ describe('<UploadDocumentsPage />', () => {
         const triggerUploadStateChange = (
             document: UploadDocument,
             state: DOCUMENT_UPLOAD_STATE,
-            progress: number,
+            progress?: number,
         ) => {
             act(() => {
                 document.state = state;
@@ -119,12 +119,24 @@ describe('<UploadDocumentsPage />', () => {
             triggerUploadStateChange(documentTwo, documentUploadStates.SUCCEEDED, 100);
             rerender(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
             expect(getProgressBarValue(documentTwo)).toEqual(100);
-            expect(getProgressText(documentTwo)).toContain('Uploaded');
+            expect(getProgressText(documentTwo)).toContain('Upload succeeded');
 
             triggerUploadStateChange(documentOne, documentUploadStates.FAILED, 0);
             rerender(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
             expect(getProgressBarValue(documentOne)).toEqual(0);
             expect(getProgressText(documentOne)).toContain('Upload failed');
+
+            triggerUploadStateChange(documentTwo, documentUploadStates.SCANNING);
+            rerender(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
+            expect(getProgressText(documentTwo)).toContain('Virus scan in progress');
+
+            triggerUploadStateChange(documentTwo, documentUploadStates.CLEAN);
+            rerender(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
+            expect(getProgressText(documentTwo)).toContain('Virus scan complete');
+
+            triggerUploadStateChange(documentTwo, documentUploadStates.SUCCEEDED);
+            rerender(<UploadingStage documents={[documentOne, documentTwo, documentThree]} />);
+            expect(getProgressText(documentTwo)).toContain('Upload succeeded');
         });
     });
 

@@ -1,7 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import AuthErrorPage from './AuthErrorPage';
 import { LinkProps } from 'react-router-dom';
-import FeedbackPage from '../feedbackPage/FeedbackPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 jest.mock('react-router-dom', () => ({

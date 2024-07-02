@@ -12,7 +12,7 @@ import uploadDocuments, {
     updateDocumentState,
     uploadConfirmation,
     uploadDocumentToS3,
-    virusScanResult,
+    virusScan,
 } from '../../helpers/requests/uploadDocuments';
 import { act } from 'react-dom/test-utils';
 import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
@@ -39,7 +39,7 @@ jest.mock('../../helpers/utils/waitForSeconds');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockUploadDocuments = uploadDocuments as jest.Mock;
 const mockS3Upload = uploadDocumentToS3 as jest.Mock;
-const mockVirusScan = virusScanResult as jest.Mock;
+const mockVirusScan = virusScan as jest.Mock;
 const mockUploadConfirmation = uploadConfirmation as jest.Mock;
 const mockUpdateDocumentState = updateDocumentState as jest.Mock;
 const mockNavigate = jest.fn();

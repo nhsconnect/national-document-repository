@@ -5,7 +5,7 @@ import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsP
 import { useNavigate } from 'react-router';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
 import { AxiosError } from 'axios';
-import { Dispatch, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
@@ -15,7 +15,6 @@ type Props = {
     nhsNumber: string;
     downloadState: string;
     updateDownloadState: (newState: SUBMISSION_STATE) => void;
-    setIsDeletingDocuments: Dispatch<boolean>;
 };
 
 interface DownloadLinkAttributes {

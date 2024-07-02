@@ -1,4 +1,4 @@
-import React, { Dispatch, MouseEvent, SetStateAction, useEffect } from 'react';
+import React, { Dispatch, MouseEvent, SetStateAction } from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
 import { routes } from '../../../../types/generic/routes';
 import { Link } from 'react-router-dom';
@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
-import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 
@@ -18,12 +17,6 @@ export type Props = {
 function DeleteResultStage({ numberOfFiles, setDownloadStage }: Props) {
     const navigate = useNavigate();
     const role = useRole();
-
-    // temp solution to focus on layout div so that skip-link can be selected.
-    // we should remove this when this component become a separate route.
-    useEffect(() => {
-        focusLayoutDiv();
-    }, []);
 
     const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();

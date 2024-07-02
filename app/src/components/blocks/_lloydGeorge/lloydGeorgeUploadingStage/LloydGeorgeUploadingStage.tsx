@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import {
     DOCUMENT_UPLOAD_STATE,
@@ -9,8 +9,8 @@ import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import { UploadSession } from '../../../../types/generic/uploadResult';
-import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
+import { getUploadMessage } from '../../../../helpers/utils/uploadAndScanDocumentHelpers';
 
 export type Props = {
     documents: Array<UploadDocument>;
@@ -22,31 +22,12 @@ export type Props = {
 };
 
 function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocuments }: Props) {
-    const getUploadMessage = ({ state, progress }: UploadDocument) => {
-        const showProgress = state === DOCUMENT_UPLOAD_STATE.UPLOADING && progress !== undefined;
-
-        if (state === DOCUMENT_UPLOAD_STATE.SELECTED) return 'Waiting...';
-        else if (showProgress) return `${Math.round(progress)}% uploaded...`;
-        else if (state === DOCUMENT_UPLOAD_STATE.FAILED) return 'Upload failed';
-        else if (state === DOCUMENT_UPLOAD_STATE.INFECTED) return 'File has failed a virus scan';
-        else if (state === DOCUMENT_UPLOAD_STATE.CLEAN) return 'Virus scan complete';
-        else if (state === DOCUMENT_UPLOAD_STATE.SCANNING) return 'Virus scan in progress';
-        else if (state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) return 'Upload succeeded';
-        else {
-            return 'Upload failed';
-        }
-    };
     const hasFailedUploads = documents.some(
         (d) =>
             !!d.attempts &&
             ![DOCUMENT_UPLOAD_STATE.UPLOADING, DOCUMENT_UPLOAD_STATE.SCANNING].includes(d.state),
     );
 
-    // temp solution to focus on layout div so that skip-link can be selected.
-    // we should remove this if this component become a separate route.
-    useEffect(() => {
-        focusLayoutDiv();
-    }, []);
     const pageHeader = 'Uploading record';
     useTitle({ pageTitle: pageHeader });
     return (
@@ -101,6 +82,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                             DOCUMENT_UPLOAD_STATE.UPLOADING,
                             DOCUMENT_UPLOAD_STATE.SCANNING,
                         ].includes(document.state);
+                        const isScanning = document.state === DOCUMENT_UPLOAD_STATE.SCANNING;
 
                         const uploadFailed = !!document.attempts && notInProgress;
 
@@ -121,7 +103,7 @@ function LloydGeorgeUploadStage({ documents, uploadSession, uploadAndScanDocumen
                                     <progress
                                         aria-label={`Uploading ${document.file.name}`}
                                         max="100"
-                                        value={document.progress}
+                                        value={isScanning ? undefined : document.progress}
                                     ></progress>
                                     <output aria-label={`${document.file.name} upload status`}>
                                         {getUploadMessage(document)}

@@ -44,7 +44,9 @@ export enum routeChildren {
     ARF_DELETE_CONFIRMATION = '/patient/arf/delete/confirmation',
     ARF_DELETE_COMPLETE = '/patient/arf/delete/complete',
     ARF_UPLOAD_UPLOADING = '/patient/arf/upload/in-progress',
+    ARF_UPLOAD_CONFIRMATION = '/patient/arf/upload/confirmation',
     ARF_UPLOAD_COMPLETED = '/patient/arf/upload/completed',
+    ARF_UPLOAD_FAILED = '/patient/arf/upload/failed',
 }
 
 export enum ROUTE_TYPE {

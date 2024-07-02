@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/_arf/documentSearchResults/DocumentSearchResults';
 import { Outlet, Route, Routes, useNavigate } from 'react-router';
@@ -31,15 +31,10 @@ function DocumentSearchResultsPage() {
     const [searchResults, setSearchResults] = useState<Array<SearchResult>>([]);
     const [submissionState, setSubmissionState] = useState(SUBMISSION_STATE.INITIAL);
     const [downloadState, setDownloadState] = useState(SUBMISSION_STATE.INITIAL);
-    const [isDeletingDocuments, setIsDeletingDocuments] = useState(false);
     const navigate = useNavigate();
     const baseUrl = useBaseAPIUrl();
     const baseHeaders = useBaseAPIHeaders();
     const config = useConfig();
-
-    const handleUpdateDownloadState = (newState: SUBMISSION_STATE) => {
-        setDownloadState(newState);
-    };
 
     const mounted = useRef(false);
     useEffect(() => {
@@ -79,22 +74,64 @@ function DocumentSearchResultsPage() {
             mounted.current = true;
             void onPageLoad();
         }
-    }, [
-        patientDetails,
-        searchResults,
-        nhsNumber,
-        setSearchResults,
-        setSubmissionState,
-        isDeletingDocuments,
-        navigate,
-        baseUrl,
-        baseHeaders,
-        config,
-    ]);
+    }, [nhsNumber, navigate, baseUrl, baseHeaders, config]);
     const pageHeader = 'Download electronic health records and attachments';
     useTitle({ pageTitle: pageHeader });
 
-    const PageIndexView = () => (
+    return (
+        <>
+            <div>
+                <Routes>
+                    <Route
+                        index
+                        element={
+                            <DocumentSearchResultsPageIndex
+                                submissionState={submissionState}
+                                nhsNumber={nhsNumber}
+                                downloadState={downloadState}
+                                setDownloadState={setDownloadState}
+                                searchResults={searchResults}
+                                pageHeader={pageHeader}
+                            />
+                        }
+                    />
+                    <Route
+                        path={getLastURLPath(routeChildren.ARF_DELETE) + '/*'}
+                        element={
+                            <DeleteSubmitStage
+                                recordType="ARF"
+                                numberOfFiles={searchResults.length}
+                                docType={DOCUMENT_TYPE.ALL}
+                            />
+                        }
+                    />
+                </Routes>
+
+                <Outlet />
+            </div>
+        </>
+    );
+}
+
+type PageIndexArgs = {
+    submissionState: SUBMISSION_STATE;
+    downloadState: SUBMISSION_STATE;
+    setDownloadState: Dispatch<SetStateAction<SUBMISSION_STATE>>;
+    searchResults: SearchResult[];
+    pageHeader: string;
+    nhsNumber: string;
+};
+const DocumentSearchResultsPageIndex = ({
+    submissionState,
+    downloadState,
+    searchResults,
+    pageHeader,
+    nhsNumber,
+    setDownloadState,
+}: PageIndexArgs) => {
+    const navigate = useNavigate();
+
+    return (
         <>
             <h1 id="download-page-title">{pageHeader}</h1>
 
@@ -115,14 +152,13 @@ function DocumentSearchResultsPage() {
 
             {submissionState === SUBMISSION_STATE.SUCCEEDED && (
                 <>
-                    {searchResults.length && patientDetails ? (
+                    {searchResults.length && nhsNumber ? (
                         <>
                             <DocumentSearchResults searchResults={searchResults} />
                             <DocumentSearchResultsOptions
                                 nhsNumber={nhsNumber}
                                 downloadState={downloadState}
-                                updateDownloadState={handleUpdateDownloadState}
-                                setIsDeletingDocuments={setIsDeletingDocuments}
+                                updateDownloadState={setDownloadState}
                             />
                         </>
                     ) : (
@@ -160,28 +196,6 @@ function DocumentSearchResultsPage() {
             )}
         </>
     );
-
-    return (
-        <>
-            <div>
-                <Routes>
-                    <Route index element={<PageIndexView />} />
-                    <Route
-                        path={getLastURLPath(routeChildren.ARF_DELETE) + '/*'}
-                        element={
-                            <DeleteSubmitStage
-                                recordType="ARF"
-                                numberOfFiles={searchResults.length}
-                                docType={DOCUMENT_TYPE.ALL}
-                            />
-                        }
-                    />
-                </Routes>
-
-                <Outlet />
-            </div>
-        </>
-    );
-}
+};
 
 export default DocumentSearchResultsPage;
