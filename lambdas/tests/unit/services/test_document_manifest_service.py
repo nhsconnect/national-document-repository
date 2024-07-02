@@ -66,6 +66,7 @@ def test_create_document_manifest_presigned_url_doc_store(
     response = mock_service.create_document_manifest_presigned_url(
         [SupportedDocumentTypes.ARF]
     )
+
     assert mock_service.zip_file_name == f"patient-record-{TEST_NHS_NUMBER}.zip"
     assert response == MOCK_PRESIGNED_URL_RESPONSE
     mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(

@@ -34,8 +34,8 @@ class DocumentZipService:
         self.file_names_to_be_zipped = {}
 
     def handle_zip_request(self, job_id: str):
-        documents = self.get_document_locations_list_from_dynamo(job_id)
-        self.download_documents_to_be_zipped(documents)
+        self.arrange_zip_trace_object(job_id)
+        # self.download_documents_to_be_zipped(documents)
         self.upload_zip_file()
         self.remove_temp_files()
 
@@ -128,7 +128,12 @@ class DocumentZipService:
 
     @staticmethod
     def extract_item_from_dynamo_response(dynamo_response) -> Dict:
-        return dynamo_response["Items"]
+        try:
+            return dynamo_response["Items"]
+        except KeyError:
+            raise GenerateManifestZipException(
+                status_code=500, error=LambdaError.FailedToQueryDynamo
+            )
 
     @staticmethod
     def checking_number_of_items_is_one(items) -> None:

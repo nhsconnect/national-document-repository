@@ -10,7 +10,7 @@ def format_day_time_now() -> str:
 
 
 class ZipTrace(BaseModel):
-    conf = ConfigDict(alias_generator=to_camel)
+    model_config = ConfigDict(alias_generator=to_camel)
 
     id: str
     job_id: str
