@@ -12,7 +12,10 @@ from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
-from utils.lambda_exceptions import DocumentManifestServiceException
+from utils.lambda_exceptions import (
+    DocumentManifestServiceException,
+    GenerateManifestZipException,
+)
 
 logger = LoggingService(__name__)
 
@@ -107,15 +110,21 @@ class DocumentZipService:
         dynamo_response = self.get_zip_trace_item_from_dynamo_by_job_id(job_id)
         dynamo_item = self.extract_item_from_dynamo_response(dynamo_response)
         self.checking_number_of_items_is_one(dynamo_item)
-        # g zip_trace = self.create_zip_trace_object(dynamo_item)
+        self.zip_trace_object = self.create_zip_trace_object(dynamo_item)
 
     def get_zip_trace_item_from_dynamo_by_job_id(self, job_id):
-        return self.dynamo_service.query_with_requested_fields(
-            table_name=self.zip_trace_table,
-            index_name="JobIdIndex",
-            search_key="JobId",
-            search_condition=job_id,
-        )
+        try:
+            return self.dynamo_service.query_with_requested_fields(
+                table_name=self.zip_trace_table,
+                index_name="JobIdIndex",
+                search_key="JobId",
+                search_condition=job_id,
+            )
+        except ClientError:
+            logger.error("Failed querying Dynamo with job id")
+            raise GenerateManifestZipException(
+                status_code=500, error=LambdaError.FailedToQueryDynamo
+            )
 
     @staticmethod
     def extract_item_from_dynamo_response(dynamo_response) -> Dict:
@@ -124,13 +133,13 @@ class DocumentZipService:
     @staticmethod
     def checking_number_of_items_is_one(items) -> None:
         if len(items) > 1:
-            raise DocumentManifestServiceException(
-                status_code=500, error=LambdaError.ManifestClient
+            raise GenerateManifestZipException(
+                status_code=400, error=LambdaError.DuplicateJobId
             )
 
         elif len(items) == 0:
-            raise DocumentManifestServiceException(
-                status_code=404, error=LambdaError.ManifestClient
+            raise GenerateManifestZipException(
+                status_code=404, error=LambdaError.JobIdNotFound
             )
 
     @staticmethod

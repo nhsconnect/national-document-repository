@@ -321,6 +321,22 @@ class LambdaError(Enum):
     }
 
     """
+       Errors for Generate Manifest Zip lambda 
+    """
+
+    JobIdNotFound = {
+        "err_code": "GMZ_4001",
+        "message": "Could not locate job id in DynamoDB",
+    }
+
+    DuplicateJobId = {
+        "err_code": "GMZ_4002",
+        "message": "Multiple items found with job id",
+    }
+
+    FailedToQueryDynamo = {"err_code": "GMZ_5001", "message": "Dynamo client error"}
+
+    """
        Errors for Update Upload State lambda 
     """
     UpdateUploadStateMissingBody = {

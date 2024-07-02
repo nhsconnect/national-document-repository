@@ -70,3 +70,7 @@ class UploadConfirmResultException(LambdaException):
 
 class UpdateUploadStateException(LambdaException):
     pass
+
+
+class GenerateManifestZipException(LambdaException):
+    pass
