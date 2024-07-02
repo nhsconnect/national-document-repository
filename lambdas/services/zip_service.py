@@ -24,7 +24,7 @@ class DocumentZipService:
         self.temp_output_dir = tempfile.mkdtemp()
         self.temp_downloads_dir = tempfile.mkdtemp()
         self.zip_file_name = "patient-record-{}.zip"
-
+        self.zip_trace_object = None
         self.zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
         self.zip_trace_table = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
         self.zip_file_path = os.path.join(self.temp_output_dir, self.zip_file_name)
@@ -103,7 +103,13 @@ class DocumentZipService:
         shutil.rmtree(self.temp_downloads_dir)
         shutil.rmtree(self.temp_output_dir)
 
-    def get_document_locations_list_from_dynamo(self, job_id):
+    def arrange_zip_trace_object(self, job_id):
+        dynamo_response = self.get_zip_trace_item_from_dynamo_by_job_id(job_id)
+        dynamo_item = self.extract_item_from_dynamo_response(dynamo_response)
+        self.checking_number_of_items_is_one(dynamo_item)
+        # g zip_trace = self.create_zip_trace_object(dynamo_item)
+
+    def get_zip_trace_item_from_dynamo_by_job_id(self, job_id):
         return self.dynamo_service.query_with_requested_fields(
             table_name=self.zip_trace_table,
             index_name="JobIdIndex",
