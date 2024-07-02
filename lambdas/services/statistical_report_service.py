@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 
 import polars as pl
 import polars.selectors as column_select
-from boto3.dynamodb.conditions import Key
 from inflection import humanize
 from models.statistics import (
     ApplicationData,
@@ -70,7 +69,8 @@ class StatisticalReportService:
         for date in self.dates_to_collect:
             response = self.dynamo_service.query_all_fields(
                 table_name=self.statistic_table,
-                key_condition_expression=Key("Date").eq(date),
+                search_key="Date",
+                search_condition=date,
             )
             dynamodb_items.extend(response["Items"])
 

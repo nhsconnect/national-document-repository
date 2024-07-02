@@ -339,7 +339,10 @@ class LambdaError(Enum):
     }
 
     FailedToQueryDynamo = {"err_code": "GMZ_5001", "message": "Dynamo client error"}
-
+    ZipServiceClientError = {
+        "err_code": "GMZ_5002",
+        "message": "Failed to create document manifest",
+    }
     """
        Errors for Update Upload State lambda 
     """
