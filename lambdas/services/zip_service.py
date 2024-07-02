@@ -2,39 +2,31 @@ import os
 import shutil
 import tempfile
 import zipfile
-from typing import Dict
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
-from models.zip_trace import ZipTrace
-from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidDocumentReferenceException
-from utils.lambda_exceptions import (
-    DocumentManifestServiceException,
-    GenerateManifestZipException,
-)
+from utils.lambda_exceptions import DocumentManifestServiceException
 
 logger = LoggingService(__name__)
 
 
 class DocumentZipService:
-    def __init__(self, job_id: str):
+    def __init__(self, zip_trace):
         self.s3_service = S3Service()
         self.dynamo_service = DynamoDBService()
         self.temp_output_dir = tempfile.mkdtemp()
         self.temp_downloads_dir = tempfile.mkdtemp()
-        self.job_id = job_id
-        self.zip_file_name = f"patient-record-{self.job_id}.zip"
-        self.zip_trace_object: ZipTrace
+        self.zip_trace_object = zip_trace
         self.zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
         self.zip_trace_table = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
+        self.zip_file_name = f"patient-record-{zip_trace.job_id}.zip"
         self.zip_file_path = os.path.join(self.temp_output_dir, self.zip_file_name)
 
     def handle_zip_request(self):
-        self.set_zip_trace_object()
         self.download_documents_to_be_zipped()
         self.zip_files()
         self.upload_zip_file()
@@ -62,7 +54,8 @@ class DocumentZipService:
                 status_code=500, error=LambdaError.ZipServiceClientError
             )
 
-    def get_file_bucket_and_key(self, file_location):
+    @staticmethod
+    def get_file_bucket_and_key(file_location):
         try:
             file_bucket, file_key = file_location.replace("s3://", "").split("/", 1)
             return file_bucket, file_key
@@ -73,11 +66,13 @@ class DocumentZipService:
 
     def upload_zip_file(self):
         logger.info("Uploading zip file to s3")
+        zip_file_name = "patient-record-{}.zip"
+
         try:
             self.s3_service.upload_file(
                 file_name=self.zip_file_path,
                 s3_bucket_name=self.zip_output_bucket,
-                file_key=f"{self.zip_file_name}",
+                file_key=f"{zip_file_name}",
             )
         except ClientError as e:
             logger.error(e, {"Result": "Failed to create document manifest"})
@@ -112,57 +107,3 @@ class DocumentZipService:
         # Removes the parent of each removed directory until the parent does not exist or the parent is not empty
         shutil.rmtree(self.temp_downloads_dir)
         shutil.rmtree(self.temp_output_dir)
-
-    def set_zip_trace_object(self):
-        dynamo_response = self.get_zip_trace_item_from_dynamo_by_job_id()
-        dynamo_item = self.extract_item_from_dynamo_response(dynamo_response)
-        self.checking_number_of_items_is_one(dynamo_item)
-        self.zip_trace_object = self.create_zip_trace_object(dynamo_item)
-
-    def get_zip_trace_item_from_dynamo_by_job_id(self):
-        try:
-            return self.dynamo_service.query_all_fields(
-                table_name=self.zip_trace_table,
-                search_key="JobId",
-                search_condition=self.job_id,
-            )
-        except ClientError:
-            logger.error("Failed querying Dynamo with job id")
-            raise GenerateManifestZipException(
-                status_code=500, error=LambdaError.FailedToQueryDynamo
-            )
-
-    @staticmethod
-    def extract_item_from_dynamo_response(dynamo_response) -> Dict:
-        try:
-            return dynamo_response["Items"]
-        except KeyError:
-            raise GenerateManifestZipException(
-                status_code=500, error=LambdaError.FailedToQueryDynamo
-            )
-
-    @staticmethod
-    def checking_number_of_items_is_one(items) -> None:
-        if len(items) > 1:
-            raise GenerateManifestZipException(
-                status_code=400, error=LambdaError.DuplicateJobId
-            )
-
-        elif len(items) == 0:
-            raise GenerateManifestZipException(
-                status_code=404, error=LambdaError.JobIdNotFound
-            )
-
-    @staticmethod
-    def create_zip_trace_object(dynamodb_item):
-        try:
-            return ZipTrace.model_validate(dynamodb_item)
-
-        except ValidationError as e:
-            logger.error(
-                f"{LambdaError.ManifestValidation.to_str()}: {str(e)}",
-                {"Result": "Failed to create document manifest"},
-            )
-            raise DocumentManifestServiceException(
-                status_code=500, error=LambdaError.ManifestValidation
-            )
