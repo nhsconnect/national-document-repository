@@ -2,6 +2,7 @@ import os
 import shutil
 import tempfile
 import zipfile
+from typing import Dict
 
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -88,12 +89,14 @@ class DocumentZipService:
                     arc_name = os.path.relpath(file_path, self.temp_downloads_dir)
                     zipf.write(file_path, arc_name)
 
-    def update_dynamo_with_zip_location(self):
+    def update_dynamo_with_zip_location(self, zip_trace: ZipTrace):
         logger.info("Writing zip trace to db")
-        zip_trace = ZipTrace(
+        zip_trace.zip_file_location = (
             f"s3://{self.zip_output_bucket}/{self.zip_file_name}",
         )
-        self.dynamo_service.create_item(self.zip_trace_table, zip_trace.to_dict())
+        self.dynamo_service.create_item(
+            self.zip_trace_table, zip_trace.model_dump(by_alias=True)
+        )
 
     def remove_temp_files(self):
         # Removes the parent of each removed directory until the parent does not exist or the parent is not empty
@@ -108,21 +111,24 @@ class DocumentZipService:
             search_condition=job_id,
         )
 
-    def extract_item_from_dynamo_response(self, dynamo_response):
-        response = dynamo_response["Items"]
-        if len(response) > 1:
+    @staticmethod
+    def extract_item_from_dynamo_response(dynamo_response) -> Dict:
+        return dynamo_response["Items"]
+
+    @staticmethod
+    def checking_number_of_items_is_one(items) -> None:
+        if len(items) > 1:
             raise DocumentManifestServiceException(
                 status_code=500, error=LambdaError.ManifestClient
             )
 
-        elif len(response) == 0:
+        elif len(items) == 0:
             raise DocumentManifestServiceException(
                 status_code=404, error=LambdaError.ManifestClient
             )
 
-        return response
-
-    def create_zip_trace_object(self, dynamodb_item):
+    @staticmethod
+    def create_zip_trace_object(dynamodb_item):
         try:
             return ZipTrace.model_validate(dynamodb_item)
 
