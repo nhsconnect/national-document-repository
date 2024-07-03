@@ -8,7 +8,7 @@ from tests.unit.conftest import TEST_NHS_NUMBER
 class PdsNameMatchingTestCase(NamedTuple):
     patient_details: PatientDetails
     patient_name_in_file_name: str
-    expect_to_pass: bool
+    should_accept_name: bool
 
 
 TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME = {
@@ -30,6 +30,12 @@ TEST_CASES_FOR_FAMILY_NAME_WITH_HYPHEN = {
     "pds_name": {"family": "Smith-Anderson", "given": ["Jane"]},
     "accept": ["Jane Smith-Anderson"],
     "reject": ["Jane Smith Anderson", "Jane Smith", "Jane Anderson"],
+}
+
+TEST_CASES_FOR_TWO_WORDS_GIVEN_NAME = {
+    "pds_name": {"family": "Smith", "given": ["Jane Bob"]},
+    "accept": ["Jane Bob Smith"],
+    "reject": ["Jane Smith", "Jane B Smith", "Jane-Bob Smith", "Bob Smith"],
 }
 
 TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME = {
@@ -60,7 +66,7 @@ def load_test_cases(test_case_dict: dict) -> List[PdsNameMatchingTestCase]:
 
     test_cases_for_accept = [
         PdsNameMatchingTestCase(
-            patient_detail, patient_name_in_file_name=test_name, expect_to_pass=True
+            patient_detail, patient_name_in_file_name=test_name, should_accept_name=True
         )
         for test_name in test_case_dict["accept"]
     ]
@@ -68,7 +74,7 @@ def load_test_cases(test_case_dict: dict) -> List[PdsNameMatchingTestCase]:
         PdsNameMatchingTestCase(
             patient_detail,
             patient_name_in_file_name=test_file_name,
-            expect_to_pass=False,
+            should_accept_name=False,
         )
         for test_file_name in test_case_dict["reject"]
     ]

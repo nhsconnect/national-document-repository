@@ -16,7 +16,10 @@ from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT_WITH_MIDDLE_NAME,
 )
 from tests.unit.helpers.data.pds.test_cases_for_patient_name_matching import (
+    TEST_CASES_FOR_FAMILY_NAME_WITH_HYPHEN,
     TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME,
+    TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME,
+    TEST_CASES_FOR_TWO_WORDS_GIVEN_NAME,
     load_test_cases,
 )
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
@@ -312,15 +315,66 @@ def test_validate_name_without_given_name(mock_pds_patient_details):
 
 
 @pytest.mark.parametrize(
-    ["patient_details", "patient_name_in_file_name", "expect_to_pass"],
+    ["patient_details", "patient_name_in_file_name", "should_accept_name"],
     load_test_cases(TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME),
 )
-def test_validate_patient_name_special_test_cases(
+def test_validate_patient_name_with_two_words_family_name(
     patient_details: PatientDetails,
     patient_name_in_file_name: str,
-    expect_to_pass: bool,
+    should_accept_name: bool,
 ):
-    if expect_to_pass:
+    if should_accept_name:
+        with expect_not_to_raise(LGInvalidFilesException):
+            validate_patient_name(patient_name_in_file_name, patient_details)
+    else:
+        with pytest.raises(LGInvalidFilesException):
+            validate_patient_name(patient_name_in_file_name, patient_details)
+
+
+@pytest.mark.parametrize(
+    ["patient_details", "patient_name_in_file_name", "should_accept_name"],
+    load_test_cases(TEST_CASES_FOR_FAMILY_NAME_WITH_HYPHEN),
+)
+def test_validate_patient_name_with_family_name_with_hyphen(
+    patient_details: PatientDetails,
+    patient_name_in_file_name: str,
+    should_accept_name: bool,
+):
+    if should_accept_name:
+        with expect_not_to_raise(LGInvalidFilesException):
+            validate_patient_name(patient_name_in_file_name, patient_details)
+    else:
+        with pytest.raises(LGInvalidFilesException):
+            validate_patient_name(patient_name_in_file_name, patient_details)
+
+
+@pytest.mark.parametrize(
+    ["patient_details", "patient_name_in_file_name", "should_accept_name"],
+    load_test_cases(TEST_CASES_FOR_TWO_WORDS_GIVEN_NAME),
+)
+def test_validate_patient_name_with_two_words_given_name(
+    patient_details: PatientDetails,
+    patient_name_in_file_name: str,
+    should_accept_name: bool,
+):
+    if should_accept_name:
+        with expect_not_to_raise(LGInvalidFilesException):
+            validate_patient_name(patient_name_in_file_name, patient_details)
+    else:
+        with pytest.raises(LGInvalidFilesException):
+            validate_patient_name(patient_name_in_file_name, patient_details)
+
+
+@pytest.mark.parametrize(
+    ["patient_details", "patient_name_in_file_name", "should_accept_name"],
+    load_test_cases(TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME),
+)
+def test_validate_patient_name_with_two_words_family_name_and_given_name(
+    patient_details: PatientDetails,
+    patient_name_in_file_name: str,
+    should_accept_name: bool,
+):
+    if should_accept_name:
         with expect_not_to_raise(LGInvalidFilesException):
             validate_patient_name(patient_name_in_file_name, patient_details)
     else:
