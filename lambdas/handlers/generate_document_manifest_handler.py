@@ -59,11 +59,11 @@ def lambda_handler(event, context):
 
 
 def prepare_zip_trace_data(dynamo_new_item):
-    for key, value in dynamo_new_item.items():
-        new_value = list(value.values())[0]
-        if isinstance(new_value, dict):
-            prepare_zip_trace_data(new_value)
+    for key, nested_object in dynamo_new_item.items():
+        value = list(nested_object.values())[0]
+        if isinstance(value, dict):
+            prepare_zip_trace_data(value)
 
-        dynamo_new_item[key] = list(value.values())[0]
+        dynamo_new_item[key] = list(nested_object.values())[0]
 
     return dynamo_new_item
