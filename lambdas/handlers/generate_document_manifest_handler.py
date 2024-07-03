@@ -36,8 +36,8 @@ def lambda_handler(event, context):
 
     for record in dynamo_records:
         dynamo_new_item = record.get("NewItem")
-
-        if not dynamo_new_item:
+        event_name = record.get("eventName")
+        if not dynamo_new_item or event_name != "INSERT":
             return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
         try:
