@@ -6,6 +6,8 @@ from utils.unicode_utils import (
     contains_accent_char,
     convert_to_nfc_form,
     convert_to_nfd_form,
+    name_ends_with,
+    name_starts_with,
     names_are_matching,
     remove_accent_glyphs,
 )
@@ -68,6 +70,43 @@ def test_names_are_matching_handles_letter_case_difference():
 
     actual = names_are_matching(name_a, name_b)
 
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    ["full_name", "partial_name", "expected"],
+    [
+        ("Jane Bob Smith Anderson", "Jane", True),
+        ("Jane Bob Smith Anderson", "Bob", False),
+        ("Jane Bob Smith Anderson", "jane", True),
+        ("jane Bob Smith Anderson", "Jane Bob", True),
+        ("jane Bob Smith Anderson", "Jane-Bob", False),
+        ("Jàne Bob Smith Anderson", "Jane", False),
+        ("Jàne Bob Smith Anderson", "Jàne", True),  # NFC <-> NFD
+        ("Jàne Bob Smith Anderson", "Jàne", True),  # NFD <-> NFC
+    ],
+)
+def test_name_starts_with(full_name, partial_name, expected):
+    actual = name_starts_with(full_name, partial_name)
+
+    assert actual == expected
+
+
+@pytest.mark.parametrize(
+    ["full_name", "partial_name", "expected"],
+    [
+        ("Jane Bob Smith Anderson", "Anderson", True),
+        ("Jane Bob Smith Anderson", "Smith", False),
+        ("Jane Bob Smith Anderson", "anderson", True),
+        ("jane Bob Smith Anderson", "Smith Anderson", True),
+        ("jane Bob Smith Anderson", "Smith-Anderson", False),
+        ("Jane Bob Smith Andèrson", "Anderson", False),
+        ("Jane Bob Smith Andèrson", "Andèrson", True),  # NFC <-> NFD
+        ("Jane Bob Smith Andèrson", "Andèrson", True),  # NFD <-> NFC
+    ],
+)
+def test_name_ends_with(full_name, partial_name, expected):
+    actual = name_ends_with(full_name, partial_name)
     assert actual == expected
 
 
