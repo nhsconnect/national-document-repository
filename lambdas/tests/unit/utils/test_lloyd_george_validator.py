@@ -1,11 +1,11 @@
 import pytest
 from botocore.exceptions import ClientError
 from enums.supported_document_types import SupportedDocumentTypes
-from models.pds_models import Patient
+from models.pds_models import Patient, PatientDetails
 from requests import Response
 from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
-from tests.unit.conftest import TEST_NHS_NUMBER
+from tests.unit.conftest import TEST_NHS_NUMBER, expect_not_to_raise
 from tests.unit.helpers.data.bulk_upload.test_data import (
     TEST_DOCUMENT_REFERENCE_LIST,
     TEST_NHS_NUMBER_FOR_BULK_UPLOAD,
@@ -14,6 +14,10 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
 from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT,
     PDS_PATIENT_WITH_MIDDLE_NAME,
+)
+from tests.unit.helpers.data.pds.test_cases_for_patient_name_matching import (
+    TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME,
+    load_test_cases,
 )
 from tests.unit.models.test_document_reference import MOCK_DOCUMENT_REFERENCE
 from utils.common_query_filters import NotDeleted
@@ -50,11 +54,9 @@ def test_catching_error_when_file_type_not_pdf():
 
 
 def test_valid_file_type():
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         file_type = "application/pdf"
         validate_lg_file_type(file_type)
-    except LGInvalidFilesException:
-        assert False, "One or more of the files do not match the required file type"
 
 
 def test_invalid_file_name():
@@ -64,13 +66,11 @@ def test_invalid_file_name():
 
 
 def test_valid_file_name():
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         file_name = (
             "1of1_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf"
         )
         validate_file_name(file_name)
-    except LGInvalidFilesException:
-        assert False, "One or more of the files do not match naming convention"
 
 
 @pytest.mark.parametrize(
@@ -87,22 +87,22 @@ def test_valid_file_name():
     ],
 )
 def test_valid_file_name_special_characters(file_name):
-    try:
+    with expect_not_to_raise(
+        LGInvalidFilesException,
+        "validate_file_name should handle patient names with special characters",
+    ):
         validate_file_name(file_name)
-    except LGInvalidFilesException:
-        assert (
-            False
-        ), "validate_file_name should be handle patient names with special characters"
 
 
 def test_valid_file_name_with_apostrophe():
-    try:
+    with expect_not_to_raise(
+        LGInvalidFilesException,
+        "validate_file_name should handle patient names with special characters and apostrophe",
+    ):
         file_name = (
             "1of1_Lloyd_George_Record_[Joé Blöggê's-Glüë]_[1111111111]_[25-12-2019].pdf"
         )
         validate_file_name(file_name)
-    except LGInvalidFilesException:
-        assert False, "One or more of the files do not match naming convention"
 
 
 def test_files_with_duplication():
@@ -115,14 +115,12 @@ def test_files_with_duplication():
 
 
 def test_files_without_duplication():
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         lg_file_list = [
             "1of2_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
             "2of2_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
         ]
         check_for_duplicate_files(lg_file_list)
-    except LGInvalidFilesException:
-        assert False, "One or more of the files has the same filename"
 
 
 def test_files_list_with_missing_files():
@@ -165,22 +163,18 @@ def test_file_name_with_apostrophe_as_name():
     As part of prmdr-520 it was decided that it was acceptable to have an apostrophe accepted as a name
     This is because patient names will only ever come from PDS
     """
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         file_name = "1of1_Lloyd_George_Record_[']_[1111111111]_[25-12-2019].pdf"
         validate_file_name(file_name)
-    except LGInvalidFilesException:
-        assert False, "One or more of the files do not match naming convention"
 
 
 def test_files_without_missing_files():
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         lg_file_list = [
             "1of2_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
             "2of2_Lloyd_George_Record_[Joe Bloggs]_[1111111111]_[25-12-2019].pdf",
         ]
         check_for_number_of_files_match_expected(lg_file_list[0], len(lg_file_list))
-    except LGInvalidFilesException:
-        assert False, "There are missing file(s) in the request"
 
 
 @pytest.mark.parametrize(
@@ -236,10 +230,8 @@ def test_validate_nhs_id_with_pds_service(mock_pds_patient_details):
         "1of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
         "2of2_Lloyd_George_Record_[Jane Smith]_[9000000009]_[22-10-2010].pdf",
     ]
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
-    except LGInvalidFilesException:
-        assert False
 
 
 def test_mismatch_nhs_id(mocker):
@@ -268,65 +260,36 @@ def test_mismatch_name_with_pds_service(mock_pds_patient_details):
         validate_filename_with_patient_details(lg_file_list, mock_pds_patient_details)
 
 
-def test_order_names_with_pds_service():
-    lg_file_list = [
-        "1of2_Lloyd_George_Record_[Jake Jane Smith]_[9000000009]_[22-10-2010].pdf",
-        "2of2_Lloyd_George_Record_[Jake Jane Smith]_[9000000009]_[22-10-2010].pdf",
-    ]
-    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
-    patient_details = patient.get_minimum_patient_details("9000000009")
-    try:
-        validate_filename_with_patient_details(lg_file_list, patient_details)
-    except LGInvalidFilesException:
-        assert False
-
-
 def test_validate_name_with_correct_name(mock_pds_patient_details):
     lg_file_patient_name = "Jane Smith"
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
-    except LGInvalidFilesException:
-        assert False
 
 
 def test_validate_name_with_file_missing_middle_name():
     lg_file_patient_name = "Jane Smith"
     patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
     patient_details = patient.get_minimum_patient_details("9000000009")
-    try:
+
+    with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_name(lg_file_patient_name, patient_details)
-    except LGInvalidFilesException:
-        assert False
 
 
 def test_validate_name_with_additional_middle_name_in_file_mismatching_pds():
     lg_file_patient_name = "Jane David Smith"
     patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
     patient_details = patient.get_minimum_patient_details("9000000009")
-    try:
+
+    with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_name(lg_file_patient_name, patient_details)
-    except LGInvalidFilesException:
-        assert False
 
 
 def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
     mock_pds_patient_details,
 ):
     lg_file_patient_name = "Jane David Smith"
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
-    except LGInvalidFilesException:
-        assert False
-
-
-def test_validate_name_with_wrong_order():
-    lg_file_patient_name = "Jake Jane Smith"
-    patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
-    patient_details = patient.get_minimum_patient_details("9000000009")
-    try:
-        validate_patient_name(lg_file_patient_name, patient_details)
-    except LGInvalidFilesException:
-        assert False
 
 
 def test_validate_name_with_wrong_first_name(mock_pds_patient_details):
@@ -344,10 +307,25 @@ def test_validate_name_with_wrong_family_name(mock_pds_patient_details):
 def test_validate_name_without_given_name(mock_pds_patient_details):
     lg_file_patient_name = "Jane Smith"
     mock_pds_patient_details.given_name = [""]
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
-    except LGInvalidFilesException:
-        assert False
+
+
+@pytest.mark.parametrize(
+    ["patient_details", "patient_name_in_file_name", "expect_to_pass"],
+    load_test_cases(TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME),
+)
+def test_validate_patient_name_special_test_cases(
+    patient_details: PatientDetails,
+    patient_name_in_file_name: str,
+    expect_to_pass: bool,
+):
+    if expect_to_pass:
+        with expect_not_to_raise(LGInvalidFilesException):
+            validate_patient_name(patient_name_in_file_name, patient_details)
+    else:
+        with pytest.raises(LGInvalidFilesException):
+            validate_patient_name(patient_name_in_file_name, patient_details)
 
 
 def test_missing_middle_name_names_with_pds_service():
@@ -357,10 +335,9 @@ def test_missing_middle_name_names_with_pds_service():
     ]
     patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
     patient_details = patient.get_minimum_patient_details("9000000009")
-    try:
+
+    with expect_not_to_raise(LGInvalidFilesException):
         validate_filename_with_patient_details(lg_file_list, patient_details)
-    except LGInvalidFilesException:
-        assert False
 
 
 def test_mismatch_dob_with_pds_service(mock_pds_patient_details):
@@ -384,10 +361,8 @@ def test_validate_date_of_birth_when_mismatch_dob_with_pds_service(
 
 def test_validate_date_of_birth_valid_with_pds_service(mock_pds_patient_details):
     file_date_of_birth = "22-10-2010"
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_date_of_birth(file_date_of_birth, mock_pds_patient_details)
-    except LGInvalidFilesException:
-        assert False
 
 
 def test_validate_date_of_birth_none_with_pds_service(mock_pds_patient_details):
@@ -463,10 +438,8 @@ def test_check_pds_response_200_status_not_raise_exception():
     response = Response()
     response.status_code = 200
 
-    try:
+    with expect_not_to_raise(LGInvalidFilesException):
         check_pds_response_status(response)
-    except LGInvalidFilesException:
-        assert False
 
 
 def test_parse_pds_response_return_the_patient_object(
