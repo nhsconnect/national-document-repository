@@ -94,16 +94,16 @@ jobs:
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
-  deploy_document_manifest_by_nhs_number_lambda:
-    name: Deploy document_manifest_by_nhs_number_lambda
+  deploy_document_manifest_job_lambda:
+    name: Deploy document_manifest_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
-      lambda_handler_name: document_manifest_by_nhs_number_handler
-      lambda_aws_name: DocumentManifestByNHSNumberLambda
+      lambda_handler_name: document_manifest_job_handler
+      lambda_aws_name: DocumentManifestJobLambda
       lambda_layer_names: "core_lambda_layer"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
@@ -343,5 +343,19 @@ jobs:
       lambda_handler_name: statistical_report_handler
       lambda_aws_name: StatisticalReportLambda
       lambda_layer_names: "core_lambda_layer,data_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_generate_document_manifest_lambda:
+    name: Deploy generate document manifest lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: generate_document_manifest_handler
+      lambda_aws_name: GenerateDocumentManifest
+      lambda_layer_names: "core_lambda_layer"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
