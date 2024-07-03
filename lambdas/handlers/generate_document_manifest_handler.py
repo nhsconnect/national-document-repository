@@ -1,6 +1,6 @@
 from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
-from models.zip_trace import ZipTrace
+from models.zip_trace import DocumentManifestZipTrace
 from pydantic import ValidationError
 from services.zip_service import DocumentZipService
 from utils.audit_logging_setup import LoggingService
@@ -35,13 +35,14 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
     for record in dynamo_records:
-        dynamo_new_item = record.get("NewItem")
+        dynamo_new_item = record.get("dynamodb", {}).get("NewImage")
         event_name = record.get("eventName")
         if not dynamo_new_item or event_name != "INSERT":
             return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
         try:
-            zip_trace = ZipTrace.model_validate(dynamo_new_item)
+            zip_trace_item = prepare_zip_trace_data(dynamo_new_item)
+            zip_trace = DocumentManifestZipTrace.model_validate(zip_trace_item)
 
         except ValidationError as e:
             logger.error(
@@ -55,3 +56,14 @@ def lambda_handler(event, context):
         zip_service.handle_zip_request()
 
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
+
+
+def prepare_zip_trace_data(dynamo_new_item):
+    for key, value in dynamo_new_item.items():
+        new_value = list(value.values())[0]
+        if isinstance(new_value, dict):
+            prepare_zip_trace_data(new_value)
+
+        dynamo_new_item[key] = list(value.values())[0]
+
+    return dynamo_new_item

@@ -36,7 +36,7 @@ class DocumentZipService:
     def download_documents_to_be_zipped(self):
         logger.info("Downloading documents to be zipped")
         documents = self.zip_trace_object.files_to_download
-        for document_name, document_location in documents:
+        for document_location, document_name in documents.items():
             self.download_file_from_s3(document_name, document_location)
 
     def download_file_from_s3(self, document_name, document_location):
@@ -66,13 +66,12 @@ class DocumentZipService:
 
     def upload_zip_file(self):
         logger.info("Uploading zip file to s3")
-        zip_file_name = "patient-record-{}.zip"
 
         try:
             self.s3_service.upload_file(
                 file_name=self.zip_file_path,
                 s3_bucket_name=self.zip_output_bucket,
-                file_key=f"{zip_file_name}",
+                file_key=f"{self.zip_file_name}",
             )
         except ClientError as e:
             logger.error(e, {"Result": "Failed to create document manifest"})
