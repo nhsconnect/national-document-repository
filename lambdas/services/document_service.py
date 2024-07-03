@@ -13,8 +13,8 @@ logger = LoggingService(__name__)
 
 
 class DocumentService:
-    def __init__(self):
-        self.s3_service = S3Service()
+    def __init__(self, custom_aws_role=None):
+        self.s3_service = S3Service(custom_aws_role=custom_aws_role)
         self.dynamo_service = DynamoDBService()
 
     def fetch_available_document_references_by_type(

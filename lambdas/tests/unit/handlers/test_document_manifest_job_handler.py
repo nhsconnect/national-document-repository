@@ -6,7 +6,8 @@ from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
-from handlers.document_manifest_by_nhs_number_handler import lambda_handler
+from handlers.document_manifest_job_handler import lambda_handler
+from tests.unit.conftest import TEST_UUID
 from tests.unit.helpers.data.test_documents import (
     create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
@@ -30,9 +31,64 @@ class MockError(Enum):
 
 
 @pytest.fixture
-def mock_service(set_env, mocker):
+def valid_id_and_both_doctype_post():
+    api_gateway_proxy_event = {
+        "httpMethod": "POST",
+        "queryStringParameters": {"patientId": "9000000009", "docType": "LG,ARF"},
+        "multiValueQueryStringParameters": {},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def valid_id_and_arf_doctype_post():
+    api_gateway_proxy_event = {
+        "httpMethod": "POST",
+        "queryStringParameters": {"patientId": "9000000009", "docType": "ARF"},
+        "multiValueQueryStringParameters": {},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def valid_id_and_lg_doctype_post():
+    api_gateway_proxy_event = {
+        "httpMethod": "POST",
+        "queryStringParameters": {"patientId": "9000000009", "docType": "LG"},
+        "multiValueQueryStringParameters": {},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def valid_id_and_invalid_doctype_post():
+    api_gateway_proxy_event = {
+        "httpMethod": "POST",
+        "queryStringParameters": {"patientId": "9000000009", "docType": "MANGO"},
+        "multiValueQueryStringParameters": {},
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def valid_id_and_lg_doctype_event_with_doc_references():
+    api_gateway_proxy_event = {
+        "httpMethod": "POST",
+        "queryStringParameters": {
+            "patientId": "9000000009",
+            "docType": "LG",
+        },
+        "multiValueQueryStringParameters": {
+            "docReferences": ["test-doc-ref", "test-doc-ref2"],
+        },
+    }
+    return api_gateway_proxy_event
+
+
+@pytest.fixture
+def mock_manifest_service(set_env, mocker):
     mocked_class = mocker.patch(
-        "handlers.document_manifest_by_nhs_number_handler.DocumentManifestService"
+        "handlers.document_manifest_job_handler.DocumentManifestService"
     )
     mocked_service = mocked_class.return_value
     yield mocked_service
@@ -47,26 +103,26 @@ def manifest_service_side_effect(nhs_number, doc_type):
 
 
 def test_lambda_handler_when_service_raises_document_manifest_exception_returns_correct_response(
-    mock_service, valid_id_and_arf_doctype_event, context
+    mock_manifest_service, valid_id_and_arf_doctype_post, context
 ):
     exception = DocumentManifestServiceException(
         status_code=404, error=LambdaError.MockError
     )
-    mock_service.create_document_manifest_presigned_url.side_effect = exception
+    mock_manifest_service.create_document_manifest_job.side_effect = exception
 
     expected = ApiGatewayResponse(
         404,
         json.dumps(MockError.Error.value),
-        "GET",
+        "POST",
     ).create_api_gateway_response()
 
-    actual = lambda_handler(valid_id_and_arf_doctype_event, context)
+    actual = lambda_handler(valid_id_and_arf_doctype_post, context)
 
     assert expected == actual
 
 
 def test_lambda_handler_when_service_raises_client_error_returns_correct_response(
-    mock_service, valid_id_and_arf_doctype_event, context
+    mock_manifest_service, valid_id_and_arf_doctype_post, context
 ):
     expected_body = json.dumps(
         {
@@ -76,23 +132,23 @@ def test_lambda_handler_when_service_raises_client_error_returns_correct_respons
         }
     )
     exception = ClientError({}, "test")
-    mock_service.create_document_manifest_presigned_url.side_effect = exception
+    mock_manifest_service.create_document_manifest_job.side_effect = exception
 
     expected = ApiGatewayResponse(
         500,
         expected_body,
-        "GET",
+        "POST",
     ).create_api_gateway_response()
 
-    actual = lambda_handler(valid_id_and_arf_doctype_event, context)
+    actual = lambda_handler(valid_id_and_arf_doctype_post, context)
 
     assert expected == actual
 
 
 def test_lambda_handler_when_doc_type_invalid_returns_400(
-    mock_service, valid_id_and_invalid_doctype_event, context
+    mock_manifest_service, valid_id_and_invalid_doctype_post, context
 ):
-    mock_service.fetch_available_document_references_by_type.return_value = []
+    mock_manifest_service.fetch_available_document_references_by_type.return_value = []
 
     expected_body = json.dumps(
         {
@@ -102,61 +158,61 @@ def test_lambda_handler_when_doc_type_invalid_returns_400(
         }
     )
     expected = ApiGatewayResponse(
-        400, expected_body, "GET"
+        400, expected_body, "POST"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(valid_id_and_invalid_doctype_event, context)
+    actual = lambda_handler(valid_id_and_invalid_doctype_post, context)
 
     assert expected == actual
 
 
-def test_lambda_handler_valid_parameters_arf_doc_type_request_returns_200(
-    mock_service, valid_id_and_arf_doctype_event, context
+def test_lambda_handler_valid_parameters_arf_doc_type_post_request_returns_200(
+    mock_manifest_service, valid_id_and_arf_doctype_post, context
 ):
-    expected_url = "test-url"
+    mock_manifest_service.create_document_manifest_job.return_value = TEST_UUID
 
-    mock_service.create_document_manifest_presigned_url.return_value = expected_url
+    expected_job_id = {"jobId": TEST_UUID}
 
     expected = ApiGatewayResponse(
-        200, expected_url, "GET"
+        200, json.dumps(expected_job_id), "POST"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(valid_id_and_arf_doctype_event, context)
+    actual = lambda_handler(valid_id_and_arf_doctype_post, context)
     assert expected == actual
 
 
-def test_lambda_handler_valid_parameters_lg_doc_type_request_returns_200(
-    mock_service, valid_id_and_lg_doctype_event, context
+def test_lambda_handler_valid_parameters_lg_doc_type_post_request_returns_200(
+    mock_manifest_service, valid_id_and_lg_doctype_post, context
 ):
-    expected_url = "test-url"
+    mock_manifest_service.create_document_manifest_job.return_value = TEST_UUID
 
-    mock_service.create_document_manifest_presigned_url.return_value = expected_url
+    expected_job_id = {"jobId": TEST_UUID}
 
     expected = ApiGatewayResponse(
-        200, expected_url, "GET"
+        200, json.dumps(expected_job_id), "POST"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(valid_id_and_lg_doctype_event, context)
+    actual = lambda_handler(valid_id_and_lg_doctype_post, context)
     assert expected == actual
 
 
-def test_lambda_handler_valid_parameters_both_doc_type_request_returns_200(
-    mock_service, valid_id_and_both_doctype_event, context
+def test_lambda_handler_valid_parameters_both_doc_type_post_request_returns_200(
+    mock_manifest_service, valid_id_and_both_doctype_post, context
 ):
-    expected_url = "test-url"
+    mock_manifest_service.create_document_manifest_job.return_value = TEST_UUID
 
-    mock_service.create_document_manifest_presigned_url.return_value = expected_url
+    expected_job_id = {"jobId": TEST_UUID}
 
     expected = ApiGatewayResponse(
-        200, expected_url, "GET"
+        200, json.dumps(expected_job_id), "POST"
     ).create_api_gateway_response()
 
-    actual = lambda_handler(valid_id_and_both_doctype_event, context)
+    actual = lambda_handler(valid_id_and_both_doctype_post, context)
     assert expected == actual
 
 
 def test_lambda_handler_missing_environment_variables_returns_500(
-    set_env, monkeypatch, valid_id_and_arf_doctype_event, context
+    set_env, monkeypatch, valid_id_and_arf_doctype_post, context
 ):
     monkeypatch.delenv("DOCUMENT_STORE_DYNAMODB_NAME")
 
@@ -170,9 +226,9 @@ def test_lambda_handler_missing_environment_variables_returns_500(
     expected = ApiGatewayResponse(
         500,
         expected_body,
-        "GET",
+        "POST",
     ).create_api_gateway_response()
-    actual = lambda_handler(valid_id_and_arf_doctype_event, context)
+    actual = lambda_handler(valid_id_and_arf_doctype_post, context)
     assert expected == actual
 
 
@@ -226,18 +282,21 @@ def test_lambda_handler_returns_400_when_doc_type_not_supplied(
 
 
 def test_lambda_handler_sets_document_references_to_none_when_no_document_reference_params(
-    mock_service, valid_id_and_lg_doctype_event, context
+    mock_manifest_service, valid_id_and_lg_doctype_post, context
 ):
-    lambda_handler(valid_id_and_lg_doctype_event, context)
-    mock_service.create_document_manifest_presigned_url.assert_called_once_with(
+    mock_manifest_service.create_document_manifest_job.return_value = "123456"
+    lambda_handler(valid_id_and_lg_doctype_post, context)
+    mock_manifest_service.create_document_manifest_job.assert_called_once_with(
         [SupportedDocumentTypes.LG], None
     )
 
 
 def test_lambda_handler_sets_document_references_when_event_contains_document_reference_params(
-    mock_service, valid_id_and_lg_doctype_event_with_doc_references, context
+    mock_manifest_service, valid_id_and_lg_doctype_event_with_doc_references, context
 ):
+    mock_manifest_service.create_document_manifest_job.return_value = "123456"
     lambda_handler(valid_id_and_lg_doctype_event_with_doc_references, context)
-    mock_service.create_document_manifest_presigned_url.assert_called_once_with(
+
+    mock_manifest_service.create_document_manifest_job.assert_called_once_with(
         [SupportedDocumentTypes.LG], ["test-doc-ref", "test-doc-ref2"]
     )

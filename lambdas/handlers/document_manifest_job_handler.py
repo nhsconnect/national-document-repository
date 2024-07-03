@@ -1,3 +1,5 @@
+import json
+
 from enums.logging_app_interaction import LoggingAppInteraction
 from services.document_manifest_service import DocumentManifestService
 from utils.audit_logging_setup import LoggingService
@@ -14,34 +16,29 @@ from utils.request_context import request_context
 logger = LoggingService(__name__)
 
 
-def handle_post(event, context):
+def handle_post(event, context, document_manifest_service: DocumentManifestService):
     logger.info("Starting document manifest process")
-    # Create job ID
-    # Write Job id to dynamo
 
-    nhs_number = event["queryStringParameters"]["patientId"]
-    document_types = extract_document_type_to_enum(
+    document_type = extract_document_type_to_enum(
         event["queryStringParameters"]["docType"]
     )
-    # document_references = event["multiValueQueryStringParameters"].get("docReference")
-    if document_references := event["queryStringParameters"].get("docReferences"):
-        document_references = document_references.split(",")
+    document_references = event["multiValueQueryStringParameters"].get("docReferences")
 
-    request_context.patient_nhs_no = nhs_number
-
-    document_manifest_service = DocumentManifestService(nhs_number)
-    response = document_manifest_service.create_document_manifest_presigned_url(
-        document_types, document_references
+    response = document_manifest_service.create_document_manifest_job(
+        document_type, document_references
     )
 
-    return ApiGatewayResponse(200, response, "POST").create_api_gateway_response()
+    return ApiGatewayResponse(
+        200, json.dumps({"jobId": response}), "POST"
+    ).create_api_gateway_response()
 
 
-def handle_get(event, context):
+# @validate_job_id
+def handle_get(event, context, document_manifest_service: DocumentManifestService):
     logger.info("Retrieving document manifest")
 
-    event["queryStringParameters"]["jobId"]
-    response = ""
+    job_id = event["queryStringParameters"]["jobId"]
+    response = document_manifest_service.create_document_manifest_presigned_url(job_id)
 
     logger.audit_splunk_info(
         "User has downloaded Lloyd George records",
@@ -51,9 +48,6 @@ def handle_get(event, context):
     return ApiGatewayResponse(200, response, "GET").create_api_gateway_response()
 
 
-method_handler = {"GET": handle_get, "POST": handle_post}
-
-
 @set_request_context_for_logging
 @validate_patient_id
 @validate_document_type
@@ -61,7 +55,6 @@ method_handler = {"GET": handle_get, "POST": handle_post}
     names=[
         "DOCUMENT_STORE_DYNAMODB_NAME",
         "LLOYD_GEORGE_DYNAMODB_NAME",
-        "ZIPPED_STORE_BUCKET_NAME",
         "ZIPPED_STORE_DYNAMODB_NAME",
         "PRESIGNED_ASSUME_ROLE",
     ]
@@ -70,7 +63,14 @@ method_handler = {"GET": handle_get, "POST": handle_post}
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.DOWNLOAD_RECORD.value
+    nhs_number = event["queryStringParameters"]["patientId"]
+
+    request_context.patient_nhs_no = nhs_number
+    document_manifest_service = DocumentManifestService(nhs_number)
+
+    method_handler = {"GET": handle_get, "POST": handle_post}
     http_method = event["httpMethod"]
     handler = method_handler[http_method]
 
-    return handler(event, context)
+    response = handler(event, context, document_manifest_service)
+    return response
