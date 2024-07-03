@@ -1,10 +1,10 @@
 {
   "resourceType": "Patient",
-  "id": "9000000102",
+  "id": "9000000105",
   "identifier": [
     {
       "system": "https://fhir.nhs.uk/Id/nhs-number",
-      "value": "9000000102",
+      "value": "9000000105",
       "extension": [
         {
           "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NHSNumberVerificationStatus",
@@ -40,8 +40,8 @@
         "start": "2020-01-01",
         "end": "2025-12-31"
       },
-      "given": ["Jane"],
-      "family": "Smith Anderson",
+      "given": ["Jane", "Bob"],
+      "family": "Smith",
       "prefix": ["Mrs"],
       "suffix": ["MBE"]
     },
@@ -66,7 +66,7 @@
       "type": "Organization",
       "identifier": {
         "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-        "value": "H81109",
+        "value": "M85143",
         "period": {
           "start": "2020-01-01",
           "end": "2025-12-31"
@@ -74,17 +74,6 @@
       }
     }
   ],
-  "managingOrganization": {
-    "type": "Organization",
-    "identifier": {
-      "system": "https://fhir.nhs.uk/Id/ods-organization-code",
-      "value": "H81109",
-      "period": {
-        "start": "2020-01-01",
-        "end": "2025-12-31"
-      }
-    }
-  },
   "extension": [
     {
       "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NominatedPharmacy",
