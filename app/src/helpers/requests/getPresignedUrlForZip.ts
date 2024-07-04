@@ -38,4 +38,27 @@ const getPresignedUrlForZip = async ({
     return data;
 };
 
+export const requestJobId = async ({
+    nhsNumber,
+    baseUrl,
+    baseHeaders,
+    docType = DOCUMENT_TYPE.ALL,
+    docReferences,
+}: Args) => {
+    const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
+
+    const response = await axios.post(gatewayUrl, '', {
+        headers: {
+            ...baseHeaders,
+        },
+        params: {
+            patientId: nhsNumber,
+            docType: docType,
+            ...(!!docReferences && { docReference: docReferences }),
+        },
+        paramsSerializer: { indexes: null },
+    });
+
+    return response.data.jobId;
+};
 export default getPresignedUrlForZip;
