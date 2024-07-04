@@ -13,7 +13,11 @@ import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router';
 import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
-import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
+import {
+    DOCUMENT_TYPE,
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../types/pages/UploadDocumentsPage/types';
 import uploadDocuments, {
     updateDocumentState,
     uploadConfirmation,
