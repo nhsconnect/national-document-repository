@@ -461,6 +461,18 @@ describe('UploadDocumentsPage', () => {
                     expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
                 });
 
+                it('navigates to upload confirmation failed page when uploadConfirmation returns a 5xx error', async () => {
+                    mockUploadConfirmation.mockRejectedValue(badGatewayResponse502);
+
+                    const { rerender } = renderPage(history);
+
+                    await uploadFilesAndWaitUntilConfirmationCall(arfDocuments, rerender);
+
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(
+                        routeChildren.ARF_UPLOAD_CONFIRMATION_FAILED,
+                    );
+                });
+
                 it('navigates to session expire page error page when uploadConfirmation returns other error', async () => {
                     mockUploadConfirmation.mockRejectedValue(badRequestResponse400);
 

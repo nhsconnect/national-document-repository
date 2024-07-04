@@ -47,6 +47,7 @@ export enum routeChildren {
     ARF_UPLOAD_CONFIRMATION = '/patient/arf/upload/confirmation',
     ARF_UPLOAD_COMPLETED = '/patient/arf/upload/completed',
     ARF_UPLOAD_FAILED = '/patient/arf/upload/failed',
+    ARF_UPLOAD_CONFIRMATION_FAILED = '/patient/arf/upload/confirmation-failed',
 }
 
 export enum ROUTE_TYPE {
