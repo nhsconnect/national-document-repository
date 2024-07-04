@@ -134,14 +134,7 @@ function UploadDocumentsPage() {
                 navigate(routeChildren.ARF_UPLOAD_CONFIRMATION_FAILED);
             } else if (isMock(error)) {
                 /* istanbul ignore next */
-                setDocuments((prevState) =>
-                    prevState.map((doc) => ({
-                        ...doc,
-                        state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                    })),
-                );
-                /* istanbul ignore next */
-                navigate(routeChildren.ARF_UPLOAD_COMPLETED);
+                mockUploadConfirmationSucceed(setDocuments, navigate);
             } else {
                 navigate(routes.SERVER_ERROR + errorToParams(error));
             }
