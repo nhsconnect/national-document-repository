@@ -33,7 +33,6 @@ def handle_post(event, context, document_manifest_service: DocumentManifestServi
     ).create_api_gateway_response()
 
 
-# @validate_job_id
 def handle_get(event, context, document_manifest_service: DocumentManifestService):
     logger.info("Retrieving document manifest")
 

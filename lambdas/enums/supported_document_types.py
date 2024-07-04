@@ -7,7 +7,7 @@ from utils.audit_logging_setup import LoggingService
 logger = LoggingService(__name__)
 
 
-class SupportedDocumentTypes(Enum):
+class SupportedDocumentTypes(str, Enum):
     ARF = "ARF"
     LG = "LG"
 
@@ -17,7 +17,7 @@ class SupportedDocumentTypes(Enum):
 
     @staticmethod
     def list_names() -> List[str]:
-        return [doc_type for doc_type in SupportedDocumentTypes.list()]
+        return [str(doc_type.value) for doc_type in SupportedDocumentTypes.list()]
 
     def get_dynamodb_table_name(self) -> str:
         """

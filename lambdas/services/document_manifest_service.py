@@ -122,4 +122,10 @@ class DocumentManifestService:
         return str(zip_trace.job_id)
 
     def create_document_manifest_presigned_url(self, job_id: str):
+        return self.s3_service.create_download_presigned_url(
+            s3_bucket_name=self.zip_output_bucket, file_key=self.zip_file_name
+        )
+
+    def query_zip_trace(self, job_id: str) -> DocumentManifestZipTrace:
+        # zip_trace = self.dynamo_service.query_all_fields()
         pass
