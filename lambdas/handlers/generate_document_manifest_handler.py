@@ -2,7 +2,7 @@ from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from models.zip_trace import DocumentManifestZipTrace
 from pydantic import ValidationError
-from services.zip_service import DocumentZipService
+from services.document_manifest_zip_service import DocumentManifestZipService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -35,13 +35,13 @@ def lambda_handler(event, context):
         return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
     for record in dynamo_records:
-        dynamo_new_item = record.get("dynamodb", {}).get("NewImage")
+        new_zip_trace = record.get("dynamodb", {}).get("NewImage")
         event_name = record.get("eventName")
-        if not dynamo_new_item or event_name != "INSERT":
+        if not new_zip_trace or event_name != "INSERT":
             return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
         try:
-            zip_trace_item = prepare_zip_trace_data(dynamo_new_item)
+            zip_trace_item = prepare_zip_trace_data(new_zip_trace)
             zip_trace = DocumentManifestZipTrace.model_validate(zip_trace_item)
 
         except ValidationError as e:
@@ -52,18 +52,18 @@ def lambda_handler(event, context):
             raise DocumentManifestServiceException(
                 status_code=500, error=LambdaError.ManifestValidation
             )
-        zip_service = DocumentZipService(zip_trace)
+        zip_service = DocumentManifestZipService(zip_trace)
         zip_service.handle_zip_request()
 
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
 
 
-def prepare_zip_trace_data(dynamo_new_item):
-    for key, nested_object in dynamo_new_item.items():
+def prepare_zip_trace_data(new_zip_trace):
+    for key, nested_object in new_zip_trace.items():
         value = list(nested_object.values())[0]
         if isinstance(value, dict):
             prepare_zip_trace_data(value)
 
-        dynamo_new_item[key] = list(nested_object.values())[0]
+        new_zip_trace[key] = list(nested_object.values())[0]
 
-    return dynamo_new_item
+    return new_zip_trace

@@ -6,6 +6,7 @@ import zipfile
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.zip_trace import ZipTraceStatus
+from models.zip_trace import DocumentManifestZipTrace
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
@@ -15,8 +16,8 @@ from utils.lambda_exceptions import DocumentManifestServiceException
 logger = LoggingService(__name__)
 
 
-class DocumentZipService:
-    def __init__(self, zip_trace):
+class DocumentManifestZipService:
+    def __init__(self, zip_trace: DocumentManifestZipTrace):
         self.s3_service = S3Service()
         self.dynamo_service = DynamoDBService()
         self.temp_output_dir = tempfile.mkdtemp()
@@ -41,7 +42,7 @@ class DocumentZipService:
         for document_location, document_name in documents.items():
             self.download_file_from_s3(document_name, document_location)
 
-    def download_file_from_s3(self, document_name, document_location):
+    def download_file_from_s3(self, document_name: str, document_location: str):
         download_path = os.path.join(self.temp_downloads_dir, document_name)
         file_bucket, file_key = self.get_file_bucket_and_key(document_location)
         try:
