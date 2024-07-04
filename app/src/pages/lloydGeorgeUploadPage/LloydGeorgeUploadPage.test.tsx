@@ -15,11 +15,16 @@ import uploadDocuments, {
     virusScan,
 } from '../../helpers/requests/uploadDocuments';
 import { act } from 'react-dom/test-utils';
-import { DOCUMENT_TYPE, DOCUMENT_UPLOAD_STATE } from '../../types/pages/UploadDocumentsPage/types';
+import {
+    DOCUMENT_TYPE,
+    DOCUMENT_UPLOAD_STATE,
+    UploadDocument,
+} from '../../types/pages/UploadDocumentsPage/types';
 import { MomentInput } from 'moment/moment';
 import * as ReactRouter from 'react-router';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
 
 jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
@@ -179,7 +184,8 @@ describe('LloydGeorgeUploadPage', () => {
             async (numberOfTimes: number) => {
                 jest.useFakeTimers();
 
-                const expectedTimeTaken = 120001 * numberOfTimes;
+                const expectedTimeTaken =
+                    (FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD + 1) * numberOfTimes;
                 mockS3Upload.mockImplementationOnce(() => {
                     jest.advanceTimersByTime(expectedTimeTaken + 100);
                     return Promise.resolve();
@@ -204,6 +210,13 @@ describe('LloydGeorgeUploadPage', () => {
                 });
 
                 expect(mockUpdateDocumentState).toHaveBeenCalledTimes(numberOfTimes);
+                const updateDocumentStateArguments = mockUpdateDocumentState.mock.calls[0][0];
+                updateDocumentStateArguments.documents.forEach((doc: UploadDocument) => {
+                    expect(doc).toMatchObject({
+                        docType: 'LG',
+                        ref: expect.stringContaining('uuid_for_file'),
+                    });
+                });
                 expect(mockVirusScan).toHaveBeenCalled();
                 expect(mockUploadConfirmation).toHaveBeenCalled();
                 expect(mockNavigate).toHaveBeenCalledWith(
@@ -298,9 +311,6 @@ describe('LloydGeorgeUploadPage', () => {
             await waitFor(() => {
                 expect(mockUploadConfirmation).toHaveBeenCalled();
             });
-            /**
-             * Replace the 'getByText mock bla bla' in other tests
-             */
             expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_UPLOAD_COMPLETED);
         });
 
