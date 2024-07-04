@@ -1,5 +1,3 @@
-import tempfile
-
 import pytest
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
@@ -47,13 +45,6 @@ TEST_ZIP_TRACE = DocumentManifestZipTrace.model_validate(TEST_DYNAMO_RESPONSE)
 
 
 @pytest.fixture
-def mock_temp_folder(mocker):
-    temp_folder = tempfile.mkdtemp()
-    mocker.patch.object(tempfile, "mkdtemp", return_value=temp_folder)
-    yield temp_folder
-
-
-@pytest.fixture
 def mock_service(mocker, set_env, mock_temp_folder):
     service = DocumentManifestZipService(TEST_ZIP_TRACE)
     mocker.patch.object(service, "s3_service")
@@ -67,6 +58,13 @@ def mock_s3_service(mock_service, mocker):
     mocker.patch.object(mock_s3_service, "download_file")
     mocker.patch.object(mock_s3_service, "upload_file")
     yield mock_s3_service
+
+
+@pytest.fixture
+def mock_dynamo_service(mock_service, mocker):
+    mock_dynamo_service = mock_service.dynamo_service
+    mocker.patch.object(mock_dynamo_service, "update_item")
+    yield mock_dynamo_service
 
 
 def test_download_file_from_s3(mock_service, mock_s3_service):
@@ -136,24 +134,33 @@ def test_upload_zip_file(mock_service, mock_s3_service):
 
 
 def test_upload_zip_file_throws_exception_on_error(mock_service, mock_s3_service):
-    pass
-
-
-def test_zip_files():
-    pass
-
-
-def test_update_dynamo(mock_service):
-
-    mock_service.dynamo_service.update_item.assert_called_with(
-        table_name="test_zip_table",
-        key=mock_service.zip_trace_object.id,
-        updated_fields=mock_service.zip_trace_object.status,
+    mock_s3_service.upload_file.side_effect = ClientError(
+        {"Error": {"Code": "500", "Message": "test error"}}, "testing"
     )
 
+    with pytest.raises(DocumentManifestServiceException) as e:
+        mock_service.upload_zip_file()
 
-def update_dynamo_fields():
-    pass
+    mock_s3_service.upload_file.assert_called_once_with(
+        file_name=f"{mock_service.temp_output_dir}/{mock_service.zip_file_name}",
+        s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET,
+        file_key=mock_service.zip_file_name,
+    )
+    assert e.value == DocumentManifestServiceException(
+        500, LambdaError.ZipServiceClientError
+    )
+    assert mock_service.zip_trace_object.status == ZipTraceStatus.FAILED.value
+
+
+def test_update_dynamo(mock_service, mock_dynamo_service):
+    # mock_service.zip_trace_object.status = ZipTraceStatus.COMPLETED.value
+    mock_service.update_dynamo_with_fields({"status"})
+
+    mock_dynamo_service.update_item.assert_called_once_with(
+        "test_zip_table",
+        mock_service.zip_trace_object.id,
+        mock_service.zip_trace_object.model_dump(by_alias=True, include={"status"}),
+    )
 
 
 def test_update_processing_status(mock_service):
@@ -164,83 +171,3 @@ def test_update_processing_status(mock_service):
 def test_update_failed_status(mock_service):
     mock_service.update_failed_status()
     assert mock_service.zip_trace_object.status == ZipTraceStatus.FAILED.value
-
-
-# this is a useless test!
-
-
-def test_remove_temp_files(mock_service):
-    pass
-
-
-# # def test_upload_zip_file(mock_service):
-# #     f"patient-record-{zip_trace.job_id}.zip"
-# def test_remove_temp_files(mock_service):
-#     mock_service.remove_temp_files()
-#
-#     assert mock_service.temp_output_dir == None
-#     assert mock_service.temp_zip_trace == None
-#
-#
-# def test_check_number_of_items_from_dynamo_is_one(mock_service):
-#     items = ["test item"]
-#     try:
-#         mock_service.checking_number_of_items_is_one(items)
-#     except GenerateManifestZipException:
-#         assert False
-#
-#
-# @pytest.mark.parametrize("items", [["test item", "another item"], []])
-# def test_check_number_of_items_throws_error_when_not_one(mock_service, items):
-#
-#     with pytest.raises(GenerateManifestZipException):
-#         mock_service.checking_number_of_items_is_one(items)
-#
-#
-# def test_extract_item_from_dynamo_returns_items(mock_service):
-#
-#     mock_dynamo_response = {"Items": ["mock items"]}
-#
-#     actual = mock_service.extract_item_from_dynamo_response(mock_dynamo_response)
-#
-#     assert actual == ["mock items"]
-#
-#
-# def test_extract_item_from_dynamo_throws_error_when_no_items(mock_service):
-#
-#     mock_bad_response = {"nothing": ["nothing"]}
-#
-#     with pytest.raises(GenerateManifestZipException):
-#         mock_service.extract_item_from_dynamo_response(mock_bad_response)
-#
-#
-# def test_get_zip_trace_item_from_dynamo_with_job_id_returns_row(mock_service):
-#     dynamo_response = MOCK_SEARCH_RESPONSE
-#     mock_service.dynamo_service.query_all_fields.return_value = dynamo_response
-#
-#     actual = mock_service.get_zip_trace_item_from_dynamo_by_job_id()
-#
-#     assert actual == dynamo_response
-#
-#     mock_service.dynamo_service.query_all_fields.assert_called_with(
-#         table_name="test_zip_table",
-#         search_key="JobId",
-#         search_condition=mock_service.job_id,
-#     )
-#
-#
-# def test_get_zip_trace_item_from_dynamo_throws_error_when_boto3_returns_client_error(
-#     mock_service,
-# ):
-#     mock_service.dynamo_service.query_all_fields.side_effect = ClientError(
-#         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
-#     )
-#
-#     with pytest.raises(GenerateManifestZipException):
-#         mock_service.get_zip_trace_item_from_dynamo_by_job_id()
-#
-#     mock_service.dynamo_service.query_all_fields.assert_called_with(
-#         table_name="test_zip_table",
-#         search_key="JobId",
-#         search_condition=mock_service.job_id,
-#     )
