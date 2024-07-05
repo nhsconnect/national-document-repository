@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { requestJobId } from './getPresignedUrlForZip';
+import { pollForPresignedUrl, requestJobId } from './getPresignedUrlForZip';
 import { endpoints } from '../../types/generic/endpoints';
 
 jest.mock('axios');
@@ -35,5 +35,32 @@ describe('requestJobId', () => {
         );
 
         expect(actual).toEqual(expectedJobId);
+    });
+});
+
+describe('pollForPresignedUrl', () => {
+    it('returns a response from backend', async () => {
+        const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
+        const testJobId = 'jobId123';
+        const expectedData = {
+            status: 'Complete',
+            url: 'http://test_s3_bucket/file_id',
+        };
+        const mockResponse = {
+            statusCode: 200,
+            data: expectedData,
+        };
+
+        mockedAxios.get.mockResolvedValueOnce(mockResponse);
+
+        const actual = await pollForPresignedUrl({
+            baseHeaders,
+            baseUrl,
+            nhsNumber,
+            jobId: testJobId,
+        });
+
+        expect(actual).toEqual(expectedData);
+        expect(mockedAxios.get).toHaveBeenCalledWith(gatewayUrl);
     });
 });

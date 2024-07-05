@@ -11,6 +11,13 @@ type Args = {
     docReferences?: Array<string>;
 };
 
+type GetRequestArgs = {
+    jobId: string;
+    nhsNumber: string;
+    baseUrl: string;
+    baseHeaders: AuthHeaders;
+};
+
 type GetPresignedUrl = {
     data: string;
 };
@@ -61,4 +68,13 @@ export const requestJobId = async ({
 
     return response.data.jobId;
 };
+
+export const pollForPresignedUrl = async ({ baseUrl }: GetRequestArgs) => {
+    const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
+
+    const { data } = await axios.get(gatewayUrl);
+
+    return data;
+};
+
 export default getPresignedUrlForZip;
