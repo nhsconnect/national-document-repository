@@ -5,7 +5,7 @@ from handlers.generate_document_manifest_handler import (
     manifest_zip_handler,
     prepare_zip_trace_data,
 )
-from unit.conftest import TEST_DOCUMENT_LOCATION, TEST_FILE_NAME, TEST_UUID
+from tests.unit.conftest import TEST_DOCUMENT_LOCATION, TEST_FILE_NAME, TEST_UUID
 from utils.lambda_exceptions import DocumentManifestServiceException
 from utils.lambda_response import ApiGatewayResponse
 
