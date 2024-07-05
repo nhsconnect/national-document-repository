@@ -4,11 +4,11 @@ from typing import Dict
 
 from enums.zip_trace import ZipTraceStatus
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_pascal
+from pydantic.alias_generators import to_camel, to_pascal
 
 
 class DocumentManifestZipTrace(BaseModel):
-    model_config = ConfigDict(alias_generator=to_pascal)
+    model_config = ConfigDict(alias_generator=to_pascal, use_enum_values=True)
 
     id: str = Field(alias="ID", default_factory=lambda: str(uuid.uuid4()))
     job_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -18,5 +18,12 @@ class DocumentManifestZipTrace(BaseModel):
         .replace("+00:00", "Z")
     )
     files_to_download: Dict[str, str]
-    status: str = Field(default=ZipTraceStatus.PENDING.value)
+    job_status: ZipTraceStatus = ZipTraceStatus.PENDING
     zip_file_location: str = ""
+
+
+class DocumentManifestJob(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, use_enum_values=True)
+
+    job_status: ZipTraceStatus
+    url: str

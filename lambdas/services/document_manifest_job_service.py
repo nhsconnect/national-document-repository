@@ -1,47 +1,46 @@
 import itertools
 import os
-import tempfile
 
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
+from enums.zip_trace import ZipTraceFields, ZipTraceStatus
 from models.document_reference import DocumentReference
-from models.zip_trace import DocumentManifestZipTrace
+from models.zip_trace import DocumentManifestJob, DocumentManifestZipTrace
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
-from utils.lambda_exceptions import DocumentManifestServiceException
+from utils.lambda_exceptions import DocumentManifestJobServiceException
 
 logger = LoggingService(__name__)
 
 
-class DocumentManifestService:
-    def __init__(self, nhs_number):
-        self.nhs_number = nhs_number
+class DocumentManifestJobService:
+    def __init__(self):
         create_document_aws_role_arn = os.getenv("PRESIGNED_ASSUME_ROLE")
         self.s3_service = S3Service(custom_aws_role=create_document_aws_role_arn)
+        self.document_service = DocumentService(
+            custom_aws_role=create_document_aws_role_arn
+        )
         self.dynamo_service = DynamoDBService()
-        self.document_service = DocumentService()
-
-        self.zip_file_name = f"patient-record-{self.nhs_number}.zip"
-        self.temp_downloads_dir = tempfile.mkdtemp()
-        self.temp_output_dir = tempfile.mkdtemp()
         self.zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
         self.zip_trace_table = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
+        self.documents: list[DocumentReference] = []
 
     def create_document_manifest_job(
         self,
+        nhs_number: str,
         doc_types: list[SupportedDocumentTypes],
         selected_document_references: list[str] = None,
     ) -> str:
         logger.info("Retrieving Document References for manifest")
 
-        documents = list(
+        self.documents = list(
             itertools.chain.from_iterable(
                 [
                     self.document_service.fetch_available_document_references_by_type(
-                        nhs_number=self.nhs_number,
+                        nhs_number=nhs_number,
                         doc_type=doc_type,
                         query_filter=UploadCompleted,
                     )
@@ -50,18 +49,17 @@ class DocumentManifestService:
             )
         )
 
-        if not documents:
-            raise DocumentManifestServiceException(404, LambdaError.ManifestNoDocs)
+        if not self.documents:
+            raise DocumentManifestJobServiceException(404, LambdaError.ManifestNoDocs)
 
         if selected_document_references:
-            documents = self.filter_documents_by_reference(
-                documents=documents,
+            self.filter_documents_by_reference(
                 selected_document_references=selected_document_references,
             )
 
         documents_to_download = {
             document.file_location: document.file_name
-            for document in self.handle_duplicate_document_filenames(documents)
+            for document in self.handle_duplicate_document_filenames()
         }
 
         job_id = self.write_zip_trace(documents_to_download)
@@ -70,7 +68,6 @@ class DocumentManifestService:
 
     def filter_documents_by_reference(
         self,
-        documents: list[DocumentReference],
         selected_document_references: list[str],
     ) -> list[DocumentReference]:
         logger.info("Filtering Selected Document References for manifest")
@@ -78,23 +75,21 @@ class DocumentManifestService:
         reference_set = set(selected_document_references)
         matched_references = [
             document_reference
-            for document_reference in documents
+            for document_reference in self.documents
             if document_reference.id in reference_set
         ]
 
         if not matched_references:
-            raise DocumentManifestServiceException(
+            raise DocumentManifestJobServiceException(
                 400, LambdaError.ManifestFilterDocumentReferences
             )
 
         return matched_references
 
-    def handle_duplicate_document_filenames(
-        self, documents: list[DocumentReference]
-    ) -> list[DocumentReference]:
+    def handle_duplicate_document_filenames(self) -> list[DocumentReference]:
         file_names_to_be_zipped = {}
 
-        for document in documents:
+        for document in self.documents:
             file_name = document.file_name
             duplicated_filename = file_name in file_names_to_be_zipped
 
@@ -106,7 +101,7 @@ class DocumentManifestService:
             else:
                 file_names_to_be_zipped[file_name] = 1
 
-        return documents
+        return self.documents
 
     def write_zip_trace(
         self,
@@ -121,11 +116,43 @@ class DocumentManifestService:
 
         return str(zip_trace.job_id)
 
-    def create_document_manifest_presigned_url(self, job_id: str):
-        return self.s3_service.create_download_presigned_url(
-            s3_bucket_name=self.zip_output_bucket, file_key=self.zip_file_name
-        )
+    def create_document_manifest_presigned_url(
+        self, job_id: str
+    ) -> DocumentManifestJob:
+        zip_trace = self.query_zip_trace(job_id=job_id)
+
+        match zip_trace.job_status:
+            case ZipTraceStatus.PENDING:
+                return DocumentManifestJob(jobStatus=ZipTraceStatus.PENDING, url="")
+            case ZipTraceStatus.PROCESSING:
+                return DocumentManifestJob(jobStatus=ZipTraceStatus.PROCESSING, url="")
+            case ZipTraceStatus.COMPLETED:
+                is_manifest_ready = self.s3_service.file_exist_on_s3(
+                    self.zip_output_bucket, zip_trace.zip_file_location
+                )
+                if not is_manifest_ready:
+                    raise DocumentManifestJobServiceException(
+                        404, LambdaError.ManifestMissingJob
+                    )
+                presigned_url = self.s3_service.create_download_presigned_url(
+                    s3_bucket_name=self.zip_output_bucket,
+                    file_key=zip_trace.zip_file_location,
+                )
+                return DocumentManifestJob(
+                    jobStatus=ZipTraceStatus.COMPLETED, url=presigned_url
+                )
 
     def query_zip_trace(self, job_id: str) -> DocumentManifestZipTrace:
-        # zip_trace = self.dynamo_service.query_all_fields()
-        pass
+        response = self.dynamo_service.query_with_requested_fields(
+            table_name=self.zip_trace_table,
+            index_name="JobIdIndex",
+            search_key="JobId",
+            search_condition=job_id,
+            requested_fields=ZipTraceFields.list(),
+        )
+        if not response["Items"]:
+            raise DocumentManifestJobServiceException(
+                404, LambdaError.ManifestMissingJob
+            )
+
+        return DocumentManifestZipTrace.model_validate(response["Items"][0])

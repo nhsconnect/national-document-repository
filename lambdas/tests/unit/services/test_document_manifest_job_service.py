@@ -3,16 +3,23 @@ from unittest.mock import call
 import pytest
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
+from enums.zip_trace import ZipTraceFields, ZipTraceStatus
 from freezegun import freeze_time
-from services.document_manifest_service import DocumentManifestService
-from tests.unit.conftest import MOCK_ZIP_TRACE_TABLE, TEST_NHS_NUMBER, TEST_UUID
+from models.zip_trace import DocumentManifestJob, DocumentManifestZipTrace
+from services.document_manifest_job_service import DocumentManifestJobService
+from tests.unit.conftest import (
+    MOCK_ZIP_TRACE_TABLE,
+    TEST_DOCUMENT_LOCATION,
+    TEST_NHS_NUMBER,
+    TEST_UUID,
+)
 from tests.unit.helpers.data.s3_responses import MOCK_PRESIGNED_URL_RESPONSE
 from tests.unit.helpers.data.test_documents import (
     create_test_doc_store_refs,
     create_test_lloyd_george_doc_store_refs,
 )
 from utils.common_query_filters import UploadCompleted
-from utils.lambda_exceptions import DocumentManifestServiceException
+from utils.lambda_exceptions import DocumentManifestJobServiceException
 
 TEST_DOC_STORE_DOCUMENT_REFS = create_test_doc_store_refs()
 TEST_LLOYD_GEORGE_DOCUMENT_REFS = create_test_lloyd_george_doc_store_refs()
@@ -22,13 +29,34 @@ TEST_DOC_REFERENCE_IDs = [
     "5d8683b9-1665-40d2-8499-6e8302d507ff",
 ]
 
+TEST_FILES_TO_DOWNLOAD = {
+    TEST_LLOYD_GEORGE_DOCUMENT_REFS[0]
+    .file_location: TEST_LLOYD_GEORGE_DOCUMENT_REFS[0]
+    .file_name,
+    TEST_LLOYD_GEORGE_DOCUMENT_REFS[1]
+    .file_location: TEST_LLOYD_GEORGE_DOCUMENT_REFS[1]
+    .file_name,
+    TEST_LLOYD_GEORGE_DOCUMENT_REFS[2]
+    .file_location: TEST_LLOYD_GEORGE_DOCUMENT_REFS[2]
+    .file_name,
+}
+
+TEST_ZIP_TRACE_DATA = {
+    "ID": TEST_UUID,
+    "JobId": TEST_UUID,
+    "Created": "2024-01-01T12:00:00Z",
+    "FilesToDownload": TEST_FILES_TO_DOWNLOAD,
+    "JobStatus": "Pending",
+    "ZipFileLocation": "",
+}
+
 
 @pytest.fixture
 def manifest_service(mocker, set_env):
     mocker.patch("boto3.client")
     mocker.patch("services.base.iam_service.IAMService")
 
-    service = DocumentManifestService(TEST_NHS_NUMBER)
+    service = DocumentManifestJobService()
     mocker.patch.object(service, "s3_service")
     mocker.patch.object(service, "dynamo_service")
     mocker.patch.object(service, "document_service")
@@ -51,6 +79,7 @@ def mock_s3_service(mocker, manifest_service):
     mock_s3_service.create_download_presigned_url.return_value = (
         MOCK_PRESIGNED_URL_RESPONSE
     )
+    mocker.patch.object(mock_s3_service, "file_exist_on_s3")
     yield mock_s3_service
 
 
@@ -58,6 +87,7 @@ def mock_s3_service(mocker, manifest_service):
 def mock_dynamo_service(mocker, manifest_service):
     mock_dynamo_service = manifest_service.dynamo_service
     mocker.patch.object(mock_dynamo_service, "create_item")
+    mocker.patch.object(mock_dynamo_service, "query_with_requested_fields")
     yield mock_dynamo_service
 
 
@@ -77,11 +107,15 @@ def mock_write_zip_trace(mocker, manifest_service):
 
 
 @pytest.fixture
+def mock_query_zip_trace(mocker, manifest_service):
+    yield mocker.patch.object(manifest_service, "query_zip_trace")
+
+
+@pytest.fixture
 def mock_query_filter(mocker):
-    upload_query = UploadCompleted
-    filter = mocker.patch("utils.common_query_filters.UploadCompleted")
-    filter.return_value = upload_query
-    yield filter.return_value
+    query_filter = mocker.patch("utils.common_query_filters.UploadCompleted")
+    query_filter.return_value = UploadCompleted
+    yield query_filter.return_value
 
 
 def test_create_document_manifest_job_raises_exception(
@@ -89,10 +123,14 @@ def test_create_document_manifest_job_raises_exception(
 ):
     mock_document_service.fetch_available_document_references_by_type.return_value = []
 
-    with pytest.raises(DocumentManifestServiceException) as e:
-        manifest_service.create_document_manifest_job([SupportedDocumentTypes.ARF])
+    with pytest.raises(DocumentManifestJobServiceException) as e:
+        manifest_service.create_document_manifest_job(
+            nhs_number=TEST_NHS_NUMBER, doc_types=[SupportedDocumentTypes.ARF]
+        )
 
-    assert e.value == DocumentManifestServiceException(404, LambdaError.ManifestNoDocs)
+    assert e.value == DocumentManifestJobServiceException(
+        404, LambdaError.ManifestNoDocs
+    )
 
 
 def test_create_document_manifest_job_for_arf(
@@ -113,7 +151,7 @@ def test_create_document_manifest_job_for_arf(
     expected = TEST_UUID
 
     response = manifest_service.create_document_manifest_job(
-        doc_types=[SupportedDocumentTypes.ARF]
+        nhs_number=TEST_NHS_NUMBER, doc_types=[SupportedDocumentTypes.ARF]
     )
 
     mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
@@ -157,7 +195,7 @@ def test_create_document_manifest_job_for_lg(
     expected = TEST_UUID
 
     response = manifest_service.create_document_manifest_job(
-        doc_types=[SupportedDocumentTypes.LG]
+        nhs_number=TEST_NHS_NUMBER, doc_types=[SupportedDocumentTypes.LG]
     )
 
     mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
@@ -215,7 +253,8 @@ def test_create_document_manifest_job_for_both(
     ]
 
     response = manifest_service.create_document_manifest_job(
-        doc_types=[SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF]
+        nhs_number=TEST_NHS_NUMBER,
+        doc_types=[SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF],
     )
 
     mock_document_service.fetch_available_document_references_by_type.assert_has_calls(
@@ -266,6 +305,7 @@ def test_create_document_manifest_job_for_arf_with_doc_references(
     expected = TEST_UUID
 
     response = manifest_service.create_document_manifest_job(
+        nhs_number=TEST_NHS_NUMBER,
         doc_types=[SupportedDocumentTypes.ARF],
         selected_document_references=TEST_DOC_REFERENCE_IDs,
     )
@@ -276,7 +316,6 @@ def test_create_document_manifest_job_for_arf_with_doc_references(
         query_filter=mock_query_filter,
     )
     mock_filter_documents_by_reference.assert_called_once_with(
-        documents=TEST_DOC_STORE_DOCUMENT_REFS,
         selected_document_references=TEST_DOC_REFERENCE_IDs,
     )
     mock_write_zip_trace.assert_called_once_with(
@@ -316,6 +355,7 @@ def test_create_document_manifest_job_for_lg_with_doc_references(
     expected = TEST_UUID
 
     response = manifest_service.create_document_manifest_job(
+        nhs_number=TEST_NHS_NUMBER,
         doc_types=[SupportedDocumentTypes.LG],
         selected_document_references=TEST_DOC_REFERENCE_IDs,
     )
@@ -326,7 +366,6 @@ def test_create_document_manifest_job_for_lg_with_doc_references(
         query_filter=mock_query_filter,
     )
     mock_filter_documents_by_reference.assert_called_once_with(
-        documents=TEST_LLOYD_GEORGE_DOCUMENT_REFS,
         selected_document_references=TEST_DOC_REFERENCE_IDs,
     )
     mock_write_zip_trace.assert_called_once_with(
@@ -381,6 +420,7 @@ def test_create_document_manifest_job_for_both_with_doc_references(
     ]
 
     response = manifest_service.create_document_manifest_job(
+        nhs_number=TEST_NHS_NUMBER,
         doc_types=[SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF],
         selected_document_references=TEST_DOC_REFERENCE_IDs,
     )
@@ -389,7 +429,6 @@ def test_create_document_manifest_job_for_both_with_doc_references(
         expected_calls
     )
     mock_filter_documents_by_reference.assert_called_once_with(
-        documents=TEST_LLOYD_GEORGE_DOCUMENT_REFS + TEST_DOC_STORE_DOCUMENT_REFS,
         selected_document_references=TEST_DOC_REFERENCE_IDs,
     )
     mock_write_zip_trace.assert_called_once_with(
@@ -418,10 +457,10 @@ def test_create_document_manifest_job_for_both_with_doc_references(
 
 
 def test_filter_documents_by_reference_valid_multiple(manifest_service):
+    manifest_service.documents = TEST_DOC_STORE_DOCUMENT_REFS
     expected = TEST_DOC_STORE_DOCUMENT_REFS[:-1]
 
     response = manifest_service.filter_documents_by_reference(
-        documents=TEST_DOC_STORE_DOCUMENT_REFS,
         selected_document_references=TEST_DOC_REFERENCE_IDs[:-1],
     )
 
@@ -429,10 +468,10 @@ def test_filter_documents_by_reference_valid_multiple(manifest_service):
 
 
 def test_filter_documents_by_reference_valid_singular(manifest_service):
+    manifest_service.documents = TEST_DOC_STORE_DOCUMENT_REFS
     expected = [TEST_DOC_STORE_DOCUMENT_REFS[0]]
 
     response = manifest_service.filter_documents_by_reference(
-        documents=TEST_DOC_STORE_DOCUMENT_REFS,
         selected_document_references=[TEST_DOC_REFERENCE_IDs[0]],
     )
 
@@ -440,24 +479,37 @@ def test_filter_documents_by_reference_valid_singular(manifest_service):
 
 
 def test_filter_documents_by_reference_raises_exception(manifest_service):
-    with pytest.raises(DocumentManifestServiceException) as e:
+    manifest_service.documents = TEST_DOC_STORE_DOCUMENT_REFS
+    with pytest.raises(DocumentManifestJobServiceException) as e:
         manifest_service.filter_documents_by_reference(
-            documents=TEST_DOC_STORE_DOCUMENT_REFS,
             selected_document_references=["invalid_reference"],
         )
 
-    assert e.value == DocumentManifestServiceException(
+    assert e.value == DocumentManifestJobServiceException(
         400, LambdaError.ManifestFilterDocumentReferences
     )
 
 
-def test_handle_duplicate_document_filenames(manifest_service):
-    test_docs = TEST_LLOYD_GEORGE_DOCUMENT_REFS
-    test_docs[0].file_name = "test.pdf"
-    test_docs[1].file_name = "test.pdf"
-    test_docs[2].file_name = "test.pdf"
+def test_handle_duplicate_document_filenames_no_duplicates(manifest_service):
+    manifest_service.documents = TEST_LLOYD_GEORGE_DOCUMENT_REFS
+    manifest_service.documents[0].file_name = "test.pdf"
+    manifest_service.documents[1].file_name = "test2.pdf"
+    manifest_service.documents[2].file_name = "test3.pdf"
 
-    response = manifest_service.handle_duplicate_document_filenames(test_docs)
+    response = manifest_service.handle_duplicate_document_filenames()
+
+    assert response[0].file_name == "test.pdf"
+    assert response[1].file_name == "test2.pdf"
+    assert response[2].file_name == "test3.pdf"
+
+
+def test_handle_duplicate_document_filenames_duplicates(manifest_service):
+    manifest_service.documents = TEST_LLOYD_GEORGE_DOCUMENT_REFS
+    manifest_service.documents[0].file_name = "test.pdf"
+    manifest_service.documents[1].file_name = "test.pdf"
+    manifest_service.documents[2].file_name = "test.pdf"
+
+    response = manifest_service.handle_duplicate_document_filenames()
 
     assert response[0].file_name == "test.pdf"
     assert response[1].file_name == "test(2).pdf"
@@ -466,227 +518,109 @@ def test_handle_duplicate_document_filenames(manifest_service):
 
 @freeze_time("2024-01-01T12:00:00Z")
 def test_write_zip_trace_valid(manifest_service, mock_dynamo_service, mock_uuid):
-    test_docs = {
-        TEST_LLOYD_GEORGE_DOCUMENT_REFS[0]
-        .file_location: TEST_LLOYD_GEORGE_DOCUMENT_REFS[0]
-        .file_name,
-        TEST_LLOYD_GEORGE_DOCUMENT_REFS[1]
-        .file_location: TEST_LLOYD_GEORGE_DOCUMENT_REFS[1]
-        .file_name,
-        TEST_LLOYD_GEORGE_DOCUMENT_REFS[2]
-        .file_location: TEST_LLOYD_GEORGE_DOCUMENT_REFS[2]
-        .file_name,
-    }
+    expected = TEST_UUID
 
-    manifest_service.write_zip_trace(test_docs)
+    actual = manifest_service.write_zip_trace(TEST_FILES_TO_DOWNLOAD)
 
     mock_dynamo_service.create_item.assert_called_with(
         MOCK_ZIP_TRACE_TABLE,
-        {
-            "ID": TEST_UUID,
-            "JobId": TEST_UUID,
-            "Created": "2024-01-01T12:00:00Z",
-            "FilesToDownload": test_docs,
-            "Status": "Pending",
-            "ZipFileLocation": "",
-        },
+        TEST_ZIP_TRACE_DATA,
+    )
+
+    assert expected == actual
+
+
+def test_create_document_manifest_presigned_url_status_pending(
+    manifest_service, mock_query_zip_trace, mock_uuid
+):
+
+    test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
+    mock_query_zip_trace.return_value = test_zip_trace
+
+    expected = DocumentManifestJob(jobStatus="Pending", url="")
+
+    actual = manifest_service.create_document_manifest_presigned_url(TEST_UUID)
+
+    assert actual == expected
+
+
+def test_create_document_manifest_presigned_url_status_processing(
+    manifest_service, mock_query_zip_trace, mock_uuid
+):
+    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.PROCESSING
+    test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
+    mock_query_zip_trace.return_value = test_zip_trace
+
+    expected = DocumentManifestJob(jobStatus="Processing", url="")
+
+    actual = manifest_service.create_document_manifest_presigned_url(TEST_UUID)
+
+    assert actual == expected
+
+
+def test_create_document_manifest_presigned_url_status_completed(
+    manifest_service, mock_query_zip_trace, mock_uuid, mock_s3_service
+):
+    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.COMPLETED
+    TEST_ZIP_TRACE_DATA["ZipFileLocation"] = TEST_DOCUMENT_LOCATION
+    test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
+
+    mock_query_zip_trace.return_value = test_zip_trace
+    mock_s3_service.file_exist_on_s3.return_value = True
+    mock_s3_service.create_download_presigned_url.return_value = TEST_DOCUMENT_LOCATION
+
+    expected = DocumentManifestJob(jobStatus="Completed", url=TEST_DOCUMENT_LOCATION)
+
+    actual = manifest_service.create_document_manifest_presigned_url(TEST_UUID)
+
+    assert actual == expected
+
+
+def test_create_document_manifest_presigned_url_status_completed_missing_manifest(
+    manifest_service, mock_query_zip_trace, mock_s3_service
+):
+    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.COMPLETED
+    test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
+
+    mock_query_zip_trace.return_value = test_zip_trace
+    mock_s3_service.file_exist_on_s3.return_value = False
+
+    with pytest.raises(DocumentManifestJobServiceException) as e:
+        manifest_service.create_document_manifest_presigned_url(TEST_UUID)
+
+    assert e.value == DocumentManifestJobServiceException(
+        404, LambdaError.ManifestMissingJob
     )
 
 
-# def test_create_document_manifest_presigned_url_doc_store(
-#     mock_service, mock_s3_service, mock_document_service
-# ):
-#     mock_document_service.fetch_available_document_references_by_type.return_value = (
-#         TEST_DOC_STORE_DOCUMENT_REFS
-#     )
-#
-#     response = mock_service.create_document_manifest_presigned_url(
-#         [SupportedDocumentTypes.ARF]
-#     )
-#     assert mock_service.zip_file_name == f"patient-record-{TEST_NHS_NUMBER}.zip"
-#     assert response == MOCK_PRESIGNED_URL_RESPONSE
-#     mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
-#         nhs_number=TEST_NHS_NUMBER,
-#         doc_type=SupportedDocumentTypes.ARF,
-#         query_filter=UploadCompleted,
-#     )
-#     mock_s3_service.create_download_presigned_url.assert_called_once_with(
-#         s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
-#     )
-#
-#
-# def test_create_document_manifest_presigned_url_lloyd_george(
-#     mock_service, mock_s3_service, mock_document_service
-# ):
-#     mock_service.document_service.fetch_available_document_references_by_type.return_value = (
-#         TEST_LLOYD_GEORGE_DOCUMENT_REFS
-#     )
-#
-#     response = mock_service.create_document_manifest_presigned_url(
-#         [SupportedDocumentTypes.LG]
-#     )
-#
-#     assert mock_service.zip_file_name == f"patient-record-{TEST_NHS_NUMBER}.zip"
-#     assert response == MOCK_PRESIGNED_URL_RESPONSE
-#     mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
-#         nhs_number=TEST_NHS_NUMBER,
-#         doc_type=SupportedDocumentTypes.LG,
-#         query_filter=UploadCompleted,
-#     )
-#     mock_s3_service.create_download_presigned_url.assert_called_once_with(
-#         s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
-#     )
-#
-#
-# def test_create_document_manifest_presigned_url_lloyd_george_with_file_ref(
-#     mock_service, mock_s3_service, mock_document_service
-# ):
-#     mock_service.document_service.fetch_available_document_references_by_type.return_value = (
-#         TEST_LLOYD_GEORGE_DOCUMENT_REFS
-#     )
-#
-#     response = mock_service.create_document_manifest_presigned_url(
-#         [SupportedDocumentTypes.LG], ["test_file_ref"]
-#     )
-#     mock_filter_doc_by_ref = (
-#         UploadCompleted
-#         & DynamoQueryFilterBuilder()
-#         .add_condition(
-#             attribute=str(DocumentReferenceMetadataFields.ID.value),
-#             attr_operator=AttributeOperator.EQUAL,
-#             filter_value="test_file_ref",
-#         )
-#         .build()
-#     )
-#     assert mock_service.zip_file_name == f"patient-record-{TEST_NHS_NUMBER}.zip"
-#     assert response == MOCK_PRESIGNED_URL_RESPONSE
-#     mock_document_service.fetch_available_document_references_by_type.assert_called_once_with(
-#         nhs_number=TEST_NHS_NUMBER,
-#         doc_type=SupportedDocumentTypes.LG,
-#         query_filter=mock_filter_doc_by_ref,
-#     )
-#     mock_s3_service.create_download_presigned_url.assert_called_once_with(
-#         s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
-#     )
-#
-#
-# def test_create_document_manifest_presigned_url_all(
-#     mock_service, mock_s3_service, mock_document_service
-# ):
-#     mock_service.document_service.fetch_available_document_references_by_type.side_effect = [
-#         TEST_LLOYD_GEORGE_DOCUMENT_REFS,
-#         TEST_DOC_STORE_DOCUMENT_REFS,
-#     ]
-#
-#     response = mock_service.create_document_manifest_presigned_url(
-#         [SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF]
-#     )
-#
-#     assert mock_service.zip_file_name == f"patient-record-{TEST_NHS_NUMBER}.zip"
-#     assert response == MOCK_PRESIGNED_URL_RESPONSE
-#     mock_document_service.fetch_available_document_references_by_type.assert_has_calls(
-#         [
-#             call(
-#                 nhs_number=TEST_NHS_NUMBER,
-#                 doc_type=SupportedDocumentTypes.LG,
-#                 query_filter=UploadCompleted,
-#             ),
-#             call(
-#                 nhs_number=TEST_NHS_NUMBER,
-#                 doc_type=SupportedDocumentTypes.ARF,
-#                 query_filter=UploadCompleted,
-#             ),
-#         ]
-#     )
-#
-#     mock_s3_service.create_download_presigned_url.assert_called_once_with(
-#         s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=mock_service.zip_file_name
-#     )
-#
-#
-# def test_create_document_manifest_presigned_raises_exception_when_validation_error(
-#     mock_service, validation_error
-# ):
-#     mock_service.document_service.fetch_available_document_references_by_type.side_effect = (
-#         validation_error
-#     )
-#
-#     with pytest.raises(DocumentManifestServiceException):
-#         mock_service.create_document_manifest_presigned_url(
-#             [SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF]
-#         )
-#
-#
-# def test_create_document_manifest_presigned_raises_exception_when_not_all_files_uploaded(
-#     mock_service, validation_error
-# ):
-#     mock_service.document_service.fetch_available_document_references_by_type.return_value = TEST_LLOYD_GEORGE_DOCUMENT_REFS[
-#         0:1
-#     ]
-#
-#     with pytest.raises(DocumentManifestServiceException):
-#         mock_service.create_document_manifest_presigned_url([SupportedDocumentTypes.LG])
-#
-#
-# def test_create_document_manifest_presigned_raises_exception_when_documents_empty(
-#     mock_service,
-# ):
-#     mock_service.document_service.fetch_available_document_references_by_type.return_value = (
-#         []
-#     )
-#
-#     with pytest.raises(DocumentManifestServiceException):
-#         mock_service.create_document_manifest_presigned_url(
-#             [SupportedDocumentTypes.LG, SupportedDocumentTypes.ARF]
-#         )
-#
-#
-# def test_download_documents_to_be_zipped_handles_duplicate_file_names(mock_service):
-#     mock_service.documents = TEST_LLOYD_GEORGE_DOCUMENT_REFS
-#
-#     mock_service.documents[0].file_name = "test.pdf"
-#     mock_service.documents[1].file_name = "test.pdf"
-#     mock_service.documents[2].file_name = "test.pdf"
-#
-#     mock_service.download_documents_to_be_zipped(TEST_LLOYD_GEORGE_DOCUMENT_REFS)
-#
-#     assert mock_service.documents[0].file_name == "test.pdf"
-#     assert mock_service.documents[1].file_name == "test(2).pdf"
-#     assert mock_service.documents[2].file_name == "test(3).pdf"
-#
-#
-# def test_download_documents_to_be_zipped_calls_download_file(
-#     mock_service, mock_s3_service
-# ):
-#     mock_service.download_documents_to_be_zipped(TEST_LLOYD_GEORGE_DOCUMENT_REFS)
-#
-#     assert mock_s3_service.download_file.call_count == 3
-#
-#
-# def test_download_documents_to_be_zipped_creates_download_path(
-#     mock_service, mock_s3_service
-# ):
-#     expected_download_path = os.path.join(
-#         mock_service.temp_downloads_dir, TEST_DOC_STORE_DOCUMENT_REFS[0].file_name
-#     )
-#     expected_document_file_key = TEST_DOC_STORE_DOCUMENT_REFS[0].get_file_key()
-#
-#     mock_service.download_documents_to_be_zipped([TEST_DOC_STORE_DOCUMENT_REFS[0]])
-#     mock_s3_service.download_file.assert_called_with(
-#         MOCK_BUCKET, expected_document_file_key, expected_download_path
-#     )
-#
-#
-# def test_upload_zip_file(mock_service, mock_s3_service, mock_dynamo_service):
-#     expected_upload_path = os.path.join(
-#         mock_service.temp_output_dir, mock_service.zip_file_name
-#     )
-#     mock_service.upload_zip_file()
-#
-#     mock_s3_service.upload_file.assert_called_with(
-#         file_name=expected_upload_path,
-#         s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET,
-#         file_key=mock_service.zip_file_name,
-#     )
-#
-#     mock_dynamo_service.create_item.assert_called_once()
+def test_query_zip_trace_returns_zip_trace_object(
+    manifest_service, mock_dynamo_service
+):
+    mock_dynamo_service.query_with_requested_fields.return_value = {
+        "Items": [TEST_ZIP_TRACE_DATA]
+    }
+    expected = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
+
+    actual = manifest_service.query_zip_trace(TEST_UUID)
+
+    mock_dynamo_service.query_with_requested_fields.assert_called_once_with(
+        table_name=MOCK_ZIP_TRACE_TABLE,
+        index_name="JobIdIndex",
+        search_key="JobId",
+        search_condition=TEST_UUID,
+        requested_fields=ZipTraceFields.list(),
+    )
+    assert actual == expected
+
+
+def test_query_zip_trace_empty_response_raises_exception(
+    manifest_service, mock_dynamo_service
+):
+    mock_dynamo_service.query_with_requested_fields.return_value = {"Items": []}
+
+    with pytest.raises(DocumentManifestJobServiceException) as e:
+        manifest_service.query_zip_trace(TEST_UUID)
+
+    assert e.value == DocumentManifestJobServiceException(
+        404, LambdaError.ManifestMissingJob
+    )

@@ -1,7 +1,9 @@
 from freezegun import freeze_time
 from models.zip_trace import DocumentManifestZipTrace
 from tests.unit.conftest import TEST_UUID
-from unit.helpers.data.test_documents import create_test_lloyd_george_doc_store_refs
+from tests.unit.helpers.data.test_documents import (
+    create_test_lloyd_george_doc_store_refs,
+)
 
 
 @freeze_time("2024-01-01T12:00:00Z")
@@ -18,7 +20,7 @@ def test_zip_trace_serializer(mock_uuid):
         "JobId": TEST_UUID,
         "Created": "2024-01-01T12:00:00Z",
         "FilesToDownload": test_files_to_download,
-        "Status": "Pending",
+        "JobStatus": "Pending",
         "ZipFileLocation": "",
     }
 
