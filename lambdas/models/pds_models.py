@@ -27,6 +27,19 @@ class Name(BaseModel):
     given: list[str] = [""]
     family: str
 
+    def is_currently_in_use(self) -> bool:
+        if not self.period:
+            return False
+        if self.use.lower() in ["nickname", "old"]:
+            return False
+
+        today = date.today()
+
+        name_started_already = self.period.start <= today
+        name_not_expired_yet = (not self.period.end) or self.period.end >= today
+
+        return name_started_already and name_not_expired_yet
+
 
 class Security(BaseModel):
     code: str
@@ -85,18 +98,31 @@ class Patient(BaseModel):
         security = self.get_security()
         return security.code == "U"
 
-    def get_current_usual_name(self) -> Optional[Name]:
+    def get_usual_name(self) -> Optional[Name]:
         for entry in self.name:
             if entry.use.lower() == "usual":
                 return entry
 
+    def get_most_recent_name(self) -> Optional[Name]:
+        active_names = [name for name in self.name if name.is_currently_in_use()]
+        if not active_names:
+            return None
+
+        sorted_by_start_date_desc = sorted(
+            active_names, key=lambda name: name.period.start, reverse=True
+        )
+        return sorted_by_start_date_desc[0]
+
     def get_current_family_name_and_given_name(self) -> Tuple[str, list[str]]:
-        usual_name = self.get_current_usual_name()
-        if not usual_name:
-            logger.warning("The patient does not have a usual name.")
+        current_name = self.get_most_recent_name() or self.get_usual_name()
+        if not current_name:
+            logger.warning(
+                "The patient does not have a currently active name or a usual name."
+            )
             return "", [""]
-        given_name = usual_name.given
-        family_name = usual_name.family
+
+        given_name = current_name.given
+        family_name = current_name.family
 
         if not given_name or given_name == [""]:
             logger.warning("The given name of patient is empty.")
