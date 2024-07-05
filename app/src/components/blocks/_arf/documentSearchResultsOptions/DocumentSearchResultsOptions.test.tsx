@@ -28,6 +28,7 @@ const updateDownloadState = jest.fn();
 describe('DocumentSearchResultsOptions', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
+        // window.HTMLAnchorElement.prototype.click = jest.fn();
     });
     afterEach(() => {
         jest.clearAllMocks();
@@ -52,6 +53,9 @@ describe('DocumentSearchResultsOptions', () => {
         });
 
         it('calls parent callback function to pass successful state after a successful response from api', async () => {
+            // suppress warning msg of <a> element being clicked when downloading zip file
+            window.HTMLAnchorElement.prototype.click = jest.fn();
+
             mockGetPresignedUrlForZip.mockResolvedValue('test-presigned-url');
 
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
@@ -70,6 +74,7 @@ describe('DocumentSearchResultsOptions', () => {
 
         it('calls parent callback function to pass pending state when waiting for response from api', async () => {
             // To delay the mock request, and give a chance for the spinner to appear
+            window.HTMLAnchorElement.prototype.click = jest.fn();
             mockGetPresignedUrlForZip.mockImplementation(() =>
                 waitForSeconds(0.5).then(() => 'test-presigned-url'),
             );
