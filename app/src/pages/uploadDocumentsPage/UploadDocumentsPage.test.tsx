@@ -19,16 +19,19 @@ import {
     UploadDocument,
 } from '../../types/pages/UploadDocumentsPage/types';
 import uploadDocuments, {
+    updateDocumentState,
     uploadConfirmation,
     uploadDocumentToS3,
     virusScan,
 } from '../../helpers/requests/uploadDocuments';
+import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
 
 const mockConfigContext = useConfig as jest.Mock;
 const mockedUseNavigate = jest.fn();
 const mockUploadDocuments = uploadDocuments as jest.Mock;
 const mockS3Upload = uploadDocumentToS3 as jest.Mock;
 const mockVirusScan = virusScan as jest.Mock;
+const mockUpdateDocumentState = updateDocumentState as jest.Mock;
 const mockUploadConfirmation = uploadConfirmation as jest.Mock;
 
 jest.mock('react-router', () => ({
@@ -238,6 +241,102 @@ describe('UploadDocumentsPage', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_COMPLETED);
             });
 
+            it('only navigate to confirmation page when every files are scanned', async () => {
+                const waitForSeconds = jest.requireActual(
+                    '../../helpers/utils/waitForSeconds',
+                ).default;
+
+                mockVirusScan
+                    .mockImplementationOnce(() => waitForSeconds(99999))
+                    .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.CLEAN)
+                    .mockResolvedValueOnce(DOCUMENT_UPLOAD_STATE.CLEAN);
+
+                const { rerender } = renderPage(history);
+
+                await uploadFileAndWaitForLoadingScreen(arfDocuments);
+
+                rerender(<App history={history} />);
+
+                await waitFor(() => {
+                    expect(mockUploadConfirmation).not.toHaveBeenCalled();
+                });
+                expect(mockedUseNavigate).not.toHaveBeenCalledWith(
+                    routeChildren.ARF_UPLOAD_CONFIRMATION,
+                );
+                expect(mockedUseNavigate).not.toHaveBeenCalledWith(
+                    routeChildren.ARF_UPLOAD_COMPLETED,
+                );
+            });
+
+            describe('setInterval related logics', () => {
+                beforeAll(() => {
+                    jest.useFakeTimers();
+                });
+                afterAll(() => {
+                    jest.useRealTimers();
+                });
+
+                function mockSlowS3Upload(milliseconds: number) {
+                    mockS3Upload.mockImplementationOnce(() => {
+                        jest.advanceTimersByTime(milliseconds);
+                        return Promise.resolve(successResponse);
+                    });
+                    mockS3Upload.mockResolvedValue(successResponse);
+                }
+                async function waitForSlowUpload(milliseconds: number) {
+                    await waitFor(
+                        () => {
+                            expect(mockS3Upload).toHaveBeenCalled();
+                        },
+                        { timeout: milliseconds },
+                    );
+                }
+
+                it.each([1, 2, 3, 4, 5])(
+                    'calls updateDocumentState every 2 minutes during upload',
+                    async (numberOfTimes) => {
+                        const mockTimeTakenForUpload =
+                            FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD * numberOfTimes + 100;
+
+                        mockSlowS3Upload(mockTimeTakenForUpload);
+
+                        renderPage(history);
+                        setFilesAndClickUpload(arfDocuments);
+
+                        await waitForSlowUpload(mockTimeTakenForUpload + 1000);
+
+                        expect(mockUpdateDocumentState).toHaveBeenCalledTimes(numberOfTimes);
+                        const updateDocumentStateArguments =
+                            mockUpdateDocumentState.mock.calls[0][0];
+                        expect(updateDocumentStateArguments.uploadingState).toBe(true);
+                    },
+                );
+
+                it('calls updateDocumentState with correct arguments', async () => {
+                    const mockTimeTakenForUpload =
+                        FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD + 100;
+                    mockSlowS3Upload(mockTimeTakenForUpload);
+
+                    renderPage(history);
+
+                    setFilesAndClickUpload(arfDocuments);
+                    await waitForSlowUpload(mockTimeTakenForUpload + 1000);
+
+                    const updateDocumentStateArguments = mockUpdateDocumentState.mock.calls[0][0];
+
+                    expect(updateDocumentStateArguments.uploadingState).toBe(true);
+                    expect(updateDocumentStateArguments.documents).toHaveLength(
+                        arfDocuments.length,
+                    );
+                    updateDocumentStateArguments.documents.forEach((doc: UploadDocument) => {
+                        expect(doc).toMatchObject({
+                            docType: 'ARF',
+                            ref: expect.stringContaining('uuid_for_file'),
+                        });
+                    });
+                });
+            });
+
             describe('Error handling', () => {
                 const badRequestResponse400 = {
                     response: {
@@ -312,6 +411,12 @@ describe('UploadDocumentsPage', () => {
 
                     expect(mockUploadConfirmation).not.toHaveBeenCalled();
                     expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_FAILED);
+
+                    expect(mockUpdateDocumentState).toHaveBeenCalledWith(
+                        expect.objectContaining({
+                            uploadingState: false,
+                        }),
+                    );
                 });
 
                 it('navigates to failed stage if all files are infected', async () => {
@@ -325,6 +430,12 @@ describe('UploadDocumentsPage', () => {
 
                     expect(mockUploadConfirmation).not.toHaveBeenCalled();
                     expect(mockedUseNavigate).toHaveBeenCalledWith(routeChildren.ARF_UPLOAD_FAILED);
+
+                    expect(mockUpdateDocumentState).toHaveBeenCalledWith(
+                        expect.objectContaining({
+                            uploadingState: false,
+                        }),
+                    );
                 });
 
                 const uploadFilesAndWaitUntilConfirmationCall = async (
@@ -348,6 +459,18 @@ describe('UploadDocumentsPage', () => {
                     await uploadFilesAndWaitUntilConfirmationCall(arfDocuments, rerender);
 
                     expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
+                });
+
+                it('navigates to upload confirmation failed page when uploadConfirmation returns a 5xx error', async () => {
+                    mockUploadConfirmation.mockRejectedValue(badGatewayResponse502);
+
+                    const { rerender } = renderPage(history);
+
+                    await uploadFilesAndWaitUntilConfirmationCall(arfDocuments, rerender);
+
+                    expect(mockedUseNavigate).toHaveBeenCalledWith(
+                        routeChildren.ARF_UPLOAD_CONFIRMATION_FAILED,
+                    );
                 });
 
                 it('navigates to session expire page error page when uploadConfirmation returns other error', async () => {
