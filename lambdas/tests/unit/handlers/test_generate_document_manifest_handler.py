@@ -3,6 +3,7 @@ from enums.lambda_error import LambdaError
 from handlers.generate_document_manifest_handler import (
     lambda_handler,
     manifest_zip_handler,
+    prepare_zip_trace_data,
 )
 from unit.conftest import TEST_DOCUMENT_LOCATION, TEST_FILE_NAME, TEST_UUID
 from utils.lambda_exceptions import DocumentManifestServiceException
@@ -27,25 +28,6 @@ INVALID_EVENT_EXAMPLE = {
     ],
 }
 
-MODIFY_EVENT_EXAMPLE = {
-    "Records": [
-        {
-            "eventID": "1",
-            "eventName": "MODIFY",
-            "eventVersion": "1.0",
-            "eventSource": "aws:dynamodb",
-            "awsRegion": "us-east-1",
-            "dynamodb": {
-                "Keys": {"Id": {"N": "101"}},
-                "NewImage": {"hello"},
-                "SequenceNumber": "111",
-                "SizeBytes": 26,
-                "StreamViewType": "NEW_AND_OLD_IMAGES",
-            },
-            "eventSourceARN": "stream-ARN",
-        }
-    ],
-}
 VALID_NEW_IMAGE = {
     "FilesToDownload": {
         "M": {
@@ -58,6 +40,27 @@ VALID_NEW_IMAGE = {
     "JobId": {"S": f"{TEST_UUID}"},
     "Created": {"S": "2023-07-02T13:11:00.544608Z"},
 }
+
+MODIFY_EVENT_EXAMPLE = {
+    "Records": [
+        {
+            "eventID": "1",
+            "eventName": "MODIFY",
+            "eventVersion": "1.0",
+            "eventSource": "aws:dynamodb",
+            "awsRegion": "us-east-1",
+            "dynamodb": {
+                "Keys": {"Id": {"N": "101"}},
+                "NewImage": VALID_NEW_IMAGE,
+                "SequenceNumber": "111",
+                "SizeBytes": 26,
+                "StreamViewType": "NEW_AND_OLD_IMAGES",
+            },
+            "eventSourceARN": "stream-ARN",
+        }
+    ],
+}
+
 
 MOCK_EVENT_RESPONSE = {
     "Records": [
@@ -76,6 +79,37 @@ INVALID_IMAGE = {
     "Created": {"S": "2023-07-02T13:11:00.544608Z"},
 }
 
+PROCESSES_VALID_IMAGE = {
+    "FilesToDownload": {
+        f"{TEST_DOCUMENT_LOCATION}1": f"{TEST_FILE_NAME}1",
+        f"{TEST_DOCUMENT_LOCATION}2": f"{TEST_FILE_NAME}2",
+    },
+    "Status": "Pending",
+    "ID": TEST_UUID,
+    "JobId": TEST_UUID,
+    "Created": "2023-07-02T13:11:00.544608Z",
+}
+
+NEW_IMAGE_NOT_DICT_EXAMPLE = {
+    "Records": [
+        {
+            "eventID": "1",
+            "eventName": "INSERT",
+            "eventVersion": "1.0",
+            "eventSource": "aws:dynamodb",
+            "awsRegion": "us-east-1",
+            "dynamodb": {
+                "Keys": {"Id": {"N": "101"}},
+                "NewImage": ["hello"],
+                "SequenceNumber": "111",
+                "SizeBytes": 26,
+                "StreamViewType": "NEW_AND_OLD_IMAGES",
+            },
+            "eventSourceARN": "stream-ARN",
+        }
+    ],
+}
+
 
 @pytest.fixture
 def mock_document_manifest_zip_service(mocker):
@@ -85,6 +119,22 @@ def mock_document_manifest_zip_service(mocker):
         return_value=mock_object,
     )
     yield mock_object
+
+
+def test_handler_200_response_no_issues(context, set_env, mocker):
+    expected = ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
+    mock_manifest_zip_handler = mocker.patch(
+        "handlers.generate_document_manifest_handler.manifest_zip_handler"
+    )
+    mock_prepare_zip_trace_data = mocker.patch(
+        "handlers.generate_document_manifest_handler.prepare_zip_trace_data"
+    )
+
+    actual = lambda_handler(MOCK_EVENT_RESPONSE, context)
+
+    assert expected == actual
+    mock_manifest_zip_handler.assert_called_once()
+    mock_prepare_zip_trace_data.assert_called_once()
 
 
 def test_400_response_thrown_if_no_records_in_event(context, set_env):
@@ -105,6 +155,28 @@ def test_400_response_if_event_name_not_insert(context, set_env):
     assert expected == actual
 
 
+def test_400_response_if_new_image_is_not_dictionary(context, set_env):
+    expected = ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
+    actual = lambda_handler(NEW_IMAGE_NOT_DICT_EXAMPLE, context)
+    assert expected == actual
+
+
+def test_handler_return_500_response_when_manifest_zip_error(context, set_env, mocker):
+    mocker.patch(
+        "handlers.generate_document_manifest_handler.manifest_zip_handler",
+        side_effect=DocumentManifestServiceException(500, LambdaError.MockError),
+    )
+    mocker.patch("handlers.generate_document_manifest_handler.prepare_zip_trace_data")
+
+    actual = lambda_handler(MOCK_EVENT_RESPONSE, context)
+
+    expected = ApiGatewayResponse(
+        500, LambdaError.MockError.create_error_body(), "GET"
+    ).create_api_gateway_response()
+
+    assert expected == actual
+
+
 def test_manifest_zip_handler_raise_error_if_zip_trace_model_validation_fails(
     mock_document_manifest_zip_service,
 ):
@@ -117,9 +189,9 @@ def test_manifest_zip_handler_raise_error_if_zip_trace_model_validation_fails(
 def test_manifest_zip_handler_happy_path(
     mock_document_manifest_zip_service,
 ):
-    manifest_zip_handler(VALID_NEW_IMAGE)
+    manifest_zip_handler(PROCESSES_VALID_IMAGE)
 
-    mock_document_manifest_zip_service.assert_called_once()
+    mock_document_manifest_zip_service.handle_zip_request.assert_called_once()
 
 
 def test_zip_service_handle_zip_request_called(mock_document_manifest_zip_service):
@@ -128,87 +200,13 @@ def test_zip_service_handle_zip_request_called(mock_document_manifest_zip_servic
     )
 
     with pytest.raises(DocumentManifestServiceException):
-        manifest_zip_handler(VALID_NEW_IMAGE)
+        manifest_zip_handler(PROCESSES_VALID_IMAGE)
 
-    mock_document_manifest_zip_service.assert_called_once()
     mock_document_manifest_zip_service.handle_zip_request.assert_called_once()
 
 
-def test_200_response_no_issues():
-    pass
-
-
 def test_prepare_zip_trace_data():
-    pass
+    actual = prepare_zip_trace_data(VALID_NEW_IMAGE)
+    expected = PROCESSES_VALID_IMAGE
 
-    # # def test_upload_zip_file(mock_service):
-    # #     f"patient-record-{zip_trace.job_id}.zip"
-    # def test_remove_temp_files(mock_service):
-    #     mock_service.remove_temp_files()
-    #
-    #     assert mock_service.temp_output_dir == None
-    #     assert mock_service.temp_zip_trace == None
-    #
-    #
-    # def test_check_number_of_items_from_dynamo_is_one(mock_service):
-    #     items = ["test item"]
-    #     try:
-    #         mock_service.checking_number_of_items_is_one(items)
-    #     except GenerateManifestZipException:
-    #         assert False
-    #
-    #
-    # @pytest.mark.parametrize("items", [["test item", "another item"], []])
-    # def test_check_number_of_items_throws_error_when_not_one(mock_service, items):
-    #
-    #     with pytest.raises(GenerateManifestZipException):
-    #         mock_service.checking_number_of_items_is_one(items)
-    #
-    #
-    # def test_extract_item_from_dynamo_returns_items(mock_service):
-    #
-    #     mock_dynamo_response = {"Items": ["mock items"]}
-    #
-    #     actual = mock_service.extract_item_from_dynamo_response(mock_dynamo_response)
-    #
-    #     assert actual == ["mock items"]
-    #
-    #
-    # def test_extract_item_from_dynamo_throws_error_when_no_items(mock_service):
-    #
-    #     mock_bad_response = {"nothing": ["nothing"]}
-    #
-    #     with pytest.raises(GenerateManifestZipException):
-    #         mock_service.extract_item_from_dynamo_response(mock_bad_response)
-    #
-    #
-    # def test_get_zip_trace_item_from_dynamo_with_job_id_returns_row(mock_service):
-    #     dynamo_response = MOCK_SEARCH_RESPONSE
-    #     mock_service.dynamo_service.query_all_fields.return_value = dynamo_response
-    #
-    #     actual = mock_service.get_zip_trace_item_from_dynamo_by_job_id()
-    #
-    #     assert actual == dynamo_response
-    #
-    #     mock_service.dynamo_service.query_all_fields.assert_called_with(
-    #         table_name="test_zip_table",
-    #         search_key="JobId",
-    #         search_condition=mock_service.job_id,
-    #     )
-    #
-    #
-    # def test_get_zip_trace_item_from_dynamo_throws_error_when_boto3_returns_client_error(
-    #     mock_service,
-    # ):
-    #     mock_service.dynamo_service.query_all_fields.side_effect = ClientError(
-    #         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
-    #     )
-    #
-    #     with pytest.raises(GenerateManifestZipException):
-    #         mock_service.get_zip_trace_item_from_dynamo_by_job_id()
-    #
-    #     mock_service.dynamo_service.query_all_fields.assert_called_with(
-    #         table_name="test_zip_table",
-    #         search_key="JobId",
-    #         search_condition=mock_service.job_id,
-    #     )
+    assert actual == expected

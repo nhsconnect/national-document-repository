@@ -37,7 +37,11 @@ def lambda_handler(event, context):
     for record in dynamo_records:
         new_zip_trace = record.get("dynamodb", {}).get("NewImage")
         event_name = record.get("eventName")
-        if not new_zip_trace or event_name != "INSERT":
+        if (
+            not new_zip_trace
+            or event_name != "INSERT"
+            or not isinstance(new_zip_trace, dict)
+        ):
             return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
         processed_zip_trace = prepare_zip_trace_data(new_zip_trace)
@@ -63,7 +67,8 @@ def manifest_zip_handler(zip_trace_item):
     zip_service.handle_zip_request()
 
 
-def prepare_zip_trace_data(new_zip_trace):
+def prepare_zip_trace_data(new_zip_trace: dict) -> dict:
+
     for key, nested_object in new_zip_trace.items():
         value = list(nested_object.values())[0]
         if isinstance(value, dict):
