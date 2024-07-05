@@ -1,5 +1,4 @@
 import json
-from enum import Enum
 
 import pytest
 from botocore.exceptions import ClientError
@@ -7,7 +6,7 @@ from enums.lambda_error import LambdaError
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from enums.supported_document_types import SupportedDocumentTypes
 from handlers.document_manifest_job_handler import create_manifest_job, lambda_handler
-from tests.unit.conftest import TEST_NHS_NUMBER, TEST_UUID
+from tests.unit.conftest import TEST_NHS_NUMBER, TEST_UUID, MockError
 from utils.lambda_exceptions import DocumentManifestJobServiceException
 from utils.lambda_response import ApiGatewayResponse
 
@@ -16,14 +15,6 @@ TEST_METADATA_FIELDS = [
     DocumentReferenceMetadataFields.FILE_LOCATION,
     DocumentReferenceMetadataFields.VIRUS_SCANNER_RESULT,
 ]
-
-
-class MockError(Enum):
-    Error = {
-        "message": "Client error",
-        "err_code": "AB_XXXX",
-        "interaction_id": "88888888-4444-4444-4444-121212121212",
-    }
 
 
 @pytest.fixture
@@ -350,6 +341,7 @@ def test_lambda_handler_when_id_not_supplied_returns_400(
 def test_lambda_handler_returns_400_when_doc_type_not_supplied(
     set_env, valid_id_event_without_auth_header, context
 ):
+    valid_id_event_without_auth_header["httpMethod"] = "POST"
     expected_body = json.dumps(
         {
             "message": "An error occurred due to missing key",
@@ -358,7 +350,7 @@ def test_lambda_handler_returns_400_when_doc_type_not_supplied(
         }
     )
     expected = ApiGatewayResponse(
-        400, expected_body, "GET"
+        400, expected_body, "POST"
     ).create_api_gateway_response()
     actual = lambda_handler(valid_id_event_without_auth_header, context)
     assert expected == actual

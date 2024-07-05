@@ -20,7 +20,7 @@ def validate_manifest_job_id(lambda_func: Callable):
 
     def interceptor(event, context):
         try:
-            job_id = event["queryStringParameters"]["jobId"]
+            job_id = event["queryStringParameters"].get("jobId")
             if job_id is None:
                 return ApiGatewayResponse(
                     400,

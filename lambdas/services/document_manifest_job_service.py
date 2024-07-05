@@ -53,7 +53,7 @@ class DocumentManifestJobService:
             raise DocumentManifestJobServiceException(404, LambdaError.ManifestNoDocs)
 
         if selected_document_references:
-            self.filter_documents_by_reference(
+            self.documents = self.filter_documents_by_reference(
                 selected_document_references=selected_document_references,
             )
 

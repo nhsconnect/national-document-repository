@@ -172,10 +172,13 @@ class LambdaError(Enum):
         "err_code": "DMS_4003",
         "message": "Selected document references do not match any documents stored for this patient",
     }
-    ManifestMissingJobId = {"err_code": "DMS_4004", "message": "jobId not supplied"}
+    ManifestMissingJobId = {
+        "err_code": "DMS_4004",
+        "message": "An error occurred due to missing key",
+    }
     ManifestMissingJob = {
         "err_code": "DMS_4005",
-        "message": "No Document Manifest found for the provided Job Id",
+        "message": "No Document Manifest found",
     }
     ManifestValidation = {
         "err_code": "DMS_5001",
