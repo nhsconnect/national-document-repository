@@ -2,6 +2,7 @@ import axios from 'axios';
 import { endpoints } from '../../types/generic/endpoints';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
+import { PollingResponse } from '../../types/generic/downloadManifestJobStatus';
 
 type Args = {
     nhsNumber: string;
@@ -13,7 +14,6 @@ type Args = {
 
 type GetRequestArgs = {
     jobId: string;
-    nhsNumber: string;
     baseUrl: string;
     baseHeaders: AuthHeaders;
 };
@@ -51,7 +51,7 @@ export const requestJobId = async ({
     baseHeaders,
     docType = DOCUMENT_TYPE.ALL,
     docReferences,
-}: Args) => {
+}: Args): Promise<string> => {
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
 
     const response = await axios.post(gatewayUrl, '', {
@@ -69,10 +69,21 @@ export const requestJobId = async ({
     return response.data.jobId;
 };
 
-export const pollForPresignedUrl = async ({ baseUrl }: GetRequestArgs) => {
+export const pollForPresignedUrl = async ({
+    jobId,
+    baseUrl,
+    baseHeaders,
+}: GetRequestArgs): Promise<PollingResponse> => {
     const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
 
-    const { data } = await axios.get(gatewayUrl);
+    const { data } = await axios.get(gatewayUrl, {
+        headers: {
+            ...baseHeaders,
+        },
+        params: {
+            jobId,
+        },
+    });
 
     return data;
 };

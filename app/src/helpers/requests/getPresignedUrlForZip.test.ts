@@ -43,7 +43,7 @@ describe('pollForPresignedUrl', () => {
         const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
         const testJobId = 'jobId123';
         const expectedData = {
-            status: 'Complete',
+            status: 'Completed',
             url: 'http://test_s3_bucket/file_id',
         };
         const mockResponse = {
@@ -56,11 +56,16 @@ describe('pollForPresignedUrl', () => {
         const actual = await pollForPresignedUrl({
             baseHeaders,
             baseUrl,
-            nhsNumber,
             jobId: testJobId,
         });
 
         expect(actual).toEqual(expectedData);
-        expect(mockedAxios.get).toHaveBeenCalledWith(gatewayUrl);
+        expect(mockedAxios.get).toHaveBeenCalledWith(
+            gatewayUrl,
+            expect.objectContaining({
+                headers: baseHeaders,
+                params: expect.objectContaining({ jobId: testJobId }),
+            }),
+        );
     });
 });
