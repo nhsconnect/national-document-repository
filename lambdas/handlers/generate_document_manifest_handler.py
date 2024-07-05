@@ -40,22 +40,27 @@ def lambda_handler(event, context):
         if not new_zip_trace or event_name != "INSERT":
             return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
-        try:
-            zip_trace_item = prepare_zip_trace_data(new_zip_trace)
-            zip_trace = DocumentManifestZipTrace.model_validate(zip_trace_item)
-
-        except ValidationError as e:
-            logger.error(
-                f"{LambdaError.ManifestValidation.to_str()}: {str(e)}",
-                {"Result": "Failed to create document manifest"},
-            )
-            raise DocumentManifestServiceException(
-                status_code=500, error=LambdaError.ManifestValidation
-            )
-        zip_service = DocumentManifestZipService(zip_trace)
-        zip_service.handle_zip_request()
+        processed_zip_trace = prepare_zip_trace_data(new_zip_trace)
+        manifest_zip_handler(processed_zip_trace)
 
     return ApiGatewayResponse(200, "", "GET").create_api_gateway_response()
+
+
+def manifest_zip_handler(zip_trace_item):
+    try:
+        zip_trace = DocumentManifestZipTrace.model_validate(zip_trace_item)
+
+    except ValidationError as e:
+        logger.error(
+            f"{LambdaError.ManifestValidation.to_str()}: {str(e)}",
+            {"Result": "Failed to create document manifest"},
+        )
+        raise DocumentManifestServiceException(
+            status_code=500, error=LambdaError.ManifestValidation
+        )
+
+    zip_service = DocumentManifestZipService(zip_trace)
+    zip_service.handle_zip_request()
 
 
 def prepare_zip_trace_data(new_zip_trace):

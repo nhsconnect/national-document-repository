@@ -1,7 +1,11 @@
 import pytest
 from enums.lambda_error import LambdaError
-from handlers.generate_document_manifest_handler import lambda_handler
+from handlers.generate_document_manifest_handler import (
+    lambda_handler,
+    manifest_zip_handler,
+)
 from unit.conftest import TEST_DOCUMENT_LOCATION, TEST_FILE_NAME, TEST_UUID
+from utils.lambda_exceptions import DocumentManifestServiceException
 from utils.lambda_response import ApiGatewayResponse
 
 INVALID_EVENT_EXAMPLE = {
@@ -42,36 +46,45 @@ MODIFY_EVENT_EXAMPLE = {
         }
     ],
 }
+VALID_NEW_IMAGE = {
+    "FilesToDownload": {
+        "M": {
+            f"{TEST_DOCUMENT_LOCATION}1": {"S": f"{TEST_FILE_NAME}1"},
+            f"{TEST_DOCUMENT_LOCATION}2": {"S": f"{TEST_FILE_NAME}2"},
+        }
+    },
+    "Status": {"S": "Pending"},
+    "ID": {"S": f"{TEST_UUID}"},
+    "JobId": {"S": f"{TEST_UUID}"},
+    "Created": {"S": "2023-07-02T13:11:00.544608Z"},
+}
 
 MOCK_EVENT_RESPONSE = {
     "Records": [
         {
             "eventName": "INSERT",
             "dynamodb": {
-                "NewImage": {
-                    "FilesToDownload": {
-                        "M": {
-                            f"{TEST_DOCUMENT_LOCATION}1": {"S": f"{TEST_FILE_NAME}1"},
-                            f"{TEST_DOCUMENT_LOCATION}2": {"S": f"{TEST_FILE_NAME}2"},
-                        }
-                    },
-                    "Status": {"S": "Pending"},
-                    "ID": {"S": f"{TEST_UUID}"},
-                    "JobId": {"S": f"{TEST_UUID}"},
-                    "Created": {"S": "2023-07-02T13:11:00.544608Z"},
-                },
+                "NewImage": VALID_NEW_IMAGE,
             },
         }
     ]
 }
 
+INVALID_IMAGE = {
+    "Status": {"S": "Pending"},
+    "ID": {"S": f"{TEST_UUID}"},
+    "Created": {"S": "2023-07-02T13:11:00.544608Z"},
+}
+
 
 @pytest.fixture
 def mock_document_manifest_zip_service(mocker):
-    service = mocker.patch(
-        "handlers.generate_document_manifest_handler.DocumentManifestZipService"
+    mock_object = mocker.MagicMock()
+    mocker.patch(
+        "handlers.generate_document_manifest_handler.DocumentManifestZipService",
+        return_value=mock_object,
     )
-    yield service
+    yield mock_object
 
 
 def test_400_response_thrown_if_no_records_in_event(context, set_env):
@@ -92,20 +105,40 @@ def test_400_response_if_event_name_not_insert(context, set_env):
     assert expected == actual
 
 
-def test_500_response_if_zip_trace_model_validation_fails(context, set_env):
-    actual = lambda_handler(MOCK_EVENT_RESPONSE, context)
+def test_manifest_zip_handler_raise_error_if_zip_trace_model_validation_fails(
+    mock_document_manifest_zip_service,
+):
+    with pytest.raises(DocumentManifestServiceException):
+        manifest_zip_handler(INVALID_IMAGE)
 
-    error_body = LambdaError.ManifestValidation.create_error_body()
-    expected = ApiGatewayResponse(500, error_body, "GET").create_api_gateway_response()
-
-    assert expected == actual
+    mock_document_manifest_zip_service.assert_not_called()
 
 
-def test_zip_service_handle_zip_request_called():
-    pass
+def test_manifest_zip_handler_happy_path(
+    mock_document_manifest_zip_service,
+):
+    manifest_zip_handler(VALID_NEW_IMAGE)
+
+    mock_document_manifest_zip_service.assert_called_once()
+
+
+def test_zip_service_handle_zip_request_called(mock_document_manifest_zip_service):
+    mock_document_manifest_zip_service.handle_zip_request.side_effect = (
+        DocumentManifestServiceException("test", LambdaError.MockError)
+    )
+
+    with pytest.raises(DocumentManifestServiceException):
+        manifest_zip_handler(VALID_NEW_IMAGE)
+
+    mock_document_manifest_zip_service.assert_called_once()
+    mock_document_manifest_zip_service.handle_zip_request.assert_called_once()
 
 
 def test_200_response_no_issues():
+    pass
+
+
+def test_prepare_zip_trace_data():
     pass
 
     # # def test_upload_zip_file(mock_service):
