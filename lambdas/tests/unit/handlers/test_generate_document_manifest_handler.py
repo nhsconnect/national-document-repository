@@ -69,10 +69,10 @@ def mock_document_manifest_zip_service(mocker):
     yield service
 
 
-def test_400_response_thrown_if_no_records_in_event(missing_id_event, context):
+def test_400_response_thrown_if_no_records_in_event(MOCK_EVENT_RESPONSE, context):
 
     expected = ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
-    actual = lambda_handler(EVENT_EXAMPLE, context)
+    actual = lambda_handler(MOCK_EVENT_RESPONSE, context)
     # assert True
     assert expected == actual
 
