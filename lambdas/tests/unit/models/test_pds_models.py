@@ -1,5 +1,5 @@
 from freezegun import freeze_time
-from models.pds_models import Name, PatientDetails
+from models.pds_models import PatientDetails
 from tests.unit.conftest import EXPECTED_PARSED_PATIENT_BASE_CASE
 from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT,
@@ -169,14 +169,46 @@ def test_patient_without_period_in_general_practitioner_identifier_can_be_proces
     assert expected == result
 
 
-BaseTestName = Name.model_validate(
-    {
-        "use": "usual",
-        "period": {"start": "2023-01-01", "end": "2025-12-31"},
-        "given": ["Jane"],
-        "family": "Smith",
-    }
-)
+def test_get_patient_details_return_the_most_recent_name():
+    name_1 = build_test_name(start="1990-01-01", end=None, given=["Jane"])
+    name_2 = build_test_name(start="2010-02-14", end=None, given=["Jones"])
+    name_3 = build_test_name(start="2000-03-25", end=None, given=["Bob"])
+
+    test_patient = build_test_patient_with_names([name_1, name_2, name_3])
+
+    expected_given_name = ["Jones"]
+    actual = test_patient.get_patient_details(test_patient.id).given_name
+
+    assert actual == expected_given_name
+
+
+def test_get_current_family_name_and_given_name_return_the_first_usual_name_if_all_names_have_no_dates_attached():
+    name_1 = build_test_name(use="temp", start=None, end=None, given=["Jones"])
+    name_2 = build_test_name(use="usual", start=None, end=None, given=["Jane"])
+    name_3 = build_test_name(use="usual", start=None, end=None, given=["Bob"])
+
+    test_patient = build_test_patient_with_names([name_1, name_2, name_3])
+
+    expected_given_name = ["Jane"]
+    actual = test_patient.get_patient_details(test_patient.id).given_name
+
+    assert actual == expected_given_name
+
+
+def test_get_current_family_name_and_given_name_logs_a_warning_if_no_current_name_or_usual_name_found(
+    caplog,
+):
+    test_patient = build_test_patient_with_names([])
+
+    actual = test_patient.get_patient_details(test_patient.id)
+    assert actual.given_name == [""]
+    assert actual.family_name == ""
+
+    expected_log = "The patient does not have a currently active name or a usual name."
+    actual_log = caplog.records[-1].msg
+
+    assert expected_log == actual_log
+    assert caplog.records[-1].levelname == "WARNING"
 
 
 @freeze_time("2024-01-01")
@@ -260,3 +292,10 @@ def test_get_most_recent_name_return_the_name_with_most_recent_start_date():
     actual = test_patient.get_most_recent_name()
 
     assert actual == expected
+
+
+@freeze_time("2024-01-01")
+def test_get_most_recent_name_return_none_if_no_active_name_found():
+    test_patient = build_test_patient_with_names([])
+
+    assert test_patient.get_most_recent_name() is None
