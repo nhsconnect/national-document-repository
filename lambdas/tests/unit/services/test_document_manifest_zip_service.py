@@ -3,7 +3,7 @@ from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.zip_trace import ZipTraceStatus
 from models.zip_trace import DocumentManifestZipTrace
-from services.document_manifest_zip_service import DocumentManifestZipService
+from services.generate_document_manifest_zip_service import DocumentManifestZipService
 from utils.exceptions import InvalidDocumentReferenceException
 from utils.lambda_exceptions import DocumentManifestServiceException
 
@@ -37,7 +37,7 @@ TEST_DYNAMO_RESPONSE = {
     "ID": TEST_UUID,
     "JobId": TEST_UUID,
     "FilesToDownload": {TEST_DOCUMENT_LOCATION: TEST_FILE_NAME},
-    "Status": ZipTraceStatus.PENDING.value,
+    "JobStatus": ZipTraceStatus.PENDING.value,
     "Created": TEST_TIME,
 }
 
@@ -75,7 +75,7 @@ def test_download_file_from_s3(mock_service, mock_s3_service):
         TEST_FILE_KEY,
         f"{mock_service.temp_downloads_dir}/{TEST_FILE_NAME}",
     )
-    assert mock_service.zip_trace_object.status != ZipTraceStatus.FAILED.value
+    assert mock_service.zip_trace_object.job_status != ZipTraceStatus.FAILED
 
 
 def test_download_file_from_s3_raises_exception(mock_service, mock_s3_service):
@@ -94,7 +94,7 @@ def test_download_file_from_s3_raises_exception(mock_service, mock_s3_service):
     assert e.value == DocumentManifestServiceException(
         500, LambdaError.ZipServiceClientError
     )
-    assert mock_service.zip_trace_object.status == ZipTraceStatus.FAILED.value
+    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.FAILED
 
 
 def test_get_file_bucket_and_key_returns_correct_items(mock_service):
@@ -115,7 +115,7 @@ def test_get_file_bucket_and_key_throws_exeception_when_not_passed_incorrect_fom
         mock_service.get_file_bucket_and_key(bad_location)
 
     assert e.value.args[0] == "Failed to parse bucket from file location string"
-    assert mock_service.zip_trace_object.status == ZipTraceStatus.FAILED.value
+    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.FAILED
 
 
 def test_upload_zip_file(mock_service, mock_s3_service):
@@ -130,7 +130,7 @@ def test_upload_zip_file(mock_service, mock_s3_service):
         mock_service.zip_trace_object.zip_file_location
         == f"s3://{MOCK_ZIP_OUTPUT_BUCKET}/{mock_service.zip_file_name}"
     )
-    assert mock_service.zip_trace_object.status == ZipTraceStatus.COMPLETED.value
+    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.COMPLETED
 
 
 def test_upload_zip_file_throws_exception_on_error(mock_service, mock_s3_service):
@@ -149,25 +149,25 @@ def test_upload_zip_file_throws_exception_on_error(mock_service, mock_s3_service
     assert e.value == DocumentManifestServiceException(
         500, LambdaError.ZipServiceClientError
     )
-    assert mock_service.zip_trace_object.status == ZipTraceStatus.FAILED.value
+    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.FAILED
 
 
 def test_update_dynamo(mock_service, mock_dynamo_service):
-    # mock_service.zip_trace_object.status = ZipTraceStatus.COMPLETED.value
-    mock_service.update_dynamo_with_fields({"status"})
+    # mock_service.zip_trace_object.job_status = ZipTraceStatus.COMPLETED.value
+    mock_service.update_dynamo_with_fields({"job_status"})
 
     mock_dynamo_service.update_item.assert_called_once_with(
         "test_zip_table",
         mock_service.zip_trace_object.id,
-        mock_service.zip_trace_object.model_dump(by_alias=True, include={"status"}),
+        mock_service.zip_trace_object.model_dump(by_alias=True, include={"job_status"}),
     )
 
 
 def test_update_processing_status(mock_service):
     mock_service.update_processing_status()
-    assert mock_service.zip_trace_object.status == ZipTraceStatus.PROCESSING.value
+    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.PROCESSING
 
 
 def test_update_failed_status(mock_service):
     mock_service.update_failed_status()
-    assert mock_service.zip_trace_object.status == ZipTraceStatus.FAILED.value
+    assert mock_service.zip_trace_object.job_status == ZipTraceStatus.FAILED

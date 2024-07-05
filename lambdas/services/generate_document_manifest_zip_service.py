@@ -34,7 +34,7 @@ class DocumentManifestZipService:
         self.zip_files()
         self.upload_zip_file()
         self.remove_temp_files()
-        self.update_dynamo_with_fields({"status", "zip_file_location"})
+        self.update_dynamo_with_fields({"job_status", "zip_file_location"})
 
     def download_documents_to_be_zipped(self):
         logger.info("Downloading documents to be zipped")
@@ -87,7 +87,7 @@ class DocumentManifestZipService:
                 status_code=500, error=LambdaError.ZipServiceClientError
             )
 
-        self.zip_trace_object.status = ZipTraceStatus.COMPLETED.value
+        self.zip_trace_object.job_status = ZipTraceStatus.COMPLETED
 
     def zip_files(self):
         logger.info("Creating zip from files")
@@ -107,12 +107,12 @@ class DocumentManifestZipService:
         )
 
     def update_processing_status(self):
-        self.zip_trace_object.status = ZipTraceStatus.PROCESSING.value
-        self.update_dynamo_with_fields({"status"})
+        self.zip_trace_object.job_status = ZipTraceStatus.PROCESSING
+        self.update_dynamo_with_fields({"job_status"})
 
     def update_failed_status(self):
-        self.zip_trace_object.status = ZipTraceStatus.FAILED.value
-        self.update_dynamo_with_fields({"status"})
+        self.zip_trace_object.job_status = ZipTraceStatus.FAILED
+        self.update_dynamo_with_fields({"job_status"})
 
     def remove_temp_files(self):
         # Removes the parent of each removed directory until the parent does not exist or the parent is not empty

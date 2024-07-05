@@ -170,7 +170,7 @@ class LambdaError(Enum):
     }
     ManifestValidation = {
         "err_code": "DMS_5001",
-        "message": "Failed to parse document reference from from DynamoDb response",
+        "message": "Failed to validate zip trace model from dynamo event",
     }
     ManifestDB = {
         "err_code": "DMS_5002",

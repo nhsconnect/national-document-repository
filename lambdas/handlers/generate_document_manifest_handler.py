@@ -2,7 +2,7 @@ from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from models.zip_trace import DocumentManifestZipTrace
 from pydantic import ValidationError
-from services.document_manifest_zip_service import DocumentManifestZipService
+from services.generate_document_manifest_zip_service import DocumentManifestZipService
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions

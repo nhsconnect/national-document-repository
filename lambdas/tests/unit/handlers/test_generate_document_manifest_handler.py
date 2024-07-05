@@ -1,61 +1,66 @@
 import pytest
+from enums.lambda_error import LambdaError
 from handlers.generate_document_manifest_handler import lambda_handler
-from services.document_manifest_zip_service import DocumentManifestZipService
-from unit.services.test_document_manifest_zip_service import TEST_ZIP_TRACE
+from unit.conftest import TEST_DOCUMENT_LOCATION, TEST_FILE_NAME, TEST_UUID
 from utils.lambda_response import ApiGatewayResponse
 
-EVENT_EXAMPLE = {
-    "eventID": "1",
-    "eventName": "INSERT",
-    "eventVersion": "1.0",
-    "eventSource": "aws:dynamodb",
-    "awsRegion": "us-east-1",
-    "dynamodb": {
-        "Keys": {"Id": {"N": "101"}},
-        "NewImage": {"Message": {"S": "New item!"}, "Id": {"N": "101"}},
-        "SequenceNumber": "111",
-        "SizeBytes": 26,
-        "StreamViewType": "NEW_AND_OLD_IMAGES",
-    },
-    "eventSourceARN": "stream-ARN",
+INVALID_EVENT_EXAMPLE = {
+    "Records": [
+        {
+            "eventID": "1",
+            "eventName": "INSERT",
+            "eventVersion": "1.0",
+            "eventSource": "aws:dynamodb",
+            "awsRegion": "us-east-1",
+            "dynamodb": {
+                "Keys": {"Id": {"N": "101"}},
+                "SequenceNumber": "111",
+                "SizeBytes": 26,
+                "StreamViewType": "NEW_AND_OLD_IMAGES",
+            },
+            "eventSourceARN": "stream-ARN",
+        }
+    ],
+}
+
+MODIFY_EVENT_EXAMPLE = {
+    "Records": [
+        {
+            "eventID": "1",
+            "eventName": "MODIFY",
+            "eventVersion": "1.0",
+            "eventSource": "aws:dynamodb",
+            "awsRegion": "us-east-1",
+            "dynamodb": {
+                "Keys": {"Id": {"N": "101"}},
+                "NewImage": {"hello"},
+                "SequenceNumber": "111",
+                "SizeBytes": 26,
+                "StreamViewType": "NEW_AND_OLD_IMAGES",
+            },
+            "eventSourceARN": "stream-ARN",
+        }
+    ],
 }
 
 MOCK_EVENT_RESPONSE = {
     "Records": [
         {
-            "eventID": "402bad225401dc8f7306d76e26be7c50",
             "eventName": "INSERT",
-            "eventVersion": "1.1",
-            "eventSource": "aws:dynamodb",
-            "awsRegion": "eu-west-2",
             "dynamodb": {
-                "ApproximateCreationDateTime": 1719934814.0,
-                "Keys": {"ID": {"S": "37d79b0e-31f6-49d9-b882-b3d2c8308b2c"}},
                 "NewImage": {
                     "FilesToDownload": {
                         "M": {
-                            "s3://ndrc-lloyd-george-store/9000000004/f2a8e23d-80b1-4682-9ccb-ee84d65b6937": {
-                                "S": "1of5_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010].pdf"
-                            },
-                            "s3://ndrc-lloyd-george-store/9000000004/aefbfb37-6e52-4def-a772-6165376637b1": {
-                                "S": "1of5_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010](2).pdf"
-                            },
+                            f"{TEST_DOCUMENT_LOCATION}1": {"S": f"{TEST_FILE_NAME}1"},
+                            f"{TEST_DOCUMENT_LOCATION}2": {"S": f"{TEST_FILE_NAME}2"},
                         }
                     },
                     "Status": {"S": "Pending"},
-                    "ZipFileLocation": {
-                        "S": "s3://ndrc-zip-request-store/e9653b17-203f-4a9b-81b5-1cb71eb10423"
-                    },
-                    "ID": {"S": "37d79b0e-31f6-49d9-b882-b3d2c8308b2c"},
-                    "JobId": {"S": "39653b17-203f-4a9b-81b5-1cb71eb10423"},
+                    "ID": {"S": f"{TEST_UUID}"},
+                    "JobId": {"S": f"{TEST_UUID}"},
                     "Created": {"S": "2023-07-02T13:11:00.544608Z"},
                 },
-                "SequenceNumber": "837800000000009615266796",
-                "SizeBytes": 552,
-                "StreamViewType": "NEW_AND_OLD_IMAGES",
             },
-            "eventSourceARN": "arn:aws:dynamodb:eu-west-2:11111111111111:table"
-            "/ndrc_ZipStoreReferenceMetadata/stream/2024-07-02T08:32:50.481",
         }
     ]
 }
@@ -63,30 +68,37 @@ MOCK_EVENT_RESPONSE = {
 
 @pytest.fixture
 def mock_document_manifest_zip_service(mocker):
-    service = DocumentManifestZipService(TEST_ZIP_TRACE)
-    mocker.patch.object(service, "s3_service")
-    mocker.patch.object(service, "dynamo_service")
+    service = mocker.patch(
+        "handlers.generate_document_manifest_handler.DocumentManifestZipService"
+    )
     yield service
 
 
-def test_400_response_thrown_if_no_records_in_event(MOCK_EVENT_RESPONSE, context):
-
+def test_400_response_thrown_if_no_records_in_event(context, set_env):
     expected = ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
-    actual = lambda_handler(MOCK_EVENT_RESPONSE, context)
-    # assert True
+    actual = lambda_handler({}, context)
     assert expected == actual
 
 
-def test_400_response_thrown_if_no_new_zip_trace_in_image():
-    pass
+def test_400_response_thrown_if_no_new_zip_trace_in_image(context, set_env):
+    expected = ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
+    actual = lambda_handler(INVALID_EVENT_EXAMPLE, context)
+    assert expected == actual
 
 
-def test_400_response_if_event_name_not_insert():
-    pass
+def test_400_response_if_event_name_not_insert(context, set_env):
+    expected = ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
+    actual = lambda_handler(MODIFY_EVENT_EXAMPLE, context)
+    assert expected == actual
 
 
-def test_500_response_if_zip_trace_model_validation_fails():
-    pass
+def test_500_response_if_zip_trace_model_validation_fails(context, set_env):
+    actual = lambda_handler(MOCK_EVENT_RESPONSE, context)
+
+    error_body = LambdaError.ManifestValidation.create_error_body()
+    expected = ApiGatewayResponse(500, error_body, "GET").create_api_gateway_response()
+
+    assert expected == actual
 
 
 def test_zip_service_handle_zip_request_called():
