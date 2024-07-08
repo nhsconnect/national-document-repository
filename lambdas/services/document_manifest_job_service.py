@@ -20,9 +20,7 @@ class DocumentManifestJobService:
     def __init__(self):
         create_document_aws_role_arn = os.getenv("PRESIGNED_ASSUME_ROLE")
         self.s3_service = S3Service(custom_aws_role=create_document_aws_role_arn)
-        self.document_service = DocumentService(
-            custom_aws_role=create_document_aws_role_arn
-        )
+        self.document_service = DocumentService()
         self.dynamo_service = DynamoDBService()
         self.zip_output_bucket = os.environ["ZIPPED_STORE_BUCKET_NAME"]
         self.zip_trace_table = os.environ["ZIPPED_STORE_DYNAMODB_NAME"]
