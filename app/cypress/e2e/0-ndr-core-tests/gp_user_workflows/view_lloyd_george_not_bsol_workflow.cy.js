@@ -245,7 +245,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     cy.intercept('GET', '/DocumentManifest*', (req) => {
                         req.reply({
                             statusCode: 200,
-                            body: { status: 'Completed', url: baseUrl + '/browserconfig.xml' }, // uses public served file in place of a ZIP file
+                            body: { jobStatus: 'Completed', url: baseUrl + '/browserconfig.xml' }, // uses public served file in place of a ZIP file
                             delay: 500,
                         });
                     }).as('documentManifest');
