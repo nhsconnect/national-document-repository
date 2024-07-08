@@ -13,7 +13,7 @@ type Props = {
     downloadStage: DOWNLOAD_STAGE;
 };
 
-function LloydGeorgeRecordError({ downloadStage }: Props) {
+function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
     const role = useRole();
     const navigate = useNavigate();
     const isBSOL = useIsBSOL();
