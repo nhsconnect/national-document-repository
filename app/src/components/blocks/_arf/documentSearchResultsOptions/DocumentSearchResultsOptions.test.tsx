@@ -8,6 +8,7 @@ import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
 import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
+import { DownloadManifestError } from '../../../../types/generic/errors';
 
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
@@ -180,6 +181,7 @@ describe('DocumentSearchResultsOptions', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });
         });
+
         it('navigates to error page when API returns 5XX', async () => {
             const errorResponse = {
                 response: {
@@ -195,6 +197,20 @@ describe('DocumentSearchResultsOptions', () => {
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
                     routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+                );
+            });
+        });
+
+        it('navigates to error page when getPresignedUrlForZip throw DownloadManifestError', async () => {
+            const mockError = new DownloadManifestError('some error msg');
+            mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(mockError));
+
+            renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
+            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    expect.stringContaining(routes.SERVER_ERROR),
                 );
             });
         });

@@ -16,6 +16,7 @@ import * as ReactRouter from 'react-router';
 import LloydGeorgeDownloadStage, { Props } from './LloydGeorgeDownloadStage';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
+import { DownloadManifestError } from '../../../../types/generic/errors';
 
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -181,6 +182,21 @@ describe('LloydGeorgeDownloadStage', () => {
         await waitFor(() => {
             expect(mockedUseNavigate).toHaveBeenCalledWith(
                 routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+            );
+        });
+    });
+
+    it('navigates to Error page when GetPresignedUrlForZip throw DownloadManifestError', async () => {
+        const mockError = new DownloadManifestError('some error msg');
+        mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(mockError));
+        jest.useFakeTimers();
+        renderComponent(history);
+        act(() => {
+            jest.advanceTimersByTime(500);
+        });
+        await waitFor(() => {
+            expect(mockedUseNavigate).toHaveBeenCalledWith(
+                expect.stringContaining(routes.SERVER_ERROR),
             );
         });
     });
