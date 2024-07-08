@@ -2,10 +2,9 @@ import { act, render, screen } from '@testing-library/react';
 import LloydGeorgeRecordError from './LloydGeorgeRecordError';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import { LinkProps } from 'react-router-dom';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { buildConfig } from '../../../../helpers/test/testBuilders';
@@ -26,7 +25,6 @@ jest.mock('react-router', () => ({
 const mockUseRole = useRole as jest.Mock;
 const mockIsBSOL = useIsBSOL as jest.Mock;
 const mockUseConfig = useConfig as jest.Mock;
-const mockSetStage = jest.fn();
 const mockNavigate = jest.fn();
 
 describe('LloydGeorgeRecordError', () => {
@@ -43,9 +41,7 @@ describe('LloydGeorgeRecordError', () => {
     describe('Rendering', () => {
         it("renders an error when the document download status is 'Timeout'", () => {
             const timeoutStatus = DOWNLOAD_STAGE.TIMEOUT;
-            render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={timeoutStatus} />);
 
             expect(
                 screen.getByText(/The Lloyd George document is too large to view in a browser/i),
@@ -55,9 +51,7 @@ describe('LloydGeorgeRecordError', () => {
 
         it("renders an error when the document download status is 'Failed'", () => {
             const timeoutStatus = DOWNLOAD_STAGE.FAILED;
-            render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={timeoutStatus} />);
 
             expect(
                 screen.getByText(/Sorry, the service is currently unavailable/i),
@@ -71,9 +65,7 @@ describe('LloydGeorgeRecordError', () => {
             const timeoutStatus = DOWNLOAD_STAGE.NO_RECORDS;
             mockIsBSOL.mockReturnValue(false);
 
-            render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={timeoutStatus} />);
 
             expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
             expect(
@@ -83,9 +75,7 @@ describe('LloydGeorgeRecordError', () => {
         it("renders a message  when the document download status is 'Uploading'", () => {
             const timeoutStatus = DOWNLOAD_STAGE.UPLOADING;
 
-            render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={timeoutStatus} />);
 
             expect(
                 screen.getByText(
@@ -111,9 +101,7 @@ describe('LloydGeorgeRecordError', () => {
                 ),
             );
 
-            render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={noRecordsStatus} />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
 
             expect(screen.getByText(/No records available for this patient/i)).toBeInTheDocument();
             expect(
@@ -127,9 +115,7 @@ describe('LloydGeorgeRecordError', () => {
             mockIsBSOL.mockReturnValue(true);
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
 
-            render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={noRecordsStatus} />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
 
             expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
             expect(
@@ -140,24 +126,14 @@ describe('LloydGeorgeRecordError', () => {
 
     describe('Accessibility', () => {
         it('pass accessibility checks for DOWNLOAD_STAGE.TIMEOUT', async () => {
-            render(
-                <LloydGeorgeRecordError
-                    setStage={mockSetStage}
-                    downloadStage={DOWNLOAD_STAGE.TIMEOUT}
-                />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={DOWNLOAD_STAGE.TIMEOUT} />);
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
         });
 
         it('pass accessibility checks for DOWNLOAD_STAGE.UPLOADING', async () => {
-            render(
-                <LloydGeorgeRecordError
-                    setStage={mockSetStage}
-                    downloadStage={DOWNLOAD_STAGE.UPLOADING}
-                />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={DOWNLOAD_STAGE.UPLOADING} />);
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
@@ -175,12 +151,7 @@ describe('LloydGeorgeRecordError', () => {
                     },
                 ),
             );
-            render(
-                <LloydGeorgeRecordError
-                    setStage={mockSetStage}
-                    downloadStage={DOWNLOAD_STAGE.NO_RECORDS}
-                />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={DOWNLOAD_STAGE.NO_RECORDS} />);
 
             await screen.findByText(/You can upload full or part of a patient record./);
 
@@ -189,12 +160,7 @@ describe('LloydGeorgeRecordError', () => {
         });
 
         it('pass accessibility checks for the last catch all failure case', async () => {
-            render(
-                <LloydGeorgeRecordError
-                    setStage={mockSetStage}
-                    downloadStage={DOWNLOAD_STAGE.FAILED}
-                />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={DOWNLOAD_STAGE.FAILED} />);
 
             await screen.findByText(
                 'An error has occurred when creating the Lloyd George preview.',
@@ -209,9 +175,7 @@ describe('LloydGeorgeRecordError', () => {
         it("renders a link that can navigate to the download all stage, when download status is 'Timeout'", () => {
             const timeoutStatus = DOWNLOAD_STAGE.TIMEOUT;
 
-            render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={timeoutStatus} />);
 
             expect(
                 screen.getByText(/The Lloyd George document is too large to view in a browser/i),
@@ -227,9 +191,7 @@ describe('LloydGeorgeRecordError', () => {
         it("navigates to the download all stage, when download status is 'Timeout' and the link is clicked: GP_ADMIN", () => {
             const timeoutStatus = DOWNLOAD_STAGE.TIMEOUT;
 
-            render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={timeoutStatus} />);
 
             const downloadLink = screen.getByRole('link', {
                 name: 'please download instead',
@@ -245,16 +207,14 @@ describe('LloydGeorgeRecordError', () => {
                 downloadLink.click();
             });
 
-            expect(mockSetStage).toHaveBeenCalledWith(LG_RECORD_STAGE.DOWNLOAD_ALL);
+            expect(mockNavigate).toHaveBeenCalledWith(routeChildren.LLOYD_GEORGE_DOWNLOAD);
         });
 
         it("navigates to unauthorised, when download status is 'Timeout' and the link is clicked: GP_CLINICAL", () => {
             mockUseRole.mockReturnValue(REPOSITORY_ROLE.GP_CLINICAL);
             const timeoutStatus = DOWNLOAD_STAGE.TIMEOUT;
 
-            render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={timeoutStatus} />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={timeoutStatus} />);
 
             const downloadLink = screen.getByRole('link', {
                 name: 'please download instead',
@@ -287,9 +247,7 @@ describe('LloydGeorgeRecordError', () => {
                 ),
             );
 
-            render(
-                <LloydGeorgeRecordError setStage={mockSetStage} downloadStage={noRecordsStatus} />,
-            );
+            render(<LloydGeorgeRecordError downloadStage={noRecordsStatus} />);
 
             const uploadButton = screen.getByRole('button', { name: 'Upload patient record' });
             expect(screen.getByText(/No records available for this patient/i)).toBeInTheDocument();
