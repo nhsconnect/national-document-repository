@@ -6,12 +6,14 @@ from enums.supported_document_types import SupportedDocumentTypes
 from enums.zip_trace import ZipTraceStatus
 from models.document_reference import DocumentReference
 from models.zip_trace import DocumentManifestJob, DocumentManifestZipTrace
+from pydantic import ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
 from utils.lambda_exceptions import DocumentManifestJobServiceException
+from utils.utilities import get_file_key_from_s3_url
 
 logger = LoggingService(__name__)
 
@@ -117,7 +119,12 @@ class DocumentManifestJobService:
     def create_document_manifest_presigned_url(
         self, job_id: str
     ) -> DocumentManifestJob:
-        zip_trace = self.query_zip_trace(job_id=job_id)
+        try:
+            zip_trace = self.query_zip_trace(job_id=job_id)
+        except ValidationError:
+            raise DocumentManifestJobServiceException(
+                404, LambdaError.ManifestMissingJob
+            )
 
         match zip_trace.job_status:
             case ZipTraceStatus.PENDING:
@@ -125,16 +132,18 @@ class DocumentManifestJobService:
             case ZipTraceStatus.PROCESSING:
                 return DocumentManifestJob(jobStatus=ZipTraceStatus.PROCESSING, url="")
             case ZipTraceStatus.COMPLETED:
+                file_key = get_file_key_from_s3_url(zip_trace.zip_file_location)
                 is_manifest_ready = self.s3_service.file_exist_on_s3(
-                    self.zip_output_bucket, zip_trace.zip_file_location
+                    self.zip_output_bucket, file_key
                 )
                 if not is_manifest_ready:
+                    logger.error("Manifest documents were not found")
                     raise DocumentManifestJobServiceException(
                         404, LambdaError.ManifestMissingJob
                     )
                 presigned_url = self.s3_service.create_download_presigned_url(
                     s3_bucket_name=self.zip_output_bucket,
-                    file_key=zip_trace.zip_file_location,
+                    file_key=file_key,
                 )
                 return DocumentManifestJob(
                     jobStatus=ZipTraceStatus.COMPLETED, url=presigned_url
@@ -146,9 +155,9 @@ class DocumentManifestJobService:
             index_name="JobIdIndex",
             search_key="JobId",
             search_condition=job_id,
-            requested_fields=list(DocumentManifestZipTrace.model_fields.keys()),
+            requested_fields=DocumentManifestZipTrace.get_field_names_list_pascal_case(),
         )
-        if not response["Items"]:
+        if not response["Items"][0]:
             raise DocumentManifestJobServiceException(
                 404, LambdaError.ManifestMissingJob
             )

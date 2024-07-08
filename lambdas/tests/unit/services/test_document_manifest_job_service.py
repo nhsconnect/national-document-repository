@@ -608,7 +608,7 @@ def test_query_zip_trace_returns_zip_trace_object(
         index_name="JobIdIndex",
         search_key="JobId",
         search_condition=TEST_UUID,
-        requested_fields=list(DocumentManifestZipTrace.model_fields.keys()),
+        requested_fields=DocumentManifestZipTrace.get_field_names_list_pascal_case(),
     )
     assert actual == expected
 
@@ -616,7 +616,7 @@ def test_query_zip_trace_returns_zip_trace_object(
 def test_query_zip_trace_empty_response_raises_exception(
     manifest_service, mock_dynamo_service
 ):
-    mock_dynamo_service.query_with_requested_fields.return_value = {"Items": []}
+    mock_dynamo_service.query_with_requested_fields.return_value = {"Items": [{}]}
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
         manifest_service.query_zip_trace(TEST_UUID)
