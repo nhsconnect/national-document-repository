@@ -3,6 +3,9 @@ import { endpoints } from '../../types/generic/endpoints';
 import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { JOB_STATUS, PollingResponse } from '../../types/generic/downloadManifestJobStatus';
+import waitForSeconds from '../utils/waitForSeconds';
+
+export const DELAY_BETWEEN_POLLING_IN_SECONDS = 10;
 
 type Args = {
     nhsNumber: string;
@@ -18,10 +21,6 @@ type GetRequestArgs = {
     baseHeaders: AuthHeaders;
 };
 
-type GetPresignedUrl = {
-    data: string;
-};
-
 export const ThreePendingErrorMessage =
     'Document Manifest api call responded with "Pending" for 3 attempts.';
 
@@ -31,7 +30,7 @@ const getPresignedUrlForZip = async (args: Args) => {
     const jobId = await requestJobId(args);
     let pendingCount = 0;
 
-    while (true) {
+    while (pendingCount < 3) {
         const pollingResponse = await pollForPresignedUrl({
             baseUrl,
             baseHeaders,
@@ -42,16 +41,14 @@ const getPresignedUrlForZip = async (args: Args) => {
             case JOB_STATUS.COMPLETED:
                 return pollingResponse.url;
             case JOB_STATUS.PROCESSING:
-                // wait for 10 sec
-                break;
+                await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+                continue;
             case JOB_STATUS.PENDING:
                 pendingCount += 1;
-
-                if (pendingCount >= 3) {
-                    throw new Error(ThreePendingErrorMessage);
-                }
+                await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
         }
     }
+    throw new Error(ThreePendingErrorMessage);
 };
 
 export const requestJobId = async ({
@@ -70,7 +67,7 @@ export const requestJobId = async ({
         params: {
             patientId: nhsNumber,
             docType: docType,
-            ...(!!docReferences && { docReference: docReferences }),
+            ...(!!docReferences && { docReferences: docReferences }),
         },
         paramsSerializer: { indexes: null },
     });
