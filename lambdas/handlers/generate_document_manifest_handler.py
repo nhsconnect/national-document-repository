@@ -1,3 +1,4 @@
+from boto3.dynamodb.types import TypeDeserializer
 from enums.lambda_error import LambdaError
 from enums.logging_app_interaction import LoggingAppInteraction
 from models.zip_trace import DocumentManifestZipTrace
@@ -32,6 +33,7 @@ def lambda_handler(event, context):
     dynamo_records = event.get("Records")
 
     if not dynamo_records:
+        logger.error("No records in event")
         return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
     for record in dynamo_records:
@@ -42,6 +44,7 @@ def lambda_handler(event, context):
             or event_name != "INSERT"
             or not isinstance(new_zip_trace, dict)
         ):
+            logger.error("Incorrect event format")
             return ApiGatewayResponse(400, "", "GET").create_api_gateway_response()
 
         processed_zip_trace = prepare_zip_trace_data(new_zip_trace)
@@ -68,12 +71,9 @@ def manifest_zip_handler(zip_trace_item):
 
 
 def prepare_zip_trace_data(new_zip_trace: dict) -> dict:
-
-    for key, nested_object in new_zip_trace.items():
-        value = list(nested_object.values())[0]
-        if isinstance(value, dict):
-            prepare_zip_trace_data(value)
-
-        new_zip_trace[key] = list(nested_object.values())[0]
-
-    return new_zip_trace
+    deserialize = TypeDeserializer().deserialize
+    parsed_dynamodb_items = {
+        key: deserialize(dynamodb_value)
+        for key, dynamodb_value in new_zip_trace.items()
+    }
+    return parsed_dynamodb_items
