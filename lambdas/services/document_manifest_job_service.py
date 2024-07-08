@@ -3,7 +3,7 @@ import os
 
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
-from enums.zip_trace import ZipTraceFields, ZipTraceStatus
+from enums.zip_trace import ZipTraceStatus
 from models.document_reference import DocumentReference
 from models.zip_trace import DocumentManifestJob, DocumentManifestZipTrace
 from services.base.dynamo_service import DynamoDBService
@@ -146,7 +146,7 @@ class DocumentManifestJobService:
             index_name="JobIdIndex",
             search_key="JobId",
             search_condition=job_id,
-            requested_fields=ZipTraceFields.list(),
+            requested_fields=list(DocumentManifestZipTrace.model_fields.keys()),
         )
         if not response["Items"]:
             raise DocumentManifestJobServiceException(

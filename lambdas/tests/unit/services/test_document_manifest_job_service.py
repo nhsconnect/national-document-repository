@@ -3,7 +3,7 @@ from unittest.mock import call
 import pytest
 from enums.lambda_error import LambdaError
 from enums.supported_document_types import SupportedDocumentTypes
-from enums.zip_trace import ZipTraceFields, ZipTraceStatus
+from enums.zip_trace import ZipTraceStatus
 from freezegun import freeze_time
 from models.zip_trace import DocumentManifestJob, DocumentManifestZipTrace
 from services.document_manifest_job_service import DocumentManifestJobService
@@ -608,7 +608,7 @@ def test_query_zip_trace_returns_zip_trace_object(
         index_name="JobIdIndex",
         search_key="JobId",
         search_condition=TEST_UUID,
-        requested_fields=ZipTraceFields.list(),
+        requested_fields=list(DocumentManifestZipTrace.model_fields.keys()),
     )
     assert actual == expected
 
