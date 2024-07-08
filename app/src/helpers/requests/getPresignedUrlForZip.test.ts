@@ -1,14 +1,11 @@
 import axios from 'axios';
 
-import getPresignedUrlForZip, {
-    pollForPresignedUrl,
-    requestJobId,
-    ThreePendingErrorMessage,
-} from './getPresignedUrlForZip';
+import getPresignedUrlForZip, { pollForPresignedUrl, requestJobId } from './getPresignedUrlForZip';
 import { endpoints } from '../../types/generic/endpoints';
 import { JOB_STATUS } from '../../types/generic/downloadManifestJobStatus';
 import waitForSeconds from '../utils/waitForSeconds';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
+import { DownloadManifestError } from '../../types/generic/errors';
 
 jest.mock('axios');
 jest.mock('../utils/waitForSeconds');
@@ -49,6 +46,13 @@ describe('getPresignedUrlForZip', () => {
         statusCode: 200,
         data: {
             status: JOB_STATUS.PENDING,
+        },
+    };
+
+    const mockFailedResponse = {
+        statusCode: 200,
+        data: {
+            status: JOB_STATUS.FAILED,
         },
     };
 
@@ -103,7 +107,16 @@ describe('getPresignedUrlForZip', () => {
 
         await expect(
             getPresignedUrlForZip({ nhsNumber, baseHeaders, baseUrl }),
-        ).rejects.toThrowError(ThreePendingErrorMessage);
+        ).rejects.toThrowError(DownloadManifestError);
+    });
+
+    it('throw an error if got failed status from api', async () => {
+        mockedAxios.post.mockResolvedValueOnce(mockJobIdResponse);
+        mockedAxios.get.mockResolvedValueOnce(mockFailedResponse);
+
+        await expect(
+            getPresignedUrlForZip({ nhsNumber, baseHeaders, baseUrl }),
+        ).rejects.toThrowError(DownloadManifestError);
     });
 });
 

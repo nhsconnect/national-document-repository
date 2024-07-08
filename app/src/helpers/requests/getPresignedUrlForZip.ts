@@ -4,6 +4,7 @@ import { AuthHeaders } from '../../types/blocks/authHeaders';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { JOB_STATUS, PollingResponse } from '../../types/generic/downloadManifestJobStatus';
 import waitForSeconds from '../utils/waitForSeconds';
+import { DownloadManifestError } from '../../types/generic/errors';
 
 export const DELAY_BETWEEN_POLLING_IN_SECONDS = 10;
 
@@ -21,8 +22,9 @@ type GetRequestArgs = {
     baseHeaders: AuthHeaders;
 };
 
-export const ThreePendingErrorMessage =
+const ThreePendingErrorMessage =
     'Document Manifest api call responded with "Pending" for 3 attempts.';
+const UnexpectedResponseMessage = 'Got unexpected response from Document Manifest';
 
 const getPresignedUrlForZip = async (args: Args) => {
     const { baseUrl, baseHeaders } = args;
@@ -46,9 +48,12 @@ const getPresignedUrlForZip = async (args: Args) => {
             case JOB_STATUS.PENDING:
                 pendingCount += 1;
                 await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
+                break;
+            default:
+                throw new DownloadManifestError(UnexpectedResponseMessage);
         }
     }
-    throw new Error(ThreePendingErrorMessage);
+    throw new DownloadManifestError(ThreePendingErrorMessage);
 };
 
 export const requestJobId = async ({
