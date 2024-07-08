@@ -8,18 +8,18 @@ export enum JOB_STATUS {
 export type PollingResponse = Completed | Pending | Processing | Failed;
 
 type Completed = {
-    status: JOB_STATUS.COMPLETED;
+    jobStatus: JOB_STATUS.COMPLETED;
     url: string;
 };
 
 type Pending = {
-    status: JOB_STATUS.PENDING;
+    jobStatus: JOB_STATUS.PENDING;
 };
 
 type Processing = {
-    status: JOB_STATUS.PROCESSING;
+    jobStatus: JOB_STATUS.PROCESSING;
 };
 
 type Failed = {
-    status: JOB_STATUS.FAILED;
+    jobStatus: JOB_STATUS.FAILED;
 };

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 import getPresignedUrlForZip, { pollForPresignedUrl, requestJobId } from './getPresignedUrlForZip';
 import { endpoints } from '../../types/generic/endpoints';
-import { JOB_STATUS } from '../../types/generic/downloadManifestJobStatus';
+import { JOB_STATUS, PollingResponse } from '../../types/generic/downloadManifestJobStatus';
 import waitForSeconds from '../utils/waitForSeconds';
 import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { DownloadManifestError } from '../../types/generic/errors';
@@ -29,7 +29,7 @@ describe('getPresignedUrlForZip', () => {
     const mockProcessingResponse = {
         statusCode: 200,
         data: {
-            status: JOB_STATUS.PROCESSING,
+            jobStatus: JOB_STATUS.PROCESSING,
             url: expectedPresignedUrl,
         },
     };
@@ -37,7 +37,7 @@ describe('getPresignedUrlForZip', () => {
     const mockCompletedResponse = {
         statusCode: 200,
         data: {
-            status: JOB_STATUS.COMPLETED,
+            jobStatus: JOB_STATUS.COMPLETED,
             url: expectedPresignedUrl,
         },
     };
@@ -45,14 +45,14 @@ describe('getPresignedUrlForZip', () => {
     const mockPendingResponse = {
         statusCode: 200,
         data: {
-            status: JOB_STATUS.PENDING,
+            jobStatus: JOB_STATUS.PENDING,
         },
     };
 
     const mockFailedResponse = {
         statusCode: 200,
         data: {
-            status: JOB_STATUS.FAILED,
+            jobStatus: JOB_STATUS.FAILED,
         },
     };
 
@@ -179,8 +179,8 @@ describe('pollForPresignedUrl', () => {
     it('returns a response from backend', async () => {
         const gatewayUrl = baseUrl + endpoints.DOCUMENT_PRESIGN;
         const testJobId = 'jobId123';
-        const expectedData = {
-            status: 'Completed',
+        const expectedData: PollingResponse = {
+            jobStatus: JOB_STATUS.COMPLETED,
             url: 'http://test_s3_bucket/file_id',
         };
         const mockResponse = {
