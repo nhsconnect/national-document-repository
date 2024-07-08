@@ -59,10 +59,17 @@ describe('GP Workflow: View Lloyd George record', () => {
             body: testFiles,
         }).as('searchDocumentReferences');
 
+        cy.intercept('POST', '/DocumentManifest*', (req) => {
+            req.reply({
+                statusCode: 200,
+                body: { jobId: 'test-jobId' },
+            });
+        }).as('documentManifestPost');
+
         cy.intercept('GET', '/DocumentManifest*', (req) => {
             req.reply({
                 statusCode: 200,
-                body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
+                body: { status: 'Completed', url: baseUrl + '/browserconfig.xml' }, // uses public served file in place of a ZIP file
                 delay: 1000,
             });
         }).as('documentManifest');
@@ -90,10 +97,17 @@ describe('GP Workflow: View Lloyd George record', () => {
                     body: testFiles,
                 }).as('searchDocumentReferences');
 
+                cy.intercept('POST', '/DocumentManifest*', (req) => {
+                    req.reply({
+                        statusCode: 200,
+                        body: { jobId: 'test-jobId' },
+                    });
+                }).as('documentManifestPost');
+
                 cy.intercept('GET', '/DocumentManifest*', (req) => {
                     req.reply({
                         statusCode: 200,
-                        body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
+                        body: { status: 'Completed', url: baseUrl + '/browserconfig.xml' }, // uses public served file in place of a ZIP file
                         delay: 1000,
                     });
                 }).as('documentManifest');
