@@ -95,7 +95,7 @@ jobs:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
   deploy_document_manifest_job_lambda:
-    name: Deploy document_manifest_lambda
+    name: Deploy document_manifest_job_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}

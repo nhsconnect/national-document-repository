@@ -21,9 +21,3 @@ class DocumentReferenceMetadataFields(Enum):
         fields = [str(field.value) for field in DocumentReferenceMetadataFields]
         fields.remove(DocumentReferenceMetadataFields.TTL.value)
         return fields
-
-
-class DocumentZipTraceFields(Enum):
-    ID = "ID"
-    CREATED = "Created"
-    FILE_LOCATION = "FileLocation"
