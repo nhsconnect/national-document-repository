@@ -46,12 +46,7 @@ def get_manifest_job(event, context):
     job_id = event["queryStringParameters"]["jobId"]
 
     document_manifest_service = DocumentManifestJobService()
-    response = document_manifest_service.create_document_manifest_presigned_url(job_id)
-
-    logger.audit_splunk_info(
-        "User has downloaded Lloyd George records",
-        {"Result": "Successful download"},
-    )
+    response = document_manifest_service.query_document_manifest_job(job_id)
 
     return ApiGatewayResponse(
         200, json.dumps(response.model_dump(by_alias=True)), "GET"

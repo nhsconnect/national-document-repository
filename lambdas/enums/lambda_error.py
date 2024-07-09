@@ -184,12 +184,8 @@ class LambdaError(Enum):
         "err_code": "DMS_5001",
         "message": "Failed to parse document reference from from DynamoDb response",
     }
-    ManifestDB = {
+    ManifestFailure = {
         "err_code": "DMS_5002",
-        "message": "Failed to create document manifest",
-    }
-    ManifestClient = {
-        "err_code": "DMS_5003",
         "message": "Failed to create document manifest",
     }
 

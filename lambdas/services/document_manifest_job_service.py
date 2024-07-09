@@ -116,38 +116,45 @@ class DocumentManifestJobService:
 
         return str(zip_trace.job_id)
 
-    def create_document_manifest_presigned_url(
-        self, job_id: str
-    ) -> DocumentManifestJob:
-        try:
-            zip_trace = self.query_zip_trace(job_id=job_id)
-        except ValidationError:
-            raise DocumentManifestJobServiceException(
-                404, LambdaError.ManifestMissingJob
-            )
+    def query_document_manifest_job(self, job_id: str) -> DocumentManifestJob:
+        zip_trace = self.query_zip_trace(job_id=job_id)
 
         match zip_trace.job_status:
+            case ZipTraceStatus.FAILED:
+                raise DocumentManifestJobServiceException(
+                    500, LambdaError.ManifestFailure
+                )
             case ZipTraceStatus.PENDING:
                 return DocumentManifestJob(jobStatus=ZipTraceStatus.PENDING, url="")
             case ZipTraceStatus.PROCESSING:
                 return DocumentManifestJob(jobStatus=ZipTraceStatus.PROCESSING, url="")
             case ZipTraceStatus.COMPLETED:
-                file_key = get_file_key_from_s3_url(zip_trace.zip_file_location)
-                is_manifest_ready = self.s3_service.file_exist_on_s3(
-                    self.zip_output_bucket, file_key
+                presigned_url = self.create_document_manifest_presigned_url(
+                    zip_trace.zip_file_location
                 )
-                if not is_manifest_ready:
-                    logger.error("Manifest documents were not found")
-                    raise DocumentManifestJobServiceException(
-                        404, LambdaError.ManifestMissingJob
-                    )
-                presigned_url = self.s3_service.create_download_presigned_url(
-                    s3_bucket_name=self.zip_output_bucket,
-                    file_key=file_key,
+                logger.audit_splunk_info(
+                    "User has downloaded Lloyd George records",
+                    {"Result": "Successful download"},
                 )
+
                 return DocumentManifestJob(
                     jobStatus=ZipTraceStatus.COMPLETED, url=presigned_url
                 )
+
+    def create_document_manifest_presigned_url(self, zip_file_location: str):
+        file_key = get_file_key_from_s3_url(zip_file_location)
+        is_manifest_ready = self.s3_service.file_exist_on_s3(
+            s3_bucket_name=self.zip_output_bucket, file_key=file_key
+        )
+        if not is_manifest_ready:
+            logger.error("Manifest documents were not found")
+            raise DocumentManifestJobServiceException(
+                404, LambdaError.ManifestMissingJob
+            )
+        return self.s3_service.create_download_presigned_url(
+            s3_bucket_name=self.zip_output_bucket,
+            file_key=file_key,
+        )
 
     def query_zip_trace(self, job_id: str) -> DocumentManifestZipTrace:
         response = self.dynamo_service.query_with_requested_fields(
@@ -157,9 +164,11 @@ class DocumentManifestJobService:
             search_condition=job_id,
             requested_fields=DocumentManifestZipTrace.get_field_names_list_pascal_case(),
         )
-        if not response["Items"][0]:
+
+        try:
+            zip_trace = DocumentManifestZipTrace.model_validate(response["Items"][0])
+            return zip_trace
+        except ValidationError:
             raise DocumentManifestJobServiceException(
                 404, LambdaError.ManifestMissingJob
             )
-
-        return DocumentManifestZipTrace.model_validate(response["Items"][0])

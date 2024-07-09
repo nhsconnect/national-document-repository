@@ -21,7 +21,7 @@ class DocumentManifestZipTrace(BaseModel):
         .isoformat()
         .replace("+00:00", "Z")
     )
-    files_to_download: Optional[Dict[str, str]] = None
+    files_to_download: Optional[Dict[str, str]]
     job_status: ZipTraceStatus = ZipTraceStatus.PENDING
     zip_file_location: str = ""
 

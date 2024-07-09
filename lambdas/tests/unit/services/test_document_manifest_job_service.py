@@ -8,8 +8,10 @@ from freezegun import freeze_time
 from models.zip_trace import DocumentManifestJob, DocumentManifestZipTrace
 from services.document_manifest_job_service import DocumentManifestJobService
 from tests.unit.conftest import (
+    MOCK_ZIP_OUTPUT_BUCKET,
     MOCK_ZIP_TRACE_TABLE,
     TEST_DOCUMENT_LOCATION,
+    TEST_FILE_KEY,
     TEST_NHS_NUMBER,
     TEST_UUID,
 )
@@ -104,6 +106,13 @@ def mock_handle_duplicate_document_filenames(mocker, manifest_service):
 @pytest.fixture
 def mock_write_zip_trace(mocker, manifest_service):
     yield mocker.patch.object(manifest_service, "write_zip_trace")
+
+
+@pytest.fixture
+def mock_create_presigned_url(mocker, manifest_service):
+    yield mocker.patch.object(
+        manifest_service, "create_document_manifest_presigned_url"
+    )
 
 
 @pytest.fixture
@@ -530,7 +539,7 @@ def test_write_zip_trace_valid(manifest_service, mock_dynamo_service, mock_uuid)
     assert expected == actual
 
 
-def test_create_document_manifest_presigned_url_status_pending(
+def test_query_document_manifest_job_status_pending(
     manifest_service, mock_query_zip_trace, mock_uuid
 ):
 
@@ -539,12 +548,12 @@ def test_create_document_manifest_presigned_url_status_pending(
 
     expected = DocumentManifestJob(jobStatus="Pending", url="")
 
-    actual = manifest_service.create_document_manifest_presigned_url(TEST_UUID)
+    actual = manifest_service.query_document_manifest_job(TEST_UUID)
 
     assert actual == expected
 
 
-def test_create_document_manifest_presigned_url_status_processing(
+def test_query_document_manifest_job_status_processing(
     manifest_service, mock_query_zip_trace, mock_uuid
 ):
     TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.PROCESSING
@@ -553,41 +562,81 @@ def test_create_document_manifest_presigned_url_status_processing(
 
     expected = DocumentManifestJob(jobStatus="Processing", url="")
 
-    actual = manifest_service.create_document_manifest_presigned_url(TEST_UUID)
+    actual = manifest_service.query_document_manifest_job(TEST_UUID)
 
     assert actual == expected
 
 
-def test_create_document_manifest_presigned_url_status_completed(
-    manifest_service, mock_query_zip_trace, mock_uuid, mock_s3_service
+def test_query_document_manifest_job_status_completed(
+    manifest_service,
+    mock_query_zip_trace,
+    mock_uuid,
+    mock_s3_service,
+    mock_create_presigned_url,
 ):
     TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.COMPLETED
     TEST_ZIP_TRACE_DATA["ZipFileLocation"] = TEST_DOCUMENT_LOCATION
     test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
 
     mock_query_zip_trace.return_value = test_zip_trace
-    mock_s3_service.file_exist_on_s3.return_value = True
-    mock_s3_service.create_download_presigned_url.return_value = TEST_DOCUMENT_LOCATION
+    mock_create_presigned_url.return_value = TEST_DOCUMENT_LOCATION
 
     expected = DocumentManifestJob(jobStatus="Completed", url=TEST_DOCUMENT_LOCATION)
 
-    actual = manifest_service.create_document_manifest_presigned_url(TEST_UUID)
+    actual = manifest_service.query_document_manifest_job(TEST_UUID)
 
     assert actual == expected
 
 
-def test_create_document_manifest_presigned_url_status_completed_missing_manifest(
+def test_query_document_manifest_job_status_failed(
     manifest_service, mock_query_zip_trace, mock_s3_service
 ):
-    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.COMPLETED
+    TEST_ZIP_TRACE_DATA["JobStatus"] = ZipTraceStatus.FAILED
     test_zip_trace = DocumentManifestZipTrace.model_validate(TEST_ZIP_TRACE_DATA)
 
     mock_query_zip_trace.return_value = test_zip_trace
+
+    with pytest.raises(DocumentManifestJobServiceException) as e:
+        manifest_service.query_document_manifest_job(TEST_UUID)
+
+    assert e.value == DocumentManifestJobServiceException(
+        500, LambdaError.ManifestFailure
+    )
+
+
+def test_create_document_manifest_presigned_url(manifest_service, mock_s3_service):
+    mock_s3_service.file_exist_on_s3.return_value = True
+    mock_s3_service.create_download_presigned_url.return_value = (
+        MOCK_PRESIGNED_URL_RESPONSE
+    )
+
+    expected = MOCK_PRESIGNED_URL_RESPONSE
+
+    actual = manifest_service.create_document_manifest_presigned_url(
+        TEST_DOCUMENT_LOCATION
+    )
+
+    mock_s3_service.file_exist_on_s3.assert_called_once_with(
+        s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=TEST_FILE_KEY
+    )
+    mock_s3_service.create_download_presigned_url.assert_called_once_with(
+        s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=TEST_FILE_KEY
+    )
+
+    assert actual == expected
+
+
+def test_create_document_manifest_presigned_url_missing_manifest_raises_exception(
+    manifest_service, mock_s3_service
+):
     mock_s3_service.file_exist_on_s3.return_value = False
 
     with pytest.raises(DocumentManifestJobServiceException) as e:
-        manifest_service.create_document_manifest_presigned_url(TEST_UUID)
+        manifest_service.create_document_manifest_presigned_url(TEST_DOCUMENT_LOCATION)
 
+    mock_s3_service.file_exist_on_s3.assert_called_once_with(
+        s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET, file_key=TEST_FILE_KEY
+    )
     assert e.value == DocumentManifestJobServiceException(
         404, LambdaError.ManifestMissingJob
     )
