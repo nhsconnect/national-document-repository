@@ -30,7 +30,6 @@ describe('getPresignedUrlForZip', () => {
         statusCode: 200,
         data: {
             jobStatus: JOB_STATUS.PROCESSING,
-            url: expectedPresignedUrl,
         },
     };
 
