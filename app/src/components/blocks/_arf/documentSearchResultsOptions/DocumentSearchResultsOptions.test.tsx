@@ -73,8 +73,9 @@ describe('DocumentSearchResultsOptions', () => {
         });
 
         it('calls parent callback function to pass pending state when waiting for response from api', async () => {
-            // To delay the mock request, and give a chance for the spinner to appear
             window.HTMLAnchorElement.prototype.click = jest.fn();
+
+            // To delay the mock request, and give a chance for the spinner to appear
             mockGetPresignedUrlForZip.mockImplementation(() =>
                 waitForSeconds(0.5).then(() => 'test-presigned-url'),
             );
