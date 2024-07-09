@@ -97,8 +97,6 @@ describe('GP Workflow: View Lloyd George record', () => {
             body: testFiles,
         }).as('searchDocumentReferences');
 
-        setUpDownloadManifestIntercepts();
-
         cy.get('#verify-submit').click();
         cy.wait('@lloydGeorgeStitch');
 
@@ -182,6 +180,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             { tags: 'regression' },
             () => {
                 beforeEachConfiguration(Roles.GP_ADMIN);
+                setUpDownloadManifestIntercepts();
                 proceedToDownloadSelectionPage();
 
                 // Select documents page
@@ -234,6 +233,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             { tags: 'regression' },
             () => {
                 beforeEachConfiguration(Roles.GP_ADMIN);
+                setUpDownloadManifestIntercepts();
                 proceedToDownloadSelectionPage();
 
                 // Select documents page
@@ -251,6 +251,40 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('download-selection-error-box').should('exist');
             },
         );
+
+        it('should display an error page when download manifest API responded with PENDING for 3 times', () => {
+            let pendingCounts = 0;
+            beforeEachConfiguration(Roles.GP_ADMIN);
+
+            cy.intercept('POST', '/DocumentManifest*', (req) => {
+                req.reply({
+                    statusCode: 200,
+                    body: { jobId: 'testJobId' },
+                });
+            }).as('documentManifestPost');
+
+            cy.intercept('GET', '/DocumentManifest*', (req) => {
+                pendingCounts += 1;
+                req.reply({
+                    statusCode: 200,
+                    body: { jobStatus: 'Pending' },
+                });
+                if (pendingCounts >= 3) {
+                    req.alias = 'documentManifestThirdTimePending';
+                }
+            });
+
+            proceedToDownloadSelectionPage();
+
+            cy.wait('@searchDocumentReferences');
+
+            cy.getByTestId('download-all-files-btn').click();
+
+            cy.wait('@documentManifestThirdTimePending');
+
+            cy.title().should('have.string', 'Service error');
+            cy.url().should('have.string', '/server-error?encodedError=');
+        });
 
         it(
             'No download option when no Lloyd George record exists for a patient as a GP ADMIN role',
