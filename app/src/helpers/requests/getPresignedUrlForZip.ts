@@ -5,8 +5,9 @@ import { DOCUMENT_TYPE } from '../../types/pages/UploadDocumentsPage/types';
 import { JOB_STATUS, PollingResponse } from '../../types/generic/downloadManifestJobStatus';
 import waitForSeconds from '../utils/waitForSeconds';
 import { DownloadManifestError } from '../../types/generic/errors';
+import { isRunningInCypress } from '../utils/isLocal';
 
-export const DELAY_BETWEEN_POLLING_IN_SECONDS = 10;
+export const DELAY_BETWEEN_POLLING_IN_SECONDS = isRunningInCypress() ? 0 : 10;
 
 type Args = {
     nhsNumber: string;

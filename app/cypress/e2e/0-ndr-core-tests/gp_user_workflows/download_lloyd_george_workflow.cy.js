@@ -48,6 +48,44 @@ describe('GP Workflow: View Lloyd George record', () => {
         cy.wait('@search');
     };
 
+    const setUpDownloadManifestIntercepts = () => {
+        let getPollingCount = 0;
+        const jobId = 'test-jobId';
+
+        cy.intercept('POST', '/DocumentManifest*', (req) => {
+            req.reply({
+                statusCode: 200,
+                body: { jobId: jobId },
+            });
+        }).as('documentManifestPost');
+
+        cy.intercept(
+            {
+                method: 'GET',
+                url: '/DocumentManifest*',
+                query: {
+                    jobId: jobId,
+                },
+            },
+            (req) => {
+                getPollingCount += 1;
+                if (getPollingCount < 3) {
+                    req.reply({
+                        statusCode: 200,
+                        body: { jobStatus: 'Processing', url: '' },
+                    });
+                    req.alias = 'documentManifestProcessing';
+                } else {
+                    req.reply({
+                        statusCode: 200,
+                        body: { jobStatus: 'Completed', url: baseUrl + '/browserconfig.xml' }, // uses public served file in place of a ZIP file
+                    });
+                    req.alias = 'documentManifestCompleted';
+                }
+            },
+        );
+    };
+
     const proceedToDownloadSelectionPage = () => {
         cy.intercept('GET', '/LloydGeorgeStitch*', {
             statusCode: 200,
@@ -59,20 +97,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             body: testFiles,
         }).as('searchDocumentReferences');
 
-        cy.intercept('POST', '/DocumentManifest*', (req) => {
-            req.reply({
-                statusCode: 200,
-                body: { jobId: 'test-jobId' },
-            });
-        }).as('documentManifestPost');
-
-        cy.intercept('GET', '/DocumentManifest*', (req) => {
-            req.reply({
-                statusCode: 200,
-                body: { jobStatus: 'Completed', url: baseUrl + '/browserconfig.xml' }, // uses public served file in place of a ZIP file
-                delay: 1000,
-            });
-        }).as('documentManifest');
+        setUpDownloadManifestIntercepts();
 
         cy.get('#verify-submit').click();
         cy.wait('@lloydGeorgeStitch');
@@ -97,20 +122,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                     body: testFiles,
                 }).as('searchDocumentReferences');
 
-                cy.intercept('POST', '/DocumentManifest*', (req) => {
-                    req.reply({
-                        statusCode: 200,
-                        body: { jobId: 'test-jobId' },
-                    });
-                }).as('documentManifestPost');
-
-                cy.intercept('GET', '/DocumentManifest*', (req) => {
-                    req.reply({
-                        statusCode: 200,
-                        body: { jobStatus: 'Completed', url: baseUrl + '/browserconfig.xml' }, // uses public served file in place of a ZIP file
-                        delay: 1000,
-                    });
-                }).as('documentManifest');
+                setUpDownloadManifestIntercepts();
 
                 cy.title().should('eq', verifyPatientPageTitle);
 
@@ -144,7 +156,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 );
 
                 // Assert contents of page after download
-                cy.wait('@documentManifest');
+                cy.wait('@documentManifestCompleted');
                 cy.title().should('eq', downloadCompletePageTitle);
                 cy.getByTestId('downloaded-record-card-header').should('exist');
                 cy.contains(
@@ -197,7 +209,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.getByTestId('cancel-download-link').should('exist');
 
                 // Assert contents of page after download
-                cy.wait('@documentManifest');
+                cy.wait('@documentManifestCompleted');
                 cy.title().should('eq', downloadCompletePageTitle);
                 cy.getByTestId('downloaded-files-card-header').should('exist');
                 cy.contains(
