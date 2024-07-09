@@ -23,9 +23,9 @@ type GetRequestArgs = {
     baseHeaders: AuthHeaders;
 };
 
-const ThreePendingErrorMessage =
-    'Document Manifest api call responded with "Pending" for 3 attempts.';
-const UnexpectedResponseMessage = 'Got unexpected response from Document Manifest';
+const ThreePendingErrorMessage = 'Failed to initiate download';
+const UnexpectedResponseMessage =
+    'Got unexpected response from server when trying to download record';
 
 const getPresignedUrlForZip = async (args: Args) => {
     const { baseUrl, baseHeaders } = args;
