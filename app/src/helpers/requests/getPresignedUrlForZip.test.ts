@@ -11,7 +11,7 @@ jest.mock('axios');
 jest.mock('../utils/waitForSeconds');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockWaitForSeconds = waitForSeconds as jest.MockableFunction;
+const mockWaitForSeconds = waitForSeconds as jest.MockedFunction<typeof waitForSeconds>;
 
 const nhsNumber = '9000000009';
 const baseUrl = 'http://localhost/test';
