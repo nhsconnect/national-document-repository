@@ -78,7 +78,7 @@ class DynamoDBService:
             logger.error(str(e), {"Result": f"Unable to query table: {table_name}"})
             raise e
 
-    def query_all_fields(self, table_name: str, search_key, search_condition):
+    def query_all_fields(self, table_name: str, search_key: str, search_condition: str):
         """
         Allow querying dynamodb table without explicitly defining the fields to retrieve.
         """

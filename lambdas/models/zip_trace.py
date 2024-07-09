@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, Optional
+from typing import Dict
 
 from enums.metadata_field_names import DocumentZipTraceFields
 from enums.zip_trace import ZipTraceStatus
@@ -22,7 +22,7 @@ class DocumentManifestZipTrace(BaseModel):
         .isoformat()
         .replace("+00:00", "Z")
     )
-    files_to_download: Optional[Dict[str, str]] = None
+    files_to_download: Dict[str, str]
     job_status: ZipTraceStatus = ZipTraceStatus.PENDING
     zip_file_location: str = ""
 
