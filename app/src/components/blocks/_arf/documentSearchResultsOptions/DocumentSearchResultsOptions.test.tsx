@@ -1,17 +1,18 @@
 import { createMemoryHistory } from 'history';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import axios from 'axios';
 import DocumentSearchResultsOptions from './DocumentSearchResultsOptions';
 import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import { buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
+import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
+import { DownloadManifestError } from '../../../../types/generic/errors';
 
-const mockedUseNavigate = jest.fn();
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
-jest.mock('axios');
+jest.mock('../../../../helpers/requests/getPresignedUrlForZip');
 jest.mock('react-router', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
@@ -19,7 +20,10 @@ jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
 
-const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockedUseNavigate = jest.fn();
+const mockGetPresignedUrlForZip = getPresignedUrlForZip as jest.MockedFunction<
+    typeof getPresignedUrlForZip
+>;
 const updateDownloadState = jest.fn();
 
 describe('DocumentSearchResultsOptions', () => {
@@ -49,9 +53,10 @@ describe('DocumentSearchResultsOptions', () => {
         });
 
         it('calls parent callback function to pass successful state after a successful response from api', async () => {
-            mockedAxios.get.mockResolvedValue(async () => {
-                return Promise.resolve({ data: 'test-presigned-url' });
-            });
+            // suppress warning msg of <a> element being clicked when downloading zip file
+            window.HTMLAnchorElement.prototype.click = jest.fn();
+
+            mockGetPresignedUrlForZip.mockResolvedValue('test-presigned-url');
 
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
             userEvent.click(await screen.findByRole('button', { name: 'Download All Documents' }));
@@ -68,15 +73,12 @@ describe('DocumentSearchResultsOptions', () => {
         });
 
         it('calls parent callback function to pass pending state when waiting for response from api', async () => {
-            mockedAxios.get.mockImplementation(async () => {
-                await new Promise((resolve) => {
-                    setTimeout(() => {
-                        // To delay the mock request, and give a chance for the spinner to appear
-                        resolve(null);
-                    }, 500);
-                });
-                return Promise.resolve({ data: 'test-presigned-url' });
-            });
+            window.HTMLAnchorElement.prototype.click = jest.fn();
+
+            // To delay the mock request, and give a chance for the spinner to appear
+            mockGetPresignedUrlForZip.mockImplementation(() =>
+                waitForSeconds(0.5).then(() => 'test-presigned-url'),
+            );
 
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
@@ -113,7 +115,7 @@ describe('DocumentSearchResultsOptions', () => {
                     data: { message: 'Error', err_code: 'SP_1001' },
                 },
             };
-            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+            mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(errorResponse));
 
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
@@ -167,7 +169,7 @@ describe('DocumentSearchResultsOptions', () => {
                     message: 'Forbidden',
                 },
             };
-            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+            mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(errorResponse));
 
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
 
@@ -179,6 +181,7 @@ describe('DocumentSearchResultsOptions', () => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.SESSION_EXPIRED);
             });
         });
+
         it('navigates to error page when API returns 5XX', async () => {
             const errorResponse = {
                 response: {
@@ -186,7 +189,7 @@ describe('DocumentSearchResultsOptions', () => {
                     data: { message: 'Server error', err_code: 'SP_1001' },
                 },
             };
-            mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+            mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(errorResponse));
 
             renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
             userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
@@ -194,6 +197,20 @@ describe('DocumentSearchResultsOptions', () => {
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(
                     routes.SERVER_ERROR + '?encodedError=WyJTUF8xMDAxIiwiMTU3NzgzNjgwMCJd',
+                );
+            });
+        });
+
+        it('navigates to error page when getPresignedUrlForZip throw DownloadManifestError', async () => {
+            const mockError = new DownloadManifestError('some error msg');
+            mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(mockError));
+
+            renderDocumentSearchResultsOptions(SUBMISSION_STATE.INITIAL);
+            userEvent.click(screen.getByRole('button', { name: 'Download All Documents' }));
+
+            await waitFor(() => {
+                expect(mockedUseNavigate).toHaveBeenCalledWith(
+                    expect.stringContaining(routes.SERVER_ERROR),
                 );
             });
         });

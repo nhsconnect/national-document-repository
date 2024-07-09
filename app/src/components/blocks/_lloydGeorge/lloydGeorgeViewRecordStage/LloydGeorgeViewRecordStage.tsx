@@ -102,7 +102,7 @@ function LloydGeorgeViewRecordStage({
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
         } else {
-            return <LloydGeorgeRecordError downloadStage={downloadStage} setStage={setStage} />;
+            return <LloydGeorgeRecordError downloadStage={downloadStage} />;
         }
     };
 
