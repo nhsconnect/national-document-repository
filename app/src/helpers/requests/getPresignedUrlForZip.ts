@@ -39,7 +39,7 @@ const getPresignedUrlForZip = async (args: Args) => {
             jobId,
         });
 
-        switch (pollingResponse.jobStatus) {
+        switch (pollingResponse?.jobStatus) {
             case JOB_STATUS.COMPLETED:
                 return pollingResponse.url;
             case JOB_STATUS.PROCESSING:
