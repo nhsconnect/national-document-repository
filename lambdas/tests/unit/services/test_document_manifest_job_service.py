@@ -505,11 +505,11 @@ def test_handle_duplicate_document_filenames_no_duplicates(manifest_service):
     manifest_service.documents[1].file_name = "test2.pdf"
     manifest_service.documents[2].file_name = "test3.pdf"
 
-    response = manifest_service.handle_duplicate_document_filenames()
+    manifest_service.handle_duplicate_document_filenames()
 
-    assert response[0].file_name == "test.pdf"
-    assert response[1].file_name == "test2.pdf"
-    assert response[2].file_name == "test3.pdf"
+    assert manifest_service.documents[0].file_name == "test.pdf"
+    assert manifest_service.documents[1].file_name == "test2.pdf"
+    assert manifest_service.documents[2].file_name == "test3.pdf"
 
 
 def test_handle_duplicate_document_filenames_duplicates(manifest_service):
@@ -518,11 +518,11 @@ def test_handle_duplicate_document_filenames_duplicates(manifest_service):
     manifest_service.documents[1].file_name = "test.pdf"
     manifest_service.documents[2].file_name = "test.pdf"
 
-    response = manifest_service.handle_duplicate_document_filenames()
+    manifest_service.handle_duplicate_document_filenames()
 
-    assert response[0].file_name == "test.pdf"
-    assert response[1].file_name == "test(2).pdf"
-    assert response[2].file_name == "test(3).pdf"
+    assert manifest_service.documents[0].file_name == "test.pdf"
+    assert manifest_service.documents[1].file_name == "test(2).pdf"
+    assert manifest_service.documents[2].file_name == "test(3).pdf"
 
 
 @freeze_time("2024-01-01T12:00:00Z")
@@ -663,6 +663,19 @@ def test_query_zip_trace_returns_zip_trace_object(
 
 
 def test_query_zip_trace_empty_response_raises_exception(
+    manifest_service, mock_dynamo_service
+):
+    mock_dynamo_service.query_with_requested_fields.return_value = {"Items": []}
+
+    with pytest.raises(DocumentManifestJobServiceException) as e:
+        manifest_service.query_zip_trace(TEST_UUID)
+
+    assert e.value == DocumentManifestJobServiceException(
+        404, LambdaError.ManifestMissingJob
+    )
+
+
+def test_query_zip_trace_empty_response_object_raises_exception(
     manifest_service, mock_dynamo_service
 ):
     mock_dynamo_service.query_with_requested_fields.return_value = {"Items": [{}]}

@@ -1,4 +1,3 @@
-import itertools
 import os
 
 from enums.lambda_error import LambdaError
@@ -13,7 +12,7 @@ from services.document_service import DocumentService
 from utils.audit_logging_setup import LoggingService
 from utils.common_query_filters import UploadCompleted
 from utils.lambda_exceptions import DocumentManifestJobServiceException
-from utils.utilities import get_file_key_from_s3_url
+from utils.utilities import flatten, get_file_key_from_s3_url
 
 logger = LoggingService(__name__)
 
@@ -36,17 +35,15 @@ class DocumentManifestJobService:
     ) -> str:
         logger.info("Retrieving Document References for manifest")
 
-        self.documents = list(
-            itertools.chain.from_iterable(
-                [
-                    self.document_service.fetch_available_document_references_by_type(
-                        nhs_number=nhs_number,
-                        doc_type=doc_type,
-                        query_filter=UploadCompleted,
-                    )
-                    for doc_type in doc_types
-                ]
-            )
+        self.documents = flatten(
+            [
+                self.document_service.fetch_available_document_references_by_type(
+                    nhs_number=nhs_number,
+                    doc_type=doc_type,
+                    query_filter=UploadCompleted,
+                )
+                for doc_type in doc_types
+            ]
         )
 
         if not self.documents:
@@ -57,9 +54,10 @@ class DocumentManifestJobService:
                 selected_document_references=selected_document_references,
             )
 
+        self.handle_duplicate_document_filenames()
+
         documents_to_download = {
-            document.file_location: document.file_name
-            for document in self.handle_duplicate_document_filenames()
+            document.file_location: document.file_name for document in self.documents
         }
 
         job_id = self.write_zip_trace(documents_to_download)
@@ -86,7 +84,7 @@ class DocumentManifestJobService:
 
         return matched_references
 
-    def handle_duplicate_document_filenames(self) -> list[DocumentReference]:
+    def handle_duplicate_document_filenames(self):
         file_names_to_be_zipped = {}
 
         for document in self.documents:
@@ -100,8 +98,6 @@ class DocumentManifestJobService:
                 )
             else:
                 file_names_to_be_zipped[file_name] = 1
-
-        return self.documents
 
     def write_zip_trace(
         self,
@@ -164,11 +160,10 @@ class DocumentManifestJobService:
             search_condition=job_id,
             requested_fields=DocumentManifestZipTrace.get_field_names_list_pascal_case(),
         )
-
         try:
             zip_trace = DocumentManifestZipTrace.model_validate(response["Items"][0])
             return zip_trace
-        except ValidationError:
+        except (KeyError, IndexError, ValidationError):
             raise DocumentManifestJobServiceException(
                 404, LambdaError.ManifestMissingJob
             )
