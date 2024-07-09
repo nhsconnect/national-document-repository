@@ -47,6 +47,10 @@ class DocumentManifestJobService:
         )
 
         if not self.documents:
+            logger.error(
+                f"{LambdaError.ManifestNoDocs.to_str()}",
+                {"Result": "Failed to create document manifest job"},
+            )
             raise DocumentManifestJobServiceException(404, LambdaError.ManifestNoDocs)
 
         if selected_document_references:
@@ -143,7 +147,7 @@ class DocumentManifestJobService:
             s3_bucket_name=self.zip_output_bucket, file_key=file_key
         )
         if not is_manifest_ready:
-            logger.error("Manifest documents were not found")
+            logger.error("No Document Manifest found")
             raise DocumentManifestJobServiceException(
                 404, LambdaError.ManifestMissingJob
             )
@@ -160,10 +164,15 @@ class DocumentManifestJobService:
             search_condition=job_id,
             requested_fields=DocumentManifestZipTrace.get_field_names_list_pascal_case(),
         )
+
         try:
             zip_trace = DocumentManifestZipTrace.model_validate(response["Items"][0])
             return zip_trace
-        except (KeyError, IndexError, ValidationError):
+        except (KeyError, IndexError, ValidationError) as e:
+            logger.error(
+                f"{LambdaError.ManifestMissingJob.to_str()}: {str(e)}",
+                {"Result": "Failed to create document manifest job"},
+            )
             raise DocumentManifestJobServiceException(
                 404, LambdaError.ManifestMissingJob
             )
