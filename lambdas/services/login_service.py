@@ -3,7 +3,6 @@ import time
 import uuid
 
 import jwt
-from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from enums.lambda_error import LambdaError
 from enums.repository_role import RepositoryRole
@@ -143,7 +142,7 @@ class LoginService:
         state_table_name = os.environ["AUTH_STATE_TABLE_NAME"]
 
         query_response = self.db_service.query_all_fields(
-            table_name=state_table_name, key_condition_expression=Key("State").eq(state)
+            table_name=state_table_name, search_key="State", search_condition=state
         )
 
         state_match = "Count" in query_response and query_response["Count"] == 1

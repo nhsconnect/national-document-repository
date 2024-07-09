@@ -4,7 +4,6 @@ from unittest.mock import call
 
 import polars as pl
 import pytest
-from boto3.dynamodb.conditions import Key
 from freezegun import freeze_time
 from models.statistics import ApplicationData
 from polars.testing import assert_frame_equal
@@ -109,11 +108,13 @@ def test_get_statistic_data(mock_dynamodb_service, mock_service):
     expected_calls = [
         call(
             table_name=MOCK_STATISTICS_TABLE,
-            key_condition_expression=Key("Date").eq("20240510"),
+            search_key="Date",
+            search_condition="20240510",
         ),
         call(
             table_name=MOCK_STATISTICS_TABLE,
-            key_condition_expression=Key("Date").eq("20240511"),
+            search_key="Date",
+            search_condition="20240511",
         ),
     ]
 

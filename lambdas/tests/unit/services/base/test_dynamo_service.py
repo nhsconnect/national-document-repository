@@ -186,11 +186,13 @@ def test_query_all_fields_is_called_with_correct_parameters(mock_service, mock_t
         "Counts": 1,
     }
 
-    mock_service.query_all_fields(MOCK_TABLE_NAME, "test_key_condition_expression")
+    mock_service.query_all_fields(
+        MOCK_TABLE_NAME, "test_key_condition", "test_key_value"
+    )
 
     mock_table.assert_called_with(MOCK_TABLE_NAME)
     mock_table.return_value.query.assert_called_once_with(
-        KeyConditionExpression="test_key_condition_expression"
+        KeyConditionExpression=Key("test_key_condition").eq("test_key_value"),
     )
 
 
@@ -200,11 +202,13 @@ def test_query_all_fields_raises_exception_when_results_are_empty(
     mock_table.return_value.query.return_value = []
 
     with pytest.raises(DynamoServiceException):
-        mock_service.query_all_fields(MOCK_TABLE_NAME, "test_key_condition_expression")
+        mock_service.query_all_fields(
+            MOCK_TABLE_NAME, "test_key_condition", "test_key_value"
+        )
 
     mock_table.assert_called_with(MOCK_TABLE_NAME)
     mock_table.return_value.query.assert_called_once_with(
-        KeyConditionExpression="test_key_condition_expression"
+        KeyConditionExpression=Key("test_key_condition").eq("test_key_value")
     )
 
 
@@ -213,7 +217,9 @@ def test_query_all_fields_client_error_raises_exception(mock_service, mock_table
     mock_table.return_value.query.side_effect = MOCK_CLIENT_ERROR
 
     with pytest.raises(ClientError) as actual_response:
-        mock_service.query_all_fields(MOCK_TABLE_NAME, "test_key_condition_expression")
+        mock_service.query_all_fields(
+            MOCK_TABLE_NAME, "test_key_condition", "test_key_value"
+        )
 
     assert expected_response == actual_response.value
 
