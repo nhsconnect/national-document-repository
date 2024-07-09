@@ -80,7 +80,21 @@ describe('getPresignedUrlForZip', () => {
         );
     });
 
-    it('wait for 10 sec between each polling', async () => {
+    it('wait for 10 secs before the 1st polling', async () => {
+        mockedAxios.post.mockResolvedValueOnce(mockJobIdResponse);
+        mockedAxios.get.mockResolvedValueOnce(mockCompletedResponse);
+
+        await getPresignedUrlForZip({
+            nhsNumber,
+            baseHeaders,
+            baseUrl,
+        });
+
+        expect(mockWaitForSeconds).toHaveBeenCalledTimes(1);
+        expect(mockWaitForSeconds).toHaveBeenCalledWith(10);
+    });
+
+    it('wait for 10 secs between every polling', async () => {
         mockedAxios.post.mockResolvedValueOnce(mockJobIdResponse);
         mockedAxios.get
             .mockResolvedValueOnce(mockPendingResponse)
@@ -94,7 +108,7 @@ describe('getPresignedUrlForZip', () => {
             baseUrl,
         });
 
-        expect(mockWaitForSeconds).toHaveBeenCalledTimes(3);
+        expect(mockWaitForSeconds).toHaveBeenCalledTimes(4);
         expect(mockWaitForSeconds).toHaveBeenCalledWith(10);
     });
 

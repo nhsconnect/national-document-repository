@@ -34,6 +34,7 @@ const getPresignedUrlForZip = async (args: Args) => {
     let pendingCount = 0;
 
     while (pendingCount < 3) {
+        await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
         const pollingResponse = await pollForPresignedUrl({
             baseUrl,
             baseHeaders,
@@ -44,12 +45,10 @@ const getPresignedUrlForZip = async (args: Args) => {
             case JOB_STATUS.COMPLETED:
                 return pollingResponse.url;
             case JOB_STATUS.PROCESSING:
-                await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
                 continue;
             case JOB_STATUS.PENDING:
                 pendingCount += 1;
-                await waitForSeconds(DELAY_BETWEEN_POLLING_IN_SECONDS);
-                break;
+                continue;
             default:
                 throw new DownloadManifestError(UnexpectedResponseMessage);
         }
