@@ -29,7 +29,6 @@ const updateDownloadState = jest.fn();
 describe('DocumentSearchResultsOptions', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';
-        // window.HTMLAnchorElement.prototype.click = jest.fn();
     });
     afterEach(() => {
         jest.clearAllMocks();
