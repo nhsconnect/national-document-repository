@@ -33,7 +33,7 @@ class DocumentManifestZipService:
         self.download_documents_to_be_zipped()
         self.zip_files()
         self.upload_zip_file()
-        self.remove_temp_files()
+        self.cleanup_temp_files()
         self.update_dynamo_with_fields({"job_status", "zip_file_location"})
 
     def download_documents_to_be_zipped(self):
@@ -58,7 +58,7 @@ class DocumentManifestZipService:
                 status_code=500, error=LambdaError.ZipServiceClientError
             )
 
-    def get_file_bucket_and_key(self, file_location):
+    def get_file_bucket_and_key(self, file_location: str):
         try:
             file_bucket, file_key = file_location.replace("s3://", "").split("/", 1)
             return file_bucket, file_key
@@ -114,7 +114,6 @@ class DocumentManifestZipService:
         self.zip_trace_object.job_status = ZipTraceStatus.FAILED
         self.update_dynamo_with_fields({"job_status"})
 
-    def remove_temp_files(self):
-        # Removes the parent of each removed directory until the parent does not exist or the parent is not empty
+    def cleanup_temp_files(self):
         shutil.rmtree(self.temp_downloads_dir)
         shutil.rmtree(self.temp_output_dir)
