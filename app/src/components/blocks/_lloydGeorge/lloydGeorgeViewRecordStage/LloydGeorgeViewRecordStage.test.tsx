@@ -47,9 +47,6 @@ describe('LloydGeorgeViewRecordStage', () => {
     });
     afterEach(() => {
         jest.clearAllMocks();
-
-        // explicit unmount component to supress act() warning arise from react-hook-form internal async logic
-        cleanup();
     });
 
     it('renders an lg record', async () => {
@@ -403,8 +400,6 @@ describe('LloydGeorgeViewRecordStage', () => {
 const TestApp = (props: Omit<Props, 'setStage' | 'stage'>) => {
     return <LgRecordStage {...props} setStage={mockSetStage} stage={LG_RECORD_STAGE.RECORD} />;
 };
-
-let unmountComponent = () => {};
 
 const renderComponent = (propsOverride?: Partial<Props>) => {
     const props: Omit<Props, 'setStage' | 'stage'> = {
