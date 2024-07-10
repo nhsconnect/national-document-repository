@@ -12,18 +12,31 @@ import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErr
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../../helpers/utils/toFileList', () => ({
-    __esModule: true,
     default: () => [],
 }));
 jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('react-router-dom');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
+jest.mock('react-router-dom', () => ({
+    useNavigate: () => mockedUseNavigate,
+}));
+
+jest.mock('moment', () => {
+    return (arg: MomentInput) => {
+        if (!arg) {
+            arg = '2020-01-01T00:00:00.000Z';
+        }
+        return jest.requireActual('moment')(arg);
+    };
+});
+
 window.scrollTo = jest.fn() as jest.Mock;
 
 const submitDocumentsMock = jest.fn();
 
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
+
+const mockedUseNavigate = jest.fn();
 
 const lgDocumentOne = buildLgFile(1, 2, 'John Doe');
 const lgDocumentTwo = buildLgFile(2, 2, 'John Doe');
@@ -48,20 +61,6 @@ const lgFilesNonStandardCharacterNames = [
 const mockPatientNonStandardCharName = buildPatientDetails({
     givenName: nonStandardCharName.split(' ').slice(0, 2),
     familyName: nonStandardCharName.split(' ')[2],
-});
-
-const mockedUseNavigate = jest.fn();
-jest.mock('react-router-dom', () => ({
-    useNavigate: () => mockedUseNavigate,
-}));
-
-jest.mock('moment', () => {
-    return (arg: MomentInput) => {
-        if (!arg) {
-            arg = '2020-01-01T00:00:00.000Z';
-        }
-        return jest.requireActual('moment')(arg);
-    };
 });
 
 describe('<LloydGeorgeFileInputStage />', () => {

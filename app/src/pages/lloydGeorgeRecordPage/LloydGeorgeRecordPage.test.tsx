@@ -14,13 +14,12 @@ import { routes } from '../../types/generic/routes';
 import useConfig from '../../helpers/hooks/useConfig';
 import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
-import { LinkProps } from 'react-router-dom';
 import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
-jest.mock('../../helpers/hooks/useConfig');
 jest.mock('axios');
+jest.mock('../../helpers/hooks/useConfig');
 jest.mock('../../helpers/hooks/usePatient');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
@@ -33,12 +32,8 @@ const mockNavigate = jest.fn();
 const mockUseConfig = useConfig as jest.Mock;
 const mockUseRole = useRole as jest.Mock;
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
-    Link: (props: LinkProps) => <a {...props} role="link" />,
-    useNavigate: () => mockNavigate,
-}));
-jest.mock('react-router-dom', () => ({
     ...jest.requireActual('react-router-dom'),
+    Link: (props: ReactRouter.LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
 }));
 jest.mock('moment', () => {

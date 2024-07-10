@@ -18,7 +18,6 @@ jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('axios');
 
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockNavigate,
 }));

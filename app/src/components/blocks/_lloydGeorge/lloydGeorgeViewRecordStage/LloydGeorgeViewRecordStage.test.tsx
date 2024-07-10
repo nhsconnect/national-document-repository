@@ -26,21 +26,18 @@ jest.mock('../../../../helpers/hooks/useRole');
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useIsBSOL');
 jest.mock('../../../../helpers/hooks/useConfig');
+
+jest.mock('react-router-dom', () => ({
+    Link: (props: LinkProps) => <a {...props} href={props.to as string} role="link" />,
+    useNavigate: () => mockNavigate,
+}));
+
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
 const mockedIsBSOL = useIsBSOL as jest.Mock;
 const mockSetStage = jest.fn();
 const mockUseConfig = useConfig as jest.Mock;
-
-jest.mock('react-router-dom', () => ({
-    useNavigate: () => mockNavigate,
-}));
-jest.mock('react-router-dom', () => ({
-    __esModule: true,
-    Link: (props: LinkProps) => <a {...props} href={props.to as string} role="link" />,
-    useNavigate: () => mockNavigate,
-}));
 
 describe('LloydGeorgeViewRecordStage', () => {
     beforeEach(() => {

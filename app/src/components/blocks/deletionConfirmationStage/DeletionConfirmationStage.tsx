@@ -1,8 +1,7 @@
 import React, { Dispatch, MouseEvent, SetStateAction } from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
 import { routes } from '../../../types/generic/routes';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';

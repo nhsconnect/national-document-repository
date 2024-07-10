@@ -10,19 +10,14 @@ import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { useState } from 'react';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
-import { routeChildren } from '../../../../types/generic/routes';
 
 const mockedUseNavigate = jest.fn();
 
 jest.mock('../../../../helpers/requests/uploadDocuments');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
-jest.mock('../../../../helpers/utils/toFileList', () => ({
-    __esModule: true,
-    default: () => [],
-}));
+jest.mock('../../../../helpers/utils/toFileList');
 jest.mock('../../../../helpers/hooks/usePatient');
-
 jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
     useLocation: () => jest.fn(),

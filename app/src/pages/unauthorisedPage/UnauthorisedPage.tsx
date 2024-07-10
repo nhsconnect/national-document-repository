@@ -1,7 +1,6 @@
 import React, { MouseEvent, useState } from 'react';
 import { routes } from '../../types/generic/routes';
-import { Link } from 'react-router-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { endpoints } from '../../types/generic/endpoints';
 import Spinner from '../../components/generic/spinner/Spinner';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';

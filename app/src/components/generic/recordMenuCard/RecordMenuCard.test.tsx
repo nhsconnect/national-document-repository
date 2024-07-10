@@ -50,7 +50,6 @@ const mockLinks: Array<LGRecordActionLink> = [
 ];
 
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockedUseNavigate,
 }));

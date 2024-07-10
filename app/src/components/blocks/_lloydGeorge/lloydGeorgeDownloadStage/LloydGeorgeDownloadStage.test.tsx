@@ -28,7 +28,6 @@ const mockGetPresignedUrlForZip = getPresignedUrlForZip as jest.MockedFunction<
 >;
 
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
     ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockedUseNavigate,

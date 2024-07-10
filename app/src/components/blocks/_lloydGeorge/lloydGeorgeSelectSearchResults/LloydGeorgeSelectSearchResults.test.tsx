@@ -11,10 +11,6 @@ import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('react-router-dom', () => ({
-    useNavigate: () => mockNavigate,
-}));
-jest.mock('react-router-dom', () => ({
-    __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
 }));

@@ -10,7 +10,6 @@ const mockedUseNavigate = jest.fn();
 jest.mock('../../helpers/hooks/useRole');
 const mockedUseRole = useRole as jest.Mock;
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockedUseNavigate,
 }));

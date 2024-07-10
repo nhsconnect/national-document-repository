@@ -29,7 +29,10 @@ jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../helpers/hooks/usePatient');
-jest.mock('react-router-dom');
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: () => mockNavigate,
+}));
 jest.mock('moment', () => {
     return (arg: MomentInput) => {
         if (!arg) {
@@ -58,14 +61,6 @@ const uploadDocument = {
     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
     attempts: 0,
 };
-
-/**
- * Update in other tests
- */
-jest.mock('react-router-dom', () => ({
-    ...jest.requireActual('react-router-dom'),
-    useNavigate: () => mockNavigate,
-}));
 
 /**
  * Update in other tests

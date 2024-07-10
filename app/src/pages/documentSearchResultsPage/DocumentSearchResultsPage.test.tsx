@@ -5,17 +5,15 @@ import { buildPatientDetails, buildSearchResult } from '../../helpers/test/testB
 import { routes } from '../../types/generic/routes';
 import axios from 'axios';
 import usePatient from '../../helpers/hooks/usePatient';
-import { LinkProps } from 'react-router-dom';
 import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockedUseNavigate,
-    Link: (props: LinkProps) => <a {...props} role="link" />,
+    Link: (props: ReactRouter.LinkProps) => <a {...props} role="link" />,
 }));
 
 jest.mock('axios');
