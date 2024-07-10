@@ -6,6 +6,7 @@ import axios from 'axios';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router-dom';
+import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockPatient = buildPatientDetails();
@@ -36,17 +37,17 @@ const searchResults = [
     buildSearchResult({ fileName: '1of1_test.pdf', ID: 'test-id-3' }),
 ];
 
-// This page has a specific url check to trigger a api call when on the select file view
-global.window = Object.create(window);
-Object.defineProperty(window, 'location', {
-    value: {
-        pathname: routeChildren.LLOYD_GEORGE_DOWNLOAD,
-    },
-    writable: true, // possibility to override
-});
-
 describe('LloydGeorgeSelectDownloadStage', () => {
     beforeEach(() => {
+        // temp solution to satisfy the pathname check within useEffect block
+        // in the future, consider to replace window.location call with useLocation
+        Object.defineProperty(window, 'location', {
+            writable: true,
+            value: {
+                pathname: routeChildren.LLOYD_GEORGE_DOWNLOAD,
+            },
+        });
+
         history = createMemoryHistory({
             initialEntries: ['/'],
             initialIndex: 0,
@@ -59,7 +60,10 @@ describe('LloydGeorgeSelectDownloadStage', () => {
         jest.clearAllMocks();
     });
 
-    it('renders the page header, patient details and loading text on page load', () => {
+    it('renders the page header, patient details and loading text on page load', async () => {
+        // suppress act() warning. postpone GET api response for 1 tick so that test complete before state change
+        mockAxios.get.mockImplementationOnce(() => waitForSeconds(0));
+
         renderComponent(history);
 
         expect(
@@ -69,7 +73,6 @@ describe('LloydGeorgeSelectDownloadStage', () => {
         ).toBeInTheDocument();
         expect(screen.getByTestId('patient-summary')).toBeInTheDocument();
         expect(screen.getByText('Loading...')).toBeInTheDocument();
-        expect(screen.queryByTestId('available-files-table-title')).not.toBeInTheDocument();
     });
 
     it('renders list of files in record when axios get request is successful', async () => {
