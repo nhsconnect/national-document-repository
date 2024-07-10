@@ -10,6 +10,7 @@ import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import ConfigProvider from '../../providers/configProvider/ConfigProvider';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
+import waitForSeconds from '../../helpers/utils/waitForSeconds';
 
 const mockedUseNavigate = jest.fn();
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
@@ -56,15 +57,7 @@ describe('PatientSearchPage', () => {
             async (role) => {
                 mockedUseRole.mockReturnValue(role);
 
-                mockedAxios.get.mockImplementation(async () => {
-                    await new Promise((resolve) => {
-                        setTimeout(() => {
-                            // To delay the mock request, and give a chance for the spinner to appear
-                            resolve(null);
-                        }, 500);
-                    });
-                    return Promise.resolve({ data: buildPatientDetails() });
-                });
+                mockedAxios.get.mockImplementation(() => waitForSeconds(0));
 
                 renderPatientSearchPage();
 
@@ -74,9 +67,9 @@ describe('PatientSearchPage', () => {
                 );
                 userEvent.click(screen.getByRole('button', { name: 'Search' }));
 
-                await waitFor(() => {
-                    expect(screen.getByRole('button')).toBeInTheDocument();
-                });
+                expect(
+                    await screen.findByRole('button', { name: 'Searching...' }),
+                ).toBeInTheDocument();
             },
         );
 
