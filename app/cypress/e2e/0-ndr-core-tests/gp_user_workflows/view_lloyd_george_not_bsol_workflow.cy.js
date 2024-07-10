@@ -234,10 +234,18 @@ describe('GP Workflow: View Lloyd George record', () => {
                         body: viewLloydGeorgePayload,
                     }).as('lloydGeorgeStitch');
 
+                    cy.intercept('POST', '/DocumentManifest*', (req) => {
+                        req.reply({
+                            statusCode: 200,
+                            body: { jobId: 'test-jobId' },
+                            delay: 500,
+                        });
+                    }).as('documentManifestPost');
+
                     cy.intercept('GET', '/DocumentManifest*', (req) => {
                         req.reply({
                             statusCode: 200,
-                            body: baseUrl + '/browserconfig.xml', // uses public served file in place of a ZIP file
+                            body: { jobStatus: 'Completed', url: baseUrl + '/browserconfig.xml' }, // uses public served file in place of a ZIP file
                             delay: 500,
                         });
                     }).as('documentManifest');

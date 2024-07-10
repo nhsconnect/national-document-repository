@@ -17,16 +17,19 @@ const UploadSummary = ({ documents }: Props) => {
     const successfulUploads = documents.filter((document) => {
         return document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED;
     });
+
     const failedUploads = documents.filter((document) => {
-        return document.state === DOCUMENT_UPLOAD_STATE.FAILED;
+        return [DOCUMENT_UPLOAD_STATE.FAILED, DOCUMENT_UPLOAD_STATE.INFECTED].includes(
+            document.state,
+        );
     });
 
     const tableMargin = { marginBottom: 50 };
     const tableCaption = (
         <>
-            <h3>
+            <h2 className="nhsuk-heading-m">
                 {failedUploads.length} of {documents.length} files failed to upload
-            </h3>
+            </h2>
             <span className="nhsuk-error-message" id="example-error">
                 <span className="nhsuk-u-visually-hidden">Error:</span> Documents that have failed
                 to upload

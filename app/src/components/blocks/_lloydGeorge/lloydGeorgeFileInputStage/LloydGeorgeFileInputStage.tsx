@@ -23,7 +23,7 @@ import useTitle from '../../../../helpers/hooks/useTitle';
 export type Props = {
     documents: Array<UploadDocument>;
     setDocuments: Dispatch<SetStateAction<Array<UploadDocument>>>;
-    submitDocuments: () => void;
+    submitDocuments: () => Promise<void>;
 };
 
 function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }: Props) {

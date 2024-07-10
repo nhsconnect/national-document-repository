@@ -2,6 +2,7 @@ const technicalIssueMsg = 'There is a technical issue on our side';
 const accountVerifyMsg = 'There was an error verifying your account details';
 const roleAccessMsg = 'There was an error verifying your role access';
 const createFileMsg = 'There was problem when creating files for the patient';
+const documentManifestFailureMsg = 'There was an error downloading the record';
 const patientFileRetrievalMsg = 'There was an error retrieving files for the patient record';
 const feedbackMsg = 'Your feedback failed to send';
 
@@ -20,6 +21,7 @@ const errorCodes: { [key: string]: string } = {
     LIN_5008: roleAccessMsg,
     LIN_5009: roleAccessMsg,
     LIN_5010: accountVerifyMsg,
+    DMS_2001: documentManifestFailureMsg,
     DMS_5001: createFileMsg,
     DMS_5002: createFileMsg,
     DMS_5003: createFileMsg,

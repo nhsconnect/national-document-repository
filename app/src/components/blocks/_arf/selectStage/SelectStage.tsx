@@ -12,35 +12,21 @@ import toFileList from '../../../../helpers/utils/toFileList';
 import DocumentInputForm from '../documentInputForm/DocumentInputForm';
 import { ARFFormConfig } from '../../../../helpers/utils/formConfig';
 import { v4 as uuidv4 } from 'uuid';
-import uploadDocuments, { uploadDocumentToS3 } from '../../../../helpers/requests/uploadDocuments';
-import usePatient from '../../../../helpers/hooks/usePatient';
-import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
-import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import BackButton from '../../../generic/backButton/BackButton';
-import { UploadSession } from '../../../../types/generic/uploadResult';
-import { AxiosError } from 'axios';
-import { routeChildren, routes } from '../../../../types/generic/routes';
-import { errorToParams } from '../../../../helpers/utils/errorToParams';
-import { isMock } from '../../../../helpers/utils/isLocal';
-import { useNavigate } from 'react-router';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
 
 interface Props {
     setDocuments: SetUploadDocuments;
     documents: Array<UploadDocument>;
+    startUpload: () => Promise<void>;
 }
 
-function SelectStage({ setDocuments, documents }: Props) {
-    const baseUrl = useBaseAPIUrl();
-    const baseHeaders = useBaseAPIHeaders();
-    const navigate = useNavigate();
+function SelectStage({ setDocuments, documents, startUpload }: Readonly<Props>) {
     const arfInputRef = useRef<HTMLInputElement | null>(null);
-    const patientDetails = usePatient();
-    const nhsNumber: string = patientDetails?.nhsNumber ?? '';
+
     const hasFileInput = documents.length > 0;
 
     const { handleSubmit, control, formState, setError } = useForm();
-
     const arfController = useController(ARFFormConfig(control));
 
     const submitDocuments = async () => {
@@ -49,81 +35,7 @@ function SelectStage({ setDocuments, documents }: Props) {
             return;
         }
 
-        navigate(routeChildren.ARF_UPLOAD_UPLOADING);
-        try {
-            const uploadSession = await uploadDocuments({
-                nhsNumber,
-                documents,
-                baseUrl,
-                baseHeaders,
-            });
-            const uploadingDocuments: UploadDocument[] =
-                addMetadataAndMarkDocumentAsUploading(uploadSession);
-            setDocuments(uploadingDocuments);
-
-            await uploadAllDocumentsToS3(uploadingDocuments, uploadSession);
-
-            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
-        } catch (error) {
-            handleUploadError(error as AxiosError);
-        }
-    };
-
-    const markDocumentAsFailed = (failedDocument: UploadDocument) => {
-        setDocuments((prevState) =>
-            prevState.map((prevStateDocument) => {
-                if (prevStateDocument.id !== failedDocument.id) {
-                    return prevStateDocument;
-                }
-                return { ...prevStateDocument, state: DOCUMENT_UPLOAD_STATE.FAILED, progress: 0 };
-            }),
-        );
-    };
-
-    const uploadAllDocumentsToS3 = (
-        uploadingDocuments: UploadDocument[],
-        uploadSession: UploadSession,
-    ) => {
-        const allUploadPromises = uploadingDocuments.map((document) =>
-            uploadDocumentToS3({ setDocuments, document, uploadSession }).catch(() =>
-                markDocumentAsFailed(document),
-            ),
-        );
-        return Promise.all(allUploadPromises);
-    };
-
-    const handleUploadError = (error: AxiosError) => {
-        if (error.response?.status === 403) {
-            navigate(routes.SESSION_EXPIRED);
-        } else if (isMock(error)) {
-            /* istanbul ignore next */
-            setDocuments((prevState) =>
-                prevState.map((doc) => ({
-                    ...doc,
-                    state: DOCUMENT_UPLOAD_STATE.SUCCEEDED,
-                })),
-            );
-            /* istanbul ignore next */
-            navigate(routeChildren.ARF_UPLOAD_COMPLETED);
-        } else if (error.response?.status === 423) {
-            /* navigate as place holder until new design*/
-            navigate(routes.SERVER_ERROR + errorToParams(error));
-        } else {
-            navigate(routes.SERVER_ERROR + errorToParams(error));
-        }
-    };
-
-    const addMetadataAndMarkDocumentAsUploading = (uploadSession: UploadSession) => {
-        return documents.map((doc) => {
-            const documentMetadata = uploadSession[doc.file.name];
-            const documentReference = documentMetadata.fields.key;
-            return {
-                ...doc,
-                state: DOCUMENT_UPLOAD_STATE.UPLOADING,
-                key: documentReference,
-                ref: documentReference.split('/').at(-1),
-            };
-        });
+        await startUpload();
     };
 
     const onInput = (e: FileInputEvent, docType: DOCUMENT_TYPE) => {

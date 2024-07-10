@@ -1,7 +1,6 @@
 import os
 import time
 
-from boto3.dynamodb.conditions import Key
 from enums.repository_role import RepositoryRole
 from services.base.dynamo_service import DynamoDBService
 from services.token_service import TokenService
@@ -78,7 +77,8 @@ class AuthoriserService:
         db_service = DynamoDBService()
         query_response = db_service.query_all_fields(
             table_name=session_table_name,
-            key_condition_expression=Key("NDRSessionId").eq(ndr_session_id),
+            search_key="NDRSessionId",
+            search_condition=ndr_session_id,
         )
 
         try:

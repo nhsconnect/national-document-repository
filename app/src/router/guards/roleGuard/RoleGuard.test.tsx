@@ -5,7 +5,6 @@ import { routeChildren, routes } from '../../../types/generic/routes';
 import RoleGuard from './RoleGuard';
 import useRole from '../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../types/generic/authRole';
-import { childRoutes } from '../../AppRouter';
 
 jest.mock('../../../helpers/hooks/useRole');
 const mockedUseRole = useRole as jest.Mock;

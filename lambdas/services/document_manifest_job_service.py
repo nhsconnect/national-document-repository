@@ -162,7 +162,7 @@ class DocumentManifestJobService:
             index_name="JobIdIndex",
             search_key="JobId",
             search_condition=job_id,
-            requested_fields=DocumentManifestZipTrace.get_field_names_list_pascal_case(),
+            requested_fields=DocumentManifestZipTrace.get_field_names_alias_list(),
         )
 
         try:

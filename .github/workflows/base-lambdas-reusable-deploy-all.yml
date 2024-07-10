@@ -345,3 +345,17 @@ jobs:
       lambda_layer_names: "core_lambda_layer,data_lambda_layer"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_generate_document_manifest_lambda:
+    name: Deploy generate document manifest lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: generate_document_manifest_handler
+      lambda_aws_name: GenerateDocumentManifest
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}

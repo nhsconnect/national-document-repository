@@ -1,15 +1,13 @@
 from datetime import datetime
 from typing import Literal
 
-from models.config import to_capitalized_camel
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_pascal
 from utils.utilities import create_reference_id
 
 
 class UploadStatusBaseClass(BaseModel):
-    model_config = ConfigDict(
-        alias_generator=to_capitalized_camel, populate_by_name=True
-    )
+    model_config = ConfigDict(alias_generator=to_pascal, populate_by_name=True)
     id: str = Field(alias="ID", default_factory=create_reference_id)
     nhs_number: str
 

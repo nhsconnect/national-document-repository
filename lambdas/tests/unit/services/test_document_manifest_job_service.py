@@ -657,7 +657,7 @@ def test_query_zip_trace_returns_zip_trace_object(
         index_name="JobIdIndex",
         search_key="JobId",
         search_condition=TEST_UUID,
-        requested_fields=DocumentManifestZipTrace.get_field_names_list_pascal_case(),
+        requested_fields=DocumentManifestZipTrace.get_field_names_alias_list(),
     )
     assert actual == expected
 

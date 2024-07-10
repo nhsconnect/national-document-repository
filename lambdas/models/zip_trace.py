@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Dict, Optional
+from typing import Dict
 
 from enums.zip_trace import ZipTraceStatus
 from pydantic import BaseModel, ConfigDict, Field
@@ -21,12 +21,12 @@ class DocumentManifestZipTrace(BaseModel):
         .isoformat()
         .replace("+00:00", "Z")
     )
-    files_to_download: Optional[Dict[str, str]]
+    files_to_download: Dict[str, str]
     job_status: ZipTraceStatus = ZipTraceStatus.PENDING
     zip_file_location: str = ""
 
     @staticmethod
-    def get_field_names_list_pascal_case() -> list[str | None]:
+    def get_field_names_alias_list() -> list[str | None]:
         return [field.alias for field in DocumentManifestZipTrace.model_fields.values()]
 
 

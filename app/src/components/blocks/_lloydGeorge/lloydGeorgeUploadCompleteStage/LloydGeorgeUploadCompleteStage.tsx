@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { ButtonLink, Card } from 'nhsuk-react-components';
 import {
     DOCUMENT_UPLOAD_STATE,
@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router';
 import { routes } from '../../../../types/generic/routes';
 import DocumentsListView from '../../../generic/documentsListView/DocumentsListView';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';
-import { focusLayoutDiv } from '../../../../helpers/utils/manageFocus';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { GenericDocument } from '../../../../types/generic/genericDocument';
 
@@ -19,12 +18,6 @@ interface Props {
 
 function LloydGeorgeUploadCompleteStage({ documents }: Props) {
     const navigate = useNavigate();
-
-    // temp solution to focus on layout div so that skip-link can be selected.
-    // we should remove this when this component become a separate route.
-    useEffect(() => {
-        focusLayoutDiv();
-    }, []);
 
     const successfulUploads = documents.map((document) => {
         if (document.state === DOCUMENT_UPLOAD_STATE.SUCCEEDED) {

@@ -182,7 +182,7 @@ class LambdaError(Enum):
     }
     ManifestValidation = {
         "err_code": "DMS_5001",
-        "message": "Failed to parse document reference from from DynamoDb response",
+        "message": "Failed to validate zip trace model from dynamo event",
     }
     ManifestFailure = {
         "err_code": "DMS_5002",
@@ -323,11 +323,34 @@ class LambdaError(Enum):
         "err_code": "UC_4004",
         "message": "Number of document references not equal to number of documents in dynamo table for this nhs number",
     }
+    UploadConfirmResultFilesNotClean = {
+        "err_code": "UC_4005",
+        "message": "Some of the given document references are not referring to clean files",
+    }
     UploadConfirmResultAWSFailure = {
         "err_code": "UC_5004",
         "message": "Error occurred with an AWS service",
     }
 
+    """
+       Errors for Generate Manifest Zip lambda 
+    """
+
+    JobIdNotFound = {
+        "err_code": "GMZ_4001",
+        "message": "Could not locate job id in DynamoDB",
+    }
+
+    DuplicateJobId = {
+        "err_code": "GMZ_4002",
+        "message": "Multiple items found with job id",
+    }
+
+    FailedToQueryDynamo = {"err_code": "GMZ_5001", "message": "Dynamo client error"}
+    ZipServiceClientError = {
+        "err_code": "GMZ_5002",
+        "message": "Failed to generate document manifest",
+    }
     """
        Errors for Update Upload State lambda 
     """

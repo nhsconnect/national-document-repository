@@ -3,7 +3,6 @@ import { act } from 'react-dom/test-utils';
 import SessionExpiredErrorPage from './SessionExpiredErrorPage';
 import useBaseAPIUrl from '../../helpers/hooks/useBaseAPIUrl';
 import { endpoints } from '../../types/generic/endpoints';
-import UploadDocumentsPage from '../uploadDocumentsPage/UploadDocumentsPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 jest.mock('../../helpers/hooks/useBaseAPIUrl');

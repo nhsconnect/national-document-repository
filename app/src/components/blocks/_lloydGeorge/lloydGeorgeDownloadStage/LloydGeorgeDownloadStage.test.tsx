@@ -15,6 +15,8 @@ import { MemoryHistory, createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router';
 import LloydGeorgeDownloadStage, { Props } from './LloydGeorgeDownloadStage';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
+import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
+import { DownloadManifestError } from '../../../../types/generic/errors';
 
 const mockedUseNavigate = jest.fn();
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -22,6 +24,9 @@ const mockedUsePatient = usePatient as jest.Mock;
 const mockUseConfig = useConfig as jest.Mock;
 const mockPdf = buildLgSearchResult();
 const mockPatient = buildPatientDetails();
+const mockGetPresignedUrlForZip = getPresignedUrlForZip as jest.MockedFunction<
+    typeof getPresignedUrlForZip
+>;
 
 jest.mock('react-router-dom', () => ({
     __esModule: true,
@@ -33,6 +38,7 @@ jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
 jest.mock('axios');
+jest.mock('../../../../helpers/requests/getPresignedUrlForZip');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useConfig');
@@ -84,7 +90,7 @@ describe('LloydGeorgeDownloadStage', () => {
 
     it('renders download complete on zip success', async () => {
         window.HTMLAnchorElement.prototype.click = jest.fn();
-        mockedAxios.get.mockImplementation(() => Promise.resolve({ data: mockPdf.presign_url }));
+        mockGetPresignedUrlForZip.mockResolvedValue(mockPdf.presign_url);
 
         jest.useFakeTimers();
 
@@ -128,7 +134,7 @@ describe('LloydGeorgeDownloadStage', () => {
 
     it('navigates to Error page when zip lg record view complete but fail on delete', async () => {
         window.HTMLAnchorElement.prototype.click = jest.fn();
-        mockedAxios.get.mockImplementation(() => Promise.resolve({ data: mockPdf.presign_url }));
+        mockGetPresignedUrlForZip.mockResolvedValue(mockPdf.presign_url);
         const errorResponse = {
             response: {
                 status: 500,
@@ -167,7 +173,7 @@ describe('LloydGeorgeDownloadStage', () => {
                 data: { message: 'An error occurred', err_code: 'SP_1001' },
             },
         };
-        mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+        mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(errorResponse));
         jest.useFakeTimers();
         renderComponent(history);
         act(() => {
@@ -180,6 +186,21 @@ describe('LloydGeorgeDownloadStage', () => {
         });
     });
 
+    it('navigates to Error page when GetPresignedUrlForZip throw DownloadManifestError', async () => {
+        const mockError = new DownloadManifestError('some error msg');
+        mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(mockError));
+        jest.useFakeTimers();
+        renderComponent(history);
+        act(() => {
+            jest.advanceTimersByTime(500);
+        });
+        await waitFor(() => {
+            expect(mockedUseNavigate).toHaveBeenCalledWith(
+                expect.stringContaining(routes.SERVER_ERROR),
+            );
+        });
+    });
+
     it('navigates to session expire page when zip lg record return 403', async () => {
         const errorResponse = {
             response: {
@@ -187,7 +208,7 @@ describe('LloydGeorgeDownloadStage', () => {
                 data: { message: 'Unauthorised' },
             },
         };
-        mockedAxios.get.mockImplementation(() => Promise.reject(errorResponse));
+        mockGetPresignedUrlForZip.mockImplementation(() => Promise.reject(errorResponse));
         jest.useFakeTimers();
         renderComponent(history);
         act(() => {

@@ -1,21 +1,19 @@
-import React, { Dispatch, MouseEvent, SetStateAction } from 'react';
+import React, { MouseEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import ServiceError from '../../../layout/serviceErrorBox/ServiceErrorBox';
-import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import useRole from '../../../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../../../types/generic/authRole';
-import { routes } from '../../../../types/generic/routes';
+import { routeChildren, routes } from '../../../../types/generic/routes';
 import useIsBSOL from '../../../../helpers/hooks/useIsBSOL';
 import { ButtonLink } from 'nhsuk-react-components';
 import useConfig from '../../../../helpers/hooks/useConfig';
 
 type Props = {
     downloadStage: DOWNLOAD_STAGE;
-    setStage: Dispatch<SetStateAction<LG_RECORD_STAGE>>;
 };
 
-function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
+function LloydGeorgeRecordError({ downloadStage }: Readonly<Props>) {
     const role = useRole();
     const navigate = useNavigate();
     const isBSOL = useIsBSOL();
@@ -44,7 +42,7 @@ function LloydGeorgeRecordError({ downloadStage, setStage }: Props) {
                             e.preventDefault();
                             role === REPOSITORY_ROLE.GP_CLINICAL
                                 ? navigate(routes.UNAUTHORISED)
-                                : setStage(LG_RECORD_STAGE.DOWNLOAD_ALL);
+                                : navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD);
                         }}
                     >
                         please download instead

@@ -29,7 +29,7 @@ def ensure_environment_variables(names: list[str]) -> Callable:
                         {"name": name}
                     )
                     return ApiGatewayResponse(
-                        500, error_body, event["httpMethod"]
+                        500, error_body, event.get("httpMethod", "GET")
                     ).create_api_gateway_response()
 
             # Validation done. Return control flow to original lambda handler
