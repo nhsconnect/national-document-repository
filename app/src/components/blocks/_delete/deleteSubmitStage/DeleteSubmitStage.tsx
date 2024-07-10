@@ -39,7 +39,12 @@ enum DELETE_DOCUMENTS_OPTION {
     NO = 'no',
 }
 
-function DeleteSubmitStage({ docType, numberOfFiles, setDownloadStage, recordType }: Props) {
+type IndexViewProps = {
+    docType: DOCUMENT_TYPE;
+    recordType: string;
+};
+
+const DeleteSubmitStageIndexView = ({ docType, recordType }: IndexViewProps) => {
     const patientDetails = usePatient();
     const role = useRole();
     const { register, handleSubmit } = useForm();
@@ -80,7 +85,7 @@ function DeleteSubmitStage({ docType, numberOfFiles, setDownloadStage, recordTyp
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error) && !!config.mockLocal.recordUploaded) {
-                onSuccess();
+                // onSuccess();
             } else {
                 if (error.response?.status === 403) {
                     navigate(routes.SESSION_EXPIRED);
@@ -112,9 +117,7 @@ function DeleteSubmitStage({ docType, numberOfFiles, setDownloadStage, recordTyp
             }
         }
     };
-    useTitle({ pageTitle: 'Delete files' });
-
-    const PageIndexView = () => (
+    return (
         <>
             <BackLink onClick={handleNoOption} href="#">
                 Go back
@@ -140,7 +143,7 @@ function DeleteSubmitStage({ docType, numberOfFiles, setDownloadStage, recordTyp
                         Once you remove these files, you can not access this record using the
                         service. You may want to keep a copy of the paper record safe.
                     </p>
-                    <h2 test-dataid="delete-files-warning-message">
+                    <h2 data-testid="delete-files-warning-message">
                         Are you sure you want to permanently remove this record?
                     </h2>
                     <div>
@@ -185,11 +188,20 @@ function DeleteSubmitStage({ docType, numberOfFiles, setDownloadStage, recordTyp
             </form>
         </>
     );
+};
+
+function DeleteSubmitStage({ docType, numberOfFiles, setDownloadStage, recordType }: Props) {
+    useTitle({ pageTitle: 'Delete files' });
 
     return (
         <>
             <Routes>
-                <Route index element={<PageIndexView />} />
+                <Route
+                    index
+                    element={
+                        <DeleteSubmitStageIndexView docType={docType} recordType={recordType} />
+                    }
+                />
                 <Route
                     path={getLastURLPath(routeChildren.ARF_DELETE_CONFIRMATION)}
                     element={
