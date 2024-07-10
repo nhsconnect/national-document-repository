@@ -85,7 +85,7 @@ const DeleteSubmitStageIndexView = ({ docType, recordType }: IndexViewProps) => 
         } catch (e) {
             const error = e as AxiosError;
             if (isMock(error) && !!config.mockLocal.recordUploaded) {
-                // onSuccess();
+                onSuccess();
             } else {
                 if (error.response?.status === 403) {
                     navigate(routes.SESSION_EXPIRED);
