@@ -9,7 +9,7 @@ from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
-from utils.lambda_exceptions import DocumentManifestServiceException
+from utils.lambda_exceptions import GenerateManifestZipException
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
@@ -62,7 +62,7 @@ def manifest_zip_handler(zip_trace_item):
             f"{LambdaError.ManifestValidation.to_str()}: {str(e)}",
             {"Result": "Failed to create document manifest"},
         )
-        raise DocumentManifestServiceException(
+        raise GenerateManifestZipException(
             status_code=500, error=LambdaError.ManifestValidation
         )
 

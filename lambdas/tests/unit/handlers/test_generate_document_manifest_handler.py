@@ -6,7 +6,7 @@ from handlers.generate_document_manifest_handler import (
     prepare_zip_trace_data,
 )
 from tests.unit.conftest import TEST_DOCUMENT_LOCATION, TEST_FILE_NAME, TEST_UUID
-from utils.lambda_exceptions import DocumentManifestServiceException
+from utils.lambda_exceptions import GenerateManifestZipException
 from utils.lambda_response import ApiGatewayResponse
 
 INVALID_EVENT_EXAMPLE = {
@@ -164,7 +164,7 @@ def test_400_response_if_new_image_is_not_dictionary(context, set_env):
 def test_handler_return_500_response_when_manifest_zip_error(context, set_env, mocker):
     mocker.patch(
         "handlers.generate_document_manifest_handler.manifest_zip_handler",
-        side_effect=DocumentManifestServiceException(500, LambdaError.MockError),
+        side_effect=GenerateManifestZipException(500, LambdaError.MockError),
     )
     mocker.patch("handlers.generate_document_manifest_handler.prepare_zip_trace_data")
 
@@ -180,7 +180,7 @@ def test_handler_return_500_response_when_manifest_zip_error(context, set_env, m
 def test_manifest_zip_handler_raise_error_if_zip_trace_model_validation_fails(
     mock_document_manifest_zip_service,
 ):
-    with pytest.raises(DocumentManifestServiceException):
+    with pytest.raises(GenerateManifestZipException):
         manifest_zip_handler(INVALID_IMAGE)
 
     mock_document_manifest_zip_service.assert_not_called()
@@ -196,10 +196,10 @@ def test_manifest_zip_handler_happy_path(
 
 def test_zip_service_handle_zip_request_called(mock_document_manifest_zip_service):
     mock_document_manifest_zip_service.handle_zip_request.side_effect = (
-        DocumentManifestServiceException("test", LambdaError.MockError)
+        GenerateManifestZipException("test", LambdaError.MockError)
     )
 
-    with pytest.raises(DocumentManifestServiceException):
+    with pytest.raises(GenerateManifestZipException):
         manifest_zip_handler(PROCESSES_VALID_IMAGE)
 
     mock_document_manifest_zip_service.handle_zip_request.assert_called_once()

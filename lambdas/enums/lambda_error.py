@@ -150,7 +150,7 @@ class LambdaError(Enum):
     }
     LoginGpODS = {
         "err_code": "LIN_5009",
-        "message": "SSM parameter values for GP organisation role code ma not exist",
+        "message": "SSM parameter values for GP organisation role code may not exist",
     }
     LoginPcseODS = {
         "err_code": "LIN_5010",
@@ -158,7 +158,7 @@ class LambdaError(Enum):
     }
 
     """
-       Errors for DocumentManifestServiceException
+       Errors for DocumentManifestJobServiceException
     """
     ManifestNoDocs = {
         "err_code": "DMS_4001",
@@ -168,16 +168,24 @@ class LambdaError(Enum):
         "err_code": "DMS_4002",
         "message": "Missing POST request body",
     }
+    ManifestFilterDocumentReferences = {
+        "err_code": "DMS_4003",
+        "message": "Selected document references do not match any documents stored for this patient",
+    }
+    ManifestMissingJobId = {
+        "err_code": "DMS_4004",
+        "message": "An error occurred due to missing key",
+    }
+    ManifestMissingJob = {
+        "err_code": "DMS_4005",
+        "message": "No Document Manifest found",
+    }
     ManifestValidation = {
         "err_code": "DMS_5001",
         "message": "Failed to validate zip trace model from dynamo event",
     }
-    ManifestDB = {
+    ManifestFailure = {
         "err_code": "DMS_5002",
-        "message": "Failed to create document manifest",
-    }
-    ManifestClient = {
-        "err_code": "DMS_5003",
         "message": "Failed to create document manifest",
     }
 

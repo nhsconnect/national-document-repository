@@ -125,12 +125,12 @@ class S3Service:
             return False
         except ClientError as e:
             error_message = str(e)
+            logger.error(str(e), {"Result": "Failed to check if file exists on s3"})
             if (
                 "An error occurred (403)" in error_message
                 or "An error occurred (404)" in error_message
             ):
                 return False
-            logger.error(str(e), {"Result": "Failed to check if file exists on s3"})
             raise e
 
     def list_all_objects(self, bucket_name: str) -> list[dict]:

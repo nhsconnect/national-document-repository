@@ -2,10 +2,9 @@ import uuid
 from datetime import datetime, timezone
 from typing import Dict
 
-from enums.metadata_field_names import DocumentZipTraceFields
 from enums.zip_trace import ZipTraceStatus
 from pydantic import BaseModel, ConfigDict, Field
-from pydantic.alias_generators import to_pascal
+from pydantic.alias_generators import to_camel, to_pascal
 
 
 class DocumentManifestZipTrace(BaseModel):
@@ -27,20 +26,12 @@ class DocumentManifestZipTrace(BaseModel):
     zip_file_location: str = ""
 
     @staticmethod
-    def get_field_names_list_pascal_case() -> list[str | None]:
+    def get_field_names_alias_list() -> list[str | None]:
         return [field.alias for field in DocumentManifestZipTrace.model_fields.values()]
 
 
-class ZipTrace:
-    def __init__(self, location: str):
-        self.id = uuid.uuid4()
-        self.location = location
-        self.created = (datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),)
+class DocumentManifestJob(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, use_enum_values=True)
 
-    def to_dict(self):
-        zip_trace_metadata = {
-            DocumentZipTraceFields.ID.value: str(self.id),
-            DocumentZipTraceFields.FILE_LOCATION.value: self.location,
-            DocumentZipTraceFields.CREATED.value: self.created,
-        }
-        return zip_trace_metadata
+    job_status: ZipTraceStatus
+    url: str

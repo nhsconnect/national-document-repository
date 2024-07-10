@@ -11,7 +11,7 @@ from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import InvalidDocumentReferenceException
-from utils.lambda_exceptions import DocumentManifestServiceException
+from utils.lambda_exceptions import GenerateManifestZipException
 
 logger = LoggingService(__name__)
 
@@ -54,7 +54,7 @@ class DocumentManifestZipService:
                 f"{LambdaError.ZipServiceClientError.to_str()} {msg + str(e)}",
                 {"Result": "Failed to create document manifest"},
             )
-            raise DocumentManifestServiceException(
+            raise GenerateManifestZipException(
                 status_code=500, error=LambdaError.ZipServiceClientError
             )
 
@@ -83,7 +83,7 @@ class DocumentManifestZipService:
         except ClientError as e:
             self.update_failed_status()
             logger.error(e, {"Result": "Failed to create document manifest"})
-            raise DocumentManifestServiceException(
+            raise GenerateManifestZipException(
                 status_code=500, error=LambdaError.ZipServiceClientError
             )
 

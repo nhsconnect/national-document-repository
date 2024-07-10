@@ -32,7 +32,7 @@ class LoginRedirectException(LambdaException):
     pass
 
 
-class DocumentManifestServiceException(LambdaException):
+class DocumentManifestJobServiceException(LambdaException):
     pass
 
 

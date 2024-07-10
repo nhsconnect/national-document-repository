@@ -7,7 +7,7 @@ from enums.zip_trace import ZipTraceStatus
 from models.zip_trace import DocumentManifestZipTrace
 from services.generate_document_manifest_zip_service import DocumentManifestZipService
 from utils.exceptions import InvalidDocumentReferenceException
-from utils.lambda_exceptions import DocumentManifestServiceException
+from utils.lambda_exceptions import GenerateManifestZipException
 
 from ..conftest import (
     MOCK_BUCKET,
@@ -84,7 +84,7 @@ def test_download_file_from_s3_raises_exception(mock_service, mock_s3_service):
         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
     )
 
-    with pytest.raises(DocumentManifestServiceException) as e:
+    with pytest.raises(GenerateManifestZipException) as e:
         mock_service.download_file_from_s3(TEST_FILE_NAME, TEST_DOCUMENT_LOCATION)
 
     mock_s3_service.download_file.assert_called_once_with(
@@ -92,7 +92,7 @@ def test_download_file_from_s3_raises_exception(mock_service, mock_s3_service):
         TEST_FILE_KEY,
         f"{mock_service.temp_downloads_dir}/{TEST_FILE_NAME}",
     )
-    assert e.value == DocumentManifestServiceException(
+    assert e.value == GenerateManifestZipException(
         500, LambdaError.ZipServiceClientError
     )
     assert mock_service.zip_trace_object.job_status == ZipTraceStatus.FAILED
@@ -139,7 +139,7 @@ def test_upload_zip_file_throws_exception_on_error(mock_service, mock_s3_service
         {"Error": {"Code": "500", "Message": "test error"}}, "testing"
     )
 
-    with pytest.raises(DocumentManifestServiceException) as e:
+    with pytest.raises(GenerateManifestZipException) as e:
         mock_service.upload_zip_file()
 
     mock_s3_service.upload_file.assert_called_once_with(
@@ -147,7 +147,7 @@ def test_upload_zip_file_throws_exception_on_error(mock_service, mock_s3_service
         s3_bucket_name=MOCK_ZIP_OUTPUT_BUCKET,
         file_key=mock_service.zip_file_name,
     )
-    assert e.value == DocumentManifestServiceException(
+    assert e.value == GenerateManifestZipException(
         500, LambdaError.ZipServiceClientError
     )
     assert mock_service.zip_trace_object.job_status == ZipTraceStatus.FAILED
