@@ -5,7 +5,7 @@ import {
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 import DocumentsListView from '../../../generic/documentsListView/DocumentsListView';
 import ReducedPatientInfo from '../../../generic/reducedPatientInfo/ReducedPatientInfo';

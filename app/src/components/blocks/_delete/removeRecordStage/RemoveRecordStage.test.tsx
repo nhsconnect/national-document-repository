@@ -5,7 +5,7 @@ import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test
 import axios from 'axios';
 import { routes } from '../../../../types/generic/routes';
 import { MemoryHistory, createMemoryHistory } from 'history';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 
 jest.mock('axios');
 jest.mock('moment', () => {
@@ -13,8 +13,8 @@ jest.mock('moment', () => {
 });
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const mockUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockUseNavigate,
 }));
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');

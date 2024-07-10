@@ -10,7 +10,7 @@ import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearc
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockNavigate,
 }));
 jest.mock('react-router-dom', () => ({

@@ -11,7 +11,7 @@ import { routes, routeChildren } from '../../../../types/generic/routes';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import { MemoryHistory, createMemoryHistory } from 'history';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
 
 jest.mock('../../../../helpers/hooks/useConfig');
@@ -23,8 +23,8 @@ jest.mock('axios');
 
 const mockedUseNavigate = jest.fn();
 
-jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockedUseNavigate,
 }));
 jest.mock('moment', () => {

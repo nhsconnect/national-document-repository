@@ -23,7 +23,7 @@ jest.mock('../../../../helpers/utils/toFileList', () => ({
 }));
 jest.mock('../../../../helpers/hooks/usePatient');
 
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
     useLocation: () => jest.fn(),
 }));

@@ -5,7 +5,7 @@ import LloydGeorgeSelectDownloadStage from './LloydGeorgeSelectDownloadStage';
 import axios from 'axios';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import { MemoryHistory, createMemoryHistory } from 'history';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 
 const mockAxios = axios as jest.Mocked<typeof axios>;
 const mockPatient = buildPatientDetails();

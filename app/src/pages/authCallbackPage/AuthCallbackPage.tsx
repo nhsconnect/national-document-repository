@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import getAuthToken, { AuthTokenArgs } from '../../helpers/requests/getAuthToken';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';
 import { routes } from '../../types/generic/routes';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import Spinner from '../../components/generic/spinner/Spinner';
 import { isMock } from '../../helpers/utils/isLocal';
 import { AxiosError } from 'axios';

@@ -15,7 +15,7 @@ const mockedUseNavigate = jest.fn();
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useRole');
 jest.mock('axios');
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
     useLocation: () => jest.fn(),
 }));

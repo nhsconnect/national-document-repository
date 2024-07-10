@@ -6,16 +6,13 @@ import UnauthorisedLoginPage from './UnauthorisedLoginPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
-    useNavigate: () => mockedUseNavigate,
-}));
-jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
+    useNavigate: () => mockedUseNavigate,
     Link: (props: LinkProps) => <a {...props} role="link" />,
 }));
+jest.mock('../../helpers/hooks/useBaseAPIUrl');
 
-describe('UnauthorisedPage', () => {
+describe('UnauthorisedLoginPage', () => {
     describe('Rendering', () => {
         it('renders unauthorised message', () => {
             render(<UnauthorisedLoginPage />);

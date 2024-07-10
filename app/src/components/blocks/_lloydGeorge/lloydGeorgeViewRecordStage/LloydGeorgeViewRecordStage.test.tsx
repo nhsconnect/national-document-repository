@@ -33,7 +33,7 @@ const mockedIsBSOL = useIsBSOL as jest.Mock;
 const mockSetStage = jest.fn();
 const mockUseConfig = useConfig as jest.Mock;
 
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockNavigate,
 }));
 jest.mock('react-router-dom', () => ({

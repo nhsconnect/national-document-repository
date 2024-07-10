@@ -1,6 +1,6 @@
 import WarningText from '../../components/generic/warningText/WarningText';
 import { ButtonLink } from 'nhsuk-react-components';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { routes } from '../../types/generic/routes';
 import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import React, { useEffect } from 'react';

@@ -1,8 +1,7 @@
-import { useNavigate } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ButtonLink } from 'nhsuk-react-components';
 import React from 'react';
 import errorCodes from '../../helpers/utils/errorCodes';
-import { useSearchParams } from 'react-router-dom';
 import { unixTimestamp } from '../../helpers/utils/createTimestamp';
 import useTitle from '../../helpers/hooks/useTitle';
 

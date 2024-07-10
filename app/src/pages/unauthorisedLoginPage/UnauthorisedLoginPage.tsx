@@ -1,5 +1,5 @@
 import { routes } from '../../types/generic/routes';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { ButtonLink } from 'nhsuk-react-components';
 import React from 'react';
 import ServiceDeskLink from '../../components/generic/serviceDeskLink/ServiceDeskLink';

@@ -18,9 +18,6 @@ jest.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
 }));
-jest.mock('react-router', () => ({
-    useNavigate: () => mockNavigate,
-}));
 
 const mockUseRole = useRole as jest.Mock;
 const mockIsBSOL = useIsBSOL as jest.Mock;

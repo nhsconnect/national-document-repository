@@ -28,7 +28,7 @@ import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { routeChildren } from '../../../../types/generic/routes';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import StartPage from './StartPage';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
-jest.mock('react-router');
+jest.mock('react-router-dom');
 describe('StartPage', () => {
     beforeEach(() => {
         process.env.REACT_APP_ENVIRONMENT = 'jest';

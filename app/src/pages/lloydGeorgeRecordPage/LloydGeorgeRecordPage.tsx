@@ -13,7 +13,7 @@ import useRole from '../../helpers/hooks/useRole';
 import useIsBSOL from '../../helpers/hooks/useIsBSOL';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { routeChildren, routes } from '../../types/generic/routes';
-import { Outlet, Route, Routes, useNavigate } from 'react-router';
+import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import { isMock } from '../../helpers/utils/isLocal';
 import moment from 'moment';

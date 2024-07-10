@@ -6,7 +6,7 @@ import userEvent from '@testing-library/user-event';
 import { routes } from '../../../types/generic/routes';
 
 const mockedUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 

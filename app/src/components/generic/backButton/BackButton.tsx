@@ -1,7 +1,7 @@
 import { BackLink } from 'nhsuk-react-components';
 import React from 'react';
 import type { MouseEvent } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 
 const BackButton = () => {
     const navigate = useNavigate();

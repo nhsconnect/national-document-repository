@@ -16,7 +16,7 @@ jest.mock('../../../../helpers/utils/toFileList', () => ({
     default: () => [],
 }));
 jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('react-router');
+jest.mock('react-router-dom');
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 window.scrollTo = jest.fn() as jest.Mock;
 
@@ -51,7 +51,7 @@ const mockPatientNonStandardCharName = buildPatientDetails({
 });
 
 const mockedUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 

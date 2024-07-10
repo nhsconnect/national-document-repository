@@ -9,7 +9,7 @@ import usePatient from '../../helpers/hooks/usePatient';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
     useLocation: () => jest.fn(),
 }));

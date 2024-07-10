@@ -13,7 +13,7 @@ import { defaultFeatureFlags } from '../../types/generic/featureFlags';
 jest.mock('../../helpers/hooks/useConfig');
 const mockedUseNavigate = jest.fn();
 jest.mock('axios');
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 const mockedAxios = axios as jest.Mocked<typeof axios>;

@@ -11,7 +11,7 @@ import { LinkProps } from 'react-router-dom';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import useConfig from '../../../../helpers/hooks/useConfig';
 import { MemoryHistory, createMemoryHistory } from 'history';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 import LloydGeorgeDownloadStage, { Props } from './LloydGeorgeDownloadStage';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 import getPresignedUrlForZip from '../../../../helpers/requests/getPresignedUrlForZip';
@@ -30,7 +30,7 @@ const mockGetPresignedUrlForZip = getPresignedUrlForZip as jest.MockedFunction<
 jest.mock('react-router-dom', () => ({
     __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
-    ...jest.requireActual('react-router'),
+    ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockedUseNavigate,
 }));
 jest.mock('moment', () => {

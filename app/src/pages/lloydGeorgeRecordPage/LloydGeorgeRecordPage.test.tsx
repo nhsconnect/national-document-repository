@@ -15,7 +15,7 @@ import useConfig from '../../helpers/hooks/useConfig';
 import useRole from '../../helpers/hooks/useRole';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { LinkProps } from 'react-router-dom';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
@@ -37,8 +37,8 @@ jest.mock('react-router-dom', () => ({
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
 }));
-jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockNavigate,
 }));
 jest.mock('moment', () => {

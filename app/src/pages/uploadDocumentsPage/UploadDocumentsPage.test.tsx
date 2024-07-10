@@ -10,7 +10,7 @@ import useConfig from '../../helpers/hooks/useConfig';
 import { routeChildren, routes } from '../../types/generic/routes';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { createMemoryHistory, History } from 'history';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
 import {
     DOCUMENT_TYPE,
@@ -33,8 +33,8 @@ const mockVirusScan = virusScan as jest.Mock;
 const mockUpdateDocumentState = updateDocumentState as jest.Mock;
 const mockUploadConfirmation = uploadConfirmation as jest.Mock;
 
-jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockedUseNavigate,
 }));
 jest.mock('../../helpers/requests/uploadDocuments');

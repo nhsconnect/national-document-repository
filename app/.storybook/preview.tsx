@@ -1,7 +1,7 @@
 import React from 'react';
 import type { Preview } from '@storybook/react';
 import '../src/styles/App.scss';
-import { MemoryRouter } from 'react-router';
+import { MemoryRouter } from 'react-router-dom';
 import PatientDetailsProvider from '../src/providers/patientProvider/PatientProvider';
 
 import { buildPatientDetails } from '../src/helpers/test/testBuilders';

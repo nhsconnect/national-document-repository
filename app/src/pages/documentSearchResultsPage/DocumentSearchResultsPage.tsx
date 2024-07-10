@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import { SearchResult } from '../../types/generic/searchResult';
 import DocumentSearchResults from '../../components/blocks/_arf/documentSearchResults/DocumentSearchResults';
-import { Outlet, Route, Routes, useNavigate } from 'react-router';
+import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import { routeChildren, routes } from '../../types/generic/routes';
 import { Link } from 'react-router-dom';
 import { SUBMISSION_STATE } from '../../types/pages/documentSearchResultsPage/types';

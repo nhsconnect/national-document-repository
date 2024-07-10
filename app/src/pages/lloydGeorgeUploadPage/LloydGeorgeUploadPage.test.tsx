@@ -20,7 +20,7 @@ import {
     UploadDocument,
 } from '../../types/pages/UploadDocumentsPage/types';
 import { MomentInput } from 'moment/moment';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
@@ -29,7 +29,7 @@ jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../helpers/hooks/usePatient');
-jest.mock('react-router');
+jest.mock('react-router-dom');
 jest.mock('moment', () => {
     return (arg: MomentInput) => {
         if (!arg) {
@@ -62,8 +62,8 @@ const uploadDocument = {
 /**
  * Update in other tests
  */
-jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockNavigate,
 }));
 

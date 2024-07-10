@@ -16,7 +16,7 @@ jest.mock('../../../../helpers/hooks/usePatient');
 const mockedUsePatient = usePatient as jest.Mock;
 const mockPatient = buildPatientDetails();
 
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 const mockedUseNavigate = jest.fn();

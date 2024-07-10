@@ -7,11 +7,11 @@ import {
 } from '../../../../types/pages/UploadDocumentsPage/types';
 import { buildPatientDetails, buildTextFile } from '../../../../helpers/test/testBuilders';
 import CompleteStage from './CompleteStage';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
-jest.mock('react-router');
+jest.mock('react-router-dom');
 jest.mock('../../../../helpers/hooks/usePatient');
 
 const mockedUsePatient = usePatient as jest.Mock;

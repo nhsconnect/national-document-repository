@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, WarningCallout } from 'nhsuk-react-components';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { routes } from '../../types/generic/routes';
 import BackButton from '../../components/generic/backButton/BackButton';
 import { useForm } from 'react-hook-form';
