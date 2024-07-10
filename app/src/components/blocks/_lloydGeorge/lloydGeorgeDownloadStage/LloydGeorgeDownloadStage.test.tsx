@@ -1,11 +1,10 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import {
     buildConfig,
     buildLgSearchResult,
     buildPatientDetails,
 } from '../../../../helpers/test/testBuilders';
 import axios from 'axios';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';

@@ -1,7 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import DocumentsListView from './DocumentsListView';
 import userEvent from '@testing-library/user-event';
-import { act } from 'react-dom/test-utils';
 
 const mockDocuments = [
     { fileName: 'test1.txt', id: '1', ref: 'testref1' },

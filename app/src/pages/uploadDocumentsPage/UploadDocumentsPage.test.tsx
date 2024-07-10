@@ -1,4 +1,4 @@
-import { render, RenderResult, screen, waitFor } from '@testing-library/react';
+import { act, render, RenderResult, screen, waitFor } from '@testing-library/react';
 import UploadDocumentsPage from './UploadDocumentsPage';
 import {
     buildConfig,
@@ -11,7 +11,6 @@ import { routeChildren, routes } from '../../types/generic/routes';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { createMemoryHistory, History } from 'history';
 import * as ReactRouter from 'react-router';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import {
     DOCUMENT_TYPE,

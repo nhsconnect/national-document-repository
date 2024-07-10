@@ -1,7 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { buildLgSearchResult, buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import DeleteResultStage from './DeleteResultStage';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
 import useRole from '../../../../helpers/hooks/useRole';

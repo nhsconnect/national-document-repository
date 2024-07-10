@@ -1,8 +1,7 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { buildPatientDetails, buildLgFile } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { formatNhsNumber } from '../../../../helpers/utils/formatNhsNumber';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import LloydGeorgeFileInputStage, { Props } from './LloydGeorgeFileInputStage';
 import { UploadDocument } from '../../../../types/pages/UploadDocumentsPage/types';

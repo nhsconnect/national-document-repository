@@ -1,6 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import ServerErrorPage from './ServerErrorPage';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { unixTimestamp } from '../../helpers/utils/createTimestamp';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';

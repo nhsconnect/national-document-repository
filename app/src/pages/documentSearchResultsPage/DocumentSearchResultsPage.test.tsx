@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import DocumentSearchResultsPage from './DocumentSearchResultsPage';
 import userEvent from '@testing-library/user-event';
 import { buildPatientDetails, buildSearchResult } from '../../helpers/test/testBuilders';
@@ -6,7 +6,6 @@ import { routes } from '../../types/generic/routes';
 import axios from 'axios';
 import usePatient from '../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
-import { act } from 'react-dom/test-utils';
 import * as ReactRouter from 'react-router';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';

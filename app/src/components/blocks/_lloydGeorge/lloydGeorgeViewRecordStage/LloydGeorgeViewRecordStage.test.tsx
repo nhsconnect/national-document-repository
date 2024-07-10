@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import {
     buildConfig,
     buildLgSearchResult,
@@ -9,7 +9,6 @@ import LgRecordStage, { Props } from './LloydGeorgeViewRecordStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
-import { act } from 'react-dom/test-utils';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import useRole from '../../../../helpers/hooks/useRole';

@@ -1,9 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import LloydGeorgeSelectDownloadStage from './LloydGeorgeSelectDownloadStage';
 import axios from 'axios';
-import { act } from 'react-dom/test-utils';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import { MemoryHistory, createMemoryHistory } from 'history';
 import * as ReactRouter from 'react-router';

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import usePatient from '../../helpers/hooks/usePatient';
 import {
     buildLgFile,
@@ -14,7 +14,6 @@ import uploadDocuments, {
     uploadDocumentToS3,
     virusScan,
 } from '../../helpers/requests/uploadDocuments';
-import { act } from 'react-dom/test-utils';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,

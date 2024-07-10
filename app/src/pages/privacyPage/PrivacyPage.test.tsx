@@ -1,10 +1,9 @@
 import { LinkProps } from 'react-router-dom';
 import useRole from '../../helpers/hooks/useRole';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import PrivacyPage from './PrivacyPage';
 import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import userEvent from '@testing-library/user-event';
-import { act } from 'react-dom/test-utils';
 import { routes } from '../../types/generic/routes';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 const mockedUseNavigate = jest.fn();

@@ -1,9 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import PatientResultPage from './PatientResultPage';
 import { buildPatientDetails } from '../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
-import { act } from 'react-dom/test-utils';
 import { REPOSITORY_ROLE, authorisedRoles } from '../../types/generic/authRole';
 import useRole from '../../helpers/hooks/useRole';
 import usePatient from '../../helpers/hooks/usePatient';

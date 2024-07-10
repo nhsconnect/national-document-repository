@@ -1,6 +1,5 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { LinkProps } from 'react-router-dom';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../types/generic/routes';
 import UnauthorisedLoginPage from './UnauthorisedLoginPage';

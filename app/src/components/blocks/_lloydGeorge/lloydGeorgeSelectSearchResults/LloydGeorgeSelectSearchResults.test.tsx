@@ -1,9 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
-import { act } from 'react-dom/test-utils';
 import LloydGeorgeSelectSearchResults, { Props } from './LloydGeorgeSelectSearchResults';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';

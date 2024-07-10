@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import SelectStage from './SelectStage';
 import { buildPatientDetails, buildTextFile } from '../../../../helpers/test/testBuilders';
 import userEvent from '@testing-library/user-event';
@@ -6,7 +6,6 @@ import {
     DOCUMENT_UPLOAD_STATE as documentUploadStates,
     UploadDocument,
 } from '../../../../types/pages/UploadDocumentsPage/types';
-import { act } from 'react-dom/test-utils';
 import { PatientDetails } from '../../../../types/generic/patientDetails';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { useState } from 'react';

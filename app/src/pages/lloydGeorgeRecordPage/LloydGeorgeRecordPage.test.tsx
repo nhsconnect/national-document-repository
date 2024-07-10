@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import LloydGeorgeRecordPage from './LloydGeorgeRecordPage';
 import {
     buildPatientDetails,
@@ -10,7 +10,6 @@ import { getFormattedDate } from '../../helpers/utils/formatDate';
 import axios from 'axios';
 import formatFileSize from '../../helpers/utils/formatFileSize';
 import usePatient from '../../helpers/hooks/usePatient';
-import { act } from 'react-dom/test-utils';
 import { routes } from '../../types/generic/routes';
 import useConfig from '../../helpers/hooks/useConfig';
 import useRole from '../../helpers/hooks/useRole';

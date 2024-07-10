@@ -1,8 +1,7 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { buildLgSearchResult, buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import DeleteSubmitStage, { Props } from './DeleteSubmitStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { DOCUMENT_TYPE } from '../../../../types/pages/UploadDocumentsPage/types';
 import axios from 'axios/index';
