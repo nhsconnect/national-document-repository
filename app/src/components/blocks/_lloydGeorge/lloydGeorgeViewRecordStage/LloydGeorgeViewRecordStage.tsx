@@ -203,6 +203,7 @@ function LloydGeorgeViewRecordStage({
                                         onClick={handleCancelButton}
                                         className="nhsuk-button nhsuk-button--secondary"
                                         style={{ marginLeft: 30 }}
+                                        type="button"
                                     >
                                         Cancel
                                     </Button>
