@@ -230,10 +230,14 @@ describe('LloydGeorgeUploadPage', () => {
     });
 
     describe('Navigating', () => {
+        const postponeByOneTick = () =>
+            new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+
         it('navigates to uploading stage when submit documents is clicked', async () => {
-            mockS3Upload.mockReturnValue(Promise.resolve());
-            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
-            mockUploadConfirmation.mockReturnValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+            mockUploadDocuments.mockImplementationOnce(postponeByOneTick);
+
             renderPage(history);
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),
