@@ -159,10 +159,13 @@ function LloydGeorgeViewRecordStage({
                                         aria-describedby="download-and-remove-prompt"
                                         data-testid="fieldset"
                                     >
-                                        <h4 id="download-and-remove-prompt">
+                                        <h3
+                                            className="nhsuk-heading-s"
+                                            id="download-and-remove-prompt"
+                                        >
                                             Are you sure you want to download and remove this
                                             record?
-                                        </h4>
+                                        </h3>
                                         <WarningText
                                             text="If you download this record, it removes from our storage.
                                             You must keep the patient's record safe."

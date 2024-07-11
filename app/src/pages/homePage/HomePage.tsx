@@ -66,7 +66,7 @@ const HomePage = (props: Props) => {
 
                 <SearchButton />
 
-                <h3>Get support with the service</h3>
+                <h2 className="nhsuk-heading-m">Get support with the service</h2>
                 <p>
                     {'Contact the '}
                     <ServiceDeskLink />
