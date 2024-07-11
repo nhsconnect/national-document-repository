@@ -83,6 +83,7 @@ function LloydGeorgeViewRecordStage({
           });
     const showMenu = recordLinksToShow.length > 0;
 
+    // @ts-ignore
     const handleConfirmDownloadAndRemoveButton = () => {
         navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS);
     };
@@ -153,16 +154,12 @@ function LloydGeorgeViewRecordStage({
                         </p>
                         {downloadRemoveButtonClicked && (
                             <InsetText className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text">
-                                <form
-                                    onSubmit={handleSubmit(handleConfirmDownloadAndRemoveButton)}
-                                    className={
-                                        formState.errors.confirmDownloadRemove
-                                            ? 'nhsuk-form-group--error'
-                                            : 'nhsuk-form-group'
-                                    }
-                                >
-                                    <Fieldset aria-describedby="waste-hint">
-                                        <h4>
+                                <form onSubmit={handleSubmit(handleConfirmDownloadAndRemoveButton)}>
+                                    <Fieldset
+                                        aria-describedby="download-and-remove-prompt"
+                                        data-testid="fieldset"
+                                    >
+                                        <h4 id="download-and-remove-prompt">
                                             Are you sure you want to download and remove this
                                             record?
                                         </h4>

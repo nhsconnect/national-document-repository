@@ -315,9 +315,18 @@ describe('LloydGeorgeViewRecordStage', () => {
                 act(() => {
                     userEvent.click(confirmButton);
                 });
-                await screen.findByText(
-                    'You must confirm if you want to download and remove this record',
-                );
+                expect(
+                    await screen.findByText(
+                        'Confirm if you want to download and remove this record',
+                    ),
+                ).toBeInTheDocument();
+
+                // to supress act() warning from non-captured classname change
+                // eslint-disable-next-line testing-library/no-node-access
+                const fieldsetParentDiv = screen.getByTestId('fieldset').closest('div');
+                await waitFor(() => {
+                    expect(fieldsetParentDiv).toHaveClass('nhsuk-form-group--error');
+                });
 
                 const results = await runAxeTest(document.body);
                 expect(results).toHaveNoViolations();
