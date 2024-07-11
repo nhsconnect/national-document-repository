@@ -18,7 +18,11 @@ from utils.exceptions import (
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
 )
-from utils.unicode_utils import REGEX_PATIENT_NAME_PATTERN, names_are_matching
+from utils.unicode_utils import (
+    REGEX_PATIENT_NAME_PATTERN,
+    name_ends_with,
+    name_starts_with,
+)
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
@@ -153,23 +157,16 @@ def validate_filename_with_patient_details(
         raise LGInvalidFilesException(e)
 
 
-def validate_patient_name(file_patient_name, pds_patient_details):
+def validate_patient_name(file_patient_name: str, pds_patient_details: PatientDetails):
     logger.info("Verifying patient name against the record in PDS...")
-    patient_name_split = file_patient_name.split(" ")
-    file_patient_first_name = patient_name_split[0]
-    file_patient_last_name = patient_name_split[-1]
-    is_file_first_name_in_patient_details = False
-    for patient_name in pds_patient_details.given_name:
-        if (
-            names_are_matching(file_patient_first_name, patient_name)
-            or not patient_name
-        ):
-            is_file_first_name_in_patient_details = True
-            break
 
-    if not is_file_first_name_in_patient_details or not names_are_matching(
-        file_patient_last_name, pds_patient_details.family_name
-    ):
+    first_name_in_pds: str = pds_patient_details.given_name[0]
+    family_name_in_pds = pds_patient_details.family_name
+
+    first_name_matches = name_starts_with(file_patient_name, first_name_in_pds)
+    family_name_matches = name_ends_with(file_patient_name, family_name_in_pds)
+
+    if not (first_name_matches and family_name_matches):
         raise LGInvalidFilesException("Patient name does not match our records")
 
 

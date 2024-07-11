@@ -44,6 +44,20 @@ def names_are_matching(name_a: str, name_b: str) -> bool:
     )
 
 
+def name_starts_with(full_name: str, partial_name: str) -> bool:
+    folded_full_name = convert_to_nfd_form(full_name).casefold()
+    folded_partial_name = convert_to_nfd_form(partial_name).casefold()
+
+    return folded_full_name.startswith(folded_partial_name)
+
+
+def name_ends_with(full_name: str, partial_name: str) -> bool:
+    folded_full_name = convert_to_nfd_form(full_name).casefold()
+    folded_partial_name = convert_to_nfd_form(partial_name).casefold()
+
+    return folded_full_name.endswith(folded_partial_name)
+
+
 def convert_to_nfc_form(input_str: str) -> str:
     """
     Convert a string to the NFC normalization form

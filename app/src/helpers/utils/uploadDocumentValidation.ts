@@ -8,7 +8,7 @@ for (let i = 0x300; i < 0x371; i++) {
     REGEX_ACCENT_MARKS_IN_NFD += String.fromCharCode(i);
 }
 const REGEX_ACCENT_CHARS_IN_NFC = 'À-ž';
-const REGEX_PATIENT_NAME_PATTERN = `[A-Za-z ${REGEX_ACCENT_CHARS_IN_NFC}${REGEX_ACCENT_MARKS_IN_NFD}]+`;
+const REGEX_PATIENT_NAME_PATTERN = `[A-Za-z ${REGEX_ACCENT_CHARS_IN_NFC}${REGEX_ACCENT_MARKS_IN_NFD}'-]+`;
 const REGEX_NHS_NUMBER_REGEX = '[0-9]{10}';
 const REGEX_LLOYD_GEORGE_FILENAME = new RegExp(
     `^[0-9]+of[0-9]+_Lloyd_George_Record_\\[(?<patient_name>${REGEX_PATIENT_NAME_PATTERN})]_\\[(?<nhs_number>${REGEX_NHS_NUMBER_REGEX})]_\\[(?<dob>\\d\\d-\\d\\d-\\d\\d\\d\\d)].pdf$`,
@@ -104,7 +104,6 @@ const validateWithPatientDetails = (
 ): UploadFilesErrors[] => {
     const dateOfBirth = new Date(patientDetails.birthDate);
     const dateOfBirthString = moment(dateOfBirth).format('DD-MM-YYYY');
-    const patientNameFromPds = [...patientDetails.givenName, patientDetails.familyName].join(' ');
     const nhsNumber = patientDetails.nhsNumber;
 
     const errors: UploadFilesErrors[] = [];
@@ -120,16 +119,24 @@ const validateWithPatientDetails = (
     }
 
     const patientNameInFilename = match?.groups?.patient_name as string;
-    if (!patientNameMatches(patientNameInFilename, patientNameFromPds)) {
+    if (!patientNameMatchesPds(patientNameInFilename, patientDetails)) {
         errors.push({ filename, error: fileUploadErrorMessages.patientNameError });
     }
 
     return errors;
 };
 
-const patientNameMatches = (patientNameInFileName: string, patientNameFromPds: string): boolean => {
-    return (
-        patientNameInFileName.normalize('NFD').toLowerCase() ===
-        patientNameFromPds.normalize('NFD').toLowerCase()
-    );
+export const patientNameMatchesPds = (
+    patientNameInFileName: string,
+    patientDetailsFromPds: PatientDetails,
+): boolean => {
+    const patientNameInFileNameNormalised = patientNameInFileName.normalize('NFD').toLowerCase();
+
+    const firstName = patientDetailsFromPds.givenName[0].normalize('NFD').toLowerCase();
+    const firstNameMatches = patientNameInFileNameNormalised.startsWith(firstName);
+
+    const familyName = patientDetailsFromPds.familyName.normalize('NFD').toLowerCase();
+    const familyNameMarches = patientNameInFileNameNormalised.endsWith(familyName);
+
+    return firstNameMatches && familyNameMarches;
 };

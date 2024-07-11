@@ -12,6 +12,10 @@ from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT_WITHOUT_ACTIVE_GP,
     PDS_PATIENT_WITHOUT_ADDRESS,
 )
+from tests.unit.helpers.data.pds.test_cases_for_date_logic import (
+    build_test_name,
+    build_test_patient_with_names,
+)
 from tests.unit.helpers.data.pds.utils import create_patient
 from utils.utilities import validate_nhs_number
 
@@ -163,3 +167,135 @@ def test_patient_without_period_in_general_practitioner_identifier_can_be_proces
     result = patient.get_patient_details(patient.id)
 
     assert expected == result
+
+
+def test_get_patient_details_return_the_most_recent_name():
+    name_1 = build_test_name(start="1990-01-01", end=None, given=["Jane"])
+    name_2 = build_test_name(start="2010-02-14", end=None, given=["Jones"])
+    name_3 = build_test_name(start="2000-03-25", end=None, given=["Bob"])
+
+    test_patient = build_test_patient_with_names([name_1, name_2, name_3])
+
+    expected_given_name = ["Jones"]
+    actual = test_patient.get_patient_details(test_patient.id).given_name
+
+    assert actual == expected_given_name
+
+
+def test_get_current_family_name_and_given_name_return_the_first_usual_name_if_all_names_have_no_dates_attached():
+    name_1 = build_test_name(use="temp", start=None, end=None, given=["Jones"])
+    name_2 = build_test_name(use="usual", start=None, end=None, given=["Jane"])
+    name_3 = build_test_name(use="usual", start=None, end=None, given=["Bob"])
+
+    test_patient = build_test_patient_with_names([name_1, name_2, name_3])
+
+    expected_given_name = ["Jane"]
+    actual = test_patient.get_patient_details(test_patient.id).given_name
+
+    assert actual == expected_given_name
+
+
+def test_get_current_family_name_and_given_name_logs_a_warning_if_no_current_name_or_usual_name_found(
+    caplog,
+):
+    test_patient = build_test_patient_with_names([])
+
+    actual = test_patient.get_patient_details(test_patient.id)
+    assert actual.given_name == [""]
+    assert actual.family_name == ""
+
+    expected_log = "The patient does not have a currently active name or a usual name."
+    actual_log = caplog.records[-1].msg
+
+    assert expected_log == actual_log
+    assert caplog.records[-1].levelname == "WARNING"
+
+
+@freeze_time("2024-01-01")
+def test_name_is_currently_in_use_return_false_for_expired_name():
+    test_name = build_test_name(start="2023-01-01", end="2023-06-01")
+    expected = False
+    actual = test_name.is_currently_in_use()
+
+    assert actual == expected
+
+
+@freeze_time("2024-01-01")
+def test_name_is_currently_in_use_return_false_for_name_not_started_yet():
+    test_name = build_test_name(start="2024-02-01", end="2024-06-01")
+    expected = False
+    actual = test_name.is_currently_in_use()
+
+    assert actual == expected
+
+
+@freeze_time("2024-01-01")
+def test_name_is_currently_in_use_return_true_when_name_period_includes_today():
+    test_name = build_test_name(start="2023-12-31", end="2024-02-01")
+    expected = True
+    actual = test_name.is_currently_in_use()
+
+    assert actual == expected
+
+
+@freeze_time("2024-01-01")
+def test_name_is_currently_in_use_return_false_for_name_without_a_period_field():
+    test_name = build_test_name(start=None, end=None)
+    assert test_name.period is None
+
+    expected = False
+    actual = test_name.is_currently_in_use()
+
+    assert actual == expected
+
+
+@freeze_time("2024-01-01")
+def test_name_is_currently_in_use_can_handle_name_with_no_end_in_period():
+    test_name = build_test_name(start="2023-12-31", end=None)
+    assert test_name.period.end is None
+
+    expected = True
+    actual = test_name.is_currently_in_use()
+
+    assert actual == expected
+
+
+@freeze_time("2024-01-01")
+def test_name_is_currently_in_use_return_false_for_nickname_or_old_name():
+    test_nickname = build_test_name(
+        use="nickname", start="2023-01-01", end="2024-12-31"
+    )
+    test_old_name = build_test_name(use="old", start="2023-01-01", end="2024-12-31")
+
+    assert test_nickname.is_currently_in_use() is False
+    assert test_old_name.is_currently_in_use() is False
+
+
+@freeze_time("2024-01-01")
+def test_get_most_recent_name_return_the_name_with_most_recent_start_date():
+    name_1 = build_test_name(start="1990-01-01", end=None, given=["Jane"])
+    name_2 = build_test_name(start="2010-02-14", end=None, given=["Jones"])
+    name_3 = build_test_name(start="2000-03-25", end=None, given=["Bob"])
+    expired_name = build_test_name(
+        start="2020-04-05", end="2022-07-01", given=["Alice"]
+    )
+    nickname = build_test_name(
+        use="nickname", start="2023-01-01", end=None, given=["Janie"]
+    )
+    future_name = build_test_name(start="2047-01-01", end=None, given=["Neo Jane"])
+
+    test_patient = build_test_patient_with_names(
+        [name_1, name_2, name_3, expired_name, nickname, future_name]
+    )
+
+    expected = name_2
+    actual = test_patient.get_most_recent_name()
+
+    assert actual == expected
+
+
+@freeze_time("2024-01-01")
+def test_get_most_recent_name_return_none_if_no_active_name_found():
+    test_patient = build_test_patient_with_names([])
+
+    assert test_patient.get_most_recent_name() is None

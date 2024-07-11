@@ -1,5 +1,6 @@
 import json
 import tempfile
+from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import Enum
 from unittest import mock
@@ -285,3 +286,12 @@ def mock_temp_folder(mocker):
 def mock_uuid(mocker):
     mocker.patch("uuid.uuid4", return_value=TEST_UUID)
     yield TEST_UUID
+
+
+@contextmanager
+def expect_not_to_raise(exception, message_when_fail=""):
+    try:
+        yield
+    except exception:
+        message_when_fail = message_when_fail or "DID RAISE {0}".format(exception)
+        raise pytest.fail(message_when_fail)
