@@ -38,4 +38,8 @@ export const fileUploadErrorMessages = {
         message: 'This file contains incorrect patient information',
         errorBox: 'The patient’s NHS number does not match this filename',
     },
+    fileNumberMissingError: {
+        message: 'This record is not complete',
+        errorBox: 'This record is missing some files with file numbers: %s',
+    },
 };

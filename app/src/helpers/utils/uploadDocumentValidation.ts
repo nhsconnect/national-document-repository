@@ -78,6 +78,26 @@ export const uploadDocumentValidation = (
     return errors;
 };
 
+const range = (size: number): number[] => {
+    const result = [];
+    for (let i = 1; i <= size; i++) {
+        result.push(i);
+    }
+    return result;
+};
+
+const validateFileNumbers = (filenames: string[]): UploadFilesErrors[] => {
+    const lgFilesNumber = /of([0-9]+)/;
+
+    const totalFileNumberFound = lgFilesNumber.exec(filenames[0]);
+    if (totalFileNumberFound) {
+        const totalFileNumber = Number(totalFileNumberFound[1]);
+        const expectedFileNumbers = new Set(range(totalFileNumber));
+    }
+
+    return [];
+};
+
 const fileNumberIsValid = (filename: string, uploadDocuments: UploadDocument[]): boolean => {
     const lgFilesNumber = /of[0-9]+/;
     const expectedNumberOfFiles = lgFilesNumber.exec(filename);

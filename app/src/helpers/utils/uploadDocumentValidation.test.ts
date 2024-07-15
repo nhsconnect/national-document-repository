@@ -1,5 +1,10 @@
 import { patientNameMatchesPds, uploadDocumentValidation } from './uploadDocumentValidation';
-import { buildPatientDetails } from '../test/testBuilders';
+import {
+    buildDocument,
+    buildLgFile,
+    buildPatientDetails,
+    buildTextFile,
+} from '../test/testBuilders';
 import {
     buildLGUploadDocsFromFilenames,
     loadTestCases,
@@ -8,10 +13,112 @@ import {
     TEST_CASES_FOR_TWO_WORDS_FAMILY_NAME_AND_GIVEN_NAME,
     TEST_CASES_FOR_TWO_WORDS_GIVEN_NAME,
 } from '../test/testDataForPdsNameValidation';
-import { UploadFilesErrors } from '../../types/pages/UploadDocumentsPage/types';
+import {
+    DOCUMENT_TYPE,
+    DOCUMENT_UPLOAD_STATE,
+    UploadFilesErrors,
+} from '../../types/pages/UploadDocumentsPage/types';
+import { fileUploadErrorMessages } from './fileUploadErrorMessages';
 
 describe('uploadDocumentValidation', () => {
-    describe('name validation', () => {
+    describe('file validation', () => {
+        const testPatient = buildPatientDetails({
+            givenName: ['Joe'], // NFC
+            familyName: 'Blogs',
+            nhsNumber: '9000000009',
+            birthDate: '1970-01-01',
+        });
+
+        it('detect files larger than 5 GB', () => {
+            const largeFile = buildLgFile(1, 2, 'Joe Blogs', 6 * Math.pow(1024, 3));
+            const normalFile = buildLgFile(2, 2, 'Joe Blogs');
+            const testUploadDocuments = [largeFile, normalFile].map((file) =>
+                buildDocument(file, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.LLOYD_GEORGE),
+            );
+
+            const expectError: UploadFilesErrors = {
+                filename: largeFile.name,
+                error: fileUploadErrorMessages.fileSizeError,
+            };
+            const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+
+            expect(actual).toContainEqual(expectError);
+        });
+
+        it('detect file that is not PDF type', () => {
+            const nonPdfFile = buildTextFile(
+                '1of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+            );
+            const normalFile = buildLgFile(2, 2, 'Joe Blogs');
+            const testUploadDocuments = [nonPdfFile, normalFile].map((file) =>
+                buildDocument(file, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.LLOYD_GEORGE),
+            );
+
+            const expectError: UploadFilesErrors = {
+                filename: nonPdfFile.name,
+                error: fileUploadErrorMessages.fileTypeError,
+            };
+            const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+
+            expect(actual).toContainEqual(expectError);
+        });
+
+        describe('file names validation', () => {
+            it('detect file names duplication', () => {
+                const file1 = buildLgFile(1, 2, 'Joe Blogs');
+                const anotherFile1 = buildLgFile(1, 2, 'Joe Blogs');
+                const file2 = buildLgFile(2, 2, 'Joe Blogs');
+                const testUploadDocuments = [file1, anotherFile1, file2].map((file) =>
+                    buildDocument(file, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.LLOYD_GEORGE),
+                );
+
+                const expectError: UploadFilesErrors = {
+                    filename: file1.name,
+                    error: fileUploadErrorMessages.duplicateFile,
+                };
+                const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+
+                expect(actual).toContainEqual(expectError);
+            });
+
+            it('detect file name that does not match LG naming convention', () => {
+                const invalidFileName = 'some_non_standard_file_name.pdf';
+                const testUploadDocuments = buildLGUploadDocsFromFilenames([
+                    invalidFileName,
+                    '2of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                ]);
+
+                const expectError: UploadFilesErrors = {
+                    filename: invalidFileName,
+                    error: fileUploadErrorMessages.fileNameError,
+                };
+                const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+
+                expect(actual).toContainEqual(expectError);
+            });
+
+            it('detect missing file', () => {
+                const testUploadDocuments = buildLGUploadDocsFromFilenames([
+                    '1of5_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                    '3of5_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                    '5of5_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                ]);
+
+                const expectError: UploadFilesErrors = {
+                    filename: '',
+                    error: {
+                        message: 'This record is not complete',
+                        errorBox: 'This record is missing some files with file numbers: 2, 4',
+                    },
+                };
+                const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+
+                expect(actual).toContainEqual(expectError);
+            });
+        });
+    });
+
+    describe('patient name validation', () => {
         it('can handle a patient name with multiple words and special chars', () => {
             const testPatient = buildPatientDetails({
                 givenName: ['Jane François', 'Bob'], // NFC
