@@ -262,13 +262,14 @@ const RecordDetails = ({
         case DOWNLOAD_STAGE.PENDING:
         case DOWNLOAD_STAGE.REFRESH:
             return <ProgressBar status="Loading..." />;
-        case DOWNLOAD_STAGE.SUCCEEDED:
+        case DOWNLOAD_STAGE.SUCCEEDED: {
             const detailsProps = {
                 lastUpdated,
                 numberOfFiles,
                 totalFileSizeInByte,
             };
             return <LloydGeorgeRecordDetails {...detailsProps} />;
+        }
         default:
             return <LloydGeorgeRecordError downloadStage={downloadStage} />;
     }
