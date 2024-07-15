@@ -156,6 +156,7 @@ const LloydGeorgeSelectSearchResults = ({
                 onClick={handleClickSelectedDownload}
                 secondary={allowSelectDocument}
                 data-testid="toggle-selection-btn"
+                type="button"
             >
                 Select All Files
             </Button>
