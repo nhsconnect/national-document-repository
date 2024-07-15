@@ -125,11 +125,12 @@ const LloydGeorgeSelectSearchResults = ({
         if (selectedDocuments.length === searchResults.length) {
             setSelectedDocuments([]);
         } else {
+            setSelectedDocuments([]);
             const downloadableItems: string[] = [];
             searchResults.forEach((result) => {
                 downloadableItems.push(result.ID);
             });
-            setSelectedDocuments([...downloadableItems]);
+            setSelectedDocuments(downloadableItems);
         }
     };
     const handleClickSelectedDownload = () => {
