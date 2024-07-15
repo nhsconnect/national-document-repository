@@ -91,19 +91,11 @@ function LloydGeorgeViewRecordStage({
         clearErrors('confirmDownloadRemove');
     };
 
-    const RecordDetails = () => {
-        if (downloadStage === DOWNLOAD_STAGE.PENDING) {
-            return <ProgressBar status="Loading..." />;
-        } else if (downloadStage === DOWNLOAD_STAGE.SUCCEEDED) {
-            const detailsProps = {
-                lastUpdated,
-                numberOfFiles,
-                totalFileSizeInByte,
-            };
-            return <LloydGeorgeRecordDetails {...detailsProps} />;
-        } else {
-            return <LloydGeorgeRecordError downloadStage={downloadStage} />;
-        }
+    const recordDetailsProps: RecordDetailsProps = {
+        downloadStage,
+        lastUpdated,
+        numberOfFiles,
+        totalFileSizeInByte,
     };
 
     const pageHeader = 'Available records';
@@ -231,7 +223,7 @@ function LloydGeorgeViewRecordStage({
                                     recordUrl={lloydGeorgeUrl}
                                     heading="Lloyd George record"
                                     fullScreenHandler={setFullScreen}
-                                    detailsElement={<RecordDetails />}
+                                    detailsElement={<RecordDetails {...recordDetailsProps} />}
                                 />
                             </div>
                         </div>
@@ -241,7 +233,7 @@ function LloydGeorgeViewRecordStage({
                             recordUrl={lloydGeorgeUrl}
                             heading="Lloyd George record"
                             fullScreenHandler={setFullScreen}
-                            detailsElement={<RecordDetails />}
+                            detailsElement={<RecordDetails {...recordDetailsProps} />}
                         />
                     )}
                 </>
@@ -253,5 +245,33 @@ function LloydGeorgeViewRecordStage({
         </div>
     );
 }
+
+type RecordDetailsProps = Pick<
+    Props,
+    'downloadStage' | 'lastUpdated' | 'numberOfFiles' | 'totalFileSizeInByte'
+>;
+
+const RecordDetails = ({
+    downloadStage,
+    lastUpdated,
+    numberOfFiles,
+    totalFileSizeInByte,
+}: RecordDetailsProps) => {
+    switch (downloadStage) {
+        case DOWNLOAD_STAGE.PENDING:
+        case DOWNLOAD_STAGE.INITIAL:
+        case DOWNLOAD_STAGE.REFRESH:
+            return <ProgressBar status="Loading..." />;
+        case DOWNLOAD_STAGE.SUCCEEDED:
+            const detailsProps = {
+                lastUpdated,
+                numberOfFiles,
+                totalFileSizeInByte,
+            };
+            return <LloydGeorgeRecordDetails {...detailsProps} />;
+        default:
+            return <LloydGeorgeRecordError downloadStage={downloadStage} />;
+    }
+};
 
 export default LloydGeorgeViewRecordStage;
