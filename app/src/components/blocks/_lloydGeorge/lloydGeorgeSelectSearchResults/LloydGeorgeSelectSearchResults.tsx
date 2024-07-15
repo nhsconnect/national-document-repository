@@ -152,6 +152,13 @@ const LloydGeorgeSelectSearchResults = ({
             )}
             <h1 id="download-page-title">{pageHeader}</h1>
             <PatientSummary />
+            <Button
+                onClick={handleClickSelectedDownload}
+                secondary={allowSelectDocument}
+                data-testid="toggle-selection-btn"
+            >
+                Select All Files
+            </Button>
             <AvailableFilesTable
                 tableCaption={tableCaption}
                 searchResults={orderedResults}

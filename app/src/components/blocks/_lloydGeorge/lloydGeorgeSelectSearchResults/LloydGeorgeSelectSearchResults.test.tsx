@@ -58,6 +58,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(screen.getAllByRole('checkbox')).toHaveLength(searchResults.length);
             expect(screen.getByTestId('patient-summary')).toBeInTheDocument();
             expect(screen.getByTestId('download-selected-files-btn')).toBeInTheDocument();
+            expect(screen.getByTestId('toggle-selection-btn')).toBeInTheDocument();
             expect(screen.getByTestId('start-again-link')).toBeInTheDocument();
         });
 
@@ -108,6 +109,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(screen.getByTestId('search-result-0')).toBeInTheDocument();
             expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
             expect(screen.queryByTestId('download-selected-files-btn')).not.toBeInTheDocument();
+            expect(screen.getByTestId('toggle-selection-btn')).toBeInTheDocument();
         });
     });
 
