@@ -121,6 +121,17 @@ const LloydGeorgeSelectSearchResults = ({
 
     const allowSelectDocument = searchResults.length > 1;
 
+    const toggleSelectAllFilesToDownload = () => {
+        if (selectedDocuments.length === searchResults.length) {
+            setSelectedDocuments([]);
+        } else {
+            const downloadableItems: string[] = [];
+            searchResults.forEach((result) => {
+                downloadableItems.push(result.ID);
+            });
+            setSelectedDocuments([...downloadableItems]);
+        }
+    };
     const handleClickSelectedDownload = () => {
         if (selectedDocuments.length === searchResults.length) {
             handleClickDownloadAll();
@@ -153,7 +164,7 @@ const LloydGeorgeSelectSearchResults = ({
             <h1 id="download-page-title">{pageHeader}</h1>
             <PatientSummary />
             <Button
-                onClick={handleClickSelectedDownload}
+                onClick={toggleSelectAllFilesToDownload}
                 secondary={allowSelectDocument}
                 data-testid="toggle-selection-btn"
                 type="button"
