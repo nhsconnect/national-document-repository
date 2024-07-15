@@ -258,8 +258,8 @@ const RecordDetails = ({
     totalFileSizeInByte,
 }: RecordDetailsProps) => {
     switch (downloadStage) {
-        case DOWNLOAD_STAGE.PENDING:
         case DOWNLOAD_STAGE.INITIAL:
+        case DOWNLOAD_STAGE.PENDING:
         case DOWNLOAD_STAGE.REFRESH:
             return <ProgressBar status="Loading..." />;
         case DOWNLOAD_STAGE.SUCCEEDED:
