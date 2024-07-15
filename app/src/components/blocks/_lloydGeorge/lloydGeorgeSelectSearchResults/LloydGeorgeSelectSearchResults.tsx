@@ -168,13 +168,6 @@ const LloydGeorgeSelectSearchResults = ({
                         Download selected files
                     </Button>
                 )}
-                <Button
-                    onClick={handleClickDownloadAll}
-                    secondary={allowSelectDocument}
-                    data-testid="download-all-files-btn"
-                >
-                    Download all files
-                </Button>
                 <Link
                     id="start-again-link"
                     data-testid="start-again-link"
