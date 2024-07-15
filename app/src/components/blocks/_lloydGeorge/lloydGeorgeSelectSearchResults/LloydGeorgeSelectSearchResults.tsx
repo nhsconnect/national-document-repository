@@ -169,7 +169,8 @@ const LloydGeorgeSelectSearchResults = ({
                 data-testid="toggle-selection-btn"
                 type="button"
             >
-                Select All Files
+                {selectedDocuments.length === searchResults.length && 'Deselect all files'}
+                {selectedDocuments.length < searchResults.length && 'Select all files'}
             </Button>
             <AvailableFilesTable
                 tableCaption={tableCaption}
