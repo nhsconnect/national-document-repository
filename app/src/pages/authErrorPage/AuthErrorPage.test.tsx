@@ -4,7 +4,6 @@ import { LinkProps } from 'react-router-dom';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
 }));
 describe('AuthErrorPage', () => {

@@ -13,7 +13,7 @@ import { DownloadManifestError } from '../../../../types/generic/errors';
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/requests/getPresignedUrlForZip');
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 jest.mock('moment', () => {

@@ -7,7 +7,7 @@ import { REPOSITORY_ROLE } from '../../types/generic/authRole';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 

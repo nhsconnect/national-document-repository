@@ -5,7 +5,6 @@ import SessionProvider, { Session } from '../../../providers/sessionProvider/Ses
 import { LinkProps } from 'react-router-dom';
 
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     Link: (props: LinkProps) => <a {...props} href={props.to as string} role="link" />,
 }));
 

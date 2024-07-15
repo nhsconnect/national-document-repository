@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import usePatient from '../../helpers/hooks/usePatient';
 import {
     buildLgFile,
@@ -14,14 +14,13 @@ import uploadDocuments, {
     uploadDocumentToS3,
     virusScan,
 } from '../../helpers/requests/uploadDocuments';
-import { act } from 'react-dom/test-utils';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
     UploadDocument,
 } from '../../types/pages/UploadDocumentsPage/types';
 import { MomentInput } from 'moment/moment';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
@@ -30,7 +29,10 @@ jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../helpers/hooks/usePatient');
-jest.mock('react-router');
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
+    useNavigate: () => mockNavigate,
+}));
 jest.mock('moment', () => {
     return (arg: MomentInput) => {
         if (!arg) {
@@ -59,14 +61,6 @@ const uploadDocument = {
     docType: DOCUMENT_TYPE.LLOYD_GEORGE,
     attempts: 0,
 };
-
-/**
- * Update in other tests
- */
-jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
-    useNavigate: () => mockNavigate,
-}));
 
 /**
  * Update in other tests
@@ -236,10 +230,14 @@ describe('LloydGeorgeUploadPage', () => {
     });
 
     describe('Navigating', () => {
+        const postponeByOneTick = () =>
+            new Promise((resolve) => {
+                setTimeout(resolve, 0);
+            });
+
         it('navigates to uploading stage when submit documents is clicked', async () => {
-            mockS3Upload.mockReturnValue(Promise.resolve());
-            mockVirusScan.mockReturnValue(DOCUMENT_UPLOAD_STATE.CLEAN);
-            mockUploadConfirmation.mockReturnValue(DOCUMENT_UPLOAD_STATE.SUCCEEDED);
+            mockUploadDocuments.mockImplementationOnce(postponeByOneTick);
+
             renderPage(history);
             expect(
                 screen.getByRole('heading', { name: 'Upload a Lloyd George record' }),

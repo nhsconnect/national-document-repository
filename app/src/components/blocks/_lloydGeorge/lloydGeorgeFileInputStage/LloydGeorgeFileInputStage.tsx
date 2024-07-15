@@ -131,7 +131,9 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                 <p data-testid="patient-dob">Date of birth: {dob}</p>
             </div>
             <div>
-                <h3>Before you upload a Lloyd George patient record:</h3>
+                <h2 className="nhsuk-heading-m">
+                    Before you upload a Lloyd George patient record:
+                </h2>
                 <ul>
                     <li>The patient details must match the record you are uploading</li>
                     <li>The patient record must be in a PDF file or multiple PDFs</li>

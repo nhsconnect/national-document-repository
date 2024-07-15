@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import {
     buildConfig,
     buildLgSearchResult,
@@ -9,7 +9,6 @@ import LgRecordStage, { Props } from './LloydGeorgeViewRecordStage';
 import { getFormattedDate } from '../../../../helpers/utils/formatDate';
 import { DOWNLOAD_STAGE } from '../../../../types/generic/downloadStage';
 import formatFileSize from '../../../../helpers/utils/formatFileSize';
-import { act } from 'react-dom/test-utils';
 import { LG_RECORD_STAGE } from '../../../../types/blocks/lloydGeorgeStages';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import useRole from '../../../../helpers/hooks/useRole';
@@ -27,21 +26,18 @@ jest.mock('../../../../helpers/hooks/useRole');
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('../../../../helpers/hooks/useIsBSOL');
 jest.mock('../../../../helpers/hooks/useConfig');
+
+jest.mock('react-router-dom', () => ({
+    Link: (props: LinkProps) => <a {...props} href={props.to as string} role="link" />,
+    useNavigate: () => mockNavigate,
+}));
+
 const mockedUsePatient = usePatient as jest.Mock;
 const mockNavigate = jest.fn();
 const mockedUseRole = useRole as jest.Mock;
 const mockedIsBSOL = useIsBSOL as jest.Mock;
 const mockSetStage = jest.fn();
 const mockUseConfig = useConfig as jest.Mock;
-
-jest.mock('react-router', () => ({
-    useNavigate: () => mockNavigate,
-}));
-jest.mock('react-router-dom', () => ({
-    __esModule: true,
-    Link: (props: LinkProps) => <a {...props} href={props.to as string} role="link" />,
-    useNavigate: () => mockNavigate,
-}));
 
 describe('LloydGeorgeViewRecordStage', () => {
     beforeEach(() => {
@@ -319,9 +315,18 @@ describe('LloydGeorgeViewRecordStage', () => {
                 act(() => {
                     userEvent.click(confirmButton);
                 });
-                await screen.findByText(
-                    'You must confirm if you want to download and remove this record',
-                );
+                expect(
+                    await screen.findByText(
+                        'Confirm if you want to download and remove this record',
+                    ),
+                ).toBeInTheDocument();
+
+                // to supress act() warning from non-captured classname change
+                // eslint-disable-next-line testing-library/no-node-access
+                const fieldsetParentDiv = screen.getByTestId('fieldset').closest('div');
+                await waitFor(() => {
+                    expect(fieldsetParentDiv).toHaveClass('nhsuk-form-group--error');
+                });
 
                 const results = await runAxeTest(document.body);
                 expect(results).toHaveNoViolations();

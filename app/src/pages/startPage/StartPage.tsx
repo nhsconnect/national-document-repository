@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { MouseEvent } from 'react';
 import { ButtonLink } from 'nhsuk-react-components';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import Spinner from '../../components/generic/spinner/Spinner';
 import { routes } from '../../types/generic/routes';
 import { endpoints } from '../../types/generic/endpoints';

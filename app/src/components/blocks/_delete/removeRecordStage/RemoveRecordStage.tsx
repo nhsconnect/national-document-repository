@@ -9,7 +9,7 @@ import { SUBMISSION_STATE } from '../../../../types/pages/documentSearchResultsP
 import useBaseAPIUrl from '../../../../helpers/hooks/useBaseAPIUrl';
 import useBaseAPIHeaders from '../../../../helpers/hooks/useBaseAPIHeaders';
 import { AxiosError } from 'axios';
-import { Outlet, Route, Routes, useNavigate } from 'react-router';
+import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import { routeChildren, routes } from '../../../../types/generic/routes';
 import { errorToParams } from '../../../../helpers/utils/errorToParams';
 import ServiceError from '../../../layout/serviceErrorBox/ServiceErrorBox';

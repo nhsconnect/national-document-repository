@@ -1,6 +1,6 @@
 import { Button, ButtonLink, WarningCallout } from 'nhsuk-react-components';
 import React from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { routes } from '../../../../types/generic/routes';
 import ServiceDeskLink from '../../../generic/serviceDeskLink/ServiceDeskLink';
 

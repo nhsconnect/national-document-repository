@@ -1,5 +1,5 @@
 import { render, waitFor } from '@testing-library/react';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { routeChildren, routes } from '../../../types/generic/routes';
 import RoleGuard from './RoleGuard';

@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import AuthCallbackPage from './AuthCallbackPage';
 import SessionProvider, {
     useSessionContext,
@@ -7,14 +7,13 @@ import axios from 'axios';
 import { buildUserAuth } from '../../helpers/test/testBuilders';
 import { routes } from '../../types/generic/routes';
 import ConfigProvider, { useConfigContext } from '../../providers/configProvider/ConfigProvider';
-import { act } from 'react-dom/test-utils';
 import { endpoints } from '../../types/generic/endpoints';
 import { defaultFeatureFlags } from '../../types/generic/featureFlags';
 
 jest.mock('../../helpers/hooks/useConfig');
 const mockedUseNavigate = jest.fn();
 jest.mock('axios');
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 const mockedAxios = axios as jest.Mocked<typeof axios>;

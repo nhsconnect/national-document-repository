@@ -5,7 +5,7 @@ import { buildPatientDetails } from '../../../helpers/test/testBuilders';
 import usePatient from '../../../helpers/hooks/usePatient';
 
 const mockedUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 jest.mock('../../../helpers/hooks/usePatient');

@@ -7,7 +7,7 @@ jest.mock('../../../helpers/hooks/useBaseAPIUrl');
 const mockUseBaseAPIUrl = useBaseAPIUrl as jest.Mock;
 const mockUseNavigate = jest.fn();
 let mockPathname = { pathname: '' };
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockUseNavigate,
     useLocation: () => mockPathname,
 }));

@@ -20,7 +20,7 @@ function UploadingStage({ documents }: Props) {
         <>
             <h1 data-testid="arf-upload-uploading-stage-header">{pageHeader}</h1>
             <WarningCallout id="upload-stage-warning">
-                <WarningCallout.Label>Stay on this page</WarningCallout.Label>
+                <WarningCallout.Label headingLevel="h2">Stay on this page</WarningCallout.Label>
                 <p>Do not close or navigate away from this browser until upload is complete.</p>
             </WarningCallout>
             <Table

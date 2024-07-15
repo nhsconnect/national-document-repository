@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Fieldset, Radios } from 'nhsuk-react-components';
 import { FieldValues, useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { routes } from '../../types/generic/routes';
 import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { useSessionContext } from '../../providers/sessionProvider/SessionProvider';

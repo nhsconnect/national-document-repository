@@ -4,10 +4,16 @@ import SelectStage from '../../components/blocks/_arf/selectStage/SelectStage';
 import UploadingStage from '../../components/blocks/_arf/uploadingStage/UploadingStage';
 import CompleteStage from '../../components/blocks/_arf/completeStage/CompleteStage';
 import { routeChildren, routes } from '../../types/generic/routes';
-import { NavigateFunction, Outlet, Route, Routes, useNavigate } from 'react-router';
+import {
+    NavigateFunction,
+    Outlet,
+    Route,
+    Routes,
+    useNavigate,
+    useLocation,
+} from 'react-router-dom';
 import useConfig from '../../helpers/hooks/useConfig';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';
-import { useLocation } from 'react-router-dom';
 import Spinner from '../../components/generic/spinner/Spinner';
 import {
     markDocumentsAsUploading,

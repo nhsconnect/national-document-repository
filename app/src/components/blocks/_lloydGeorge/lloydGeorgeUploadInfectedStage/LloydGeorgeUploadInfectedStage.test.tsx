@@ -11,7 +11,7 @@ import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
 const restartJourneyMock = jest.fn();
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockedUseNavigate,
 }));
 const uploadDocument = {
