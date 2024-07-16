@@ -53,15 +53,7 @@ export const uploadDocumentValidation = (
         if (failedRegexCheck) {
             errors.push({
                 filename: currentFile.name,
-                error: fileUploadErrorMessages.fileNameError,
-            });
-            continue;
-        }
-
-        if (!fileNumberIsValid(currentFile.name, uploadDocuments)) {
-            errors.push({
-                filename: currentFile.name,
-                error: fileUploadErrorMessages.fileNameError,
+                error: fileUploadErrorMessages.generalFileNameError,
             });
             continue;
         }
@@ -75,10 +67,14 @@ export const uploadDocumentValidation = (
         }
     }
 
+    const fileNumberErrors = validateFileNumbers(uploadDocuments.map((doc) => doc.file.name));
+
+    errors.push(...fileNumberErrors);
+
     return errors;
 };
 
-const range = (size: number): number[] => {
+const fromOneToN = (size: number): number[] => {
     const result = [];
     for (let i = 1; i <= size; i++) {
         result.push(i);
@@ -87,15 +83,65 @@ const range = (size: number): number[] => {
 };
 
 const validateFileNumbers = (filenames: string[]): UploadFilesErrors[] => {
-    const lgFilesNumber = /of([0-9]+)/;
+    const errors: UploadFilesErrors[] = [];
+    const lgFilesNumber = /^([0-9]+)of([0-9]+)/;
 
-    const totalFileNumberFound = lgFilesNumber.exec(filenames[0]);
-    if (totalFileNumberFound) {
-        const totalFileNumber = Number(totalFileNumberFound[1]);
-        const expectedFileNumbers = new Set(range(totalFileNumber));
+    const allFileNumbersMatches = filenames
+        .map((filename) => lgFilesNumber.exec(filename))
+        .filter((matchFound) => matchFound) as RegExpExecArray[];
+
+    const allFileNamesWithNumbers = allFileNumbersMatches.map((match) => match.input);
+
+    const allTotalNumbersFound = new Set(allFileNumbersMatches.map((match) => match[2]));
+    if (allTotalNumbersFound.size !== 1) {
+        // early return here.
+        const totalNumberUnmatchErrors = allFileNamesWithNumbers.map((filename) => ({
+            filename,
+            error: fileUploadErrorMessages.totalFileNumberUnmatchError,
+        }));
+        return totalNumberUnmatchErrors;
     }
 
-    return [];
+    const totalFileNumber = Number([...allTotalNumbersFound][0]);
+
+    const expectedFileNumbers = new Set(fromOneToN(totalFileNumber));
+    const actualFileNumbersFound = allFileNumbersMatches.map((match) => Number(match[1]));
+    const actualFileNumbersSet = new Set(actualFileNumbersFound);
+
+    allFileNumbersMatches.forEach((matchData, index) => {
+        const filename = matchData.input;
+        const fileNumber = Number(matchData[1]);
+
+        if (!expectedFileNumbers.has(fileNumber)) {
+            errors.push({ filename, error: fileUploadErrorMessages.fileNumberOutOfRangeError });
+        }
+        if (actualFileNumbersFound.indexOf(fileNumber) !== index) {
+            errors.push({ filename, error: fileUploadErrorMessages.duplicateFile });
+        }
+    });
+
+    const missingFileNumbers = [...expectedFileNumbers].filter(
+        (number) => !actualFileNumbersSet.has(number),
+    );
+
+    if (missingFileNumbers.length > 0) {
+        const missingFileNumbersInString = missingFileNumbers.join(', ');
+        const updatedInlineMessage = `${fileUploadErrorMessages.fileNumberMissingError.message}: ${missingFileNumbersInString}`;
+        const updatedErrorBoxMessage = `${fileUploadErrorMessages.fileNumberMissingError.errorBox}: ${missingFileNumbersInString}`;
+
+        const missingFileNumberErrors: UploadFilesErrors[] = allFileNamesWithNumbers.map(
+            (filename) => ({
+                filename,
+                error: {
+                    message: updatedInlineMessage,
+                    errorBox: updatedErrorBoxMessage,
+                },
+            }),
+        );
+        errors.push(...missingFileNumberErrors);
+    }
+
+    return errors;
 };
 
 const fileNumberIsValid = (filename: string, uploadDocuments: UploadDocument[]): boolean => {

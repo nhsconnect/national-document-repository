@@ -36,13 +36,13 @@ describe('uploadDocumentValidation', () => {
                 buildDocument(file, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.LLOYD_GEORGE),
             );
 
-            const expectError: UploadFilesErrors = {
+            const expectedError: UploadFilesErrors = {
                 filename: largeFile.name,
                 error: fileUploadErrorMessages.fileSizeError,
             };
             const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
 
-            expect(actual).toContainEqual(expectError);
+            expect(actual).toContainEqual(expectedError);
         });
 
         it('detect file that is not PDF type', () => {
@@ -88,32 +88,70 @@ describe('uploadDocumentValidation', () => {
                     '2of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
                 ]);
 
-                const expectError: UploadFilesErrors = {
+                const expectedError: UploadFilesErrors = {
                     filename: invalidFileName,
-                    error: fileUploadErrorMessages.fileNameError,
+                    error: fileUploadErrorMessages.generalFileNameError,
                 };
                 const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
 
-                expect(actual).toContainEqual(expectError);
+                expect(actual).toContainEqual(expectedError);
             });
 
             it('detect missing file', () => {
-                const testUploadDocuments = buildLGUploadDocsFromFilenames([
+                const testFilenames = [
                     '1of5_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
                     '3of5_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
                     '5of5_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
-                ]);
+                ];
+                const testUploadDocuments = buildLGUploadDocsFromFilenames(testFilenames);
 
-                const expectError: UploadFilesErrors = {
-                    filename: '',
+                const expectedErrors = testFilenames.map((filename) => ({
+                    filename,
                     error: {
-                        message: 'This record is not complete',
+                        message: 'This record is missing some files with file numbers: 2, 4',
                         errorBox: 'This record is missing some files with file numbers: 2, 4',
                     },
+                }));
+                const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+
+                expect(actual).toEqual(expect.arrayContaining(expectedErrors));
+            });
+
+            it('detect file number exceeding total number', () => {
+                const invalidFileName =
+                    '3of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf';
+                const testFilenames = [
+                    '1of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                    '2of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                    invalidFileName,
+                ];
+                const testUploadDocuments = buildLGUploadDocsFromFilenames(testFilenames);
+
+                const expectedError = {
+                    filename: invalidFileName,
+                    error: fileUploadErrorMessages.fileNumberOutOfRangeError,
                 };
                 const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
 
-                expect(actual).toContainEqual(expectError);
+                expect(actual).toContainEqual(expectedError);
+            });
+
+            it('detect file number duplication', () => {
+                const duplicatedFileName =
+                    '01of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf';
+                const testFilenames = [
+                    '1of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                    duplicatedFileName,
+                ];
+                const testUploadDocuments = buildLGUploadDocsFromFilenames(testFilenames);
+
+                const expectedError = {
+                    filename: duplicatedFileName,
+                    error: fileUploadErrorMessages.duplicateFile,
+                };
+                const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+
+                expect(actual).toContainEqual(expectedError);
             });
         });
     });

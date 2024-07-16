@@ -373,10 +373,10 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
             expect(screen.getAllByText(lgExtraFile.name)).toHaveLength(2);
             expect(
-                screen.getByText(fileUploadErrorMessages.fileNameError.message),
+                screen.getByText(fileUploadErrorMessages.generalFileNameError.message),
             ).toBeInTheDocument();
             expect(
-                screen.getByText(fileUploadErrorMessages.fileNameError.errorBox),
+                screen.getByText(fileUploadErrorMessages.generalFileNameError.errorBox),
             ).toBeInTheDocument();
         });
 
@@ -397,10 +397,10 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(
-                screen.getByText(fileUploadErrorMessages.fileNameError.message),
+                screen.getByText(fileUploadErrorMessages.generalFileNameError.message),
             ).toBeInTheDocument();
             expect(
-                screen.getByText(fileUploadErrorMessages.fileNameError.errorBox),
+                screen.getByText(fileUploadErrorMessages.generalFileNameError.errorBox),
             ).toBeInTheDocument();
         });
 
@@ -419,10 +419,10 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(
-                screen.getByText(fileUploadErrorMessages.fileNameError.message),
+                screen.getByText(fileUploadErrorMessages.generalFileNameError.message),
             ).toBeInTheDocument();
             expect(
-                screen.getByText(fileUploadErrorMessages.fileNameError.errorBox),
+                screen.getByText(fileUploadErrorMessages.generalFileNameError.errorBox),
             ).toBeInTheDocument();
         });
 
@@ -455,10 +455,10 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(
-                screen.getByText(fileUploadErrorMessages.fileNameError.message),
+                screen.getByText(fileUploadErrorMessages.generalFileNameError.message),
             ).toBeInTheDocument();
             expect(
-                screen.getByText(fileUploadErrorMessages.fileNameError.errorBox),
+                screen.getByText(fileUploadErrorMessages.generalFileNameError.errorBox),
             ).toBeInTheDocument();
         });
 
