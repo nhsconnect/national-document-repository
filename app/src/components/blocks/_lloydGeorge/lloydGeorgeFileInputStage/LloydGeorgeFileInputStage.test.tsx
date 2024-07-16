@@ -253,7 +253,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
             expect(screen.getByRole('button', { name: 'Upload' })).toBeEnabled();
         });
-        it('does upload and then remove a file', async () => {
+        it('can select and then remove a file', async () => {
             renderApp();
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), [
@@ -262,8 +262,6 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     lgDocumentThreeNamesOne,
                 ]);
             });
-
-            expect(screen.queryAllByText(lgDocumentThreeNamesOne.name)).toHaveLength(2);
 
             const removeFile = await screen.findByRole('button', {
                 name: `Remove ${lgDocumentThreeNamesOne.name} from selection`,
@@ -277,7 +275,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             expect(screen.getByText(lgDocumentTwo.name)).toBeInTheDocument();
             expect(screen.queryByText(lgDocumentThreeNamesOne.name)).not.toBeInTheDocument();
         });
-        it('does upload and then remove all a files', async () => {
+        it('can select and then remove all files', async () => {
             renderApp();
 
             expect(
@@ -304,24 +302,24 @@ describe('<LloydGeorgeFileInputStage />', () => {
             expect(screen.queryByText(lgDocumentOne.name)).not.toBeInTheDocument();
             expect(screen.queryByText(lgDocumentTwo.name)).not.toBeInTheDocument();
         });
-        it('does not upload either forms if selected file is more than 5GB', async () => {
+        it('does not upload if selected file is more than 5GB', async () => {
             renderApp();
 
-            const documentBig = buildLgFile(3, 2, 'Joe Blogs', 6 * Math.pow(1024, 3));
+            const documentBig = buildLgFile(1, 2, 'Joe Blogs', 6 * Math.pow(1024, 3));
 
             act(() => {
                 userEvent.upload(screen.getByTestId('button-input'), documentBig);
             });
 
-            expect(screen.getAllByText(documentBig.name)).toHaveLength(2);
+            const errorBox = screen.getByTestId('error-box');
+            expect(errorBox).toHaveTextContent(documentBig.name);
+            expect(errorBox).toHaveTextContent(fileUploadErrorMessages.fileSizeError.message);
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
 
-            expect(
-                await screen.findAllByText(fileUploadErrorMessages.fileSizeError.message),
-            ).toHaveLength(2);
+            expect(submitDocumentsMock).not.toBeCalled();
         });
 
         it('does not upload LG form if selected file is not PDF', async () => {
@@ -345,7 +343,8 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 screen.getByText('There is a problem with some of your files'),
             ).toBeInTheDocument();
 
-            expect(screen.getAllByText(lgFileWithBadType.name)).toHaveLength(2);
+            const errorBox = screen.getByTestId('error-box');
+            expect(errorBox).toHaveTextContent(lgFileWithBadType.name);
 
             expect(
                 screen.getByText(fileUploadErrorMessages.fileTypeError.message),
@@ -353,12 +352,14 @@ describe('<LloydGeorgeFileInputStage />', () => {
             expect(
                 screen.getByText(fileUploadErrorMessages.fileTypeError.errorBox),
             ).toBeInTheDocument();
+
+            expect(submitDocumentsMock).not.toBeCalled();
         });
 
         it('does not upload LG form if total number of file does not match file name', async () => {
             renderApp();
 
-            const lgExtraFile = buildLgFile(3, 3, 'Joe Blogs');
+            const lgExtraFile = buildLgFile(3, 3, 'John Doe');
 
             act(() => {
                 userEvent.upload(screen.getByTestId(`button-input`), lgExtraFile);
@@ -371,13 +372,13 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 screen.getByText('There is a problem with some of your files'),
             ).toBeInTheDocument();
 
-            expect(screen.getAllByText(lgExtraFile.name)).toHaveLength(2);
-            expect(
-                screen.getByText(fileUploadErrorMessages.generalFileNameError.message),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText(fileUploadErrorMessages.generalFileNameError.errorBox),
-            ).toBeInTheDocument();
+            const errorBox = screen.getByTestId('error-box');
+            expect(errorBox).toHaveTextContent(lgExtraFile.name);
+            expect(errorBox).toHaveTextContent(
+                fileUploadErrorMessages.fileNumberMissingError.errorBox,
+            );
+
+            expect(submitDocumentsMock).not.toBeCalled();
         });
 
         it('does not upload LG form if selected file does not match naming conventions', async () => {
@@ -402,6 +403,8 @@ describe('<LloydGeorgeFileInputStage />', () => {
             expect(
                 screen.getByText(fileUploadErrorMessages.generalFileNameError.errorBox),
             ).toBeInTheDocument();
+
+            expect(submitDocumentsMock).not.toBeCalled();
         });
 
         it('does not upload LG form if selected file number is bigger than number of total files', async () => {
@@ -412,58 +415,44 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 userEvent.upload(screen.getByTestId(`button-input`), pdfFileWithBadNumber);
             });
 
-            expect(screen.getAllByText(pdfFileWithBadNumber.name)).toHaveLength(2);
+            const errorBox = screen.getByTestId('error-box');
+            expect(errorBox).toHaveTextContent(pdfFileWithBadNumber.name);
+            expect(errorBox).toHaveTextContent(
+                fileUploadErrorMessages.fileNumberOutOfRangeError.errorBox,
+            );
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
 
-            expect(
-                screen.getByText(fileUploadErrorMessages.generalFileNameError.message),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText(fileUploadErrorMessages.generalFileNameError.errorBox),
-            ).toBeInTheDocument();
+            expect(submitDocumentsMock).not.toBeCalled();
         });
 
-        it('does not upload LG form if files do not match each other', async () => {
+        it('does not upload LG form if files does not match patient details', async () => {
             renderApp();
 
             const joeBloggsFile = new File(
                 ['test'],
-                `1of2_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf`,
+                `1of1_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf`,
                 {
                     type: 'application/pdf',
                 },
             );
-            const johnSmithFile = new File(
-                ['test'],
-                `2of2_Lloyd_George_Record_[John Smith]_[9876543210]_[25-12-2019].pdf`,
-                {
-                    type: 'application/pdf',
-                },
-            );
-            act(() => {
-                userEvent.upload(screen.getByTestId(`button-input`), [
-                    joeBloggsFile,
-                    johnSmithFile,
-                ]);
-            });
 
             act(() => {
+                userEvent.upload(screen.getByTestId(`button-input`), [joeBloggsFile]);
                 userEvent.click(screen.getByText('Upload'));
             });
 
-            expect(
-                screen.getByText(fileUploadErrorMessages.generalFileNameError.message),
-            ).toBeInTheDocument();
-            expect(
-                screen.getByText(fileUploadErrorMessages.generalFileNameError.errorBox),
-            ).toBeInTheDocument();
+            const errorBox = screen.getByTestId('error-box');
+            expect(errorBox).toHaveTextContent(fileUploadErrorMessages.patientNameError.errorBox);
+            expect(errorBox).toHaveTextContent(fileUploadErrorMessages.dateOfBirthError.errorBox);
+            expect(errorBox).toHaveTextContent(fileUploadErrorMessages.nhsNumberError.errorBox);
+
+            expect(submitDocumentsMock).not.toBeCalled();
         });
 
         it('does not upload LG form if two or more files match name/size', async () => {
-            const duplicateFileWarning = 'There are two or more documents with the same name.';
             renderApp();
 
             act(() => {
@@ -473,19 +462,16 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 ]);
             });
 
-            expect(screen.getAllByText(lgDocumentTwo.name)).toHaveLength(4);
+            const errorBox = screen.getByTestId('error-box');
+            expect(errorBox).toHaveTextContent(lgDocumentTwo.name);
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
             });
 
-            expect(
-                await screen.findAllByText(fileUploadErrorMessages.duplicateFile.message),
-            ).toHaveLength(2);
-            expect(
-                await screen.findAllByText(fileUploadErrorMessages.duplicateFile.errorBox),
-            ).toHaveLength(2);
-            expect(screen.queryByText(duplicateFileWarning)).not.toBeInTheDocument();
+            expect(errorBox).toHaveTextContent(fileUploadErrorMessages.duplicateFile.errorBox);
+
+            expect(submitDocumentsMock).not.toBeCalled();
         });
 
         it('does not upload LG form if no file was provided', async () => {
@@ -504,6 +490,8 @@ describe('<LloydGeorgeFileInputStage />', () => {
             ).toBeInTheDocument();
 
             expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+
+            expect(submitDocumentsMock).not.toBeCalled();
         });
 
         describe('Validation with patient details from PDS', () => {

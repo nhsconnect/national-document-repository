@@ -112,6 +112,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                     errorInputLink={'#nhs-number-input'}
                     errorBoxSummaryId={'error-box-summary'}
                     errorMessageList={uploadFilesErrors}
+                    dataTestId="error-box"
                 />
             )}
             {showNoFilesMessage && (
@@ -120,6 +121,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                     messageLinkBody={fileUploadErrorMessages.noFiles.message}
                     errorBoxSummaryId={'error-box-summary'}
                     errorInputLink={'#upload-lloyd-george'}
+                    dataTestId="error-box"
                 />
             )}
             <h1>{pageHeader}</h1>
