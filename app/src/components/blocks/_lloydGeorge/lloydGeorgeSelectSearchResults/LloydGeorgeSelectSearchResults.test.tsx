@@ -104,17 +104,6 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(mockSetSelectedDocuments).toBeCalledWith(expectedSelectedDocument);
         });
 
-        it('checks all checkboxes are checked when select all files button is clicked', async () => {
-            renderComponent({ selectedDocuments: [] });
-            const selectAllBtn = screen.getByTestId('toggle-selection-btn');
-
-            act(() => {
-                userEvent.click(selectAllBtn);
-            });
-
-            expect(mockSetSelectedDocuments).toBeCalledWith(mockAllSelectedDocuments);
-        });
-
         it('does not render checkbox and `download selected file` button when there is only one file in search result', async () => {
             renderComponent({ searchResults: searchResultOneFileOnly, selectedDocuments: [] });
 
@@ -183,6 +172,38 @@ describe('LloydGeorgeSelectSearchResults', () => {
             );
         });
     });
+
+    describe('Toggle select all button', () => {
+        it('checks all checkboxes are checked when select all files button is clicked, no files previously checked', async () => {
+            let selectedDocuments: Array<string> = [];
+            mockSetSelectedDocuments.mockImplementation(
+                (documents) => (selectedDocuments = documents),
+            );
+
+            const { rerender } = renderComponent({ selectedDocuments: [] });
+            const selectAllBtn = screen.getByTestId('toggle-selection-btn');
+            const checkboxes = screen.getAllByRole('checkbox');
+
+            act(() => {
+                userEvent.click(selectAllBtn);
+            });
+
+            expect(mockSetSelectedDocuments).toBeCalledWith(mockAllSelectedDocuments);
+
+            const props: Props = {
+                searchResults: searchResults,
+                setSubmissionSearchState: mockSetSubmissionSearchState,
+                selectedDocuments: selectedDocuments,
+                setSelectedDocuments: mockSetSelectedDocuments,
+            };
+
+            rerender(<LloydGeorgeSelectSearchResults {...props} />);
+
+            checkboxes.forEach((checkbox) => {
+                expect(checkbox).toBeChecked();
+            });
+        });
+    });
 });
 
 const renderComponent = (propsOverride: Partial<Props> = {}) => {
@@ -193,5 +214,5 @@ const renderComponent = (propsOverride: Partial<Props> = {}) => {
         setSelectedDocuments: mockSetSelectedDocuments,
         ...propsOverride,
     };
-    render(<LloydGeorgeSelectSearchResults {...props} />);
+    return render(<LloydGeorgeSelectSearchResults {...props} />);
 };

@@ -53,69 +53,72 @@ const AvailableFilesTable = ({
         }
     };
     return (
-        <Table
-            id="available-files-table-title"
-            data-testid="available-files-table-title"
-            caption={tableCaption}
-        >
-            <Table.Head>
-                <Button
-                    onClick={toggleSelectAllFilesToDownload}
-                    secondary={allowSelectDocument}
-                    data-testid="toggle-selection-btn"
-                    type="button"
-                >
-                    {selectedDocuments.length === searchResults.length && 'Deselect all files'}
-                    {selectedDocuments.length < searchResults.length && 'Select all files'}
-                </Button>
-                <p>Or select individual files</p>
-                <Table.Row>
-                    {allowSelectDocument && (
-                        <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
-                    )}
-                    <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
-                    <Table.Cell className={'table-column-header'}>Upload date</Table.Cell>
-                </Table.Row>
-            </Table.Head>
-            <Table.Body>
-                {searchResults.map((result, index) => (
-                    <Table.Row
-                        className="available-files-row"
-                        id={`search-result-${index}`}
-                        key={`document-${result.fileName + result.created}`}
-                        data-testid={`search-result-${index}`}
-                    >
+        <>
+            {/*<h2>{tableCaption}</h2>*/}
+            <Button
+                onClick={toggleSelectAllFilesToDownload}
+                secondary={allowSelectDocument}
+                data-testid="toggle-selection-btn"
+                type="button"
+            >
+                {selectedDocuments.length === searchResults.length && 'Deselect all files'}
+                {selectedDocuments.length < searchResults.length && 'Select all files'}
+            </Button>
+            <p>Or select individual files</p>
+            <Table
+                id="available-files-table-title"
+                data-testid="available-files-table-title"
+                caption={tableCaption}
+            >
+                <Table.Head>
+                    <Table.Row>
                         {allowSelectDocument && (
-                            <Table.Cell id={`selected-files-row-${index}`}>
-                                <Checkboxes onChange={handleChangeCheckboxes}>
-                                    <Checkboxes.Box
-                                        value={result.ID}
-                                        data-testid={`checkbox-${index}`}
-                                        checked={selectedDocuments.includes(result.ID)}
-                                    >
-                                        <span className="nhsuk-u-visually-hidden">
-                                            {result.fileName}
-                                        </span>
-                                    </Checkboxes.Box>
-                                </Checkboxes>
-                            </Table.Cell>
+                            <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
                         )}
-                        <Table.Cell
-                            id={'available-files-row-' + index + '-filename'}
-                            data-testid="filename"
-                        >
-                            {result.fileName}
-                        </Table.Cell>
-                        <Table.Cell
-                            id={'available-files-row-' + index + '-created-date'}
-                            data-testid="created"
-                        >
-                            {getFormattedDatetime(new Date(result.created))}
-                        </Table.Cell>
+                        <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
+                        <Table.Cell className={'table-column-header'}>Upload date</Table.Cell>
                     </Table.Row>
-                ))}
-            </Table.Body>
-        </Table>
+                </Table.Head>
+                <Table.Body>
+                    {searchResults.map((result, index) => (
+                        <Table.Row
+                            className="available-files-row"
+                            id={`search-result-${index}`}
+                            key={`document-${result.fileName + result.created}`}
+                            data-testid={`search-result-${index}`}
+                        >
+                            {allowSelectDocument && (
+                                <Table.Cell id={`selected-files-row-${index}`}>
+                                    <Checkboxes onChange={handleChangeCheckboxes}>
+                                        <Checkboxes.Box
+                                            value={result.ID}
+                                            data-testid={`checkbox-${index}`}
+                                            checked={selectedDocuments.includes(result.ID)}
+                                        >
+                                            <span className="nhsuk-u-visually-hidden">
+                                                {result.fileName}
+                                            </span>
+                                        </Checkboxes.Box>
+                                    </Checkboxes>
+                                </Table.Cell>
+                            )}
+                            <Table.Cell
+                                id={'available-files-row-' + index + '-filename'}
+                                data-testid="filename"
+                            >
+                                {result.fileName}
+                            </Table.Cell>
+                            <Table.Cell
+                                id={'available-files-row-' + index + '-created-date'}
+                                data-testid="created"
+                            >
+                                {getFormattedDatetime(new Date(result.created))}
+                            </Table.Cell>
+                        </Table.Row>
+                    ))}
+                </Table.Body>
+            </Table>
+        </>
     );
 };
 
