@@ -32,9 +32,8 @@ const AvailableFilesTable = ({
     allowSelectDocument,
 }: AvailableFilesTableProps) => {
     const toggleSelectAllFilesToDownload = () => {
-        if (selectedDocuments.length === searchResults.length) {
-            setSelectedDocuments([]);
-        } else {
+        setSelectedDocuments([]);
+        if (selectedDocuments.length < searchResults.length) {
             setSelectedDocuments([]);
             const downloadableItems: string[] = [];
             searchResults.forEach((result) => {
