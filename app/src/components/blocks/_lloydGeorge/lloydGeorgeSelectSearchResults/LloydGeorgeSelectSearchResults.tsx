@@ -31,6 +31,18 @@ const AvailableFilesTable = ({
     setSelectedDocuments,
     allowSelectDocument,
 }: AvailableFilesTableProps) => {
+    const toggleSelectAllFilesToDownload = () => {
+        if (selectedDocuments.length === searchResults.length) {
+            setSelectedDocuments([]);
+        } else {
+            setSelectedDocuments([]);
+            const downloadableItems: string[] = [];
+            searchResults.forEach((result) => {
+                downloadableItems.push(result.ID);
+            });
+            setSelectedDocuments(downloadableItems);
+        }
+    };
     const handleChangeCheckboxes = (e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
         const toggledDocumentId = target.value;
@@ -47,6 +59,16 @@ const AvailableFilesTable = ({
             caption={tableCaption}
         >
             <Table.Head>
+                <Button
+                    onClick={toggleSelectAllFilesToDownload}
+                    secondary={allowSelectDocument}
+                    data-testid="toggle-selection-btn"
+                    type="button"
+                >
+                    {selectedDocuments.length === searchResults.length && 'Deselect all files'}
+                    {selectedDocuments.length < searchResults.length && 'Select all files'}
+                </Button>
+                <p>Or select individual files</p>
                 <Table.Row>
                     {allowSelectDocument && (
                         <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
@@ -121,18 +143,6 @@ const LloydGeorgeSelectSearchResults = ({
 
     const allowSelectDocument = searchResults.length > 1;
 
-    const toggleSelectAllFilesToDownload = () => {
-        if (selectedDocuments.length === searchResults.length) {
-            setSelectedDocuments([]);
-        } else {
-            setSelectedDocuments([]);
-            const downloadableItems: string[] = [];
-            searchResults.forEach((result) => {
-                downloadableItems.push(result.ID);
-            });
-            setSelectedDocuments(downloadableItems);
-        }
-    };
     const handleClickSelectedDownload = () => {
         if (selectedDocuments.length === searchResults.length) {
             handleClickDownloadAll();
@@ -164,15 +174,6 @@ const LloydGeorgeSelectSearchResults = ({
             )}
             <h1 id="download-page-title">{pageHeader}</h1>
             <PatientSummary />
-            <Button
-                onClick={toggleSelectAllFilesToDownload}
-                secondary={allowSelectDocument}
-                data-testid="toggle-selection-btn"
-                type="button"
-            >
-                {selectedDocuments.length === searchResults.length && 'Deselect all files'}
-                {selectedDocuments.length < searchResults.length && 'Select all files'}
-            </Button>
             <AvailableFilesTable
                 tableCaption={tableCaption}
                 searchResults={orderedResults}
