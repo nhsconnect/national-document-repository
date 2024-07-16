@@ -1,7 +1,7 @@
 import React from 'react';
 import { Header as NhsHeader } from 'nhsuk-react-components';
 import { routes } from '../../../types/generic/routes';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import NavLinks from '../navLinks/NavLinks';
 import useRole from '../../../helpers/hooks/useRole';
 

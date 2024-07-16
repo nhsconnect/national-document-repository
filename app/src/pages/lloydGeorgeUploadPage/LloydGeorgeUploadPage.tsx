@@ -17,7 +17,7 @@ import { AxiosError } from 'axios';
 import { isMock } from '../../helpers/utils/isLocal';
 import Spinner from '../../components/generic/spinner/Spinner';
 import { routeChildren, routes } from '../../types/generic/routes';
-import { Outlet, Route, Routes, useNavigate } from 'react-router';
+import { Outlet, Route, Routes, useNavigate } from 'react-router-dom';
 import { errorToParams } from '../../helpers/utils/errorToParams';
 import LloydGeorgeRetryUploadStage from '../../components/blocks/_lloydGeorge/lloydGeorgeRetryUploadStage/LloydGeorgeRetryUploadStage';
 import { getLastURLPath } from '../../helpers/utils/urlManipulations';

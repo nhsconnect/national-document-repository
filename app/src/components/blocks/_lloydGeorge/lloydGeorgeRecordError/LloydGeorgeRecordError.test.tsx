@@ -14,11 +14,7 @@ jest.mock('../../../../helpers/hooks/useIsBSOL');
 jest.mock('../../../../helpers/hooks/useRole');
 jest.mock('../../../../helpers/hooks/useConfig');
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
-    useNavigate: () => mockNavigate,
-}));
-jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
 }));
 

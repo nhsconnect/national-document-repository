@@ -1,6 +1,6 @@
 import { render, waitFor } from '@testing-library/react';
 import SessionProvider, { Session } from '../../../providers/sessionProvider/SessionProvider';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { buildUserAuth } from '../../../helpers/test/testBuilders';
 import AuthGuard from './AuthGuard';

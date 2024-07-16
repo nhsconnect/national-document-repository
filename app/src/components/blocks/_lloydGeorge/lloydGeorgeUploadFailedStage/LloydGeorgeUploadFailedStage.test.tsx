@@ -6,7 +6,7 @@ import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 const mockRestart = jest.fn();
 const mockUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
     useNavigate: () => mockUseNavigate,
 }));
 

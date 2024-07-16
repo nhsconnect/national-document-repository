@@ -1,17 +1,18 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import ServerErrorPage from './ServerErrorPage';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { unixTimestamp } from '../../helpers/utils/createTimestamp';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
+const mockSearchParamsGet = jest.fn();
 
 jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
 
-jest.mock('react-router', () => ({
+jest.mock('react-router-dom', () => ({
+    useSearchParams: () => [{ get: mockSearchParamsGet }],
     useNavigate: () => mockedUseNavigate,
     useLocation: () => jest.fn(),
 }));
@@ -62,7 +63,7 @@ describe('ServerErrorPage', () => {
             const mockErrorCode = 'CDR_5001';
             const mockInteractionId = '000-000';
             const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
-            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
+            mockSearchParamsGet.mockReturnValue(mockEncoded);
             render(<ServerErrorPage />);
 
             expect(
@@ -78,7 +79,7 @@ describe('ServerErrorPage', () => {
             const mockErrorCode = 'CDR_5002';
             const mockInteractionId = '000-000';
             const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
-            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
+            mockSearchParamsGet.mockReturnValue(mockEncoded);
             render(<ServerErrorPage />);
 
             expect(
@@ -95,7 +96,7 @@ describe('ServerErrorPage', () => {
             const mockErrorCode = 'XXX';
             const mockInteractionId = '000-000';
             const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
-            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
+            mockSearchParamsGet.mockReturnValue(mockEncoded);
             render(<ServerErrorPage />);
 
             expect(
@@ -110,7 +111,7 @@ describe('ServerErrorPage', () => {
 
         it('pass accessibility checks', async () => {
             const mockEncoded = btoa(JSON.stringify(['mockErrorCode', 'mockInteractionid']));
-            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
+            mockSearchParamsGet.mockReturnValue(mockEncoded);
 
             render(<ServerErrorPage />);
 
@@ -124,7 +125,7 @@ describe('ServerErrorPage', () => {
             const mockErrorCode = 'XXX';
             const mockInteractionId = '000-000';
             const mockEncoded = btoa(JSON.stringify([mockErrorCode, mockInteractionId]));
-            jest.spyOn(URLSearchParams.prototype, 'get').mockReturnValue(mockEncoded);
+            mockSearchParamsGet.mockReturnValue(mockEncoded);
 
             render(<ServerErrorPage />);
             const returnButtonLink = screen.getByRole('button', {

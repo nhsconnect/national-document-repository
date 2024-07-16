@@ -5,7 +5,7 @@ import ErrorBox from '../../components/layout/errorBox/ErrorBox';
 import { Button, Fieldset, Input } from 'nhsuk-react-components';
 import SpinnerButton from '../../components/generic/spinnerButton/SpinnerButton';
 import { InputRef } from '../../types/generic/inputRef';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import ServiceError from '../../components/layout/serviceErrorBox/ServiceErrorBox';
 import { usePatientDetailsContext } from '../../providers/patientProvider/PatientProvider';
 import getPatientDetails from '../../helpers/requests/getPatientDetails';

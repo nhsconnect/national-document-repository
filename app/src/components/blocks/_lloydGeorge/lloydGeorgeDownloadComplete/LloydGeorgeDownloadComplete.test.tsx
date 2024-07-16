@@ -23,7 +23,6 @@ const searchResults = [
 ];
 
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     useNavigate: () => mockedUseNavigate,
 }));
 

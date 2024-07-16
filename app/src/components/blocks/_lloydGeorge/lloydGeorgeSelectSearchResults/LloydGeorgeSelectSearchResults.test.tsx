@@ -1,9 +1,8 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import React from 'react';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { LinkProps } from 'react-router-dom';
-import { act } from 'react-dom/test-utils';
 import LloydGeorgeSelectSearchResults, { Props } from './LloydGeorgeSelectSearchResults';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
@@ -11,11 +10,7 @@ import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearc
 import { runAxeTest } from '../../../../helpers/test/axeTestHelper';
 
 jest.mock('../../../../helpers/hooks/usePatient');
-jest.mock('react-router', () => ({
-    useNavigate: () => mockNavigate,
-}));
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockNavigate,
 }));

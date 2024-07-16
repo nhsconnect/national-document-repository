@@ -1,26 +1,27 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import RemoveRecordStage from './RemoveRecordStage';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { buildPatientDetails, buildSearchResult } from '../../../../helpers/test/testBuilders';
 import axios from 'axios';
-import { act } from 'react-dom/test-utils';
 import { routes } from '../../../../types/generic/routes';
 import { MemoryHistory, createMemoryHistory } from 'history';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
+import waitForSeconds from '../../../../helpers/utils/waitForSeconds';
 
 jest.mock('axios');
 jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-const mockUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockUseNavigate,
 }));
 jest.mock('../../../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../../../helpers/hooks/usePatient');
+
+const mockedAxios = axios as jest.Mocked<typeof axios>;
+const mockUseNavigate = jest.fn();
 const mockUsePatient = usePatient as jest.Mock;
 const mockPatientDetails = buildPatientDetails();
 const mockDownloadStage = jest.fn();
@@ -52,6 +53,8 @@ describe('RemoveRecordStage', () => {
     });
     describe('Render', () => {
         it('renders the component', () => {
+            mockedAxios.get.mockImplementation(() => waitForSeconds(0));
+
             const recordType = 'Test Record';
 
             act(() => {
@@ -69,8 +72,10 @@ describe('RemoveRecordStage', () => {
         });
 
         it('show progress bar when file search pending', () => {
+            mockedAxios.get.mockImplementation(() => waitForSeconds(0));
+
             const recordType = 'Test Record';
-            mockedAxios.get.mockImplementation(() => Promise.resolve({ data: searchResults }));
+
             act(() => {
                 renderComponent(history, numberOfFiles, recordType);
             });

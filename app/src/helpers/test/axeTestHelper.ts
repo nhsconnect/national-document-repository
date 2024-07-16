@@ -10,10 +10,8 @@ const axeConfigs = {
 };
 const axeConfigsForLayout = { rules: {} };
 
-// TODO: Remove the rule supress options once we complete Scenario 4 of PRMDR-809
 const suppressRules = {
-    // below are all the issues found in our ui, as of 22/Apr/2024
-    'heading-order': { enabled: false },
+    // TODO: Remove the rule supress options to enable accessibility auto-test.
     list: { enabled: false },
     listitem: { enabled: false },
     region: { enabled: false },

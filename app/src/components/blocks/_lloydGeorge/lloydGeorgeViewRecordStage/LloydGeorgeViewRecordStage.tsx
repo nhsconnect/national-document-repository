@@ -28,7 +28,7 @@ import RecordCard from '../../../generic/recordCard/RecordCard';
 import RecordMenuCard from '../../../generic/recordMenuCard/RecordMenuCard';
 import useTitle from '../../../../helpers/hooks/useTitle';
 import { routeChildren } from '../../../../types/generic/routes';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 
@@ -83,6 +83,7 @@ function LloydGeorgeViewRecordStage({
           });
     const showMenu = recordLinksToShow.length > 0;
 
+    // @ts-ignore
     const handleConfirmDownloadAndRemoveButton = () => {
         navigate(routeChildren.LLOYD_GEORGE_DOWNLOAD_IN_PROGRESS);
     };
@@ -153,19 +154,18 @@ function LloydGeorgeViewRecordStage({
                         </p>
                         {downloadRemoveButtonClicked && (
                             <InsetText className="lloydgeorge_record-stage_gp-admin-non-bsol_inset-text">
-                                <form
-                                    onSubmit={handleSubmit(handleConfirmDownloadAndRemoveButton)}
-                                    className={
-                                        formState.errors.confirmDownloadRemove
-                                            ? 'nhsuk-form-group--error'
-                                            : 'nhsuk-form-group'
-                                    }
-                                >
-                                    <Fieldset aria-describedby="waste-hint">
-                                        <h4>
+                                <form onSubmit={handleSubmit(handleConfirmDownloadAndRemoveButton)}>
+                                    <Fieldset
+                                        aria-describedby="download-and-remove-prompt"
+                                        data-testid="fieldset"
+                                    >
+                                        <h3
+                                            className="nhsuk-heading-s"
+                                            id="download-and-remove-prompt"
+                                        >
                                             Are you sure you want to download and remove this
                                             record?
-                                        </h4>
+                                        </h3>
                                         <WarningText
                                             text="If you download this record, it removes from our storage.
                                             You must keep the patient's record safe."
@@ -203,6 +203,7 @@ function LloydGeorgeViewRecordStage({
                                         onClick={handleCancelButton}
                                         className="nhsuk-button nhsuk-button--secondary"
                                         style={{ marginLeft: 30 }}
+                                        type="button"
                                     >
                                         Cancel
                                     </Button>

@@ -1,7 +1,6 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import { buildLgSearchResult, buildPatientDetails } from '../../../../helpers/test/testBuilders';
 import DeleteResultStage from './DeleteResultStage';
-import { act } from 'react-dom/test-utils';
 import userEvent from '@testing-library/user-event';
 import { routes } from '../../../../types/generic/routes';
 import useRole from '../../../../helpers/hooks/useRole';
@@ -16,11 +15,7 @@ const mockNavigate = jest.fn();
 jest.mock('../../../../helpers/hooks/useRole');
 jest.mock('../../../../helpers/hooks/usePatient');
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
-}));
-
-jest.mock('react-router', () => ({
     useNavigate: () => mockNavigate,
 }));
 

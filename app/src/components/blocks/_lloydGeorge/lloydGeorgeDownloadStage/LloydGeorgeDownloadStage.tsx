@@ -156,8 +156,7 @@ function LloydGeorgeDownloadStage({
             <div className="lloydgeorge_downloadall-stage_header">
                 <h1 data-testid="lloyd-george-download-header">{pageHeader}</h1>
                 <h2>{patientDetails?.givenName + ' ' + patientDetails?.familyName}</h2>
-                <h4>NHS number: {patientDetails?.nhsNumber}</h4>
-                <div className="nhsuk-heading-xl" />
+                <h3 className="nhsuk-heading-s">NHS number: {patientDetails?.nhsNumber}</h3>
                 <h4 data-testid={pageDownloadCountId}>
                     Preparing download for {numberOfFiles} files
                 </h4>

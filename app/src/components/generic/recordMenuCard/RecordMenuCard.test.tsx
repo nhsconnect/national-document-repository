@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import RecordMenuCard from './RecordMenuCard';
 import useRole from '../../../helpers/hooks/useRole';
 import { LGRecordActionLink, RECORD_ACTION } from '../../../types/blocks/lloydGeorgeActions';
@@ -7,7 +7,6 @@ import { LinkProps } from 'react-router-dom';
 import { LG_RECORD_STAGE } from '../../../types/blocks/lloydGeorgeStages';
 import { routes } from '../../../types/generic/routes';
 import userEvent from '@testing-library/user-event';
-import { act } from 'react-dom/test-utils';
 
 jest.mock('../../../helpers/hooks/useRole');
 const mockSetStage = jest.fn();
@@ -51,7 +50,6 @@ const mockLinks: Array<LGRecordActionLink> = [
 ];
 
 jest.mock('react-router-dom', () => ({
-    __esModule: true,
     Link: (props: LinkProps) => <a {...props} role="link" />,
     useNavigate: () => mockedUseNavigate,
 }));

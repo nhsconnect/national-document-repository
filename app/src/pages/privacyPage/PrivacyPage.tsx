@@ -29,7 +29,7 @@ function PrivacyPage() {
                 This means NHS England is the data controller for any personal information that you
                 provided to get NHS Care Identity credentials.
             </p>
-            <h4>What happens with my personal information?</h4>
+            <h2 className="nhsuk-heading-s">What happens with my personal information?</h2>
             <p>NHS England uses this information only to verify your identity.</p>
             <p>
                 When verifying your identity, our role is a "processor". We must act under

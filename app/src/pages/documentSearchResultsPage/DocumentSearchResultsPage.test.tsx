@@ -1,31 +1,26 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor } from '@testing-library/react';
 import DocumentSearchResultsPage from './DocumentSearchResultsPage';
 import userEvent from '@testing-library/user-event';
 import { buildPatientDetails, buildSearchResult } from '../../helpers/test/testBuilders';
 import { routes } from '../../types/generic/routes';
 import axios from 'axios';
 import usePatient from '../../helpers/hooks/usePatient';
-import { LinkProps } from 'react-router-dom';
-import { act } from 'react-dom/test-utils';
-import * as ReactRouter from 'react-router';
+import * as ReactRouter from 'react-router-dom';
 import { History, createMemoryHistory } from 'history';
 import { runAxeTest } from '../../helpers/test/axeTestHelper';
 
 const mockedUseNavigate = jest.fn();
-jest.mock('react-router', () => ({
-    ...jest.requireActual('react-router'),
+jest.mock('react-router-dom', () => ({
+    ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockedUseNavigate,
+    Link: (props: ReactRouter.LinkProps) => <a {...props} role="link" />,
 }));
 
-jest.mock('react-router-dom', () => ({
-    __esModule: true,
-    Link: (props: LinkProps) => <a {...props} role="link" />,
-}));
+jest.mock('axios');
 jest.mock('moment', () => {
     return () => jest.requireActual('moment')('2020-01-01T00:00:00.000Z');
 });
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
-jest.mock('axios');
 jest.mock('../../helpers/hooks/usePatient');
 jest.mock('../../helpers/hooks/useConfig');
 

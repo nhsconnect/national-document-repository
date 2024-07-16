@@ -1,6 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import { useNavigate } from 'react-router';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { routes } from '../../../types/generic/routes';
 import { childRoutes, routeMap } from '../../AppRouter';
 import useRole from '../../../helpers/hooks/useRole';
