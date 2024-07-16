@@ -11,7 +11,7 @@ const REGEX_ACCENT_CHARS_IN_NFC = 'À-ž';
 const REGEX_PATIENT_NAME_PATTERN = `[A-Za-z ${REGEX_ACCENT_CHARS_IN_NFC}${REGEX_ACCENT_MARKS_IN_NFD}'-]+`;
 const REGEX_NHS_NUMBER_REGEX = '[0-9]{10}';
 const REGEX_LLOYD_GEORGE_FILENAME = new RegExp(
-    `^[0-9]+of[0-9]+_Lloyd_George_Record_\\[(?<patient_name>${REGEX_PATIENT_NAME_PATTERN})]_\\[(?<nhs_number>${REGEX_NHS_NUMBER_REGEX})]_\\[(?<dob>\\d\\d-\\d\\d-\\d\\d\\d\\d)].pdf$`,
+    `^(?<file_number>[0-9])+of(?<total_number>[0-9])+_Lloyd_George_Record_\\[(?<patient_name>${REGEX_PATIENT_NAME_PATTERN})]_\\[(?<nhs_number>${REGEX_NHS_NUMBER_REGEX})]_\\[(?<dob>\\d\\d-\\d\\d-\\d\\d\\d\\d)].pdf$`,
 );
 
 export const uploadDocumentValidation = (
@@ -21,6 +21,9 @@ export const uploadDocumentValidation = (
     const errors: UploadFilesErrors[] = [];
 
     const FIVEGB = 5 * Math.pow(1024, 3);
+
+    const filesPassedRegexCheck = [];
+
     for (let document of uploadDocuments) {
         const currentFile = document.file;
         if (currentFile.size > FIVEGB) {
@@ -48,27 +51,25 @@ export const uploadDocumentValidation = (
             continue;
         }
 
-        const failedRegexCheck: boolean = !REGEX_LLOYD_GEORGE_FILENAME.exec(currentFile.name);
-
-        if (failedRegexCheck) {
+        const regexMatchResult = REGEX_LLOYD_GEORGE_FILENAME.exec(currentFile.name);
+        if (regexMatchResult) {
+            filesPassedRegexCheck.push(regexMatchResult);
+        } else {
             errors.push({
                 filename: currentFile.name,
                 error: fileUploadErrorMessages.generalFileNameError,
             });
-            continue;
-        }
-
-        if (patientDetails) {
-            const errorsWhenCompareWithPdsData = validateWithPatientDetails(
-                currentFile.name,
-                patientDetails,
-            );
-            errors.push(...errorsWhenCompareWithPdsData);
         }
     }
 
-    const fileNumberErrors = validateFileNumbers(uploadDocuments.map((doc) => doc.file.name));
+    if (patientDetails) {
+        const errorsWhenCompareWithPdsData = filesPassedRegexCheck.flatMap((regexMatchResult) =>
+            validateWithPatientDetails(regexMatchResult, patientDetails),
+        );
+        errors.push(...errorsWhenCompareWithPdsData);
+    }
 
+    const fileNumberErrors = validateFileNumbers(filesPassedRegexCheck);
     errors.push(...fileNumberErrors);
 
     return errors;
@@ -82,35 +83,31 @@ const fromOneToN = (size: number): number[] => {
     return result;
 };
 
-const validateFileNumbers = (filenames: string[]): UploadFilesErrors[] => {
+const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesErrors[] => {
     const errors: UploadFilesErrors[] = [];
-    const lgFilesNumber = /^([0-9]+)of([0-9]+)/;
+    const allFileNames = regexMatchResults.map((match) => match.input);
 
-    const allFileNumbersMatches = filenames
-        .map((filename) => lgFilesNumber.exec(filename))
-        .filter((matchFound) => matchFound) as RegExpExecArray[];
-
-    const allFileNamesWithNumbers = allFileNumbersMatches.map((match) => match.input);
-
-    const allTotalNumbersFound = new Set(allFileNumbersMatches.map((match) => match[2]));
-    if (allTotalNumbersFound.size !== 1) {
+    const totalNumberInFiles = new Set(
+        regexMatchResults.map((match) => match?.groups?.total_number),
+    );
+    if (totalNumberInFiles.size !== 1) {
         // early return here.
-        const totalNumberUnmatchErrors = allFileNamesWithNumbers.map((filename) => ({
+        const totalNumberUnmatchErrors = allFileNames.map((filename) => ({
             filename,
             error: fileUploadErrorMessages.totalFileNumberUnmatchError,
         }));
         return totalNumberUnmatchErrors;
     }
 
-    const totalFileNumber = Number([...allTotalNumbersFound][0]);
+    const totalFileNumber = Number([...totalNumberInFiles][0]);
 
     const expectedFileNumbers = new Set(fromOneToN(totalFileNumber));
-    const actualFileNumbersFound = allFileNumbersMatches.map((match) => Number(match[1]));
+    const actualFileNumbersFound = regexMatchResults.map((match) => Number(match[1]));
     const actualFileNumbersSet = new Set(actualFileNumbersFound);
 
-    allFileNumbersMatches.forEach((matchData, index) => {
-        const filename = matchData.input;
-        const fileNumber = Number(matchData[1]);
+    regexMatchResults.forEach((match, index) => {
+        const filename = match.input;
+        const fileNumber = Number(match?.groups?.file_number);
 
         if (!expectedFileNumbers.has(fileNumber)) {
             errors.push({ filename, error: fileUploadErrorMessages.fileNumberOutOfRangeError });
@@ -129,43 +126,21 @@ const validateFileNumbers = (filenames: string[]): UploadFilesErrors[] => {
         const updatedInlineMessage = `${fileUploadErrorMessages.fileNumberMissingError.message}: ${missingFileNumbersInString}`;
         const updatedErrorBoxMessage = `${fileUploadErrorMessages.fileNumberMissingError.errorBox}: ${missingFileNumbersInString}`;
 
-        const missingFileNumberErrors: UploadFilesErrors[] = allFileNamesWithNumbers.map(
-            (filename) => ({
-                filename,
-                error: {
-                    message: updatedInlineMessage,
-                    errorBox: updatedErrorBoxMessage,
-                },
-            }),
-        );
+        const missingFileNumberErrors: UploadFilesErrors[] = allFileNames.map((filename) => ({
+            filename,
+            error: {
+                message: updatedInlineMessage,
+                errorBox: updatedErrorBoxMessage,
+            },
+        }));
         errors.push(...missingFileNumberErrors);
     }
 
     return errors;
 };
 
-const fileNumberIsValid = (filename: string, uploadDocuments: UploadDocument[]): boolean => {
-    const lgFilesNumber = /of[0-9]+/;
-    const expectedNumberOfFiles = lgFilesNumber.exec(filename);
-    const doFilesTotalMatch =
-        expectedNumberOfFiles !== null &&
-        uploadDocuments.length === parseInt(expectedNumberOfFiles[0].slice(2));
-    const isFileNumberBiggerThanTotal =
-        expectedNumberOfFiles != null &&
-        parseInt(filename.split(lgFilesNumber)[0]) > parseInt(expectedNumberOfFiles[0].slice(2));
-    const isFileNumberZero = parseInt(filename.split(lgFilesNumber)[0]) === 0;
-    const doesFileNameMatchEachOther =
-        filename.split(lgFilesNumber)[1] === uploadDocuments[0].file.name.split(lgFilesNumber)[1];
-    return (
-        doFilesTotalMatch &&
-        !isFileNumberBiggerThanTotal &&
-        !isFileNumberZero &&
-        doesFileNameMatchEachOther
-    );
-};
-
 const validateWithPatientDetails = (
-    filename: string,
+    regexMatchResult: RegExpExecArray,
     patientDetails: PatientDetails,
 ): UploadFilesErrors[] => {
     const dateOfBirth = new Date(patientDetails.birthDate);
@@ -173,18 +148,17 @@ const validateWithPatientDetails = (
     const nhsNumber = patientDetails.nhsNumber;
 
     const errors: UploadFilesErrors[] = [];
+    const filename = regexMatchResult.input;
 
-    const match = REGEX_LLOYD_GEORGE_FILENAME.exec(filename);
-
-    if (match?.groups?.nhs_number !== nhsNumber) {
+    if (regexMatchResult?.groups?.nhs_number !== nhsNumber) {
         errors.push({ filename, error: fileUploadErrorMessages.nhsNumberError });
     }
 
-    if (match?.groups?.dob !== dateOfBirthString) {
+    if (regexMatchResult?.groups?.dob !== dateOfBirthString) {
         errors.push({ filename, error: fileUploadErrorMessages.dateOfBirthError });
     }
 
-    const patientNameInFilename = match?.groups?.patient_name as string;
+    const patientNameInFilename = regexMatchResult?.groups?.patient_name as string;
     if (!patientNameMatchesPds(patientNameInFilename, patientDetails)) {
         errors.push({ filename, error: fileUploadErrorMessages.patientNameError });
     }
