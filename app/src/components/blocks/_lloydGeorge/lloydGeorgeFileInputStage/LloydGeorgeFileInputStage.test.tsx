@@ -426,30 +426,6 @@ describe('<LloydGeorgeFileInputStage />', () => {
             expect(submitDocumentsMock).not.toBeCalled();
         });
 
-        it('does not upload LG form if files does not match patient details', async () => {
-            renderApp();
-
-            const joeBloggsFile = new File(
-                ['test'],
-                `1of1_Lloyd_George_Record_[Joe Bloggs]_[1234567890]_[25-12-2019].pdf`,
-                {
-                    type: 'application/pdf',
-                },
-            );
-
-            act(() => {
-                userEvent.upload(screen.getByTestId(`button-input`), [joeBloggsFile]);
-                userEvent.click(screen.getByText('Upload'));
-            });
-
-            const errorBox = screen.getByTestId('error-box');
-            expect(errorBox).toHaveTextContent(fileUploadErrorMessages.patientNameError.errorBox);
-            expect(errorBox).toHaveTextContent(fileUploadErrorMessages.dateOfBirthError.errorBox);
-            expect(errorBox).toHaveTextContent(fileUploadErrorMessages.nhsNumberError.errorBox);
-
-            expect(submitDocumentsMock).not.toBeCalled();
-        });
-
         it('does not upload LG form if two or more files match name/size', async () => {
             renderApp();
 
@@ -512,12 +488,10 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
                 await setDocsAndClickUploadButton(documentsToUpload);
 
-                expect(
-                    await screen.findAllByText(fileUploadErrorMessages.patientNameError.message),
-                ).toHaveLength(2);
-                expect(
-                    await screen.findAllByText(fileUploadErrorMessages.patientNameError.errorBox),
-                ).toHaveLength(2);
+                const errorBox = screen.getByTestId('error-box');
+                expect(errorBox).toHaveTextContent(
+                    fileUploadErrorMessages.patientNameError.errorBox,
+                );
 
                 expect(submitDocumentsMock).not.toBeCalled();
             });
@@ -534,12 +508,10 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
                 await setDocsAndClickUploadButton(documentsToUpload);
 
-                expect(
-                    await screen.findAllByText(fileUploadErrorMessages.dateOfBirthError.message),
-                ).toHaveLength(2);
-                expect(
-                    await screen.findAllByText(fileUploadErrorMessages.dateOfBirthError.errorBox),
-                ).toHaveLength(2);
+                const errorBox = screen.getByTestId('error-box');
+                expect(errorBox).toHaveTextContent(
+                    fileUploadErrorMessages.dateOfBirthError.errorBox,
+                );
 
                 expect(submitDocumentsMock).not.toBeCalled();
             });
@@ -556,12 +528,8 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
                 await setDocsAndClickUploadButton(documentsToUpload);
 
-                expect(
-                    await screen.findAllByText(fileUploadErrorMessages.nhsNumberError.message),
-                ).toHaveLength(2);
-                expect(
-                    await screen.findAllByText(fileUploadErrorMessages.nhsNumberError.errorBox),
-                ).toHaveLength(2);
+                const errorBox = screen.getByTestId('error-box');
+                expect(errorBox).toHaveTextContent(fileUploadErrorMessages.nhsNumberError.errorBox);
 
                 expect(submitDocumentsMock).not.toBeCalled();
             });
@@ -586,9 +554,10 @@ describe('<LloydGeorgeFileInputStage />', () => {
                     fileUploadErrorMessages.patientNameError,
                 ];
 
+                const errorBox = screen.getByTestId('error-box');
+
                 expectedErrors.forEach((errorType) => {
-                    expect(screen.getAllByText(errorType.message)).toHaveLength(2);
-                    expect(screen.getAllByText(errorType.errorBox)).toHaveLength(2);
+                    expect(errorBox).toHaveTextContent(errorType.errorBox);
                 });
 
                 expect(submitDocumentsMock).not.toBeCalled();

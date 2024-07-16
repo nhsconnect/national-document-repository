@@ -42,15 +42,15 @@ export const fileUploadErrorMessages: errorMessageType = {
             'Your filename must follow the format [PDFnumber]_Lloyd_George_Record_[Patient Name]_[NHS Number]_[D.O.B].PDF',
     },
     dateOfBirthError: {
-        message: 'This file contains incorrect patient information',
+        message: 'The patient’s date of birth does not match this filename',
         errorBox: 'The patient’s date of birth does not match this filename',
     },
     patientNameError: {
-        message: 'This file contains incorrect patient information',
+        message: 'The patient’s name does not match this filename',
         errorBox: 'The patient’s name does not match this filename',
     },
     nhsNumberError: {
-        message: 'This file contains incorrect patient information',
+        message: 'The patient’s NHS number does not match this filename',
         errorBox: 'The patient’s NHS number does not match this filename',
     },
     totalFileNumberUnmatchError: {

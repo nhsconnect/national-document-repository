@@ -94,12 +94,14 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
         setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
     };
     const fileErrorMessage = (document: UploadDocument) => {
-        const errorFile = uploadFilesErrors.find(
+        const errorsForDocument = uploadFilesErrors.filter(
             (errorFile) => document.file.name === errorFile.filename,
         );
-        if (errorFile) {
-            return <div className="lloydgeorge_file_upload_error">{errorFile.error.message}</div>;
-        }
+        return errorsForDocument.map((errorObject, index) => (
+            <div className="lloydgeorge_file_upload_error" key={document.file.name + index}>
+                {errorObject.error.message}
+            </div>
+        ));
     };
     const pageHeader = 'Upload a Lloyd George record';
     useTitle({ pageTitle: pageHeader });
