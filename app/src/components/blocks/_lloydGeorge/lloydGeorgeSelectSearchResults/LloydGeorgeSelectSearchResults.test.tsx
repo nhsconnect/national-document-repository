@@ -33,6 +33,7 @@ const searchResults = [
     buildSearchResult({ fileName: '1of1_test.pdf', ID: 'test-id-3' }),
 ];
 const searchResultOneFileOnly = [searchResults[0]];
+const mockAllSelectedDocuments = [searchResults[2].ID, searchResults[0].ID, searchResults[1].ID];
 
 describe('LloydGeorgeSelectSearchResults', () => {
     beforeEach(() => {
@@ -101,6 +102,17 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 userEvent.click(checkbox);
             });
             expect(mockSetSelectedDocuments).toBeCalledWith(expectedSelectedDocument);
+        });
+
+        it('checks all checkboxes are checked when select all files button is clicked', async () => {
+            renderComponent({ selectedDocuments: [] });
+            const selectAllBtn = screen.getByTestId('toggle-selection-btn');
+
+            act(() => {
+                userEvent.click(selectAllBtn);
+            });
+
+            expect(mockSetSelectedDocuments).toBeCalledWith(mockAllSelectedDocuments);
         });
 
         it('does not render checkbox and `download selected file` button when there is only one file in search result', async () => {

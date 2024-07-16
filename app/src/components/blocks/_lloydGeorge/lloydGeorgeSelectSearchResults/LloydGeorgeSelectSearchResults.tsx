@@ -32,14 +32,15 @@ const AvailableFilesTable = ({
     allowSelectDocument,
 }: AvailableFilesTableProps) => {
     const toggleSelectAllFilesToDownload = () => {
-        setSelectedDocuments([]);
         if (selectedDocuments.length < searchResults.length) {
-            setSelectedDocuments([]);
+            // setSelectedDocuments( [])
             const downloadableItems: string[] = [];
             searchResults.forEach((result) => {
                 downloadableItems.push(result.ID);
             });
             setSelectedDocuments(downloadableItems);
+        } else {
+            setSelectedDocuments((prev) => []);
         }
     };
     const handleChangeCheckboxes = (e: SyntheticEvent<HTMLInputElement>) => {
