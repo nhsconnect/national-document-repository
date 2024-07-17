@@ -69,11 +69,7 @@ const AvailableFilesTable = ({
                 </div>
             )}
 
-            <Table
-                id="available-files-table-title"
-                data-testid="available-files-table-title"
-                // caption={tableCaption}
-            >
+            <Table id="available-files-table-title" data-testid="available-files-table-title">
                 <Table.Head>
                     <Table.Row>
                         {allowSelectDocument && (
@@ -199,7 +195,7 @@ const LloydGeorgeSelectSearchResults = ({
                 )}
                 {!allowSelectDocument && (
                     <Button onClick={handleClickDownloadAll} data-testid="download-file-btn">
-                        Download file
+                        Download
                     </Button>
                 )}
                 <Link
