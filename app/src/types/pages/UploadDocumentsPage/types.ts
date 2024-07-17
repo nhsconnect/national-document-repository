@@ -44,6 +44,7 @@ export type UploadDocument = {
 export type UploadFilesErrors = {
     filename?: string;
     error: UPLOAD_FILE_ERROR_TYPE;
+    details?: string;
 };
 
 export type SearchResult = {

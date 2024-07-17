@@ -11,7 +11,7 @@ const REGEX_ACCENT_CHARS_IN_NFC = 'À-ž';
 const REGEX_PATIENT_NAME_PATTERN = `[A-Za-z ${REGEX_ACCENT_CHARS_IN_NFC}${REGEX_ACCENT_MARKS_IN_NFD}'-]+`;
 const REGEX_NHS_NUMBER_REGEX = '[0-9]{10}';
 const REGEX_LLOYD_GEORGE_FILENAME = new RegExp(
-    `^(?<file_number>[0-9])+of(?<total_number>[0-9])+_Lloyd_George_Record_\\[(?<patient_name>${REGEX_PATIENT_NAME_PATTERN})]_\\[(?<nhs_number>${REGEX_NHS_NUMBER_REGEX})]_\\[(?<dob>\\d\\d-\\d\\d-\\d\\d\\d\\d)].pdf$`,
+    `^(?<file_number>[0-9]+)of(?<total_number>[0-9])+_Lloyd_George_Record_\\[(?<patient_name>${REGEX_PATIENT_NAME_PATTERN})]_\\[(?<nhs_number>${REGEX_NHS_NUMBER_REGEX})]_\\[(?<dob>\\d\\d-\\d\\d-\\d\\d\\d\\d)].pdf$`,
 );
 
 export const uploadDocumentValidation = (
@@ -86,11 +86,8 @@ const fromOneToN = (size: number): number[] => {
 const countElements = <T extends string | number>(array: Array<T>): Record<T, number> => {
     const counter = {} as Record<T, number>;
     array.forEach((element) => {
-        if (element in counter) {
-            counter[element] += 1;
-        } else {
-            counter[element] = 1;
-        }
+        counter[element] = counter[element] ?? 0;
+        counter[element] += 1;
     });
     return counter;
 };
@@ -134,17 +131,10 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
     );
 
     if (missingFileNumbers.length > 0) {
-        // const missingFileNumbersAsString = missingFileNumbers.join(', ');
-        // const updatedInlineMessage = `${UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError.message}: ${missingFileNumbersAsString}`;
-        // const updatedErrorBoxMessage = `${UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError.errorBox}: ${missingFileNumbersAsString}`;
-
         const missingFileNumberErrors: UploadFilesErrors[] = allFileNames.map((filename) => ({
             filename,
             error: UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError,
-            // error: {
-            //     message: updatedInlineMessage,
-            //     errorBox: updatedErrorBoxMessage,
-            // },
+            details: `file numbers: ${missingFileNumbers.join(', ')}`,
         }));
         errors.push(...missingFileNumberErrors);
     }

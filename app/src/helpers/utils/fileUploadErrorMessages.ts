@@ -15,11 +15,36 @@ export enum UPLOAD_FILE_ERROR_TYPE {
 }
 
 export function getInlineErrorMessage(uploadFileError: UploadFilesErrors): string {
-    return fileUploadErrorMessages[uploadFileError.error].inline;
+    const errorMessage = fileUploadErrorMessages[uploadFileError.error].inline;
+    if (uploadFileError.error === UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError) {
+        return `${errorMessage}, ${uploadFileError.details}`;
+    }
+    return errorMessage;
 }
 
 export function getErrorBoxErrorMessage(uploadFileError: UploadFilesErrors): string {
     return fileUploadErrorMessages[uploadFileError.error].errorBox;
+}
+
+type UploadFilesErrorBoxMessages = Partial<
+    Record<UPLOAD_FILE_ERROR_TYPE, { filenames: string[]; errorMessage: string }>
+>;
+export function groupUploadErrorsByType(
+    uploadFileErrors: UploadFilesErrors[],
+): UploadFilesErrorBoxMessages {
+    const result: UploadFilesErrorBoxMessages = {};
+
+    uploadFileErrors.forEach((errorItem) => {
+        const { error, filename = '' } = errorItem;
+        const errorMessage = getErrorBoxErrorMessage(errorItem);
+        if (!(error in result)) {
+            result[error] = { filenames: [filename], errorMessage };
+        } else {
+            result[error]?.filenames?.push(filename);
+        }
+    });
+
+    return result;
 }
 
 export type fileUploadErrorMessageType = {
@@ -68,8 +93,8 @@ export const fileUploadErrorMessages: errorMessageType = {
         errorBox: 'The total file number does not match with each others',
     },
     fileNumberMissingError: {
-        inline: 'This record is missing some files with file numbers',
-        errorBox: 'This record is missing some files with file numbers',
+        inline: 'This record is missing some files',
+        errorBox: 'This record is not complete',
     },
     fileNumberOutOfRangeError: {
         inline: 'The file number does not match the total number',
