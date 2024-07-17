@@ -16,7 +16,10 @@ import usePatient from '../../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import { uploadDocumentValidation } from '../../../../helpers/utils/uploadDocumentValidation';
-import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
+import {
+    fileUploadErrorMessages,
+    getInlineErrorMessage,
+} from '../../../../helpers/utils/fileUploadErrorMessages';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import useTitle from '../../../../helpers/hooks/useTitle';
 
@@ -97,9 +100,9 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
         const errorsForDocument = uploadFilesErrors.filter(
             (errorFile) => document.file.name === errorFile.filename,
         );
-        return errorsForDocument.map((errorObject, index) => (
+        return errorsForDocument.map((error, index) => (
             <div className="lloydgeorge_file_upload_error" key={document.file.name + index}>
-                {errorObject.error.message}
+                {getInlineErrorMessage(error)}
             </div>
         ));
     };
@@ -120,7 +123,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
             {showNoFilesMessage && (
                 <ErrorBox
                     messageTitle={'There is a problem with some of your files'}
-                    messageLinkBody={fileUploadErrorMessages.noFiles.message}
+                    messageLinkBody={fileUploadErrorMessages.noFiles.inline}
                     errorBoxSummaryId={'error-box-summary'}
                     errorInputLink={'#upload-lloyd-george'}
                     dataTestId="error-box"

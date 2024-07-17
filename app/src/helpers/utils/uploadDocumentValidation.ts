@@ -1,5 +1,5 @@
 import { UploadDocument, UploadFilesErrors } from '../../types/pages/UploadDocumentsPage/types';
-import { fileUploadErrorMessages } from './fileUploadErrorMessages';
+import { UPLOAD_FILE_ERROR_TYPE } from './fileUploadErrorMessages';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import moment from 'moment/moment';
 
@@ -29,14 +29,14 @@ export const uploadDocumentValidation = (
         if (currentFile.size > FIVEGB) {
             errors.push({
                 filename: currentFile.name,
-                error: fileUploadErrorMessages.fileSizeError,
+                error: UPLOAD_FILE_ERROR_TYPE.fileSizeError,
             });
             continue;
         }
         if (currentFile.type !== 'application/pdf') {
             errors.push({
                 filename: currentFile.name,
-                error: fileUploadErrorMessages.fileTypeError,
+                error: UPLOAD_FILE_ERROR_TYPE.fileTypeError,
             });
             continue;
         }
@@ -46,7 +46,7 @@ export const uploadDocumentValidation = (
         if (isDuplicate) {
             errors.push({
                 filename: document.file.name,
-                error: fileUploadErrorMessages.duplicateFile,
+                error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
             });
             continue;
         }
@@ -57,7 +57,7 @@ export const uploadDocumentValidation = (
         } else {
             errors.push({
                 filename: currentFile.name,
-                error: fileUploadErrorMessages.generalFileNameError,
+                error: UPLOAD_FILE_ERROR_TYPE.generalFileNameError,
             });
         }
     }
@@ -105,7 +105,7 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
     if (totalNumberInFiles.size !== 1) {
         const totalNumberUnmatchErrors = allFileNames.map((filename) => ({
             filename,
-            error: fileUploadErrorMessages.totalFileNumberUnmatchError,
+            error: UPLOAD_FILE_ERROR_TYPE.totalFileNumberUnmatchError,
         }));
         // early return here, as no basis to perform remaining checks if we can't be sure about total file number
         return totalNumberUnmatchErrors;
@@ -122,10 +122,10 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
         const fileNumber = Number(match?.groups?.file_number);
 
         if (!expectedFileNumbers.has(fileNumber)) {
-            errors.push({ filename, error: fileUploadErrorMessages.fileNumberOutOfRangeError });
+            errors.push({ filename, error: UPLOAD_FILE_ERROR_TYPE.fileNumberOutOfRangeError });
         }
         if (actualFileNumberCounts[fileNumber] > 1) {
-            errors.push({ filename, error: fileUploadErrorMessages.duplicateFile });
+            errors.push({ filename, error: UPLOAD_FILE_ERROR_TYPE.duplicateFile });
         }
     });
 
@@ -134,16 +134,17 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
     );
 
     if (missingFileNumbers.length > 0) {
-        const missingFileNumbersAsString = missingFileNumbers.join(', ');
-        const updatedInlineMessage = `${fileUploadErrorMessages.fileNumberMissingError.message}: ${missingFileNumbersAsString}`;
-        const updatedErrorBoxMessage = `${fileUploadErrorMessages.fileNumberMissingError.errorBox}: ${missingFileNumbersAsString}`;
+        // const missingFileNumbersAsString = missingFileNumbers.join(', ');
+        // const updatedInlineMessage = `${UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError.message}: ${missingFileNumbersAsString}`;
+        // const updatedErrorBoxMessage = `${UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError.errorBox}: ${missingFileNumbersAsString}`;
 
         const missingFileNumberErrors: UploadFilesErrors[] = allFileNames.map((filename) => ({
             filename,
-            error: {
-                message: updatedInlineMessage,
-                errorBox: updatedErrorBoxMessage,
-            },
+            error: UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError,
+            // error: {
+            //     message: updatedInlineMessage,
+            //     errorBox: updatedErrorBoxMessage,
+            // },
         }));
         errors.push(...missingFileNumberErrors);
     }
@@ -163,16 +164,16 @@ const validateWithPatientDetails = (
     const filename = regexMatchResult.input;
 
     if (regexMatchResult?.groups?.nhs_number !== nhsNumber) {
-        errors.push({ filename, error: fileUploadErrorMessages.nhsNumberError });
+        errors.push({ filename, error: UPLOAD_FILE_ERROR_TYPE.nhsNumberError });
     }
 
     if (regexMatchResult?.groups?.dob !== dateOfBirthString) {
-        errors.push({ filename, error: fileUploadErrorMessages.dateOfBirthError });
+        errors.push({ filename, error: UPLOAD_FILE_ERROR_TYPE.dateOfBirthError });
     }
 
     const patientNameInFilename = regexMatchResult?.groups?.patient_name as string;
     if (!patientNameMatchesPds(patientNameInFilename, patientDetails)) {
-        errors.push({ filename, error: fileUploadErrorMessages.patientNameError });
+        errors.push({ filename, error: UPLOAD_FILE_ERROR_TYPE.patientNameError });
     }
 
     return errors;

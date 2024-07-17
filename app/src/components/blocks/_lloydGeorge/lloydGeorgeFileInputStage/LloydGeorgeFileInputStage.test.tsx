@@ -311,7 +311,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
 
             const errorBox = screen.getByTestId('error-box');
             expect(errorBox).toHaveTextContent(documentBig.name);
-            expect(errorBox).toHaveTextContent(fileUploadErrorMessages.fileSizeError.message);
+            expect(errorBox).toHaveTextContent(fileUploadErrorMessages.fileSizeError.inline);
 
             act(() => {
                 userEvent.click(screen.getByText('Upload'));
@@ -345,7 +345,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             expect(errorBox).toHaveTextContent(lgFileWithBadType.name);
 
             expect(
-                screen.getByText(fileUploadErrorMessages.fileTypeError.message),
+                screen.getByText(fileUploadErrorMessages.fileTypeError.inline),
             ).toBeInTheDocument();
             expect(
                 screen.getByText(fileUploadErrorMessages.fileTypeError.errorBox),
@@ -396,7 +396,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(
-                screen.getByText(fileUploadErrorMessages.generalFileNameError.message),
+                screen.getByText(fileUploadErrorMessages.generalFileNameError.inline),
             ).toBeInTheDocument();
             expect(
                 screen.getByText(fileUploadErrorMessages.generalFileNameError.errorBox),
@@ -456,7 +456,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
             });
 
             expect(
-                await screen.findByText(fileUploadErrorMessages.noFiles.message),
+                await screen.findByText(fileUploadErrorMessages.noFiles.inline),
             ).toBeInTheDocument();
 
             expect(
@@ -580,7 +580,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 await setDocsAndClickUploadButton(documentsToUpload);
 
                 expect(
-                    screen.queryByText(fileUploadErrorMessages.patientNameError.message),
+                    screen.queryByText(fileUploadErrorMessages.patientNameError.inline),
                 ).not.toBeInTheDocument();
 
                 expect(submitDocumentsMock).toHaveBeenCalled();
@@ -598,7 +598,7 @@ describe('<LloydGeorgeFileInputStage />', () => {
                 await setDocsAndClickUploadButton(documentsToUpload);
 
                 expect(
-                    screen.queryByText(fileUploadErrorMessages.patientNameError.message),
+                    screen.queryByText(fileUploadErrorMessages.patientNameError.inline),
                 ).not.toBeInTheDocument();
 
                 expect(submitDocumentsMock).toHaveBeenCalled();

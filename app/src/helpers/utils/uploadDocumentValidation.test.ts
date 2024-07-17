@@ -18,7 +18,7 @@ import {
     DOCUMENT_UPLOAD_STATE,
     UploadFilesErrors,
 } from '../../types/pages/UploadDocumentsPage/types';
-import { fileUploadErrorMessages } from './fileUploadErrorMessages';
+import { fileUploadErrorMessages, UPLOAD_FILE_ERROR_TYPE } from './fileUploadErrorMessages';
 
 describe('uploadDocumentValidation', () => {
     describe('file validation', () => {
@@ -38,7 +38,7 @@ describe('uploadDocumentValidation', () => {
 
             const expectedError: UploadFilesErrors = {
                 filename: largeFile.name,
-                error: fileUploadErrorMessages.fileSizeError,
+                error: UPLOAD_FILE_ERROR_TYPE.fileSizeError,
             };
             const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
 
@@ -54,13 +54,13 @@ describe('uploadDocumentValidation', () => {
                 buildDocument(file, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.LLOYD_GEORGE),
             );
 
-            const expectError: UploadFilesErrors = {
+            const expectedError: UploadFilesErrors = {
                 filename: nonPdfFile.name,
-                error: fileUploadErrorMessages.fileTypeError,
+                error: UPLOAD_FILE_ERROR_TYPE.fileTypeError,
             };
             const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
 
-            expect(actual).toContainEqual(expectError);
+            expect(actual).toContainEqual(expectedError);
         });
 
         describe('file names validation', () => {
@@ -72,13 +72,13 @@ describe('uploadDocumentValidation', () => {
                     buildDocument(file, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.LLOYD_GEORGE),
                 );
 
-                const expectError: UploadFilesErrors = {
+                const expectedError: UploadFilesErrors = {
                     filename: file1.name,
-                    error: fileUploadErrorMessages.duplicateFile,
+                    error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
                 };
                 const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
 
-                expect(actual).toContainEqual(expectError);
+                expect(actual).toContainEqual(expectedError);
             });
 
             it('detect file name that does not match LG naming convention', () => {
@@ -90,7 +90,7 @@ describe('uploadDocumentValidation', () => {
 
                 const expectedError: UploadFilesErrors = {
                     filename: invalidFileName,
-                    error: fileUploadErrorMessages.generalFileNameError,
+                    error: UPLOAD_FILE_ERROR_TYPE.generalFileNameError,
                 };
                 const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
 
@@ -107,10 +107,7 @@ describe('uploadDocumentValidation', () => {
 
                 const expectedErrors = testFilenames.map((filename) => ({
                     filename,
-                    error: {
-                        message: 'This record is missing some files with file numbers: 2, 4',
-                        errorBox: 'This record is missing some files with file numbers: 2, 4',
-                    },
+                    error: UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError,
                 }));
                 const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
 
@@ -129,7 +126,7 @@ describe('uploadDocumentValidation', () => {
 
                 const expectedError = {
                     filename: invalidFileName,
-                    error: fileUploadErrorMessages.fileNumberOutOfRangeError,
+                    error: UPLOAD_FILE_ERROR_TYPE.fileNumberOutOfRangeError,
                 };
                 const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
 
@@ -147,7 +144,7 @@ describe('uploadDocumentValidation', () => {
 
                 const expectedError = {
                     filename: duplicatedFileName,
-                    error: fileUploadErrorMessages.duplicateFile,
+                    error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
                 };
                 const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
 
