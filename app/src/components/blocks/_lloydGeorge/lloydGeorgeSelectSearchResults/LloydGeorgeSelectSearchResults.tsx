@@ -69,7 +69,11 @@ const AvailableFilesTable = ({
                 </div>
             )}
 
-            <Table id="available-files-table-title" data-testid="available-files-table-title">
+            <Table
+                id="available-files-table-title"
+                data-testid="available-files-table-title"
+                aria-label="List of files in record"
+            >
                 <Table.Head>
                     <Table.Row>
                         {allowSelectDocument && (
