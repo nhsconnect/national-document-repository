@@ -139,10 +139,11 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.getByTestId('available-files-table-title').should('exist');
                 cy.getByTestId('download-selected-files-btn').should('exist');
-                cy.getByTestId('download-all-files-btn').should('exist');
+                cy.getByTestId('toggle-selection-btn').should('exist');
 
                 cy.getByTestId('start-again-link').should('exist');
-                cy.getByTestId('download-all-files-btn').click();
+                cy.getByTestId('toggle-selection-btn').click();
+                cy.getByTestId('download-selected-files-btn').click();
 
                 cy.title().should('eq', downloadingPageTitle);
 
@@ -188,7 +189,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.wait('@searchDocumentReferences');
 
                 cy.getByTestId('download-selected-files-btn').should('exist');
-                cy.getByTestId('download-all-files-btn').should('exist');
+                cy.getByTestId('toggle-selection-btn').should('exist');
 
                 cy.getByTestId('checkbox-0').should('exist');
                 cy.getByTestId('checkbox-1').should('exist');
@@ -278,7 +279,8 @@ describe('GP Workflow: View Lloyd George record', () => {
 
             cy.wait('@searchDocumentReferences');
 
-            cy.getByTestId('download-all-files-btn').click();
+            cy.getByTestId('toggle-selection-btn').click();
+            cy.getByTestId('download-selected-files-btn').click();
 
             cy.wait('@documentManifestThirdTimePending');
 

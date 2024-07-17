@@ -53,7 +53,7 @@ const AvailableFilesTable = ({
     };
     return (
         <>
-            {/*<h2>{tableCaption}</h2>*/}
+            <h2>{tableCaption}</h2>
             <Button
                 onClick={toggleSelectAllFilesToDownload}
                 secondary={allowSelectDocument}
@@ -67,7 +67,7 @@ const AvailableFilesTable = ({
             <Table
                 id="available-files-table-title"
                 data-testid="available-files-table-title"
-                caption={tableCaption}
+                // caption={tableCaption}
             >
                 <Table.Head>
                     <Table.Row>
