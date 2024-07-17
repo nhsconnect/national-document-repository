@@ -83,6 +83,18 @@ const fromOneToN = (size: number): number[] => {
     return result;
 };
 
+const countElements = <T extends string | number>(array: Array<T>): Record<T, number> => {
+    const counter = {} as Record<T, number>;
+    array.forEach((element) => {
+        if (element in counter) {
+            counter[element] += 1;
+        } else {
+            counter[element] = 1;
+        }
+    });
+    return counter;
+};
+
 const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesErrors[] => {
     const errors: UploadFilesErrors[] = [];
     const allFileNames = regexMatchResults.map((match) => match.input);
@@ -91,19 +103,19 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
         regexMatchResults.map((match) => match?.groups?.total_number),
     );
     if (totalNumberInFiles.size !== 1) {
-        // early return here.
         const totalNumberUnmatchErrors = allFileNames.map((filename) => ({
             filename,
             error: fileUploadErrorMessages.totalFileNumberUnmatchError,
         }));
+        // early return here, as no basis to perform remaining checks if we can't be sure about total file number
         return totalNumberUnmatchErrors;
     }
 
     const totalFileNumber = Number([...totalNumberInFiles][0]);
 
     const expectedFileNumbers = new Set(fromOneToN(totalFileNumber));
-    const actualFileNumbersFound = regexMatchResults.map((match) => Number(match[1]));
-    const actualFileNumbersSet = new Set(actualFileNumbersFound);
+    const actualFileNumbersInFiles = regexMatchResults.map((match) => Number(match[1]));
+    const actualFileNumberCounts = countElements(actualFileNumbersInFiles);
 
     regexMatchResults.forEach((match, index) => {
         const filename = match.input;
@@ -112,19 +124,19 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
         if (!expectedFileNumbers.has(fileNumber)) {
             errors.push({ filename, error: fileUploadErrorMessages.fileNumberOutOfRangeError });
         }
-        if (actualFileNumbersFound.indexOf(fileNumber) !== index) {
+        if (actualFileNumberCounts[fileNumber] > 1) {
             errors.push({ filename, error: fileUploadErrorMessages.duplicateFile });
         }
     });
 
     const missingFileNumbers = [...expectedFileNumbers].filter(
-        (number) => !actualFileNumbersSet.has(number),
+        (fileNumber) => !(fileNumber in actualFileNumberCounts),
     );
 
     if (missingFileNumbers.length > 0) {
-        const missingFileNumbersInString = missingFileNumbers.join(', ');
-        const updatedInlineMessage = `${fileUploadErrorMessages.fileNumberMissingError.message}: ${missingFileNumbersInString}`;
-        const updatedErrorBoxMessage = `${fileUploadErrorMessages.fileNumberMissingError.errorBox}: ${missingFileNumbersInString}`;
+        const missingFileNumbersAsString = missingFileNumbers.join(', ');
+        const updatedInlineMessage = `${fileUploadErrorMessages.fileNumberMissingError.message}: ${missingFileNumbersAsString}`;
+        const updatedErrorBoxMessage = `${fileUploadErrorMessages.fileNumberMissingError.errorBox}: ${missingFileNumbersAsString}`;
 
         const missingFileNumberErrors: UploadFilesErrors[] = allFileNames.map((filename) => ({
             filename,
