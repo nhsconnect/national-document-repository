@@ -53,7 +53,7 @@ const AvailableFilesTable = ({
     };
     return (
         <>
-            <h2>{tableCaption}</h2>
+            {tableCaption}
             {allowSelectDocument && (
                 <div>
                     <Button
