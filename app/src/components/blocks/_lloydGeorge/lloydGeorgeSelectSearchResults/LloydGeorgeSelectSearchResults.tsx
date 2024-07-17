@@ -54,16 +54,21 @@ const AvailableFilesTable = ({
     return (
         <>
             <h2>{tableCaption}</h2>
-            <Button
-                onClick={toggleSelectAllFilesToDownload}
-                secondary={allowSelectDocument}
-                data-testid="toggle-selection-btn"
-                type="button"
-            >
-                {selectedDocuments.length === searchResults.length && 'Deselect all files'}
-                {selectedDocuments.length < searchResults.length && 'Select all files'}
-            </Button>
-            <p>Or select individual files</p>
+            {allowSelectDocument && (
+                <div>
+                    <Button
+                        onClick={toggleSelectAllFilesToDownload}
+                        secondary={true}
+                        data-testid="toggle-selection-btn"
+                        type="button"
+                    >
+                        {selectedDocuments.length === searchResults.length && 'Deselect all files'}
+                        {selectedDocuments.length < searchResults.length && 'Select all files'}
+                    </Button>
+                    <p>Or select individual files</p>
+                </div>
+            )}
+
             <Table
                 id="available-files-table-title"
                 data-testid="available-files-table-title"
@@ -190,6 +195,11 @@ const LloydGeorgeSelectSearchResults = ({
                         data-testid="download-selected-files-btn"
                     >
                         Download selected files
+                    </Button>
+                )}
+                {!allowSelectDocument && (
+                    <Button onClick={handleClickDownloadAll} data-testid="download-file-btn">
+                        Download file
                     </Button>
                 )}
                 <Link

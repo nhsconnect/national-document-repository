@@ -110,7 +110,8 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(screen.getByTestId('search-result-0')).toBeInTheDocument();
             expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
             expect(screen.queryByTestId('download-selected-files-btn')).not.toBeInTheDocument();
-            expect(screen.getByTestId('toggle-selection-btn')).toBeInTheDocument();
+            expect(screen.getByTestId('download-file-btn')).toBeInTheDocument();
+            expect(screen.queryByTestId('toggle-selection-btn')).not.toBeInTheDocument();
         });
 
         describe('Toggle select all button', () => {
