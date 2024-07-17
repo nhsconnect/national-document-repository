@@ -71,6 +71,24 @@ describe('LloydGeorgeViewRecordStage', () => {
         ).not.toBeInTheDocument();
     });
 
+    const inProgressStages = [
+        DOWNLOAD_STAGE.INITIAL,
+        DOWNLOAD_STAGE.PENDING,
+        DOWNLOAD_STAGE.REFRESH,
+    ];
+
+    it.each(inProgressStages)(
+        'renders a loading screen if downloading of stitched LG is in progress. Stage name: %s',
+        async (stage) => {
+            renderComponent({
+                downloadStage: stage,
+                lloydGeorgeUrl: '',
+            });
+
+            expect(screen.getByRole('progressbar', { name: 'Loading...' })).toBeInTheDocument();
+        },
+    );
+
     it('renders no docs available text if there is no LG record', async () => {
         renderComponent({
             downloadStage: DOWNLOAD_STAGE.NO_RECORDS,
