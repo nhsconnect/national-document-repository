@@ -122,11 +122,11 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 );
 
                 const { rerender } = renderComponent({ selectedDocuments: [] });
-                const selectAllBtn = screen.getByTestId('toggle-selection-btn');
+                const toggleSelectAllBtn = screen.getByTestId('toggle-selection-btn');
                 const checkboxes = screen.getAllByRole('checkbox');
 
                 act(() => {
-                    userEvent.click(selectAllBtn);
+                    userEvent.click(toggleSelectAllBtn);
                 });
 
                 expect(mockSetSelectedDocuments).toBeCalledWith(mockAllSelectedDocuments);
@@ -144,7 +144,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                     expect(checkbox).toBeChecked();
                 });
 
-                expect(selectAllBtn.textContent).toBe('Deselect all files');
+                expect(toggleSelectAllBtn.textContent).toBe('Deselect all files');
             });
 
             it('check all checkboxes unchecked, when select all files button clicked, all files previously checked', () => {
@@ -156,17 +156,17 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 const { rerender } = renderComponent({
                     selectedDocuments: mockAllSelectedDocuments,
                 });
-                const selectAllBtn = screen.getByTestId('toggle-selection-btn');
+                const toggleSelectAllBtn = screen.getByTestId('toggle-selection-btn');
                 const checkboxes = screen.getAllByRole('checkbox');
 
                 checkboxes.forEach((checkbox) => {
                     expect(checkbox).toBeChecked();
                 });
 
-                expect(selectAllBtn.textContent).toBe('Deselect all files');
+                expect(toggleSelectAllBtn.textContent).toBe('Deselect all files');
 
                 act(() => {
-                    userEvent.click(selectAllBtn);
+                    userEvent.click(toggleSelectAllBtn);
                 });
 
                 expect(mockSetSelectedDocuments).toBeCalledWith([]);
@@ -183,7 +183,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 checkboxes.forEach((checkbox) => {
                     expect(checkbox).not.toBeChecked();
                 });
-                expect(selectAllBtn.textContent).toBe('Select all files');
+                expect(toggleSelectAllBtn.textContent).toBe('Select all files');
             });
 
             it('check all checkboxes unchecked, when select all files button clicked twice, no files previously checked', () => {
@@ -193,11 +193,11 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 );
 
                 const { rerender } = renderComponent({ selectedDocuments: selectedDocuments });
-                const selectAllBtn = screen.getByTestId('toggle-selection-btn');
+                const toggleSelectAllBtn = screen.getByTestId('toggle-selection-btn');
                 const checkboxes = screen.getAllByRole('checkbox');
 
                 act(() => {
-                    userEvent.click(selectAllBtn);
+                    userEvent.click(toggleSelectAllBtn);
                 });
 
                 let props: Props = {
@@ -210,7 +210,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 rerender(<LloydGeorgeSelectSearchResults {...props} />);
 
                 act(() => {
-                    userEvent.click(selectAllBtn);
+                    userEvent.click(toggleSelectAllBtn);
                 });
 
                 props = {
@@ -227,7 +227,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 checkboxes.forEach((checkbox) => {
                     expect(checkbox).not.toBeChecked();
                 });
-                expect(selectAllBtn.textContent).toBe('Select all files');
+                expect(toggleSelectAllBtn.textContent).toBe('Select all files');
             });
         });
     });
