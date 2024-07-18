@@ -118,7 +118,7 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
         (fileNumber) => !(fileNumber in actualFileNumberCounts),
     );
 
-    regexMatchResults.forEach((match, index) => {
+    regexMatchResults.forEach((match) => {
         const filename = match.input;
         const fileNumber = Number(match?.groups?.file_number);
 
