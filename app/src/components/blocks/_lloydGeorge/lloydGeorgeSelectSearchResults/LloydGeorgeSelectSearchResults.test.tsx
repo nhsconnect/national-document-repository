@@ -187,12 +187,17 @@ describe('LloydGeorgeSelectSearchResults', () => {
             });
 
             it('check all checkboxes unchecked, when select all files button clicked twice, no files previously checked', () => {
-                let selectedDocuments: Array<string> = [];
+                const props: Props = {
+                    searchResults: searchResults,
+                    setSubmissionSearchState: mockSetSubmissionSearchState,
+                    selectedDocuments: [],
+                    setSelectedDocuments: mockSetSelectedDocuments,
+                };
                 mockSetSelectedDocuments.mockImplementation(
-                    (documents) => (selectedDocuments = documents),
+                    (documents) => (props.selectedDocuments = documents),
                 );
 
-                const { rerender } = renderComponent({ selectedDocuments: selectedDocuments });
+                const { rerender } = renderComponent(props);
                 const toggleSelectAllBtn = screen.getByTestId('toggle-selection-btn');
                 const checkboxes = screen.getAllByRole('checkbox');
 
@@ -200,25 +205,11 @@ describe('LloydGeorgeSelectSearchResults', () => {
                     userEvent.click(toggleSelectAllBtn);
                 });
 
-                let props: Props = {
-                    searchResults: searchResults,
-                    setSubmissionSearchState: mockSetSubmissionSearchState,
-                    selectedDocuments: selectedDocuments,
-                    setSelectedDocuments: mockSetSelectedDocuments,
-                };
-
                 rerender(<LloydGeorgeSelectSearchResults {...props} />);
 
                 act(() => {
                     userEvent.click(toggleSelectAllBtn);
                 });
-
-                props = {
-                    searchResults: searchResults,
-                    setSubmissionSearchState: mockSetSubmissionSearchState,
-                    selectedDocuments: selectedDocuments,
-                    setSelectedDocuments: mockSetSelectedDocuments,
-                };
 
                 expect(mockSetSelectedDocuments).toBeCalledWith([]);
 
