@@ -12,31 +12,37 @@ MOCK_EVENT_BODY = {
                     "fileName": "test1.txt",
                     "contentType": "text/plain",
                     "docType": "ARF",
+                    "clientId": "uuid1",
                 },
                 {
                     "fileName": "test2.txt",
                     "contentType": "text/plain",
                     "docType": "ARF",
+                    "clientId": "uuid1",
                 },
                 {
                     "fileName": "test3.txt",
                     "contentType": "text/plain",
                     "docType": "ARF",
+                    "clientId": "uuid3",
                 },
                 {
                     "fileName": f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
                     "docType": "LG",
+                    "clientId": "uuid4",
                 },
                 {
                     "fileName": f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
                     "docType": "LG",
+                    "clientId": "uuid5",
                 },
                 {
                     "fileName": f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
                     "docType": "LG",
+                    "clientId": "uuid6",
                 },
             ]
         }
@@ -48,16 +54,19 @@ LG_FILE_LIST = [
         "fileName": f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
         "contentType": "application/pdf",
         "docType": "LG",
+        "clientId": "uuid1",
     },
     {
         "fileName": f"2of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
         "contentType": "application/pdf",
         "docType": "LG",
+        "clientId": "uuid2",
     },
     {
         "fileName": f"3of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
         "contentType": "application/pdf",
         "docType": "LG",
+        "clientId": "uuid3",
     },
 ]
 
@@ -66,6 +75,7 @@ PARSED_LG_FILE_LIST = [
         fileName=f"{i}of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
         contentType="application/pdf",
         docType="LG",
+        clientId=f"uuid{i}",
     )
     for i in [1, 2, 3]
 ]
@@ -87,6 +97,7 @@ LG_MOCK_BAD_FILE_TYPE_EVENT_BODY = {
                     "fileName": f"1of1_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "text/plain",
                     "docType": "LG",
+                    "clientId": "uuid1",
                 }
             ]
         }
@@ -105,6 +116,7 @@ LG_MOCK_BAD_FILE_NAME_EVENT_BODY = {
                     "fileName": f"1of1_BAD_NAME_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
                     "docType": "LG",
+                    "clientId": "uuid1",
                 }
             ]
         }
@@ -123,6 +135,7 @@ LG_MOCK_MISSING_FILES_EVENT_BODY = {
                     "fileName": f"1of3_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
                     "docType": "LG",
+                    "clientId": "uuid1",
                 }
             ]
         }
@@ -141,11 +154,13 @@ LG_MOCK_DUPLICATE_FILES_EVENT_BODY = {
                     "fileName": f"1of2_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
                     "docType": "LG",
+                    "clientId": "uuid1",
                 },
                 {
                     "fileName": f"1of2_Lloyd_George_Record_[Joe Bloggs]_[{TEST_NHS_NUMBER}]_[25-12-2019].pdf",
                     "contentType": "application/pdf",
                     "docType": "LG",
+                    "clientId": "uuid2",
                 },
             ]
         }
@@ -158,16 +173,19 @@ ARF_FILE_LIST = [
         "fileName": "test1.txt",
         "contentType": "text/plain",
         "docType": "ARF",
+        "clientId": "uuid1",
     },
     {
         "fileName": "test2.txt",
         "contentType": "text/plain",
         "docType": "ARF",
+        "clientId": "uuid2",
     },
     {
         "fileName": "test3.txt",
         "contentType": "text/plain",
         "docType": "ARF",
+        "clientId": "uuid3",
     },
 ]
 
@@ -176,6 +194,7 @@ PARSED_ARF_FILE_LIST = [
         fileName=f"test{i}.txt",
         contentType="text/plain",
         docType="ARF",
+        clientId=f"uuid{i}",
     )
     for i in [1, 2, 3]
 ]
