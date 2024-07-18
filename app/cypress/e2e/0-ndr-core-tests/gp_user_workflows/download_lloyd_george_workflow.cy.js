@@ -33,6 +33,15 @@ const testFiles = [
     },
 ];
 
+const singleTestFile = [
+    {
+        fileName: '1of1_lone_test_file.pdf',
+        created: '2024-01-01T14:52:00.827602Z',
+        virusScannerResult: 'Clean',
+        id: 'test-id-3',
+    },
+];
+
 describe('GP Workflow: View Lloyd George record', () => {
     const beforeEachConfiguration = (role) => {
         cy.login(role);
@@ -139,10 +148,11 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.getByTestId('available-files-table-title').should('exist');
                 cy.getByTestId('download-selected-files-btn').should('exist');
-                cy.getByTestId('download-all-files-btn').should('exist');
+                cy.getByTestId('toggle-selection-btn').should('exist');
 
                 cy.getByTestId('start-again-link').should('exist');
-                cy.getByTestId('download-all-files-btn').click();
+                cy.getByTestId('toggle-selection-btn').click();
+                cy.getByTestId('download-selected-files-btn').click();
 
                 cy.title().should('eq', downloadingPageTitle);
 
@@ -188,7 +198,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.wait('@searchDocumentReferences');
 
                 cy.getByTestId('download-selected-files-btn').should('exist');
-                cy.getByTestId('download-all-files-btn').should('exist');
+                cy.getByTestId('toggle-selection-btn').should('exist');
 
                 cy.getByTestId('checkbox-0').should('exist');
                 cy.getByTestId('checkbox-1').should('exist');
@@ -215,6 +225,72 @@ describe('GP Workflow: View Lloyd George record', () => {
                     `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
                 ).should('be.visible');
                 cy.getByTestId('downloaded-files-2-files').should('exist');
+
+                cy.contains(formatNhsNumber(searchPatientPayload.nhsNumber)).should('be.visible');
+
+                // Assert file has been downloaded
+                cy.readFile(`${Cypress.config('downloadsFolder')}/browserconfig.xml`);
+
+                cy.getByTestId('return-btn').click();
+
+                // Assert return button returns to pdf view
+                cy.getByTestId('pdf-card').should('be.visible');
+            },
+        );
+
+        it(
+            'GP ADMIN user can download entire Lloyd George document when single file',
+            { tags: 'regression' },
+            () => {
+                beforeEachConfiguration(Roles.GP_ADMIN);
+
+                cy.intercept('GET', '/LloydGeorgeStitch*', {
+                    statusCode: 200,
+                    body: viewLloydGeorgePayload,
+                }).as('lloydGeorgeStitch');
+
+                cy.intercept('GET', '/SearchDocumentReferences*', {
+                    statusCode: 200,
+                    body: singleTestFile,
+                }).as('searchDocumentReferences');
+
+                setUpDownloadManifestIntercepts();
+
+                cy.title().should('eq', verifyPatientPageTitle);
+
+                cy.get('#verify-submit').click();
+                cy.wait('@lloydGeorgeStitch');
+                cy.title().should('eq', lloydGeorgeRecordPageTitle);
+
+                cy.getByTestId('download-all-files-link').should('exist');
+                cy.getByTestId('download-all-files-link').click();
+
+                // Select documents page
+                cy.title().should('eq', downloadPageTitle);
+                cy.wait('@searchDocumentReferences');
+
+                cy.getByTestId('patient-summary').should('exist');
+
+                cy.getByTestId('available-files-table-title').should('exist');
+                cy.getByTestId('download-file-btn').should('exist');
+
+                cy.getByTestId('download-file-btn').click();
+
+                // Assert contents of page when downloading
+                cy.title().should('eq', downloadingPageTitle);
+                // Assert contents of page when downloading
+                cy.getByTestId('lloyd-george-download-header').should('exist');
+                cy.getByTestId('download-file-header-1-files').should('exist');
+
+                cy.getByTestId('cancel-download-link').should('exist');
+
+                // Assert contents of page after download
+                cy.wait('@documentManifestCompleted');
+                cy.title().should('eq', downloadCompletePageTitle);
+                cy.getByTestId('downloaded-record-card-header').should('exist');
+                cy.contains(
+                    `${searchPatientPayload.givenName} ${searchPatientPayload.familyName}`,
+                ).should('be.visible');
 
                 cy.contains(formatNhsNumber(searchPatientPayload.nhsNumber)).should('be.visible');
 
@@ -278,7 +354,8 @@ describe('GP Workflow: View Lloyd George record', () => {
 
             cy.wait('@searchDocumentReferences');
 
-            cy.getByTestId('download-all-files-btn').click();
+            cy.getByTestId('toggle-selection-btn').click();
+            cy.getByTestId('download-selected-files-btn').click();
 
             cy.wait('@documentManifestThirdTimePending');
 
