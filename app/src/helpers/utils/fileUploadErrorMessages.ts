@@ -97,7 +97,7 @@ export const fileUploadErrorMessages: errorMessageType = {
         errorBox: 'This record is not complete',
     },
     fileNumberOutOfRangeError: {
-        inline: 'The file number does not match the total number',
+        inline: 'The file number should be between 1 and the total file number',
         errorBox: 'Some file numbers does not match the total file number',
     },
 };

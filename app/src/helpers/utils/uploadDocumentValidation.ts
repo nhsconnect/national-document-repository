@@ -114,6 +114,10 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
     const actualFileNumbersInFiles = regexMatchResults.map((match) => Number(match[1]));
     const actualFileNumberCounts = countElements(actualFileNumbersInFiles);
 
+    const missingFileNumbers = [...expectedFileNumbers].filter(
+        (fileNumber) => !(fileNumber in actualFileNumberCounts),
+    );
+
     regexMatchResults.forEach((match, index) => {
         const filename = match.input;
         const fileNumber = Number(match?.groups?.file_number);
@@ -124,20 +128,14 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
         if (actualFileNumberCounts[fileNumber] > 1) {
             errors.push({ filename, error: UPLOAD_FILE_ERROR_TYPE.duplicateFile });
         }
+        if (missingFileNumbers.length > 0 && expectedFileNumbers.has(fileNumber)) {
+            errors.push({
+                filename,
+                error: UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError,
+                details: `file numbers: ${missingFileNumbers.join(', ')}`,
+            });
+        }
     });
-
-    const missingFileNumbers = [...expectedFileNumbers].filter(
-        (fileNumber) => !(fileNumber in actualFileNumberCounts),
-    );
-
-    if (missingFileNumbers.length > 0) {
-        const missingFileNumberErrors: UploadFilesErrors[] = allFileNames.map((filename) => ({
-            filename,
-            error: UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError,
-            details: `file numbers: ${missingFileNumbers.join(', ')}`,
-        }));
-        errors.push(...missingFileNumberErrors);
-    }
 
     return errors;
 };
