@@ -101,7 +101,7 @@ export const uploadConfirmation = async ({
     uploadSession,
 }: UploadConfirmationArgs) => {
     const fileKeyBuilder = documents.reduce((acc, doc) => {
-        const documentMetadata = uploadSession[doc.file.name];
+        const documentMetadata = uploadSession[doc.id];
         const fileReferenceUUID = getLastURLPath(documentMetadata.fields.key);
         const previousKeys = acc[doc.docType] ?? [];
 
@@ -134,7 +134,7 @@ export const uploadDocumentToS3 = async ({
     uploadSession,
     document,
 }: UploadDocumentsToS3Args) => {
-    const documentMetadata: S3Upload = uploadSession[document.file.name];
+    const documentMetadata: S3Upload = uploadSession[document.id];
     const formData = new FormData();
     const docFields: S3UploadFields = documentMetadata.fields;
     Object.entries(docFields).forEach(([key, value]) => {
@@ -189,6 +189,7 @@ const uploadDocuments = async ({
                     fileName: doc.file.name,
                     contentType: doc.file.type,
                     docType: doc.docType,
+                    clientId: doc.id,
                 })),
             },
         ],

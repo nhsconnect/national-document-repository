@@ -43,7 +43,7 @@ export const markDocumentsAsUploading = (
     uploadSession: UploadSession,
 ) => {
     return documents.map((doc) => {
-        const documentMetadata = uploadSession[doc.file.name];
+        const documentMetadata = uploadSession[doc.id];
         const documentReference = documentMetadata.fields.key;
         return {
             ...doc,

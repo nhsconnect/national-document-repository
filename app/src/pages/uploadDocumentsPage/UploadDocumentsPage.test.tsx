@@ -24,6 +24,7 @@ import uploadDocuments, {
     virusScan,
 } from '../../helpers/requests/uploadDocuments';
 import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
+import { v4 } from 'uuid';
 
 const mockConfigContext = useConfig as jest.Mock;
 const mockedUseNavigate = jest.fn();
@@ -163,13 +164,9 @@ describe('UploadDocumentsPage', () => {
 
             beforeEach(() => {
                 mockedUseNavigate.mockImplementation((path) => history.push(path));
-
-                const uploadDocs = arfDocuments.map((doc) =>
-                    buildDocument(doc, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.ARF),
-                );
-                const uploadSession = buildUploadSession(uploadDocs);
-
-                mockUploadDocuments.mockResolvedValue(uploadSession);
+                mockUploadDocuments.mockImplementation(({ documents }) => {
+                    return buildUploadSession(documents);
+                });
                 mockS3Upload.mockResolvedValue(successResponse);
             });
 

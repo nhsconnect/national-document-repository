@@ -100,7 +100,7 @@ const buildUploadSession = (documents: Array<UploadDocument>) => {
     return documents.reduce(
         (acc, doc) => ({
             ...acc,
-            [doc.file.name]: {
+            [doc.id]: {
                 fields: {
                     key: `bucket/sub_folder/uuid_for_file(${doc.file.name})`,
                     'x-amz-algorithm': 'string',
