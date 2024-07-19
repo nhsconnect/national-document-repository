@@ -24,7 +24,6 @@ import uploadDocuments, {
     virusScan,
 } from '../../helpers/requests/uploadDocuments';
 import { FREQUENCY_TO_UPDATE_DOCUMENT_STATE_DURING_UPLOAD } from '../../helpers/utils/uploadAndScanDocumentHelpers';
-import { v4 } from 'uuid';
 
 const mockConfigContext = useConfig as jest.Mock;
 const mockedUseNavigate = jest.fn();
