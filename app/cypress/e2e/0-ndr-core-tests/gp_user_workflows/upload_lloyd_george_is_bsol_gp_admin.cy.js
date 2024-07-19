@@ -54,7 +54,6 @@ const uploadedFileNames = {
 const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
 const singleFileUsecaseIndex = 0;
 const multiFileUsecaseIndex = 1;
-const fileNames = uploadedFileNames.LG[multiFileUsecaseIndex];
 
 const mockCreateDocRefHandler = (req) => {
     const uploadPayload = req.body.content[0].attachment;
