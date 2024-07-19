@@ -1,5 +1,10 @@
 import axios, { AxiosError } from 'axios';
-import { buildDocument, buildTextFile, buildUploadSession } from '../test/testBuilders';
+import {
+    buildDocument,
+    buildLgFile,
+    buildTextFile,
+    buildUploadSession,
+} from '../test/testBuilders';
 import {
     DOCUMENT_TYPE,
     DOCUMENT_UPLOAD_STATE,
@@ -10,6 +15,7 @@ import {
     updateDocumentState,
     virusScan,
     uploadConfirmation,
+    uploadDocumentToS3,
 } from './uploadDocuments';
 import waitForSeconds from '../utils/waitForSeconds';
 
@@ -34,6 +40,27 @@ describe('[POST] updateDocumentState', () => {
         const error = AxiosError;
 
         expect(() => updateDocumentState(args)).not.toThrow(error);
+    });
+});
+
+describe('uploadDocumentToS3', () => {
+    const testFile = buildLgFile(1, 3, 'John Doe');
+    const testDocument = buildDocument(
+        testFile,
+        DOCUMENT_UPLOAD_STATE.SELECTED,
+        DOCUMENT_TYPE.LLOYD_GEORGE,
+    );
+    const mockUploadSession = buildUploadSession([testDocument]);
+    const mockSetDocuments = jest.fn();
+
+    it('make POST request to s3 bucket', async () => {
+        await uploadDocumentToS3({
+            setDocuments: mockSetDocuments,
+            uploadSession: mockUploadSession,
+            document: testDocument,
+        });
+
+        expect(mockedAxios.post).toHaveBeenCalledTimes(1);
     });
 });
 
