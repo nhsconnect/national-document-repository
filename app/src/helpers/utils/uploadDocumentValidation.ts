@@ -2,6 +2,7 @@ import { UploadDocument, UploadFilesErrors } from '../../types/pages/UploadDocum
 import { UPLOAD_FILE_ERROR_TYPE } from './fileUploadErrorMessages';
 import { PatientDetails } from '../../types/generic/patientDetails';
 import moment from 'moment/moment';
+import { joinNumbersAsWords } from './stringManipulations';
 
 let REGEX_ACCENT_MARKS_IN_NFD = '';
 for (let i = 0x300; i < 0x371; i++) {
@@ -132,7 +133,7 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
             errors.push({
                 filename,
                 error: UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError,
-                details: `file numbers: ${missingFileNumbers.join(', ')}`,
+                details: `file numbers: ${joinNumbersAsWords(missingFileNumbers)}`,
             });
         }
     });

@@ -98,6 +98,6 @@ export const fileUploadErrorMessages: errorMessageType = {
     },
     fileNumberOutOfRangeError: {
         inline: 'The file number should be between 1 and the total file number',
-        errorBox: 'Some file numbers does not match the total file number',
+        errorBox: 'Some file numbers are higher than the total file number',
     },
 };
