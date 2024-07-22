@@ -14,6 +14,7 @@ class UploadRequestDocument(BaseModel):
     fileName: str
     contentType: str
     docType: SupportedDocumentTypes
+    clientId: str
 
 
 class NHSDocumentReference:

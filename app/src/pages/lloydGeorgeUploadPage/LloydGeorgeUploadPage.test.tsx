@@ -29,6 +29,7 @@ jest.mock('../../helpers/requests/uploadDocuments');
 jest.mock('../../helpers/hooks/useBaseAPIHeaders');
 jest.mock('../../helpers/hooks/useBaseAPIUrl');
 jest.mock('../../helpers/hooks/usePatient');
+jest.mock('../../helpers/utils/waitForSeconds');
 jest.mock('react-router-dom', () => ({
     ...jest.requireActual('react-router-dom'),
     useNavigate: () => mockNavigate,
@@ -41,7 +42,6 @@ jest.mock('moment', () => {
         return jest.requireActual('moment')(arg);
     };
 });
-jest.mock('../../helpers/utils/waitForSeconds');
 
 const mockedUsePatient = usePatient as jest.Mock;
 const mockUploadDocuments = uploadDocuments as jest.Mock;
@@ -53,14 +53,6 @@ const mockNavigate = jest.fn();
 const mockPatient = buildPatientDetails();
 
 const lgFile = buildLgFile(1, 1, 'John Doe');
-const uploadDocument = {
-    file: lgFile,
-    state: DOCUMENT_UPLOAD_STATE.SELECTED,
-    id: '1',
-    progress: 50,
-    docType: DOCUMENT_TYPE.LLOYD_GEORGE,
-    attempts: 0,
-};
 
 /**
  * Update in other tests
@@ -82,7 +74,7 @@ describe('LloydGeorgeUploadPage', () => {
 
         process.env.REACT_APP_ENVIRONMENT = 'jest';
         mockedUsePatient.mockReturnValue(mockPatient);
-        mockUploadDocuments.mockReturnValue(buildUploadSession([uploadDocument]));
+        mockUploadDocuments.mockImplementation(({ documents }) => buildUploadSession(documents));
     });
     afterEach(() => {
         jest.clearAllMocks();

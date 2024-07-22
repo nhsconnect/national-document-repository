@@ -90,8 +90,8 @@ class CreateDocumentReferenceService:
                             400, LambdaError.CreateDocInvalidType
                         )
 
-                url_responses[document_reference.file_name] = (
-                    self.prepare_pre_signed_url(document_reference)
+                url_responses[validated_doc.clientId] = self.prepare_pre_signed_url(
+                    document_reference
                 )
 
             if lg_documents:

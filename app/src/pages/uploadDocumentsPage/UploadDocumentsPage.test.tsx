@@ -163,13 +163,9 @@ describe('UploadDocumentsPage', () => {
 
             beforeEach(() => {
                 mockedUseNavigate.mockImplementation((path) => history.push(path));
-
-                const uploadDocs = arfDocuments.map((doc) =>
-                    buildDocument(doc, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.ARF),
-                );
-                const uploadSession = buildUploadSession(uploadDocs);
-
-                mockUploadDocuments.mockResolvedValue(uploadSession);
+                mockUploadDocuments.mockImplementation(({ documents }) => {
+                    return buildUploadSession(documents);
+                });
                 mockS3Upload.mockResolvedValue(successResponse);
             });
 
