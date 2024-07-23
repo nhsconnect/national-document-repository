@@ -97,15 +97,17 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
     const errors: UploadFilesErrors[] = [];
     const allFileNames = regexMatchResults.map((match) => match.input);
 
-    const totalNumberInFiles = new Set(
-        regexMatchResults.map((match) => match?.groups?.total_number),
-    );
-    if (totalNumberInFiles.size !== 1) {
+    const totalNumberInFiles = regexMatchResults.map((match) => match?.groups?.total_number);
+    const allTotalNumbersAreTheSame =
+        totalNumberInFiles.length > 0 &&
+        totalNumberInFiles.every((n) => n === totalNumberInFiles[0]);
+
+    if (!allTotalNumbersAreTheSame) {
         const totalNumberUnmatchErrors = allFileNames.map((filename) => ({
             filename,
             error: UPLOAD_FILE_ERROR_TYPE.totalFileNumberUnmatchError,
         }));
-        // early return here, as no basis to perform remaining checks if we can't be sure about total file number
+        // early return here
         return totalNumberUnmatchErrors;
     }
 
