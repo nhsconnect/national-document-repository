@@ -111,13 +111,15 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
         return totalNumberUnmatchErrors;
     }
 
-    const totalFileNumber = Number([...totalNumberInFiles][0]);
+    const totalFileNumber = Number(totalNumberInFiles[0]);
 
-    const expectedFileNumbers = new Set(fromOneToN(totalFileNumber));
-    const actualFileNumbersInFiles = regexMatchResults.map((match) => Number(match[1]));
-    const actualFileNumberCounts = countElements(actualFileNumbersInFiles);
+    const allowedFileNumbers = new Set(fromOneToN(totalFileNumber));
+    const actualFileNumbersFound = regexMatchResults.map((match) =>
+        Number(match?.groups?.file_number),
+    );
+    const actualFileNumberCounts = countElements(actualFileNumbersFound);
 
-    const missingFileNumbers = [...expectedFileNumbers].filter(
+    const missingFileNumbers = [...allowedFileNumbers].filter(
         (fileNumber) => !(fileNumber in actualFileNumberCounts),
     );
 
@@ -125,13 +127,13 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
         const filename = match.input;
         const fileNumber = Number(match?.groups?.file_number);
 
-        if (!expectedFileNumbers.has(fileNumber)) {
+        if (!allowedFileNumbers.has(fileNumber)) {
             errors.push({ filename, error: UPLOAD_FILE_ERROR_TYPE.fileNumberOutOfRangeError });
         }
         if (actualFileNumberCounts[fileNumber] > 1) {
             errors.push({ filename, error: UPLOAD_FILE_ERROR_TYPE.duplicateFile });
         }
-        if (missingFileNumbers.length > 0 && expectedFileNumbers.has(fileNumber)) {
+        if (missingFileNumbers.length > 0 && allowedFileNumbers.has(fileNumber)) {
             errors.push({
                 filename,
                 error: UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError,
