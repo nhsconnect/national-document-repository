@@ -1,4 +1,7 @@
-import { patientNameMatchesPds, uploadDocumentValidation } from './uploadDocumentValidation';
+import {
+    patientNameMatchesPds,
+    uploadLloydGeorgeDocumentValidation,
+} from './uploadDocumentValidation';
 import {
     buildDocument,
     buildLgFile,
@@ -40,7 +43,7 @@ describe('uploadDocumentValidation', () => {
                 filename: largeFile.name,
                 error: UPLOAD_FILE_ERROR_TYPE.fileSizeError,
             };
-            const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+            const actual = uploadLloydGeorgeDocumentValidation(testUploadDocuments, testPatient);
 
             expect(actual).toContainEqual(expectedError);
         });
@@ -58,7 +61,7 @@ describe('uploadDocumentValidation', () => {
                 filename: nonPdfFile.name,
                 error: UPLOAD_FILE_ERROR_TYPE.fileTypeError,
             };
-            const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+            const actual = uploadLloydGeorgeDocumentValidation(testUploadDocuments, testPatient);
 
             expect(actual).toContainEqual(expectedError);
         });
@@ -76,7 +79,10 @@ describe('uploadDocumentValidation', () => {
                     filename: file1.name,
                     error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
                 };
-                const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+                const actual = uploadLloydGeorgeDocumentValidation(
+                    testUploadDocuments,
+                    testPatient,
+                );
 
                 expect(actual).toContainEqual(expectedError);
             });
@@ -92,7 +98,10 @@ describe('uploadDocumentValidation', () => {
                     filename: invalidFileName,
                     error: UPLOAD_FILE_ERROR_TYPE.generalFileNameError,
                 };
-                const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+                const actual = uploadLloydGeorgeDocumentValidation(
+                    testUploadDocuments,
+                    testPatient,
+                );
 
                 expect(actual).toContainEqual(expectedError);
             });
@@ -110,7 +119,10 @@ describe('uploadDocumentValidation', () => {
                     error: UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError,
                     details: 'file numbers: 2 and 4',
                 }));
-                const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+                const actual = uploadLloydGeorgeDocumentValidation(
+                    testUploadDocuments,
+                    testPatient,
+                );
 
                 expect(actual).toEqual(expect.arrayContaining(expectedErrors));
             });
@@ -129,7 +141,10 @@ describe('uploadDocumentValidation', () => {
                     filename: invalidFileName,
                     error: UPLOAD_FILE_ERROR_TYPE.fileNumberOutOfRangeError,
                 };
-                const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+                const actual = uploadLloydGeorgeDocumentValidation(
+                    testUploadDocuments,
+                    testPatient,
+                );
 
                 expect(actual).toContainEqual(expectedError);
             });
@@ -147,7 +162,10 @@ describe('uploadDocumentValidation', () => {
                     filename: duplicatedFileName,
                     error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
                 };
-                const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+                const actual = uploadLloydGeorgeDocumentValidation(
+                    testUploadDocuments,
+                    testPatient,
+                );
 
                 expect(actual).toContainEqual(expectedError);
             });
@@ -167,7 +185,7 @@ describe('uploadDocumentValidation', () => {
             const testUploadDocuments = buildLGUploadDocsFromFilenames([testFileName]);
 
             const expected: UploadFilesErrors[] = [];
-            const actual = uploadDocumentValidation(testUploadDocuments, testPatient);
+            const actual = uploadLloydGeorgeDocumentValidation(testUploadDocuments, testPatient);
 
             expect(actual).toEqual(expected);
         });

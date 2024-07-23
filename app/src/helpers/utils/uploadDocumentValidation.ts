@@ -15,7 +15,7 @@ const REGEX_LLOYD_GEORGE_FILENAME = new RegExp(
     `^(?<file_number>[0-9]+)of(?<total_number>[0-9])+_Lloyd_George_Record_\\[(?<patient_name>${REGEX_PATIENT_NAME_PATTERN})]_\\[(?<nhs_number>${REGEX_NHS_NUMBER_REGEX})]_\\[(?<dob>\\d\\d-\\d\\d-\\d\\d\\d\\d)].pdf$`,
 );
 
-export const uploadDocumentValidation = (
+export const uploadLloydGeorgeDocumentValidation = (
     uploadDocuments: UploadDocument[],
     patientDetails: PatientDetails | null,
 ): UploadFilesErrors[] => {
@@ -38,16 +38,6 @@ export const uploadDocumentValidation = (
             errors.push({
                 filename: currentFile.name,
                 error: UPLOAD_FILE_ERROR_TYPE.fileTypeError,
-            });
-            continue;
-        }
-        const isDuplicate = uploadDocuments.some((compare: UploadDocument) => {
-            return currentFile.name === compare.file.name && document.id !== compare.id;
-        });
-        if (isDuplicate) {
-            errors.push({
-                filename: document.file.name,
-                error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
             });
             continue;
         }

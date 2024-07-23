@@ -15,7 +15,7 @@ import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import { uploadDocumentValidation } from '../../../../helpers/utils/uploadDocumentValidation';
+import { uploadLloydGeorgeDocumentValidation } from '../../../../helpers/utils/uploadDocumentValidation';
 import {
     fileUploadErrorMessages,
     getInlineErrorMessage,
@@ -43,7 +43,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
 
     const onSubmit = async () => {
         setShowNoFilesMessage(!hasFileInput);
-        setUploadFilesErrors(uploadDocumentValidation(documents, patientDetails));
+        setUploadFilesErrors(uploadLloydGeorgeDocumentValidation(documents, patientDetails));
         if (!hasFileInput || uploadFilesErrors.length > 0) {
             window.scrollTo(0, 0);
             return;
@@ -63,7 +63,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
         setShowNoFilesMessage(false);
-        setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
+        setUploadFilesErrors(uploadLloydGeorgeDocumentValidation(updatedDocList, patientDetails));
     };
     const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -94,7 +94,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
             updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
         }
         setDocuments(updatedDocList);
-        setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
+        setUploadFilesErrors(uploadLloydGeorgeDocumentValidation(updatedDocList, patientDetails));
     };
     const fileErrorMessage = (document: UploadDocument) => {
         const errorsForDocument = uploadFilesErrors.filter(
