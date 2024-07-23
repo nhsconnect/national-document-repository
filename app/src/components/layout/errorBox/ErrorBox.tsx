@@ -19,7 +19,7 @@ type UploadErrorMessagesProps = {
     errorMessageList: UploadFilesErrors[];
 };
 
-function UploadErrorMessages({ errorMessageList }: UploadErrorMessagesProps) {
+function UploadErrorMessages({ errorMessageList }: Readonly<UploadErrorMessagesProps>) {
     const uploadErrorsGrouped = groupUploadErrorsByType(errorMessageList);
 
     return (
