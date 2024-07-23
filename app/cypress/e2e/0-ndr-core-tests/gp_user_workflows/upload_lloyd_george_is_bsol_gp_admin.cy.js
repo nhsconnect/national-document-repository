@@ -54,35 +54,30 @@ const uploadedFileNames = {
 const bucketUrlIdentifer = 'document-store.s3.amazonaws.com';
 const singleFileUsecaseIndex = 0;
 const multiFileUsecaseIndex = 1;
-const fileNames = uploadedFileNames.LG[multiFileUsecaseIndex];
 
-const stubbedResponseMulti = {
-    statusCode: 200,
-    body: {
-        [fileNames[0]]: {
+const mockCreateDocRefHandler = (req) => {
+    const uploadPayload = req.body.content[0].attachment;
+    const clientIds = uploadPayload.map((document) => document.clientId);
+    const responseBody = clientIds.reduce((body, id, currentIndex) => {
+        body[id] = {
             url: 'http://' + bucketUrlIdentifer,
             fields: {
-                key: 'test key',
+                key: `test key ${currentIndex}`,
                 'x-amz-algorithm': 'xxxx-xxxx-SHA256',
                 'x-amz-credential': 'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
                 'x-amz-date': '20230904T125954Z',
                 'x-amz-security-token': 'xxxxxxxxx',
                 'x-amz-signature': '9xxxxxxxx',
             },
-        },
-        [fileNames[1]]: {
-            url: 'http://' + bucketUrlIdentifer,
-            fields: {
-                key: 'test key',
-                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
-                'x-amz-credential': 'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
-                'x-amz-date': '20230904T125954Z',
-                'x-amz-security-token': 'xxxxxxxxx',
-                'x-amz-signature': '9xxxxxxxx',
-            },
-        },
-    },
+        };
+        return body;
+    }, {});
+
+    const response = { statusCode: 200, body: responseBody };
+
+    req.reply(response);
 };
+
 describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and patient has no record', () => {
     const beforeEachConfiguration = () => {
         cy.login(Roles.GP_ADMIN);
@@ -120,27 +115,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
             `User can upload a single LG file using the "Select files" button and can then view LG record`,
             { tags: 'regression' },
             () => {
-                const fileName = uploadedFileNames.LG[singleFileUsecaseIndex];
-
-                const stubbedResponse = {
-                    statusCode: 200,
-                    body: {
-                        [fileName]: {
-                            url: 'http://' + bucketUrlIdentifer,
-                            fields: {
-                                key: 'test key',
-                                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
-                                'x-amz-credential':
-                                    'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
-                                'x-amz-date': '20230904T125954Z',
-                                'x-amz-security-token': 'xxxxxxxxx',
-                                'x-amz-signature': '9xxxxxxxx',
-                            },
-                        },
-                    },
-                };
-
-                cy.intercept('POST', '**/DocumentReference**', stubbedResponse);
+                cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler);
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
                     req.reply({
                         statusCode: 204,
@@ -188,10 +163,10 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
         );
 
         it(
-            `User can upload a multiple LG file using the "Select files" button and can then view LG record`,
+            `User can upload multiple LG files using the "Select files" button and can then view LG record`,
             { tags: 'regression' },
             () => {
-                cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti);
+                cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler);
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
                     req.reply({
                         statusCode: 204,
@@ -235,7 +210,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
             `User can upload a multiple LG file using drag and drop and can then view LG record`,
             { tags: 'regression' },
             () => {
-                cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti);
+                cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler);
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
                     req.reply({
                         statusCode: 204,
@@ -280,27 +255,9 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
             `User can retry failed upload with a single LG file using the "Retry upload" button and can then view LG record`,
             { tags: 'regression' },
             () => {
-                const fileName = uploadedFileNames.LG[singleFileUsecaseIndex];
-
-                const stubbedResponse = {
-                    statusCode: 200,
-                    body: {
-                        [fileName]: {
-                            url: 'http://' + bucketUrlIdentifer,
-                            fields: {
-                                key: 'test key',
-                                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
-                                'x-amz-credential':
-                                    'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
-                                'x-amz-date': '20230904T125954Z',
-                                'x-amz-security-token': 'xxxxxxxxx',
-                                'x-amz-signature': '9xxxxxxxx',
-                            },
-                        },
-                    },
-                };
-
-                cy.intercept('POST', '**/DocumentReference**', stubbedResponse).as('doc_upload');
+                cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler).as(
+                    'doc_upload',
+                );
 
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
                     req.reply({
@@ -364,7 +321,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
             `User can retry a multiple failed LG files using the "Retry all uploads" warning button and can then view LG record`,
             { tags: 'regression' },
             () => {
-                cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti).as(
+                cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler).as(
                     'doc_upload',
                 );
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
@@ -428,7 +385,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
             `User can restart upload LG files journey when document upload fails more than once`,
             { tags: 'regression' },
             () => {
-                cy.intercept('POST', '**/DocumentReference**', stubbedResponseMulti).as(
+                cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler).as(
                     'doc_upload',
                 );
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
@@ -509,27 +466,9 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
             `User's upload journey is stopped if an infected file is detected`,
             { tags: 'regression' },
             () => {
-                const fileName = uploadedFileNames.LG[singleFileUsecaseIndex];
-
-                const stubbedResponse = {
-                    statusCode: 200,
-                    body: {
-                        [fileName]: {
-                            url: 'http://' + bucketUrlIdentifer,
-                            fields: {
-                                key: 'test key',
-                                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
-                                'x-amz-credential':
-                                    'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
-                                'x-amz-date': '20230904T125954Z',
-                                'x-amz-security-token': 'xxxxxxxxx',
-                                'x-amz-signature': '9xxxxxxxx',
-                            },
-                        },
-                    },
-                };
-
-                cy.intercept('POST', '**/DocumentReference**', stubbedResponse).as('doc_upload');
+                cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler).as(
+                    'doc_upload',
+                );
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
                     req.reply({
                         statusCode: 200,
@@ -566,27 +505,9 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
             `User is shown an error screen when the upload complete endpoint fails to complete`,
             { tags: 'regression' },
             () => {
-                const fileName = uploadedFileNames.LG[singleFileUsecaseIndex];
-
-                const stubbedResponse = {
-                    statusCode: 200,
-                    body: {
-                        [fileName]: {
-                            url: 'http://' + bucketUrlIdentifer,
-                            fields: {
-                                key: 'test key',
-                                'x-amz-algorithm': 'xxxx-xxxx-SHA256',
-                                'x-amz-credential':
-                                    'xxxxxxxxxxx/20230904/eu-west-2/s3/aws4_request',
-                                'x-amz-date': '20230904T125954Z',
-                                'x-amz-security-token': 'xxxxxxxxx',
-                                'x-amz-signature': '9xxxxxxxx',
-                            },
-                        },
-                    },
-                };
-
-                cy.intercept('POST', '**/DocumentReference**', stubbedResponse).as('doc_upload');
+                cy.intercept('POST', '**/DocumentReference**', mockCreateDocRefHandler).as(
+                    'doc_upload',
+                );
 
                 cy.intercept('POST', '**/' + bucketUrlIdentifer + '**', (req) => {
                     req.reply({

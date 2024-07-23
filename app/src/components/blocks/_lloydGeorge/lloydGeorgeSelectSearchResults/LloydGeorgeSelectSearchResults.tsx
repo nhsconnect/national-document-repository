@@ -31,6 +31,17 @@ const AvailableFilesTable = ({
     setSelectedDocuments,
     allowSelectDocument,
 }: AvailableFilesTableProps) => {
+    const toggleSelectAllFilesToDownload = () => {
+        if (selectedDocuments.length < searchResults.length) {
+            const downloadableItems: string[] = [];
+            searchResults.forEach((result) => {
+                downloadableItems.push(result.ID);
+            });
+            setSelectedDocuments(downloadableItems);
+        } else {
+            setSelectedDocuments([]);
+        }
+    };
     const handleChangeCheckboxes = (e: SyntheticEvent<HTMLInputElement>) => {
         const target = e.target as HTMLInputElement;
         const toggledDocumentId = target.value;
@@ -41,59 +52,77 @@ const AvailableFilesTable = ({
         }
     };
     return (
-        <Table
-            id="available-files-table-title"
-            data-testid="available-files-table-title"
-            caption={tableCaption}
-        >
-            <Table.Head>
-                <Table.Row>
-                    {allowSelectDocument && (
-                        <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
-                    )}
-                    <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
-                    <Table.Cell className={'table-column-header'}>Upload date</Table.Cell>
-                </Table.Row>
-            </Table.Head>
-            <Table.Body>
-                {searchResults.map((result, index) => (
-                    <Table.Row
-                        className="available-files-row"
-                        id={`search-result-${index}`}
-                        key={`document-${result.fileName + result.created}`}
-                        data-testid={`search-result-${index}`}
+        <>
+            {tableCaption}
+            {allowSelectDocument && (
+                <div>
+                    <Button
+                        onClick={toggleSelectAllFilesToDownload}
+                        secondary={true}
+                        data-testid="toggle-selection-btn"
+                        type="button"
                     >
+                        {selectedDocuments.length === searchResults.length && 'Deselect all files'}
+                        {selectedDocuments.length < searchResults.length && 'Select all files'}
+                    </Button>
+                    <p>Or select individual files</p>
+                </div>
+            )}
+
+            <Table
+                id="available-files-table-title"
+                data-testid="available-files-table-title"
+                aria-label="List of files in record"
+            >
+                <Table.Head>
+                    <Table.Row>
                         {allowSelectDocument && (
-                            <Table.Cell id={`selected-files-row-${index}`}>
-                                <Checkboxes onChange={handleChangeCheckboxes}>
-                                    <Checkboxes.Box
-                                        value={result.ID}
-                                        data-testid={`checkbox-${index}`}
-                                        checked={selectedDocuments.includes(result.ID)}
-                                    >
-                                        <span className="nhsuk-u-visually-hidden">
-                                            {result.fileName}
-                                        </span>
-                                    </Checkboxes.Box>
-                                </Checkboxes>
-                            </Table.Cell>
+                            <Table.Cell className={'table-column-header'}>Selected</Table.Cell>
                         )}
-                        <Table.Cell
-                            id={'available-files-row-' + index + '-filename'}
-                            data-testid="filename"
-                        >
-                            {result.fileName}
-                        </Table.Cell>
-                        <Table.Cell
-                            id={'available-files-row-' + index + '-created-date'}
-                            data-testid="created"
-                        >
-                            {getFormattedDatetime(new Date(result.created))}
-                        </Table.Cell>
+                        <Table.Cell className={'table-column-header'}>Filename</Table.Cell>
+                        <Table.Cell className={'table-column-header'}>Upload date</Table.Cell>
                     </Table.Row>
-                ))}
-            </Table.Body>
-        </Table>
+                </Table.Head>
+                <Table.Body>
+                    {searchResults.map((result, index) => (
+                        <Table.Row
+                            className="available-files-row"
+                            id={`search-result-${index}`}
+                            key={`document-${result.fileName + result.created}`}
+                            data-testid={`search-result-${index}`}
+                        >
+                            {allowSelectDocument && (
+                                <Table.Cell id={`selected-files-row-${index}`}>
+                                    <Checkboxes onChange={handleChangeCheckboxes}>
+                                        <Checkboxes.Box
+                                            value={result.ID}
+                                            data-testid={`checkbox-${index}`}
+                                            checked={selectedDocuments.includes(result.ID)}
+                                        >
+                                            <span className="nhsuk-u-visually-hidden">
+                                                {result.fileName}
+                                            </span>
+                                        </Checkboxes.Box>
+                                    </Checkboxes>
+                                </Table.Cell>
+                            )}
+                            <Table.Cell
+                                id={'available-files-row-' + index + '-filename'}
+                                data-testid="filename"
+                            >
+                                {result.fileName}
+                            </Table.Cell>
+                            <Table.Cell
+                                id={'available-files-row-' + index + '-created-date'}
+                                data-testid="created"
+                            >
+                                {getFormattedDatetime(new Date(result.created))}
+                            </Table.Cell>
+                        </Table.Row>
+                    ))}
+                </Table.Body>
+            </Table>
+        </>
     );
 };
 
@@ -168,13 +197,11 @@ const LloydGeorgeSelectSearchResults = ({
                         Download selected files
                     </Button>
                 )}
-                <Button
-                    onClick={handleClickDownloadAll}
-                    secondary={allowSelectDocument}
-                    data-testid="download-all-files-btn"
-                >
-                    Download all files
-                </Button>
+                {!allowSelectDocument && (
+                    <Button onClick={handleClickDownloadAll} data-testid="download-file-btn">
+                        Download
+                    </Button>
+                )}
                 <Link
                     id="start-again-link"
                     data-testid="start-again-link"
