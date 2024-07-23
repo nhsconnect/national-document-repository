@@ -21,7 +21,8 @@ import {
     DOCUMENT_UPLOAD_STATE,
     UploadFilesErrors,
 } from '../../types/pages/UploadDocumentsPage/types';
-import { fileUploadErrorMessages, UPLOAD_FILE_ERROR_TYPE } from './fileUploadErrorMessages';
+import { UPLOAD_FILE_ERROR_TYPE } from './fileUploadErrorMessages';
+import { fromOneToN } from './validationHelpers';
 
 describe('uploadDocumentValidation', () => {
     describe('file validation', () => {
@@ -68,42 +69,47 @@ describe('uploadDocumentValidation', () => {
 
         describe('file names validation', () => {
             it('detect file names duplication', () => {
-                const file1 = buildLgFile(1, 2, 'Joe Blogs');
-                const anotherFile1 = buildLgFile(1, 2, 'Joe Blogs');
-                const file2 = buildLgFile(2, 2, 'Joe Blogs');
-                const testUploadDocuments = [file1, anotherFile1, file2].map((file) =>
-                    buildDocument(file, DOCUMENT_UPLOAD_STATE.SELECTED, DOCUMENT_TYPE.LLOYD_GEORGE),
-                );
+                const testUploadDocuments = buildLGUploadDocsFromFilenames([
+                    '1of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                    '1of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                    '2of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                ]);
 
-                const expectedError: UploadFilesErrors = {
-                    filename: file1.name,
-                    error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
-                };
+                const expectedError = [
+                    {
+                        filename:
+                            '1of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                        error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
+                    },
+                ];
                 const actual = uploadLloydGeorgeDocumentValidation(
                     testUploadDocuments,
                     testPatient,
                 );
 
-                expect(actual).toContainEqual(expectedError);
+                expect(actual).toEqual(expectedError);
             });
 
             it('detect file name that does not match LG naming convention', () => {
                 const invalidFileName = 'some_non_standard_file_name.pdf';
                 const testUploadDocuments = buildLGUploadDocsFromFilenames([
                     invalidFileName,
+                    '1of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
                     '2of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
                 ]);
 
-                const expectedError: UploadFilesErrors = {
-                    filename: invalidFileName,
-                    error: UPLOAD_FILE_ERROR_TYPE.generalFileNameError,
-                };
+                const expectedError = [
+                    {
+                        filename: invalidFileName,
+                        error: UPLOAD_FILE_ERROR_TYPE.generalFileNameError,
+                    },
+                ];
                 const actual = uploadLloydGeorgeDocumentValidation(
                     testUploadDocuments,
                     testPatient,
                 );
 
-                expect(actual).toContainEqual(expectedError);
+                expect(actual).toEqual(expectedError);
             });
 
             it('detect missing file', () => {
@@ -124,7 +130,7 @@ describe('uploadDocumentValidation', () => {
                     testPatient,
                 );
 
-                expect(actual).toEqual(expect.arrayContaining(expectedErrors));
+                expect(actual).toEqual(expectedErrors);
             });
 
             it('detect file number exceeding total number', () => {
@@ -137,38 +143,70 @@ describe('uploadDocumentValidation', () => {
                 ];
                 const testUploadDocuments = buildLGUploadDocsFromFilenames(testFilenames);
 
-                const expectedError = {
-                    filename: invalidFileName,
-                    error: UPLOAD_FILE_ERROR_TYPE.fileNumberOutOfRangeError,
-                };
+                const expectedError = [
+                    {
+                        filename: invalidFileName,
+                        error: UPLOAD_FILE_ERROR_TYPE.fileNumberOutOfRangeError,
+                    },
+                ];
                 const actual = uploadLloydGeorgeDocumentValidation(
                     testUploadDocuments,
                     testPatient,
                 );
 
-                expect(actual).toContainEqual(expectedError);
+                expect(actual).toEqual(expectedError);
             });
 
             it('detect file number duplication', () => {
-                const duplicatedFileName =
-                    '01of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf';
                 const testFilenames = [
                     '1of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
-                    duplicatedFileName,
+                    '2of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                    '01of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
                 ];
                 const testUploadDocuments = buildLGUploadDocsFromFilenames(testFilenames);
 
-                const expectedError = {
-                    filename: duplicatedFileName,
-                    error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
-                };
+                const expectedErrors = [
+                    {
+                        filename:
+                            '1of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                        error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
+                    },
+                    {
+                        filename:
+                            '01of2_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf',
+                        error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
+                    },
+                ];
                 const actual = uploadLloydGeorgeDocumentValidation(
                     testUploadDocuments,
                     testPatient,
                 );
 
-                expect(actual).toContainEqual(expectedError);
+                expect(actual).toEqual(expectedErrors);
             });
+        });
+
+        it('can handle a large number of input files', () => {
+            const testFileNames = fromOneToN(1000).map(
+                (index) =>
+                    `${index}of1000_Lloyd_George_Record_[Joe Blogs]_[9000000009]_[01-01-1970].pdf`,
+            );
+            const testUploadDocuments = buildLGUploadDocsFromFilenames(testFileNames);
+            expect(testUploadDocuments).toHaveLength(1000);
+
+            testUploadDocuments.push(testUploadDocuments[123]);
+
+            const duplicatedFileName = testFileNames[123];
+
+            const expectedError = [
+                {
+                    filename: duplicatedFileName,
+                    error: UPLOAD_FILE_ERROR_TYPE.duplicateFile,
+                },
+            ];
+            const actual = uploadLloydGeorgeDocumentValidation(testUploadDocuments, testPatient);
+
+            expect(actual).toEqual(expectedError);
         });
     });
 
