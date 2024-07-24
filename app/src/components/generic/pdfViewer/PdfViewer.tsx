@@ -5,7 +5,7 @@ import { DocumentCallback } from 'react-pdf/src/shared/types';
 import { PDFPageProxy } from 'pdfjs-dist';
 import { Button } from 'nhsuk-react-components';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 type MatchFound = {
     pageNumber: number;
@@ -19,9 +19,27 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
     console.log(searchTerm);
     console.log(fileUrl);
 
-    //pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
+    const [url, setUrl] = useState('');
+    const [blob, setBlob] = useState<Blob | null>(null);
     const [numPages, setNumPages] = useState<number>(1);
     const [pageNumber, setPageNumber] = useState<number>(1);
+
+    useEffect(() => {
+        const fetchPdf = async () => {
+            try {
+                const response = await fetch(fileUrl);
+                const blob = await response.blob();
+                setBlob(blob);
+                const url = URL.createObjectURL(blob);
+                console.log(url);
+                setUrl(url);
+            } catch (error) {
+                console.error('Error fetching PDF:', error);
+            }
+        };
+
+        fetchPdf();
+    }, [fileUrl]);
 
     function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
         setNumPages(numPages);
@@ -29,7 +47,7 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
 
     return (
         <div>
-            <Document file={{ url: fileUrl }} onLoadSuccess={onDocumentLoadSuccess}>
+            <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
                 <Page pageNumber={pageNumber} />
             </Document>
             <p>
