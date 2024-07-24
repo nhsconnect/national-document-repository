@@ -74,7 +74,12 @@ function LloydGeorgeRecordPage() {
 
                 if (isMock(error)) {
                     if (!!config.mockLocal.recordUploaded) {
-                        onSuccess(1, moment().format(), '/dev/testFile.pdf', 59000);
+                        onSuccess(
+                            1,
+                            moment().format(),
+                            `http://localhost:3000/dev/testFile.pdf`,
+                            59000,
+                        );
                     } else {
                         setDownloadStage(DOWNLOAD_STAGE.NO_RECORDS);
                     }

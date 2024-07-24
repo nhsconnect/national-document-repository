@@ -9,6 +9,7 @@ type Props = {
     fullScreenHandler: (clicked: true) => void;
     detailsElement: ReactNode;
     downloadStage: DOWNLOAD_STAGE;
+    searchTerm: string;
 };
 
 function RecordCard({
@@ -17,6 +18,7 @@ function RecordCard({
     heading,
     fullScreenHandler,
     detailsElement,
+    searchTerm,
 }: Props) {
     return (
         <Card className="lloydgeorge_record-stage_pdf">
@@ -46,7 +48,7 @@ function RecordCard({
                     >
                         View in full screen
                     </button>
-                    <PdfViewer fileUrl={recordUrl} />
+                    <PdfViewer fileUrl={recordUrl} searchTerm={searchTerm} />
                 </Details>
             )}
         </Card>

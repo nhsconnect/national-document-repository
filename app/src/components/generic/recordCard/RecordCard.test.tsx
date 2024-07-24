@@ -16,6 +16,7 @@ describe('RecordCard', () => {
                     heading={header}
                     fullScreenHandler={mockFullscreenHandler}
                     recordUrl={'http://test'}
+                    searchTerm={''}
                 />,
             );
             expect(
@@ -36,6 +37,7 @@ describe('RecordCard', () => {
                     heading={header}
                     fullScreenHandler={mockFullscreenHandler}
                     recordUrl={'http://test'}
+                    searchTerm=""
                 />,
             );
             expect(

@@ -31,6 +31,8 @@ import { routeChildren } from '../../../../types/generic/routes';
 import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
+import SearchBar from '../../../generic/searchBar/SearchBar';
+import SearchResults from '../../../generic/searchBar/SearchResults';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -54,6 +56,8 @@ function LloydGeorgeViewRecordStage({
 
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
+    const [searchTerm, setSearchTerm] = useState<string>('');
+
     const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
         reValidateMode: 'onSubmit',
     });
@@ -208,6 +212,9 @@ function LloydGeorgeViewRecordStage({
 
             <h1>{pageHeader}</h1>
             <PatientSimpleSummary />
+
+            <SearchBar setSearchTerm={setSearchTerm} />
+
             {!fullScreen ? (
                 <>
                     {showMenu ? (
@@ -225,6 +232,7 @@ function LloydGeorgeViewRecordStage({
                                     heading="Lloyd George record"
                                     fullScreenHandler={setFullScreen}
                                     detailsElement={<RecordDetails {...recordDetailsProps} />}
+                                    searchTerm={searchTerm}
                                 />
                             </div>
                         </div>
@@ -235,12 +243,13 @@ function LloydGeorgeViewRecordStage({
                             heading="Lloyd George record"
                             fullScreenHandler={setFullScreen}
                             detailsElement={<RecordDetails {...recordDetailsProps} />}
+                            searchTerm={searchTerm}
                         />
                     )}
                 </>
             ) : (
                 <div className="lloydgeorge_record-stage_fs">
-                    <PdfViewer fileUrl={lloydGeorgeUrl} />
+                    <PdfViewer fileUrl={lloydGeorgeUrl} searchTerm={searchTerm} />
                 </div>
             )}
         </div>
