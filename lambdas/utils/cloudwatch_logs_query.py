@@ -17,7 +17,7 @@ LloydGeorgeRecordsViewed = CloudwatchLogsQueryParams(
 )
 
 LloydGeorgeRecordsDownloaded = CloudwatchLogsQueryParams(
-    lambda_name="DocumentManifestByNHSNumberLambda",
+    lambda_name="DocumentManifestJobLambda",
     query_string="""
         fields @timestamp, Message, Authorisation.selected_organisation.org_ods_code AS ods_code 
         | filter Message = 'User has downloaded Lloyd George records' 
