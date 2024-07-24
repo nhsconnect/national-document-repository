@@ -16,8 +16,11 @@ export enum UPLOAD_FILE_ERROR_TYPE {
 
 export function getInlineErrorMessage(uploadFileError: UploadFilesErrors): string {
     const errorMessage = fileUploadErrorMessages[uploadFileError.error].inline;
-    if (uploadFileError.error === UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError) {
-        return `${errorMessage}, ${uploadFileError.details}`;
+    if (
+        uploadFileError.error === UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError &&
+        uploadFileError.details
+    ) {
+        return `${errorMessage} ${uploadFileError.details}`;
     }
     return errorMessage;
 }
@@ -89,8 +92,8 @@ export const fileUploadErrorMessages: errorMessageType = {
         errorBox: 'The patient’s NHS number does not match this filename',
     },
     totalFileNumberUnmatchError: {
-        inline: 'The total file number does not match with each others',
-        errorBox: 'The total file number does not match with each others',
+        inline: 'The total file numbers does not match with each others',
+        errorBox: 'The total file numbers does not match with each others',
     },
     fileNumberMissingError: {
         inline: 'This record is missing some files',

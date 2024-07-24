@@ -110,7 +110,7 @@ const validateFileNumbers = (regexMatchResults: RegExpExecArray[]): UploadFilesE
             errors.push({
                 filename,
                 error: UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError,
-                details: `file numbers: ${joinNumbersAsWords(missingFileNumbers)}`,
+                details: `with file numbers: ${joinNumbersAsWords(missingFileNumbers)}`,
             });
         }
     });

@@ -123,7 +123,7 @@ describe('uploadDocumentValidation', () => {
                 const expectedErrors = testFilenames.map((filename) => ({
                     filename,
                     error: UPLOAD_FILE_ERROR_TYPE.fileNumberMissingError,
-                    details: 'file numbers: 2 and 4',
+                    details: 'with file numbers: 2 and 4',
                 }));
                 const actual = uploadLloydGeorgeDocumentValidation(
                     testUploadDocuments,
