@@ -4,6 +4,7 @@ import 'react-pdf/dist/Page/TextLayer.css';
 import { DocumentCallback } from 'react-pdf/src/shared/types';
 import { PDFPageProxy } from 'pdfjs-dist';
 import { Button } from 'nhsuk-react-components';
+import axios from 'axios';
 
 //pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
@@ -31,25 +32,24 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
             try {
                 //const response = await fetch(fileUrl);
                 //Blob
-                // const blob = await response.blob();
-                // setBlob(blob);
-                // console.log(blob);
-                // const url = URL.createObjectURL(blob);
-                // console.log(url);
-                // setUrl(url);
+                const response = await axios.get(fileUrl, { responseType: 'blob' });
+                console.log(response, '<-- response');
+                const blobUrl = URL.createObjectURL(response.data);
+                console.log(blobUrl, '<--- blob url');
+                setUrl(blobUrl);
 
                 //b64
-                const response = await fetch(fileUrl);
-                const arrayBuffer = await response.arrayBuffer();
-                const base64String = arrayBufferToBase64(arrayBuffer);
-                setBase64(base64String);
+                // const response = await fetch(fileUrl);
+                // const arrayBuffer = await response.arrayBuffer();
+                // const base64String = arrayBufferToBase64(arrayBuffer);
+                // setBase64(base64String);
             } catch (error) {
                 console.error('Error fetching PDF:', error);
             }
         };
 
         fetchPdf();
-    }, []);
+    }, [fileUrl]);
 
     const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
         let binary = '';
@@ -66,10 +66,7 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
 
     return (
         <div>
-            <Document
-                file={`data:application/pdf;base64,${base64}`}
-                onLoadSuccess={onDocumentLoadSuccess}
-            >
+            <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess}>
                 <Page pageNumber={pageNumber} />
             </Document>
             <p>
