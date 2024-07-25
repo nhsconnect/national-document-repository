@@ -5,8 +5,8 @@ import { DocumentCallback } from 'react-pdf/src/shared/types';
 import { PDFPageProxy } from 'pdfjs-dist';
 import { Button } from 'nhsuk-react-components';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-//pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+//pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 type MatchFound = {
     pageNumber: number;
