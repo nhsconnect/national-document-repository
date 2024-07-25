@@ -675,7 +675,16 @@ $hunit: '%';
     margin-bottom: 24px;
 }
 
-// Helper
+//PDF Viewer
+.search-form {
+    .nhsuk-input {
+        max-width: 730px;
+    }
+    .nhsuk-button {
+        margin-bottom: 0;
+        margin-left: 25px;
+    }
+}
 
 @-moz-document url-prefix() {
     #pdf-viewer {
@@ -683,6 +692,30 @@ $hunit: '%';
     }
 }
 
+.react-pdf {
+    &__Page {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        .prevPage {
+            position: absolute !important;
+            z-index: 1;
+        }
+    }
+
+    &__Document {
+        height: 600px;
+        overflow-y: scroll;
+
+        &:focus {
+            border: 2px solid #212b32;
+            outline: 4px solid #ffeb3b;
+            outline-offset: 0;
+        }
+    }
+}
+
+// Helper
 .clickable {
     cursor: pointer;
 }

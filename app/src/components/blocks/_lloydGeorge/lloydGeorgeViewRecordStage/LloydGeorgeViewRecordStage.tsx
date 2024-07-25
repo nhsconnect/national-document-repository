@@ -32,7 +32,6 @@ import { useNavigate } from 'react-router-dom';
 import ProgressBar from '../../../generic/progressBar/ProgressBar';
 import PatientSimpleSummary from '../../../generic/patientSimpleSummary/PatientSimpleSummary';
 import SearchBar from '../../../generic/searchBar/SearchBar';
-import SearchResults from '../../../generic/searchBar/SearchResults';
 
 export type Props = {
     downloadStage: DOWNLOAD_STAGE;
@@ -213,7 +212,9 @@ function LloydGeorgeViewRecordStage({
             <h1>{pageHeader}</h1>
             <PatientSimpleSummary />
 
-            <SearchBar setSearchTerm={setSearchTerm} />
+            {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
+                <SearchBar setSearchTerm={setSearchTerm} />
+            )}
 
             {!fullScreen ? (
                 <>

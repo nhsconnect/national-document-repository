@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/TextLayer.css';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
 import { DocumentCallback } from 'react-pdf/src/shared/types';
 import { PDFPageProxy } from 'pdfjs-dist';
 import { Button } from 'nhsuk-react-components';
@@ -28,19 +29,11 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
     useEffect(() => {
         const fetchPdf = async () => {
             try {
-                //const response = await fetch(fileUrl);
-                //Blob
                 const response = await axios.get(fileUrl, { responseType: 'blob' });
                 console.log(response, '<-- response');
                 const blobUrl = URL.createObjectURL(response.data);
                 console.log(blobUrl, '<--- blob url');
                 setUrl(blobUrl);
-
-                //b64
-                // const response = await fetch(fileUrl);
-                // const arrayBuffer = await response.arrayBuffer();
-                // const base64String = arrayBufferToBase64(arrayBuffer);
-                // setBase64(base64String);
             } catch (error) {
                 console.error('Error fetching PDF:', error);
             }
@@ -53,14 +46,34 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
         setNumPages(numPages);
     }
 
+    const handlePageChange = (page: number) => {
+        setPageNumber(page);
+    };
+
     return (
         <div>
-            <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess}>
-                <Page pageNumber={pageNumber} />
-            </Document>
-            <p>
-                Page {pageNumber} of {numPages}
-            </p>
+            <div id="pdf-viewer" data-testid="pdf-viewer">
+                <div>
+                    <button
+                        onClick={() => handlePageChange(pageNumber > 1 ? pageNumber - 1 : 1)}
+                        disabled={pageNumber === 1}
+                    >
+                        Prev
+                    </button>
+                    Page {pageNumber} of {numPages}
+                    <button
+                        onClick={() =>
+                            handlePageChange(pageNumber < numPages ? pageNumber + 1 : numPages)
+                        }
+                        disabled={pageNumber === numPages}
+                    >
+                        Next
+                    </button>
+                </div>
+                <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
+                    <Page pageNumber={pageNumber} />
+                </Document>
+            </div>
         </div>
     );
 

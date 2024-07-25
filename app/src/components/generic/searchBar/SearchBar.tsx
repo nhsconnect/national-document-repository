@@ -30,16 +30,16 @@ const SearchBar = ({ setSearchTerm }: Props) => {
                         value={inputValue}
                         onChange={handleInputChange}
                     />
+                    <button
+                        className="nhsuk-button"
+                        aria-disabled="false"
+                        type="submit"
+                        id="search-content-submit"
+                        data-testid="search-content-submit-btn"
+                    >
+                        Search records
+                    </button>
                 </div>
-                <button
-                    className="nhsuk-button"
-                    aria-disabled="false"
-                    type="submit"
-                    id="search-content-submit"
-                    data-testid="search-content-submit-btn"
-                >
-                    Search records
-                </button>
             </form>
         </div>
     );
