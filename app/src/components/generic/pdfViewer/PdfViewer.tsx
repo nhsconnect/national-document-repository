@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/TextLayer.css';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
 import { DocumentCallback } from 'react-pdf/src/shared/types';
 import { PDFPageProxy } from 'pdfjs-dist';
 import { Button } from 'nhsuk-react-components';
+import axios from 'axios';
 
-//pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 type MatchFound = {
@@ -21,55 +22,31 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
     console.log(fileUrl);
 
     const [url, setUrl] = useState('');
-    const [blob, setBlob] = useState<Blob | null>(null);
-    const [base64, setBase64] = useState<string | null>(null);
     const [numPages, setNumPages] = useState<number>(1);
     const [pageNumber, setPageNumber] = useState<number>(1);
 
     useEffect(() => {
         const fetchPdf = async () => {
             try {
-                //const response = await fetch(fileUrl);
-                //Blob
-                // const blob = await response.blob();
-                // setBlob(blob);
-                // console.log(blob);
-                // const url = URL.createObjectURL(blob);
-                // console.log(url);
-                // setUrl(url);
-
-                //b64
-                const response = await fetch(fileUrl);
-                const arrayBuffer = await response.arrayBuffer();
-                const base64String = arrayBufferToBase64(arrayBuffer);
-                setBase64(base64String);
+                const response = await axios.get(fileUrl, { responseType: 'blob' });
+                console.log(response, '<-- response');
+                const blobUrl = URL.createObjectURL(response.data);
+                console.log(blobUrl, '<--- blob url');
+                setUrl(blobUrl);
             } catch (error) {
                 console.error('Error fetching PDF:', error);
             }
         };
 
         fetchPdf();
-    }, []);
-
-    const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
-        let binary = '';
-        const bytes = new Uint8Array(buffer);
-        const len = bytes.byteLength;
-        for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return window.btoa(binary);
-    };
+    }, [fileUrl]);
     function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
         setNumPages(numPages);
     }
 
     return (
         <div>
-            <Document
-                file={`data:application/pdf;base64,${base64}`}
-                onLoadSuccess={onDocumentLoadSuccess}
-            >
+            <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess}>
                 <Page pageNumber={pageNumber} />
             </Document>
             <p>
