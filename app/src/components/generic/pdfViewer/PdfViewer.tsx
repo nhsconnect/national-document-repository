@@ -22,8 +22,6 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
     console.log(fileUrl);
 
     const [url, setUrl] = useState('');
-    const [blob, setBlob] = useState<Blob | null>(null);
-    const [base64, setBase64] = useState<string | null>(null);
     const [numPages, setNumPages] = useState<number>(1);
     const [pageNumber, setPageNumber] = useState<number>(1);
 
@@ -51,15 +49,6 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
         fetchPdf();
     }, [fileUrl]);
 
-    const arrayBufferToBase64 = (buffer: ArrayBuffer): string => {
-        let binary = '';
-        const bytes = new Uint8Array(buffer);
-        const len = bytes.byteLength;
-        for (let i = 0; i < len; i++) {
-            binary += String.fromCharCode(bytes[i]);
-        }
-        return window.btoa(binary);
-    };
     function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
         setNumPages(numPages);
     }
