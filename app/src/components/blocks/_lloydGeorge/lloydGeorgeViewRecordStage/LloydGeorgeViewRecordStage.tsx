@@ -56,6 +56,7 @@ function LloydGeorgeViewRecordStage({
     const [fullScreen, setFullScreen] = useState(false);
     const [downloadRemoveButtonClicked, setDownloadRemoveButtonClicked] = useState(false);
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [searchResultsCount, setSearchResultsCount] = useState<number>(0);
 
     const { register, handleSubmit, formState, clearErrors, setError, setFocus } = useForm({
         reValidateMode: 'onSubmit',
@@ -213,7 +214,7 @@ function LloydGeorgeViewRecordStage({
             <PatientSimpleSummary />
 
             {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
-                <SearchBar setSearchTerm={setSearchTerm} />
+                <SearchBar setSearchTerm={setSearchTerm} resultsCount={searchResultsCount} />
             )}
 
             {!fullScreen ? (
@@ -234,6 +235,7 @@ function LloydGeorgeViewRecordStage({
                                     fullScreenHandler={setFullScreen}
                                     detailsElement={<RecordDetails {...recordDetailsProps} />}
                                     searchTerm={searchTerm}
+                                    updateSearchResultsCount={setSearchResultsCount}
                                 />
                             </div>
                         </div>
@@ -245,12 +247,17 @@ function LloydGeorgeViewRecordStage({
                             fullScreenHandler={setFullScreen}
                             detailsElement={<RecordDetails {...recordDetailsProps} />}
                             searchTerm={searchTerm}
+                            updateSearchResultsCount={setSearchResultsCount}
                         />
                     )}
                 </>
             ) : (
                 <div className="lloydgeorge_record-stage_fs">
-                    <PdfViewer fileUrl={lloydGeorgeUrl} searchTerm={searchTerm} />
+                    <PdfViewer
+                        fileUrl={lloydGeorgeUrl}
+                        searchTerm={searchTerm}
+                        updateSearchResultsCount={setSearchResultsCount}
+                    />
                 </div>
             )}
         </div>

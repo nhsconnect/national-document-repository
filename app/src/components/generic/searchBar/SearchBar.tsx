@@ -2,18 +2,25 @@ import React, { useState } from 'react';
 
 type Props = {
     setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+    resultsCount: number;
 };
 
-const SearchBar = ({ setSearchTerm }: Props) => {
-    const [inputValue, setInputValue] = useState<string>('');
+const SearchBar = ({ setSearchTerm, resultsCount }: Props) => {
+    const [searchValue, setSearchValue] = useState<string>('');
+    const [emptyResults, setEmptyResults] = useState<boolean>(true);
 
     const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setSearchTerm(inputValue);
+        setSearchTerm(searchValue);
+        if (!searchValue) {
+            setEmptyResults(true);
+        } else {
+            setEmptyResults(false);
+        }
     };
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setInputValue(event.target.value);
+        setSearchValue(event.target.value);
     };
 
     return (
@@ -27,7 +34,7 @@ const SearchBar = ({ setSearchTerm }: Props) => {
                         className="nhsuk-input"
                         type="text"
                         autoComplete="off"
-                        value={inputValue}
+                        value={searchValue}
                         onChange={handleInputChange}
                     />
                     <button
@@ -39,6 +46,17 @@ const SearchBar = ({ setSearchTerm }: Props) => {
                     >
                         Search records
                     </button>
+                    {!emptyResults && (
+                        <input
+                            className="nhsuk-input"
+                            type="text"
+                            autoComplete="off"
+                            value={
+                                !emptyResults ? `${resultsCount} results found` : '0 results found'
+                            }
+                            disabled
+                        />
+                    )}
                 </div>
             </form>
         </div>

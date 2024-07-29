@@ -692,14 +692,30 @@ $hunit: '%';
     }
 }
 
+.textLayer {
+    mix-blend-mode: multiply;
+}
+
 .react-pdf {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     &__Page {
-        display: flex;
-        justify-content: center;
-        align-items: center;
         .prevPage {
             position: absolute !important;
             z-index: 1;
+        }
+        canvas {
+            flex: 0.8;
+        }
+        &__textContent {
+            flex: 0.8;
+            span {
+                mark {
+                    background: $color_nhsuk-yellow;
+                    color: transparent;
+                }
+            }
         }
     }
 

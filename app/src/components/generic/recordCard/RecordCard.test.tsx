@@ -9,6 +9,7 @@ describe('RecordCard', () => {
     describe('Rendering', () => {
         it('renders component', () => {
             const header = 'Jest Record';
+            const mockSetCount = jest.fn();
             render(
                 <RecordCard
                     downloadStage={DOWNLOAD_STAGE.SUCCEEDED}
@@ -17,6 +18,7 @@ describe('RecordCard', () => {
                     fullScreenHandler={mockFullscreenHandler}
                     recordUrl={'http://test'}
                     searchTerm={''}
+                    updateSearchResultsCount={mockSetCount}
                 />,
             );
             expect(
@@ -30,6 +32,7 @@ describe('RecordCard', () => {
 
         it('does not render pdf viewer when download stage not succeeded', () => {
             const header = 'Jest Record';
+            const mockSetCount = jest.fn();
             render(
                 <RecordCard
                     downloadStage={DOWNLOAD_STAGE.NO_RECORDS}
@@ -38,6 +41,7 @@ describe('RecordCard', () => {
                     fullScreenHandler={mockFullscreenHandler}
                     recordUrl={'http://test'}
                     searchTerm=""
+                    updateSearchResultsCount={mockSetCount}
                 />,
             );
             expect(

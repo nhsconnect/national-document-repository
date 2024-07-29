@@ -10,6 +10,7 @@ type Props = {
     detailsElement: ReactNode;
     downloadStage: DOWNLOAD_STAGE;
     searchTerm: string;
+    updateSearchResultsCount: React.Dispatch<React.SetStateAction<number>>;
 };
 
 function RecordCard({
@@ -19,6 +20,7 @@ function RecordCard({
     fullScreenHandler,
     detailsElement,
     searchTerm,
+    updateSearchResultsCount,
 }: Props) {
     return (
         <Card className="lloydgeorge_record-stage_pdf">
@@ -48,7 +50,11 @@ function RecordCard({
                     >
                         View in full screen
                     </button>
-                    <PdfViewer fileUrl={recordUrl} searchTerm={searchTerm} />
+                    <PdfViewer
+                        fileUrl={recordUrl}
+                        searchTerm={searchTerm}
+                        updateSearchResultsCount={updateSearchResultsCount}
+                    />
                 </Details>
             )}
         </Card>

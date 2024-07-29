@@ -4,10 +4,8 @@ import 'react-pdf/dist/Page/TextLayer.css';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import { DocumentCallback } from 'react-pdf/src/shared/types';
 import { PDFPageProxy } from 'pdfjs-dist';
-import { Button } from 'nhsuk-react-components';
 import axios from 'axios';
 
-//pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 
 type MatchFound = {
@@ -16,35 +14,75 @@ type MatchFound = {
     keywordStart: number;
 };
 
-type Props = { fileUrl: string; searchTerm: string };
+type Props = {
+    fileUrl: string;
+    searchTerm: string;
+    updateSearchResultsCount: React.Dispatch<React.SetStateAction<number>>;
+};
 
-const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
-    console.log(searchTerm);
-    console.log(fileUrl);
-
+const PdfViewer = ({ fileUrl, searchTerm, updateSearchResultsCount }: Props) => {
     const [url, setUrl] = useState('');
     const [numPages, setNumPages] = useState<number>(1);
     const [pageNumber, setPageNumber] = useState<number>(1);
+    const [pdfText, setPdfText] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchPdf = async () => {
             try {
                 const response = await axios.get(fileUrl, { responseType: 'blob' });
-                console.log(response, '<-- response');
                 const blobUrl = URL.createObjectURL(response.data);
-                console.log(blobUrl, '<--- blob url');
                 setUrl(blobUrl);
             } catch (error) {
                 console.error('Error fetching PDF:', error);
             }
         };
 
-        fetchPdf();
+        (async () => {
+            await fetchPdf();
+        })();
     }, [fileUrl]);
 
-    function onDocumentLoadSuccess({ numPages }: { numPages: number }): void {
-        setNumPages(numPages);
-    }
+    useEffect(() => {
+        console.log(pdfText);
+        if (searchTerm) {
+            findMatches();
+        }
+    }, [searchTerm, updateSearchResultsCount]);
+
+    const onDocumentLoadSuccess = (props: DocumentCallback): void => {
+        setNumPages(props.numPages);
+        const allPages = [];
+        for (let i = 1; i <= numPages; i++) {
+            allPages.push(props.getPage(i).then(extractTextFromPage));
+        }
+        Promise.all(allPages).then((allPageTextContent) => setPdfText(allPageTextContent));
+    };
+
+    const extractTextFromPage = async (page: PDFPageProxy): Promise<string> => {
+        const textContent = await page.getTextContent();
+        return textContent.items.map((item) => ('str' in item ? item.str : '')).join(' ');
+    };
+
+    const findMatches = () => {
+        if (searchTerm) {
+            let count = 0;
+            pdfText.forEach((text) => {
+                const matches = text.match(new RegExp(searchTerm, 'gi'));
+
+                if (matches) {
+                    count += matches.length;
+                }
+            });
+            console.log(count, ' results found');
+            updateSearchResultsCount(count);
+        }
+    };
+
+    const highlightKeywords = ({ str }: { str: string }) => {
+        return str.replace(new RegExp(searchTerm, 'gi'), (value) => {
+            return `<mark>${value}</mark>`;
+        });
+    };
 
     const handlePageChange = (page: number) => {
         setPageNumber(page);
@@ -58,7 +96,7 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
                         onClick={() => handlePageChange(pageNumber > 1 ? pageNumber - 1 : 1)}
                         disabled={pageNumber === 1}
                     >
-                        Prev
+                        &#8592;
                     </button>
                     Page {pageNumber} of {numPages}
                     <button
@@ -67,11 +105,17 @@ const PdfViewer = ({ fileUrl, searchTerm }: Props) => {
                         }
                         disabled={pageNumber === numPages}
                     >
-                        Next
+                        &#8594;
                     </button>
                 </div>
                 <Document file={url} onLoadSuccess={onDocumentLoadSuccess}>
-                    <Page pageNumber={pageNumber} />
+                    <Page
+                        pageNumber={pageNumber}
+                        renderAnnotationLayer={false}
+                        customTextRenderer={highlightKeywords}
+                        canvasBackground="white"
+                        scale={1.4}
+                    ></Page>
                 </Document>
             </div>
         </div>
