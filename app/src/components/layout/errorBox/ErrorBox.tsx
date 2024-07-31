@@ -1,6 +1,7 @@
 import { ErrorSummary } from 'nhsuk-react-components';
 import { MouseEvent } from 'react';
 import { UploadFilesErrors } from '../../../types/pages/UploadDocumentsPage/types';
+import { groupUploadErrorsByType } from '../../../helpers/utils/fileUploadErrorMessages';
 
 type Props = {
     errorBoxSummaryId: string;
@@ -13,6 +14,31 @@ type Props = {
     errorOnClick?: () => void;
     errorMessageList?: UploadFilesErrors[];
 };
+
+type UploadErrorMessagesProps = {
+    errorMessageList: UploadFilesErrors[];
+};
+
+function UploadErrorMessages({ errorMessageList }: Readonly<UploadErrorMessagesProps>) {
+    const uploadErrorsGrouped = groupUploadErrorsByType(errorMessageList);
+
+    return (
+        <>
+            {Object.entries(uploadErrorsGrouped).map(([errorType, { filenames, errorMessage }]) => (
+                <div key={errorType}>
+                    <p>{errorMessage}</p>
+                    <ErrorSummary.List>
+                        {filenames.map((filename) => (
+                            <ErrorSummary.Item href={'#' + filename} key={errorType + filename}>
+                                {filename}
+                            </ErrorSummary.Item>
+                        ))}
+                    </ErrorSummary.List>
+                </div>
+            ))}
+        </>
+    );
+}
 
 // @ts-ignore
 const ErrorBox = ({
@@ -64,19 +90,10 @@ const ErrorBox = ({
                                 <p>{messageLinkBody}</p>
                             </ErrorSummary.Item>
                         )}
-                        {errorMessageList?.map((errorItem, i) => {
-                            const key = (errorItem.filename ?? '') + errorItem.error.errorBox + i;
-
-                            return (
-                                <div key={key}>
-                                    <p>{errorItem.error.errorBox}</p>
-                                    <ErrorSummary.Item href={'#' + errorItem.filename}>
-                                        {errorItem.filename}
-                                    </ErrorSummary.Item>
-                                </div>
-                            );
-                        })}
                     </ErrorSummary.List>
+                    {errorMessageList && (
+                        <UploadErrorMessages errorMessageList={errorMessageList} />
+                    )}
                 </ErrorSummary.Body>
             </ErrorSummary>
         </div>
