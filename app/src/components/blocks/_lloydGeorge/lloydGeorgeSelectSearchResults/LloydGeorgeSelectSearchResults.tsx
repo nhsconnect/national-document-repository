@@ -71,7 +71,16 @@ const AvailableFilesTable = ({
                     >
                         {selectedDocuments.length === searchResults.length && 'Deselect all files'}
                         {selectedDocuments.length < searchResults.length && 'Select all files'}
-                        <div data-testid="toggle-selection-btn-announcement" aria-live="off"></div>
+                        <div
+                            data-testid="toggle-selection-btn-announcement"
+                            aria-live="off"
+                            className="nhsuk-u-visually-hidden"
+                        >
+                            {selectedDocuments.length === searchResults.length &&
+                                'All files currently selected'}
+                            {selectedDocuments.length < searchResults.length &&
+                                'No files currently selected'}
+                        </div>
                     </Button>
                     <p>Or select individual files</p>
                 </div>
