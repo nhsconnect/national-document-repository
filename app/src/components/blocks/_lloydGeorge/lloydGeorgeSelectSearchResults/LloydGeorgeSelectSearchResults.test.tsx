@@ -239,7 +239,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(results).toHaveNoViolations();
         });
 
-        it('checkbox had aria-checked attribute true when box is checked', () => {
+        it('checkbox has aria-checked attribute reflecting the checkbox status', () => {
             const props: Props = {
                 searchResults: searchResults,
                 setSubmissionSearchState: mockSetSubmissionSearchState,
@@ -254,6 +254,8 @@ describe('LloydGeorgeSelectSearchResults', () => {
 
             const firstCheckBox = screen.getByTestId('checkbox-0');
 
+            expect(firstCheckBox).toHaveAttribute('aria-checked', 'false');
+
             act(() => {
                 userEvent.click(firstCheckBox);
             });
@@ -261,6 +263,14 @@ describe('LloydGeorgeSelectSearchResults', () => {
             rerender(<LloydGeorgeSelectSearchResults {...props} />);
 
             expect(firstCheckBox).toHaveAttribute('aria-checked', 'true');
+
+            act(() => {
+                userEvent.click(firstCheckBox);
+            });
+
+            rerender(<LloydGeorgeSelectSearchResults {...props} />);
+
+            expect(firstCheckBox).toHaveAttribute('aria-checked', 'false');
         });
     });
 
