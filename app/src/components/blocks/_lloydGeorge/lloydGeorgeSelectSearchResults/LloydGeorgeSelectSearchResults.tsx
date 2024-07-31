@@ -3,7 +3,14 @@ import { SearchResult } from '../../../../types/generic/searchResult';
 import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
 import { Link, useNavigate } from 'react-router-dom';
 import { routeChildren, routes } from '../../../../types/generic/routes';
-import React, { Dispatch, ReactNode, SetStateAction, SyntheticEvent, useState } from 'react';
+import React, {
+    createRef,
+    Dispatch,
+    ReactNode,
+    SetStateAction,
+    SyntheticEvent,
+    useState,
+} from 'react';
 import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
@@ -96,10 +103,17 @@ const AvailableFilesTable = ({
                                     <Checkboxes onChange={handleChangeCheckboxes}>
                                         <Checkboxes.Box
                                             value={result.ID}
+                                            id={result.ID}
                                             data-testid={`checkbox-${index}`}
                                             checked={selectedDocuments.includes(result.ID)}
+                                            aria-labelledby={result.fileName}
+                                            aria-checked={selectedDocuments.includes(result.ID)}
                                         >
-                                            <span className="nhsuk-u-visually-hidden">
+                                            <span
+                                                id={result.fileName}
+                                                className="nhsuk-u-visually-hidden"
+                                                role="checkbox"
+                                            >
                                                 {result.fileName}
                                             </span>
                                         </Checkboxes.Box>
