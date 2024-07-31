@@ -238,6 +238,30 @@ describe('LloydGeorgeSelectSearchResults', () => {
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
         });
+
+        it('checkbox had aria-checked attribute true when box is checked', () => {
+            const props: Props = {
+                searchResults: searchResults,
+                setSubmissionSearchState: mockSetSubmissionSearchState,
+                selectedDocuments: [],
+                setSelectedDocuments: mockSetSelectedDocuments,
+            };
+            mockSetSelectedDocuments.mockImplementation(
+                (documents) => (props.selectedDocuments = documents),
+            );
+
+            const { rerender } = renderComponent(props);
+
+            const firstCheckBox = screen.getByTestId('checkbox-0');
+
+            act(() => {
+                userEvent.click(firstCheckBox);
+            });
+
+            rerender(<LloydGeorgeSelectSearchResults {...props} />);
+
+            expect(firstCheckBox).toHaveAttribute('aria-checked', 'true');
+        });
     });
 
     describe('Navigation', () => {
