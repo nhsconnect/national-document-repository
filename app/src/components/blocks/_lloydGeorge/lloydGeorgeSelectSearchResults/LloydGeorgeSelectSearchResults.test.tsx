@@ -226,6 +226,14 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(results).toHaveNoViolations();
         });
 
+        it('checks for aria-live attributes on toggleSelectBtn', () => {
+            renderComponent();
+            expect(screen.getByTestId('toggle-selection-btn-announcement')).toHaveAttribute(
+                'aria-live',
+                'off',
+            );
+        });
+
         it('pass accessibility checks when error box shows up', async () => {
             renderComponent({ selectedDocuments: [] });
 
