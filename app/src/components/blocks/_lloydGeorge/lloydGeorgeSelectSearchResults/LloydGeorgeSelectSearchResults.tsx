@@ -75,18 +75,21 @@ const AvailableFilesTable = ({
                                 'Deselect all files'}
                             {selectedDocuments.length < searchResults.length && 'Select all files'}
                         </span>
+                        <div
+                            data-testid="toggle-selection-btn-announcement"
+                            aria-live="off"
+                            // aria-hidden="true"
+                            className="nhsuk-u-visually-hidden"
+                        >
+                            {selectedDocuments.length === searchResults.length &&
+                                '    all files have been selected'}
+                            {selectedDocuments.length === 0 && '    all files have been deselected'}
+                            {selectedDocuments.length > 0 &&
+                                selectedDocuments.length < searchResults.length &&
+                                'some files are currently selected'}
+                        </div>
                     </Button>
-                    <div
-                        data-testid="toggle-selection-btn-announcement"
-                        aria-live="polite"
-                        // aria-hidden="true"
-                        className="nhsuk-u-visually-hidden"
-                    >
-                        {selectedDocuments.length === searchResults.length &&
-                            '    all files have been selected'}
-                        {selectedDocuments.length < searchResults.length &&
-                            '    all files have been deselected'}
-                    </div>
+
                     <p>Or select individual files</p>
                 </div>
             )}
