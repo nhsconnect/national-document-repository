@@ -139,7 +139,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                     expect(checkbox).toBeChecked();
                 });
 
-                expect(toggleSelectAllBtn.textContent).toBe('Deselect all files');
+                expect(toggleSelectAllBtn.textContent).toContain('Deselect all files');
             });
 
             it('check all checkboxes unchecked, when select all files button clicked, all files previously checked', () => {
@@ -158,7 +158,9 @@ describe('LloydGeorgeSelectSearchResults', () => {
                     expect(checkbox).toBeChecked();
                 });
 
-                expect(toggleSelectAllBtn.textContent).toBe('Deselect all files');
+                expect(toggleSelectAllBtn.textContent).toBe(
+                    'Deselect all files, all files are selected, Toggle file selection button, Click to deselect all files',
+                );
 
                 act(() => {
                     userEvent.click(toggleSelectAllBtn);
@@ -178,7 +180,9 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 checkboxes.forEach((checkbox) => {
                     expect(checkbox).not.toBeChecked();
                 });
-                expect(toggleSelectAllBtn.textContent).toBe('Select all files');
+                expect(toggleSelectAllBtn.textContent).toBe(
+                    'Select all files, all files are deselected, Toggle file selection button, Click to select all files',
+                );
             });
 
             it('check all checkboxes unchecked, when select all files button clicked twice, no files previously checked', () => {
@@ -213,7 +217,9 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 checkboxes.forEach((checkbox) => {
                     expect(checkbox).not.toBeChecked();
                 });
-                expect(toggleSelectAllBtn.textContent).toBe('Select all files');
+                expect(toggleSelectAllBtn.textContent).toBe(
+                    'Select all files, all files are deselected, Toggle file selection button, Click to select all files',
+                );
             });
         });
     });
@@ -224,23 +230,6 @@ describe('LloydGeorgeSelectSearchResults', () => {
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
-        });
-
-        it('checks for aria-live attributes on toggleSelectBtn', () => {
-            renderComponent();
-            expect(screen.getByTestId('toggle-selection-btn-announcement')).toHaveAttribute(
-                'aria-live',
-                'off',
-            );
-        });
-
-        it('aria-live has announcement associated with it', () => {
-            renderComponent();
-            const announcement = screen.getByTestId('toggle-selection-btn');
-
-            expect(announcement).toContainElement(
-                screen.getByTestId('toggle-selection-btn-announcement'),
-            );
         });
 
         it('pass accessibility checks when error box shows up', async () => {
@@ -256,6 +245,14 @@ describe('LloydGeorgeSelectSearchResults', () => {
             expect(results).toHaveNoViolations();
         });
 
+        it('check all checkboxes have aria-checked attribute', () => {
+            renderComponent();
+            const allCheckBoxes = screen.getAllByRole('checkbox');
+
+            allCheckBoxes.forEach((checkbox) => {
+                expect(checkbox).toHaveAttribute('aria-checked');
+            });
+        });
         it('checkbox has aria-checked attribute reflecting the checkbox status', () => {
             const props: Props = {
                 searchResults: searchResults,
@@ -268,7 +265,6 @@ describe('LloydGeorgeSelectSearchResults', () => {
             );
 
             const { rerender } = renderComponent(props);
-
             const firstCheckBox = screen.getByTestId('checkbox-0');
 
             expect(firstCheckBox).toHaveAttribute('aria-checked', 'false');
@@ -288,6 +284,14 @@ describe('LloydGeorgeSelectSearchResults', () => {
             rerender(<LloydGeorgeSelectSearchResults {...props} />);
 
             expect(firstCheckBox).toHaveAttribute('aria-checked', 'false');
+        });
+
+        it('toggle select all button has status announcements associated with it', () => {
+            renderComponent();
+            const toggleSelectAllBtn = screen.getByTestId('toggle-selection-btn');
+            const announcement = screen.getByTestId('toggle-selection-btn-announcement');
+            expect(toggleSelectAllBtn).toContainElement(announcement);
+            expect(announcement).toHaveAttribute('role', 'status');
         });
     });
 

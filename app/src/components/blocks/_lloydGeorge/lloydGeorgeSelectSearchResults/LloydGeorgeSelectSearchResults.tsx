@@ -3,14 +3,7 @@ import { SearchResult } from '../../../../types/generic/searchResult';
 import { getFormattedDatetime } from '../../../../helpers/utils/formatDatetime';
 import { Link, useNavigate } from 'react-router-dom';
 import { routeChildren, routes } from '../../../../types/generic/routes';
-import React, {
-    createRef,
-    Dispatch,
-    ReactNode,
-    SetStateAction,
-    SyntheticEvent,
-    useState,
-} from 'react';
+import React, { Dispatch, ReactNode, SetStateAction, SyntheticEvent, useState } from 'react';
 import { SEARCH_AND_DOWNLOAD_STATE } from '../../../../types/pages/documentSearchResultsPage/types';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
 import PatientSummary from '../../../generic/patientSummary/PatientSummary';
@@ -61,17 +54,17 @@ const AvailableFilesTable = ({
 
     const handleToggleButtonAriaDescription = () => {
         if (selectedDocuments.length === searchResults.length) {
-            return 'Toggle file selection button, Click to deselect all files';
+            return ', Toggle file selection button, Click to deselect all files';
         } else {
-            return 'Toggle file selection button, Click to select all files';
+            return ', Toggle file selection button, Click to select all files';
         }
     };
 
     const handleToggleButtonStatusChange = () => {
         if (selectedDocuments.length === searchResults.length) {
-            return 'all files are selected';
+            return ', all files are selected';
         } else if (selectedDocuments.length === 0) {
-            return 'all files are deselected';
+            return ', all files are deselected';
         }
         // else if(selectedDocuments.length > 0 && selectedDocuments.length < searchResults.length){
         //     return "some files are selected"
@@ -93,7 +86,11 @@ const AvailableFilesTable = ({
                             {selectedDocuments.length === searchResults.length &&
                                 'Deselect all files'}
                             {selectedDocuments.length < searchResults.length && 'Select all files'}
-                            <span role="status" className="nhsuk-u-visually-hidden">
+                            <span
+                                data-testid="toggle-selection-btn-announcement"
+                                role="status"
+                                className="nhsuk-u-visually-hidden"
+                            >
                                 {handleToggleButtonStatusChange()}
                                 {handleToggleButtonAriaDescription()}
                             </span>
@@ -136,13 +133,13 @@ const AvailableFilesTable = ({
                                             aria-labelledby={result.fileName}
                                             aria-checked={selectedDocuments.includes(result.ID)}
                                         >
-                                            <span
+                                            <label
                                                 id={result.fileName}
                                                 className="nhsuk-u-visually-hidden"
-                                                role="checkbox"
+                                                htmlFor={result.ID}
                                             >
                                                 {result.fileName}
-                                            </span>
+                                            </label>
                                         </Checkboxes.Box>
                                     </Checkboxes>
                                 </Table.Cell>
