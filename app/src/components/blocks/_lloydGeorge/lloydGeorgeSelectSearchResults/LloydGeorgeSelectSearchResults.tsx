@@ -70,11 +70,6 @@ const AvailableFilesTable = ({
                         type="button"
                         aria-description="Toggle file selection button"
                     >
-                        <span aria-hidden="true">
-                            {selectedDocuments.length === searchResults.length &&
-                                'Deselect all files'}
-                            {selectedDocuments.length < searchResults.length && 'Select all files'}
-                        </span>
                         <div
                             data-testid="toggle-selection-btn-announcement"
                             aria-live="off"
@@ -88,6 +83,10 @@ const AvailableFilesTable = ({
                                 selectedDocuments.length < searchResults.length &&
                                 'some files are currently selected'}
                         </div>
+                        {/*<span aria-hidden="true">*/}
+                        {selectedDocuments.length === searchResults.length && 'Deselect all files'}
+                        {selectedDocuments.length < searchResults.length && 'Select all files'}
+                        {/*</span>*/}
                     </Button>
 
                     <p>Or select individual files</p>

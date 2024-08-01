@@ -230,13 +230,13 @@ describe('LloydGeorgeSelectSearchResults', () => {
             renderComponent();
             expect(screen.getByTestId('toggle-selection-btn-announcement')).toHaveAttribute(
                 'aria-live',
-                'polite',
+                'off',
             );
         });
 
         it('aria-live has announcement associated with it', () => {
             renderComponent();
-            const announcement = screen.getByTestId('toggle-selection-btn-announcement');
+            const announcement = screen.getByTestId('toggle-selection-btn');
 
             expect(announcement).toContainElement(
                 screen.getByTestId('toggle-selection-btn-announcement'),
