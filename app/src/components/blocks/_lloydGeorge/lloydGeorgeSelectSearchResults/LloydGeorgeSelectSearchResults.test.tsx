@@ -230,7 +230,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
             renderComponent();
             expect(screen.getByTestId('toggle-selection-btn-announcement')).toHaveAttribute(
                 'aria-live',
-                'off',
+                'polite',
             );
         });
 

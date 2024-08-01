@@ -68,9 +68,13 @@ const AvailableFilesTable = ({
                         secondary={true}
                         data-testid="toggle-selection-btn"
                         type="button"
+                        aria-description="Toggle file selection button"
                     >
-                        {selectedDocuments.length === searchResults.length && 'Deselect all files'}
-                        {selectedDocuments.length < searchResults.length && 'Select all files'}
+                        <span aria-hidden="true">
+                            {selectedDocuments.length === searchResults.length &&
+                                'Deselect all files'}
+                            {selectedDocuments.length < searchResults.length && 'Select all files'}
+                        </span>
                     </Button>
                     <div
                         data-testid="toggle-selection-btn-announcement"
