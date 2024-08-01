@@ -58,6 +58,25 @@ const AvailableFilesTable = ({
             setSelectedDocuments(selectedDocuments.filter((id) => id !== toggledDocumentId));
         }
     };
+
+    const handleToggleButtonAriaDescription = () => {
+        if (selectedDocuments.length === searchResults.length) {
+            return 'Toggle file selection button, Click to deselect all files';
+        } else {
+            return 'Toggle file selection button, Click to select all files';
+        }
+    };
+
+    const handleToggleButtonStatusChange = () => {
+        if (selectedDocuments.length === searchResults.length) {
+            return 'all files are selected';
+        } else if (selectedDocuments.length === 0) {
+            return 'all files are deselected';
+        }
+        // else if(selectedDocuments.length > 0 && selectedDocuments.length < searchResults.length){
+        //     return "some files are selected"
+        // }
+    };
     return (
         <>
             {tableCaption}
@@ -68,27 +87,18 @@ const AvailableFilesTable = ({
                         secondary={true}
                         data-testid="toggle-selection-btn"
                         type="button"
-                        aria-description="Toggle file selection button"
+                        aria-description={handleToggleButtonAriaDescription()}
                     >
-                        <div
-                            data-testid="toggle-selection-btn-announcement"
-                            aria-live="off"
-                            // aria-hidden="true"
-                            className="nhsuk-u-visually-hidden"
-                        >
+                        <span>
                             {selectedDocuments.length === searchResults.length &&
-                                '    all files have been selected'}
-                            {selectedDocuments.length === 0 && '    all files have been deselected'}
-                            {selectedDocuments.length > 0 &&
-                                selectedDocuments.length < searchResults.length &&
-                                'some files are currently selected'}
-                        </div>
-                        {/*<span aria-hidden="true">*/}
-                        {selectedDocuments.length === searchResults.length && 'Deselect all files'}
-                        {selectedDocuments.length < searchResults.length && 'Select all files'}
-                        {/*</span>*/}
+                                'Deselect all files'}
+                            {selectedDocuments.length < searchResults.length && 'Select all files'}
+                            <span role="status" className="nhsuk-u-visually-hidden">
+                                {handleToggleButtonStatusChange()}
+                                {handleToggleButtonAriaDescription()}
+                            </span>
+                        </span>
                     </Button>
-
                     <p>Or select individual files</p>
                 </div>
             )}
