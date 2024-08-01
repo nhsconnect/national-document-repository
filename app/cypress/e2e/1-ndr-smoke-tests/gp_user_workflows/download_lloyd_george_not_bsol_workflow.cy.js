@@ -1,6 +1,7 @@
 import { pdsPatients, stubPatients } from '../../../support/patients';
 import { Roles } from '../../../support/roles';
 import dbItem from '../../../fixtures/dynamo-db-items/active-patient.json';
+import { formatNhsNumber } from '../../../../src/helpers/utils/formatNhsNumber';
 
 const workspace = Cypress.env('WORKSPACE');
 dbItem.FileLocation = dbItem.FileLocation.replace('{env}', workspace);
@@ -32,6 +33,7 @@ describe('GP Workflow: View Lloyd George record', () => {
             { tags: 'smoke', defaultCommandTimeout: 20000 },
             () => {
                 cy.smokeLogin(Roles.GP_ADMIN);
+                cy.get('.nhsuk-header__navigation').should('exist');
 
                 cy.getByTestId('search-patient-btn').click();
 
@@ -52,6 +54,8 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                 cy.downloadIframeReplace();
 
+                cy.intercept('POST', '**/DocumentManifest*').as('postDocumentManifest');
+
                 cy.getByTestId('confirm-download-and-remove-btn').click();
 
                 // Assert contents of page when downloading
@@ -62,17 +66,26 @@ describe('GP Workflow: View Lloyd George record', () => {
                 cy.contains('Cancel').should('be.visible');
 
                 // Assert contents of page after download
-                cy.get('.lloydgeorge_download-complete', { timeout: 20000 }).should('exist');
-                cy.contains('Download complete').should('be.visible');
-                cy.contains('You have successfully downloaded the Lloyd George record of:').should(
-                    'be.visible',
+                cy.title({ timeout: 30000 }).should(
+                    'eq',
+                    'Download complete - Digital Lloyd George records',
                 );
-                cy.contains(`NHS number: ${activePatient}`).should('be.visible');
+                cy.getByTestId('downloaded-record-card-header').should('exist');
+                cy.contains('You have downloaded the record of:').should('be.visible');
 
-                // Assert file has been downloaded
-                cy.readFile(
-                    `${Cypress.config('downloadsFolder')}/patient-record-${activePatient}.zip`,
-                );
+                const nhsNumberFormatted = formatNhsNumber(activePatient.toString());
+                cy.contains(`NHS number: ${nhsNumberFormatted}`).should('be.visible');
+
+                cy.wait('@postDocumentManifest').then(({ response }) => {
+                    const downloadJobId = response.body['jobId'];
+                    cy.readFile(
+                        `${Cypress.config('downloadsFolder')}/patient-record-${downloadJobId}.zip`,
+                    );
+                });
+
+                cy.getByTestId('logout-btn').click();
+                cy.url({ timeout: 10000 }).should('eq', Cypress.config('baseUrl') + '/');
+                cy.get('.nhsuk-header__navigation').should('not.exist');
             },
         );
     });
