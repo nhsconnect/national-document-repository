@@ -85,14 +85,12 @@ const AvailableFilesTable = ({
                                 'Deselect all files'}
                             {selectedDocuments.length < searchResults.length && 'Select all files'}
                         </span>
-                        <span
+                        <output
                             data-testid="toggle-selection-btn-announcement"
-                            role="status"
                             className="nhsuk-u-visually-hidden"
-                            //aria-live="off"
                         >
                             {handleToggleButtonStatusChange()}
-                        </span>
+                        </output>
                     </Button>
                     <p>Or select individual files</p>
                 </div>
