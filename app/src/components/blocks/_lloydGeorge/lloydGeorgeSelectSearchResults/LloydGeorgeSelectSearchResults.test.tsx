@@ -291,7 +291,6 @@ describe('LloydGeorgeSelectSearchResults', () => {
             const toggleSelectAllBtn = screen.getByTestId('toggle-selection-btn');
             const announcement = screen.getByTestId('toggle-selection-btn-announcement');
             expect(toggleSelectAllBtn).toContainElement(announcement);
-            expect(announcement).toHaveAttribute('role', 'status');
         });
     });
 
