@@ -86,15 +86,15 @@ const AvailableFilesTable = ({
                             {selectedDocuments.length === searchResults.length &&
                                 'Deselect all files'}
                             {selectedDocuments.length < searchResults.length && 'Select all files'}
-                            <output
-                                data-testid="toggle-selection-btn-announcement"
-                                role="status"
-                                className="nhsuk-u-visually-hidden"
-                                aria-live="off"
-                            >
-                                {handleToggleButtonStatusChange()}
-                                {handleToggleButtonAriaDescription()}
-                            </output>
+                        </span>
+                        <span
+                            data-testid="toggle-selection-btn-announcement"
+                            role="status"
+                            className="nhsuk-u-visually-hidden"
+                            // aria-live="off"
+                        >
+                            {handleToggleButtonStatusChange()}
+                            {handleToggleButtonAriaDescription()}
                         </span>
                     </Button>
                     <p>Or select individual files</p>
@@ -131,18 +131,14 @@ const AvailableFilesTable = ({
                                             id={result.ID}
                                             data-testid={`checkbox-${index}`}
                                             checked={selectedDocuments.includes(result.ID)}
-                                            aria-labelledby={result.fileName}
                                             aria-checked={selectedDocuments.includes(result.ID)}
                                         >
-                                            <span
-                                                id={result.fileName}
+                                            <label
+                                                htmlFor={result.fileName}
                                                 className="nhsuk-u-visually-hidden"
-                                                role="checkbox"
-                                                onChange={handleChangeCheckboxes}
-                                                aria-checked={selectedDocuments.includes(result.ID)}
                                             >
                                                 {result.fileName}
-                                            </span>
+                                            </label>
                                         </Checkboxes.Box>
                                     </Checkboxes>
                                 </Table.Cell>
