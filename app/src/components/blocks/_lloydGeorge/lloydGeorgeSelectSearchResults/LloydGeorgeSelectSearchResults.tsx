@@ -86,14 +86,15 @@ const AvailableFilesTable = ({
                             {selectedDocuments.length === searchResults.length &&
                                 'Deselect all files'}
                             {selectedDocuments.length < searchResults.length && 'Select all files'}
-                            <span
+                            <output
                                 data-testid="toggle-selection-btn-announcement"
                                 role="status"
                                 className="nhsuk-u-visually-hidden"
+                                aria-live="off"
                             >
                                 {handleToggleButtonStatusChange()}
                                 {handleToggleButtonAriaDescription()}
-                            </span>
+                            </output>
                         </span>
                     </Button>
                     <p>Or select individual files</p>
@@ -133,13 +134,15 @@ const AvailableFilesTable = ({
                                             aria-labelledby={result.fileName}
                                             aria-checked={selectedDocuments.includes(result.ID)}
                                         >
-                                            <label
+                                            <span
                                                 id={result.fileName}
                                                 className="nhsuk-u-visually-hidden"
-                                                htmlFor={result.ID}
+                                                role="checkbox"
+                                                onChange={handleChangeCheckboxes}
+                                                aria-checked={selectedDocuments.includes(result.ID)}
                                             >
                                                 {result.fileName}
-                                            </label>
+                                            </span>
                                         </Checkboxes.Box>
                                     </Checkboxes>
                                 </Table.Cell>
