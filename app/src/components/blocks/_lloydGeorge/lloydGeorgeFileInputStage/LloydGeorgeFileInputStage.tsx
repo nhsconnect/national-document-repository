@@ -15,8 +15,11 @@ import formatFileSize from '../../../../helpers/utils/formatFileSize';
 import usePatient from '../../../../helpers/hooks/usePatient';
 import { v4 as uuidv4 } from 'uuid';
 import ErrorBox from '../../../layout/errorBox/ErrorBox';
-import { uploadDocumentValidation } from '../../../../helpers/utils/uploadDocumentValidation';
-import { fileUploadErrorMessages } from '../../../../helpers/utils/fileUploadErrorMessages';
+import { uploadLloydGeorgeDocumentValidation } from '../../../../helpers/utils/uploadDocumentValidation';
+import {
+    fileUploadErrorMessages,
+    getInlineErrorMessage,
+} from '../../../../helpers/utils/fileUploadErrorMessages';
 import LinkButton from '../../../generic/linkButton/LinkButton';
 import useTitle from '../../../../helpers/hooks/useTitle';
 
@@ -40,7 +43,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
 
     const onSubmit = async () => {
         setShowNoFilesMessage(!hasFileInput);
-        setUploadFilesErrors(uploadDocumentValidation(documents, patientDetails));
+        setUploadFilesErrors(uploadLloydGeorgeDocumentValidation(documents, patientDetails));
         if (!hasFileInput || uploadFilesErrors.length > 0) {
             window.scrollTo(0, 0);
             return;
@@ -60,7 +63,7 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
         const updatedDocList = [...documentMap, ...documents];
         setDocuments(updatedDocList);
         setShowNoFilesMessage(false);
-        setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
+        setUploadFilesErrors(uploadLloydGeorgeDocumentValidation(updatedDocList, patientDetails));
     };
     const onFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -91,15 +94,17 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
             updatedDocList = [...documents.slice(0, index), ...documents.slice(index + 1)];
         }
         setDocuments(updatedDocList);
-        setUploadFilesErrors(uploadDocumentValidation(updatedDocList, patientDetails));
+        setUploadFilesErrors(uploadLloydGeorgeDocumentValidation(updatedDocList, patientDetails));
     };
     const fileErrorMessage = (document: UploadDocument) => {
-        const errorFile = uploadFilesErrors.find(
+        const errorsForDocument = uploadFilesErrors.filter(
             (errorFile) => document.file.name === errorFile.filename,
         );
-        if (errorFile) {
-            return <div className="lloydgeorge_file_upload_error">{errorFile.error.message}</div>;
-        }
+        return errorsForDocument.map((error, index) => (
+            <div className="lloydgeorge_file_upload_error" key={document.file.name + index}>
+                {getInlineErrorMessage(error)}
+            </div>
+        ));
     };
     const pageHeader = 'Upload a Lloyd George record';
     useTitle({ pageTitle: pageHeader });
@@ -112,14 +117,16 @@ function LloydGeorgeFileInputStage({ documents, setDocuments, submitDocuments }:
                     errorInputLink={'#nhs-number-input'}
                     errorBoxSummaryId={'error-box-summary'}
                     errorMessageList={uploadFilesErrors}
+                    dataTestId="error-box"
                 />
             )}
             {showNoFilesMessage && (
                 <ErrorBox
                     messageTitle={'There is a problem with some of your files'}
-                    messageLinkBody={fileUploadErrorMessages.noFiles.message}
+                    messageLinkBody={fileUploadErrorMessages.noFiles.inline}
                     errorBoxSummaryId={'error-box-summary'}
                     errorInputLink={'#upload-lloyd-george'}
+                    dataTestId="error-box"
                 />
             )}
             <h1>{pageHeader}</h1>
