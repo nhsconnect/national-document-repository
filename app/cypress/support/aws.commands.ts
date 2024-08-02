@@ -1,8 +1,7 @@
 /// <reference types="cypress" />
 
-import { String } from 'aws-sdk/clients/acm';
 import AWS from './aws.config';
-import { ExpressionAttributeValueMap, QueryOutput } from 'aws-sdk/clients/dynamodb';
+import { QueryOutput } from 'aws-sdk/clients/dynamodb';
 
 Cypress.Commands.add('addPdfFileToS3', (bucketName: string, fileName: string, filePath: string) => {
     const s3 = new AWS.S3();
@@ -130,6 +129,7 @@ Cypress.Commands.add(
             ProjectionExpression: 'ID',
         };
 
+        //queries table with the index and specific value
         return cy.wrap(
             new Cypress.Promise((resolve, reject) => {
                 dynamoDB.query(queryParams, (err, data) => {
@@ -142,8 +142,8 @@ Cypress.Commands.add(
                     }
                 });
             }).then((value) => {
-                const itemsForDelete: AWS.DynamoDB.ItemList | undefined = (value as QueryOutput)
-                    .Items;
+                //uses the returned query response to form a batch write request and delete each item
+                const itemsForDelete = (value as QueryOutput).Items;
 
                 if (
                     itemsForDelete?.length === 0 ||

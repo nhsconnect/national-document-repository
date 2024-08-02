@@ -3,7 +3,6 @@ import { Roles, roleIds, roleList } from './roles';
 import { defaultFeatureFlags, FeatureFlags } from './feature_flags';
 import Bluebird from 'cypress/types/bluebird';
 import './aws.commands';
-import { AttributeMap, KeyExpression, ProjectionExpression } from 'aws-sdk/clients/dynamodb';
 
 /// <reference types="cypress" />
 const registerCypressGrep = require('@cypress/grep');
@@ -194,7 +193,7 @@ declare global {
                 index: string,
                 attribute: string,
                 value: string,
-            ): Chainable<Bluebird<DynamoDB.QueryOutput>>;
+            ): Chainable<Bluebird<DynamoDB.BatchWriteItemOutput>>;
             /**
              * Workaround to prevent click on download link from firing a load event and preventing test continuing to run
              */
