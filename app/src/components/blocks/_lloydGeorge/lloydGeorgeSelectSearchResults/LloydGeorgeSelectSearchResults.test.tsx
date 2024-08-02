@@ -159,7 +159,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 });
 
                 expect(toggleSelectAllBtn.textContent).toBe(
-                    'Deselect all files, all files are selected, Toggle file selection button, Click to deselect all files',
+                    'Deselect all filesAll files are selected',
                 );
 
                 act(() => {
@@ -181,7 +181,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                     expect(checkbox).not.toBeChecked();
                 });
                 expect(toggleSelectAllBtn.textContent).toBe(
-                    'Select all files, all files are deselected, Toggle file selection button, Click to select all files',
+                    'Select all filesAll files are deselected',
                 );
             });
 
@@ -218,7 +218,7 @@ describe('LloydGeorgeSelectSearchResults', () => {
                     expect(checkbox).not.toBeChecked();
                 });
                 expect(toggleSelectAllBtn.textContent).toBe(
-                    'Select all files, all files are deselected, Toggle file selection button, Click to select all files',
+                    'Select all filesAll files are deselected',
                 );
             });
         });

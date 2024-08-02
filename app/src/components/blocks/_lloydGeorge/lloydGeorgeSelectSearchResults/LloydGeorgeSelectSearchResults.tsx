@@ -54,22 +54,20 @@ const AvailableFilesTable = ({
 
     const handleToggleButtonAriaDescription = () => {
         if (selectedDocuments.length === searchResults.length) {
-            return ', Toggle file selection button, Click to deselect all files';
+            return 'Toggle selection button, Click to deselect all files';
         } else {
-            return ', Toggle file selection button, Click to select all files';
+            return 'Toggle selection button, Click to select all files';
         }
     };
 
     const handleToggleButtonStatusChange = () => {
         if (selectedDocuments.length === searchResults.length) {
-            return ', all files are selected';
+            return 'All files are selected';
         } else if (selectedDocuments.length === 0) {
-            return ', all files are deselected';
+            return 'All files are deselected';
         }
-        // else if(selectedDocuments.length > 0 && selectedDocuments.length < searchResults.length){
-        //     return "some files are selected"
-        // }
     };
+
     return (
         <>
             {tableCaption}
@@ -91,10 +89,9 @@ const AvailableFilesTable = ({
                             data-testid="toggle-selection-btn-announcement"
                             role="status"
                             className="nhsuk-u-visually-hidden"
-                            // aria-live="off"
+                            //aria-live="off"
                         >
                             {handleToggleButtonStatusChange()}
-                            {handleToggleButtonAriaDescription()}
                         </span>
                     </Button>
                     <p>Or select individual files</p>
