@@ -92,8 +92,8 @@ export const fileUploadErrorMessages: errorMessageType = {
         errorBox: 'The patient’s NHS number does not match this filename',
     },
     totalFileNumberUnmatchError: {
-        inline: 'The total file numbers does not match with each others',
-        errorBox: 'The total file numbers does not match with each others',
+        inline: 'The total file numbers do not match each other',
+        errorBox: 'The total file numbers do not match each other',
     },
     fileNumberMissingError: {
         inline: 'This record is missing some files',
