@@ -139,7 +139,8 @@ describe('LloydGeorgeSelectSearchResults', () => {
                     expect(checkbox).toBeChecked();
                 });
 
-                expect(toggleSelectAllBtn.textContent).toBe('Deselect all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('Deselect all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('All files are selected');
             });
 
             it('check all checkboxes unchecked, when select all files button clicked, all files previously checked', () => {
@@ -158,7 +159,8 @@ describe('LloydGeorgeSelectSearchResults', () => {
                     expect(checkbox).toBeChecked();
                 });
 
-                expect(toggleSelectAllBtn.textContent).toBe('Deselect all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('Deselect all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('All files are selected');
 
                 act(() => {
                     userEvent.click(toggleSelectAllBtn);
@@ -178,7 +180,8 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 checkboxes.forEach((checkbox) => {
                     expect(checkbox).not.toBeChecked();
                 });
-                expect(toggleSelectAllBtn.textContent).toBe('Select all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('Select all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('All files are deselected');
             });
 
             it('check all checkboxes unchecked, when select all files button clicked twice, no files previously checked', () => {
@@ -213,7 +216,8 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 checkboxes.forEach((checkbox) => {
                     expect(checkbox).not.toBeChecked();
                 });
-                expect(toggleSelectAllBtn.textContent).toBe('Select all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('Select all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('All files are deselected');
             });
         });
     });
@@ -237,6 +241,54 @@ describe('LloydGeorgeSelectSearchResults', () => {
 
             const results = await runAxeTest(document.body);
             expect(results).toHaveNoViolations();
+        });
+
+        it('check all checkboxes have aria-checked attribute', () => {
+            renderComponent();
+            const allCheckBoxes = screen.getAllByRole('checkbox');
+
+            allCheckBoxes.forEach((checkbox) => {
+                expect(checkbox).toHaveAttribute('aria-checked');
+            });
+        });
+        it('checkbox has aria-checked attribute reflecting the checkbox status', () => {
+            const props: Props = {
+                searchResults: searchResults,
+                setSubmissionSearchState: mockSetSubmissionSearchState,
+                selectedDocuments: [],
+                setSelectedDocuments: mockSetSelectedDocuments,
+            };
+            mockSetSelectedDocuments.mockImplementation(
+                (documents) => (props.selectedDocuments = documents),
+            );
+
+            const { rerender } = renderComponent(props);
+            const firstCheckBox = screen.getByTestId('checkbox-0');
+
+            expect(firstCheckBox).toHaveAttribute('aria-checked', 'false');
+
+            act(() => {
+                userEvent.click(firstCheckBox);
+            });
+
+            rerender(<LloydGeorgeSelectSearchResults {...props} />);
+
+            expect(firstCheckBox).toHaveAttribute('aria-checked', 'true');
+
+            act(() => {
+                userEvent.click(firstCheckBox);
+            });
+
+            rerender(<LloydGeorgeSelectSearchResults {...props} />);
+
+            expect(firstCheckBox).toHaveAttribute('aria-checked', 'false');
+        });
+
+        it('toggle select all button has status announcements associated with it', () => {
+            renderComponent();
+            const toggleSelectAllBtn = screen.getByTestId('toggle-selection-btn');
+            const announcement = screen.getByTestId('toggle-selection-btn-announcement');
+            expect(toggleSelectAllBtn).toContainElement(announcement);
         });
     });
 

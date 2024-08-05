@@ -51,6 +51,23 @@ const AvailableFilesTable = ({
             setSelectedDocuments(selectedDocuments.filter((id) => id !== toggledDocumentId));
         }
     };
+
+    const getToggleButtonAriaDescription = () => {
+        if (selectedDocuments.length === searchResults.length) {
+            return 'Toggle selection button, Click to deselect all files';
+        } else {
+            return 'Toggle selection button, Click to select all files';
+        }
+    };
+
+    const getToggleButtonStatusChange = () => {
+        if (selectedDocuments.length === searchResults.length) {
+            return 'All files are selected';
+        } else if (selectedDocuments.length === 0) {
+            return 'All files are deselected';
+        }
+    };
+
     return (
         <>
             {tableCaption}
@@ -61,9 +78,19 @@ const AvailableFilesTable = ({
                         secondary={true}
                         data-testid="toggle-selection-btn"
                         type="button"
+                        aria-description={getToggleButtonAriaDescription()}
                     >
-                        {selectedDocuments.length === searchResults.length && 'Deselect all files'}
-                        {selectedDocuments.length < searchResults.length && 'Select all files'}
+                        <span>
+                            {selectedDocuments.length === searchResults.length &&
+                                'Deselect all files'}
+                            {selectedDocuments.length < searchResults.length && 'Select all files'}
+                        </span>
+                        <output
+                            data-testid="toggle-selection-btn-announcement"
+                            className="nhsuk-u-visually-hidden"
+                        >
+                            {getToggleButtonStatusChange()}
+                        </output>
                     </Button>
                     <p>Or select individual files</p>
                 </div>
@@ -96,8 +123,10 @@ const AvailableFilesTable = ({
                                     <Checkboxes onChange={handleChangeCheckboxes}>
                                         <Checkboxes.Box
                                             value={result.ID}
+                                            id={result.ID}
                                             data-testid={`checkbox-${index}`}
                                             checked={selectedDocuments.includes(result.ID)}
+                                            aria-checked={selectedDocuments.includes(result.ID)}
                                         >
                                             <span className="nhsuk-u-visually-hidden">
                                                 {result.fileName}
