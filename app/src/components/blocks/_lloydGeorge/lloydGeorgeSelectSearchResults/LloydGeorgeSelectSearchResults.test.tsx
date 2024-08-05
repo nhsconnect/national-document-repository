@@ -139,7 +139,8 @@ describe('LloydGeorgeSelectSearchResults', () => {
                     expect(checkbox).toBeChecked();
                 });
 
-                expect(toggleSelectAllBtn.textContent).toContain('Deselect all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('Deselect all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('All files are selected');
             });
 
             it('check all checkboxes unchecked, when select all files button clicked, all files previously checked', () => {
@@ -158,9 +159,8 @@ describe('LloydGeorgeSelectSearchResults', () => {
                     expect(checkbox).toBeChecked();
                 });
 
-                expect(toggleSelectAllBtn.textContent).toBe(
-                    'Deselect all filesAll files are selected',
-                );
+                expect(toggleSelectAllBtn).toHaveTextContent('Deselect all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('All files are selected');
 
                 act(() => {
                     userEvent.click(toggleSelectAllBtn);
@@ -180,9 +180,8 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 checkboxes.forEach((checkbox) => {
                     expect(checkbox).not.toBeChecked();
                 });
-                expect(toggleSelectAllBtn.textContent).toBe(
-                    'Select all filesAll files are deselected',
-                );
+                expect(toggleSelectAllBtn).toHaveTextContent('Select all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('All files are deselected');
             });
 
             it('check all checkboxes unchecked, when select all files button clicked twice, no files previously checked', () => {
@@ -217,9 +216,8 @@ describe('LloydGeorgeSelectSearchResults', () => {
                 checkboxes.forEach((checkbox) => {
                     expect(checkbox).not.toBeChecked();
                 });
-                expect(toggleSelectAllBtn.textContent).toBe(
-                    'Select all filesAll files are deselected',
-                );
+                expect(toggleSelectAllBtn).toHaveTextContent('Select all files');
+                expect(toggleSelectAllBtn).toHaveTextContent('All files are deselected');
             });
         });
     });

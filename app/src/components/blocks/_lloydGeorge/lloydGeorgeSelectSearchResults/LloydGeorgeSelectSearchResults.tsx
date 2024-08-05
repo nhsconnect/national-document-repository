@@ -52,7 +52,7 @@ const AvailableFilesTable = ({
         }
     };
 
-    const handleToggleButtonAriaDescription = () => {
+    const getToggleButtonAriaDescription = () => {
         if (selectedDocuments.length === searchResults.length) {
             return 'Toggle selection button, Click to deselect all files';
         } else {
@@ -60,7 +60,7 @@ const AvailableFilesTable = ({
         }
     };
 
-    const handleToggleButtonStatusChange = () => {
+    const getToggleButtonStatusChange = () => {
         if (selectedDocuments.length === searchResults.length) {
             return 'All files are selected';
         } else if (selectedDocuments.length === 0) {
@@ -78,7 +78,7 @@ const AvailableFilesTable = ({
                         secondary={true}
                         data-testid="toggle-selection-btn"
                         type="button"
-                        aria-description={handleToggleButtonAriaDescription()}
+                        aria-description={getToggleButtonAriaDescription()}
                     >
                         <span>
                             {selectedDocuments.length === searchResults.length &&
@@ -89,7 +89,7 @@ const AvailableFilesTable = ({
                             data-testid="toggle-selection-btn-announcement"
                             className="nhsuk-u-visually-hidden"
                         >
-                            {handleToggleButtonStatusChange()}
+                            {getToggleButtonStatusChange()}
                         </output>
                     </Button>
                     <p>Or select individual files</p>
@@ -128,12 +128,9 @@ const AvailableFilesTable = ({
                                             checked={selectedDocuments.includes(result.ID)}
                                             aria-checked={selectedDocuments.includes(result.ID)}
                                         >
-                                            <label
-                                                htmlFor={result.fileName}
-                                                className="nhsuk-u-visually-hidden"
-                                            >
+                                            <span className="nhsuk-u-visually-hidden">
                                                 {result.fileName}
-                                            </label>
+                                            </span>
                                         </Checkboxes.Box>
                                     </Checkboxes>
                                 </Table.Cell>
