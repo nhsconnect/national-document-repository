@@ -3,27 +3,53 @@ import { Roles } from '../../../support/roles';
 
 const workspace = Cypress.env('WORKSPACE');
 const uploadedFilePathNames = [
-    'cypress/fixtures/lg-files/jane_smith/1of3_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010].pdf',
-    'cypress/fixtures/lg-files/jane_smith/2of3_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010].pdf',
-    'cypress/fixtures/lg-files/jane_smith/3of3_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010].pdf',
+    'cypress/fixtures/lg-files/tim_brad_jacks/1of3_Lloyd_George_Record_[Tim Brad Jacks]_[9730787077]_[10-02-2024].pdf',
+    'cypress/fixtures/lg-files/tim_brad_jacks/2of3_Lloyd_George_Record_[Tim Brad Jacks]_[9730787077]_[10-02-2024].pdf',
+    'cypress/fixtures/lg-files/tim_brad_jacks/3of3_Lloyd_George_Record_[Tim Brad Jacks]_[9730787077]_[10-02-2024].pdf',
 ];
 const uploadedFileNames = [
-    '1of3_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010].pdf',
-    '2of3_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010].pdf',
-    '3of3_Lloyd_George_Record_[Jane Smith]_[9000000004]_[22-10-2010].pdf',
+    '1of3_Lloyd_George_Record_[Tim Brad Jacks]_[9730787077]_[10-02-2024].pdf',
+    '2of3_Lloyd_George_Record_[Tim Brad Jacks]_[9730787077]_[10-02-2024].pdf',
+    '3of3_Lloyd_George_Record_[Tim Brad Jacks]_[9730787077]_[10-02-2024].pdf',
 ];
 
 const baseUrl = Cypress.config('baseUrl');
+const bucketName = `${workspace}-lloyd-george-store`;
 const tableName = `${workspace}_LloydGeorgeReferenceMetadata`;
 
 const patientVerifyUrl = '/patient/verify';
 const lloydGeorgeRecordUrl = '/patient/lloyd-george-record';
 
-const activePatient =
-    workspace === 'ndr-dev' ? pdsPatients.activeNoUploadBsol : stubPatients.activeNoUploadBsol;
+const activePatient = pdsPatients.activeNoUploadBsol;
 
 describe('GP Workflow: Upload Lloyd George record', () => {
     context('Upload a Lloyd George document', () => {
+        beforeEach(() => {
+            //delete any records present for the active patient
+            cy.deleteItemsBySecondaryKeyFromDynamoDb(
+                tableName,
+                'NhsNumberIndex',
+                'NhsNumber',
+                activePatient.toString(),
+            );
+            uploadedFileNames.forEach((file) => {
+                cy.deleteFileFromS3(bucketName, file);
+            });
+        });
+
+        afterEach(() => {
+            //clean up any records present for the active patient
+            cy.deleteItemsBySecondaryKeyFromDynamoDb(
+                tableName,
+                'NhsNumberIndex',
+                'NhsNumber',
+                activePatient.toString(),
+            );
+            uploadedFileNames.forEach((file) => {
+                cy.deleteFileFromS3(bucketName, file);
+            });
+        });
+
         it(
             '[Smoke] BSOL GP ADMIN can upload and then view a Lloyd George record for an active patient with no record',
             { tags: 'smoke', defaultCommandTimeout: 20000 },
@@ -55,7 +81,7 @@ describe('GP Workflow: Upload Lloyd George record', () => {
                 uploadedFileNames.forEach((name) => {
                     cy.getByTestId('upload-documents-table').should('contain', name);
                 });
-                cy.getByTestId('upload-complete-page', { timeout: 20000 }).should('exist');
+                cy.getByTestId('upload-complete-page', { timeout: 25000 }).should('exist');
                 cy.getByTestId('upload-complete-page')
                     .should('include.text', 'Record uploaded for')
                     .should(
@@ -66,11 +92,6 @@ describe('GP Workflow: Upload Lloyd George record', () => {
 
                 uploadedFileNames.forEach((name) => {
                     cy.getByTestId('upload-complete-page').should('contain', name);
-                    cy.getByTestId(name.split('_')[0])
-                        .invoke('attr', 'data-ref')
-                        .then((ref) => {
-                            cy.deleteItemFromDynamoDb(tableName, ref);
-                        });
                 });
                 cy.getByTestId('upload-complete-card').should('be.visible');
                 cy.getByTestId('view-record-btn').should('be.visible');

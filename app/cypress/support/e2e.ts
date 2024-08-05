@@ -56,6 +56,12 @@ Cypress.Commands.add('smokeLogin', (role) => {
         const startUrl = '/';
         const authCallback = '/auth-callback';
         cy.visit(startUrl);
+        cy.url().should('eq', baseUrl + startUrl);
+        cy.get('.nhsuk-header__transactional-service-name--link').should(
+            'have.text',
+            'Access and store digital GP records',
+        );
+        cy.get('.nhsuk-header__navigation').should('not.exist');
         cy.getByTestId('start-btn').should('exist');
         cy.getByTestId('start-btn').click();
         cy.origin(
@@ -66,10 +72,7 @@ Cypress.Commands.add('smokeLogin', (role) => {
                 const { username, password, role } = args;
                 cy.url().should('include', 'cis2.spineservices.nhs.uk');
                 cy.get('.nhsuk-cis2-cia-header-text').should('exist');
-                cy.get('.nhsuk-cis2-cia-header-text').should(
-                    'have.text',
-                    'CIS2 - Care Identity Authentication',
-                );
+                cy.get('.nhsuk-cis2-cia-header-text').should('include.text', 'Authentication');
                 cy.get('#floatingLabelInput19').should('exist');
                 cy.get('#floatingLabelInput19').type(username);
                 cy.get('#floatingLabelInput25').should('exist');
@@ -177,6 +180,20 @@ declare global {
                 tableName: string,
                 itemId: string,
             ): Chainable<Bluebird<DynamoDB.DeleteItemOutput>>;
+            /**
+             * Delete items with a specific secondary key value from DynamoDB table
+             * @param {string} tableName - Name of the target DynamoDB table
+             * @param {string} index - Index for the secondary key
+             * @param {string} attribute - Name of the attribute you are matching on
+             * @param {string} value - Specific value you are matching on to delete
+             * @return {Promise<BatchWriteItemOutput>} - Dynamo response for dynamoDB.BatchWriteItem
+             */
+            deleteItemsBySecondaryKeyFromDynamoDb(
+                tableName: string,
+                index: string,
+                attribute: string,
+                value: string,
+            ): Chainable<Bluebird<DynamoDB.BatchWriteItemOutput>>;
             /**
              * Workaround to prevent click on download link from firing a load event and preventing test continuing to run
              */

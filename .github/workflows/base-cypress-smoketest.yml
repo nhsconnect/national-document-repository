@@ -53,11 +53,14 @@ jobs:
         working-directory: ./app
 
       - name: Cypress run
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           install: false
           browser: chrome
           working-directory: ./app
+          spec: | 
+            cypress/e2e/1-ndr-smoke-tests/*.cy.js
+            cypress/e2e/1-ndr-smoke-tests/**/*.cy.js
         env:
           CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
@@ -103,11 +106,15 @@ jobs:
         working-directory: ./app
 
       - name: Cypress run
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           install: false
           browser: firefox
           working-directory: ./app
+          spec: | 
+            cypress/e2e/1-ndr-smoke-tests/*.cy.js
+            cypress/e2e/1-ndr-smoke-tests/**/*.cy.js
+
         env:
           CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
@@ -140,11 +147,14 @@ jobs:
         working-directory: ./app
 
       - name: Cypress run
-        uses: cypress-io/github-action@v5
+        uses: cypress-io/github-action@v6
         with:
           install: false
           browser: edge
           working-directory: ./app
+          spec: | 
+            cypress/e2e/1-ndr-smoke-tests/*.cy.js
+            cypress/e2e/1-ndr-smoke-tests/**/*.cy.js
         env:
           CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
