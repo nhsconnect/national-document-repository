@@ -57,7 +57,7 @@ jobs:
         with:
           install: false
           browser: chrome
-          working-directory: ./app
+          working-directory: ./app/cypress/e2e/1-ndr-smoke-tests
         env:
           CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
@@ -107,7 +107,7 @@ jobs:
         with:
           install: false
           browser: firefox
-          working-directory: ./app
+          working-directory: ./app/cypress/e2e/1-ndr-smoke-tests
         env:
           CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
@@ -144,7 +144,7 @@ jobs:
         with:
           install: false
           browser: edge
-          working-directory: ./app
+          working-directory: ./app/cypress/e2e/1-ndr-smoke-tests
         env:
           CYPRESS_BASE_URL: 'https://${{ inputs.sandbox }}.access-request-fulfilment.patient-deductions.nhs.uk'
           CYPRESS_grepTags: 'smoke'
