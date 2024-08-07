@@ -410,7 +410,6 @@ PDS_PATIENT_WITHOUT_ACTIVE_GP = {
     "gender": "female",
     "birthDate": "2010-10-22",
     "multipleBirthInteger": 1,
-    "deceasedDateTime": "2010-10-22T00:00:00+00:00",
     "generalPractitioner": [],
     "managingOrganization": {
         "type": "Organization",
@@ -458,7 +457,6 @@ PDS_PATIENT_WITH_GP_END_DATE = {
     "gender": "female",
     "birthDate": "2010-10-22",
     "multipleBirthInteger": 1,
-    "deceasedDateTime": "2010-10-22T00:00:00+00:00",
     "generalPractitioner": [
         {
             "id": "254406A3",
