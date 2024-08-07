@@ -18,14 +18,14 @@ describe('Home Page', () => {
         cy.url().should('eq', baseUrl + startUrl);
         cy.title().should(
             'eq',
-            'Access and store digital GP records - Digital Lloyd George records',
+            'Access and store digital patient documents - Digital Lloyd George records',
         );
     });
 
     it('displays correct page title on home page', { tags: 'regression' }, () => {
         cy.get('.app-homepage-content h1').should(
             'have.text',
-            'Access and store digital GP records',
+            'Access and store digital patient documents',
         );
     });
 
@@ -56,7 +56,7 @@ describe('Home Page', () => {
                 cy.get('.nhsuk-header__transactional-service-name--link').should('exist');
                 cy.get('.nhsuk-header__transactional-service-name--link').should(
                     'have.text',
-                    'Access and store digital GP records',
+                    'Access and store digital patient documents',
                 );
                 cy.get('.nhsuk-header__navigation').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');
@@ -150,7 +150,7 @@ describe('Home Page', () => {
                 cy.get('.nhsuk-header__transactional-service-name--link').should('exist');
                 cy.get('.nhsuk-header__transactional-service-name--link').should(
                     'have.text',
-                    'Access and store digital GP records',
+                    'Access and store digital patient documents',
                 );
                 cy.get('.nhsuk-header__navigation').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');

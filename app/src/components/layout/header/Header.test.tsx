@@ -35,7 +35,7 @@ describe('Header', () => {
         it('navigates to the home page when header is clicked and user is logged in', async () => {
             mockedUseRole.mockReturnValue(REPOSITORY_ROLE.GP_ADMIN);
             renderHeaderWithRouter();
-            userEvent.click(screen.getByText('Access and store digital GP records'));
+            userEvent.click(screen.getByText('Access and store digital patient documents'));
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);

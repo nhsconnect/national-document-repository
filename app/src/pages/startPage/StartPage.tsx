@@ -26,7 +26,7 @@ function StartPage(props: Props) {
             window.location.replace(`${baseAPIUrl}${endpoints.LOGIN}`);
         }
     };
-    const pageHeader = 'Access and store digital GP records';
+    const pageHeader = 'Access and store digital patient documents';
     useTitle({ pageTitle: pageHeader });
     return !isLoading ? (
         <>
