@@ -1,6 +1,7 @@
 from datetime import date
 from typing import Optional, Tuple
 
+from enums.death_notification_status import DeathNotificationStatus
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 from utils.audit_logging_setup import LoggingService
@@ -64,6 +65,11 @@ class GeneralPractitioner(BaseModel):
     identifier: GPIdentifier
 
 
+class Extension(BaseModel):
+    url: str
+    extension: list[dict] = []
+
+
 class PatientDetails(BaseModel):
     model_config = conf
 
@@ -76,6 +82,8 @@ class PatientDetails(BaseModel):
     restricted: bool
     general_practice_ods: str = ""
     active: Optional[bool] = None
+    deceased: bool = False
+    death_notification_status: Optional[DeathNotificationStatus] = None
 
 
 class Patient(BaseModel):
@@ -87,6 +95,8 @@ class Patient(BaseModel):
     name: list[Name]
     meta: Meta
     general_practitioner: list[GeneralPractitioner] = []
+    deceased_date_time: str = ""
+    extension: list[Extension] = []
 
     def get_security(self) -> Security:
         security = self.meta.security[0] if self.meta.security[0] else None
@@ -150,9 +160,40 @@ class Patient(BaseModel):
         gp_ods = self.get_active_ods_code_for_gp()
         return bool(gp_ods)
 
+    def get_death_notification_status(self) -> Optional[DeathNotificationStatus]:
+        if not self.deceased_date_time:
+            return None
+
+        for extension_wrapper in self.extension:
+            if (
+                extension_wrapper.url
+                != "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus"
+            ):
+                continue
+            return self.parse_death_notification_status_extension(extension_wrapper)
+
+    @staticmethod
+    def parse_death_notification_status_extension(
+        extension_wrapper: Extension,
+    ) -> Optional[DeathNotificationStatus]:
+        try:
+            for nested_extension in extension_wrapper.extension:
+                if nested_extension["url"] == "deathNotificationStatus":
+                    return DeathNotificationStatus(
+                        nested_extension["valueCodeableConcept"]["coding"][0]["code"]
+                    )
+        except (KeyError, IndexError, ValueError) as e:
+            logger.info(
+                "Failed to parse death_notification_status "
+                "for patient due to error: %s. Will fill the value as None.",
+                e,
+            )
+        return None
+
     def get_patient_details(self, nhs_number) -> PatientDetails:
         family_name, given_name = self.get_current_family_name_and_given_name()
         current_home_address = self.get_current_home_address()
+        death_notification_status = self.get_death_notification_status()
 
         patient_details = PatientDetails(
             givenName=given_name,
@@ -166,12 +207,15 @@ class Patient(BaseModel):
             restricted=not self.is_unrestricted(),
             generalPracticeOds=self.get_active_ods_code_for_gp(),
             active=self.get_is_active_status(),
+            deceased=is_deceased(death_notification_status),
+            deathNotificationStatus=death_notification_status,
         )
 
         return patient_details
 
     def get_minimum_patient_details(self, nhs_number) -> PatientDetails:
         family_name, given_name = self.get_current_family_name_and_given_name()
+        death_notification_status = self.get_death_notification_status()
 
         return PatientDetails(
             givenName=given_name,
@@ -183,4 +227,13 @@ class Patient(BaseModel):
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
+            deathNotificationStatus=death_notification_status,
+            deceased=is_deceased(death_notification_status),
         )
+
+
+def is_deceased(death_notification_status: Optional[DeathNotificationStatus]) -> bool:
+    return (
+        death_notification_status == DeathNotificationStatus.FORMAL
+        or death_notification_status == DeathNotificationStatus.INFORMAL
+    )

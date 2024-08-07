@@ -1,8 +1,10 @@
+from enums.death_notification_status import DeathNotificationStatus
 from freezegun import freeze_time
 from models.pds_models import PatientDetails
 from tests.unit.conftest import EXPECTED_PARSED_PATIENT_BASE_CASE
 from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT,
+    PDS_PATIENT_DECEASED,
     PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME,
     PDS_PATIENT_NO_GIVEN_NAME_IN_HISTORIC_NAME,
     PDS_PATIENT_NO_PERIOD_IN_GENERAL_PRACTITIONER_IDENTIFIER,
@@ -72,6 +74,21 @@ def test_get_minimum_patient_details():
     result = patient.get_minimum_patient_details(patient.id)
 
     assert expected_patient_details == result
+
+
+def test_get_patient_details_for_deceased_patient():
+    patient = create_patient(PDS_PATIENT_DECEASED)
+
+    expected_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(
+        update={
+            "death_notification_status": DeathNotificationStatus.FORMAL,
+            "deceased": True,
+        }
+    )
+
+    result = patient.get_patient_details(patient.id)
+
+    assert result == expected_patient_details
 
 
 @freeze_time("2024-12-31")
