@@ -16,6 +16,7 @@ from utils.exceptions import (
     BulkUploadException,
     DocumentInfectedException,
     InvalidMessageException,
+    PatientDeceasedException,
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
     S3FileNotFoundException,
@@ -111,9 +112,23 @@ class BulkUploadService:
             )
             patient_ods_code = pds_patient_details.general_practice_ods
             validate_filename_with_patient_details(file_names, pds_patient_details)
+
             if not allowed_to_ingest_ods_code(patient_ods_code):
                 raise LGInvalidFilesException("Patient not registered at your practice")
-        except (LGInvalidFilesException, PatientRecordAlreadyExistException) as error:
+
+            if pds_patient_details.deceased:
+                death_notification_status = (
+                    pds_patient_details.death_notification_status
+                )
+                raise PatientDeceasedException(
+                    f"Patient is deceased - {death_notification_status}"
+                )
+
+        except (
+            LGInvalidFilesException,
+            PatientRecordAlreadyExistException,
+            PatientDeceasedException,
+        ) as error:
             logger.info(
                 f"Detected issue related to patient number: {staging_metadata.nhs_number}"
             )

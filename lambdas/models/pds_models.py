@@ -179,7 +179,7 @@ class Patient(BaseModel):
         try:
             for nested_extension in extension_wrapper.extension:
                 if nested_extension["url"] == "deathNotificationStatus":
-                    return DeathNotificationStatus(
+                    return DeathNotificationStatus.from_code(
                         nested_extension["valueCodeableConcept"]["coding"][0]["code"]
                     )
         except (KeyError, IndexError, ValueError) as e:
