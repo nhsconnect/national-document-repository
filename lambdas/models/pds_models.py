@@ -227,8 +227,8 @@ class Patient(BaseModel):
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
-            deathNotificationStatus=death_notification_status,
             deceased=is_deceased(death_notification_status),
+            deathNotificationStatus=death_notification_status,
         )
 
 
