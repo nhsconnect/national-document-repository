@@ -50,7 +50,7 @@ MOCK_ROLE_CODE_RESPONSE = {
         {
             "Name": GP_CLINICAL_USER_ROLE_CODE,
             "Type": "String",
-            "Value": "R0002",
+            "Value": "R0004,R0005,R0006",
             "Version": 123,
             "Selector": "string",
             "SourceResult": "string",
@@ -61,7 +61,7 @@ MOCK_ROLE_CODE_RESPONSE = {
         {
             "Name": PCSE_USER_ROLE_CODE,
             "Type": "String",
-            "Value": "R0003",
+            "Value": "R0007,R0008,R0009",
             "Version": 123,
             "Selector": "string",
             "SourceResult": "string",
@@ -114,7 +114,7 @@ def test_get_jwt_token(mock_service, mock_ssm):
 
 def test_get_ssm_parameters(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSE
-    expected = ["R0001,R0002,R0003", "R0002", "R0003"]
+    expected = ["R0001,R0002,R0003", "R0004,R0005,R0006", "R0007,R0008,R0009"]
 
     actual = mock_service.get_smartcard_role_codes()
 
@@ -158,7 +158,7 @@ def test_get_smartcard_role_gp_admin_raises_login_exception(mock_service, mock_s
 
 def test_get_smartcard_role_gp_clinical(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSE
-    expected = "R0002"
+    expected = ["R0004", "R0005", "R0006"]
 
     actual = mock_service.get_smartcard_role_gp_clinical()
 
@@ -185,7 +185,7 @@ def test_get_smartcard_role_gp_clinical_raises_login_exception(mock_service, moc
 
 def test_get_smartcard_role_pcse(mock_service, mock_ssm):
     mock_ssm.get_parameters.return_value = MOCK_ROLE_CODE_RESPONSE
-    expected = "R0003"
+    expected = ["R0007", "R0008", "R0009"]
 
     actual = mock_service.get_smartcard_role_pcse()
 

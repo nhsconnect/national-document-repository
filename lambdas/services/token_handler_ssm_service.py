@@ -59,34 +59,38 @@ class TokenHandlerSSMService(SSMService):
         response = values.split(",")
         return response
 
-    def get_smartcard_role_gp_clinical(self) -> str:
+    def get_smartcard_role_gp_clinical(self) -> list[str]:
         logger.info(
             "starting ssm request to retrieve required smartcard role code gp clinical"
         )
         params = self.get_ssm_parameters([GP_CLINICAL_USER_ROLE_CODE])
+        values = params.get(GP_CLINICAL_USER_ROLE_CODE)
 
-        response = params.get(GP_CLINICAL_USER_ROLE_CODE)
-        if response is None:
+        if values is None:
             logger.error(
                 LambdaError.LoginClinicalSSM.to_str(),
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(500, LambdaError.LoginClinicalSSM)
 
+        response = values.split(",")
         return response
 
-    def get_smartcard_role_pcse(self) -> str:
+    def get_smartcard_role_pcse(self) -> list[str]:
         logger.info(
             "starting ssm request to retrieve required smartcard role code pcse"
         )
         params = self.get_ssm_parameters([PCSE_USER_ROLE_CODE])
-        response = params.get(PCSE_USER_ROLE_CODE)
-        if response is None:
+        values = params.get(PCSE_USER_ROLE_CODE)
+
+        if values is None:
             logger.error(
                 LambdaError.LoginPcseSSM.to_str(),
                 {"Result": "Unsuccessful login"},
             )
             raise LoginException(500, LambdaError.LoginPcseSSM)
+
+        response = values.split(",")
         return response
 
     def get_org_role_codes(self) -> list[str]:
