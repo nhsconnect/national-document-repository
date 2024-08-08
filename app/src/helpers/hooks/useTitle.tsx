@@ -5,7 +5,7 @@ type Props = {
 };
 
 function useTitle({ pageTitle }: Props) {
-    const serviceName = 'Digital Lloyd George records';
+    const serviceName = 'Access and store digital patient documents';
     useEffect(() => {
         document.title = pageTitle + ' - ' + serviceName;
     }, [pageTitle]);

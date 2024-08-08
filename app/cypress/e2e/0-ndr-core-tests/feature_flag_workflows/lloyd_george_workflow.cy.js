@@ -26,13 +26,19 @@ describe('Feature flags - Lloyd George Workflow', () => {
                 cy.intercept('GET', '/LloydGeorgeStitch*', {
                     statusCode: 404,
                 });
-                cy.title().should('eq', 'Verify patient details - Digital Lloyd George records');
+                cy.title().should(
+                    'eq',
+                    'Verify patient details - Access and store digital patient documents',
+                );
 
                 cy.get('#verify-submit').click();
 
                 cy.getByTestId('upload-patient-record-text').should('exist');
                 cy.getByTestId('upload-patient-record-button').should('exist');
-                cy.title().should('eq', 'Available records - Digital Lloyd George records');
+                cy.title().should(
+                    'eq',
+                    'Available records - Access and store digital patient documents',
+                );
             },
         );
 

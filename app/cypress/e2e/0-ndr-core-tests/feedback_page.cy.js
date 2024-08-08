@@ -42,7 +42,7 @@ describe('Feedback Page', () => {
                     cy.url().should('eq', baseUrl + feedbackUrl);
                     cy.title().should(
                         'eq',
-                        'Give feedback on this service - Digital Lloyd George records',
+                        'Give feedback on this service - Access and store digital patient documents',
                     );
                 },
             );
@@ -92,7 +92,10 @@ describe('Feedback Page', () => {
                             'have.text',
                             'We’ve received your feedback',
                         );
-                        cy.title().should('eq', 'Feedback sent - Digital Lloyd George records');
+                        cy.title().should(
+                            'eq',
+                            'Feedback sent - Access and store digital patient documents',
+                        );
                     },
                 );
 

@@ -18,7 +18,7 @@ describe('Home Page', () => {
         cy.url().should('eq', baseUrl + startUrl);
         cy.title().should(
             'eq',
-            'Access and store digital patient documents - Digital Lloyd George records',
+            'Access and store digital patient documents - Access and store digital patient documents',
         );
     });
 
@@ -84,7 +84,7 @@ describe('Home Page', () => {
                     );
                     cy.title().should(
                         'eq',
-                        'Access to this service outside of Birmingham and Solihull - Digital Lloyd George records',
+                        'Access to this service outside of Birmingham and Solihull - Access and store digital patient documents',
                     );
                     cy.get('.govuk-warning-text__text').should('exist');
                     cy.get('.govuk-warning-text__text').should(
