@@ -1,10 +1,10 @@
 {
   "resourceType": "Patient",
-  "id": "9000000006",
+  "id": "9000000201",
   "identifier": [
     {
       "system": "https://fhir.nhs.uk/Id/nhs-number",
-      "value": "9000000006",
+      "value": "9000000201",
       "extension": [
         {
           "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NHSNumberVerificationStatus",
@@ -125,8 +125,8 @@
               {
                 "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-DeathNotificationStatus",
                 "version": "1.0.0",
-                "code": "2",
-                "display": "Formal - death notice received from Registrar of Deaths"
+                "code": "1",
+                "display": "Informal - death notice received via an update from a local NHS Organisation such as GP or Trust"
               }
             ]
           }
