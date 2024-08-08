@@ -179,14 +179,15 @@ class Patient(BaseModel):
         try:
             for nested_extension in extension_wrapper.extension:
                 if nested_extension["url"] == "deathNotificationStatus":
-                    return DeathNotificationStatus.from_code(
-                        nested_extension["valueCodeableConcept"]["coding"][0]["code"]
-                    )
+                    status_code = nested_extension["valueCodeableConcept"]["coding"][0][
+                        "code"
+                    ]
+                    return DeathNotificationStatus.from_code(status_code)
+
         except (KeyError, IndexError, ValueError) as e:
             logger.info(
-                "Failed to parse death_notification_status "
-                "for patient due to error: %s. Will fill the value as None.",
-                e,
+                f"Failed to parse death_notification_status for patient due to error: {str(e)}. "
+                "Will fill the value as None."
             )
         return None
 
