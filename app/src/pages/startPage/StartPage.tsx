@@ -33,7 +33,8 @@ function StartPage(props: Props) {
             <h1>{pageHeader}</h1>
             <p>
                 This service gives you access to Lloyd George digital health records. You may have
-                received a note within a patient record, stating that the record has been digitised.
+                received a note within a patient record, stating that the paper record has been
+                digitised.
             </p>
             <p>If you are part of a GP practice, you can use this service to:</p>
             <ul>
