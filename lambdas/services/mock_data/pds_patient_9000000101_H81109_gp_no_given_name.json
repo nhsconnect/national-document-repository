@@ -113,28 +113,6 @@
       }
     },
     {
-      "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
-      "extension": [
-        {
-          "url": "deathNotificationStatus",
-          "valueCodeableConcept": {
-            "coding": [
-              {
-                "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-DeathNotificationStatus",
-                "version": "1.0.0",
-                "code": "2",
-                "display": "Formal - death notice received from Registrar of Deaths"
-              }
-            ]
-          }
-        },
-        {
-          "url": "systemEffectiveDate",
-          "valueDateTime": "2010-10-22T00:00:00+00:00"
-        }
-      ]
-    },
-    {
       "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NHSCommunication",
       "extension": [
         {

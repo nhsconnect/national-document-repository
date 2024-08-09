@@ -217,7 +217,7 @@ def parse_pds_response(pds_response: requests.Response) -> Patient:
 
 def get_allowed_ods_codes() -> list[str]:
     if os.getenv("PDS_FHIR_IS_STUBBED") in ["True", "true"]:
-        return ["H81109"]
+        return ["ALL"]
     else:
         ssm_service = SSMService()
         gp_ods = ssm_service.get_ssm_parameter(SSMParameter.GP_ODS_CODE.value)
