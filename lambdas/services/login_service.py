@@ -179,8 +179,8 @@ class LoginService:
             return RepositoryRole.NONE
 
         if (
-            self.token_handler_ssm_service.get_smartcard_role_gp_clinical()
-            == smartcard_role
+            smartcard_role
+            in self.token_handler_ssm_service.get_smartcard_role_gp_clinical()
         ):
             logger.info("GP Clinical: smartcard ODS identified")
             if self.has_role_org_role_code(
@@ -189,7 +189,7 @@ class LoginService:
                 return RepositoryRole.GP_CLINICAL
             return RepositoryRole.NONE
 
-        if self.token_handler_ssm_service.get_smartcard_role_pcse() == smartcard_role:
+        if smartcard_role in self.token_handler_ssm_service.get_smartcard_role_pcse():
             logger.info("PCSE: smartcard ODS identified")
             if self.has_role_org_ods_code(
                 organisation, self.token_handler_ssm_service.get_org_ods_codes()[0]
