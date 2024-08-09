@@ -276,7 +276,7 @@ def test_generate_repository_role_gp_clinical(set_env, mocker):
     mocker.patch.object(
         TokenHandlerSSMService,
         "get_smartcard_role_gp_clinical",
-        return_value=user_role_code,
+        return_value=[user_role_code],
     )
     mocker.patch.object(
         TokenHandlerSSMService, "get_org_role_codes", return_value=[org_role_code]
@@ -304,7 +304,7 @@ def test_generate_repository_role_pcse(set_env, mocker):
     mocker.patch.object(
         TokenHandlerSSMService,
         "get_smartcard_role_gp_clinical",
-        return_value="wrong_role_code",
+        return_value=["wrong_role_code"],
     )
     mocker.patch.object(
         TokenHandlerSSMService, "get_smartcard_role_pcse", return_value=user_role_code
@@ -333,12 +333,12 @@ def test_generate_repository_role_no_role_raises_auth_error(set_env, mocker):
     mocker.patch.object(
         TokenHandlerSSMService,
         "get_smartcard_role_gp_clinical",
-        return_value="wrong_role_code",
+        return_value=["wrong_role_code"],
     )
     mocker.patch.object(
         TokenHandlerSSMService,
         "get_smartcard_role_pcse",
-        return_value="wrong_role_code",
+        return_value=["wrong_role_code"],
     )
 
     login_service = LoginService()
