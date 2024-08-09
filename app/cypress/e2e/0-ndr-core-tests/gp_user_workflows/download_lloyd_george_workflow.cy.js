@@ -7,11 +7,12 @@ const baseUrl = Cypress.config('baseUrl');
 const patientSearchUrl = '/patient/search';
 
 const downloadPageTitle =
-    'Download the Lloyd George record for this patient - Digital Lloyd George records';
-const downloadingPageTitle = 'Downloading documents - Digital Lloyd George records';
-const downloadCompletePageTitle = 'Download complete - Digital Lloyd George records';
-const verifyPatientPageTitle = 'Verify patient details - Digital Lloyd George records';
-const lloydGeorgeRecordPageTitle = 'Available records - Digital Lloyd George records';
+    'Download the Lloyd George record for this patient - Access and store digital patient documents';
+const downloadingPageTitle = 'Downloading documents - Access and store digital patient documents';
+const downloadCompletePageTitle = 'Download complete - Access and store digital patient documents';
+const verifyPatientPageTitle =
+    'Verify patient details - Access and store digital patient documents';
+const lloydGeorgeRecordPageTitle = 'Available records - Access and store digital patient documents';
 const testFiles = [
     {
         fileName: '1of2_testy_test.pdf',

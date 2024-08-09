@@ -68,7 +68,7 @@ describe('GP Workflow: View Lloyd George record', () => {
                 // Assert contents of page after download
                 cy.title({ timeout: 30000 }).should(
                     'eq',
-                    'Download complete - Digital Lloyd George records',
+                    'Download complete - Access and store digital patient documents',
                 );
                 cy.getByTestId('downloaded-record-card-header').should('exist');
                 cy.contains('You have downloaded the record of:').should('be.visible');

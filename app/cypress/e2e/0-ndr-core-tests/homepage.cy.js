@@ -18,14 +18,14 @@ describe('Home Page', () => {
         cy.url().should('eq', baseUrl + startUrl);
         cy.title().should(
             'eq',
-            'Access and store digital GP records - Digital Lloyd George records',
+            'Access and store digital patient documents - Access and store digital patient documents',
         );
     });
 
     it('displays correct page title on home page', { tags: 'regression' }, () => {
         cy.get('.app-homepage-content h1').should(
             'have.text',
-            'Access and store digital GP records',
+            'Access and store digital patient documents',
         );
     });
 
@@ -56,7 +56,7 @@ describe('Home Page', () => {
                 cy.get('.nhsuk-header__transactional-service-name--link').should('exist');
                 cy.get('.nhsuk-header__transactional-service-name--link').should(
                     'have.text',
-                    'Access and store digital GP records',
+                    'Access and store digital patient documents',
                 );
                 cy.get('.nhsuk-header__navigation').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');
@@ -84,7 +84,7 @@ describe('Home Page', () => {
                     );
                     cy.title().should(
                         'eq',
-                        'Access to this service outside of Birmingham and Solihull - Digital Lloyd George records',
+                        'Access to this service outside of Birmingham and Solihull - Access and store digital patient documents',
                     );
                     cy.get('.govuk-warning-text__text').should('exist');
                     cy.get('.govuk-warning-text__text').should(
@@ -150,7 +150,7 @@ describe('Home Page', () => {
                 cy.get('.nhsuk-header__transactional-service-name--link').should('exist');
                 cy.get('.nhsuk-header__transactional-service-name--link').should(
                     'have.text',
-                    'Access and store digital GP records',
+                    'Access and store digital patient documents',
                 );
                 cy.get('.nhsuk-header__navigation').should('not.exist');
                 cy.get('.nhsuk-header__navigation-list').should('not.exist');

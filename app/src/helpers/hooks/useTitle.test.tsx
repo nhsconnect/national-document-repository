@@ -9,7 +9,7 @@ describe('useTitle', () => {
 
             render(<TestApp />);
 
-            expect(document.title).toBe('test title - Digital Lloyd George records');
+            expect(document.title).toBe('test title - Access and store digital patient documents');
         });
     });
 });
