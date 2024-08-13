@@ -166,7 +166,9 @@ def test_get_dynamo_data_with_bad_response(mocker, set_env, bulk_upload_report_s
     bulk_upload_report_service.db_service.scan_table.assert_called_once()
 
 
-def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_service):
+def test_report_handler_no_items_return(
+    mocker, set_env, bulk_upload_report_service, caplog
+):
     mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
     mock_start_report_time = datetime(2012, 1, 13, 7, 0, 0, 0)
     f"Bulk upload report for {str(mock_start_report_time)} to {str(mock_end_report_time)}.txt"
@@ -174,6 +176,8 @@ def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_serv
         "services.bulk_upload_report_service.BulkUploadReportService.get_times_for_scan",
         return_value=(mock_start_report_time, mock_end_report_time),
     )
+
+    expected_message = "No data found, no new report file to upload"
 
     mock_get_db = mocker.patch(
         "services.bulk_upload_report_service.BulkUploadReportService.get_dynamodb_report_items",
@@ -190,6 +194,7 @@ def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_serv
     )
 
     bulk_upload_report_service.s3_service.upload_file.assert_not_called()
+    assert caplog.records[-1].msg == expected_message
 
 
 def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
