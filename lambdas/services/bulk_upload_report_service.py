@@ -87,8 +87,3 @@ class BulkUploadReportService:
             end_timestamp -= datetime.timedelta(days=1)
         start_timestamp = end_timestamp - datetime.timedelta(days=1)
         return start_timestamp, end_timestamp
-
-    @staticmethod
-    def write_empty_report(file_path: str):
-        with open(file_path, "w") as output_file:
-            output_file.write("No data was found for this timeframe")

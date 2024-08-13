@@ -83,13 +83,13 @@ def test_write_items_to_csv(bulk_upload_report_service):
     os.remove("test_file")
 
 
-def test_write_empty_file_to_txt(bulk_upload_report_service):
-    bulk_upload_report_service.write_empty_report("test_file")
-
-    with open("test_file") as test_file:
-        file_content = test_file.read()
-    assert file_content == "No data was found for this timeframe"
-    os.remove("test_file")
+# def test_write_empty_file_to_txt(bulk_upload_report_service):
+#     bulk_upload_report_service.write_empty_report("test_file")
+#
+#     with open("test_file") as test_file:
+#         file_content = test_file.read()
+#     assert file_content == "No data was found for this timeframe"
+#     os.remove("test_file")
 
 
 def test_get_dynamo_data_2_calls(mocker, set_env, bulk_upload_report_service):
@@ -174,9 +174,7 @@ def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_serv
         "services.bulk_upload_report_service.BulkUploadReportService.get_times_for_scan",
         return_value=(mock_start_report_time, mock_end_report_time),
     )
-    mocker.patch(
-        "services.bulk_upload_report_service.BulkUploadReportService.write_empty_report"
-    )
+
     mock_get_db = mocker.patch(
         "services.bulk_upload_report_service.BulkUploadReportService.get_dynamodb_report_items",
         return_value=[],
@@ -191,7 +189,6 @@ def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_serv
         int(mock_end_report_time.timestamp()),
     )
 
-    bulk_upload_report_service.write_empty_report.assert_not_called()
     bulk_upload_report_service.s3_service.upload_file.assert_not_called()
     # mock_write_empty_csv.assert_called_once()
     # bulk_upload_report_service.s3_service.upload_file.assert_called_with(
@@ -209,9 +206,6 @@ def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
         "services.bulk_upload_report_service.BulkUploadReportService.get_times_for_scan",
         return_value=(mock_start_report_time, mock_end_report_time),
     )
-    mock_write_empty_csv = mocker.patch(
-        "services.bulk_upload_report_service.BulkUploadReportService.write_empty_report"
-    )
     mock_get_db = mocker.patch(
         "services.bulk_upload_report_service.BulkUploadReportService.get_dynamodb_report_items",
         return_value=[{"test": "dsfsf"}],
@@ -228,7 +222,7 @@ def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
         int(mock_start_report_time.timestamp()),
         int(mock_end_report_time.timestamp()),
     )
-    mock_write_empty_csv.assert_not_called()
+
     mock_write_csv.assert_called_once()
     mock_write_csv.assert_called_with([{"test": "dsfsf"}], f"/tmp/{mock_file_name}")
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
