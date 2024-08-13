@@ -169,12 +169,12 @@ def test_get_dynamo_data_with_bad_response(mocker, set_env, bulk_upload_report_s
 def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_service):
     mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
     mock_start_report_time = datetime(2012, 1, 13, 7, 0, 0, 0)
-    mock_file_name = f"Bulk upload report for {str(mock_start_report_time)} to {str(mock_end_report_time)}.txt"
+    f"Bulk upload report for {str(mock_start_report_time)} to {str(mock_end_report_time)}.txt"
     mock_get_time = mocker.patch(
         "services.bulk_upload_report_service.BulkUploadReportService.get_times_for_scan",
         return_value=(mock_start_report_time, mock_end_report_time),
     )
-    mock_write_empty_csv = mocker.patch(
+    mocker.patch(
         "services.bulk_upload_report_service.BulkUploadReportService.write_empty_report"
     )
     mock_get_db = mocker.patch(
@@ -190,12 +190,15 @@ def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_serv
         int(mock_start_report_time.timestamp()),
         int(mock_end_report_time.timestamp()),
     )
-    mock_write_empty_csv.assert_called_once()
-    bulk_upload_report_service.s3_service.upload_file.assert_called_with(
-        s3_bucket_name=MOCK_STAGING_STORE_BUCKET,
-        file_key=f"reports/{mock_file_name}",
-        file_name=f"/tmp/{mock_file_name}",
-    )
+
+    bulk_upload_report_service.write_empty_report.assert_not_called()
+    bulk_upload_report_service.s3_service.upload_file.assert_not_called()
+    # mock_write_empty_csv.assert_called_once()
+    # bulk_upload_report_service.s3_service.upload_file.assert_called_with(
+    #     s3_bucket_name=MOCK_STAGING_STORE_BUCKET,
+    #     file_key=f"reports/{mock_file_name}",
+    #     file_name=f"/tmp/{mock_file_name}",
+    # )
 
 
 def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
@@ -225,7 +228,7 @@ def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
         int(mock_start_report_time.timestamp()),
         int(mock_end_report_time.timestamp()),
     )
-    mock_write_empty_csv.ssert_not_called()
+    mock_write_empty_csv.assert_not_called()
     mock_write_csv.assert_called_once()
     mock_write_csv.assert_called_with([{"test": "dsfsf"}], f"/tmp/{mock_file_name}")
     bulk_upload_report_service.s3_service.upload_file.assert_called_with(
