@@ -31,7 +31,10 @@ describe('GP Workflow: View Lloyd George record', () => {
             cy.getByTestId('download-instead-link').should('exist');
             cy.getByTestId('download-instead-link').click();
             cy.url().should('contains', baseUrl + '/unauthorised');
-            cy.title().should('eq', 'Unauthorised access - Digital Lloyd George records');
+            cy.title().should(
+                'eq',
+                'Unauthorised access - Access and store digital patient documents',
+            );
         }
     };
 
@@ -131,7 +134,10 @@ describe('GP Workflow: View Lloyd George record', () => {
 
                     //Assert
                     cy.contains('Sorry, there is a problem with the service').should('be.visible');
-                    cy.title().should('eq', 'Service error - Digital Lloyd George records');
+                    cy.title().should(
+                        'eq',
+                        'Service error - Access and store digital patient documents',
+                    );
                 },
             );
         });

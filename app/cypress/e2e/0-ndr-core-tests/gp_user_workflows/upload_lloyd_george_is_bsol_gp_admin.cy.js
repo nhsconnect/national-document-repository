@@ -134,7 +134,7 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 }).as('upload_confirm');
                 cy.title().should(
                     'eq',
-                    'Upload a Lloyd George record - Digital Lloyd George records',
+                    'Upload a Lloyd George record - Access and store digital patient documents',
                 );
 
                 cy.getByTestId('button-input').selectFile(
@@ -156,7 +156,10 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                     .should('contain', uploadedFileNames.LG[singleFileUsecaseIndex]);
 
                 testUploadCompletePageContent();
-                cy.title().should('eq', 'Record upload complete - Digital Lloyd George records');
+                cy.title().should(
+                    'eq',
+                    'Record upload complete - Access and store digital patient documents',
+                );
 
                 testViewRecordButton();
             },
@@ -492,7 +495,10 @@ describe('GP Workflow: Upload Lloyd George record when user is GP admin BSOL and
                 cy.getByTestId('failure-complete-page')
                     .should('include.text', 'Some of your files failed a virus scan')
                     .should('include.text', uploadedFileNames.LG[singleFileUsecaseIndex]);
-                cy.title().should('eq', 'The record did not upload - Digital Lloyd George records');
+                cy.title().should(
+                    'eq',
+                    'The record did not upload - Access and store digital patient documents',
+                );
                 cy.url().should('eq', baseUrl + lloydGeorgeInfectedUrl);
 
                 cy.getByTestId('retry-upload-btn').should('exist');

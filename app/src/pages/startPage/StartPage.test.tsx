@@ -15,7 +15,7 @@ describe('StartPage', () => {
 
         expect(
             screen.getByRole('heading', {
-                name: 'Access and store digital GP records',
+                name: 'Access and store digital patient documents',
             }),
         ).toBeInTheDocument();
     });
