@@ -40,7 +40,7 @@ class BulkUploadReportService:
             )
 
         else:
-            logger.info("No new report file to upload")
+            logger.info("No data found, no new report file to upload")
 
     def get_dynamodb_report_items(
         self, start_timestamp: int, end_timestamp: int

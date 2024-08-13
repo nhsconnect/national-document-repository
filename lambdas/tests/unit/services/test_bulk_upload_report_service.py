@@ -190,12 +190,6 @@ def test_report_handler_no_items_return(mocker, set_env, bulk_upload_report_serv
     )
 
     bulk_upload_report_service.s3_service.upload_file.assert_not_called()
-    # mock_write_empty_csv.assert_called_once()
-    # bulk_upload_report_service.s3_service.upload_file.assert_called_with(
-    #     s3_bucket_name=MOCK_STAGING_STORE_BUCKET,
-    #     file_key=f"reports/{mock_file_name}",
-    #     file_name=f"/tmp/{mock_file_name}",
-    # )
 
 
 def test_report_handler_with_items(mocker, set_env, bulk_upload_report_service):
