@@ -1,8 +1,13 @@
+import copy
+
+from enums.death_notification_status import DeathNotificationStatus
 from freezegun import freeze_time
 from models.pds_models import PatientDetails
 from tests.unit.conftest import EXPECTED_PARSED_PATIENT_BASE_CASE
 from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT,
+    PDS_PATIENT_DECEASED,
+    PDS_PATIENT_DECEASED_INFORMAL,
     PDS_PATIENT_NO_GIVEN_NAME_IN_CURRENT_NAME,
     PDS_PATIENT_NO_GIVEN_NAME_IN_HISTORIC_NAME,
     PDS_PATIENT_NO_PERIOD_IN_GENERAL_PRACTITIONER_IDENTIFIER,
@@ -72,6 +77,21 @@ def test_get_minimum_patient_details():
     result = patient.get_minimum_patient_details(patient.id)
 
     assert expected_patient_details == result
+
+
+def test_get_patient_details_for_deceased_patient():
+    patient = create_patient(PDS_PATIENT_DECEASED)
+
+    expected_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(
+        update={
+            "death_notification_status": DeathNotificationStatus.FORMAL,
+            "deceased": True,
+        }
+    )
+
+    result = patient.get_patient_details(patient.id)
+
+    assert result == expected_patient_details
 
 
 @freeze_time("2024-12-31")
@@ -299,3 +319,89 @@ def test_get_most_recent_name_return_none_if_no_active_name_found():
     test_patient = build_test_patient_with_names([])
 
     assert test_patient.get_most_recent_name() is None
+
+
+def test_get_death_notification_status_return_the_death_notification_status():
+    test_patient = create_patient(PDS_PATIENT_DECEASED)
+    expected = DeathNotificationStatus.FORMAL
+    actual = test_patient.get_death_notification_status()
+
+    assert actual == expected
+
+
+def test_get_death_notification_status_return_the_death_notification_status_informal():
+    test_patient = create_patient(PDS_PATIENT_DECEASED_INFORMAL)
+
+    expected = DeathNotificationStatus.INFORMAL
+    actual = test_patient.get_death_notification_status()
+
+    assert actual == expected
+
+
+def test_get_death_notification_status_return_none_if_extension_is_empty():
+    test_pds_response = copy.deepcopy(PDS_PATIENT_DECEASED)
+    test_pds_response["extension"] = []
+
+    test_patient = create_patient(test_pds_response)
+
+    assert test_patient.get_death_notification_status() is None
+
+
+def test_get_death_notification_status_return_none_if_death_notification_status_object_is_malformed():
+    test_pds_response = copy.deepcopy(PDS_PATIENT_DECEASED)
+    test_pds_response["extension"] = [
+        {
+            "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
+            "extension": [
+                {
+                    "url": "deathNotificationStatus",
+                    "foo": "bar",
+                    "msg": "some_invalid_data",
+                },
+                {
+                    "url": "systemEffectiveDate",
+                    "valueDateTime": "2010-10-22T00:00:00+00:00",
+                },
+            ],
+        }
+    ]
+
+    test_patient = create_patient(test_pds_response)
+
+    assert test_patient.get_death_notification_status() is None
+
+
+def test_get_death_notification_status_return_none_when_patient_not_deceased():
+    test_patient = create_patient(PDS_PATIENT)
+    expected = None
+    actual = test_patient.get_death_notification_status()
+
+    assert actual == expected
+
+
+def test_get_death_notification_status_return_none_when_patient_deceased_incorrect_deceased_code():
+    test_pds_response = copy.deepcopy(PDS_PATIENT_DECEASED)
+    test_pds_response["extension"] = [
+        {
+            "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
+            "extension": [
+                {
+                    "url": "deathNotificationStatus",
+                    "valueCodeableConcept": {
+                        "coding": [
+                            {
+                                "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-DeathNotificationStatus",
+                                "version": "1.0.0",
+                                "code": "3",
+                                "display": "Formal - death notice received from Registrar of Deaths",
+                            }
+                        ]
+                    },
+                },
+            ],
+        }
+    ]
+
+    test_patient = create_patient(test_pds_response)
+
+    assert test_patient.get_death_notification_status() is None

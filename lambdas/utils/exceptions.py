@@ -64,6 +64,10 @@ class PatientRecordAlreadyExistException(Exception):
     pass
 
 
+class PatientDeceasedException(Exception):
+    pass
+
+
 class UserNotAuthorisedException(Exception):
     pass
 

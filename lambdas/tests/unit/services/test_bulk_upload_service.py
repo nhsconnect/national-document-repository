@@ -28,7 +28,10 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
     make_s3_file_paths,
     make_valid_lg_file_names,
 )
-from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
+from tests.unit.helpers.data.pds.pds_patient_response import (
+    PDS_PATIENT,
+    PDS_PATIENT_DECEASED,
+)
 from tests.unit.utils.test_unicode_utils import (
     NAME_WITH_ACCENT_NFC_FORM,
     NAME_WITH_ACCENT_NFD_FORM,
@@ -67,6 +70,17 @@ def mock_validate_files(mocker):
 @pytest.fixture
 def mock_pds_service(mocker):
     patient = Patient.model_validate(PDS_PATIENT)
+    patient_details = patient.get_minimum_patient_details("9000000009")
+    mocker.patch(
+        "services.bulk_upload_service.getting_patient_info_from_pds",
+        return_value=patient_details,
+    )
+    yield patient_details
+
+
+@pytest.fixture
+def mock_pds_service_patient_deceased(mocker):
+    patient = Patient.model_validate(PDS_PATIENT_DECEASED)
     patient_details = patient.get_minimum_patient_details("9000000009")
     mocker.patch(
         "services.bulk_upload_service.getting_patient_info_from_pds",
@@ -389,6 +403,41 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA,
         "One or more of the files is not accessible from staging bucket",
+        "Y12345",
+    )
+
+
+def test_handle_sqs_message_calls_report_upload_failure_when_patient_is_deceased(
+    repo_under_test,
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_validate_files,
+    mock_check_virus_result,
+    mock_pds_service_patient_deceased,
+    mock_pds_validation,
+    mock_ods_validation,
+):
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_remove_ingested_file_from_source_bucket = (
+        repo_under_test.s3_repository.remove_ingested_file_from_source_bucket
+    )
+    mock_put_staging_metadata_back_to_queue = (
+        repo_under_test.sqs_repository.put_staging_metadata_back_to_queue
+    )
+    mock_report_upload_failure = repo_under_test.dynamo_repository.report_upload_failure
+
+    repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    mock_create_lg_records_and_copy_files.assert_not_called()
+    mock_remove_ingested_file_from_source_bucket.assert_not_called()
+    mock_put_staging_metadata_back_to_queue.assert_not_called()
+
+    mock_report_upload_failure.assert_called_with(
+        TEST_STAGING_METADATA,
+        "Patient is deceased - FORMAL",
         "Y12345",
     )
 

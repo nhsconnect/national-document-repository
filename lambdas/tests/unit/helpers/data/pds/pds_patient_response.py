@@ -57,7 +57,6 @@ PDS_PATIENT = {
     "gender": "female",
     "birthDate": "2010-10-22",
     "multipleBirthInteger": 1,
-    "deceasedDateTime": "2010-10-22T00:00:00+00:00",
     "generalPractitioner": [
         {
             "id": "254406A3",
@@ -104,28 +103,6 @@ PDS_PATIENT = {
                     "value": "Y34567",
                 }
             },
-        },
-        {
-            "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
-            "extension": [
-                {
-                    "url": "deathNotificationStatus",
-                    "valueCodeableConcept": {
-                        "coding": [
-                            {
-                                "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-DeathNotificationStatus",
-                                "version": "1.0.0",
-                                "code": "2",
-                                "display": "Formal - death notice received from Registrar of Deaths",
-                            }
-                        ]
-                    },
-                },
-                {
-                    "url": "systemEffectiveDate",
-                    "valueDateTime": "2010-10-22T00:00:00+00:00",
-                },
-            ],
         },
         {
             "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NHSCommunication",
@@ -395,31 +372,7 @@ PDS_PATIENT_RESTRICTED = {
     "gender": "female",
     "birthDate": "2010-10-22",
     "multipleBirthInteger": 1,
-    "deceasedDateTime": "2010-10-22T00:00:00+00:00",
-    "extension": [
-        {
-            "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
-            "extension": [
-                {
-                    "url": "deathNotificationStatus",
-                    "valueCodeableConcept": {
-                        "coding": [
-                            {
-                                "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-DeathNotificationStatus",
-                                "version": "1.0.0",
-                                "code": "2",
-                                "display": "Formal - death notice received from Registrar of Deaths",
-                            }
-                        ]
-                    },
-                },
-                {
-                    "url": "systemEffectiveDate",
-                    "valueDateTime": "2010-10-22T00:00:00+00:00",
-                },
-            ],
-        }
-    ],
+    "extension": [],
 }
 PDS_PATIENT_WITHOUT_ACTIVE_GP = {
     "resourceType": "Patient",
@@ -457,7 +410,6 @@ PDS_PATIENT_WITHOUT_ACTIVE_GP = {
     "gender": "female",
     "birthDate": "2010-10-22",
     "multipleBirthInteger": 1,
-    "deceasedDateTime": "2010-10-22T00:00:00+00:00",
     "generalPractitioner": [],
     "managingOrganization": {
         "type": "Organization",
@@ -505,7 +457,6 @@ PDS_PATIENT_WITH_GP_END_DATE = {
     "gender": "female",
     "birthDate": "2010-10-22",
     "multipleBirthInteger": 1,
-    "deceasedDateTime": "2010-10-22T00:00:00+00:00",
     "generalPractitioner": [
         {
             "id": "254406A3",
@@ -603,3 +554,41 @@ PDS_PATIENT_NO_PERIOD_IN_GENERAL_PRACTITIONER_IDENTIFIER["generalPractitioner"] 
         },
     },
 ]
+
+PDS_PATIENT_DECEASED = copy.deepcopy(PDS_PATIENT)
+PDS_PATIENT_DECEASED["deceasedDateTime"] = "2010-10-22T00:00:00+00:00"
+PDS_PATIENT_DECEASED["extension"].append(
+    {
+        "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
+        "extension": [
+            {
+                "url": "deathNotificationStatus",
+                "valueCodeableConcept": {
+                    "coding": [
+                        {
+                            "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-DeathNotificationStatus",
+                            "version": "1.0.0",
+                            "code": "2",
+                            "display": "Formal - death notice received from Registrar of Deaths",
+                        }
+                    ]
+                },
+            },
+            {
+                "url": "systemEffectiveDate",
+                "valueDateTime": "2010-10-22T00:00:00+00:00",
+            },
+        ],
+    }
+)
+
+PDS_PATIENT_DECEASED_INFORMAL = copy.deepcopy(PDS_PATIENT_DECEASED)
+PDS_PATIENT_DECEASED_INFORMAL["extension"][-1]["extension"][0]["valueCodeableConcept"][
+    "coding"
+][0] = {
+    "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-DeathNotificationStatus",
+    "version": "1.0.0",
+    "code": "1",
+    "display": "Informal - death notice received via an update from a local NHS "
+    "Organisation such as GENERAL PRACTITIONER or NHS Trust",
+}

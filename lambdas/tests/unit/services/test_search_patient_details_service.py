@@ -80,7 +80,8 @@ def test_handle_search_patient_request_valid(mock_service, mocker):
     )
     expected_response = (
         '{"givenName":["Jane"],"familyName":"Smith","birthDate":"2010-10-22","postalCode":"LS1 '
-        '6AE","nhsNumber":"9000000009","superseded":false,"restricted":false,"generalPracticeOds":"Y12345","active":true}'
+        '6AE","nhsNumber":"9000000009","superseded":false,"restricted":false,"generalPracticeOds":"Y12345",'
+        '"active":true,"deceased":false,"deathNotificationStatus":null}'
     )
     mock_pds_service_fetch = mocker.patch(
         "services.patient_search_service.PatientSearch.fetch_patient_details",
