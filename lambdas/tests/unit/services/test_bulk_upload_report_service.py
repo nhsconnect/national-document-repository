@@ -83,15 +83,6 @@ def test_write_items_to_csv(bulk_upload_report_service):
     os.remove("test_file")
 
 
-# def test_write_empty_file_to_txt(bulk_upload_report_service):
-#     bulk_upload_report_service.write_empty_report("test_file")
-#
-#     with open("test_file") as test_file:
-#         file_content = test_file.read()
-#     assert file_content == "No data was found for this timeframe"
-#     os.remove("test_file")
-
-
 def test_get_dynamo_data_2_calls(mocker, set_env, bulk_upload_report_service):
     mock_start_time = 1688395630
     mock_end_time = 1688195630
