@@ -167,10 +167,11 @@ class Patient(BaseModel):
         for extension_wrapper in self.extension:
             if (
                 extension_wrapper.url
-                != "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus"
+                == "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus"
             ):
-                continue
-            return self.parse_death_notification_status_extension(extension_wrapper)
+                return self.parse_death_notification_status_extension(extension_wrapper)
+
+        return None
 
     @staticmethod
     def parse_death_notification_status_extension(
@@ -182,7 +183,7 @@ class Patient(BaseModel):
                     status_code = nested_extension["valueCodeableConcept"]["coding"][0][
                         "code"
                     ]
-                    return DeathNotificationStatus.from_code(status_code)
+                    return DeathNotificationStatus(status_code)
 
         except (KeyError, IndexError, ValueError) as e:
             logger.info(

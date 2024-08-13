@@ -117,11 +117,8 @@ class BulkUploadService:
                 raise LGInvalidFilesException("Patient not registered at your practice")
 
             if pds_patient_details.deceased:
-                death_notification_status = (
-                    pds_patient_details.death_notification_status
-                )
                 raise PatientDeceasedException(
-                    f"Patient is deceased - {death_notification_status}"
+                    f"Patient is deceased - {pds_patient_details.death_notification_status.name}"
                 )
 
         except (

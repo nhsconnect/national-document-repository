@@ -377,3 +377,31 @@ def test_get_death_notification_status_return_none_when_patient_not_deceased():
     actual = test_patient.get_death_notification_status()
 
     assert actual == expected
+
+
+def test_get_death_notification_status_return_none_when_patient_deceased_incorrect_deceased_code():
+    test_pds_response = copy.deepcopy(PDS_PATIENT_DECEASED)
+    test_pds_response["extension"] = [
+        {
+            "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
+            "extension": [
+                {
+                    "url": "deathNotificationStatus",
+                    "valueCodeableConcept": {
+                        "coding": [
+                            {
+                                "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-DeathNotificationStatus",
+                                "version": "1.0.0",
+                                "code": "3",
+                                "display": "Formal - death notice received from Registrar of Deaths",
+                            }
+                        ]
+                    },
+                },
+            ],
+        }
+    ]
+
+    test_patient = create_patient(test_pds_response)
+
+    assert test_patient.get_death_notification_status() is None
