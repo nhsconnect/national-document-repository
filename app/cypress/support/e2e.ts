@@ -59,7 +59,7 @@ Cypress.Commands.add('smokeLogin', (role) => {
         cy.url().should('eq', baseUrl + startUrl);
         cy.get('.nhsuk-header__transactional-service-name--link').should(
             'have.text',
-            'Access and store digital GP records',
+            'Access and store digital patient documents',
         );
         cy.get('.nhsuk-header__navigation').should('not.exist');
         cy.getByTestId('start-btn').should('exist');
