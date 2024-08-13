@@ -30,19 +30,17 @@ class BulkUploadReportService:
                 f"Bulk upload report for {str(start_time)} to {str(end_time)}.csv"
             )
             self.write_items_to_csv(report_data, f"/tmp/{file_name}")
-        else:
-            file_name = (
-                f"Bulk upload report for {str(start_time)} to {str(end_time)}.txt"
+
+            logger.info("Uploading new report file to S3")
+
+            self.s3_service.upload_file(
+                s3_bucket_name=staging_bucket_name,
+                file_key=f"reports/{file_name}",
+                file_name=f"/tmp/{file_name}",
             )
-            self.write_empty_report(f"/tmp/{file_name}")
 
-        logger.info("Uploading new report file to S3")
-
-        self.s3_service.upload_file(
-            s3_bucket_name=staging_bucket_name,
-            file_key=f"reports/{file_name}",
-            file_name=f"/tmp/{file_name}",
-        )
+        else:
+            logger.info("No data found, no new report file to upload")
 
     def get_dynamodb_report_items(
         self, start_timestamp: int, end_timestamp: int
@@ -89,8 +87,3 @@ class BulkUploadReportService:
             end_timestamp -= datetime.timedelta(days=1)
         start_timestamp = end_timestamp - datetime.timedelta(days=1)
         return start_timestamp, end_timestamp
-
-    @staticmethod
-    def write_empty_report(file_path: str):
-        with open(file_path, "w") as output_file:
-            output_file.write("No data was found for this timeframe")
