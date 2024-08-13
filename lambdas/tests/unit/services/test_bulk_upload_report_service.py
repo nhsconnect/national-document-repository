@@ -162,7 +162,6 @@ def test_report_handler_no_items_return(
 ):
     mock_end_report_time = datetime(2012, 1, 14, 7, 0, 0, 0)
     mock_start_report_time = datetime(2012, 1, 13, 7, 0, 0, 0)
-    f"Bulk upload report for {str(mock_start_report_time)} to {str(mock_end_report_time)}.txt"
     mock_get_time = mocker.patch(
         "services.bulk_upload_report_service.BulkUploadReportService.get_times_for_scan",
         return_value=(mock_start_report_time, mock_end_report_time),
