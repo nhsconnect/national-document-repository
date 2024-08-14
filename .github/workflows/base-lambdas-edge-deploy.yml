@@ -87,6 +87,6 @@ jobs:
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
         uses: appleboy/lambda-action@master
         with:
-          aws_region: ${{ vars.AWS_REGION }}
+          aws_region: 'us-east-1'
           function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
           zip_file: build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip

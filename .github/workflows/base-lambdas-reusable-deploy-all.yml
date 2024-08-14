@@ -362,10 +362,9 @@ jobs:
 
   deploy_edge_presign_lambda:
     name: Deploy edge presign cloudfront lambda
-    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    uses: ./.github/workflows/base-lambdas-edge-deploy.yml
     with:
       environment: ${{ inputs.environment}}
-      region: 'us-east-1'
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
