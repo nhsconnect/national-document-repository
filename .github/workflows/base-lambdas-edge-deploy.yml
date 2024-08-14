@@ -76,6 +76,10 @@ jobs:
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
 
+      - name: Create release package for Lambda ${{ inputs.lambda_aws_name }}
+        run: |
+          make lambda_layer_zip layer_name=${{ inputs.lambda_handler_name}}
+
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
         uses: appleboy/lambda-action@master
         with:
