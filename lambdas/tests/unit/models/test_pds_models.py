@@ -95,12 +95,12 @@ def test_get_patient_details_for_deceased_patient():
 
 
 @freeze_time("2024-12-31")
-def test_gp_ods_empty_when_gp_end_date_indicates_inactive():
+def test_gp_ods_susp_when_gp_end_date_indicates_inactive():
     patient = create_patient(PDS_PATIENT_WITH_GP_END_DATE)
 
     response = patient.get_minimum_patient_details(patient.id)
 
-    assert response.general_practice_ods == ""
+    assert response.general_practice_ods == "SUSP"
 
 
 def test_not_raise_error_when_no_gp_in_response():
@@ -108,7 +108,7 @@ def test_not_raise_error_when_no_gp_in_response():
 
     response = patient.get_minimum_patient_details(patient.id)
 
-    assert response.general_practice_ods == ""
+    assert response.general_practice_ods == "SUSP"
 
 
 @freeze_time("2021-12-31")

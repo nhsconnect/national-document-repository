@@ -154,6 +154,10 @@ class Patient(BaseModel):
             gp_end_date = period.end
             if not gp_end_date or gp_end_date >= date.today():
                 return entry.identifier.value
+
+        death_notification_status = self.get_death_notification_status()
+        if not is_deceased(death_notification_status) and self.is_unrestricted():
+            return "SUSP"
         return ""
 
     def get_is_active_status(self) -> bool:
