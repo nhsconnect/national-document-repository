@@ -76,14 +76,6 @@ jobs:
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
 
-      - name: Run Lambda Layer Update
-        run: |
-          ./lambdas/venv/bin/python3 lambdas/scripts/lambda_layer_update.py ${{ inputs.sandbox }} ${{ inputs.lambda_aws_name }} ${{ inputs.lambda_layer_names }}
-
-      - name: Create release package for ${{ inputs.lambda_handler_name }}
-        run: |
-          make lambda_name=${{ inputs.lambda_handler_name }} zip
-
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
         uses: appleboy/lambda-action@master
         with:
