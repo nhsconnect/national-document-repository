@@ -3,6 +3,7 @@ from enum import Enum
 
 class LoggingAppInteraction(Enum):
     LOGIN = "Login"
+    EDGE_PRESIGN = "Edge Presign Cloudfront URL"
     PATIENT_SEARCH = "Patient search"
     VIEW_PATIENT = "View Patient"
     VIEW_LG_RECORD = "View LG record"

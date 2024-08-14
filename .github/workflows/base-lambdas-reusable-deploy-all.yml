@@ -48,7 +48,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: create_document_reference_handler
       lambda_aws_name: CreateDocRefLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -62,7 +62,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: search_patient_details_handler
       lambda_aws_name: SearchPatientDetailsLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -76,7 +76,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: document_reference_search_handler
       lambda_aws_name: SearchDocumentReferencesLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -90,7 +90,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: delete_document_reference_handler
       lambda_aws_name: DeleteDocRefLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -104,7 +104,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: document_manifest_job_handler
       lambda_aws_name: DocumentManifestJobLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -118,7 +118,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: bulk_upload_metadata_handler
       lambda_aws_name: BulkUploadMetadataLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -132,7 +132,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: token_handler
       lambda_aws_name: TokenRequestHandler
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -146,7 +146,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: login_redirect_handler
       lambda_aws_name: LoginRedirectHandler
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -160,7 +160,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: authoriser_handler
       lambda_aws_name: AuthoriserLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -174,7 +174,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: lloyd_george_record_stitch_handler
       lambda_aws_name: LloydGeorgeStitchLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -188,7 +188,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: logout_handler
       lambda_aws_name: LogoutHandler
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -202,7 +202,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: bulk_upload_handler
       lambda_aws_name: BulkUploadLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -216,7 +216,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: bulk_upload_report_handler
       lambda_aws_name: BulkUploadReportLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -230,7 +230,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: back_channel_logout_handler
       lambda_aws_name: BackChannelLogoutHandler
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -244,7 +244,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: send_feedback_handler
       lambda_aws_name: SendFeedbackLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -258,7 +258,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: nems_message_handler
       lambda_aws_name: NemsMessageLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -272,7 +272,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: feature_flags_handler
       lambda_aws_name: FeatureFlagsLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -286,7 +286,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: virus_scan_result_handler
       lambda_aws_name: VirusScanResult
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -300,7 +300,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: upload_confirm_result_handler
       lambda_aws_name: UploadConfirmResultLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -314,7 +314,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: update_upload_state_handler
       lambda_aws_name: UpdateUploadStateLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -328,7 +328,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: data_collection_handler
       lambda_aws_name: DataCollectionLambda
-      lambda_layer_names: "core_lambda_layer,data_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer,data_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -342,7 +342,7 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: statistical_report_handler
       lambda_aws_name: StatisticalReportLambda
-      lambda_layer_names: "core_lambda_layer,data_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer,data_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
 
@@ -356,6 +356,20 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: generate_document_manifest_handler
       lambda_aws_name: GenerateDocumentManifest
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: 'core_lambda_layer'
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_edge_presign_lambda:
+    name: Deploy edge presign cloudfront lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: edge_presign_handler
+      lambda_aws_name: EdgePresignLambda
+      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
