@@ -365,6 +365,7 @@ jobs:
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
       environment: ${{ inputs.environment}}
+      region: 'us-east-1'
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
