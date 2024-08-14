@@ -7,7 +7,6 @@ on:
         required: true
         type: string
       region:
-        required: true
         type: string
       python_version:
         required: true
