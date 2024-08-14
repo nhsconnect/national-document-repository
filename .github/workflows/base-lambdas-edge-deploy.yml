@@ -78,7 +78,7 @@ jobs:
 
       - name: Create release package for Lambda ${{ inputs.lambda_aws_name }}
         run: |
-          make lambda_layer_zip layer_name=${{ inputs.lambda_handler_name}}
+          make lambda_name=${{ inputs.lambda_handler_name}} zip
 
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
         uses: appleboy/lambda-action@master
