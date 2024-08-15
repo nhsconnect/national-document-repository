@@ -15,4 +15,4 @@ def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.EDGE_PRESIGN.value
     logger.info("Edge Presign handler triggered")
     location_header = {"Location": "https://www.google.co.uk", "Hello": "World"}
-    return json.loads(location_header)
+    return json.dumps(location_header)
