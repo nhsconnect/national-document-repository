@@ -30,8 +30,6 @@ class LambdaLayerUpdate:
 
     def extract_default_layer_arns(self):
         response = self.client.get_function(FunctionName=self.function_name_aws)
-        if self.function_name_aws.find("Edge"):
-            return
         layer_responses = response["Configuration"]["Layers"]
         for layer_response in layer_responses:
             layer_arn = layer_response["Arn"]
