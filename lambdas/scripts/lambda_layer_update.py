@@ -1,3 +1,4 @@
+import json
 import re
 import sys
 
@@ -30,8 +31,10 @@ class LambdaLayerUpdate:
 
     def extract_default_layer_arns(self):
         response = self.client.get_function(FunctionName=self.function_name_aws)
+        print(json.dumps(response))
+        if not hasattr(response["Configuration"], "Layers"):
+            return
         layer_responses = response["Configuration"]["Layers"]
-
         for layer_response in layer_responses:
             layer_arn = layer_response["Arn"]
             layer_name_match = re.search(r"layer:([^:]+):", layer_arn)
