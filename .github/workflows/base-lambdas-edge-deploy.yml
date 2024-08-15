@@ -74,15 +74,30 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
-          aws-region: ${{ vars.AWS_REGION }}
+          aws-region: 'us-east-1'
 
-      - name: Create release package for Lambda ${{ inputs.lambda_aws_name }}
+      # - name: Create release package for Lambda ${{ inputs.lambda_aws_name }}
+      #   run: |
+      #     make lambda_name=${{ inputs.lambda_handler_name}} zip
+
+      # - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
+      #   uses: appleboy/lambda-action@master
+      #   with:
+      #     aws_region: 'us-east-1'
+      #     function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
+      #     zip_file: build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
+
+      - name: Run Lambda Layer Update
         run: |
-          make lambda_name=${{ inputs.lambda_handler_name}} zip
+          ./lambdas/venv/bin/python3 lambdas/scripts/lambda_layer_update.py ${{ inputs.sandbox }} ${{ inputs.lambda_aws_name }} ${{ inputs.lambda_layer_names }}
+
+      - name: Create release package for ${{ inputs.lambda_handler_name }}
+        run: |
+          make lambda_name=${{ inputs.lambda_handler_name }} zip
 
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
         uses: appleboy/lambda-action@master
         with:
-          aws_region: 'us-east-1'
+          aws_region: us-east-1
           function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
           zip_file: build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
