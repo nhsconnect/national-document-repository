@@ -30,17 +30,22 @@ class LambdaLayerUpdate:
 
     def extract_default_layer_arns(self):
         response = self.client.get_function(FunctionName=self.function_name_aws)
-        if not hasattr(response["Configuration"], "Layers"):
+        if "Layers" not in response["Configuration"]:
+            print("Default layers property does not exist in the lambda configuration.")
             return
-        layer_responses = response["Configuration"]["Layers"]
-        for layer_response in layer_responses:
-            layer_arn = layer_response["Arn"]
-            layer_name_match = re.search(r"layer:([^:]+):", layer_arn)
-            if layer_name_match:
-                layer_name = layer_name_match.group(1)
+        else:
+            layer_responses = response["Configuration"]["Layers"]
+            for layer_response in layer_responses:
+                layer_arn = layer_response["Arn"]
+                layer_name_match = re.search(r"layer:([^:]+):", layer_arn)
+                if layer_name_match:
+                    layer_name = layer_name_match.group(1)
 
-                if layer_name in ["AWS-AppConfig-Extension", "LambdaInsightsExtension"]:
-                    self.updated_lambda_arns.update({layer_name: layer_arn})
+                    if layer_name in [
+                        "AWS-AppConfig-Extension",
+                        "LambdaInsightsExtension",
+                    ]:
+                        self.updated_lambda_arns.update({layer_name: layer_arn})
 
     def extract_updated_layer_arns(self):
         for updated_layer_name in self.updated_layer_names:
