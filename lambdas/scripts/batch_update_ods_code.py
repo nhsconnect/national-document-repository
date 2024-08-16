@@ -114,8 +114,19 @@ class BatchUpdate:
         )
         pds_response.raise_for_status()
 
-        patient = Patient.model_validate(pds_response.json())
-        return patient.get_active_ods_code_for_gp()
+        pds_response_json = pds_response.json()
+
+        patient = Patient.model_validate(pds_response_json)
+
+        ods_code = patient.get_active_ods_code_for_gp()
+        if not ods_code:
+            deceased = bool(pds_response_json.get("deceasedDateTime"))
+            if deceased:
+                return "DECE"
+            else:
+                return "SUSP"
+
+        return ods_code
 
     def initialise_new_job(self):
         all_entries = self.list_all_entries()
