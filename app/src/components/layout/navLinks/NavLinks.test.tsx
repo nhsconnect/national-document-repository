@@ -33,7 +33,7 @@ describe('NavLinks', () => {
             const isLoggedIn = true;
             renderNav(isLoggedIn);
 
-            expect(screen.getByRole('link', { name: 'Log out' })).toBeInTheDocument();
+            expect(screen.getByRole('link', { name: 'Sign out' })).toBeInTheDocument();
         });
 
         it('renders a navlink for app searcg when user logged in', () => {
@@ -63,7 +63,7 @@ describe('NavLinks', () => {
             const isLoggedIn = false;
             renderNav(isLoggedIn);
 
-            expect(screen.queryByRole('link', { name: 'Log out' })).not.toBeInTheDocument();
+            expect(screen.queryByRole('link', { name: 'Sign out' })).not.toBeInTheDocument();
         });
     });
 
@@ -104,7 +104,7 @@ describe('NavLinks', () => {
             const isLoggedIn = true;
             renderNav(isLoggedIn);
 
-            const logoutLink = screen.getByRole('link', { name: 'Log out' });
+            const logoutLink = screen.getByRole('link', { name: 'Sign out' });
             expect(logoutLink).toBeInTheDocument();
 
             act(() => {
