@@ -1,3 +1,5 @@
+import json
+
 from enums.logging_app_interaction import LoggingAppInteraction
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
@@ -11,7 +13,7 @@ logger = LoggingService(__name__)
 @handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.EDGE_PRESIGN.value
-    logger.info("Edge Presign handler triggered")
+    logger.info(json.dumps(event))
     response = {
         "status": "302",  # Redirect status code
         "statusDescription": "Found",

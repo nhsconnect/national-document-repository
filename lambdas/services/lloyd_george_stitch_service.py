@@ -199,7 +199,7 @@ class LloydGeorgeStitchService:
     def format_cloudfront_url(self, presign_url: str) -> str:
         test_url = presign_url.split("/")
         formatted_arr = ["/" + s for s in test_url]
-        del formatted_arr[0:2]
+        del formatted_arr[0:3]
         cloudfront_str_arr = ["https://d2k4kp2bsjuisr.cloudfront.net"]
         cloudfront_str_arr.extend(formatted_arr)
         cloudfront_url = "".join(cloudfront_str_arr)
