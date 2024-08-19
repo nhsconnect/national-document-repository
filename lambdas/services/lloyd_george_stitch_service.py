@@ -194,7 +194,13 @@ class LloydGeorgeStitchService:
         presign_url_response = self.s3_service.create_download_presigned_url(
             s3_bucket_name=self.lloyd_george_bucket_name, file_key=filename_on_bucket
         )
-        return presign_url_response
+        logger.info(presign_url_response)
+        test_url = presign_url_response.split("/")
+        logger.info(test_url)
+        del test_url[0:2]
+        str.join(test_url)
+        logger.info(test_url)
+        return test_url
 
     @staticmethod
     def get_most_recent_created_date(documents: list[DocumentReference]) -> str:
