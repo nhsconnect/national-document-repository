@@ -359,3 +359,17 @@ jobs:
       lambda_layer_names: "core_lambda_layer"
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
+
+  deploy_update_patient_ods_lambda:
+    name: Deploy update patient ods lambda
+    uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
+    with:
+      environment: ${{ inputs.environment}}
+      python_version: ${{ inputs.python_version }}
+      build_branch: ${{ inputs.build_branch}}
+      sandbox: ${{ inputs.sandbox }}
+      lambda_handler_name: update_patient_ods_handler
+      lambda_aws_name: UpdatePatientOdsLambda
+      lambda_layer_names: "core_lambda_layer"
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
