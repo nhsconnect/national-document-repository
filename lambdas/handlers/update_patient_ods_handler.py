@@ -1,3 +1,4 @@
+import os
 import tempfile
 
 from services.batch_update_ods_code import BatchUpdate
@@ -21,11 +22,12 @@ logger = LoggingService(__name__)
 @override_error_check
 def lambda_handler(event, context):
 
+    table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
     tempdir = tempfile.mkdtemp()
     filename = "batch_update_progress.json"
 
     batch_update = BatchUpdate(
-        table_name="LLOYD_GEORGE_DYNAMODB_NAME",
+        table_name=table_name,
         progress_store_file_path=f"{tempdir}/{filename}",
     )
 
