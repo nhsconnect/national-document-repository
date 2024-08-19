@@ -31,12 +31,6 @@ function RecordCard({
             </Card.Content>
             {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
                 <Details expander open className="lloydgeorge_record-stage_pdf-expander">
-                    <Details.Summary
-                        style={{ display: 'inline-block' }}
-                        data-testid="view-record-bin"
-                    >
-                        View record
-                    </Details.Summary>
                     <button
                         className="lloydgeorge_record-stage_pdf-expander-button link-button clickable"
                         data-testid="full-screen-btn"
