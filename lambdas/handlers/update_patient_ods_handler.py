@@ -19,7 +19,7 @@ logger = LoggingService(__name__)
     ]
 )
 @override_error_check
-def update_patient_ods_handler(event, context):
+def lambda_handler(event, context):
 
     tempdir = tempfile.mkdtemp()
     filename = "batch_update_progress.json"
