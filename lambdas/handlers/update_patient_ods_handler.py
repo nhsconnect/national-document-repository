@@ -1,6 +1,6 @@
 import tempfile
 
-from scripts.batch_update_ods_code import BatchUpdate
+from services.batch_update_ods_code import BatchUpdate
 from utils.audit_logging_setup import LoggingService
 from utils.decorators.ensure_env_var import ensure_environment_variables
 from utils.decorators.override_error_check import override_error_check

@@ -1,5 +1,5 @@
 import pytest
-from scripts.batch_update_ods_code import BatchUpdate
+from services.batch_update_ods_code import BatchUpdate
 
 
 @pytest.fixture
