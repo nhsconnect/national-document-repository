@@ -196,7 +196,7 @@ class LloydGeorgeStitchService:
         )
         return self.format_cloudfront_url(presign_url_response)
 
-    def format_cloudfront_url(presign_url: str) -> str:
+    def format_cloudfront_url(self, presign_url: str) -> str:
         test_url = presign_url.split("/")
         formatted_arr = ["/" + s for s in test_url]
         del formatted_arr[0:2]
