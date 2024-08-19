@@ -12,14 +12,6 @@ logger.setLevel(logging.INFO)
 @override_error_check
 @handle_lambda_exceptions
 def lambda_handler(event, context):
-    logger.info(json.dumps(event))
-    response = {
-        "status": "302",  # Redirect status code
-        "statusDescription": "Found",
-        "headers": {
-            "location": [{"key": "Location", "value": "https://www.google.co.uk"}],
-            "hello": [{"key": "Hello", "value": "World"}],
-        },
-    }
-
-    return response
+    request = event["Records"][0]["cf"]["request"]
+    logger.info(json.dumps(request))
+    return request
