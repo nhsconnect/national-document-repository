@@ -30,7 +30,7 @@ function RecordCard({
                 {detailsElement}
             </Card.Content>
             {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
-                <Details expander open className="lloydgeorge_record-stage_pdf-expander">
+                <div className="lloydgeorge_record-stage_pdf-expander">
                     <button
                         className="lloydgeorge_record-stage_pdf-expander-button link-button clickable"
                         data-testid="full-screen-btn"
@@ -41,7 +41,7 @@ function RecordCard({
                         View in full screen
                     </button>
                     <PdfViewer fileUrl={recordUrl} />
-                </Details>
+                </div>
             )}
         </Card>
     );
