@@ -15,3 +15,8 @@ def lambda_handler(event, context):
     request = event["Records"][0]["cf"]["request"]
     logger.info(json.dumps(request))
     return request
+
+
+#   Capture requested URL
+#   Check DynamoDB for entry
+#   Forward the request / Reject the request
