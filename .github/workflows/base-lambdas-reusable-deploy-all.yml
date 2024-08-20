@@ -42,7 +42,7 @@ jobs:
     name: Deploy create_document_reference_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -56,7 +56,7 @@ jobs:
     name: Deploy search_patient_details_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -70,7 +70,7 @@ jobs:
     name: Deploy document_reference_search_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -84,7 +84,7 @@ jobs:
     name: Deploy delete_document_reference_handler
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -98,7 +98,7 @@ jobs:
     name: Deploy document_manifest_job_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -112,7 +112,7 @@ jobs:
     name: Deploy bulk_upload_metadata_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -126,7 +126,7 @@ jobs:
     name: Deploy TokenRequestHandler
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -140,7 +140,7 @@ jobs:
     name: Deploy LoginRedirectHandler
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -154,7 +154,7 @@ jobs:
     name: Deploy AuthoriserLambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -182,7 +182,7 @@ jobs:
     name: Deploy LogoutHandler
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -196,7 +196,7 @@ jobs:
     name: Deploy bulk_upload_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -210,7 +210,7 @@ jobs:
     name: Deploy report_bulk_upload_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -224,7 +224,7 @@ jobs:
     name: Deploy back_channel_logout_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -238,7 +238,7 @@ jobs:
     name: Deploy send_feedback_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -252,7 +252,7 @@ jobs:
     name: Deploy nems_message_lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -266,7 +266,7 @@ jobs:
     name: Deploy feature flags lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -280,7 +280,7 @@ jobs:
     name: Deploy virus scan result lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -294,7 +294,7 @@ jobs:
     name: Deploy upload confirm result lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -308,7 +308,7 @@ jobs:
     name: Deploy update upload state lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -322,7 +322,7 @@ jobs:
     name: Deploy data collection lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -336,7 +336,7 @@ jobs:
     name: Deploy statistical report lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -350,7 +350,7 @@ jobs:
     name: Deploy generate document manifest lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
@@ -364,12 +364,12 @@ jobs:
     name: Deploy update patient ods lambda
     uses: ./.github/workflows/base-lambdas-reusable-deploy.yml
     with:
-      environment: ${{ inputs.environment}}
+      environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
       build_branch: ${{ inputs.build_branch}}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: update_patient_ods_handler
       lambda_aws_name: UpdatePatientOdsLambda
-      lambda_layer_names: "core_lambda_layer"
+      lambda_layer_names: core_lambda_layer
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
