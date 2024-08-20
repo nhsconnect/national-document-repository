@@ -1,22 +1,15 @@
-import json
-import logging
+from services.edge_presign_service import edge_presign_service
+from utils.audit_logging_setup import LoggingService
 
-from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
-from utils.decorators.override_error_check import override_error_check
-
-# Set up logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = LoggingService(__name__)
 
 
-@override_error_check
-@handle_lambda_exceptions
 def lambda_handler(event, context):
+
     request = event["Records"][0]["cf"]["request"]
-    logger.info(json.dumps(request))
+    requested_url = request["uri"]
+    logger("URL REQUESTED: " + requested_url)
+
+    table_name = "ndrd_CloudFrontEdgeReference"
+    edge_presign_service.attempt_url_update(table_name, requested_url)
     return request
-
-
-#   Capture requested URL
-#   Check DynamoDB for entry
-#   Forward the request / Reject the request
