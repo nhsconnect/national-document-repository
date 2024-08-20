@@ -8,7 +8,7 @@ def lambda_handler(event, context):
 
     request = event["Records"][0]["cf"]["request"]
     requested_url = request["uri"]
-    logger("URL REQUESTED: " + requested_url)
+    logger.info(f"Info: URL Requested [{requested_url}]")
 
     table_name = "ndrd_CloudFrontEdgeReference"
     edge_presign_service.attempt_url_update(table_name, requested_url)
