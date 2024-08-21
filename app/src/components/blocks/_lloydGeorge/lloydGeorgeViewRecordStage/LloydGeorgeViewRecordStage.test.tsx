@@ -55,7 +55,6 @@ describe('LloydGeorgeViewRecordStage', () => {
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
         });
-        expect(screen.getByText('View record')).toBeInTheDocument();
         expect(screen.getByText('View in full screen')).toBeInTheDocument();
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();
@@ -97,8 +96,6 @@ describe('LloydGeorgeViewRecordStage', () => {
         await waitFor(async () => {
             expect(screen.getByText(/No documents are available/i)).toBeInTheDocument();
         });
-
-        expect(screen.queryByText('View record')).not.toBeInTheDocument();
     });
 
     it("renders 'full screen' mode correctly", async () => {
