@@ -194,7 +194,17 @@ class LloydGeorgeStitchService:
         presign_url_response = self.s3_service.create_download_presigned_url(
             s3_bucket_name=self.lloyd_george_bucket_name, file_key=filename_on_bucket
         )
-        return presign_url_response
+        return self.format_cloudfront_url(presign_url_response)
+
+    def format_cloudfront_url(self, presign_url: str) -> str:
+        test_url = presign_url.split("/")
+        formatted_arr = ["/" + s for s in test_url]
+        del formatted_arr[0:3]
+        # TODO: ADD DYNAMIC DISTRIBUTION ID
+        cloudfront_str_arr = ["https://d34jv4isf6y7i5.cloudfront.net"]
+        cloudfront_str_arr.extend(formatted_arr)
+        cloudfront_url = "".join(cloudfront_str_arr)
+        return cloudfront_url
 
     @staticmethod
     def get_most_recent_created_date(documents: list[DocumentReference]) -> str:

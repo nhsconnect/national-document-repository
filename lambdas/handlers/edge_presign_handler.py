@@ -13,6 +13,7 @@ def lambda_handler(event, context):
     edge_presign_service = EdgePresignService()
     s3_service = S3Service()
 
+    # TODO : ADD DYNAMIC TABLE NAME
     table_name = "ndrd_CloudFrontEdgeReference"
 
     # Attempt to update the URL in DynamoDB
@@ -26,6 +27,8 @@ def lambda_handler(event, context):
     file_key = requested_url.lstrip("/")
 
     # Create a presigned URL using S3Service
+    # TODO : ADD DYNAMIC BUCKET NAME
+
     s3_bucket_name = "ndrd_CloudFrontEdgeReference"
     presigned_url_response = s3_service.create_download_presigned_url(
         s3_bucket_name, file_key
