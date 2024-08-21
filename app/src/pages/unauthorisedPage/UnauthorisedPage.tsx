@@ -23,7 +23,7 @@ const UnauthorisedPage = () => {
             <p>
                 The page you were looking for could not be accessed. If you have the permissions,{' '}
                 <Link to="" onClick={handleLogin}>
-                    logging in
+                    signing in
                 </Link>{' '}
                 may fix this.
             </p>
@@ -38,7 +38,7 @@ const UnauthorisedPage = () => {
             </Link>
         </>
     ) : (
-        <Spinner status="Logging in..." />
+        <Spinner status="Signing in..." />
     );
 };
 export default UnauthorisedPage;
