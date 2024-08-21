@@ -23,10 +23,6 @@ on:
       lambda_aws_name:
         required: true
         type: string
-      lambda_layer_names:
-        description: 'Comma-separated list of Lambda Layer names'
-        required: true
-        type: string
     secrets:
       AWS_ASSUME_ROLE:
         required: true
@@ -51,7 +47,6 @@ jobs:
           echo Sandbox: ${{ inputs.sandbox }}
           echo Lambda Handler Name: ${{ inputs.lambda_handler_name }}
           echo Lambda AWS function: ${{ inputs.lambda_aws_name }}
-          echo Lambda Layers Names: ${{ inputs.lambda_layer_names }}
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -67,7 +62,24 @@ jobs:
 
       - name: Make virtual environment
         run: |
-          make github_env
+          python -m venv venv
+          source venv/bin/activate
+
+      - name: Install dependencies
+        run: |
+          source venv/bin/activate
+          pip install -r requirements.txt
+          pip install boto3 botocore  # Ensure botocore and boto3 are installed
+        working-directory: src/lambdas/${{ inputs.lambda_handler_name }}
+
+      - name: Package dependencies
+        run: |
+          source venv/bin/activate
+          mkdir -p build/lambdas/${{ inputs.lambda_handler_name }}
+          pip install --target build/lambdas/${{ inputs.lambda_handler_name }}/package -r requirements.txt
+          cp -r src/lambdas/${{ inputs.lambda_handler_name }}/* build/lambdas/${{ inputs.lambda_handler_name }}/
+          cd build/lambdas/${{ inputs.lambda_handler_name }}/package && zip -r ../${{ inputs.lambda_handler_name }}.zip .
+          cd .. && zip -r ../${{ inputs.lambda_handler_name }}.zip *
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
