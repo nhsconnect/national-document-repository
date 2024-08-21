@@ -1,4 +1,4 @@
-import { Card, Details } from 'nhsuk-react-components';
+import { Card } from 'nhsuk-react-components';
 import React, { ReactNode } from 'react';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../pdfViewer/PdfViewer';
