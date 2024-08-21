@@ -24,6 +24,7 @@ logger = LoggingService(__name__)
         "LLOYD_GEORGE_DYNAMODB_NAME",
         "LLOYD_GEORGE_BUCKET_NAME",
         "PRESIGNED_ASSUME_ROLE",
+        "CLOUDFRONT_URL",
     ]
 )
 def lambda_handler(event, context):

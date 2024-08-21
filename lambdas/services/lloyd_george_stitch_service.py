@@ -33,6 +33,7 @@ class LloydGeorgeStitchService:
         self.lifecycle_policy_tag = os.environ.get(
             "STITCHED_FILE_LIFECYCLE_POLICY_TAG", "autodelete"
         )
+        self.cloudfront_url = os.environ.get("CLOUDFRONT_URL")
 
         get_document_presign_url_aws_role_arn = os.getenv("PRESIGNED_ASSUME_ROLE")
         self.s3_service = S3Service(
@@ -66,6 +67,7 @@ class LloydGeorgeStitchService:
             presign_url = self.upload_stitched_lg_record_and_retrieve_presign_url(
                 stitched_lg_record=stitched_lg_record,
                 filename_on_bucket=f"combined_files/{filename_for_stitched_file}",
+                cloudfront_url=self.cloudfront_url,
             )
             response = {
                 "number_of_files": number_of_files,
@@ -176,9 +178,7 @@ class LloydGeorgeStitchService:
         return all_lg_parts
 
     def upload_stitched_lg_record_and_retrieve_presign_url(
-        self,
-        stitched_lg_record: str,
-        filename_on_bucket: str,
+        self, stitched_lg_record: str, filename_on_bucket: str, cloudfront_url: str
     ) -> str:
         extra_args = {
             "Tagging": parse.urlencode({self.lifecycle_policy_tag: "true"}),
@@ -194,14 +194,13 @@ class LloydGeorgeStitchService:
         presign_url_response = self.s3_service.create_download_presigned_url(
             s3_bucket_name=self.lloyd_george_bucket_name, file_key=filename_on_bucket
         )
-        return self.format_cloudfront_url(presign_url_response)
+        return self.format_cloudfront_url(presign_url_response, cloudfront_url)
 
-    def format_cloudfront_url(self, presign_url: str) -> str:
+    def format_cloudfront_url(self, presign_url: str, cloudfront_url: str) -> str:
         test_url = presign_url.split("/")
         formatted_arr = ["/" + s for s in test_url]
         del formatted_arr[0:3]
-        # TODO: ADD DYNAMIC DISTRIBUTION ID
-        cloudfront_str_arr = ["https://d34jv4isf6y7i5.cloudfront.net"]
+        cloudfront_str_arr = [f"https://{cloudfront_url}"]
         cloudfront_str_arr.extend(formatted_arr)
         cloudfront_url = "".join(cloudfront_str_arr)
         return cloudfront_url

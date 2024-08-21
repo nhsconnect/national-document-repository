@@ -29,7 +29,7 @@ def lambda_handler(event, context):
     # Create a presigned URL using S3Service
     # TODO : ADD DYNAMIC BUCKET NAME
 
-    s3_bucket_name = "ndrd_CloudFrontEdgeReference"
+    s3_bucket_name = "ndrd_lloyd-george-store"
     presigned_url_response = s3_service.create_download_presigned_url(
         s3_bucket_name, file_key
     )
