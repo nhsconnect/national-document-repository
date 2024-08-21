@@ -1,5 +1,6 @@
 from botocore.exceptions import BotoCoreError, ClientError, EndpointConnectionError
 from services.base.dynamo_service import DynamoDBService
+from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
@@ -58,4 +59,28 @@ class EdgePresignService:
                 "status": "500",
                 "statusDescription": "Internal Server Error",
                 "body": error,
+            }
+
+    def generate_presigned_url(self, s3_bucket_name: str, file_key: str) -> dict:
+        s3_service = S3Service()
+        try:
+            presigned_url = s3_service.create_download_presigned_url(
+                s3_bucket_name, file_key
+            )
+            return {"status": "200", "statusDescription": "OK", "data": presigned_url}
+        except RuntimeError as e:
+            error_message = f"Failed to generate presigned URL: {str(e)}"
+            logger.error(error_message)
+            return {
+                "status": "500",
+                "statusDescription": "Internal Server Error",
+                "body": error_message,
+            }
+        except Exception as e:
+            error_message = f"Unexpected error occurred: {str(e)}"
+            logger.error(error_message)
+            return {
+                "status": "500",
+                "statusDescription": "Internal Server Error",
+                "body": error_message,
             }
