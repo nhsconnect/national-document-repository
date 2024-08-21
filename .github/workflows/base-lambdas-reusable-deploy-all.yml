@@ -338,7 +338,7 @@ jobs:
     with:
       environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
-      build_branch: ${{ inputs.build_branch}}
+      build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: statistical_report_handler
       lambda_aws_name: StatisticalReportLambda
@@ -352,7 +352,7 @@ jobs:
     with:
       environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
-      build_branch: ${{ inputs.build_branch}}
+      build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: generate_document_manifest_handler
       lambda_aws_name: GenerateDocumentManifest
@@ -366,7 +366,7 @@ jobs:
     with:
       environment: ${{ inputs.environment }}
       python_version: ${{ inputs.python_version }}
-      build_branch: ${{ inputs.build_branch}}
+      build_branch: ${{ inputs.build_branch }}
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: update_patient_ods_handler
       lambda_aws_name: UpdatePatientOdsLambda

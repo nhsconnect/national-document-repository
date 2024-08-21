@@ -117,12 +117,13 @@ class BatchUpdate:
         patient = Patient.model_validate(pds_response_json)
 
         ods_code = patient.get_active_ods_code_for_gp()
+
+        deceased = bool(pds_response_json.get("deceasedDateTime"))
+        if deceased:
+            return "DECE"
+
         if not ods_code:
-            deceased = bool(pds_response_json.get("deceasedDateTime"))
-            if deceased:
-                return "DECE"
-            else:
-                return "SUSP"
+            return "SUSP"
 
         return ods_code
 
@@ -207,29 +208,3 @@ class BatchUpdate:
 
         logger.info(f"Totally {len(progress_dict)} patients found in record.")
         return progress_dict
-
-
-# def setup_logging_for_local_script():
-#     importlib.reload(logging)
-#
-#     logging.basicConfig(
-#         level=logging.INFO,
-#         format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
-#         datefmt="%d/%b/%Y %H:%M:%S",
-#         stream=sys.stdout,
-#     )
-#
-#
-# if __name__ == "__main__":
-#     import argparse
-#
-#     setup_logging_for_local_script()
-#
-#     parser = argparse.ArgumentParser(
-#         prog="batch_update_ods_code.py",
-#         description="A utility script to update the ODS Codes for all patients in a dynamoDB doc reference table",
-#     )
-#     parser.add_argument("table_name", type=str, help="The name of dynamodb table")
-#     args = parser.parse_args()
-#
-#     BatchUpdate(table_name=args.table_name).main()
