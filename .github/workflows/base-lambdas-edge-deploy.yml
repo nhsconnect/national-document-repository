@@ -80,3 +80,15 @@ jobs:
           aws_region: 'us-east-1'
           function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
           zip_file: build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
+
+      - name: Get CloudFront Distribution ID
+        id: cloudfront
+        run: echo "distribution_id=$(aws cloudfront list-distributions |jq -r '.[]["Items"][] | select(.Origins.Items[].Id=="${{inputs.sandbox}}-lloyd-george-store") | .Id')" >> $GITHUB_OUTPUT
+
+      - name: Updating Cloudfront to latest Lambda@Edge
+        run: |
+          ./venv/bin/python3  update_edge_lambda.py
+        env:
+          DISTRIBUTION_ID: ${{ env.distribution_id }}
+          LAMBDA_NAME: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
+          AWS_REGION: 'us-east-1'
