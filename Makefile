@@ -104,6 +104,7 @@ edge_zip:
 	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)|| true
 	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)
 	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/handlers
+	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/venv
 	cp -r lambdas/handlers/$(lambda_name).py ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/handlers
 	cp -r lambdas/utils ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cp -r lambdas/models ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
