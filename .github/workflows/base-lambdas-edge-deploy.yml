@@ -61,15 +61,13 @@ jobs:
           python-version: ${{ inputs.python_version }}
 
       - name: Make virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
+        run: make github_env
 
       - name: Install dependencies
         run: |
           source venv/bin/activate
-          pip install -r requirements.txt
-          pip install boto3 botocore  # Ensure botocore and boto3 are installed
+          pip3 install -r requirements.txt
+          pip3 install boto3 botocore
         working-directory: src/lambdas/${{ inputs.lambda_handler_name }}
 
       - name: Package dependencies
