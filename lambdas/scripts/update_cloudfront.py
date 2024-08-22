@@ -10,6 +10,12 @@ aws_region = os.getenv("AWS_REGION")
 # Initialize AWS clients
 cloudfront_client = boto3.client("cloudfront", region_name=aws_region)
 lambda_client = boto3.client("lambda", region_name=aws_region)
+sts_client = boto3.client("sts", region_name=aws_region)
+
+
+def get_aws_account_id():
+    response = sts_client.get_caller_identity()
+    return response["Account"]
 
 
 def get_latest_lambda_version(function_name):
@@ -44,9 +50,10 @@ def update_cloudfront_lambda_association(distribution_id, lambda_arn):
 
 
 if __name__ == "__main__":
+    aws_account_id = get_aws_account_id()
     # Get latest Lambda version and ARN
     lambda_version = get_latest_lambda_version(lambda_name)
-    lambda_arn = f"arn:aws:lambda:{aws_region}:{os.environ['AWS_ACCOUNT_ID']}:function:{lambda_name}:{lambda_version}"
+    lambda_arn = f"arn:aws:lambda:{aws_region}:{aws_account_id}:function:{lambda_name}:{lambda_version}"
 
     # Update CloudFront distribution
     update_cloudfront_lambda_association(distribution_id, lambda_arn)
