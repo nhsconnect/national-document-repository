@@ -87,7 +87,7 @@ jobs:
 
       - name: Updating Cloudfront to latest Lambda@Edge
         run: |
-          ./venv/bin/python3  lambdas/scripts/update_edge_lambda.py
+          ./venv/bin/python3  lambdas/scripts/update_cloudfront.py
         env:
           DISTRIBUTION_ID: ${{ env.distribution_id }}
           LAMBDA_NAME: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
