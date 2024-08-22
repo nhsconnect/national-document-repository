@@ -95,6 +95,21 @@ zip:
 	cp -r lambdas/services ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cp -r lambdas/repositories ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cp -r lambdas/enums ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cd ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp ; zip -r ../$(lambda_name).zip .
+	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cd ../..
+
+edge_zip:
+	echo $(LAMBDAS_BUILD_PATH)/$(lambda_name)
+	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)|| true
+	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)
+	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/handlers
+	cp -r lambdas/handlers/$(lambda_name).py ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/handlers
+	cp -r lambdas/utils ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cp -r lambdas/models ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cp -r lambdas/services ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cp -r lambdas/repositories ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cp -r lambdas/enums ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cp -r lambdas/venv/lib/python*/site-packages/* ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cd ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp ; zip -r ../$(lambda_name).zip .
 	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
