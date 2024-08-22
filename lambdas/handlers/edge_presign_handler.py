@@ -1,5 +1,5 @@
+from services.base.s3_service import S3Service
 from services.edge_presign_service import EdgePresignService
-from services.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
@@ -14,6 +14,8 @@ def lambda_handler(event, context):
     s3_service = S3Service()
 
     # TODO : ADD DYNAMIC TABLE NAME
+    # PULL ENV FROM ORIGIN USE ENV PULL FOR DEFAULT SSM REQ
+    # LOGIC TO CHECK WHETHER ITS PROD TO PREPEND OR NOT
     table_name = "ndrd_CloudFrontEdgeReference"
 
     # Attempt to update the URL in DynamoDB
