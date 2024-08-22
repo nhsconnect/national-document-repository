@@ -370,6 +370,5 @@ jobs:
       sandbox: ${{ inputs.sandbox }}
       lambda_handler_name: edge_presign_handler
       lambda_aws_name: EdgePresignLambda
-      lambda_layer_names: 'core_lambda_layer'
     secrets:
       AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
