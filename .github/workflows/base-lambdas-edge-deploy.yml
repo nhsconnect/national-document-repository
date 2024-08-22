@@ -83,7 +83,12 @@ jobs:
 
       - name: Get CloudFront Distribution ID
         id: cloudfront
-        run: echo "distribution_id=$(aws cloudfront list-distributions |jq -r '.[]["Items"][] | select(.Origins.Items[].Id=="${{inputs.sandbox}}-lloyd-george-store") | .Id')" >> $GITHUB_OUTPUT
+        run: |
+          aws cloudfront list-distributions > distributions.json
+          cat distributions.json
+          distribution_id=$(cat distributions.json | jq -r '.DistributionList.Items[] | select(.Origins.Items[].Id=="${{ inputs.sandbox }}-lloyd-george-store") | .Id')
+          echo "Distribution ID found: $distribution_id"
+          echo "distribution_id=${distribution_id}" >> $GITHUB_ENV
 
       - name: Updating Cloudfront to latest Lambda@Edge
         run: |
