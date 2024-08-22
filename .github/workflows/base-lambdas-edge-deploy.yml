@@ -88,12 +88,11 @@ jobs:
           cat distributions.json
           distribution_id=$(cat distributions.json | jq -r '.DistributionList.Items[] | select(.Origins.Items[].Id=="${{ inputs.sandbox }}-lloyd-george-store") | .Id')
           echo "Distribution ID found: $distribution_id"
-          echo "distribution_id=${distribution_id}" >> $GITHUB_ENV
+          echo "DISTRIBUTION_ID=${distribution_id}" >> $GITHUB_ENV
 
       - name: Updating Cloudfront to latest Lambda@Edge
         run: |
           ./lambdas/venv/bin/python3 lambdas/scripts/update_cloudfront.py
         env:
-          DISTRIBUTION_ID: ${{ env.distribution_id }}
           LAMBDA_NAME: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
           AWS_REGION: 'us-east-1'
