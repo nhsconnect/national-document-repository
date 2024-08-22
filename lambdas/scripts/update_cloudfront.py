@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 import boto3
 from botocore.exceptions import ClientError
@@ -30,6 +31,20 @@ def get_latest_lambda_version(function_name):
     latest_version = max(versions, key=lambda x: x["Version"])
     print(f"Latest Lambda version: {latest_version['Version']}")
     return latest_version["Version"]
+
+
+def check_lambda_status(function_name, version):
+    print(f"Checking status of Lambda function {function_name} version {version}")
+    while True:
+        response = lambda_client.get_function(
+            FunctionName=function_name, Qualifier=version
+        )
+        status = response["Configuration"]["State"]
+        print(f"Lambda function status: {status}")
+        if status == "Active":
+            break
+        print("Lambda function not yet active. Retrying in 30 seconds...")
+        time.sleep(30)
 
 
 def update_cloudfront_lambda_association(distribution_id, lambda_arn):
@@ -79,6 +94,9 @@ if __name__ == "__main__":
         lambda_version = get_latest_lambda_version(lambda_name)
         lambda_arn = f"arn:aws:lambda:{aws_region}:{aws_account_id}:function:{lambda_name}:{lambda_version}"
         print(f"Lambda ARN: {lambda_arn}")
+
+        # Check Lambda function status
+        check_lambda_status(lambda_name, lambda_version)
 
         # Update CloudFront distribution
         update_cloudfront_lambda_association(distribution_id, lambda_arn)
