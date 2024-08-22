@@ -7,6 +7,7 @@ GITHUB_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_github_runner.txt
 TEST_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_test.txt
 CORE_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_core_lambda_layer.txt
 DATA_REQUIREMENTS=$(LAMBDA_LAYER_REQUIREMENTS_PATH)/requirements_data_lambda_layer.txt
+EDGE_REQUIREMENTS=$(REQUIREMENTS_PATH)/requirements_edge_lambda.txt
 
 LAMBDAS_BUILD_PATH=build/lambdas
 LAMBDA_LAYERS_BUILD_PATH=build/lambda_layers
@@ -75,6 +76,14 @@ github_env:
 	./lambdas/venv/bin/pip3 install --upgrade pip
 	./lambdas/venv/bin/pip3 install -r $(GITHUB_REQUIREMENTS)
 
+edge_env:
+	rm -rf lambdas/venv || true
+	python3 -m venv ./lambdas/venv
+	./lambdas/venv/bin/pip3 install --upgrade pip
+	./lambdas/venv/bin/pip3 install -r $(GITHUB_REQUIREMENTS)
+	./lambdas/venv/bin/pip3 install -r $(EDGE_REQUIREMENTS)
+
+
 zip:
 	echo $(LAMBDAS_BUILD_PATH)/$(lambda_name)
 	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)|| true
@@ -86,6 +95,7 @@ zip:
 	cp -r lambdas/services ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cp -r lambdas/repositories ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cp -r lambdas/enums ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cp -r lambdas/venv/lib/python*/site-packages/* ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cd ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp ; zip -r ../$(lambda_name).zip .
 	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cd ../..

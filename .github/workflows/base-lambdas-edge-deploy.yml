@@ -61,23 +61,7 @@ jobs:
           python-version: ${{ inputs.python_version }}
 
       - name: Make virtual environment
-        run: make github_env
-
-      - name: Install dependencies
-        run: |
-          source venv/bin/activate
-          pip3 install -r requirements.txt
-          pip3 install boto3 botocore
-        working-directory: lambdas/handlers/${{ inputs.lambda_handler_name }}
-
-      - name: Package dependencies
-        run: |
-          source venv/bin/activate
-          mkdir -p build/lambdas/${{ inputs.lambda_handler_name }}
-          pip install --target build/lambdas/${{ inputs.lambda_handler_name }}/package -r requirements.txt
-          cp -r src/lambdas/${{ inputs.lambda_handler_name }}/* build/lambdas/${{ inputs.lambda_handler_name }}/
-          cd build/lambdas/${{ inputs.lambda_handler_name }}/package && zip -r ../${{ inputs.lambda_handler_name }}.zip .
-          cd .. && zip -r ../${{ inputs.lambda_handler_name }}.zip *
+        run: make edge_env
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
