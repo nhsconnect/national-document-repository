@@ -34,7 +34,7 @@ function RecordCard({
                     <button
                         className="lloydgeorge_record-stage_pdf-expander-button link-button clickable"
                         data-testid="full-screen-btn"
-                        style={{ top: -30 }}
+                        id="full-screen-btn"
                         onClick={() => {
                             fullScreenHandler(true);
                         }}
