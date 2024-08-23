@@ -12,11 +12,13 @@ def lambda_handler(event, context):
     logger.info(f"Info: URL Requested [{str(request)}]")
 
     return {
-        "status": 302,
-        "statusText": "Found",
+        "status": "302",
+        "statusDescription": "Found",
         "headers": {
-            "Location": "https://www.google.com/",
-            "Content-Type": "text/html; charset=UTF-8",
+            "location": [{"key": "Location", "value": "https://www.google.com/"}],
+            "content-type": [
+                {"key": "Content-Type", "value": "text/html; charset=UTF-8"}
+            ],
         },
         "body": '<html>\n<head><title>302 Found</title></head>\n<body>\n<h1>Found</h1>\n<p>The document has moved <a href="https://www.google.com/">here</a>.</p>\n</body>\n</html>',
     }
