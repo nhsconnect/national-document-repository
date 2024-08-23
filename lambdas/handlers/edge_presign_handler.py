@@ -7,9 +7,19 @@ logger = LoggingService(__name__)
 
 def lambda_handler(event, context):
     request = event["Records"][0]["cf"]["request"]
-    return request
-    # requested_url = request["uri"]
-    # logger.info(f"Info: URL Requested [{requested_url}]")
+    requested_url = request["uri"]
+    logger.info(f"Info: URL Requested [{requested_url}]")
+    logger.info(f"Info: URL Requested [{str(request)}]")
+
+    return {
+        "status": 302,
+        "statusText": "Found",
+        "headers": {
+            "Location": "https://www.google.com/",
+            "Content-Type": "text/html; charset=UTF-8",
+        },
+        "body": '<html>\n<head><title>302 Found</title></head>\n<body>\n<h1>Found</h1>\n<p>The document has moved <a href="https://www.google.com/">here</a>.</p>\n</body>\n</html>',
+    }
 
     # edge_presign_service = EdgePresignService()
     # s3_service = S3Service()
