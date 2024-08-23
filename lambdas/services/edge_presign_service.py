@@ -1,3 +1,5 @@
+import base64
+
 from botocore.exceptions import BotoCoreError, ClientError, EndpointConnectionError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
@@ -12,6 +14,7 @@ class EdgePresignService:
         self,
     ):
         self.dynamo_service = DynamoDBService()
+        self.s3_service = S3Service()
 
     def attempt_url_update(self, table_name, requested_url):
         try:
@@ -61,26 +64,41 @@ class EdgePresignService:
                 "body": error,
             }
 
-    def generate_presigned_url(self, s3_bucket_name: str, file_key: str) -> dict:
-        s3_service = S3Service()
+    def get_s3_object(self, bucket_name: str, file_key: str):
         try:
-            presigned_url = s3_service.create_download_presigned_url(
-                s3_bucket_name, file_key
-            )
-            return {"status": "200", "statusDescription": "OK", "data": presigned_url}
-        except RuntimeError as e:
-            error_message = f"Failed to generate presigned URL: {str(e)}"
-            logger.error(error_message)
-            return {
-                "status": "500",
-                "statusDescription": "Internal Server Error",
-                "body": error_message,
-            }
+            pdf_object = self.s3_service.get_object(bucket_name, file_key)
+            return self.create_success_response(pdf_object["Body"].read())
+
+        except ClientError as e:
+            error_code = e.response["Error"]["Code"]
+            self.logger.error(f"ClientError occurred: {error_code} - {e}")
+
+            if error_code == "404":
+                return self.create_error_response(
+                    "Not Found", "The requested PDF object does not exist."
+                )
+            else:
+                return self.create_error_response(
+                    "Internal Server Error",
+                    "An error occurred while retrieving the PDF object.",
+                )
+
         except Exception as e:
-            error_message = f"Unexpected error occurred: {str(e)}"
-            logger.error(error_message)
-            return {
-                "status": "500",
-                "statusDescription": "Internal Server Error",
-                "body": error_message,
-            }
+            # Handle any other unexpected errors
+            self.logger.error(f"Unexpected error occurred: {str(e)}")
+            return self.create_error_response(
+                "Internal Server Error",
+                "An unexpected error occurred while retrieving the PDF object.",
+            )
+
+    def create_success_response(self, pdf_object):
+        return {
+            "status": "200",
+            "statusDescription": "OK",
+            "headers": {
+                "content-type": [{"key": "Content-Type", "value": "application/pdf"}],
+                "cache-control": [{"key": "Cache-Control", "value": "max-age=3600"}],
+            },
+            "body": base64.b64encode(pdf_object).decode("utf-8"),
+            "bodyEncoding": "base64",
+        }
