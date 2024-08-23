@@ -16,7 +16,7 @@ class EdgePresignService:
     def attempt_url_update(self, table_name, requested_url):
         try:
             try:
-                return self.dynamo_service.update_item(
+                return self.dynamo_service.update_conditional(
                     table_name=table_name,
                     key=requested_url,
                     updated_fields={"IsRequested": True},
