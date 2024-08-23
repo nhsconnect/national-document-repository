@@ -1,6 +1,6 @@
 from botocore.exceptions import BotoCoreError, ClientError, EndpointConnectionError
 from services.base.dynamo_service import DynamoDBService
-from services.s3_service import S3Service
+from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
