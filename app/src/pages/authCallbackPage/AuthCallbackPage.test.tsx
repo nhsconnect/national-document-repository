@@ -54,7 +54,7 @@ describe('AuthCallbackPage', () => {
                 renderCallbackPage();
             });
             expect(screen.getByRole('status')).toBeInTheDocument();
-            expect(screen.getByText('Logging in...')).toBeInTheDocument();
+            expect(screen.getByText('Signing in...')).toBeInTheDocument();
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
@@ -68,7 +68,7 @@ describe('AuthCallbackPage', () => {
             renderCallbackPage();
 
             expect(screen.getByRole('status')).toBeInTheDocument();
-            expect(screen.getByText('Logging in...')).toBeInTheDocument();
+            expect(screen.getByText('Signing in...')).toBeInTheDocument();
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.HOME);
@@ -87,7 +87,7 @@ describe('AuthCallbackPage', () => {
             renderCallbackPage();
 
             expect(screen.getByRole('status')).toBeInTheDocument();
-            expect(screen.getByText('Logging in...')).toBeInTheDocument();
+            expect(screen.getByText('Signing in...')).toBeInTheDocument();
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.AUTH_ERROR);
@@ -105,7 +105,7 @@ describe('AuthCallbackPage', () => {
             renderCallbackPage();
 
             expect(screen.getByRole('status')).toBeInTheDocument();
-            expect(screen.getByText('Logging in...')).toBeInTheDocument();
+            expect(screen.getByText('Signing in...')).toBeInTheDocument();
 
             await waitFor(() => {
                 expect(mockedUseNavigate).toHaveBeenCalledWith(routes.UNAUTHORISED_LOGIN);

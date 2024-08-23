@@ -23,7 +23,7 @@ describe('logoutPage', () => {
 
     it('returns a loading state until logout redirect', () => {
         renderLogoutPage();
-        const status = 'Logging out...';
+        const status = 'Signing out...';
         expect(screen.getByText(status)).toBeInTheDocument();
     });
 

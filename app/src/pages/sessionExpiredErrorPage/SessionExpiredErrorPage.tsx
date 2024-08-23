@@ -28,7 +28,7 @@ const SessionExpiredErrorPage = () => {
             </ButtonLink>
         </>
     ) : (
-        <Spinner status="Logging in..." />
+        <Spinner status="Signing in..." />
     );
 };
 export default SessionExpiredErrorPage;
