@@ -67,32 +67,38 @@ class EdgePresignService:
     def get_s3_object(self, bucket_name: str, file_key: str):
         try:
             pdf_object = self.s3_service.get_object(bucket_name, file_key)
+            logger.info(f"Success S3 {bucket_name}")
+
             return self.create_success_response(pdf_object["Body"].read())
 
         except ClientError as e:
             error_code = e.response["Error"]["Code"]
-            self.logger.error(f"ClientError occurred: {error_code} - {e}")
+            logger.error(f"ClientError occurred: {error_code} - {e}")
 
             if error_code == "404":
-                return self.create_error_response(
-                    "Not Found", "The requested PDF object does not exist."
-                )
+                return {
+                    "status": "404",
+                    "statusDescription": "Not Found",
+                    "body": "The requested PDF object does not exist.",
+                }
             else:
-                return self.create_error_response(
-                    "Internal Server Error",
-                    "An error occurred while retrieving the PDF object.",
-                )
+                return {
+                    "status": "500",
+                    "statusDescription": "Internal Server Error",
+                    "body": "An error occurred while retrieving the PDF object.",
+                }
 
         except Exception as e:
             # Handle any other unexpected errors
-            self.logger.error(f"Unexpected error occurred: {str(e)}")
-            return self.create_error_response(
-                "Internal Server Error",
-                "An unexpected error occurred while retrieving the PDF object.",
-            )
+            logger.error(f"Unexpected error occurred: {str(e)}")
+            return {
+                "status": "500",
+                "statusDescription": "Internal Server Error",
+                "body": "An unexpected error occurred while retrieving the PDF object.",
+            }
 
     def create_success_response(self, pdf_object):
-        return {
+        res = {
             "status": "200",
             "statusDescription": "OK",
             "headers": {
@@ -102,3 +108,4 @@ class EdgePresignService:
             "body": base64.b64encode(pdf_object).decode("utf-8"),
             "bodyEncoding": "base64",
         }
+        return res

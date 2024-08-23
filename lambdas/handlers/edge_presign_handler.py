@@ -20,6 +20,7 @@ def lambda_handler(event, context):
 
     # Attempt to update the URL in DynamoDB
     dynamo_response = edge_presign_service.attempt_url_update(table_name, requested_url)
+    logger.info(f"Success Dynamo {str(dynamo_response)}")
 
     # If the dynamo_response is a dictionary with a status code, return it
     if isinstance(dynamo_response, dict) and "status" in dynamo_response:
@@ -36,4 +37,5 @@ def lambda_handler(event, context):
         s3_bucket_name, file_key
     )
 
+    logger.info(f"Success Response: {str(presigned_url_response)}")
     return presigned_url_response
