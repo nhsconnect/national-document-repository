@@ -106,32 +106,34 @@ class DynamoDBService:
             )
             raise e
 
-    def update_item(self, table_name: str, key: str, updated_fields: dict):
+    def update_item(
+        self,
+        table_name: str,
+        key: str,
+        updated_fields: dict,
+        condition_expression: str = None,
+        expression_attribute_values: dict = {},
+    ):
         table = self.get_table(table_name)
 
         updated_field_names = list(updated_fields.keys())
-
         update_expression = create_update_expression(updated_field_names)
         _, expression_attribute_names = create_expressions(updated_field_names)
-        expression_attribute_values = create_expression_attribute_values(updated_fields)
 
-        table.update_item(
-            Key={"ID": key},
-            UpdateExpression=update_expression,
-            ExpressionAttributeNames=expression_attribute_names,
-            ExpressionAttributeValues=expression_attribute_values,
+        expression_attribute_values.update(
+            create_expression_attribute_values(updated_fields)
         )
 
-    def delete_item(self, table_name: str, key: dict):
-        try:
-            table = self.get_table(table_name)
-            table.delete_item(Key=key)
-            logger.info(f"Deleting item in table: {table_name}")
-        except ClientError as e:
-            logger.error(
-                str(e), {"Result": f"Unable to delete item in table: {table_name}"}
-            )
-            raise e
+        update_item_args = {
+            "Key": {"ID": key},
+            "UpdateExpression": update_expression,
+            "ExpressionAttributeNames": expression_attribute_names,
+            "ExpressionAttributeValues": expression_attribute_values,
+        }
+
+        if condition_expression:
+            update_item_args["ConditionExpression"] = condition_expression
+        table.update_item(**update_item_args)
 
     def scan_table(
         self,
