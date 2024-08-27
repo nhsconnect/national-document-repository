@@ -44,7 +44,7 @@ def lambda_handler(event, context):
     try:
         dynamo_service.update_conditional(
             table_name=table_name,
-            key={"ID": {"S": uri_hash}},
+            key=uri_hash,
             updated_fields={"IsRequested": True},
             condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
             expression_attribute_values={":false": False},
