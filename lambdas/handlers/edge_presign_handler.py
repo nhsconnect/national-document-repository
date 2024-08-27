@@ -2,21 +2,24 @@ import hashlib
 
 import boto3
 from botocore.exceptions import ClientError
+from utils.audit_logging_setup import LoggingService
+
+logger = LoggingService(__name__)
 
 # AWS Clients
 ssm_client = boto3.client("ssm", region_name="us-east-1")
-dynamodb_client = boto3.client("dynamodb", region_name="us-east-1")
+dynamodb_client = boto3.client("dynamodb", region_name="eu-west-2")
 table_name = "ndrd_CloudFrontEdgeReference"
 
 # Responses
 internal_server_error_response = {
     "status": "500",
-    "statusDescription": "Internal Server Error",
+    "statusDescription": "Internal Server Error xD",
     "headers": {
         "content-type": [{"key": "Content-Type", "value": "text/plain"}],
         "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
     },
-    "body": "Internal Server Error",
+    "body": "Internal Server Error xD",
 }
 
 forbidden_response = {
@@ -41,7 +44,11 @@ def lambda_handler(event, context):
         if is_already_used(uri_hash):
             return forbidden_response
         save_usage(uri_hash)
-    except ClientError:
+    except ClientError as e:
+        logger.error(
+            f"ClientError: {str(e)}",
+            {"Result": "Lloyd George stitching failed"},
+        )
         return internal_server_error_response
 
     return request
