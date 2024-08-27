@@ -2,6 +2,7 @@ import hashlib
 
 import boto3
 from botocore.exceptions import ClientError
+from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
@@ -10,7 +11,6 @@ logger = LoggingService(__name__)
 ssm_client = boto3.client("ssm", region_name="us-east-1")
 dynamodb_client = boto3.client("dynamodb", region_name="eu-west-2")
 table_name = "ndrd_CloudFrontEdgeReference"
-
 # Responses
 internal_server_error_response = {
     "status": "500",
@@ -38,12 +38,17 @@ def lambda_handler(event, context):
     uri = request["uri"]
     querystring = request.get("querystring", "")
 
+    dynamo_service = DynamoDBService()
     uri_hash = hashlib.md5(f"{uri}?{querystring}".encode("utf-8")).hexdigest()
 
     try:
-        if is_already_used(uri_hash):
-            return forbidden_response
-        save_usage(uri_hash)
+        dynamo_service.update_conditional(
+            table_name=table_name,
+            key={"ID": {"S": uri_hash}},
+            updated_fields={"IsRequested": True},
+            condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
+            expression_attribute_values={":false": False},
+        )
     except ClientError as e:
         logger.error(
             f"ClientError: {str(e)}",
@@ -52,12 +57,3 @@ def lambda_handler(event, context):
         return internal_server_error_response
 
     return request
-
-
-def is_already_used(hash):
-    response = dynamodb_client.get_item(TableName=table_name, Key={"pk": {"S": hash}})
-    return "Item" in response
-
-
-def save_usage(hash):
-    dynamodb_client.put_item(TableName=table_name, Item={"pk": {"S": hash}})
