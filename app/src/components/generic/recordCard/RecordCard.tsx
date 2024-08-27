@@ -32,9 +32,8 @@ function RecordCard({
             {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
                 <div className="lloydgeorge_record-stage_pdf-expander">
                     <button
-                        className="lloydgeorge_record-stage_pdf-expander-button link-button clickable"
+                        className="lloydgeorge_record-stage_pdf-expander-button link-button clickable full-screen-btn"
                         data-testid="full-screen-btn"
-                        id="full-screen-btn"
                         onClick={() => {
                             fullScreenHandler(true);
                         }}
