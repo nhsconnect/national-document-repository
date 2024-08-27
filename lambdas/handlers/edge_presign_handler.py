@@ -56,4 +56,7 @@ def lambda_handler(event, context):
         )
         return internal_server_error_response
 
+    headers = request.get("headers", {})
+    if "authorization" in headers:
+        del headers["authorization"]
     return request
