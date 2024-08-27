@@ -16,6 +16,7 @@ from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT_WITH_GP_END_DATE,
     PDS_PATIENT_WITHOUT_ACTIVE_GP,
     PDS_PATIENT_WITHOUT_ADDRESS,
+    PDS_PATIENT_SUSPENDED,
 )
 from tests.unit.helpers.data.pds.test_cases_for_date_logic import (
     build_test_name,
@@ -53,6 +54,25 @@ def test_get_restricted_patient_details():
         superseded=False,
         restricted=True,
         generalPracticeOds="",
+        active=False,
+    )
+
+    result = patient.get_patient_details(patient.id)
+
+    assert expected_patient_details == result
+
+def test_get_suspended_patient_details():
+    patient = create_patient(PDS_PATIENT_SUSPENDED)
+
+    expected_patient_details = PatientDetails(
+        givenName=["Jane"],
+        familyName="Smith",
+        birthDate="2010-10-22",
+        postalCode="LS1 6AE",
+        nhsNumber="9000000009",
+        superseded=False,
+        restricted=False,
+        generalPracticeOds="SUSP",
         active=False,
     )
 

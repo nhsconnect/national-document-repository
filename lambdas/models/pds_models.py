@@ -162,7 +162,7 @@ class Patient(BaseModel):
 
     def get_is_active_status(self) -> bool:
         gp_ods = self.get_active_ods_code_for_gp()
-        return bool(gp_ods)
+        return not (gp_ods == "SUSP" or gp_ods == "")
 
     def get_death_notification_status(self) -> Optional[DeathNotificationStatus]:
         if not self.deceased_date_time:
