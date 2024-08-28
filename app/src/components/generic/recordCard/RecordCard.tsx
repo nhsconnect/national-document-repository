@@ -29,15 +29,17 @@ function RecordCard({
                 </Card.Heading>
                 {detailsElement}
 
-                <button
-                    className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
-                    data-testid="full-screen-btn"
-                    onClick={() => {
-                        fullScreenHandler(true);
-                    }}
-                >
-                    View in full screen
-                </button>
+                {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
+                    <button
+                        className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
+                        data-testid="full-screen-btn"
+                        onClick={() => {
+                            fullScreenHandler(true);
+                        }}
+                    >
+                        View in full screen
+                    </button>
+                )}
             </Card.Content>
             {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
                 <div className="lloydgeorge_record-stage_pdf-expander">
