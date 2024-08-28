@@ -4,7 +4,10 @@ from typing import Optional, Tuple
 from enums.death_notification_status import DeathNotificationStatus
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
+
+from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from utils.audit_logging_setup import LoggingService
+from utils.ods_utils import is_ods_code_active
 
 logger = LoggingService(__name__)
 conf = ConfigDict(alias_generator=to_camel)
@@ -157,12 +160,14 @@ class Patient(BaseModel):
 
         death_notification_status = self.get_death_notification_status()
         if not is_deceased(death_notification_status) and self.is_unrestricted():
-            return "SUSP"
+            return PatientOdsInactiveStatus.SUSPENDED
         return ""
+
 
     def get_is_active_status(self) -> bool:
         gp_ods = self.get_active_ods_code_for_gp()
-        return not (gp_ods == "SUSP" or gp_ods == "")
+        return is_ods_code_active(gp_ods)
+
 
     def get_death_notification_status(self) -> Optional[DeathNotificationStatus]:
         if not self.deceased_date_time:
