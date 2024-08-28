@@ -310,6 +310,11 @@ $hunit: '%';
                         margin-bottom: 0;
                     }
                 }
+
+                &-button {
+                    position: absolute;
+                    right: 28px;
+                }
             }
 
             &-expander {
@@ -317,14 +322,6 @@ $hunit: '%';
                 margin-bottom: 0;
                 border-left: none;
                 border-right: none;
-
-                //TODO: MODIFY
-                &-button {
-                    display: inline-block;
-                    position: absolute;
-                    right: 28px;
-                    top: 30px;
-                }
             }
         }
 
