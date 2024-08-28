@@ -1,54 +1,62 @@
-# from services.base.s3_service import S3Service
-# from services.edge_presign_service import EdgePresignService
+import hashlib
+
+import boto3
+from botocore.exceptions import ClientError
+from services.base.dynamo_service import DynamoDBService
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
 
+# AWS Clients
+ssm_client = boto3.client("ssm", region_name="us-east-1")
+dynamodb_client = boto3.client("dynamodb", region_name="eu-west-2")
+table_name = "ndrd_CloudFrontEdgeReference"
+# Responses
+internal_server_error_response = {
+    "status": "500",
+    "statusDescription": "Internal Server Error xD",
+    "headers": {
+        "content-type": [{"key": "Content-Type", "value": "text/plain"}],
+        "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
+    },
+    "body": "Internal Server Error xD",
+}
+
+forbidden_response = {
+    "status": "403",
+    "statusDescription": "Forbidden",
+    "headers": {
+        "content-type": [{"key": "Content-Type", "value": "text/plain"}],
+        "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
+    },
+    "body": "Forbidden",
+}
+
 
 def lambda_handler(event, context):
     request = event["Records"][0]["cf"]["request"]
-    requested_url = request["uri"]
-    logger.info(f"Info: URL Requested [{requested_url}]")
-    logger.info(f"Info: URL Requested [{str(request)}]")
+    uri = request["uri"]
+    querystring = request.get("querystring", "")
 
-    return {
-        "status": "302",
-        "statusDescription": "Found",
-        "headers": {
-            "location": [{"key": "Location", "value": "https://www.google.com/"}],
-            "content-type": [
-                {"key": "Content-Type", "value": "text/html; charset=UTF-8"}
-            ],
-        },
-        "body": '<html>\n<head><title>302 Found</title></head>\n<body>\n<h1>Found</h1>\n<p>The document has moved <a href="https://www.google.com/">here</a>.</p>\n</body>\n</html>',
-    }
+    dynamo_service = DynamoDBService()
+    uri_hash = hashlib.md5(f"{uri}?{querystring}".encode("utf-8")).hexdigest()
 
-    # edge_presign_service = EdgePresignService()
-    # s3_service = S3Service()
+    try:
+        dynamo_service.update_conditional(
+            table_name=table_name,
+            key=uri_hash,
+            updated_fields={"IsRequested": True},
+            condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
+            expression_attribute_values={":false": False},
+        )
+    except ClientError as e:
+        logger.error(
+            f"ClientError: {str(e)}",
+            {"Result": "Lloyd George stitching failed"},
+        )
+        return internal_server_error_response
 
-    # # TODO : ADD DYNAMIC TABLE NAME
-    # # PULL ENV FROM ORIGIN USE ENV PULL FOR DEFAULT SSM REQ
-    # # LOGIC TO CHECK WHETHER ITS PROD TO PREPEND OR NOT
-    # table_name = "ndrd_CloudFrontEdgeReference"
-
-    # # Attempt to update the URL in DynamoDB
-    # dynamo_response = edge_presign_service.attempt_url_update(table_name, requested_url)
-    # logger.info(f"Success Dynamo {str(dynamo_response)}")
-
-    # # If the dynamo_response is a dictionary with a status code, return it
-    # if isinstance(dynamo_response, dict) and "status" in dynamo_response:
-    #     return dynamo_response
-
-    # # Extract the file key from the requested URL
-    # file_key = requested_url.lstrip("/")
-
-    # # Create a presigned URL using S3Service
-    # # TODO : ADD DYNAMIC BUCKET NAME
-
-    # s3_bucket_name = "ndrd_lloyd-george-store"
-    # presigned_url_response = s3_service.create_download_presigned_url(
-    #     s3_bucket_name, file_key
-    # )
-
-    # logger.info(f"Success Response: {str(presigned_url_response)}")
-    # return presigned_url_response
+    headers = request.get("headers", {})
+    if "authorization" in headers:
+        del headers["authorization"]
+    return request
