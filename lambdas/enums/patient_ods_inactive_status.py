@@ -6,5 +6,5 @@ class PatientOdsInactiveStatus(StrEnum):
     DECEASED = "DECE"
 
     @staticmethod
-    def list():
+    def list() -> list[str]:
         return list(PatientOdsInactiveStatus.__members__.values())

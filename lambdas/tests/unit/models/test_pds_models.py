@@ -1,6 +1,7 @@
 import copy
 
 from enums.death_notification_status import DeathNotificationStatus
+from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from freezegun import freeze_time
 from models.pds_models import PatientDetails
 from tests.unit.conftest import EXPECTED_PARSED_PATIENT_BASE_CASE
@@ -73,7 +74,7 @@ def test_get_suspended_patient_details():
         nhsNumber="9000000009",
         superseded=False,
         restricted=False,
-        generalPracticeOds="SUSP",
+        generalPracticeOds=PatientOdsInactiveStatus.SUSPENDED,
         active=False,
     )
 
@@ -121,7 +122,7 @@ def test_gp_ods_susp_when_gp_end_date_indicates_inactive():
 
     response = patient.get_minimum_patient_details(patient.id)
 
-    assert response.general_practice_ods == "SUSP"
+    assert response.general_practice_ods == PatientOdsInactiveStatus.SUSPENDED
 
 
 def test_not_raise_error_when_no_gp_in_response():
@@ -129,7 +130,7 @@ def test_not_raise_error_when_no_gp_in_response():
 
     response = patient.get_minimum_patient_details(patient.id)
 
-    assert response.general_practice_ods == "SUSP"
+    assert response.general_practice_ods == PatientOdsInactiveStatus.SUSPENDED
 
 
 @freeze_time("2021-12-31")
