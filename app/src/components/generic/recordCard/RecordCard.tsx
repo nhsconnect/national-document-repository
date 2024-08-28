@@ -28,10 +28,9 @@ function RecordCard({
                     {heading}
                 </Card.Heading>
                 {detailsElement}
-            </Card.Content>
-            {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
-                <div className="lloydgeorge_record-stage_pdf-expander">
-                    <button
+
+                {/* TODO: MOVE BUTTON HERE AND UPDATE CLASSNAME  */}
+                {/* {/* <button
                         className="lloydgeorge_record-stage_pdf-expander-button link-button clickable full-screen-btn"
                         data-testid="full-screen-btn"
                         onClick={() => {
@@ -39,7 +38,19 @@ function RecordCard({
                         }}
                     >
                         View in full screen
-                    </button>
+                    </button> */}
+            </Card.Content>
+            {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
+                <div className="lloydgeorge_record-stage_pdf-expander">
+                    {/* <button
+                        className="lloydgeorge_record-stage_pdf-expander-button link-button clickable full-screen-btn"
+                        data-testid="full-screen-btn"
+                        onClick={() => {
+                            fullScreenHandler(true);
+                        }}
+                    >
+                        View in full screen
+                    </button> */}
                     <PdfViewer fileUrl={recordUrl} />
                 </div>
             )}
