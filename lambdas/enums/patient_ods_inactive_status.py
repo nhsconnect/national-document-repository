@@ -2,7 +2,7 @@ from enum import StrEnum
 
 
 class PatientOdsInactiveStatus(StrEnum):
-    SUSPENDED = "SUSP",
+    SUSPENDED = "SUSP"
     DECEASED = "DECE"
 
     @staticmethod

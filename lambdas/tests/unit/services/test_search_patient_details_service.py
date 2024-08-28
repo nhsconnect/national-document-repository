@@ -9,6 +9,11 @@ from utils.exceptions import (
 )
 from utils.lambda_exceptions import SearchPatientException
 
+USER_VALID_ODS_CODE = "ABC123"
+PATIENT_VALID_ODS_CODE = "XYZ789"
+INVALID_ODS_CODE = "SOME_INVALID_ODS_CODE"
+EMPTY_ODS_CODE = ""
+
 
 @pytest.fixture(scope="function")
 def mock_service(request, mocker):
@@ -33,7 +38,11 @@ def mock_check_if_user_authorise(mocker, mock_service):
 
 @pytest.mark.parametrize(
     "mock_service",
-    (("GP_ADMIN", "test_ods_code"), ("GP_CLINICAL", "test_ods_code"), ("PCSE", "")),
+    (
+        ("GP_ADMIN", USER_VALID_ODS_CODE),
+        ("GP_CLINICAL", USER_VALID_ODS_CODE),
+        ("PCSE", ""),
+    ),
     indirect=True,
 )
 def test_check_if_user_authorise_valid(mock_service):
@@ -47,24 +56,26 @@ def test_check_if_user_authorise_valid(mock_service):
 @pytest.mark.parametrize(
     "mock_service",
     (
-        ("GP_ADMIN", "test_ods_code"),
-        ("GP_ADMIN", ""),
-        ("GP_CLINICAL", "test_ods_code"),
-        ("GP_CLINICAL", ""),
-        ("PCSE", ""),
-        ("PCSE", "new_gp_ods_code"),
-        ("Not_valid", "new_gp_ods_code"),
-        ("Not_valid", ""),
+        ("GP_ADMIN", USER_VALID_ODS_CODE),
+        ("GP_ADMIN", EMPTY_ODS_CODE),
+        ("GP_CLINICAL", USER_VALID_ODS_CODE),
+        ("GP_CLINICAL", EMPTY_ODS_CODE),
+        ("PCSE", EMPTY_ODS_CODE),
+        ("PCSE", PATIENT_VALID_ODS_CODE),
+        ("Not_valid", PATIENT_VALID_ODS_CODE),
+        ("Not_valid", EMPTY_ODS_CODE),
     ),
     indirect=True,
 )
 def test_check_if_user_authorise_raise_error(mock_service):
     with pytest.raises(UserNotAuthorisedException):
-        mock_service.check_if_user_authorise("new_gp_ods_code")
+        mock_service.check_if_user_authorise(PATIENT_VALID_ODS_CODE)
 
 
 @pytest.mark.parametrize(
-    "mock_service", (("GP_ADMIN", "test_ods_code"), ("GP_ADMIN", "")), indirect=True
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
+    indirect=True,
 )
 def test_handle_search_patient_request_valid(mock_service, mocker):
     pds_service_response = PatientDetails(
@@ -98,7 +109,9 @@ def test_handle_search_patient_request_valid(mock_service, mocker):
 
 
 @pytest.mark.parametrize(
-    "mock_service", (("GP_ADMIN", "test_ods_code"), ("GP_ADMIN", "")), indirect=True
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
+    indirect=True,
 )
 def test_handle_search_patient_request_raise_error_when_patient_not_found(
     mock_service, mock_pds_service_fetch
@@ -111,7 +124,9 @@ def test_handle_search_patient_request_raise_error_when_patient_not_found(
 
 
 @pytest.mark.parametrize(
-    "mock_service", (("GP_ADMIN", "test_ods_code"), ("GP_ADMIN", "")), indirect=True
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
+    indirect=True,
 )
 def test_handle_search_patient_request_raise_error_when_user_is_not_auth(
     mock_service, mock_pds_service_fetch, mock_check_if_user_authorise
@@ -125,7 +140,9 @@ def test_handle_search_patient_request_raise_error_when_user_is_not_auth(
 
 
 @pytest.mark.parametrize(
-    "mock_service", (("GP_ADMIN", "test_ods_code"), ("GP_ADMIN", "")), indirect=True
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
+    indirect=True,
 )
 def test_handle_search_patient_request_raise_error_when_invalid_patient(
     mock_service, mock_pds_service_fetch, mock_check_if_user_authorise
@@ -139,7 +156,9 @@ def test_handle_search_patient_request_raise_error_when_invalid_patient(
 
 
 @pytest.mark.parametrize(
-    "mock_service", (("GP_ADMIN", "test_ods_code"), ("GP_ADMIN", "")), indirect=True
+    "mock_service",
+    (("GP_ADMIN", USER_VALID_ODS_CODE), ("GP_ADMIN", EMPTY_ODS_CODE)),
+    indirect=True,
 )
 def test_handle_search_patient_request_raise_error_when_pds_error(
     mock_service, mock_pds_service_fetch, mock_check_if_user_authorise

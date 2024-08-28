@@ -13,10 +13,10 @@ from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT_NO_PERIOD_IN_GENERAL_PRACTITIONER_IDENTIFIER,
     PDS_PATIENT_NO_PERIOD_IN_NAME_MODEL,
     PDS_PATIENT_RESTRICTED,
+    PDS_PATIENT_SUSPENDED,
     PDS_PATIENT_WITH_GP_END_DATE,
     PDS_PATIENT_WITHOUT_ACTIVE_GP,
     PDS_PATIENT_WITHOUT_ADDRESS,
-    PDS_PATIENT_SUSPENDED,
 )
 from tests.unit.helpers.data.pds.test_cases_for_date_logic import (
     build_test_name,
@@ -60,6 +60,7 @@ def test_get_restricted_patient_details():
     result = patient.get_patient_details(patient.id)
 
     assert expected_patient_details == result
+
 
 def test_get_suspended_patient_details():
     patient = create_patient(PDS_PATIENT_SUSPENDED)
