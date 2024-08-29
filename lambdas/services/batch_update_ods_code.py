@@ -78,6 +78,7 @@ class BatchUpdate:
             logger.info(
                 f"Updating record for NHS number {nhs_number} ({current_count} of {total_count})"
             )
+
             self.update_patient_ods(nhs_number)
 
         logger.info("Finished updating all patient's ODS codes")

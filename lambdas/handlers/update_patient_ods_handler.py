@@ -21,7 +21,6 @@ logger = LoggingService(__name__)
 )
 @override_error_check
 def lambda_handler(event, context):
-
     table_name = os.environ["LLOYD_GEORGE_DYNAMODB_NAME"]
     tempdir = tempfile.mkdtemp()
     filename = "batch_update_progress.json"
