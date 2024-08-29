@@ -592,3 +592,6 @@ PDS_PATIENT_DECEASED_INFORMAL["extension"][-1]["extension"][0]["valueCodeableCon
     "display": "Informal - death notice received via an update from a local NHS "
     "Organisation such as GENERAL PRACTITIONER or NHS Trust",
 }
+
+PDS_PATIENT_SUSPENDED = copy.deepcopy(PDS_PATIENT)
+PDS_PATIENT_SUSPENDED["generalPractitioner"][0]["identifier"].pop("period")

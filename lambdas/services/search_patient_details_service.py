@@ -11,6 +11,7 @@ from utils.exceptions import (
     UserNotAuthorisedException,
 )
 from utils.lambda_exceptions import SearchPatientException
+from utils.ods_utils import is_ods_code_active
 from utils.utilities import get_pds_service
 
 logger = LoggingService(__name__)
@@ -65,7 +66,7 @@ class SearchPatientDetailsService:
             raise SearchPatientException(400, LambdaError.SearchPatientNoParse)
 
     def check_if_user_authorise(self, gp_ods_for_patient):
-        patient_is_active = bool(gp_ods_for_patient)
+        patient_is_active = is_ods_code_active(gp_ods_for_patient)
         match self.user_role:
             case RepositoryRole.GP_ADMIN.value:
                 # Not raising error here if gp_ods is null / empty
