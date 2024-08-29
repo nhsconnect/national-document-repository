@@ -11,7 +11,6 @@ from utils.lambda_exceptions import SearchPatientException
 
 USER_VALID_ODS_CODE = "ABC123"
 PATIENT_VALID_ODS_CODE = "XYZ789"
-INVALID_ODS_CODE = "SOME_INVALID_ODS_CODE"
 EMPTY_ODS_CODE = ""
 
 
