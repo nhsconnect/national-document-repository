@@ -1,111 +1,71 @@
-import base64
+import re
 
-from botocore.exceptions import BotoCoreError, ClientError, EndpointConnectionError
+from botocore.exceptions import ClientError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
 
+internal_server_error_response = {
+    "status": "500",
+    "statusDescription": "Internal Server Error xD",
+    "headers": {
+        "content-type": [{"key": "Content-Type", "value": "text/plain"}],
+        "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
+    },
+    "body": "Internal Server Error xD",
+}
+
+client_error_response = {
+    "status": "404",
+    "statusDescription": "Not Found :P",
+    "headers": {
+        "content-type": [{"key": "Content-Type", "value": "text/plain"}],
+        "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
+    },
+    "body": "Not Found :P",
+}
+
 
 class EdgePresignService:
 
-    def __init__(
-        self,
-    ):
+    def __init__(self):
         self.dynamo_service = DynamoDBService()
         self.s3_service = S3Service()
 
-    def attempt_url_update(self, table_name, requested_url):
+    def attempt_url_update(self, base_table_name, uri_hash, origin_url):
         try:
-            try:
-                return self.dynamo_service.update_conditional(
-                    table_name=table_name,
-                    key=requested_url,
-                    updated_fields={"IsRequested": True},
-                    condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
-                    expression_attribute_values={":false": False},
-                )
-            except ClientError as e:
-                error = (
-                    "This URL has already been requested and cannot be accessed again"
-                )
+            environment = self.extract_environment_from_url(origin_url)
+            logger.info(f"Extracted Environment: {environment}")
 
-                logger.error(f"Message: {error}: {str(e)}")
-                return {
-                    "status": "404",
-                    "statusDescription": "Not Found",
-                    "body": error,
-                }
+            table_name = self.extend_table_name(base_table_name, environment)
 
-        except EndpointConnectionError as e:
-            error = "Unable to reach the DynamoDB service"
-
-            logger.error(f"Message: {error}: {str(e)}")
-            return {"status": "502", "statusDescription": "Bad Gateway", "body": e}
-
-        except BotoCoreError as e:
-            error = "An AWS SDK error occurred"
-
-            logger.error(f"Message: {error}: {str(e)}")
-            return {
-                "status": "500",
-                "statusDescription": "Internal Server Error",
-                "body": error,
-            }
-
-        except Exception as e:
-            error = "An unexpected error occurred"
-
-            logger.error(f"Message: {error}: {str(e)}")
-            return {
-                "status": "500",
-                "statusDescription": "Internal Server Error",
-                "body": error,
-            }
-
-    def get_s3_object(self, bucket_name: str, file_key: str):
-        try:
-            pdf_object = self.s3_service.get_object(bucket_name, file_key)
-            logger.info(f"Success S3 {bucket_name}")
-
-            return self.create_success_response(pdf_object["Body"].read())
-
+            self.dynamo_service.update_conditional(
+                table_name=table_name,
+                key=uri_hash,
+                updated_fields={"IsRequested": True},
+                condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
+                expression_attribute_values={":false": False},
+            )
         except ClientError as e:
-            error_code = e.response["Error"]["Code"]
-            logger.error(f"ClientError occurred: {error_code} - {e}")
-
-            if error_code == "404":
-                return {
-                    "status": "404",
-                    "statusDescription": "Not Found",
-                    "body": "The requested PDF object does not exist.",
-                }
-            else:
-                return {
-                    "status": "500",
-                    "statusDescription": "Internal Server Error",
-                    "body": "An error occurred while retrieving the PDF object.",
-                }
-
+            logger.error(
+                f"[Message]: {str(e)}", {"Result": "Lloyd George stitching failed"}
+            )
+            return client_error_response
         except Exception as e:
-            # Handle any other unexpected errors
-            logger.error(f"Unexpected error occurred: {str(e)}")
-            return {
-                "status": "500",
-                "statusDescription": "Internal Server Error",
-                "body": "An unexpected error occurred while retrieving the PDF object.",
-            }
+            logger.error(
+                f"[Message]: {str(e)}", {"Result": "Lloyd George stitching failed"}
+            )
+            return internal_server_error_response
 
-    def create_success_response(self, pdf_object):
-        res = {
-            "status": "200",
-            "statusDescription": "OK",
-            "headers": {
-                "content-type": [{"key": "Content-Type", "value": "application/pdf"}],
-                "cache-control": [{"key": "Cache-Control", "value": "max-age=3600"}],
-            },
-            "body": base64.b64encode(pdf_object).decode("utf-8"),
-            "bodyEncoding": "base64",
-        }
-        return res
+    def extract_environment_from_url(self, url):
+        match = re.search(r"https://([^.]+)\.", url)
+        if match:
+            return match.group(1)
+        return ""
+
+    def extend_table_name(self, base_table_name, environment):
+        if environment:
+            return f"{environment}_{base_table_name}"
+        return base_table_name

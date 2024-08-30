@@ -85,9 +85,11 @@ jobs:
         id: cloudfront
         run: |
           aws cloudfront list-distributions > distributions.json
-          distribution_id=$(cat distributions.json | jq -r '.DistributionList.Items[] | select(.Origins.Items[].Id=="${{ inputs.sandbox }}-lloyd-george-store") | .Id')
+          distribution_id=$(jq -r --arg origin_id "${{ inputs.sandbox }}-lloyd-george-store" \
+          '.DistributionList.Items[] | select(.Origins.Items[].Id==$origin_id) | .Id' distributions.json | head -n 1)
+
           echo "Distribution ID found: $distribution_id"
-          echo "DISTRIBUTION_ID=${distribution_id}" >> $GITHUB_ENV
+          echo "DISTRIBUTION_ID=$distribution_id" >> $GITHUB_ENV
 
       - name: Updating Cloudfront to latest Lambda@Edge
         run: |
