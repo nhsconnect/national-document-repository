@@ -111,7 +111,7 @@ edge_zip:
 	cp -r lambdas/services ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cp -r lambdas/repositories ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cp -r lambdas/enums ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cp -r lambdas/venv/lib/python*/site-packages/* ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+	cp -r lambdas/venv/lib/python*/site-packages/* ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/python
 	cd ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp ; zip -r ../$(lambda_name).zip .
 	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
 	cd ../..
