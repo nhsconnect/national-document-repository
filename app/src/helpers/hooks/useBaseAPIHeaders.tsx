@@ -7,6 +7,7 @@ function useBaseAPIHeaders(authHeaderName = 'Authorization') {
     const headers: AuthHeaders = {
         'Content-Type': 'application/json',
         [authHeaderName]: jwtToken,
+        'X-Origin': typeof window !== 'undefined' ? window.location.href : '',
     };
     return headers;
 }
