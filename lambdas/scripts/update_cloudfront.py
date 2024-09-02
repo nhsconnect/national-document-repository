@@ -56,9 +56,19 @@ def update_cloudfront_lambda_association(distribution_id, lambda_arn):
         distribution_config = response["DistributionConfig"]
         etag = response["ETag"]
 
-        for item in distribution_config["DefaultCacheBehavior"][
-            "LambdaFunctionAssociations"
-        ]["Items"]:
+        # Check if 'Items' exist in 'LambdaFunctionAssociations'
+        lambda_associations = distribution_config["DefaultCacheBehavior"].get(
+            "LambdaFunctionAssociations", {}
+        )
+        items = lambda_associations.get("Items", [])
+
+        if not items:
+            print(
+                f"No Lambda function associations found for distribution '{distribution_id}'. Exiting."
+            )
+            sys.exit(0)
+
+        for item in items:
             if item["EventType"] in [
                 "viewer-request",
                 "viewer-response",
@@ -81,7 +91,7 @@ def update_cloudfront_lambda_association(distribution_id, lambda_arn):
             print(f"Distribution '{distribution_id}' does not exist. Skipping update.")
         else:
             print(f"Error updating distribution: {str(e)}")
-            sys.exit(1)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
