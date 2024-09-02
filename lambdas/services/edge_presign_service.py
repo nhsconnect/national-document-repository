@@ -60,7 +60,10 @@ class EdgePresignService:
             return internal_server_error_response
 
     def extract_environment_from_url(self, url: str) -> str:
-        match = re.search(r"https://([^.]+)\.example\.com", url)
+        match = re.search(
+            r"https://([^.]+)\.access-request-fulfilment\.patient-deductions\.nhs\.uk",
+            url,
+        )
         if match:
             return match.group(1)
         return ""
