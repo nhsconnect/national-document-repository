@@ -5,8 +5,9 @@ from services.edge_presign_service import EdgePresignService
 # Instantiate the service for testing
 edge_presign_service = EdgePresignService()
 
-# Variable for the table name
+# Global Variables
 TABLE_NAME = "CloudFrontEdgeReference"
+NHS_DOMAIN = "access-request-fulfilment.patient-deductions.nhs.uk"
 
 
 @pytest.fixture
@@ -21,12 +22,12 @@ def mock_s3_service(mocker):
 
 @pytest.fixture
 def valid_origin_url():
-    return "https://test.example.com"
+    return f"https://test.{NHS_DOMAIN}"
 
 
 @pytest.fixture
 def invalid_origin_url():
-    return "https://invalid.example.com"
+    return f"https://invalid.{NHS_DOMAIN}"
 
 
 def test_attempt_url_update_success(mock_dynamo_service, valid_origin_url):
@@ -105,14 +106,14 @@ def test_attempt_url_update_generic_exception(mock_dynamo_service, valid_origin_
 
 
 def test_extract_environment_from_url():
-    # Test with valid URLs
-    url = "https://test.example.com/path/to/resource"
+    # Test with valid NHS domain URL
+    url = f"https://test.{NHS_DOMAIN}/path/to/resource"
     expected = "test"
     actual = edge_presign_service.extract_environment_from_url(url)
     assert actual == expected
 
-    # Test with invalid URLs
-    url = "https://example.com/path/to/resource"
+    # Test with invalid URL (missing the environment part)
+    url = f"https://{NHS_DOMAIN}/path/to/resource"
     expected = ""
     actual = edge_presign_service.extract_environment_from_url(url)
     assert actual == expected
