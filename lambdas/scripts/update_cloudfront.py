@@ -64,9 +64,10 @@ def update_cloudfront_lambda_association(distribution_id, lambda_arn):
 
         if not items:
             print(
-                f"No Lambda function associations found for distribution '{distribution_id}'. Exiting."
+                f"Error for distribution '{distribution_id}'. Lambda associations not found. "
+                "Manually clean any duplicated and unused distributions and try again."
             )
-            sys.exit(0)
+            sys.exit(1)
 
         for item in items:
             if item["EventType"] in [
