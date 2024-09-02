@@ -9,22 +9,22 @@ logger = LoggingService(__name__)
 
 internal_server_error_response = {
     "status": "500",
-    "statusDescription": "Internal Server Error xD",
+    "statusDescription": "Internal Server Error",
     "headers": {
         "content-type": [{"key": "Content-Type", "value": "text/plain"}],
         "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
     },
-    "body": "Internal Server Error xD",
+    "body": "Internal Server Error",
 }
 
 client_error_response = {
     "status": "404",
-    "statusDescription": "Not Found :P",
+    "statusDescription": "Not Found",
     "headers": {
         "content-type": [{"key": "Content-Type", "value": "text/plain"}],
         "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
     },
-    "body": "Not Found :P",
+    "body": "Not Found",
 }
 
 
@@ -59,8 +59,8 @@ class EdgePresignService:
             )
             return internal_server_error_response
 
-    def extract_environment_from_url(self, url):
-        match = re.search(r"https://([^.]+)\.", url)
+    def extract_environment_from_url(self, url: str) -> str:
+        match = re.search(r"https://([^.]+)\.example\.com", url)
         if match:
             return match.group(1)
         return ""
