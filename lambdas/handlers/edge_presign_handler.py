@@ -3,11 +3,13 @@ import json
 
 from services.edge_presign_service import EdgePresignService
 from utils.audit_logging_setup import LoggingService
+from utils.decorators.set_audit_arg import set_request_context_for_logging
 
 logger = LoggingService(__name__)
 table_name = "ndrd_CloudFrontEdgeReference"
 
 
+@set_request_context_for_logging
 def lambda_handler(event, context):
     request = event["Records"][0]["cf"]["request"]
     uri = request["uri"]
