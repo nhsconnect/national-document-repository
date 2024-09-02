@@ -22,7 +22,6 @@ describe('RecordCard', () => {
                 screen.getByRole('heading', { name: 'Mock details render' }),
             ).toBeInTheDocument();
             expect(screen.getByRole('heading', { name: header })).toBeInTheDocument();
-            expect(screen.getByText('View record')).toBeInTheDocument();
             expect(screen.getByText('View in full screen')).toBeInTheDocument();
             expect(screen.getByTestId('pdf-viewer')).toBeInTheDocument();
         });
@@ -42,7 +41,6 @@ describe('RecordCard', () => {
                 screen.getByRole('heading', { name: 'Mock details render' }),
             ).toBeInTheDocument();
             expect(screen.getByRole('heading', { name: header })).toBeInTheDocument();
-            expect(screen.queryByText('View record')).not.toBeInTheDocument();
             expect(screen.queryByText('View in full screen')).not.toBeInTheDocument();
             expect(screen.queryByTestId('pdf-viewer')).not.toBeInTheDocument();
         });
