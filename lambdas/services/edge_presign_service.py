@@ -34,15 +34,15 @@ class EdgePresignService:
         self.dynamo_service = DynamoDBService()
         self.s3_service = S3Service()
 
-    def attempt_url_update(self, base_table_name, uri_hash, origin_url):
+    def attempt_url_update(self, table_name, uri_hash, origin_url):
         try:
             environment = self.extract_environment_from_url(origin_url)
             logger.info(f"Extracted Environment: {environment}")
 
-            table_name = self.extend_table_name(base_table_name, environment)
+            formatted_table_name = self.extend_table_name(table_name, environment)
 
             self.dynamo_service.update_conditional(
-                table_name=table_name,
+                table_name=formatted_table_name,
                 key=uri_hash,
                 updated_fields={"IsRequested": True},
                 condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
