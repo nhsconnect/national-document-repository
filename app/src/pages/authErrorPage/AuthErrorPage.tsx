@@ -32,7 +32,7 @@ const AuthErrorPage = () => {
             </Link>
         </>
     ) : (
-        <Spinner status="Logging in..." />
+        <Spinner status="Signing in..." />
     );
 };
 export default AuthErrorPage;

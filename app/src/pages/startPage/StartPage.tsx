@@ -67,7 +67,7 @@ function StartPage(props: Props) {
                 process.env.REACT_APP_ENVIRONMENT === 'test') && <TestPanel />}
         </>
     ) : (
-        <Spinner status="Logging in..." />
+        <Spinner status="Signing in..." />
     );
 }
 

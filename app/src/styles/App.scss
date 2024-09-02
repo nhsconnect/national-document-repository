@@ -101,30 +101,35 @@ $hunit: '%';
     justify-content: center;
     align-items: center;
 }
+
 .align-left {
     display: inline-flex;
     flex-flow: row nowrap;
     justify-content: flex-start;
     align-items: center;
 }
+
 .align-right {
     display: inline-flex;
     flex-flow: row nowrap;
     justify-content: flex-end;
     align-items: center;
 }
+
 .align-between {
     display: inline-flex;
     flex-flow: row nowrap;
     justify-content: space-between;
     align-items: center;
 }
+
 .align-evenly {
     display: inline-flex;
     flex-flow: row nowrap;
     justify-content: space-evenly;
     align-items: center;
 }
+
 .align-bottom {
     display: inline-flex;
     flex-flow: row nowrap;
@@ -166,11 +171,13 @@ $hunit: '%';
         color: $color_nhsuk-black;
         background: $color_nhsuk-yellow;
     }
+
     &:disabled {
         color: $color_nhsuk-black;
         background: $color_nhsuk-yellow;
         opacity: 1;
     }
+
     &-spinner {
         border: nhsuk-spacing(1) solid rgba($color_nhsuk-white, 0.8);
         border-top: nhsuk-spacing(1) solid $color_nhsuk-black;
@@ -203,6 +210,7 @@ $hunit: '%';
     text-align: center;
     padding-top: 150px;
     padding-bottom: 150px;
+
     &__text {
         @include nhsuk-typography-responsive(19);
         padding-bottom: 16px;
@@ -239,31 +247,38 @@ $hunit: '%';
             flex-flow: row nowrap;
             justify-content: space-between;
             margin: 0 -15px;
+
             &-row {
                 margin: 0 15px;
             }
+
             &-row:last-child {
                 flex-basis: calc(70% - 17px);
             }
         }
+
         &_patient-info {
             p {
                 font-size: 1.2rem;
             }
+
             p:first-child {
                 margin-bottom: 5px;
                 font-weight: 700;
             }
+
             p:nth-child(2) {
                 margin-bottom: 0;
             }
         }
+
         &_menu {
             &-content {
                 padding: 24px;
 
                 ol {
                     padding-left: 0;
+
                     li {
                         font-size: 1rem;
                         list-style-type: none;
@@ -271,23 +286,34 @@ $hunit: '%';
                 }
             }
         }
+
         &_pdf {
             margin-bottom: 0;
+
             &-content {
                 @extend .nhsuk-body-s;
                 position: relative;
+
                 &-label {
                     font-weight: 700;
                     font-size: 1.5rem;
                 }
+
                 p {
                     margin-bottom: 0;
                 }
+
                 &-no_record {
                     text-align: right;
+
                     &-upload {
                         margin-bottom: 0;
                     }
+                }
+
+                &-button {
+                    position: absolute;
+                    right: 28px;
                 }
             }
 
@@ -296,46 +322,49 @@ $hunit: '%';
                 margin-bottom: 0;
                 border-left: none;
                 border-right: none;
-                &-button {
-                    display: inline-block;
-                    position: absolute;
-                    right: 28px;
-                    top: 30px;
-                }
             }
         }
+
         &_gp-admin-non-bsol {
             &_inset-text {
                 padding-bottom: 0;
                 padding-top: 0;
+
                 &_confirm-download-remove-button {
                     background-color: #b61105;
                     box-shadow: #9a0c02;
+
                     &:hover {
                         background-color: #9a0c02;
                     }
+
                     &:active {
                         background-color: #9a0c02;
                     }
                 }
+
                 &_checkbox {
                     margin-bottom: 30px;
                 }
             }
         }
     }
+
     &_downloadall-stage {
         &_header {
             h2 {
                 margin: 0;
             }
+
             h4 {
                 font-weight: unset;
                 font-style: unset;
             }
         }
+
         &_details {
             @extend .nhsuk-body-s;
+
             &-content {
                 display: flex;
                 flex-flow: row nowrap;
@@ -343,6 +372,7 @@ $hunit: '%';
             }
         }
     }
+
     &_record-details {
         @extend .nhsuk-body-s;
 
@@ -350,22 +380,27 @@ $hunit: '%';
             &--last-updated {
                 margin-bottom: 16px;
             }
+
             &--num-files {
                 color: #4c6272;
             }
         }
+
         &_download-remove-button {
             position: absolute;
             top: 80px;
             right: 32px;
+
             &_content {
                 position: relative;
             }
         }
+
         &_actions {
             position: absolute;
             top: 32px;
             right: 32px;
+
             &-select {
                 border-color: #000;
                 background: #fff;
@@ -380,19 +415,23 @@ $hunit: '%';
                 @media (max-width: 480px) {
                     display: none;
                 }
+
                 &_border {
                     border: solid black 2px;
                     width: 100%;
                     height: 100%;
+
                     &--selected {
                         border-width: 4px;
                     }
                 }
+
                 &:focus,
                 &:active,
                 &--selected {
                     box-shadow: 0px 0px 0px 4px #ffeb3b;
                 }
+
                 &_placeholder {
                     position: absolute;
                     top: 50%;
@@ -400,6 +439,7 @@ $hunit: '%';
                     left: 10px;
                     box-sizing: border-box;
                 }
+
                 &_icon {
                     height: 9px;
                     width: auto;
@@ -412,14 +452,17 @@ $hunit: '%';
 
                 cursor: pointer;
             }
+
             &-menu {
                 position: absolute;
                 right: 0px;
                 z-index: 1000;
                 width: 252.5px;
                 box-shadow: 0 10px 10px rgba(0, 0, 0, 0.3);
+
                 ol {
                     padding-left: 0;
+
                     li {
                         font-size: 1rem;
                         list-style-type: none;
@@ -428,8 +471,10 @@ $hunit: '%';
             }
         }
     }
+
     &_download-complete {
         width: 711px;
+
         &_details {
             &-content {
                 padding: 95px 76px;
@@ -438,32 +483,39 @@ $hunit: '%';
                 color: #fff;
                 font-size: 1.5rem;
                 white-space: pre-wrap;
+
                 &_header {
                     font-weight: 700;
                     font-size: 3rem;
                     margin-bottom: 25px;
                 }
+
                 &_subheader {
                     font-weight: 700;
                     margin-top: 25px;
                 }
+
                 &_description {
                     font-size: 1.5rem !important;
                 }
             }
         }
+
         &_paragraph-headers {
             font-weight: 700;
             font-size: 2rem;
         }
+
         &_paragraph-subheaders {
             font-weight: 700;
             font-size: 1.2rem;
             margin-top: 2.4rem;
         }
     }
+
     &_delete-complete {
         width: 711px;
+
         &_details {
             &-content {
                 padding: 95px 76px;
@@ -472,32 +524,39 @@ $hunit: '%';
                 color: #fff;
                 font-size: 1.5rem;
                 white-space: pre-wrap;
+
                 &_header {
                     font-weight: 700;
                     font-size: 3rem;
                     margin-bottom: 25px;
                 }
+
                 &_subheader {
                     font-weight: 700;
                     margin-top: 25px;
                 }
+
                 &_description {
                     font-size: 1.5rem !important;
                 }
             }
         }
+
         &_paragraph-headers {
             font-weight: 700;
             font-size: 2rem;
         }
+
         &_paragraph-subheaders {
             font-weight: 700;
             font-size: 1.2rem;
             margin-top: 2.4rem;
         }
     }
+
     &_upload-complete {
         max-width: 711px;
+
         &_card {
             &_content {
                 padding: 95px 76px;
@@ -507,20 +566,24 @@ $hunit: '%';
                 font-weight: 400;
                 font-size: 1.5rem !important;
                 white-space: pre-wrap;
+
                 &_header {
                     font-weight: 700;
                     font-size: 3rem;
                 }
+
                 &_subheader {
                     font-weight: 700;
                     margin-top: 25px;
                 }
+
                 &_description {
                     font-size: 1.5rem !important;
                 }
             }
         }
     }
+
     &_drag-and-drop {
         display: flex;
         width: 100%;
@@ -531,6 +594,7 @@ $hunit: '%';
         border: 1px dashed #212b32;
         background: #d8dde0;
     }
+
     &_link {
         background: none;
         border: none;
@@ -549,6 +613,7 @@ $hunit: '%';
             @include link-focus;
         }
     }
+
     &_file_upload_error {
         font-family: Arial, sans-serif;
         font-size: 1.2rem;
@@ -566,6 +631,7 @@ $hunit: '%';
         .lloydgeorge_link {
             margin-left: 25px;
             padding: 0;
+
             &:focus {
                 @include link-focus;
             }
@@ -576,6 +642,7 @@ $hunit: '%';
 //Feedback
 #feedback-form {
     max-width: 800px;
+
     & form > div {
         margin: 50px 0;
     }
@@ -584,24 +651,30 @@ $hunit: '%';
 // NavLinks
 .navlinks {
     display: initial;
+
     &_wrapper {
         display: flex;
         flex-flow: row nowrap;
     }
+
     .nhsuk-header__navigation-title {
         color: $color_nhsuk-white;
     }
+
     .nhsuk-header__navigation-close {
         display: none;
     }
+
     &_item {
         a,
         a:hover {
             color: $color_nhsuk-white;
         }
+
         a:visited {
             color: $color_nhsuk-white;
         }
+
         &--desktop {
             margin: 0 2rem;
         }
@@ -617,6 +690,7 @@ $hunit: '%';
 
 .deletion-complete {
     width: 711px;
+
     &_card {
         &_content {
             padding: 95px 76px;
@@ -626,15 +700,18 @@ $hunit: '%';
             font-weight: 400;
             font-size: 1.5rem !important;
             white-space: pre-wrap;
+
             &_header {
                 font-weight: 700;
                 font-size: 3rem;
                 margin-bottom: 25px;
             }
+
             &_subheader {
                 font-weight: 700;
                 margin-top: 25px;
             }
+
             &_description {
                 font-size: 1.5rem !important;
             }
@@ -659,13 +736,16 @@ $hunit: '%';
     text-align: left;
     color: $color_nhsuk-blue;
     text-decoration: underline;
+
     &:hover {
         color: #7c2855;
         text-decoration: none;
     }
+
     &:active {
         color: #002f5c;
     }
+
     &:focus {
         @include link-focus;
     }

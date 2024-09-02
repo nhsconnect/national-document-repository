@@ -97,8 +97,6 @@ describe('LloydGeorgeRecordPage', () => {
         await waitFor(async () => {
             expect(screen.getByText('No documents are available.')).toBeInTheDocument();
         });
-
-        expect(screen.queryByText('View record')).not.toBeInTheDocument();
     });
     it('renders initial lg record view with no docs available text if lambda return records status is uploading for more than 3 min', async () => {
         const errorResponse = {
@@ -116,8 +114,6 @@ describe('LloydGeorgeRecordPage', () => {
         await waitFor(async () => {
             expect(screen.getByText('No documents are available.')).toBeInTheDocument();
         });
-
-        expect(screen.queryByText('View record')).not.toBeInTheDocument();
     });
     it('renders initial lg record view with docs are uploading text if response status is 423', async () => {
         const errorResponse = {
@@ -139,8 +135,6 @@ describe('LloydGeorgeRecordPage', () => {
                 ),
             ).toBeInTheDocument();
         });
-
-        expect(screen.queryByText('View record')).not.toBeInTheDocument();
     });
     it('renders initial lg record view with timeout text if response is 504', async () => {
         const errorResponse = {
@@ -161,8 +155,6 @@ describe('LloydGeorgeRecordPage', () => {
             ).toBeInTheDocument();
         });
         expect(screen.getByText(/please download instead/i)).toBeInTheDocument();
-
-        expect(screen.queryByText('View record')).not.toBeInTheDocument();
     });
 
     it('displays Loading... until the pdf is fetched', async () => {
@@ -184,7 +176,6 @@ describe('LloydGeorgeRecordPage', () => {
         await waitFor(() => {
             expect(screen.getByTitle('Embedded PDF')).toBeInTheDocument();
         });
-        expect(screen.getByText('View record')).toBeInTheDocument();
         expect(screen.getByText('View in full screen')).toBeInTheDocument();
 
         expect(screen.getByText('Lloyd George record')).toBeInTheDocument();

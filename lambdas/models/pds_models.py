@@ -2,9 +2,11 @@ from datetime import date
 from typing import Optional, Tuple
 
 from enums.death_notification_status import DeathNotificationStatus
+from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from pydantic import BaseModel, ConfigDict
 from pydantic.alias_generators import to_camel
 from utils.audit_logging_setup import LoggingService
+from utils.ods_utils import is_ods_code_active
 
 logger = LoggingService(__name__)
 conf = ConfigDict(alias_generator=to_camel)
@@ -146,6 +148,13 @@ class Patient(BaseModel):
                 if entry.use.lower() == "home":
                     return entry
 
+    def get_ods_code_or_inactive_status_for_gp(self) -> str:
+        return (
+            self.get_active_ods_code_for_gp()
+            or self.get_status_for_inactive_patient()
+            or ""
+        )
+
     def get_active_ods_code_for_gp(self) -> str:
         for entry in self.general_practitioner:
             period = entry.identifier.period
@@ -155,14 +164,14 @@ class Patient(BaseModel):
             if not gp_end_date or gp_end_date >= date.today():
                 return entry.identifier.value
 
+    def get_status_for_inactive_patient(self) -> str:
         death_notification_status = self.get_death_notification_status()
         if not is_deceased(death_notification_status) and self.is_unrestricted():
-            return "SUSP"
-        return ""
+            return PatientOdsInactiveStatus.SUSPENDED
 
     def get_is_active_status(self) -> bool:
-        gp_ods = self.get_active_ods_code_for_gp()
-        return bool(gp_ods)
+        gp_ods = self.get_ods_code_or_inactive_status_for_gp()
+        return is_ods_code_active(gp_ods)
 
     def get_death_notification_status(self) -> Optional[DeathNotificationStatus]:
         if not self.deceased_date_time:
@@ -211,7 +220,7 @@ class Patient(BaseModel):
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
-            generalPracticeOds=self.get_active_ods_code_for_gp(),
+            generalPracticeOds=self.get_ods_code_or_inactive_status_for_gp(),
             active=self.get_is_active_status(),
             deceased=is_deceased(death_notification_status),
             deathNotificationStatus=death_notification_status,
@@ -228,7 +237,9 @@ class Patient(BaseModel):
             familyName=family_name,
             birthDate=self.birth_date,
             generalPracticeOds=(
-                self.get_active_ods_code_for_gp() if self.is_unrestricted() else ""
+                self.get_ods_code_or_inactive_status_for_gp()
+                if self.is_unrestricted()
+                else ""
             ),
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),

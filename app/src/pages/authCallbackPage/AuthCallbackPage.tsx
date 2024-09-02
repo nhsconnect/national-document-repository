@@ -92,7 +92,7 @@ const AuthCallbackPage = (props: Props) => {
         void handleCallback({ baseUrl, code, state });
     }, [baseUrl, setSession, navigate, mockLocal, setConfig]);
 
-    return <Spinner status="Logging in..." />;
+    return <Spinner status="Signing in..." />;
 };
 
 export default AuthCallbackPage;

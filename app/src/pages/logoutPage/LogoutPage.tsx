@@ -43,7 +43,7 @@ const LogoutPage = () => {
         handleCallback(args);
     }, [baseUrl, setSession, navigate, baseHeaders]);
 
-    return <Spinner status="Logging out..." />;
+    return <Spinner status="Signing out..." />;
 };
 
 export default LogoutPage;

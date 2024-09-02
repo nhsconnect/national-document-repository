@@ -1,6 +1,7 @@
 import copy
 
 from enums.death_notification_status import DeathNotificationStatus
+from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from freezegun import freeze_time
 from models.pds_models import PatientDetails
 from tests.unit.conftest import EXPECTED_PARSED_PATIENT_BASE_CASE
@@ -13,6 +14,7 @@ from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT_NO_PERIOD_IN_GENERAL_PRACTITIONER_IDENTIFIER,
     PDS_PATIENT_NO_PERIOD_IN_NAME_MODEL,
     PDS_PATIENT_RESTRICTED,
+    PDS_PATIENT_SUSPENDED,
     PDS_PATIENT_WITH_GP_END_DATE,
     PDS_PATIENT_WITHOUT_ACTIVE_GP,
     PDS_PATIENT_WITHOUT_ADDRESS,
@@ -61,6 +63,26 @@ def test_get_restricted_patient_details():
     assert expected_patient_details == result
 
 
+def test_get_suspended_patient_details():
+    patient = create_patient(PDS_PATIENT_SUSPENDED)
+
+    expected_patient_details = PatientDetails(
+        givenName=["Jane"],
+        familyName="Smith",
+        birthDate="2010-10-22",
+        postalCode="LS1 6AE",
+        nhsNumber="9000000009",
+        superseded=False,
+        restricted=False,
+        generalPracticeOds=PatientOdsInactiveStatus.SUSPENDED,
+        active=False,
+    )
+
+    result = patient.get_patient_details(patient.id)
+
+    assert expected_patient_details == result
+
+
 def test_get_minimum_patient_details():
     patient = create_patient(PDS_PATIENT)
 
@@ -100,7 +122,7 @@ def test_gp_ods_susp_when_gp_end_date_indicates_inactive():
 
     response = patient.get_minimum_patient_details(patient.id)
 
-    assert response.general_practice_ods == "SUSP"
+    assert response.general_practice_ods == PatientOdsInactiveStatus.SUSPENDED
 
 
 def test_not_raise_error_when_no_gp_in_response():
@@ -108,7 +130,7 @@ def test_not_raise_error_when_no_gp_in_response():
 
     response = patient.get_minimum_patient_details(patient.id)
 
-    assert response.general_practice_ods == "SUSP"
+    assert response.general_practice_ods == PatientOdsInactiveStatus.SUSPENDED
 
 
 @freeze_time("2021-12-31")

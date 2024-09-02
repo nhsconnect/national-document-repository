@@ -1,4 +1,4 @@
-import { Card, Details } from 'nhsuk-react-components';
+import { Card } from 'nhsuk-react-components';
 import React, { ReactNode } from 'react';
 import { DOWNLOAD_STAGE } from '../../../types/generic/downloadStage';
 import PdfViewer from '../pdfViewer/PdfViewer';
@@ -28,17 +28,10 @@ function RecordCard({
                     {heading}
                 </Card.Heading>
                 {detailsElement}
-            </Card.Content>
-            {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
-                <Details expander open className="lloydgeorge_record-stage_pdf-expander">
-                    <Details.Summary
-                        style={{ display: 'inline-block' }}
-                        data-testid="view-record-bin"
-                    >
-                        View record
-                    </Details.Summary>
+
+                {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
                     <button
-                        className="lloydgeorge_record-stage_pdf-expander-button link-button clickable"
+                        className="lloydgeorge_record-stage_pdf-content-button link-button clickable"
                         data-testid="full-screen-btn"
                         onClick={() => {
                             fullScreenHandler(true);
@@ -46,8 +39,12 @@ function RecordCard({
                     >
                         View in full screen
                     </button>
+                )}
+            </Card.Content>
+            {downloadStage === DOWNLOAD_STAGE.SUCCEEDED && (
+                <div className="lloydgeorge_record-stage_pdf-expander">
                     <PdfViewer fileUrl={recordUrl} />
-                </Details>
+                </div>
             )}
         </Card>
     );

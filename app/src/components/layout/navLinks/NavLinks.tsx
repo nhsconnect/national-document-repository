@@ -24,7 +24,7 @@ const NavLinks = () => {
 
     const appLinks = [
         { href: routes.SEARCH_PATIENT, label: 'Search for a patient', id: 'search-btn' },
-        { href: routes.LOGOUT, label: 'Log out', id: 'logout-btn' },
+        { href: routes.LOGOUT, label: 'Sign out', id: 'logout-btn' },
     ];
 
     return session.isLoggedIn ? (
