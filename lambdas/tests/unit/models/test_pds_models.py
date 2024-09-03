@@ -54,7 +54,7 @@ def test_get_restricted_patient_details():
         nhsNumber="9000000025",
         superseded=False,
         restricted=True,
-        generalPracticeOds="",
+        generalPracticeOds=PatientOdsInactiveStatus.RESTRICTED,
         active=False,
     )
 
@@ -101,13 +101,28 @@ def test_get_minimum_patient_details():
     assert expected_patient_details == result
 
 
-def test_get_patient_details_for_deceased_patient():
+def test_get_patient_details_for_informally_deceased_patient():
+    patient = create_patient(PDS_PATIENT_DECEASED_INFORMAL)
+
+    expected_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(
+        update={
+            "death_notification_status": DeathNotificationStatus.INFORMAL,
+        }
+    )
+
+    result = patient.get_patient_details(patient.id)
+
+    assert result == expected_patient_details
+
+def test_get_patient_details_for_formally_deceased_patient():
     patient = create_patient(PDS_PATIENT_DECEASED)
 
     expected_patient_details = EXPECTED_PARSED_PATIENT_BASE_CASE.model_copy(
         update={
+            "general_practice_ods": PatientOdsInactiveStatus.DECEASED,
             "death_notification_status": DeathNotificationStatus.FORMAL,
             "deceased": True,
+            "active": False,
         }
     )
 

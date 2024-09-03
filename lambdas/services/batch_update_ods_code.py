@@ -1,14 +1,18 @@
+import importlib
+import logging
 import os.path
+import sys
 import time
 from typing import Dict
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.pds_models import Patient
-from pydantic import BaseModel, TypeAdapter
+from pydantic import BaseModel, TypeAdapter, ValidationError
 from services.base.dynamo_service import DynamoDBService
 from services.base.ssm_service import SSMService
 from services.pds_api_service import PdsApiService
 from utils.audit_logging_setup import LoggingService
+from utils.exceptions import PdsResponseValidationException
 
 Fields = DocumentReferenceMetadataFields
 
@@ -78,8 +82,10 @@ class BatchUpdate:
             logger.info(
                 f"Updating record for NHS number {nhs_number} ({current_count} of {total_count})"
             )
-
-            self.update_patient_ods(nhs_number)
+            try:
+                self.update_patient_ods(nhs_number)
+            except PdsResponseValidationException as e:
+                logger.error(str(e))
 
         logger.info("Finished updating all patient's ODS codes")
 
@@ -115,18 +121,11 @@ class BatchUpdate:
 
         pds_response_json = pds_response.json()
 
-        patient = Patient.model_validate(pds_response_json)
-
-        ods_code = patient.get_active_ods_code_for_gp()
-
-        deceased = bool(pds_response_json.get("deceasedDateTime"))
-        if deceased:
-            return "DECE"
-
-        if not ods_code:
-            return "SUSP"
-
-        return ods_code
+        try:
+            patient = Patient.model_validate(pds_response_json)
+            return patient.get_ods_code_or_inactive_status_for_gp()
+        except ValidationError:
+            raise PdsResponseValidationException(f"PDS returned an invalid response for patient with NHS number {nhs_number}")
 
     def initialise_new_job(self):
         all_entries = self.list_all_entries()
@@ -209,3 +208,28 @@ class BatchUpdate:
 
         logger.info(f"Totally {len(progress_dict)} patients found in record.")
         return progress_dict
+
+def setup_logging_for_local_script():
+    importlib.reload(logging)
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s",
+        datefmt="%d/%b/%Y %H:%M:%S",
+        stream=sys.stdout,
+    )
+
+
+if __name__ == "__main__":
+    import argparse
+
+    setup_logging_for_local_script()
+
+    parser = argparse.ArgumentParser(
+        prog="batch_update_ods_code.py",
+        description="A utility script to update the ODS Codes for all patients in a dynamoDB doc reference table",
+    )
+    parser.add_argument("table_name", type=str, help="The name of dynamodb table")
+    args = parser.parse_args()
+
+    BatchUpdate(table_name=args.table_name).main()

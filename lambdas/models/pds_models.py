@@ -150,9 +150,9 @@ class Patient(BaseModel):
 
     def get_ods_code_or_inactive_status_for_gp(self) -> str:
         return (
-            self.get_active_ods_code_for_gp()
+            PatientOdsInactiveStatus.RESTRICTED if not self.is_unrestricted()
+            else self.get_active_ods_code_for_gp()
             or self.get_status_for_inactive_patient()
-            or ""
         )
 
     def get_active_ods_code_for_gp(self) -> str:
@@ -165,8 +165,9 @@ class Patient(BaseModel):
                 return entry.identifier.value
 
     def get_status_for_inactive_patient(self) -> str:
-        death_notification_status = self.get_death_notification_status()
-        if not is_deceased(death_notification_status) and self.is_unrestricted():
+        if is_formally_deceased(self.get_death_notification_status()):
+            return PatientOdsInactiveStatus.DECEASED
+        else:
             return PatientOdsInactiveStatus.SUSPENDED
 
     def get_is_active_status(self) -> bool:
@@ -222,7 +223,7 @@ class Patient(BaseModel):
             restricted=not self.is_unrestricted(),
             generalPracticeOds=self.get_ods_code_or_inactive_status_for_gp(),
             active=self.get_is_active_status(),
-            deceased=is_deceased(death_notification_status),
+            deceased=is_formally_deceased(death_notification_status),
             deathNotificationStatus=death_notification_status,
         )
 
@@ -236,21 +237,14 @@ class Patient(BaseModel):
             givenName=given_name,
             familyName=family_name,
             birthDate=self.birth_date,
-            generalPracticeOds=(
-                self.get_ods_code_or_inactive_status_for_gp()
-                if self.is_unrestricted()
-                else ""
-            ),
+            generalPracticeOds=self.get_ods_code_or_inactive_status_for_gp(),
             nhsNumber=self.id,
             superseded=bool(nhs_number == id),
             restricted=not self.is_unrestricted(),
-            deceased=is_deceased(death_notification_status),
+            deceased=is_formally_deceased(death_notification_status),
             deathNotificationStatus=death_notification_status,
         )
 
 
-def is_deceased(death_notification_status: Optional[DeathNotificationStatus]) -> bool:
-    return (
-        death_notification_status == DeathNotificationStatus.FORMAL
-        or death_notification_status == DeathNotificationStatus.INFORMAL
-    )
+def is_formally_deceased(death_notification_status: Optional[DeathNotificationStatus]) -> bool:
+    return death_notification_status == DeathNotificationStatus.FORMAL

@@ -20,7 +20,19 @@ def mock_pds_service(mocker, mock_update_ods_service):
 
 
 @pytest.fixture
-def mock_valid_pds_response_patient_deceased():
+def mock_valid_pds_response_patient_informally_deceased():
+    mock_response = Response()
+    mock_response.status_code = 200
+    with open(
+        "services/mock_data/pds_patient_9000000201_M85143_deceased_informal.json", "rb"
+    ) as f:
+        mock_data = f.read()
+    mock_response._content = mock_data
+    yield mock_response
+
+
+@pytest.fixture
+def mock_valid_pds_response_patient_formally_deceased():
     mock_response = Response()
     mock_response.status_code = 200
     with open(
@@ -41,10 +53,18 @@ def mock_valid_pds_response_patient_suspended():
     yield mock_response
 
 
-def test_get_updated_gp_ods_returns_DECE_if_patient_is_deceased(
-    mock_update_ods_service, mock_pds_service, mock_valid_pds_response_patient_deceased
+def test_get_updated_gp_ods_returns_gp_ods_if_patient_is_informally_deceased(
+    mock_update_ods_service, mock_pds_service, mock_valid_pds_response_patient_informally_deceased
 ):
-    mock_pds_service.pds_request.return_value = mock_valid_pds_response_patient_deceased
+    mock_pds_service.pds_request.return_value = mock_valid_pds_response_patient_informally_deceased
+
+    assert mock_update_ods_service.get_updated_gp_ods("9000000201") == "M85143"
+
+
+def test_get_updated_gp_ods_returns_DECE_if_patient_is_formally_deceased(
+    mock_update_ods_service, mock_pds_service, mock_valid_pds_response_patient_formally_deceased
+):
+    mock_pds_service.pds_request.return_value = mock_valid_pds_response_patient_formally_deceased
 
     assert mock_update_ods_service.get_updated_gp_ods("9000000202") == "DECE"
 

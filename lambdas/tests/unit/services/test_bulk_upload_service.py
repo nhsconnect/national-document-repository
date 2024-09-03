@@ -3,6 +3,8 @@ from copy import copy
 
 import pytest
 from botocore.exceptions import ClientError
+
+from enums.patient_ods_inactive_status import PatientOdsInactiveStatus
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
 from models.pds_models import Patient
@@ -407,7 +409,7 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
     )
 
 
-def test_handle_sqs_message_calls_report_upload_failure_when_patient_is_deceased(
+def test_handle_sqs_message_calls_report_upload_failure_when_patient_is_formally_deceased(
     repo_under_test,
     set_env,
     mocker,
@@ -438,7 +440,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_is_deceased
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA,
         "Patient is deceased - FORMAL",
-        "Y12345",
+        PatientOdsInactiveStatus.DECEASED,
     )
 
 
