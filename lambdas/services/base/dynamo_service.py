@@ -122,6 +122,14 @@ class DynamoDBService:
             ExpressionAttributeValues=expression_attribute_values,
         )
 
+    def remove_attribute_from_item(self, table_name: str, key: str, attribute: str):
+        table = self.get_table(table_name)
+
+        table.update_item(
+            Key={"ID": key},
+            AttributeUpdates={attribute: {"Action": "DELETE"}},
+        )
+
     def delete_item(self, table_name: str, key: dict):
         try:
             table = self.get_table(table_name)
