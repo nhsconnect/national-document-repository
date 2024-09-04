@@ -127,7 +127,7 @@ class DynamoDBService:
 
         table.update_item(
             Key={"ID": key},
-            AttributeUpdates={attribute: {"Action": "DELETE"}},
+            UpdateExpression=f"REMOVE {attribute}",
         )
 
     def delete_item(self, table_name: str, key: dict):

@@ -53,7 +53,7 @@ class BatchUpdate:
             self.logger.info(
                 f'No record found in local progress file. Please try removing the local progress file: "{self.progress}"'
             )
-            exit()
+            exit(2)
 
         patients_to_be_updated = [
             doc
@@ -64,15 +64,16 @@ class BatchUpdate:
             self.logger.info(
                 "Already updated the ODS codes for all patients in previous run."
             )
-            exit()
+            exit(2)
 
         self.update_patient_ods()
 
         self.logger.info("Finished updating all patient's ODS codes")
+        exit(0)
 
     def update_patient_ods(self):
         for doc_id, document in self.progress.items():
-            logging.info(f"Updated ODS code for {doc_id}")
+            self.logger.info(f"Updated ODS code for {doc_id}")
 
             updated_fields = {
                 ATTRIBUTE_TO_ADD: document.ods_code,
@@ -83,7 +84,7 @@ class BatchUpdate:
                 key=doc_id,
                 updated_fields=updated_fields,
             )
-            logging.info(f"REMOVING {ATTRIBUTE_TO_REMOVE} for {doc_id}")
+            self.logger.info(f"REMOVING {ATTRIBUTE_TO_REMOVE} for {doc_id}")
             self.dynamo_service.remove_attribute_from_item(
                 table_name=self.table_name, key=doc_id, attribute=ATTRIBUTE_TO_REMOVE
             )
@@ -98,7 +99,7 @@ class BatchUpdate:
             self.logger.info(
                 f"No records was found in table {self.table_name}. Please check the table name."
             )
-            exit()
+            exit(1)
 
         self.progress = self.build_progress_dict(all_entries)
 
