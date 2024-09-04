@@ -10,6 +10,7 @@ from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.pds_models import Patient
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from services.base.dynamo_service import DynamoDBService
+from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 from utils.exceptions import PdsResponseValidationException, PdsErrorException
 from utils.utilities import get_pds_service
@@ -35,7 +36,8 @@ class BatchUpdate:
     ):
         self.progress_store = progress_store_file_path
         self.table_name = table_name
-        self.pds_service = get_pds_service()
+        pds_service_class = get_pds_service()
+        self.pds_service = pds_service_class(SSMService())
         self.dynamo_service = DynamoDBService()
         self.progress: Dict[str, ProgressForPatient] = {}
 
