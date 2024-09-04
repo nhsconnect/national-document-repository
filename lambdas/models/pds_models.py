@@ -86,6 +86,7 @@ class PatientDetails(BaseModel):
     active: Optional[bool] = None
     deceased: bool = False
     death_notification_status: Optional[DeathNotificationStatus] = None
+    historic_names: list[Name] = []
 
 
 class Patient(BaseModel):
@@ -224,6 +225,7 @@ class Patient(BaseModel):
             active=self.get_is_active_status(),
             deceased=is_deceased(death_notification_status),
             deathNotificationStatus=death_notification_status,
+            historic_names=self.name,
         )
 
         return patient_details

@@ -157,17 +157,44 @@ def validate_filename_with_patient_details(
         raise LGInvalidFilesException(e)
 
 
-def validate_patient_name(file_patient_name: str, pds_patient_details: PatientDetails):
+def validate_patient_name(
+    file_patient_name: str, first_name_in_pds: str, family_name_in_pds: str
+):
     logger.info("Verifying patient name against the record in PDS...")
-
-    first_name_in_pds: str = pds_patient_details.given_name[0]
-    family_name_in_pds = pds_patient_details.family_name
 
     first_name_matches = name_starts_with(file_patient_name, first_name_in_pds)
     family_name_matches = name_ends_with(file_patient_name, family_name_in_pds)
 
     if not (first_name_matches and family_name_matches):
-        raise LGInvalidFilesException("Patient name does not match our records")
+        return False
+    return True
+
+
+def validate_patient_name_using_full_name_history(
+    file_patient_name: str, pds_patient_details: PatientDetails
+):
+    usual_first_name_in_pds: str = pds_patient_details.given_name[0]
+    usual_family_name_in_pds = pds_patient_details.family_name
+
+    if validate_patient_name(
+        file_patient_name, usual_first_name_in_pds, usual_family_name_in_pds
+    ):
+        return True
+    logger.info(
+        "Failed to validate patient name using usual name, trying to validate using name history"
+    )
+
+    for name in pds_patient_details.historic_names:
+        if name.use == "usual":
+            continue
+        historic_first_name_in_pds: str = name.given[0]
+        historic_family_name_in_pds = name.family
+        if validate_patient_name(
+            file_patient_name, historic_first_name_in_pds, historic_family_name_in_pds
+        ):
+            return True
+
+    raise LGInvalidFilesException("Patient name does not match our records")
 
 
 def validate_patient_date_of_birth(file_date_of_birth, pds_patient_details):
