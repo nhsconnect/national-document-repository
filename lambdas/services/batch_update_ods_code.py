@@ -128,7 +128,7 @@ class BatchUpdate:
 
             return patient.get_ods_code_or_inactive_status_for_gp()
         except HTTPError as e:
-            raise PdsErrorException(f"PDS returned a {e.status_code} code response for patient with NHS number {nhs_number}")
+            raise PdsErrorException(f"PDS returned a {e.response.status_code} code response for patient with NHS number {nhs_number}")
         except ValidationError:
             raise PdsResponseValidationException(f"PDS returned an invalid response for patient with NHS number {nhs_number}")
 
