@@ -17,6 +17,7 @@ logger = LoggingService(__name__)
         "APPCONFIG_CONFIGURATION",
         "APPCONFIG_ENVIRONMENT",
         "LLOYD_GEORGE_DYNAMODB_NAME",
+        "PDS_FHIR_IS_STUBBED",
     ]
 )
 @override_error_check

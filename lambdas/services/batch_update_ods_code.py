@@ -4,15 +4,15 @@ import os.path
 import sys
 import time
 from typing import Dict
+from requests import HTTPError
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
 from models.pds_models import Patient
 from pydantic import BaseModel, TypeAdapter, ValidationError
 from services.base.dynamo_service import DynamoDBService
-from services.base.ssm_service import SSMService
-from services.pds_api_service import PdsApiService
 from utils.audit_logging_setup import LoggingService
-from utils.exceptions import PdsResponseValidationException
+from utils.exceptions import PdsResponseValidationException, PdsErrorException
+from utils.utilities import get_pds_service
 
 Fields = DocumentReferenceMetadataFields
 
@@ -35,7 +35,7 @@ class BatchUpdate:
     ):
         self.progress_store = progress_store_file_path
         self.table_name = table_name
-        self.pds_service = PdsApiService(SSMService())
+        self.pds_service = get_pds_service()
         self.dynamo_service = DynamoDBService()
         self.progress: Dict[str, ProgressForPatient] = {}
 
@@ -84,7 +84,7 @@ class BatchUpdate:
             )
             try:
                 self.update_patient_ods(nhs_number)
-            except PdsResponseValidationException as e:
+            except Exception as e: # Catching generic Exception as there are many to catch and this Lambda is temporary
                 logger.error(str(e))
 
         logger.info("Finished updating all patient's ODS codes")
@@ -114,16 +114,19 @@ class BatchUpdate:
         time.sleep(0.2)  # buffer to avoid over stretching PDS API
         logger.debug("Getting the latest ODS code from PDS...")
 
-        pds_response = self.pds_service.pds_request(
-            nhs_number=nhs_number, retry_on_expired=True
-        )
-        pds_response.raise_for_status()
-
-        pds_response_json = pds_response.json()
-
         try:
+            pds_response = self.pds_service.pds_request(
+                nhs_number=nhs_number, retry_on_expired=True
+            )
+            pds_response.raise_for_status()
+
+            pds_response_json = pds_response.json()
+
             patient = Patient.model_validate(pds_response_json)
+
             return patient.get_ods_code_or_inactive_status_for_gp()
+        except HTTPError as e:
+            raise PdsErrorException(f"PDS returned a {e.status_code} code response for patient with NHS number {nhs_number}")
         except ValidationError:
             raise PdsResponseValidationException(f"PDS returned an invalid response for patient with NHS number {nhs_number}")
 
