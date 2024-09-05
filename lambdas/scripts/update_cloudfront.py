@@ -28,7 +28,8 @@ def get_latest_lambda_version(function_name):
     print(f"Getting latest version for Lambda function: {function_name}")
     response = lambda_client.list_versions_by_function(FunctionName=function_name)
     versions = response["Versions"]
-    latest_version = max(versions, key=lambda x: x["Version"])
+    versions = [v for v in versions if v["Version"] != "$LATEST"]
+    latest_version = max(versions, key=lambda x: int(x["Version"]))
     print(f"Latest Lambda version: {latest_version['Version']}")
     return latest_version["Version"]
 
