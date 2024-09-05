@@ -86,7 +86,6 @@ class PatientDetails(BaseModel):
     active: Optional[bool] = None
     deceased: bool = False
     death_notification_status: Optional[DeathNotificationStatus] = None
-    historic_names: list[Name] = []
 
 
 class Patient(BaseModel):

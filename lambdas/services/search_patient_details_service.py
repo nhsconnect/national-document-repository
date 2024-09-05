@@ -41,7 +41,6 @@ class SearchPatientDetailsService:
                     "death_notification_status",
                     "deceased",
                     "general_practice_ods",
-                    "historic_names",
                 },
             )
             return response
