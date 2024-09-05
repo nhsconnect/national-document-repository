@@ -212,6 +212,10 @@ class LambdaError(Enum):
         "err_code": "LGS_5004",
         "message": "Unable to retrieve documents for patient",
     }
+    StitchCloudFront = {
+        "err_code": "LGS_5005",
+        "message": "CloudFront format url failure",
+    }
 
     """
        Errors for DocumentRefSearchException

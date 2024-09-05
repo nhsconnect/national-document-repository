@@ -180,30 +180,41 @@ class LloydGeorgeStitchService:
     def upload_stitched_lg_record_and_retrieve_presign_url(
         self, stitched_lg_record: str, filename_on_bucket: str, cloudfront_url: str
     ) -> str:
-        extra_args = {
-            "Tagging": parse.urlencode({self.lifecycle_policy_tag: "true"}),
-            "ContentDisposition": "inline",
-            "ContentType": "application/pdf",
-        }
-        self.s3_service.upload_file_with_extra_args(
-            file_name=stitched_lg_record,
-            s3_bucket_name=self.lloyd_george_bucket_name,
-            file_key=filename_on_bucket,
-            extra_args=extra_args,
-        )
-        presign_url_response = self.s3_service.create_download_presigned_url(
-            s3_bucket_name=self.lloyd_george_bucket_name, file_key=filename_on_bucket
-        )
-        return self.format_cloudfront_url(presign_url_response, cloudfront_url)
+        try:
+            extra_args = {
+                "Tagging": parse.urlencode({self.lifecycle_policy_tag: "true"}),
+                "ContentDisposition": "inline",
+                "ContentType": "application/pdf",
+            }
+            self.s3_service.upload_file_with_extra_args(
+                file_name=stitched_lg_record,
+                s3_bucket_name=self.lloyd_george_bucket_name,
+                file_key=filename_on_bucket,
+                extra_args=extra_args,
+            )
 
-    def format_cloudfront_url(self, presign_url: str, cloudfront_url: str) -> str:
-        test_url = presign_url.split("/")
-        formatted_arr = ["/" + s for s in test_url]
-        del formatted_arr[0:3]
-        cloudfront_str_arr = [f"https://{cloudfront_url}"]
-        cloudfront_str_arr.extend(formatted_arr)
-        cloudfront_url = "".join(cloudfront_str_arr)
-        return cloudfront_url
+            presign_url_response = self.s3_service.create_download_presigned_url(
+                s3_bucket_name=self.lloyd_george_bucket_name,
+                file_key=filename_on_bucket,
+            )
+            return self.format_cloudfront_url(presign_url_response, cloudfront_url)
+
+        except ValueError as e:
+            logger.error(
+                f"{LambdaError.StitchCloudFront.to_str()}: {str(e)}",
+                {"Result": "Failed to format CloudFront URL due to invalid input."},
+            )
+            raise LGStitchServiceException(500, LambdaError.StitchCloudFront)
+
+
+def format_cloudfront_url(self, presign_url: str, cloudfront_domain: str) -> str:
+    url_parts = presign_url.split("/")
+    if len(url_parts) < 4:
+        raise ValueError("Invalid presigned URL format")
+
+    path_parts = url_parts[3:]
+    formatted_url = f"https://{cloudfront_domain}/{'/'.join(path_parts)}"
+    return formatted_url
 
     @staticmethod
     def get_most_recent_created_date(documents: list[DocumentReference]) -> str:

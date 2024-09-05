@@ -62,7 +62,7 @@ def lambda_handler(event, context):
         uri_hash=presign_credentials_hash, origin_url=origin_url
     )
 
-    if response is not None:
+    if not response:
         return response
 
     headers = request.get("headers", {})

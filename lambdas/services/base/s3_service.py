@@ -57,10 +57,6 @@ class S3Service:
                 ExpiresIn=self.presigned_url_expiry,
             )
 
-    def get_object(self, bucket_name: str, key: str) -> bytes:
-        response = self.s3_client.get_object(Bucket=bucket_name, Key=key)
-        return response["Body"].read()
-
     def download_file(self, s3_bucket_name: str, file_key: str, download_path: str):
         return self.client.download_file(s3_bucket_name, file_key, download_path)
 
