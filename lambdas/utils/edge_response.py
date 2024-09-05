@@ -12,7 +12,7 @@ class EdgeResponse:
             "status": self.status_code,
             "headers": {
                 "content-type": [
-                    {"key": "Content-Encoding", "value": "application/fhir+json"}
+                    {"key": "Content-Type", "value": "application/fhir+json"}
                 ],
                 "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
             },
