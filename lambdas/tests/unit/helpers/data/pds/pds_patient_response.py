@@ -3,27 +3,6 @@ import copy
 PDS_PATIENT = {
     "resourceType": "Patient",
     "id": "9000000009",
-    "identifier": [
-        {
-            "system": "https://fhir.nhs.uk/Id/nhs-number",
-            "value": "9000000009",
-            "extension": [
-                {
-                    "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-NHSNumberVerificationStatus",
-                    "valueCodeableConcept": {
-                        "coding": [
-                            {
-                                "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-NHSNumberVerificationStatus",
-                                "version": "1.0.0",
-                                "code": "01",
-                                "display": "Number present and verified",
-                            }
-                        ]
-                    },
-                }
-            ],
-        }
-    ],
     "meta": {
         "versionId": "2",
         "security": [
@@ -185,57 +164,6 @@ PDS_PATIENT = {
                 },
             ],
         },
-    ],
-    "telecom": [
-        {
-            "id": "789",
-            "period": {"start": "2020-01-01", "end": "2021-12-31"},
-            "system": "phone",
-            "value": "01632960587",
-            "use": "home",
-        },
-        {
-            "id": "790",
-            "period": {"start": "2019-01-01", "end": "2022-12-31"},
-            "system": "email",
-            "value": "jane.smith@example.com",
-            "use": "home",
-        },
-        {
-            "id": "OC789",
-            "period": {"start": "2020-01-01", "end": "2021-12-31"},
-            "system": "other",
-            "value": "01632960587",
-            "use": "home",
-            "extension": [
-                {
-                    "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-OtherContactSystem",
-                    "valueCoding": {
-                        "system": "https://fhir.hl7.org.uk/CodeSystem/UKCore-OtherContactSystem",
-                        "code": "textphone",
-                        "display": "Minicom (Textphone)",
-                    },
-                }
-            ],
-        },
-    ],
-    "contact": [
-        {
-            "id": "C123",
-            "period": {"start": "2020-01-01", "end": "2021-12-31"},
-            "relationship": [
-                {
-                    "coding": [
-                        {
-                            "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
-                            "code": "C",
-                            "display": "Emergency Contact",
-                        }
-                    ]
-                }
-            ],
-            "telecom": [{"system": "phone", "value": "01632960587"}],
-        }
     ],
     "address": [
         {

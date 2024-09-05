@@ -247,7 +247,6 @@ class Patient(BaseModel):
             restricted=not self.is_unrestricted(),
             deceased=is_deceased(death_notification_status),
             deathNotificationStatus=death_notification_status,
-            historic_names=self.name,
         )
 
 

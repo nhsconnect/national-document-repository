@@ -70,23 +70,21 @@ def mock_validate_files(mocker):
 @pytest.fixture
 def mock_pds_service(mocker):
     patient = Patient.model_validate(PDS_PATIENT)
-    patient_details = patient.get_minimum_patient_details("9000000009")
     mocker.patch(
         "services.bulk_upload_service.getting_patient_info_from_pds",
-        return_value=patient_details,
+        return_value=patient,
     )
-    yield patient_details
+    yield patient
 
 
 @pytest.fixture
 def mock_pds_service_patient_deceased(mocker):
     patient = Patient.model_validate(PDS_PATIENT_DECEASED)
-    patient_details = patient.get_minimum_patient_details("9000000009")
     mocker.patch(
         "services.bulk_upload_service.getting_patient_info_from_pds",
-        return_value=patient_details,
+        return_value=patient,
     )
-    yield patient_details
+    yield patient
 
 
 @pytest.fixture

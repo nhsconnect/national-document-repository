@@ -93,10 +93,10 @@ def mock_validate_lg(mocker, mock_getting_patient_info_from_pds):
 
 
 @pytest.fixture()
-def mock_getting_patient_info_from_pds(mocker, mock_patient_details):
+def mock_getting_patient_info_from_pds(mocker, mock_pds_patient):
     yield mocker.patch(
         "services.create_document_reference_service.getting_patient_info_from_pds",
-        return_value=mock_patient_details,
+        return_value=mock_pds_patient,
     )
 
 
@@ -153,7 +153,7 @@ def test_create_document_reference_request_with_arf_list_happy_path(
                 reference_id=NA_STRING,
                 content_type=NA_STRING,
                 file_name=file["fileName"],
-                doc_type=SupportedDocumentTypes.ARF.value,
+                doc_type=SupportedDocumentTypes.ARF,
             )
         )
         side_effects.append(
@@ -191,7 +191,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
     mock_fetch_document,
-    mock_patient_details,
+    mock_pds_patient,
 ):
     document_references = []
     side_effects = []
@@ -207,7 +207,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
                 reference_id=NA_STRING,
                 content_type=NA_STRING,
                 file_name=file["fileName"],
-                doc_type=SupportedDocumentTypes.LG.value,
+                doc_type=SupportedDocumentTypes.LG,
             )
         )
         side_effects.append(document_references[index])
@@ -231,7 +231,7 @@ def test_create_document_reference_request_with_lg_list_happy_path(
     )
 
     mock_create_reference_in_dynamodb.assert_called_once()
-    mock_validate_lg.assert_called_with(document_references, mock_patient_details)
+    mock_validate_lg.assert_called_with(document_references, mock_pds_patient)
 
 
 @freeze_time("2023-10-30T10:25:00")
@@ -301,7 +301,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     mock_prepare_pre_signed_url,
     mock_create_reference_in_dynamodb,
     mock_validate_lg,
-    mock_patient_details,
+    mock_pds_patient,
 ):
     document_references = []
     side_effects = []
@@ -317,7 +317,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
                 reference_id=NA_STRING,
                 content_type=NA_STRING,
                 file_name=file["fileName"],
-                doc_type=SupportedDocumentTypes.LG.value,
+                doc_type=SupportedDocumentTypes.LG,
             )
         )
         side_effects.append(document_references[index])
@@ -343,7 +343,7 @@ def test_create_document_reference_request_raise_error_when_invalid_lg(
     )
 
     mock_create_reference_in_dynamodb.assert_not_called()
-    mock_validate_lg.assert_called_with(document_references, mock_patient_details)
+    mock_validate_lg.assert_called_with(document_references, mock_pds_patient)
 
 
 def test_create_document_reference_invalid_nhs_number(

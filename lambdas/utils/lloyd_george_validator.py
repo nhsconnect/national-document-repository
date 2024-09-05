@@ -8,7 +8,7 @@ from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
 from enums.supported_document_types import SupportedDocumentTypes
 from models.nhs_document_reference import NHSDocumentReference
-from models.pds_models import Patient, PatientDetails
+from models.pds_models import Patient
 from requests import HTTPError
 from services.base.ssm_service import SSMService
 from services.document_service import DocumentService
@@ -83,7 +83,7 @@ def check_for_patient_already_exist_in_repo(nhs_number: str):
 
 
 def validate_lg_files(
-    file_list: list[NHSDocumentReference], pds_patient_details: PatientDetails
+    file_list: list[NHSDocumentReference], pds_patient_details: Patient
 ):
     nhs_number = pds_patient_details.nhs_number
     files_name_list = []
@@ -143,7 +143,7 @@ def check_for_file_names_agrees_with_each_other(file_name_list: list[str]):
 
 
 def validate_filename_with_patient_details(
-    file_name_list: list[str], patient_details: PatientDetails
+    file_name_list: list[str], patient_details: Patient
 ):
     try:
         file_name_info = extract_info_from_filename(file_name_list[0])
@@ -173,20 +173,21 @@ def validate_patient_name(
 
 
 def validate_patient_name_using_full_name_history(
-    file_patient_name: str, pds_patient_details: PatientDetails
+    file_patient_name: str, pds_patient_details: Patient
 ):
-    usual_first_name_in_pds: str = pds_patient_details.given_name[0]
-    usual_family_name_in_pds = pds_patient_details.family_name
+    usual_family_name_in_pds, usual_first_name_in_pds = (
+        pds_patient_details.get_current_family_name_and_given_name()
+    )
 
     if validate_patient_name(
-        file_patient_name, usual_first_name_in_pds, usual_family_name_in_pds
+        file_patient_name, usual_first_name_in_pds[0], usual_family_name_in_pds
     ):
         return
     logger.info(
         "Failed to validate patient name using usual name, trying to validate using name history"
     )
 
-    for name in pds_patient_details.historic_names:
+    for name in pds_patient_details.name:
         if name.use == "usual":
             continue
         historic_first_name_in_pds: str = name.given[0]
@@ -208,14 +209,13 @@ def validate_patient_date_of_birth(file_date_of_birth, pds_patient_details):
         raise LGInvalidFilesException("Patient DoB does not match our records")
 
 
-def getting_patient_info_from_pds(nhs_number: str) -> PatientDetails:
+def getting_patient_info_from_pds(nhs_number: str) -> Patient:
     pds_service_class = get_pds_service()
     pds_service = pds_service_class(SSMService())
     pds_response = pds_service.pds_request(nhs_number=nhs_number, retry_on_expired=True)
     check_pds_response_status(pds_response)
     patient = parse_pds_response(pds_response)
-    patient_details = patient.get_minimum_patient_details(nhs_number)
-    return patient_details
+    return patient
 
 
 def check_pds_response_status(pds_response: requests.Response):

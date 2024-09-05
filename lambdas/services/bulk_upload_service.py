@@ -5,6 +5,7 @@ import pydantic
 from botocore.exceptions import ClientError
 from enums.virus_scan_result import VirusScanResult
 from models.nhs_document_reference import NHSDocumentReference
+from models.pds_models import is_deceased
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
@@ -110,15 +111,19 @@ class BulkUploadService:
             pds_patient_details = getting_patient_info_from_pds(
                 staging_metadata.nhs_number
             )
-            patient_ods_code = pds_patient_details.general_practice_ods
+            patient_ods_code = (
+                pds_patient_details.get_ods_code_or_inactive_status_for_gp()
+            )
             validate_filename_with_patient_details(file_names, pds_patient_details)
 
             if not allowed_to_ingest_ods_code(patient_ods_code):
                 raise LGInvalidFilesException("Patient not registered at your practice")
-
-            if pds_patient_details.deceased:
+            patient_death_notification_status = (
+                pds_patient_details.get_death_notification_status()
+            )
+            if is_deceased(patient_death_notification_status):
                 raise PatientDeceasedException(
-                    f"Patient is deceased - {pds_patient_details.death_notification_status.name}"
+                    f"Patient is deceased - {patient_death_notification_status.name}"
                 )
 
         except (

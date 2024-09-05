@@ -67,7 +67,9 @@ class CreateDocumentReferenceService:
             current_gp_ods = ""
             if has_lg_document:
                 pds_patient_details = getting_patient_info_from_pds(nhs_number)
-                current_gp_ods = pds_patient_details.general_practice_ods
+                current_gp_ods = (
+                    pds_patient_details.get_ods_code_or_inactive_status_for_gp()
+                )
 
             for validated_doc in upload_request_documents:
                 document_reference = self.prepare_doc_object(

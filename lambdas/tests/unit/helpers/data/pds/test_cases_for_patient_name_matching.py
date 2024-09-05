@@ -1,12 +1,13 @@
+import copy
 from datetime import date
 from typing import List, NamedTuple
 
-from models.pds_models import PatientDetails
-from tests.unit.conftest import TEST_NHS_NUMBER
+from models.pds_models import Patient
+from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 
 
 class PdsNameMatchingTestCase(NamedTuple):
-    patient_details: PatientDetails
+    patient_details: Patient
     patient_name_in_file_name: str
     should_accept_name: bool
 
@@ -55,24 +56,21 @@ MOCK_DATE_OF_BIRTH = date(2010, 10, 22)
 
 
 def load_test_cases(test_case_dict: dict) -> List[PdsNameMatchingTestCase]:
-    patient_detail = PatientDetails(
-        givenName=test_case_dict["pds_name"]["given"],
-        familyName=test_case_dict["pds_name"]["family"],
-        birthDate=MOCK_DATE_OF_BIRTH,
-        nhsNumber=TEST_NHS_NUMBER,
-        superseded=False,
-        restricted=False,
-    )
+    pds_response_patient = copy.deepcopy(PDS_PATIENT)
+    pds_response_patient["name"][0]["given"] = test_case_dict["pds_name"]["given"]
+    pds_response_patient["name"][0]["family"] = test_case_dict["pds_name"]["family"]
+
+    patient = Patient.model_validate(pds_response_patient)
 
     test_cases_for_accept = [
         PdsNameMatchingTestCase(
-            patient_detail, patient_name_in_file_name=test_name, should_accept_name=True
+            patient, patient_name_in_file_name=test_name, should_accept_name=True
         )
         for test_name in test_case_dict["accept"]
     ]
     test_cases_for_reject = [
         PdsNameMatchingTestCase(
-            patient_detail,
+            patient,
             patient_name_in_file_name=test_file_name,
             should_accept_name=False,
         )
