@@ -555,8 +555,10 @@ PDS_PATIENT_NO_PERIOD_IN_GENERAL_PRACTITIONER_IDENTIFIER["generalPractitioner"] 
     },
 ]
 
+DECEASED_DATE_TIME = "2010-10-22T00:00:00+00:00"
+
 PDS_PATIENT_DECEASED = copy.deepcopy(PDS_PATIENT)
-PDS_PATIENT_DECEASED["deceasedDateTime"] = "2010-10-22T00:00:00+00:00"
+PDS_PATIENT_DECEASED["deceasedDateTime"] = DECEASED_DATE_TIME
 PDS_PATIENT_DECEASED["extension"].append(
     {
         "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
@@ -576,7 +578,7 @@ PDS_PATIENT_DECEASED["extension"].append(
             },
             {
                 "url": "systemEffectiveDate",
-                "valueDateTime": "2010-10-22T00:00:00+00:00",
+                "valueDateTime": DECEASED_DATE_TIME,
             },
         ],
     }
@@ -584,7 +586,7 @@ PDS_PATIENT_DECEASED["extension"].append(
 PDS_PATIENT_DECEASED.pop("generalPractitioner")
 
 PDS_PATIENT_DECEASED_INFORMAL = copy.deepcopy(PDS_PATIENT)
-PDS_PATIENT_DECEASED_INFORMAL["deceasedDateTime"] = "2010-10-22T00:00:00+00:00"
+PDS_PATIENT_DECEASED_INFORMAL["deceasedDateTime"] = DECEASED_DATE_TIME
 PDS_PATIENT_DECEASED_INFORMAL["extension"].append(
     {
         "url": "https://fhir.hl7.org.uk/StructureDefinition/Extension-UKCore-DeathNotificationStatus",
@@ -605,7 +607,7 @@ PDS_PATIENT_DECEASED_INFORMAL["extension"].append(
             },
             {
                 "url": "systemEffectiveDate",
-                "valueDateTime": "2010-10-22T00:00:00+00:00",
+                "valueDateTime": DECEASED_DATE_TIME,
             },
         ],
     }

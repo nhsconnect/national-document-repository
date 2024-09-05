@@ -61,7 +61,7 @@ def test_get_updated_gp_ods_returns_gp_ods_if_patient_is_informally_deceased(
     assert mock_update_ods_service.get_updated_gp_ods("9000000201") == "M85143"
 
 
-def test_get_updated_gp_ods_returns_DECE_if_patient_is_formally_deceased(
+def test_get_updated_gp_ods_returns_dece_if_patient_is_formally_deceased(
     mock_update_ods_service, mock_pds_service, mock_valid_pds_response_patient_formally_deceased
 ):
     mock_pds_service.pds_request.return_value = mock_valid_pds_response_patient_formally_deceased
@@ -69,7 +69,7 @@ def test_get_updated_gp_ods_returns_DECE_if_patient_is_formally_deceased(
     assert mock_update_ods_service.get_updated_gp_ods("9000000202") == "DECE"
 
 
-def test_get_updated_gp_ods_returns_SUSP_if_patient_is_inactive(
+def test_get_updated_gp_ods_returns_susp_if_patient_is_inactive(
     mock_update_ods_service, mock_pds_service, mock_valid_pds_response_patient_suspended
 ):
     mock_pds_service.pds_request.return_value = (
