@@ -24,7 +24,7 @@ bad_request_response = {
 def lambda_handler(event, context):
     try:
         request = event["Records"][0]["cf"]["request"]
-        logger.info(f"CloudFront received S3 request:  ${json.dumps(request)}")
+        logger.info("CloudFront received S3 request", {"Result": {json.dumps(request)}})
         uri = request.get("uri", "")
         presign_query_string = request.get("querystring", "")
 
@@ -59,6 +59,7 @@ def lambda_handler(event, context):
     )
 
     if response:
+        logger.info("CloudFront Edge Success")
         return response
 
     headers = request.get("headers", {})
