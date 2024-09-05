@@ -5,10 +5,11 @@ from urllib.parse import parse_qs
 
 from enums.lambda_error import LambdaError
 from services.edge_presign_service import EdgePresignService
-from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.lambda_exceptions import CloudFrontEdgeException
+
+from lambdas.utils.decorators.handle_edge_exceptions import handle_edge_exceptions
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -16,7 +17,7 @@ logger.setLevel(logging.INFO)
 
 @set_request_context_for_logging
 @override_error_check
-@handle_lambda_exceptions
+@handle_edge_exceptions
 def lambda_handler(event, context):
     try:
         request = event["Records"][0]["cf"]["request"]
