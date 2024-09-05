@@ -46,7 +46,7 @@ from utils.lloyd_george_validator import (
     validate_lg_file_type,
     validate_lg_files,
     validate_patient_date_of_birth,
-    validate_patient_name,
+    validate_patient_name_using_full_name_history,
 )
 
 
@@ -266,7 +266,9 @@ def test_mismatch_name_with_pds_service(mock_pds_patient_details):
 def test_validate_name_with_correct_name(mock_pds_patient_details):
     lg_file_patient_name = "Jane Smith"
     with expect_not_to_raise(LGInvalidFilesException):
-        validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, mock_pds_patient_details
+        )
 
 
 def test_validate_name_with_file_missing_middle_name():
@@ -275,7 +277,9 @@ def test_validate_name_with_file_missing_middle_name():
     patient_details = patient.get_minimum_patient_details("9000000009")
 
     with expect_not_to_raise(LGInvalidFilesException):
-        validate_patient_name(lg_file_patient_name, patient_details)
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, patient_details
+        )
 
 
 def test_validate_name_with_additional_middle_name_in_file_mismatching_pds():
@@ -284,7 +288,9 @@ def test_validate_name_with_additional_middle_name_in_file_mismatching_pds():
     patient_details = patient.get_minimum_patient_details("9000000009")
 
     with expect_not_to_raise(LGInvalidFilesException):
-        validate_patient_name(lg_file_patient_name, patient_details)
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, patient_details
+        )
 
 
 def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
@@ -292,26 +298,34 @@ def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
 ):
     lg_file_patient_name = "Jane David Smith"
     with expect_not_to_raise(LGInvalidFilesException):
-        validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, mock_pds_patient_details
+        )
 
 
 def test_validate_name_with_wrong_first_name(mock_pds_patient_details):
     lg_file_patient_name = "John Smith"
     with pytest.raises(LGInvalidFilesException):
-        validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, mock_pds_patient_details
+        )
 
 
 def test_validate_name_with_wrong_family_name(mock_pds_patient_details):
     lg_file_patient_name = "Jane Johnson"
     with pytest.raises(LGInvalidFilesException):
-        validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, mock_pds_patient_details
+        )
 
 
 def test_validate_name_without_given_name(mock_pds_patient_details):
     lg_file_patient_name = "Jane Smith"
     mock_pds_patient_details.given_name = [""]
     with expect_not_to_raise(LGInvalidFilesException):
-        validate_patient_name(lg_file_patient_name, mock_pds_patient_details)
+        validate_patient_name_using_full_name_history(
+            lg_file_patient_name, mock_pds_patient_details
+        )
 
 
 @pytest.mark.parametrize(
@@ -325,10 +339,14 @@ def test_validate_patient_name_with_two_words_family_name(
 ):
     if should_accept_name:
         with expect_not_to_raise(LGInvalidFilesException):
-            validate_patient_name(patient_name_in_file_name, patient_details)
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
     else:
         with pytest.raises(LGInvalidFilesException):
-            validate_patient_name(patient_name_in_file_name, patient_details)
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
 
 
 @pytest.mark.parametrize(
@@ -342,10 +360,14 @@ def test_validate_patient_name_with_family_name_with_hyphen(
 ):
     if should_accept_name:
         with expect_not_to_raise(LGInvalidFilesException):
-            validate_patient_name(patient_name_in_file_name, patient_details)
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
     else:
         with pytest.raises(LGInvalidFilesException):
-            validate_patient_name(patient_name_in_file_name, patient_details)
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
 
 
 @pytest.mark.parametrize(
@@ -359,10 +381,14 @@ def test_validate_patient_name_with_two_words_given_name(
 ):
     if should_accept_name:
         with expect_not_to_raise(LGInvalidFilesException):
-            validate_patient_name(patient_name_in_file_name, patient_details)
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
     else:
         with pytest.raises(LGInvalidFilesException):
-            validate_patient_name(patient_name_in_file_name, patient_details)
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
 
 
 @pytest.mark.parametrize(
@@ -376,10 +402,14 @@ def test_validate_patient_name_with_two_words_family_name_and_given_name(
 ):
     if should_accept_name:
         with expect_not_to_raise(LGInvalidFilesException):
-            validate_patient_name(patient_name_in_file_name, patient_details)
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
     else:
         with pytest.raises(LGInvalidFilesException):
-            validate_patient_name(patient_name_in_file_name, patient_details)
+            validate_patient_name_using_full_name_history(
+                patient_name_in_file_name, patient_details
+            )
 
 
 def test_missing_middle_name_names_with_pds_service():

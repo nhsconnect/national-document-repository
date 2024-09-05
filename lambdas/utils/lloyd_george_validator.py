@@ -150,7 +150,9 @@ def validate_filename_with_patient_details(
         file_patient_name = file_name_info["patient_name"]
         file_date_of_birth = file_name_info["date_of_birth"]
         validate_patient_date_of_birth(file_date_of_birth, patient_details)
-        validate_patient_name(file_patient_name, patient_details)
+        validate_patient_name_using_full_name_history(
+            file_patient_name, patient_details
+        )
 
     except (ClientError, ValueError) as e:
         logger.error(e)
@@ -179,7 +181,7 @@ def validate_patient_name_using_full_name_history(
     if validate_patient_name(
         file_patient_name, usual_first_name_in_pds, usual_family_name_in_pds
     ):
-        return True
+        return
     logger.info(
         "Failed to validate patient name using usual name, trying to validate using name history"
     )
@@ -192,7 +194,7 @@ def validate_patient_name_using_full_name_history(
         if validate_patient_name(
             file_patient_name, historic_first_name_in_pds, historic_family_name_in_pds
         ):
-            return True
+            return
 
     raise LGInvalidFilesException("Patient name does not match our records")
 
