@@ -1,7 +1,8 @@
 import os
 
 from enums.metadata_field_names import DocumentReferenceMetadataFields
-from models.bulk_upload_status import FailedUpload, SuccessfulUpload
+from enums.upload_status import UploadStatus
+from models.bulk_upload_status import BulkUploadReport
 from models.nhs_document_reference import NHSDocumentReference
 from models.staging_metadata import StagingMetadata
 from services.base.dynamo_service import DynamoDBService
@@ -27,32 +28,18 @@ class BulkUploadDynamoRepository:
         )
         self.dynamo_records_in_transaction.append(document_reference)
 
-    def report_upload_complete(
-        self, staging_metadata: StagingMetadata, pds_ods_code: str = ""
-    ):
-        nhs_number = staging_metadata.nhs_number
-        for file in staging_metadata.files:
-            dynamo_record = SuccessfulUpload(
-                nhs_number=nhs_number,
-                file_path=file.file_path,
-                pds_ods_code=pds_ods_code,
-                uploader_ods_code=file.gp_practice_code,
-            )
-            self.dynamo_repository.create_item(
-                table_name=self.bulk_upload_report_dynamo_table,
-                item=dynamo_record.model_dump(by_alias=True),
-            )
-
-    def report_upload_failure(
+    def write_report_upload_to_dynamo(
         self,
         staging_metadata: StagingMetadata,
-        failure_reason: str,
+        upload_status: UploadStatus,
+        failure_reason: str = None,
         pds_ods_code: str = "",
     ):
         nhs_number = staging_metadata.nhs_number
 
         for file in staging_metadata.files:
-            dynamo_record = FailedUpload(
+            dynamo_record = BulkUploadReport(
+                upload_status=upload_status,
                 nhs_number=nhs_number,
                 failure_reason=failure_reason,
                 file_path=file.file_path,
@@ -61,7 +48,7 @@ class BulkUploadDynamoRepository:
             )
             self.dynamo_repository.create_item(
                 table_name=self.bulk_upload_report_dynamo_table,
-                item=dynamo_record.model_dump(by_alias=True),
+                item=dynamo_record.model_dump(by_alias=True, exclude_none=True),
             )
 
     def init_transaction(self):

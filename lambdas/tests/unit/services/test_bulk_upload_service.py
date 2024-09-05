@@ -3,6 +3,7 @@ from copy import copy
 
 import pytest
 from botocore.exceptions import ClientError
+from enums.upload_status import UploadStatus
 from enums.virus_scan_result import SCAN_RESULT_TAG_KEY, VirusScanResult
 from freezegun import freeze_time
 from models.pds_models import Patient
@@ -181,7 +182,7 @@ def test_handle_sqs_message_happy_path(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
     mock_report_upload_complete = mocker.patch.object(
-        repo_under_test.dynamo_repository, "report_upload_complete"
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
     mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
         repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
@@ -269,7 +270,7 @@ def test_handle_sqs_message_happy_path_with_non_ascii_filenames(
 
     repo_under_test.handle_sqs_message(message=test_sqs_message)
 
-    repo_under_test.dynamo_repository.report_upload_complete.assert_called()
+    repo_under_test.dynamo_repository.write_report_upload_to_dynamo.assert_called()
     assert repo_under_test.s3_repository.check_virus_result.call_count == 1
     assert repo_under_test.s3_repository.copy_to_lg_bucket.call_count == 3
 
@@ -292,7 +293,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
         repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
     )
     mock_report_upload_failure = mocker.patch.object(
-        repo_under_test.dynamo_repository, "report_upload_failure"
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
     mocked_error = PatientRecordAlreadyExistException(
         "Lloyd George already exists for patient, upload cancelled."
@@ -304,7 +305,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_record_alre
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
     mock_report_upload_failure.assert_called_with(
-        TEST_STAGING_METADATA, str(mocked_error), ""
+        TEST_STAGING_METADATA, UploadStatus.FAILED, str(mocked_error), ""
     )
 
 
@@ -325,7 +326,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
         repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
     )
     mock_report_upload_failure = mocker.patch.object(
-        repo_under_test.dynamo_repository, "report_upload_failure"
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
     mocked_error = LGInvalidFilesException(
         "One or more of the files do not match naming convention"
@@ -337,7 +338,10 @@ def test_handle_sqs_message_calls_report_upload_failure_when_lg_file_name_invali
     mock_create_lg_records_and_copy_files.assert_not_called()
     mock_remove_ingested_file_from_source_bucket.assert_not_called()
     mock_report_upload_failure.assert_called_with(
-        TEST_STAGING_METADATA_WITH_INVALID_FILENAME, str(mocked_error), ""
+        TEST_STAGING_METADATA_WITH_INVALID_FILENAME,
+        UploadStatus.FAILED,
+        str(mocked_error),
+        "",
     )
 
 
@@ -354,7 +358,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
 ):
     TEST_STAGING_METADATA.retries = 0
     mock_report_upload_failure = mocker.patch.object(
-        repo_under_test.dynamo_repository, "report_upload_failure"
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
@@ -370,6 +374,7 @@ def test_handle_sqs_message_report_failure_when_document_is_infected(
 
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA,
+        UploadStatus.FAILED,
         "One or more of the files failed virus scanner check",
         "Y12345",
     )
@@ -393,13 +398,14 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
         S3FileNotFoundException
     )
     mock_report_upload_failure = mocker.patch.object(
-        repo_under_test.dynamo_repository, "report_upload_failure"
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA,
+        UploadStatus.FAILED,
         "One or more of the files is not accessible from staging bucket",
         "Y12345",
     )
@@ -425,7 +431,9 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_is_deceased
     mock_put_staging_metadata_back_to_queue = (
         repo_under_test.sqs_repository.put_staging_metadata_back_to_queue
     )
-    mock_report_upload_failure = repo_under_test.dynamo_repository.report_upload_failure
+    mock_report_upload_failure = (
+        repo_under_test.dynamo_repository.write_report_upload_to_dynamo
+    )
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
@@ -435,6 +443,7 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_is_deceased
 
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA,
+        UploadStatus.FAILED,
         "Patient is deceased - FORMAL",
         "Y12345",
     )
@@ -456,7 +465,7 @@ def test_handle_sqs_message_put_staging_metadata_back_to_queue_when_virus_scan_r
         VirusScanNoResultException
     )
     mock_report_upload_failure = mocker.patch.object(
-        repo_under_test.dynamo_repository, "report_upload_failure"
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
@@ -496,7 +505,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
         repo_under_test.dynamo_repository, "rollback_transaction"
     )
     mock_report_upload_failure = mocker.patch.object(
-        repo_under_test.dynamo_repository, "report_upload_failure"
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
     )
     mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
         repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
@@ -519,6 +528,7 @@ def test_handle_sqs_message_rollback_transaction_when_validation_pass_but_file_t
     mock_rollback_transaction_s3.assert_called()
     mock_report_upload_failure.assert_called_with(
         TEST_STAGING_METADATA,
+        UploadStatus.FAILED,
         "Validation passed but error occurred during file transfer",
         "Y12345",
     )
@@ -554,7 +564,7 @@ def test_validate_files_raise_LGInvalidFilesException_when_file_names_invalid(
 
     repo_under_test.handle_sqs_message({"body": invalid_file_name_metadata_as_json})
 
-    repo_under_test.dynamo_repository.report_upload_failure.assert_called()
+    repo_under_test.dynamo_repository.write_report_upload_to_dynamo.assert_called()
 
 
 @freeze_time("2023-10-2 13:00:00")
@@ -569,7 +579,7 @@ def test_reports_failure_when_max_retries_reached(
     repo_under_test.handle_sqs_message({"body": metadata_as_json})
 
     repo_under_test.sqs_repository.send_message_with_nhs_number_attr_fifo.assert_not_called()
-    repo_under_test.dynamo_repository.report_upload_failure.assert_called()
+    repo_under_test.dynamo_repository.write_report_upload_to_dynamo.assert_called()
 
 
 def test_resolve_source_file_path_when_filenames_dont_have_accented_chars(
@@ -710,8 +720,11 @@ def test_mismatch_ods_with_pds_service(
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
-    repo_under_test.dynamo_repository.report_upload_failure.assert_called_with(
-        TEST_STAGING_METADATA, "Patient not registered at your practice", "Y12345"
+    repo_under_test.dynamo_repository.write_report_upload_to_dynamo.assert_called_with(
+        TEST_STAGING_METADATA,
+        UploadStatus.FAILED,
+        "Patient not registered at your practice",
+        "Y12345",
     )
 
 
@@ -742,8 +755,9 @@ def test_create_lg_records_and_copy_files_client_error(
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
     mock_rollback_transaction.assert_called()
-    repo_under_test.dynamo_repository.report_upload_failure.assert_called_with(
+    repo_under_test.dynamo_repository.write_report_upload_to_dynamo.assert_called_with(
         TEST_STAGING_METADATA,
+        UploadStatus.FAILED,
         "Validation passed but error occurred during file transfer",
         "Y12345",
     )
