@@ -206,15 +206,14 @@ class LloydGeorgeStitchService:
             )
             raise LGStitchServiceException(500, LambdaError.StitchCloudFront)
 
+    def format_cloudfront_url(self, presign_url: str, cloudfront_domain: str) -> str:
+        url_parts = presign_url.split("/")
+        if len(url_parts) < 4:
+            raise ValueError("Invalid presigned URL format")
 
-def format_cloudfront_url(self, presign_url: str, cloudfront_domain: str) -> str:
-    url_parts = presign_url.split("/")
-    if len(url_parts) < 4:
-        raise ValueError("Invalid presigned URL format")
-
-    path_parts = url_parts[3:]
-    formatted_url = f"https://{cloudfront_domain}/{'/'.join(path_parts)}"
-    return formatted_url
+        path_parts = url_parts[3:]
+        formatted_url = f"https://{cloudfront_domain}/{'/'.join(path_parts)}"
+        return formatted_url
 
     @staticmethod
     def get_most_recent_created_date(documents: list[DocumentReference]) -> str:
