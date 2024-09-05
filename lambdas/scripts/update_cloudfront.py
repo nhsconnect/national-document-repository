@@ -20,7 +20,7 @@ sts_client = boto3.client("sts", region_name=aws_region)
 def get_aws_account_id():
     response = sts_client.get_caller_identity()
     account_id = response["Account"]
-    print(f"Retrieved AWS Account ID: {account_id}")
+    print("Retrieved AWS Account ID: ***")
     return account_id
 
 

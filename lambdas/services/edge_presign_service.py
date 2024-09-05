@@ -3,6 +3,7 @@ import re
 from botocore.exceptions import ClientError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
+from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
 
 logger = LoggingService(__name__)
@@ -33,13 +34,17 @@ class EdgePresignService:
     def __init__(self):
         self.dynamo_service = DynamoDBService()
         self.s3_service = S3Service()
+        self.ssm_service = SSMService()
+        self.table_name_ssm_param = "EDGE_REFERENCE_TABLE"
 
-    def attempt_url_update(self, table_name, uri_hash, origin_url):
+    def attempt_url_update(self, uri_hash, origin_url):
         try:
             environment = self.extract_environment_from_url(origin_url)
-            logger.info(f"Extracted Environment: {environment}")
-
-            formatted_table_name = self.extend_table_name(table_name, environment)
+            logger.info("[Message]: Extracted Environment", {"Result": {environment}})
+            base_table_name = self.ssm_service.get_ssm_parameter(
+                self.table_name_ssm_param
+            )
+            formatted_table_name = self.extend_table_name(base_table_name, environment)
 
             self.dynamo_service.update_conditional(
                 table_name=formatted_table_name,
@@ -60,10 +65,7 @@ class EdgePresignService:
             return internal_server_error_response
 
     def extract_environment_from_url(self, url: str) -> str:
-        match = re.search(
-            r"https://([^.]+)\.access-request-fulfilment\.patient-deductions\.nhs\.uk",
-            url,
-        )
+        match = re.search(r"https://([^.]+)\.[^.]+\.[^.]+\.[^.]+", url)
         if match:
             return match.group(1)
         return ""
