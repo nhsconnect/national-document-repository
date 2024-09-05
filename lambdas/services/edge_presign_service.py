@@ -1,32 +1,14 @@
 import re
 
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from services.base.dynamo_service import DynamoDBService
 from services.base.s3_service import S3Service
 from services.base.ssm_service import SSMService
 from utils.audit_logging_setup import LoggingService
+from utils.lambda_exceptions import CloudFrontEdgeException
 
 logger = LoggingService(__name__)
-
-internal_server_error_response = {
-    "status": "500",
-    "statusDescription": "Internal Server Error",
-    "headers": {
-        "content-type": [{"key": "Content-Type", "value": "text/plain"}],
-        "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
-    },
-    "body": "Internal Server Error",
-}
-
-client_error_response = {
-    "status": "404",
-    "statusDescription": "Not Found",
-    "headers": {
-        "content-type": [{"key": "Content-Type", "value": "text/plain"}],
-        "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
-    },
-    "body": "Not Found",
-}
 
 
 class EdgePresignService:
@@ -56,15 +38,10 @@ class EdgePresignService:
             )
         except ClientError as e:
             logger.error(
-                f"{str(e)}", {"Result": "CloudFront Edge failed due to client"}
-            )
-            return client_error_response
-        except Exception as e:
-            logger.error(
                 f"{str(e)}",
-                {"Result": "CloudFront Edge failed due to unknown exception"},
+                {"Result": {LambdaError.EdgeNoClient.to_str()}},
             )
-            return internal_server_error_response
+            raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
     def extract_environment_from_url(self, url: str) -> str:
         match = re.search(r"https://([^.]+)\.[^.]+\.[^.]+\.[^.]+", url)

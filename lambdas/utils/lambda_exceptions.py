@@ -74,3 +74,7 @@ class UpdateUploadStateException(LambdaException):
 
 class GenerateManifestZipException(LambdaException):
     pass
+
+
+class CloudFrontEdgeException(LambdaException):
+    pass
