@@ -40,10 +40,11 @@ class EdgePresignService:
     def attempt_url_update(self, uri_hash, origin_url):
         try:
             environment = self.extract_environment_from_url(origin_url)
-            logger.info("[Message]: Extracted Environment", {"Result": {environment}})
+            logger.info("Extracted Environment", {"Result": {environment}})
             base_table_name = self.ssm_service.get_ssm_parameter(
                 self.table_name_ssm_param
             )
+            logger.info("Found table name", {"Result": base_table_name})
             formatted_table_name = self.extend_table_name(base_table_name, environment)
 
             self.dynamo_service.update_conditional(
@@ -55,12 +56,13 @@ class EdgePresignService:
             )
         except ClientError as e:
             logger.error(
-                f"[Message]: {str(e)}", {"Result": "Lloyd George stitching failed"}
+                f"{str(e)}", {"Result": "CloudFront Edge failed due to client"}
             )
             return client_error_response
         except Exception as e:
             logger.error(
-                f"[Message]: {str(e)}", {"Result": "Lloyd George stitching failed"}
+                f"{str(e)}",
+                {"Result": "CloudFront Edge failed due to unknown exception"},
             )
             return internal_server_error_response
 

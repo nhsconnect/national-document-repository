@@ -24,23 +24,19 @@ bad_request_response = {
 def lambda_handler(event, context):
     try:
         request = event["Records"][0]["cf"]["request"]
-        logger.info(
-            "[Message] CloudFront received S3 request", {"Result": json.dumps(request)}
-        )
+        logger.info("CloudFront received S3 request", {"Result": json.dumps(request)})
         uri = request.get("uri", "")
         presign_query_string = request.get("querystring", "")
 
     except (KeyError, IndexError) as e:
-        logger.error(
-            "[Message]: Malformed event structure or missing data", {"Result": {str(e)}}
-        )
+        logger.error("Malformed event structure or missing data", {"Result": {str(e)}})
         return bad_request_response
 
     s3_presign_credentials = parse_qs(presign_query_string)
     origin_url = s3_presign_credentials.get("origin", [""])[0]
     if not origin_url:
         logger.error(
-            "[Message]: Origin URL not provided in presigned credentials",
+            "Origin URL not provided in presigned credentials",
             {"Result": {presign_query_string}},
         )
         return {
