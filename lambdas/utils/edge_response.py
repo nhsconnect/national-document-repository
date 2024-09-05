@@ -11,8 +11,10 @@ class EdgeResponse:
             "isBase64Encoded": False,
             "status": self.status_code,
             "headers": {
-                "Content-Type": "application/fhir+json",
-                "Content-Encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
+                "content-type": [
+                    {"key": "Content-Encoding", "value": "application/fhir+json"}
+                ],
+                "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
             },
             "body": self.body,
         }
