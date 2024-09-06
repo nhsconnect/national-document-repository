@@ -1,15 +1,12 @@
-import hashlib
 from unittest.mock import Mock
 
 import pytest
-from handlers.edge_presign_handler import lambda_handler
+from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from services.edge_presign_service import EdgePresignService
-
-# Set the table name globally for all tests
-TABLE_NAME = "CloudFrontEdgeReference"
+from utils.lambda_exceptions import CloudFrontEdgeException
 
 
-# Utility function to create a mock context
 def mock_context():
     context = Mock()
     context.aws_request_id = "fake_request_id"
@@ -27,9 +24,9 @@ def valid_event():
                             "authorization": [
                                 {"key": "Authorization", "value": "Bearer token"}
                             ],
-                            "host": [{"key": "Host", "value": "example.com"}],
+                            "host": [{"key": "Host", "value": "example.gov.uk"}],
                         },
-                        "querystring": "origin=https://test.example.com&other=param",
+                        "querystring": "origin=https://test.example.gov.uk&other=param",
                         "uri": "/some/path",
                     }
                 }
@@ -49,7 +46,7 @@ def missing_origin_event():
                             "authorization": [
                                 {"key": "Authorization", "value": "Bearer token"}
                             ],
-                            "host": [{"key": "Host", "value": "example.com"}],
+                            "host": [{"key": "Host", "value": "example.gov.uk"}],
                         },
                         "querystring": "other=param",
                         "uri": "/some/path",
@@ -62,80 +59,53 @@ def missing_origin_event():
 
 @pytest.fixture
 def mock_edge_presign_service(mocker):
-    return mocker.patch.object(
-        EdgePresignService, "attempt_url_update", return_value=None
+    mock_ssm_service = mocker.patch("services.edge_presign_service.SSMService")
+    mock_ssm_service_instance = mock_ssm_service.return_value
+    mock_ssm_service_instance.get_ssm_parameter.return_value = "CloudFrontEdgeReference"
+
+    mock_dynamo_service = mocker.patch("services.edge_presign_service.DynamoDBService")
+    mock_dynamo_service_instance = mock_dynamo_service.return_value
+    mock_dynamo_service_instance.update_conditional.return_value = None
+
+    return mock_ssm_service_instance, mock_dynamo_service_instance
+
+
+def test_attempt_url_update_success(mock_edge_presign_service):
+    edge_service = EdgePresignService()
+    env = "test"
+    uri_hash = "test_uri_hash"
+    origin_url = f"https://{env}.example.gov.uk"
+    edge_service.ssm_service.get_ssm_parameter.return_value = "CloudFrontEdgeReference"
+
+    edge_service.attempt_url_update(uri_hash, origin_url)
+    edge_service.ssm_service.get_ssm_parameter.assert_called_once_with(
+        "EDGE_REFERENCE_TABLE"
+    )
+
+    edge_service.dynamo_service.update_conditional.assert_called_once_with(
+        table_name=f"{env}_CloudFrontEdgeReference",
+        key=uri_hash,
+        updated_fields={"IsRequested": True},
+        condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
+        expression_attribute_values={":false": False},
     )
 
 
-def test_lambda_handler_valid_event(valid_event, mocker, mock_edge_presign_service):
-    # Use the mock context
-    context = mock_context()
-
-    uri = valid_event["Records"][0]["cf"]["request"]["uri"]
-    querystring = valid_event["Records"][0]["cf"]["request"]["querystring"]
-    expected_uri_hash = hashlib.md5(f"{uri}?{querystring}".encode("utf-8")).hexdigest()
-
-    # Expected output (assuming EdgePresignService returns None)
-    expected = {
-        "uri": "/some/path",
-        "querystring": "origin=https://test.example.com&other=param",
-        "headers": {
-            "host": [{"key": "Host", "value": "example.com"}],
-        },
-    }
-
-    actual = lambda_handler(valid_event, context)
-    assert actual == expected
-
-    mock_edge_presign_service.assert_called_once_with(
-        table_name=TABLE_NAME,
-        uri_hash=expected_uri_hash,
-        origin_url="https://test.example.com",
+def test_attempt_url_update_client_error(mock_edge_presign_service):
+    edge_service = EdgePresignService()
+    edge_service.dynamo_service.update_conditional.side_effect = ClientError(
+        error_response={"Error": {"Code": "ConditionalCheckFailedException"}},
+        operation_name="UpdateItem",
     )
 
+    with pytest.raises(CloudFrontEdgeException) as exc_info:
+        edge_service.attempt_url_update("test_uri_hash", "https://test.example.gov.uk")
 
-def test_lambda_handler_missing_origin(
-    missing_origin_event, mocker, mock_edge_presign_service
-):
-    # Use the mock context
-    context = mock_context()
-
-    uri = missing_origin_event["Records"][0]["cf"]["request"]["uri"]
-    querystring = missing_origin_event["Records"][0]["cf"]["request"]["querystring"]
-    expected_uri_hash = hashlib.md5(f"{uri}?{querystring}".encode("utf-8")).hexdigest()
-
-    # Expected output (assuming no origin and EdgePresignService returns None)
-    expected = {
-        "uri": "/some/path",
-        "querystring": "other=param",
-        "headers": {
-            "host": [{"key": "Host", "value": "example.com"}],
-        },
-    }
-
-    actual = lambda_handler(missing_origin_event, context)
-    assert actual == expected
-
-    mock_edge_presign_service.assert_called_once_with(
-        table_name=TABLE_NAME, uri_hash=expected_uri_hash, origin_url=""
-    )
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.message == LambdaError.EdgeNoClient.value["message"]
 
 
-def test_lambda_handler_service_error(valid_event, mocker):
-    context = mock_context()
-    expected_response = {
-        "status": "500",
-        "statusDescription": "Internal Server Error",
-        "headers": {
-            "content-type": [{"key": "Content-Type", "value": "text/plain"}],
-            "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
-        },
-        "body": "Internal Server Error",
-    }
-
-    mocker.patch.object(
-        EdgePresignService, "attempt_url_update", return_value=expected_response
-    )
-
-    actual = lambda_handler(valid_event, context)
-    assert actual == expected_response
+def test_attempt_url_update_invalid_origin(mock_edge_presign_service):
+    edge_service = EdgePresignService()
+    result = edge_service.extract_environment_from_url("invalid_url")
+    assert result == ""

@@ -37,10 +37,7 @@ class EdgePresignService:
                 expression_attribute_values={":false": False},
             )
         except ClientError as e:
-            logger.error(
-                f"{str(e)}",
-                {"Result": {LambdaError.EdgeNoClient.to_str()}},
-            )
+            logger.error(str(e), {"Result": LambdaError.EdgeNoClient.to_str()})
             raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
     def extract_environment_from_url(self, url: str) -> str:

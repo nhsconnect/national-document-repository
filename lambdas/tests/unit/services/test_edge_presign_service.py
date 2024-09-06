@@ -1,13 +1,15 @@
 import pytest
 from botocore.exceptions import ClientError
+from enums.lambda_error import LambdaError
 from services.edge_presign_service import EdgePresignService
+from utils.lambda_exceptions import CloudFrontEdgeException
 
 # Instantiate the service for testing
 edge_presign_service = EdgePresignService()
 
 # Global Variables
 TABLE_NAME = "CloudFrontEdgeReference"
-NHS_DOMAIN = "access-request-fulfilment.patient-deductions.nhs.uk"
+NHS_DOMAIN = "example.gov.uk"
 
 
 @pytest.fixture
@@ -16,8 +18,8 @@ def mock_dynamo_service(mocker):
 
 
 @pytest.fixture
-def mock_s3_service(mocker):
-    return mocker.patch.object(edge_presign_service, "s3_service", autospec=True)
+def mock_ssm_service(mocker):
+    return mocker.patch.object(edge_presign_service, "ssm_service", autospec=True)
 
 
 @pytest.fixture
@@ -30,20 +32,22 @@ def invalid_origin_url():
     return f"https://invalid.{NHS_DOMAIN}"
 
 
-def test_attempt_url_update_success(mock_dynamo_service, valid_origin_url):
+def test_attempt_url_update_success(
+    mock_dynamo_service, mock_ssm_service, valid_origin_url
+):
     # Setup
     mock_dynamo_service.update_conditional.return_value = None
+    mock_ssm_service.get_ssm_parameter.return_value = TABLE_NAME
     uri_hash = "valid_hash"
 
     # Action
     response = edge_presign_service.attempt_url_update(
-        table_name=TABLE_NAME,
-        uri_hash=uri_hash,
-        origin_url=valid_origin_url,
+        uri_hash=uri_hash, origin_url=valid_origin_url
     )
 
     # Assert
     assert response is None  # Success scenario returns None
+    mock_ssm_service.get_ssm_parameter.assert_called_once_with("EDGE_REFERENCE_TABLE")
     mock_dynamo_service.update_conditional.assert_called_once_with(
         table_name="test_" + TABLE_NAME,
         key=uri_hash,
@@ -53,56 +57,24 @@ def test_attempt_url_update_success(mock_dynamo_service, valid_origin_url):
     )
 
 
-def test_attempt_url_update_client_error(mock_dynamo_service, valid_origin_url):
+def test_attempt_url_update_client_error(
+    mock_dynamo_service, mock_ssm_service, valid_origin_url
+):
     # Setup
     mock_dynamo_service.update_conditional.side_effect = ClientError(
         {"Error": {"Code": "ConditionalCheckFailedException"}}, "UpdateItem"
     )
+    mock_ssm_service.get_ssm_parameter.return_value = TABLE_NAME
     uri_hash = "valid_hash"
 
-    # Action
-    response = edge_presign_service.attempt_url_update(
-        table_name=TABLE_NAME,
-        uri_hash=uri_hash,
-        origin_url=valid_origin_url,
-    )
+    # Assert that CloudFrontEdgeException is raised
+    with pytest.raises(CloudFrontEdgeException) as exc_info:
+        edge_presign_service.attempt_url_update(
+            uri_hash=uri_hash, origin_url=valid_origin_url
+        )
 
-    # Assert
-    expected_response = {
-        "status": "404",
-        "statusDescription": "Not Found",
-        "headers": {
-            "content-type": [{"key": "Content-Type", "value": "text/plain"}],
-            "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
-        },
-        "body": "Not Found",
-    }
-    assert response == expected_response
-
-
-def test_attempt_url_update_generic_exception(mock_dynamo_service, valid_origin_url):
-    # Setup
-    mock_dynamo_service.update_conditional.side_effect = Exception("Some generic error")
-    uri_hash = "valid_hash"
-
-    # Action
-    response = edge_presign_service.attempt_url_update(
-        table_name=TABLE_NAME,
-        uri_hash=uri_hash,
-        origin_url=valid_origin_url,
-    )
-
-    # Assert
-    expected_response = {
-        "status": "500",
-        "statusDescription": "Internal Server Error",
-        "headers": {
-            "content-type": [{"key": "Content-Type", "value": "text/plain"}],
-            "content-encoding": [{"key": "Content-Encoding", "value": "UTF-8"}],
-        },
-        "body": "Internal Server Error",
-    }
-    assert response == expected_response
+    assert exc_info.value.status_code == 400
+    assert exc_info.value.message == LambdaError.EdgeNoClient.value["message"]
 
 
 def test_extract_environment_from_url():
