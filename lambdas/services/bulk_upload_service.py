@@ -106,8 +106,8 @@ class BulkUploadService:
                 os.path.basename(metadata.file_path)
                 for metadata in staging_metadata.files
             ]
-            validate_lg_file_names(file_names, staging_metadata.nhs_number)
             request_context.patient_nhs_no = staging_metadata.nhs_number
+            validate_lg_file_names(file_names, staging_metadata.nhs_number)
 
             pds_patient_details = getting_patient_info_from_pds(
                 staging_metadata.nhs_number
