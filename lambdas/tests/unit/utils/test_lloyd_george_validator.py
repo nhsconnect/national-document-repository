@@ -45,6 +45,7 @@ from utils.lloyd_george_validator import (
     validate_lg_file_type,
     validate_lg_files,
     validate_patient_date_of_birth,
+    validate_patient_name,
     validate_patient_name_using_full_name_history,
 )
 
@@ -262,63 +263,96 @@ def test_mismatch_name_with_pds_service(mock_pds_patient):
         validate_filename_with_patient_details(lg_file_list, mock_pds_patient)
 
 
-def test_validate_name_with_correct_name(mock_pds_patient):
+def test_validate_name_with_correct_name(mocker, mock_pds_patient):
     lg_file_patient_name = "Jane Smith"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name"
+    )
+
     with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_name_using_full_name_history(
             lg_file_patient_name, mock_pds_patient
         )
+    assert mock_validate_name.call_count == 1
 
 
-def test_validate_name_with_file_missing_middle_name():
+def test_validate_name_with_file_missing_middle_name(mocker):
     lg_file_patient_name = "Jane Smith"
     patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
-
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name"
+    )
     with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_name_using_full_name_history(lg_file_patient_name, patient)
 
+    assert mock_validate_name.call_count == 1
 
-def test_validate_name_with_additional_middle_name_in_file_mismatching_pds():
+
+def test_validate_name_with_additional_middle_name_in_file_mismatching_pds(mocker):
     lg_file_patient_name = "Jane David Smith"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name"
+    )
     patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
 
     with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_name_using_full_name_history(lg_file_patient_name, patient)
+    assert mock_validate_name.call_count == 1
 
 
 def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
-    mock_pds_patient,
+    mock_pds_patient, mocker
 ):
     lg_file_patient_name = "Jane David Smith"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name"
+    )
     with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_name_using_full_name_history(
             lg_file_patient_name, mock_pds_patient
         )
+    assert mock_validate_name.call_count == 1
 
 
-def test_validate_name_with_wrong_first_name(mock_pds_patient):
+def test_validate_name_with_wrong_first_name(mocker, mock_pds_patient):
     lg_file_patient_name = "John Smith"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name"
+    )
+    mock_validate_name.return_value = False
+
     with pytest.raises(LGInvalidFilesException):
         validate_patient_name_using_full_name_history(
             lg_file_patient_name, mock_pds_patient
         )
+    assert mock_validate_name.call_count == 2
 
 
-def test_validate_name_with_wrong_family_name(mock_pds_patient):
+def test_validate_name_with_wrong_family_name(mocker, mock_pds_patient):
     lg_file_patient_name = "Jane Johnson"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name"
+    )
+    mock_validate_name.return_value = False
     with pytest.raises(LGInvalidFilesException):
         validate_patient_name_using_full_name_history(
             lg_file_patient_name, mock_pds_patient
         )
+    assert mock_validate_name.call_count == 2
 
 
-def test_validate_name_without_given_name(mock_pds_patient):
+def test_validate_name_without_given_name(mocker, mock_pds_patient):
     lg_file_patient_name = "Jane Smith"
     mock_pds_patient.name[0].given = [""]
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name"
+    )
+
     with expect_not_to_raise(LGInvalidFilesException):
         validate_patient_name_using_full_name_history(
             lg_file_patient_name, mock_pds_patient
         )
+    assert mock_validate_name.call_count == 1
 
 
 @pytest.mark.parametrize(
@@ -667,6 +701,61 @@ def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
         validate_lg_files(
             TEST_DOCUMENT_REFERENCE_LIST, patient_with_different_nhs_number
         )
+
+
+@pytest.mark.parametrize(
+    ["file_patient_name", "first_name_from_pds", "family_name_from_pds"],
+    [
+        ["Jim Stevens", "Jane", "Smith"],
+        ["Jane Smith Anderson", "Jane", "Smith"],
+        ["Bob Smith Anderson", "Jane", "Smith"],
+        ["Jane B Smith Anderson", "Jane", "Smith"],
+        ["Jane Bob Anderson", "Jane", "Smith"],
+        ["Jane Bob Smith", "Jane Bob", "Smith Anderson"],
+        ["Jane Smith", "Jane Bob", "Smith"],
+        ["Jane B Smith", "Jane Bob", "Smith"],
+        ["Jane-Bob Smith", "Jane Bob", "Smith"],
+        ["Jane Smith", "Jane Bob", "Smith"],
+        ["Jane Smith Anderson", "Jane", "Smith-Anderson"],
+        ["Jane Smith", "Jane", "Smith-Anderson"],
+        ["Jane Anderson", "Jane", "Smith-Anderson"],
+        ["Bob Smith Anderson", "Jane", "Smith Anderson"],
+        ["Jane Smith", "Jane", "Smith Anderson"],
+        ["Jane Anderson", "Jane", "Smith Anderson"],
+        ["Jane Anderson Smith", "Jane", "Smith Anderson"],
+    ],
+)
+def test_validate_patient_name_return_false(
+    file_patient_name, first_name_from_pds, family_name_from_pds
+):
+    actual = validate_patient_name(
+        file_patient_name, first_name_from_pds, family_name_from_pds
+    )
+    assert actual is False
+
+
+@pytest.mark.parametrize(
+    ["file_patient_name", "first_name_from_pds", "family_name_from_pds"],
+    [
+        ["Jane Smith", "Jane", "Smith"],
+        ["Jane Bob Smith Anderson", "Jane", "Smith Anderson"],
+        ["Jane Smith Anderson", "Jane", "Smith Anderson"],
+        ["Jane B Smith Anderson", "Jane", "Smith Anderson"],
+        ["Jane Smith-Anderson", "Jane", "Smith-Anderson"],
+        ["Jane Bob Smith", "Jane Bob", "Smith-Anderson"],
+        ["Jane Bob Smith Anderson", "Jane Bob", "Smith Anderson"],
+    ],
+)
+def test_validate_patient_name_return_true(
+    file_patient_name, first_name_from_pds, family_name_from_pds
+):
+    file_patient_name = "Jane Smith"
+    first_name_from_pds = "Jane"
+    family_name_from_pds = "Smith"
+    actual = validate_patient_name(
+        file_patient_name, first_name_from_pds, family_name_from_pds
+    )
+    assert actual is True
 
 
 @pytest.fixture
