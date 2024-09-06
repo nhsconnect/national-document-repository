@@ -21,14 +21,23 @@ class EdgePresignService:
 
     def attempt_url_update(self, uri_hash, origin_url):
         try:
+            # Extract environment
             environment = self.extract_environment_from_url(origin_url)
             logger.info("Extracted Environment", {"Result": environment})
+
+            # Fetch base table name from SSM
             base_table_name = self.ssm_service.get_ssm_parameter(
                 self.table_name_ssm_param
             )
             logger.info("Found table name", {"Result": base_table_name})
-            formatted_table_name = self.extend_table_name(base_table_name, environment)
 
+            # Construct final table name with environment
+            if environment:
+                formatted_table_name = f"{environment}_{base_table_name}"
+            else:
+                formatted_table_name = base_table_name
+
+            # Perform DynamoDB update
             self.dynamo_service.update_conditional(
                 table_name=formatted_table_name,
                 key=uri_hash,
@@ -37,7 +46,7 @@ class EdgePresignService:
                 expression_attribute_values={":false": False},
             )
         except ClientError as e:
-            logger.error(str(e), {"Result": LambdaError.EdgeNoClient.to_str()})
+            logger.error(f"{str(e)}", {"Result": LambdaError.EdgeNoClient.to_str()})
             raise CloudFrontEdgeException(400, LambdaError.EdgeNoClient)
 
     def extract_environment_from_url(self, url: str) -> str:
