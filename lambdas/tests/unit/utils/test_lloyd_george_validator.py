@@ -719,6 +719,7 @@ def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
         ["Jane Smith Anderson", "Jane", "Smith-Anderson"],
         ["Jane Smith", "Jane", "Smith-Anderson"],
         ["Jane Anderson", "Jane", "Smith-Anderson"],
+        ["Jane Bob Smith", "Jane Bob", "Smith-Anderson"],
         ["Bob Smith Anderson", "Jane", "Smith Anderson"],
         ["Jane Smith", "Jane", "Smith Anderson"],
         ["Jane Anderson", "Jane", "Smith Anderson"],
@@ -742,16 +743,13 @@ def test_validate_patient_name_return_false(
         ["Jane Smith Anderson", "Jane", "Smith Anderson"],
         ["Jane B Smith Anderson", "Jane", "Smith Anderson"],
         ["Jane Smith-Anderson", "Jane", "Smith-Anderson"],
-        ["Jane Bob Smith", "Jane Bob", "Smith-Anderson"],
         ["Jane Bob Smith Anderson", "Jane Bob", "Smith Anderson"],
+        ["Jane Bob Smith", "Jane Bob", "Smith"],
     ],
 )
 def test_validate_patient_name_return_true(
     file_patient_name, first_name_from_pds, family_name_from_pds
 ):
-    file_patient_name = "Jane Smith"
-    first_name_from_pds = "Jane"
-    family_name_from_pds = "Smith"
     actual = validate_patient_name(
         file_patient_name, first_name_from_pds, family_name_from_pds
     )
