@@ -12,11 +12,14 @@ from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.lambda_response import ApiGatewayResponse
 from utils.request_context import request_context
 
+from lambdas.utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
+
 logger = LoggingService(__name__)
 
 
 @set_request_context_for_logging
 @override_error_check
+@handle_lambda_exceptions
 def lambda_handler(event, context):
     request_context.app_interaction = LoggingAppInteraction.LOGOUT.value
     logger.info("Logout handler triggered")
