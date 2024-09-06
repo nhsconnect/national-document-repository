@@ -10,7 +10,12 @@ from models.document_reference import DocumentReference
 from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
-from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_UUID
+from tests.unit.conftest import (
+    MOCK_CLOUDFRONT_URL,
+    MOCK_LG_BUCKET,
+    TEST_NHS_NUMBER,
+    TEST_UUID,
+)
 from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.lambda_exceptions import LGStitchServiceException
 
@@ -149,10 +154,8 @@ def test_stitch_lloyd_george_record_happy_path(
         }
     )
 
-    mock_cloudfront_url = "mock-cloudfront-url.com"
-
     # Set the correct cloudfront_url in the environment
-    patched_stitch_service.cloudfront_url = mock_cloudfront_url
+    patched_stitch_service.cloudfront_url = MOCK_CLOUDFRONT_URL
 
     actual = patched_stitch_service.stitch_lloyd_george_record(TEST_NHS_NUMBER)
 
@@ -171,7 +174,7 @@ def test_stitch_lloyd_george_record_happy_path(
     patched_stitch_service.upload_stitched_lg_record_and_retrieve_presign_url.assert_called_with(
         stitched_lg_record=MOCK_STITCHED_FILE,
         filename_on_bucket=MOCK_STITCHED_FILE_ON_S3,
-        cloudfront_url=mock_cloudfront_url,  # Correct cloudfront_url used here
+        cloudfront_url=MOCK_CLOUDFRONT_URL,  # Correct cloudfront_url used here
     )
 
 
@@ -372,14 +375,13 @@ def test_get_total_file_size(mocker, stitch_service):
 
 def test_upload_stitched_lg_record_and_retrieve_presign_url(mock_s3, stitch_service):
     # Mock the expected CloudFront URL
-    mock_cloudfront_url = "test-cloudfront-url.com"
-    expected = f"https://{mock_cloudfront_url}/combined_files/{MOCK_STITCHED_FILE}"
+    expected = f"https://{MOCK_CLOUDFRONT_URL}/combined_files/{MOCK_STITCHED_FILE}"
 
     # Run the method with the mock CloudFront URL
     actual = stitch_service.upload_stitched_lg_record_and_retrieve_presign_url(
         stitched_lg_record=MOCK_STITCHED_FILE,
         filename_on_bucket=MOCK_STITCHED_FILE_ON_S3,
-        cloudfront_url=mock_cloudfront_url,
+        cloudfront_url=MOCK_CLOUDFRONT_URL,
     )
 
     assert actual == expected

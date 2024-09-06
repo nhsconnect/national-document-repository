@@ -13,6 +13,7 @@ from requests import Response
 
 REGION_NAME = "eu-west-2"
 
+MOCK_CLOUDFRONT_URL = "test-cloudfront-url.com"
 MOCK_TABLE_NAME = "test-table"
 MOCK_BUCKET = "test-s3-bucket"
 
