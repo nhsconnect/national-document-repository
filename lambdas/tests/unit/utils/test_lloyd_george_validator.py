@@ -660,7 +660,7 @@ def test_mismatch_nhs_in_validate_lg_file(mocker, mock_pds_patient):
     )
     mocker.patch("utils.lloyd_george_validator.validate_file_name")
     patient_with_different_nhs_number = mock_pds_patient.model_copy(
-        update={"nhs_number": "9876543210"}
+        update={"id": "9876543210"}
     )
 
     with pytest.raises(LGInvalidFilesException):
