@@ -296,8 +296,11 @@ def test_validate_name_with_additional_middle_name_in_file_mismatching_pds(mocke
     patient = Patient.model_validate(PDS_PATIENT_WITH_MIDDLE_NAME)
 
     with expect_not_to_raise(LGInvalidFilesException):
-        validate_patient_name_using_full_name_history(lg_file_patient_name, patient)
+        actual_is_name_validation_based_on_historic_name = (
+            validate_patient_name_using_full_name_history(lg_file_patient_name, patient)
+        )
     assert mock_validate_name.call_count == 1
+    assert actual_is_name_validation_based_on_historic_name is False
 
 
 def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
@@ -308,10 +311,13 @@ def test_validate_name_with_additional_middle_name_in_file_but_none_in_pds(
         "utils.lloyd_george_validator.validate_patient_name"
     )
     with expect_not_to_raise(LGInvalidFilesException):
-        validate_patient_name_using_full_name_history(
-            lg_file_patient_name, mock_pds_patient
+        actual_is_name_validation_based_on_historic_name = (
+            validate_patient_name_using_full_name_history(
+                lg_file_patient_name, mock_pds_patient
+            )
         )
     assert mock_validate_name.call_count == 1
+    assert actual_is_name_validation_based_on_historic_name is False
 
 
 def test_validate_name_with_wrong_first_name(mocker, mock_pds_patient):
@@ -339,6 +345,22 @@ def test_validate_name_with_wrong_family_name(mocker, mock_pds_patient):
             lg_file_patient_name, mock_pds_patient
         )
     assert mock_validate_name.call_count == 2
+
+
+def test_validate_name_with_historical_name(mocker, mock_pds_patient):
+    lg_file_patient_name = "Jim Stevens"
+    mock_validate_name = mocker.patch(
+        "utils.lloyd_george_validator.validate_patient_name"
+    )
+    mock_validate_name.side_effect = [False, True]
+    with expect_not_to_raise(LGInvalidFilesException):
+        actual_is_name_validation_based_on_historic_name = (
+            validate_patient_name_using_full_name_history(
+                lg_file_patient_name, mock_pds_patient
+            )
+        )
+    assert mock_validate_name.call_count == 2
+    assert actual_is_name_validation_based_on_historic_name is True
 
 
 def test_validate_name_without_given_name(mocker, mock_pds_patient):

@@ -763,3 +763,41 @@ def test_create_lg_records_and_copy_files_client_error(
     )
     repo_under_test.s3_repository.remove_ingested_file_from_source_bucket.assert_not_called()
     repo_under_test.dynamo_repository.report_upload_complete.assert_not_called()
+
+
+def test_handle_sqs_message_happy_path_historical_name(
+    set_env,
+    mocker,
+    mock_uuid,
+    repo_under_test,
+    mock_validate_files,
+    mock_pds_service,
+    mock_pds_validation,
+    mock_ods_validation,
+):
+    TEST_STAGING_METADATA.retries = 0
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_report_upload_complete = mocker.patch.object(
+        repo_under_test.dynamo_repository, "write_report_upload_to_dynamo"
+    )
+    mock_remove_ingested_file_from_source_bucket = mocker.patch.object(
+        repo_under_test.s3_repository, "remove_ingested_file_from_source_bucket"
+    )
+    mocker.patch.object(repo_under_test.s3_repository, "check_virus_result")
+    mock_pds_validation.return_value = True
+
+    repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    mock_create_lg_records_and_copy_files.assert_called_with(
+        TEST_STAGING_METADATA, TEST_CURRENT_GP_ODS
+    )
+    mock_report_upload_complete.assert_called()
+    mock_report_upload_complete.assert_called_with(
+        TEST_STAGING_METADATA,
+        UploadStatus.COMPLETE,
+        "Patient matched on historical name",
+        "Y12345",
+    )
+    mock_remove_ingested_file_from_source_bucket.assert_called()
