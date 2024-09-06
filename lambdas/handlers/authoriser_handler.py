@@ -21,7 +21,7 @@ from utils.decorators.override_error_check import override_error_check
 from utils.decorators.set_audit_arg import set_request_context_for_logging
 from utils.exceptions import AuthorisationException
 from utils.request_context import request_context
-from lambdas.utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
+from utils.decorators.handle_lambda_exceptions import handle_lambda_exceptions
 
 logger = LoggingService(__name__)
 
