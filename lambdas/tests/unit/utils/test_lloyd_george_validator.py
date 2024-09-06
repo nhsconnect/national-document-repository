@@ -371,9 +371,10 @@ def test_validate_name_without_given_name(mocker, mock_pds_patient):
     )
 
     with expect_not_to_raise(LGInvalidFilesException):
-        validate_patient_name_using_full_name_history(
+        actual_is_validate_on_historic = validate_patient_name_using_full_name_history(
             lg_file_patient_name, mock_pds_patient
         )
+    assert actual_is_validate_on_historic is False
     assert mock_validate_name.call_count == 1
 
 
@@ -388,9 +389,12 @@ def test_validate_patient_name_with_two_words_family_name(
 ):
     if should_accept_name:
         with expect_not_to_raise(LGInvalidFilesException):
-            validate_patient_name_using_full_name_history(
-                patient_name_in_file_name, patient_details
+            actual_is_validate_on_historic = (
+                validate_patient_name_using_full_name_history(
+                    patient_name_in_file_name, patient_details
+                )
             )
+            assert actual_is_validate_on_historic is False
     else:
         with pytest.raises(LGInvalidFilesException):
             validate_patient_name_using_full_name_history(
@@ -409,9 +413,12 @@ def test_validate_patient_name_with_family_name_with_hyphen(
 ):
     if should_accept_name:
         with expect_not_to_raise(LGInvalidFilesException):
-            validate_patient_name_using_full_name_history(
-                patient_name_in_file_name, patient_details
+            actual_is_validate_on_historic = (
+                validate_patient_name_using_full_name_history(
+                    patient_name_in_file_name, patient_details
+                )
             )
+            assert actual_is_validate_on_historic is False
     else:
         with pytest.raises(LGInvalidFilesException):
             validate_patient_name_using_full_name_history(
