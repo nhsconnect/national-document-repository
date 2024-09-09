@@ -106,48 +106,52 @@ class DynamoDBService:
             )
             raise e
 
-    def update_item(self, table_name: str, key: str, updated_fields: dict):
-        table = self.get_table(table_name)
-
-        updated_field_names = list(updated_fields.keys())
-
-        update_expression = create_update_expression(updated_field_names)
-        _, expression_attribute_names = create_expressions(updated_field_names)
-        expression_attribute_values = create_expression_attribute_values(updated_fields)
-
-        table.update_item(
-            Key={"ID": key},
-            UpdateExpression=update_expression,
-            ExpressionAttributeNames=expression_attribute_names,
-            ExpressionAttributeValues=expression_attribute_values,
-        )
-
-    def update_conditional(
+    def update_item(
         self,
         table_name: str,
         key: str,
         updated_fields: dict,
-        condition_expression: str,
-        expression_attribute_values,
+        condition_expression: str = None,
+        condition_expression_attribute_values: dict = None,
     ):
+        """
+        Update an item in DynamoDB. Optionally, provide a condition expression to make the update conditional.
+
+        :param table_name: The name of the DynamoDB table.
+        :param key: The key of the item to update.
+        :param updated_fields: The fields to update in the item.
+        :param condition_expression: Optional condition expression to enforce for the update.
+        :param condition_expression_attribute_values: Optional dictionary of attribute values for the condition expression.
+        """
         table = self.get_table(table_name)
 
+        # Generate expressions for the update
         updated_field_names = list(updated_fields.keys())
         update_expression = create_update_expression(updated_field_names)
         _, expression_attribute_names = create_expressions(updated_field_names)
+        expression_attribute_values = create_expression_attribute_values(updated_fields)
 
-        expression_attribute_values.update(
-            create_expression_attribute_values(updated_fields)
-        )
-
+        # Prepare the update item arguments
         update_item_args = {
             "Key": {"ID": key},
             "UpdateExpression": update_expression,
             "ExpressionAttributeNames": expression_attribute_names,
             "ExpressionAttributeValues": expression_attribute_values,
         }
-        update_item_args["ConditionExpression"] = condition_expression
 
+        # Add conditional expression if provided
+        if condition_expression:
+            update_item_args["ConditionExpression"] = condition_expression
+            if condition_expression_attribute_values:
+                # Merge condition expression values with update expression values
+                expression_attribute_values.update(
+                    condition_expression_attribute_values
+                )
+                update_item_args["ExpressionAttributeValues"] = (
+                    expression_attribute_values
+                )
+
+        # Perform the update
         table.update_item(**update_item_args)
 
     def delete_item(self, table_name: str, key: dict):

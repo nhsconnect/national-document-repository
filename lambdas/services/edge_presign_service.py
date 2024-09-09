@@ -27,12 +27,12 @@ class EdgePresignService:
             )
             formatted_table_name = self.extend_table_name(base_table_name, environment)
 
-            self.dynamo_service.update_conditional(
+            self.dynamo_service.update_item(
                 table_name=formatted_table_name,
                 key=uri_hash,
                 updated_fields={"IsRequested": True},
                 condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
-                expression_attribute_values={":false": False},
+                condition_expression_attribute_values={":false": False},
             )
         except ClientError as e:
             logger.error(f"{str(e)}", {"Result": LambdaError.EdgeNoClient.to_str()})
