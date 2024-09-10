@@ -126,7 +126,3 @@ class LogsQueryException(Exception):
 
 class StatisticDataNotFoundException(Exception):
     pass
-
-
-class PdsResponseValidationException(Exception):
-    pass
