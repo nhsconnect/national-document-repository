@@ -13,6 +13,9 @@ LAMBDAS_BUILD_PATH=build/lambdas
 LAMBDA_LAYERS_BUILD_PATH=build/lambda_layers
 LAMBDA_LAYER_PYTHON_PATH=python/lib/python$(PYTHON_VERSION)/site-packages
 
+ZIP_BASE_PATH = ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
+ZIP_COMMON_FILES = lambdas/utils lambdas/models lambdas/services lambdas/repositories lambdas/enums
+
 default: help
 
 clean: clean-build clean-py clean-test
@@ -83,38 +86,20 @@ edge_env:
 	./lambdas/venv/bin/pip3 install -r $(GITHUB_REQUIREMENTS)
 	./lambdas/venv/bin/pip3 install -r $(EDGE_REQUIREMENTS)
 
-
 zip:
 	echo $(LAMBDAS_BUILD_PATH)/$(lambda_name)
-	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)|| true
-	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)
-	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/handlers
-	cp -r lambdas/handlers/$(lambda_name).py ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/handlers
-	cp -r lambdas/utils ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cp -r lambdas/models ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cp -r lambdas/services ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cp -r lambdas/repositories ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cp -r lambdas/enums ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cd ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp ; zip -r ../$(lambda_name).zip .
-	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cd ../..
+	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name) || true
+	mkdir -p $(ZIP_BASE_PATH)/handlers
+	cp lambdas/handlers/$(lambda_name).py $(ZIP_BASE_PATH)/handlers
+	cp -r $(ZIP_COMMON_FILES) $(ZIP_BASE_PATH)
+	cd $(ZIP_BASE_PATH) ; zip -r ../$(lambda_name).zip .
+	rm -rf $(ZIP_BASE_PATH)
 
-edge_zip:
-	echo $(LAMBDAS_BUILD_PATH)/$(lambda_name)
-	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)|| true
-	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)
-	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/handlers
-	mkdir -p ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/python
-	cp -r lambdas/handlers/$(lambda_name).py ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp/handlers
-	cp -r lambdas/utils ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cp -r lambdas/models ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cp -r lambdas/services ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cp -r lambdas/repositories ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cp -r lambdas/enums ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cp -r lambdas/venv/lib/python*/site-packages/* ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cd ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp ; zip -r ../$(lambda_name).zip .
-	rm -rf ./$(LAMBDAS_BUILD_PATH)/$(lambda_name)/tmp
-	cd ../..
+edge_zip: zip
+	mkdir -p $(ZIP_BASE_PATH)/python
+	cp -r lambdas/venv/lib/python*/site-packages/* $(ZIP_BASE_PATH)
+	cd $(ZIP_BASE_PATH) ; zip -r ../$(lambda_name).zip .
+	rm -rf $(ZIP_BASE_PATH)
 
 lambda_layer_zip:
 	rm -rf ./$(LAMBDA_LAYERS_BUILD_PATH)/$(layer_name) || true
