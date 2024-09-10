@@ -118,22 +118,23 @@ class DynamoDBService:
         updated_field_names = list(updated_fields.keys())
         update_expression = create_update_expression(updated_field_names)
         _, expression_attribute_names = create_expressions(updated_field_names)
-        expression_attribute_values = create_expression_attribute_values(updated_fields)
+
+        generated_expression_attribute_values = create_expression_attribute_values(
+            updated_fields
+        )
+
+        if expression_attribute_values:
+            generated_expression_attribute_values.update(expression_attribute_values)
 
         update_item_args = {
             "Key": {"ID": key},
             "UpdateExpression": update_expression,
             "ExpressionAttributeNames": expression_attribute_names,
-            "ExpressionAttributeValues": expression_attribute_values,
+            "ExpressionAttributeValues": generated_expression_attribute_values,
         }
 
         if condition_expression:
             update_item_args["ConditionExpression"] = condition_expression
-            if expression_attribute_values:
-                expression_attribute_values.update(expression_attribute_values)
-                update_item_args["ExpressionAttributeValues"] = (
-                    expression_attribute_values
-                )
 
         table.update_item(**update_item_args)
 
