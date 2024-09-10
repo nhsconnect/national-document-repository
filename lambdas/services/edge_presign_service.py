@@ -19,20 +19,22 @@ class EdgePresignService:
         self.ssm_service = SSMService()
         self.table_name_ssm_param = "EDGE_REFERENCE_TABLE"
 
-    def attempt_url_update(self, uri_hash, origin_url):
+    def attempt_url_update(self, uri_hash, origin_url) -> None:
         try:
             environment = self.extract_environment_from_url(origin_url)
-            base_table_name = self.ssm_service.get_ssm_parameter(
+            base_table_name: str = self.ssm_service.get_ssm_parameter(
                 self.table_name_ssm_param
             )
-            formatted_table_name = self.extend_table_name(base_table_name, environment)
+            formatted_table_name: str = self.extend_table_name(
+                base_table_name, environment
+            )
 
             self.dynamo_service.update_item(
                 table_name=formatted_table_name,
                 key=uri_hash,
                 updated_fields={"IsRequested": True},
                 condition_expression="attribute_not_exists(IsRequested) OR IsRequested = :false",
-                condition_expression_attribute_values={":false": False},
+                expression_attribute_values={":false": False},
             )
         except ClientError as e:
             logger.error(f"{str(e)}", {"Result": LambdaError.EdgeNoClient.to_str()})
@@ -44,7 +46,7 @@ class EdgePresignService:
             return match.group(1)
         return ""
 
-    def extend_table_name(self, base_table_name, environment):
+    def extend_table_name(self, base_table_name, environment) -> str:
         if environment:
             return f"{environment}_{base_table_name}"
         return base_table_name

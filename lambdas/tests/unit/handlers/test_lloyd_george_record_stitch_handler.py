@@ -35,7 +35,6 @@ MOCK_STITCH_SERVICE_RESPONSE = json.dumps(
 )
 
 
-# New fixture to set environment variables
 @pytest.fixture(autouse=True)
 def set_env_vars(monkeypatch):
     monkeypatch.setenv("LLOYD_GEORGE_DYNAMODB_NAME", "mock_dynamodb_table")
@@ -134,7 +133,6 @@ def test_lambda_handler_respond_400_when_no_nhs_number_supplied(
 def test_lambda_handler_respond_500_when_environment_variables_not_set(
     joe_bloggs_event, context
 ):
-    # Unset the environment variable to simulate the failure
     os.environ.pop("CLOUDFRONT_URL", None)
 
     actual = lambda_handler(joe_bloggs_event, context)

@@ -42,7 +42,7 @@ def mock_edge_presign_service(mocker):
 
     mock_dynamo_service = mocker.patch("services.edge_presign_service.DynamoDBService")
     mock_dynamo_service_instance = mock_dynamo_service.return_value
-    mock_dynamo_service_instance.update_conditional.return_value = None
+    mock_dynamo_service_instance.update_item.return_value = None
 
     return mock_ssm_service_instance, mock_dynamo_service_instance
 
@@ -52,20 +52,16 @@ def test_attempt_url_update_success(mock_edge_presign_service):
     uri_hash = "test_uri_hash"
     origin_url = f"https://{ENV}.{NHS_DOMAIN}"
 
-    # Action
     edge_service.attempt_url_update(uri_hash, origin_url)
 
-    # Assertions
     mock_ssm_service_instance = mock_edge_presign_service[0]
     mock_dynamo_service_instance = mock_edge_presign_service[1]
 
-    # Assert SSM parameter key was used correctly
     mock_ssm_service_instance.get_ssm_parameter.assert_called_once_with(
         EXPECTED_SSM_PARAMETER_KEY
     )
 
-    # Assert DynamoDB update call was correct
-    mock_dynamo_service_instance.update_conditional.assert_called_once_with(
+    mock_dynamo_service_instance.update_item.assert_called_once_with(
         table_name=f"{ENV}_{TABLE_NAME}",
         key=uri_hash,
         updated_fields={"IsRequested": True},
@@ -77,17 +73,14 @@ def test_attempt_url_update_success(mock_edge_presign_service):
 def test_attempt_url_update_client_error(mock_edge_presign_service):
     edge_service = EdgePresignService()
 
-    # Simulate a ClientError from DynamoDB
-    edge_service.dynamo_service.update_conditional.side_effect = ClientError(
+    edge_service.dynamo_service.update_item.side_effect = ClientError(
         error_response={"Error": {"Code": "ConditionalCheckFailedException"}},
         operation_name="UpdateItem",
     )
 
-    # Action & Expectation
     with pytest.raises(CloudFrontEdgeException) as exc_info:
         edge_service.attempt_url_update("test_uri_hash", f"https://{ENV}.{NHS_DOMAIN}")
 
-    # Assert exception details
     assert exc_info.value.status_code == 400
     assert exc_info.value.message == EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE
     assert exc_info.value.err_code == EXPECTED_EDGE_NO_CLIENT_ERROR_CODE
@@ -96,10 +89,8 @@ def test_attempt_url_update_client_error(mock_edge_presign_service):
 def test_attempt_url_update_invalid_origin(mock_edge_presign_service):
     edge_service = EdgePresignService()
 
-    # Action: Extract environment from invalid URL
     result = edge_service.extract_environment_from_url("invalid_url")
 
-    # Expectation: Invalid URL should return an empty string
     expected_empty_result = ""
 
     assert result == expected_empty_result

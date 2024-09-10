@@ -14,7 +14,6 @@ from tests.unit.enums.test_edge_presign_values import (
 )
 from utils.lambda_exceptions import CloudFrontEdgeException
 
-# Instantiate the service for testing
 edge_presign_service = EdgePresignService()
 
 
@@ -36,22 +35,20 @@ def valid_origin_url():
 def test_attempt_url_update_success(
     mock_dynamo_service, mock_ssm_service, valid_origin_url
 ):
-    mock_dynamo_service.update_conditional.return_value = None
+    mock_dynamo_service.update_item.return_value = None
     mock_ssm_service.get_ssm_parameter.return_value = TABLE_NAME
     uri_hash = "valid_hash"
 
-    # Action
     response = edge_presign_service.attempt_url_update(
         uri_hash=uri_hash, origin_url=valid_origin_url
     )
 
-    # Assertions
     expected_table_name = f"{ENV}_{TABLE_NAME}"
     assert response == EXPECTED_SUCCESS_RESPONSE  # Success scenario returns None
     mock_ssm_service.get_ssm_parameter.assert_called_once_with(
         EXPECTED_SSM_PARAMETER_KEY
     )
-    mock_dynamo_service.update_conditional.assert_called_once_with(
+    mock_dynamo_service.update_item.assert_called_once_with(
         table_name=expected_table_name,
         key=uri_hash,
         updated_fields={"IsRequested": True},
@@ -63,7 +60,7 @@ def test_attempt_url_update_success(
 def test_attempt_url_update_client_error(
     mock_dynamo_service, mock_ssm_service, valid_origin_url
 ):
-    mock_dynamo_service.update_conditional.side_effect = ClientError(
+    mock_dynamo_service.update_item.side_effect = ClientError(
         {"Error": {"Code": "ConditionalCheckFailedException"}}, "UpdateItem"
     )
     mock_ssm_service.get_ssm_parameter.return_value = TABLE_NAME
@@ -74,7 +71,6 @@ def test_attempt_url_update_client_error(
             uri_hash=uri_hash, origin_url=valid_origin_url
         )
 
-    # Assertions
     assert exc_info.value.status_code == 400
     assert exc_info.value.message == EXPECTED_EDGE_NO_CLIENT_ERROR_MESSAGE
     assert exc_info.value.err_code == EXPECTED_EDGE_NO_CLIENT_ERROR_CODE
@@ -86,7 +82,6 @@ def test_extract_environment_from_url():
     actual_environment = edge_presign_service.extract_environment_from_url(url)
     assert actual_environment == expected_environment
 
-    # Invalid URL test
     url_invalid = f"https://{NHS_DOMAIN}/path/to/resource"
     expected_empty_result = ""
     actual_empty_result = edge_presign_service.extract_environment_from_url(url_invalid)

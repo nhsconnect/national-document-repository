@@ -19,10 +19,10 @@ logger.setLevel(logging.INFO)
 @handle_edge_exceptions
 def lambda_handler(event, context):
     try:
-        request = event["Records"][0]["cf"]["request"]
+        request: dict = event["Records"][0]["cf"]["request"]
         logger.info("CloudFront received S3 request", {"Result": {json.dumps(request)}})
-        uri = request.get("uri", "")
-        presign_query_string = request.get("querystring", "")
+        uri: str = request.get("uri", "")
+        presign_query_string: str = request.get("querystring", "")
 
     except (KeyError, IndexError) as e:
         logger.error(
@@ -41,7 +41,7 @@ def lambda_handler(event, context):
         raise CloudFrontEdgeException(500, LambdaError.EdgeNoOrigin)
 
     presign_string = f"{uri}?{presign_query_string}"
-    encoded_presign_string = presign_string.encode("utf-8")
+    encoded_presign_string: str = presign_string.encode("utf-8")
     presign_credentials_hash = hashlib.md5(encoded_presign_string).hexdigest()
 
     edge_presign_service = EdgePresignService()
@@ -49,7 +49,7 @@ def lambda_handler(event, context):
         uri_hash=presign_credentials_hash, origin_url=origin_url
     )
 
-    headers = request.get("headers", {})
+    headers: dict = request.get("headers", {})
     if "authorization" in headers:
         del headers["authorization"]
 
