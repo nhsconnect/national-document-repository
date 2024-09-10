@@ -23,7 +23,7 @@ class SQSService:
         queue_url: str,
         message_body: str,
         nhs_number: str,
-        group_id=str,
+        group_id: str,
     ):
         self.client.send_message(
             QueueUrl=queue_url,
