@@ -72,7 +72,7 @@ jobs:
 
       - name: Create release package for Lambda ${{ inputs.lambda_aws_name }}
         run: |
-          make lambda_name=${{ inputs.lambda_handler_name}} edge_package
+          make lambda_name=${{ inputs.lambda_handler_name}} edge_zip
 
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
         uses: appleboy/lambda-action@master
