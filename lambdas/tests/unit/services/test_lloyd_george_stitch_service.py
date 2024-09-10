@@ -10,7 +10,12 @@ from models.document_reference import DocumentReference
 from pypdf.errors import PdfReadError
 from services.document_service import DocumentService
 from services.lloyd_george_stitch_service import LloydGeorgeStitchService
-from tests.unit.conftest import MOCK_LG_BUCKET, TEST_NHS_NUMBER, TEST_UUID
+from tests.unit.conftest import (
+    MOCK_CLOUDFRONT_URL,
+    MOCK_LG_BUCKET,
+    TEST_NHS_NUMBER,
+    TEST_UUID,
+)
 from utils.dynamo_utils import filter_uploaded_docs_and_recently_uploading_docs
 from utils.lambda_exceptions import LGStitchServiceException
 
@@ -148,6 +153,9 @@ def test_stitch_lloyd_george_record_happy_path(
             "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
         }
     )
+
+    patched_stitch_service.cloudfront_url = MOCK_CLOUDFRONT_URL
+
     actual = patched_stitch_service.stitch_lloyd_george_record(TEST_NHS_NUMBER)
 
     assert actual == expected
@@ -165,6 +173,7 @@ def test_stitch_lloyd_george_record_happy_path(
     patched_stitch_service.upload_stitched_lg_record_and_retrieve_presign_url.assert_called_with(
         stitched_lg_record=MOCK_STITCHED_FILE,
         filename_on_bucket=MOCK_STITCHED_FILE_ON_S3,
+        cloudfront_url=MOCK_CLOUDFRONT_URL,
     )
 
 
@@ -364,10 +373,12 @@ def test_get_total_file_size(mocker, stitch_service):
 
 
 def test_upload_stitched_lg_record_and_retrieve_presign_url(mock_s3, stitch_service):
-    expected = MOCK_PRESIGNED_URL
+    expected = f"https://{MOCK_CLOUDFRONT_URL}/combined_files/{MOCK_STITCHED_FILE}"
+
     actual = stitch_service.upload_stitched_lg_record_and_retrieve_presign_url(
         stitched_lg_record=MOCK_STITCHED_FILE,
         filename_on_bucket=MOCK_STITCHED_FILE_ON_S3,
+        cloudfront_url=MOCK_CLOUDFRONT_URL,
     )
 
     assert actual == expected

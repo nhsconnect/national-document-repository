@@ -23,18 +23,14 @@ on:
       lambda_aws_name:
         required: true
         type: string
-      lambda_layer_names:
-        description: 'Comma-separated list of Lambda Layer names'
-        required: true
-        type: string
     secrets:
       AWS_ASSUME_ROLE:
         required: true
 
 permissions:
   pull-requests: write
-  id-token: write # This is required for requesting the JWT
-  contents: read # This is required for actions/checkout
+  id-token: write
+  contents: read
 
 jobs:
   python_deploy_lambda:
@@ -51,7 +47,6 @@ jobs:
           echo Sandbox: ${{ inputs.sandbox }}
           echo Lambda Handler Name: ${{ inputs.lambda_handler_name }}
           echo Lambda AWS function: ${{ inputs.lambda_aws_name }}
-          echo Lambda Layers Names: ${{ inputs.lambda_layer_names }}
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -66,27 +61,39 @@ jobs:
           python-version: ${{ inputs.python_version }}
 
       - name: Make virtual environment
-        run: |
-          make github_env
+        run: make edge_env
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
-          aws-region: ${{ vars.AWS_REGION }}
+          aws-region: 'us-east-1'
 
-      - name: Run Lambda Layer Update
+      - name: Create release package for Lambda ${{ inputs.lambda_aws_name }}
         run: |
-          ./lambdas/venv/bin/python3 lambdas/scripts/lambda_layer_update.py ${{ inputs.sandbox }} ${{ inputs.lambda_aws_name }} ${{ inputs.lambda_layer_names }}
-
-      - name: Create release package for ${{ inputs.lambda_handler_name }}
-        run: |
-          make lambda_name=${{ inputs.lambda_handler_name }} zip
+          make lambda_name=${{ inputs.lambda_handler_name}} zip
 
       - name: Upload Lambda Function to ${{ inputs.lambda_aws_name }}
         uses: appleboy/lambda-action@master
         with:
-          aws_region: ${{ vars.AWS_REGION }}
+          aws_region: 'us-east-1'
           function_name: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
           zip_file: build/lambdas/${{ inputs.lambda_handler_name }}/${{ inputs.lambda_handler_name }}.zip
+
+      - name: Get CloudFront Distribution ID
+        id: cloudfront
+        run: |
+          aws cloudfront list-distributions > distributions.json
+          distribution_id=$(jq -r --arg origin_id "${{ inputs.sandbox }}-lloyd-george-store" \
+          '.DistributionList.Items[] | select(.Origins.Items[].Id==$origin_id) | .Id' distributions.json | head -n 1)
+
+          echo "Distribution ID found: $distribution_id"
+          echo "DISTRIBUTION_ID=$distribution_id" >> $GITHUB_ENV
+
+      - name: Updating Cloudfront to latest Lambda@Edge
+        run: |
+          ./lambdas/venv/bin/python3 lambdas/scripts/update_cloudfront.py
+        env:
+          LAMBDA_NAME: ${{ inputs.sandbox }}_${{ inputs.lambda_aws_name }}
+          AWS_REGION: 'us-east-1'

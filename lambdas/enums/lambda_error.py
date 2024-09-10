@@ -212,6 +212,10 @@ class LambdaError(Enum):
         "err_code": "LGS_5004",
         "message": "Unable to retrieve documents for patient",
     }
+    StitchCloudFront = {
+        "err_code": "LGS_5005",
+        "message": "CloudFront format url failure",
+    }
 
     """
        Errors for DocumentRefSearchException
@@ -382,6 +386,19 @@ class LambdaError(Enum):
         "err_code": "US_5001",
         "message": "Dynamo client error",
     }
+
+    """
+        Edge Lambda Errors
+    """
+    EdgeMalformed = {
+        "err_code": "CE_5001",
+        "message": "Malformed event structure or missing data",
+    }
+    EdgeNoOrigin = {
+        "err_code": "CE_5002",
+        "message": "The request is missing an origin",
+    }
+    EdgeNoClient = {"err_code": "CE_4001", "message": "Document not found"}
 
     """
        Errors with no exception

@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 
 import pypdf.errors
@@ -32,6 +33,14 @@ MOCK_STITCH_SERVICE_RESPONSE = json.dumps(
         "total_file_size_in_byte": MOCK_TOTAL_FILE_SIZE,
     }
 )
+
+
+@pytest.fixture(autouse=True)
+def set_env_vars(monkeypatch):
+    monkeypatch.setenv("LLOYD_GEORGE_DYNAMODB_NAME", "mock_dynamodb_table")
+    monkeypatch.setenv("LLOYD_GEORGE_BUCKET_NAME", MOCK_LG_BUCKET)
+    monkeypatch.setenv("PRESIGNED_ASSUME_ROLE", "mock_role")
+    monkeypatch.setenv("CLOUDFRONT_URL", "mock-cloudfront-url.com")
 
 
 @pytest.fixture
@@ -84,7 +93,7 @@ def joe_bloggs_event():
 
 
 def test_lambda_handler_respond_with_200_and_presign_url(
-    valid_id_event_without_auth_header, context, set_env, mock_stitch_service
+    valid_id_event_without_auth_header, context, mock_stitch_service
 ):
     actual = lambda_handler(valid_id_event_without_auth_header, context)
 
@@ -124,11 +133,13 @@ def test_lambda_handler_respond_400_when_no_nhs_number_supplied(
 def test_lambda_handler_respond_500_when_environment_variables_not_set(
     joe_bloggs_event, context
 ):
+    os.environ.pop("CLOUDFRONT_URL", None)
+
     actual = lambda_handler(joe_bloggs_event, context)
 
     expected_body = json.dumps(
         {
-            "message": "An error occurred due to missing environment variable: 'LLOYD_GEORGE_DYNAMODB_NAME'",
+            "message": "An error occurred due to missing environment variable: 'CLOUDFRONT_URL'",
             "err_code": "ENV_5001",
             "interaction_id": "88888888-4444-4444-4444-121212121212",
         }
@@ -161,7 +172,7 @@ def test_lambda_handler_respond_400_when_nhs_number_not_valid(
 
 
 def test_lambda_handler_respond_500_when_failed_to_retrieve_lg_record(
-    joe_bloggs_event, context, set_env, fetch_available_document_references_by_type
+    joe_bloggs_event, context, fetch_available_document_references_by_type
 ):
     fetch_available_document_references_by_type.side_effect = MOCK_CLIENT_ERROR
     actual = lambda_handler(joe_bloggs_event, context)
@@ -184,7 +195,6 @@ def test_lambda_handler_respond_500_when_failed_to_retrieve_lg_record(
 def test_lambda_handler_respond_500_throws_error_when_fail_to_download_lloyd_george_file(
     joe_bloggs_event,
     context,
-    set_env,
     fetch_available_document_references_by_type,
     mock_s3,
 ):
@@ -209,7 +219,6 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_download_lloyd_geo
 def test_lambda_handler_respond_404_throws_error_when_no_lloyd_george_for_patient_in_record(
     valid_id_event_without_auth_header,
     context,
-    set_env,
     fetch_available_document_references_by_type,
 ):
     fetch_available_document_references_by_type.return_value = []
@@ -233,7 +242,6 @@ def test_lambda_handler_respond_404_throws_error_when_no_lloyd_george_for_patien
 def test_lambda_handler_respond_500_throws_error_when_fail_to_stitch_lloyd_george_file(
     valid_id_event_without_auth_header,
     context,
-    set_env,
     fetch_available_document_references_by_type,
     mock_s3,
     mock_stitch_pdf,
@@ -259,7 +267,6 @@ def test_lambda_handler_respond_500_throws_error_when_fail_to_stitch_lloyd_georg
 def test_lambda_handler_respond_500_throws_error_when_fail_to_upload_lloyd_george_file(
     joe_bloggs_event,
     context,
-    set_env,
     fetch_available_document_references_by_type,
     mock_s3,
     mock_stitch_pdf,

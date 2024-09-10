@@ -1,4 +1,4 @@
-name: "Z-BASE Lambda Layer: action to deploy a single lambda layer"
+name: 'Z-BASE Lambda Layer: action to deploy a single lambda layer'
 
 on:
   workflow_call:
@@ -60,7 +60,7 @@ jobs:
         run: |
           make github_env
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials for ${{ vars.AWS_REGION }}
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
@@ -71,8 +71,8 @@ jobs:
         run: |
           make lambda_layer_zip layer_name=${{ inputs.lambda_layer_name }}
 
-      - name: Publish Lambda Layer
-        id: publish_layer
+      - name: Publish Lambda Layer for ${{ vars.AWS_REGION }}
+        id: publish_layer_main
         run: |
           aws lambda publish-layer-version --layer-name ${{ inputs.sandbox }}_${{ inputs.lambda_layer_name }} \
           --zip-file fileb://build/lambda_layers/${{ inputs.lambda_layer_name }}/${{ inputs.lambda_layer_name }}.zip \
