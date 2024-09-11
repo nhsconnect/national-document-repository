@@ -20,14 +20,15 @@ logger = LoggingService(__name__)
 @override_error_check
 @handle_lambda_exceptions
 def lambda_handler(event, context):
-    report_type = event.get("report_type", ReportType.CURRENT.value)
-    logger.info(f"Starting {report_type} report process")
+    logger.info("Starting bulk upload report process")
+
+    report_type = event.get("report_type", ReportType.DAILY.value)
 
     bulk_upload_report_service = BulkUploadReportService()
     bulk_upload_report_service.report_handler(report_type)
 
     return ApiGatewayResponse(
         status_code=200,
-        body=f"{report_type.capitalize()} report creation successful",
+        body=f"{report_type} Bulk upload report creation successful",
         methods="GET",
     ).create_api_gateway_response()
