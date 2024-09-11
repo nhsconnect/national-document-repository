@@ -26,11 +26,10 @@ class ProgressForPatient(BaseModel):
 class BatchUpdate:
     def __init__(
         self,
-        table_name: str,
         progress_store_file_path: str = "batch_update_progress.json",
     ):
         self.progress_store = progress_store_file_path
-        self.table_name = table_name
+        self.table_name = os.getenv("table_name")
         self.pds_service = PdsApiService(SSMService())
         self.dynamo_service = DynamoDBService()
         self.progress: Dict[str, ProgressForPatient] = {}
@@ -212,15 +211,4 @@ def setup_logging_for_local_script():
 
 
 if __name__ == "__main__":
-    import argparse
-
-    setup_logging_for_local_script()
-
-    parser = argparse.ArgumentParser(
-        prog="batch_update_ods_code.py",
-        description="A utility script to update the ODS Codes for all patients in a dynamoDB doc reference table",
-    )
-    parser.add_argument("table_name", type=str, help="The name of dynamodb table")
-    args = parser.parse_args()
-
-    BatchUpdate(table_name=args.table_name).main()
+    BatchUpdate().main()
