@@ -22,19 +22,21 @@ class BulkUploadReportService:
 
     def report_handler(self, report_type: str):
         start_time, end_time = self.get_times_for_scan()
+        formatted_date = end_time.strftime("%Y%m%d")  # Generate date string once
+
         report_data = self.get_dynamodb_report_items(
             int(start_time.timestamp()), int(end_time.timestamp())
         )
+
         if report_data:
             if report_type == ReportType.DAILY.value:
-                self.generate_daily_report(report_data, start_time, end_time)
+                self.generate_daily_report(report_data, formatted_date)
             elif report_type == ReportType.ODS.value:
-                self.generate_ods_reports(report_data, start_time, end_time)
+                self.generate_ods_reports(report_data, formatted_date)
         else:
             logger.info("No data found, no new report file to upload")
 
-    def generate_daily_report(self, report_data, end_time):
-        formatted_date = end_time.strftime("%Y%m%d")
+    def generate_daily_report(self, report_data, formatted_date):
         file_name = f"daily_statistical_report_bulk_upload_summary_{formatted_date}.csv"
         file_key = f"daily-reports/{file_name}"
 
@@ -47,13 +49,14 @@ class BulkUploadReportService:
             file_name=f"/tmp/{file_name}",
         )
 
-    def generate_ods_reports(self, report_data, end_time):
+    def generate_ods_reports(self, report_data, formatted_date):
         ods_reports = self.group_data_by_ods_code(report_data)
-        formatted_date = end_time.strftime("%Y%m%d")
         for ods_code, ods_data in ods_reports.items():
             file_name = f"daily_statistical_report_bulk_upload_summary_{formatted_date}_{ods_code}.csv"
             file_key = f"daily-reports/{file_name}"
+
             self.write_items_to_csv(ods_data, f"/tmp/{file_name}")
+
             logger.info(f"Uploading ODS report file for {ods_code} to S3")
             self.s3_service.upload_file(
                 s3_bucket_name=self.reports_bucket,
