@@ -41,7 +41,7 @@ describe('PrivacyPage', () => {
             render(<PrivacyPage />);
 
             const contentHeaders = [
-                /If you access the Lloyd George patient records digital service using your/i,
+                /If you use the 'Access and store digital patient documents' service using your/i,
                 /credentials, your NHS Care Identity credentials are managed by NHS England/i,
                 /This means NHS England is the data controller for any personal information/i,
                 /that you provided to get NHS Care Identity credentials/i,
