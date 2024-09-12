@@ -53,7 +53,7 @@ class BulkUploadReportService:
         ods_reports = self.group_data_by_ods_code(report_data)
         for ods_code, ods_data in ods_reports.items():
             file_name = f"daily_statistical_report_bulk_upload_summary_{formatted_date}_{ods_code}.csv"
-            file_key = f"daily-reports/{file_name}"
+            file_key = f"{file_name}"
 
             self.write_items_to_csv(ods_data, f"/tmp/{file_name}")
 
