@@ -46,7 +46,7 @@ permissions:
 
 jobs:
   push_image:
-    name: Deploy UI
+    name: Push Image
     uses: ./.github/workflows/base-batch-update.yml
     with:
       build_branch: ${{ inputs.build_branch }}
