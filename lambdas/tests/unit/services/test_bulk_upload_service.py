@@ -432,19 +432,17 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_is_formally
     mock_put_staging_metadata_back_to_queue = (
         repo_under_test.sqs_repository.put_staging_metadata_back_to_queue
     )
-    mock_report_upload_failure = (
-        repo_under_test.dynamo_repository.write_report_upload_to_dynamo
-    )
+    mock_report_upload = repo_under_test.dynamo_repository.write_report_upload_to_dynamo
 
     repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
 
-    mock_create_lg_records_and_copy_files.assert_not_called()
-    mock_remove_ingested_file_from_source_bucket.assert_not_called()
+    mock_create_lg_records_and_copy_files.assert_called()
+    mock_remove_ingested_file_from_source_bucket.assert_called()
     mock_put_staging_metadata_back_to_queue.assert_not_called()
 
-    mock_report_upload_failure.assert_called_with(
+    mock_report_upload.assert_called_with(
         TEST_STAGING_METADATA,
-        UploadStatus.FAILED,
+        UploadStatus.COMPLETE,
         "Patient is deceased - FORMAL",
         PatientOdsInactiveStatus.DECEASED,
     )

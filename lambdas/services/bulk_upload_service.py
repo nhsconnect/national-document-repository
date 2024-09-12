@@ -6,7 +6,6 @@ from botocore.exceptions import ClientError
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
 from models.nhs_document_reference import NHSDocumentReference
-from models.pds_models import is_formally_deceased
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
@@ -18,7 +17,6 @@ from utils.exceptions import (
     BulkUploadException,
     DocumentInfectedException,
     InvalidMessageException,
-    PatientDeceasedException,
     PatientRecordAlreadyExistException,
     PdsTooManyRequestsException,
     S3FileNotFoundException,
@@ -115,25 +113,25 @@ class BulkUploadService:
             patient_ods_code = (
                 pds_patient_details.get_ods_code_or_inactive_status_for_gp()
             )
-
+            accepted_reason = None
             is_name_validation_based_on_historic_name = (
                 validate_filename_with_patient_details(file_names, pds_patient_details)
             )
-
+            if is_name_validation_based_on_historic_name:
+                accepted_reason = "Patient matched on historical name"
             if not allowed_to_ingest_ods_code(patient_ods_code):
                 raise LGInvalidFilesException("Patient not registered at your practice")
             patient_death_notification_status = (
                 pds_patient_details.get_death_notification_status()
             )
-            if is_formally_deceased(patient_death_notification_status):
-                raise PatientDeceasedException(
+            if patient_death_notification_status:
+                accepted_reason = (
                     f"Patient is deceased - {patient_death_notification_status.name}"
                 )
 
         except (
             LGInvalidFilesException,
             PatientRecordAlreadyExistException,
-            PatientDeceasedException,
         ) as error:
             logger.info(
                 f"Detected issue related to patient number: {staging_metadata.nhs_number}"
@@ -241,9 +239,6 @@ class BulkUploadService:
             {"Result": "Successful upload"},
         )
         logger.info("Reporting transaction successful")
-        accepted_reason = None
-        if is_name_validation_based_on_historic_name:
-            accepted_reason = "Patient matched on historical name"
         self.dynamo_repository.write_report_upload_to_dynamo(
             staging_metadata, UploadStatus.COMPLETE, accepted_reason, patient_ods_code
         )
