@@ -31,5 +31,5 @@ jobs:
 
     steps:
       - name: Placeholder
-    run: |
-      echo "Running placeholder job on ${inputs.sandbox}"
+        run: |
+          echo "Running placeholder job on ${inputs.sandbox}"
