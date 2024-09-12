@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
 from models.nhs_document_reference import NHSDocumentReference
-from models.pds_models import is_deceased
+from models.pds_models import is_formally_deceased
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
@@ -125,7 +125,7 @@ class BulkUploadService:
             patient_death_notification_status = (
                 pds_patient_details.get_death_notification_status()
             )
-            if is_deceased(patient_death_notification_status):
+            if is_formally_deceased(patient_death_notification_status):
                 raise PatientDeceasedException(
                     f"Patient is deceased - {patient_death_notification_status.name}"
                 )
