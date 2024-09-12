@@ -1,4 +1,5 @@
 import pytest
+from enums.upload_status import UploadStatus
 from freezegun import freeze_time
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
@@ -33,7 +34,9 @@ def test_create_record_in_dynamodb_table(set_env, repo_under_test):
 def test_report_upload_complete_add_record_to_dynamodb(
     repo_under_test, set_env, mock_uuid
 ):
-    repo_under_test.report_upload_complete(TEST_STAGING_METADATA)
+    repo_under_test.write_report_upload_to_dynamo(
+        TEST_STAGING_METADATA, upload_status=UploadStatus.COMPLETE
+    )
 
     assert repo_under_test.dynamo_repository.create_item.call_count == len(
         TEST_STAGING_METADATA.files
@@ -46,7 +49,7 @@ def test_report_upload_complete_add_record_to_dynamodb(
             "ID": mock_uuid,
             "NhsNumber": TEST_STAGING_METADATA.nhs_number,
             "Timestamp": 1696165200,
-            "UploadStatus": "complete",
+            "UploadStatus": UploadStatus.COMPLETE,
             "UploaderOdsCode": "Y12345",
             "PdsOdsCode": "",
         }
@@ -60,8 +63,10 @@ def test_report_upload_failure_add_record_to_dynamodb(
     repo_under_test, set_env, mock_uuid
 ):
     mock_failure_reason = "File name invalid"
-    repo_under_test.report_upload_failure(
-        TEST_STAGING_METADATA, failure_reason=mock_failure_reason
+    repo_under_test.write_report_upload_to_dynamo(
+        TEST_STAGING_METADATA,
+        upload_status=UploadStatus.FAILED,
+        failure_reason=mock_failure_reason,
     )
 
     for file in TEST_STAGING_METADATA.files:

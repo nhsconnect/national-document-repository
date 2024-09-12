@@ -35,7 +35,14 @@ class SearchPatientDetailsService:
             logger.audit_splunk_info(
                 "Searched for patient details", {"Result": "Patient found"}
             )
-            response = patient_details.model_dump_json(by_alias=True)
+            response = patient_details.model_dump_json(
+                by_alias=True,
+                exclude={
+                    "death_notification_status",
+                    "deceased",
+                    "general_practice_ods",
+                },
+            )
             return response
         except PatientNotFoundException as e:
             logger.error(

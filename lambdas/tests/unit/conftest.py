@@ -7,9 +7,10 @@ from unittest import mock
 
 import pytest
 from models.document_reference import DocumentReference
-from models.pds_models import PatientDetails
+from models.pds_models import Patient, PatientDetails
 from pydantic import ValidationError
 from requests import Response
+from tests.unit.helpers.data.pds.pds_patient_response import PDS_PATIENT
 
 REGION_NAME = "eu-west-2"
 
@@ -174,8 +175,8 @@ EXPECTED_PARSED_PATIENT_BASE_CASE = PatientDetails(
 
 
 @pytest.fixture
-def mock_patient_details():
-    yield EXPECTED_PARSED_PATIENT_BASE_CASE
+def mock_pds_patient():
+    yield Patient.model_validate(PDS_PATIENT)
 
 
 @pytest.fixture

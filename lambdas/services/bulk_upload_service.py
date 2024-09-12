@@ -3,8 +3,10 @@ import uuid
 
 import pydantic
 from botocore.exceptions import ClientError
+from enums.upload_status import UploadStatus
 from enums.virus_scan_result import VirusScanResult
 from models.nhs_document_reference import NHSDocumentReference
+from models.pds_models import is_deceased
 from models.staging_metadata import MetadataFile, StagingMetadata
 from repositories.bulk_upload.bulk_upload_dynamo_repository import (
     BulkUploadDynamoRepository,
@@ -104,21 +106,28 @@ class BulkUploadService:
                 os.path.basename(metadata.file_path)
                 for metadata in staging_metadata.files
             ]
-            validate_lg_file_names(file_names, staging_metadata.nhs_number)
             request_context.patient_nhs_no = staging_metadata.nhs_number
+            validate_lg_file_names(file_names, staging_metadata.nhs_number)
 
             pds_patient_details = getting_patient_info_from_pds(
                 staging_metadata.nhs_number
             )
-            patient_ods_code = pds_patient_details.general_practice_ods
-            validate_filename_with_patient_details(file_names, pds_patient_details)
+            patient_ods_code = (
+                pds_patient_details.get_ods_code_or_inactive_status_for_gp()
+            )
+
+            is_name_validation_based_on_historic_name = (
+                validate_filename_with_patient_details(file_names, pds_patient_details)
+            )
 
             if not allowed_to_ingest_ods_code(patient_ods_code):
                 raise LGInvalidFilesException("Patient not registered at your practice")
-
-            if pds_patient_details.deceased:
+            patient_death_notification_status = (
+                pds_patient_details.get_death_notification_status()
+            )
+            if is_deceased(patient_death_notification_status):
                 raise PatientDeceasedException(
-                    f"Patient is deceased - {pds_patient_details.death_notification_status.name}"
+                    f"Patient is deceased - {patient_death_notification_status.name}"
                 )
 
         except (
@@ -133,8 +142,8 @@ class BulkUploadService:
             logger.info("Will stop processing Lloyd George record for this patient.")
 
             failure_reason = str(error)
-            self.dynamo_repository.report_upload_failure(
-                staging_metadata, failure_reason, patient_ods_code
+            self.dynamo_repository.write_report_upload_to_dynamo(
+                staging_metadata, UploadStatus.FAILED, failure_reason, patient_ods_code
             )
             return
 
@@ -156,8 +165,8 @@ class BulkUploadService:
                 err = (
                     "File was not scanned for viruses before maximum retries attempted"
                 )
-                self.dynamo_repository.report_upload_failure(
-                    staging_metadata, err, patient_ods_code
+                self.dynamo_repository.write_report_upload_to_dynamo(
+                    staging_metadata, UploadStatus.FAILED, err, patient_ods_code
                 )
             else:
                 self.sqs_repository.put_staging_metadata_back_to_queue(staging_metadata)
@@ -169,8 +178,9 @@ class BulkUploadService:
             )
             logger.info("Will stop processing Lloyd George record for this patient")
 
-            self.dynamo_repository.report_upload_failure(
+            self.dynamo_repository.write_report_upload_to_dynamo(
                 staging_metadata,
+                UploadStatus.FAILED,
                 "One or more of the files failed virus scanner check",
                 patient_ods_code,
             )
@@ -182,8 +192,9 @@ class BulkUploadService:
             )
             logger.info("Will stop processing Lloyd George record for this patient")
 
-            self.dynamo_repository.report_upload_failure(
+            self.dynamo_repository.write_report_upload_to_dynamo(
                 staging_metadata,
+                UploadStatus.FAILED,
                 "One or more of the files is not accessible from staging bucket",
                 patient_ods_code,
             )
@@ -212,8 +223,9 @@ class BulkUploadService:
             logger.info("Will try to rollback any change to database and bucket")
             self.rollback_transaction()
 
-            self.dynamo_repository.report_upload_failure(
+            self.dynamo_repository.write_report_upload_to_dynamo(
                 staging_metadata,
+                UploadStatus.FAILED,
                 "Validation passed but error occurred during file transfer",
                 patient_ods_code,
             )
@@ -229,8 +241,11 @@ class BulkUploadService:
             {"Result": "Successful upload"},
         )
         logger.info("Reporting transaction successful")
-        self.dynamo_repository.report_upload_complete(
-            staging_metadata, patient_ods_code
+        accepted_reason = None
+        if is_name_validation_based_on_historic_name:
+            accepted_reason = "Patient matched on historical name"
+        self.dynamo_repository.write_report_upload_to_dynamo(
+            staging_metadata, UploadStatus.COMPLETE, accepted_reason, patient_ods_code
         )
 
     def resolve_source_file_path(self, staging_metadata: StagingMetadata):
