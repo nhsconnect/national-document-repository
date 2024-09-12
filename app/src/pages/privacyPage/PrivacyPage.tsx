@@ -8,6 +8,8 @@ function PrivacyPage() {
     const isLoggedIn = !!useRole();
     const navigate = useNavigate();
     const pageHeader = 'Privacy notice';
+    const gdprLink =
+        'https://digital.nhs.uk/data-and-information/keeping-data-safe-and-benefitting-the-public/gdpr#:~:text=The%20GDPR%20came%20into%20effect,in%20line%20with%20the%20regulations';
     useTitle({ pageTitle: pageHeader });
     return (
         <>
@@ -71,7 +73,7 @@ function PrivacyPage() {
                 <a
                     data-testid="gdpr-link"
                     target="_blank"
-                    href="https://digital.nhs.uk/data-and-information/keeping-data-safe-and-benefitting-the-public/gdpr#:~:text=The%20GDPR%20came%20into%20effect,in%20line%20with%20the%20regulations"
+                    href={gdprLink}
                     rel="noreferrer"
                     aria-label="(UK General Data Protection Regulation (GDPR) 2018 - this link will open in a new tab)"
                 >
@@ -103,7 +105,7 @@ function PrivacyPage() {
                 <a
                     data-testid="permission-section-gdpr-link"
                     target="_blank"
-                    href="https://digital.nhs.uk/data-and-information/keeping-data-safe-and-benefitting-the-public/gdpr#:~:text=The%20GDPR%20came%20into%20effect,in%20line%20with%20the%20regulations"
+                    href={gdprLink}
                     rel="noreferrer"
                     aria-label="(UK General Data Protection Regulation (GDPR) 2018 - this link will open in a new tab)"
                 >
