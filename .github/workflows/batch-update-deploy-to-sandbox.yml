@@ -1,0 +1,56 @@
+name: 'SANDBOX Batch Update - Publish Batch Update Image to ECR'
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_branch:
+        description: "Feature branch to push."
+        required: true
+        type: string
+        default: "main"
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: string
+        default: "ndr"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: string
+        default: "development"
+  workflow_call:
+    inputs:
+      build_branch:
+        description: "Feature branch to push."
+        required: true
+        type: string
+        default: "main"
+      sandbox:
+        description: "Which Sandbox to push to."
+        required: true
+        type: string
+        default: "ndr"
+      environment:
+        description: "Which Environment settings to use."
+        required: true
+        type: string
+        default: "development"
+    secrets:
+      AWS_ASSUME_ROLE:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  contents: read # This is required for actions/checkout
+
+jobs:
+  push_image:
+    name: Push Image
+    uses: ./.github/workflows/base-batch-update.yml
+    with:
+      build_branch: ${{ inputs.build_branch }}
+      environment: ${{ inputs.environment }}
+      sandbox: ${{ inputs.sandbox }}
+    secrets:
+      AWS_ASSUME_ROLE: ${{ secrets.AWS_ASSUME_ROLE }}
