@@ -37,12 +37,11 @@ jobs:
           fetch-depth: '0'
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
-
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -60,3 +59,31 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG_SHA" >> $GITHUB_OUTPUT
+
+      # Looks like the ECS does not check for image updates, as such we need to force a new task definition to run the new image
+      # We will always use the "latest" image tag so we do not need to modify the task-definition
+      - name: Download task definition
+        id: download-task
+        run: |
+          aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-service-task-ods-weekly-update --query taskDefinition > task-definition.json
+          echo "::set-output name=revision::$(cat task-definition.json | jq .revision)"
+
+      - name: Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ./lambdas/task-definition.json
+          container-name: ${{ inputs.sandbox }}-ods-weekly-update
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ./lambdas/task-definition.json
+          cluster: ${{ inputs.sandbox }}-ods-weekly-update
+          wait-for-service-stability: true
+
+      - name: De-register previous revision
+        run: |
+          aws ecs deregister-task-definition \
+            --task-definition ${{ inputs.sandbox }}-service-task-ods-weekly-update:${{ steps.download-task.outputs.revision }}
