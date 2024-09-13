@@ -71,7 +71,9 @@ class BulkUploadReportService:
             writer = csv.writer(output_file)
 
             writer.writerow(["Type", "Description", "Count"])
+
             writer.writerow(["Total", "Total Successful", total_successful])
+
             writer.writerow(
                 [
                     "Total",
@@ -79,9 +81,12 @@ class BulkUploadReportService:
                     total_registered_elsewhere,
                 ]
             )
+
             writer.writerow(["Total", "Suspended", total_suspended])
+
             for ods_code, count in ods_code_totals.items():
                 writer.writerow(["Success by ODS", ods_code, count])
+
             for failure_reason, count in failure_reason_counts.items():
                 writer.writerow(["FailureReason", failure_reason, count])
 
