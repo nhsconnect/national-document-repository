@@ -37,7 +37,53 @@ class BulkUploadReportService:
         file_name = f"daily_statistical_report_bulk_upload_summary_{formatted_date}.csv"
         file_key = f"daily-reports/{file_name}"
 
-        self.write_items_to_csv(report_data, f"/tmp/{file_name}")
+        total_successful = 0
+        total_registered_elsewhere = 0
+        total_suspended = 0
+        ods_code_totals = {}
+        failure_reason_counts = {}
+
+        for item in report_data:
+            upload_status = item.get("UploadStatus", "")
+            pds_ods_code = item.get("PdsOdsCode", "")
+            uploader_ods_code = item.get("UploaderOdsCode", "")
+
+            if upload_status == "complete":
+                total_successful += 1
+
+                if uploader_ods_code not in ods_code_totals:
+                    ods_code_totals[uploader_ods_code] = 0
+                ods_code_totals[uploader_ods_code] += 1
+
+                if uploader_ods_code != pds_ods_code:
+                    total_registered_elsewhere += 1
+
+            elif upload_status == "suspended":
+                total_suspended += 1
+
+            if upload_status == "failed":
+                failure_reason = item.get("FailureReason", "Unknown")
+                if failure_reason not in failure_reason_counts:
+                    failure_reason_counts[failure_reason] = 0
+                failure_reason_counts[failure_reason] += 1
+
+        with open(f"/tmp/{file_name}", "w") as output_file:
+            writer = csv.writer(output_file)
+
+            writer.writerow(["Type", "Description", "Count"])
+            writer.writerow(["Total", "Total Successful", total_successful])
+            writer.writerow(
+                [
+                    "Total",
+                    "Successful - Registered Elsewhere",
+                    total_registered_elsewhere,
+                ]
+            )
+            writer.writerow(["Total", "Suspended", total_suspended])
+            for ods_code, count in ods_code_totals.items():
+                writer.writerow(["Success by ODS", ods_code, count])
+            for failure_reason, count in failure_reason_counts.items():
+                writer.writerow(["FailureReason", failure_reason, count])
 
         logger.info("Uploading daily report file to S3")
         self.s3_service.upload_file(
@@ -51,17 +97,64 @@ class BulkUploadReportService:
         formatted_date = end_time.strftime("%Y%m%d")
 
         for ods_code, ods_data in ods_reports.items():
-            file_name = f"daily_statistical_report_bulk_upload_summary_{formatted_date}_{ods_code}.csv"
-            file_key = f"{file_name}"
+            file_key = f"daily_statistical_report_bulk_upload_summary_{formatted_date}_{ods_code}.csv"
 
-            self.write_items_to_csv(ods_data, f"/tmp/{file_name}")
+            total_successful = 0
+            total_registered_elsewhere = 0
+            total_suspended = 0
+            failure_reason_counts = {}
+
+            for item in ods_data:
+                upload_status = item.get("UploadStatus", "")
+                pds_ods_code = item.get("PdsOdsCode", "")
+                uploader_ods_code = item.get("UploaderOdsCode", "")
+
+                if upload_status == "complete":
+                    total_successful += 1
+
+                    if uploader_ods_code != pds_ods_code:
+                        total_registered_elsewhere += 1
+
+                elif upload_status == "suspended":
+                    total_suspended += 1
+
+                if upload_status == "failed":
+                    failure_reason = item.get("FailureReason", "Unknown")
+                    if failure_reason not in failure_reason_counts:
+                        failure_reason_counts[failure_reason] = 0
+                    failure_reason_counts[failure_reason] += 1
+
+            with open(f"/tmp/{file_key}", "w") as output_file:
+                writer = csv.writer(output_file)
+
+                writer.writerow(["Type", "Description", "Count"])
+                writer.writerow(["Total", "Total Successful", total_successful])
+                writer.writerow(
+                    [
+                        "Total",
+                        "Successful - Registered Elsewhere",
+                        total_registered_elsewhere,
+                    ]
+                )
+                writer.writerow(["Total", "Suspended", total_suspended])
+                for failure_reason, count in failure_reason_counts.items():
+                    writer.writerow(["FailureReason", failure_reason, count])
+
             logger.info(f"Uploading ODS report file for {ods_code} to S3")
-
             self.s3_service.upload_file(
                 s3_bucket_name=self.reports_bucket,
                 file_key=file_key,
-                file_name=f"/tmp/{file_name}",
+                file_name=f"/tmp/{file_key}",
             )
+
+    def group_data_by_ods_code(self, report_data):
+        ods_reports = {}
+        for item in report_data:
+            ods_code = item.get("UploaderOdsCode", "Unknown")
+            if ods_code not in ods_reports:
+                ods_reports[ods_code] = []
+            ods_reports[ods_code].append(item)
+        return ods_reports
 
     def get_dynamodb_report_items(
         self, start_timestamp: int, end_timestamp: int
@@ -71,41 +164,22 @@ class BulkUploadReportService:
         filter_time = Attr("Timestamp").gt(start_timestamp) & Attr("Timestamp").lt(
             end_timestamp
         )
-
         db_response = self.db_service.scan_table(
             bulk_upload_table_name, filter_expression=filter_time
         )
 
-        items = db_response.get("Items", [])
+        if "Items" not in db_response:
+            return None
+        items = db_response["Items"]
         while "LastEvaluatedKey" in db_response:
             db_response = self.db_service.scan_table(
                 bulk_upload_table_name,
                 exclusive_start_key=db_response["LastEvaluatedKey"],
                 filter_expression=filter_time,
             )
-            items.extend(db_response.get("Items", []))
+            if db_response["Items"]:
+                items.extend(db_response["Items"])
         return items
-
-    @staticmethod
-    def write_items_to_csv(items: list, csv_file_path: str):
-        logger.info(f"Writing {len(items)} items to csv file")
-        if items:
-            with open(csv_file_path, "w") as output_file:
-                field_names = items[0].keys()
-                writer = csv.DictWriter(output_file, fieldnames=field_names)
-                writer.writeheader()
-                for item in items:
-                    writer.writerow(item)
-
-    @staticmethod
-    def group_data_by_ods_code(report_data: list) -> dict:
-        grouped_reports = {}
-        for item in report_data:
-            ods_code = item.get("UploaderOdsCode", "UNKNOWN")
-            if ods_code not in grouped_reports:
-                grouped_reports[ods_code] = []
-            grouped_reports[ods_code].append(item)
-        return grouped_reports
 
     @staticmethod
     def get_times_for_scan() -> tuple[datetime, datetime]:
