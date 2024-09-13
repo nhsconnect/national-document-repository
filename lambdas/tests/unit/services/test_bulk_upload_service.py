@@ -440,6 +440,7 @@ def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_forma
     mock_remove_ingested_file_from_source_bucket = (
         repo_under_test.s3_repository.remove_ingested_file_from_source_bucket
     )
+    mock_pds_validation.return_value = False
     mock_put_staging_metadata_back_to_queue = (
         repo_under_test.sqs_repository.put_staging_metadata_back_to_queue
     )
@@ -459,6 +460,43 @@ def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_forma
     )
 
 
+def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_informally_deceased_and_historical(
+    repo_under_test,
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_validate_files,
+    mock_check_virus_result,
+    mock_pds_service_patient_deceased_informal,
+    mock_pds_validation,
+    mock_ods_validation,
+):
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_pds_validation.return_value = True
+    mock_remove_ingested_file_from_source_bucket = (
+        repo_under_test.s3_repository.remove_ingested_file_from_source_bucket
+    )
+    mock_put_staging_metadata_back_to_queue = (
+        repo_under_test.sqs_repository.put_staging_metadata_back_to_queue
+    )
+    mock_report_upload = repo_under_test.dynamo_repository.write_report_upload_to_dynamo
+
+    repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    mock_create_lg_records_and_copy_files.assert_called()
+    mock_remove_ingested_file_from_source_bucket.assert_called()
+    mock_put_staging_metadata_back_to_queue.assert_not_called()
+
+    mock_report_upload.assert_called_with(
+        TEST_STAGING_METADATA,
+        UploadStatus.COMPLETE,
+        "Patient is deceased - INFORMAL, Patient matched on historical name",
+        "Y12345",
+    )
+
+
 def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_informally_deceased(
     repo_under_test,
     set_env,
@@ -473,6 +511,7 @@ def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_infor
     mock_create_lg_records_and_copy_files = mocker.patch.object(
         BulkUploadService, "create_lg_records_and_copy_files"
     )
+    mock_pds_validation.return_value = False
     mock_remove_ingested_file_from_source_bucket = (
         repo_under_test.s3_repository.remove_ingested_file_from_source_bucket
     )

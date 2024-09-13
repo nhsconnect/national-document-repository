@@ -125,8 +125,13 @@ class BulkUploadService:
                 pds_patient_details.get_death_notification_status()
             )
             if patient_death_notification_status:
-                accepted_reason = (
+                deceased_accepted_reason = (
                     f"Patient is deceased - {patient_death_notification_status.name}"
+                )
+                accepted_reason = (
+                    (deceased_accepted_reason + ", " + accepted_reason)
+                    if accepted_reason
+                    else deceased_accepted_reason
                 )
 
         except (
