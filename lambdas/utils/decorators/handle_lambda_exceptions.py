@@ -44,12 +44,13 @@ def handle_lambda_exceptions(lambda_func: Callable):
                 methods=event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
         except Exception as e:
-            logger.error(f"Unhandled exception: {str(e)}", exc_info=True)
-
-            interaction_id = getattr(request_context, "request_id", None)
+            logger.error(
+                f"Unhandled exception: {str(e)}",
+                exc_info=True
+            )
             return ApiGatewayResponse(
                 status_code=500,
-                body=ErrorResponse("InternalServerError", "An internal server error occurred", interaction_id).create(),
+                body=LambdaError.InternalServerError.create_error_body(),
                 methods=event.get("httpMethod", "GET"),
             ).create_api_gateway_response()
 

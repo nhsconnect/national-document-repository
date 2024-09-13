@@ -438,3 +438,11 @@ class LambdaError(Enum):
         "err_code": "AB_XXXX",
         "interaction_id": "88888888-4444-4444-4444-121212121212",
     }
+
+    """
+       Errors with unhandled exceptions
+    """
+    InternalServerError = {
+        "err_code": "UE_500",
+        "message": "An internal server error occurred",
+    }
