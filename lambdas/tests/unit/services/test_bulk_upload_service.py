@@ -33,6 +33,7 @@ from tests.unit.helpers.data.bulk_upload.test_data import (
 from tests.unit.helpers.data.pds.pds_patient_response import (
     PDS_PATIENT,
     PDS_PATIENT_DECEASED,
+    PDS_PATIENT_DECEASED_INFORMAL,
 )
 from tests.unit.utils.test_unicode_utils import (
     NAME_WITH_ACCENT_NFC_FORM,
@@ -80,8 +81,18 @@ def mock_pds_service(mocker):
 
 
 @pytest.fixture
-def mock_pds_service_patient_deceased(mocker):
+def mock_pds_service_patient_deceased_formal(mocker):
     patient = Patient.model_validate(PDS_PATIENT_DECEASED)
+    mocker.patch(
+        "services.bulk_upload_service.getting_patient_info_from_pds",
+        return_value=patient,
+    )
+    yield patient
+
+
+@pytest.fixture
+def mock_pds_service_patient_deceased_informal(mocker):
+    patient = Patient.model_validate(PDS_PATIENT_DECEASED_INFORMAL)
     mocker.patch(
         "services.bulk_upload_service.getting_patient_info_from_pds",
         return_value=patient,
@@ -412,14 +423,14 @@ def test_handle_sqs_message_report_failure_when_document_not_exist(
     )
 
 
-def test_handle_sqs_message_calls_report_upload_failure_when_patient_is_formally_deceased(
+def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_formally_deceased(
     repo_under_test,
     set_env,
     mocker,
     mock_uuid,
     mock_validate_files,
     mock_check_virus_result,
-    mock_pds_service_patient_deceased,
+    mock_pds_service_patient_deceased_formal,
     mock_pds_validation,
     mock_ods_validation,
 ):
@@ -445,6 +456,42 @@ def test_handle_sqs_message_calls_report_upload_failure_when_patient_is_formally
         UploadStatus.COMPLETE,
         "Patient is deceased - FORMAL",
         PatientOdsInactiveStatus.DECEASED,
+    )
+
+
+def test_handle_sqs_message_calls_report_upload_successful_when_patient_is_informally_deceased(
+    repo_under_test,
+    set_env,
+    mocker,
+    mock_uuid,
+    mock_validate_files,
+    mock_check_virus_result,
+    mock_pds_service_patient_deceased_informal,
+    mock_pds_validation,
+    mock_ods_validation,
+):
+    mock_create_lg_records_and_copy_files = mocker.patch.object(
+        BulkUploadService, "create_lg_records_and_copy_files"
+    )
+    mock_remove_ingested_file_from_source_bucket = (
+        repo_under_test.s3_repository.remove_ingested_file_from_source_bucket
+    )
+    mock_put_staging_metadata_back_to_queue = (
+        repo_under_test.sqs_repository.put_staging_metadata_back_to_queue
+    )
+    mock_report_upload = repo_under_test.dynamo_repository.write_report_upload_to_dynamo
+
+    repo_under_test.handle_sqs_message(message=TEST_SQS_MESSAGE)
+
+    mock_create_lg_records_and_copy_files.assert_called()
+    mock_remove_ingested_file_from_source_bucket.assert_called()
+    mock_put_staging_metadata_back_to_queue.assert_not_called()
+
+    mock_report_upload.assert_called_with(
+        TEST_STAGING_METADATA,
+        UploadStatus.COMPLETE,
+        "Patient is deceased - INFORMAL",
+        "Y12345",
     )
 
 
