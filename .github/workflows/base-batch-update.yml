@@ -30,7 +30,7 @@ jobs:
         working-directory: lambdas
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           repository: 'nhsconnect/national-document-repository'
           ref: ${{ inputs.build_branch }}
@@ -42,6 +42,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE }}
           role-skip-session-tagging: true
           aws-region: ${{ vars.AWS_REGION }}
+          mask-aws-account-id: true
 
       - name: Login to Amazon ECR
         id: login-ecr
@@ -66,7 +67,7 @@ jobs:
         id: download-task
         run: |
           aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-service-task-ods-weekly-update --query taskDefinition > task-definition.json
-          echo "::set-output name=revision::$(cat task-definition.json | jq .revision)"
+          echo "revision=$(cat task-definition.json | jq .revision)" >> $GITHUB_OUTPUT
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
