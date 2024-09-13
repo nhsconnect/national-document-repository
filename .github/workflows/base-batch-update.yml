@@ -73,7 +73,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ./lambdas/task-definition.json
-          container-name: ${{ inputs.sandbox }}-ods-weekly-update
+          container-name: ${{ inputs.sandbox }}-container-ods-weekly-update
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition

@@ -87,7 +87,7 @@ jobs:
       - name: Download task definition
         id: download-task
         run: |
-          aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-service-task-ods-weekly-update --query taskDefinition > task-definition.json
+          aws ecs describe-task-definition --task-definition ${{ inputs.sandbox }}-ndr-service-task --query taskDefinition > task-definition.json
           echo "::set-output name=revision::$(cat task-definition.json | jq .revision)"
 
       - name: Fill in the new image ID in the Amazon ECS task definition
@@ -95,7 +95,7 @@ jobs:
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ./app/task-definition.json
-          container-name: ${{ inputs.sandbox }}-container-ods-weekly-update
+          container-name: ${{ inputs.sandbox }}-app-container
           image: ${{ steps.build-image.outputs.image }}
 
       - name: Deploy Amazon ECS task definition
