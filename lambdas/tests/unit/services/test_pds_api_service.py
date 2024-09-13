@@ -366,9 +366,6 @@ def test_pds_request_refresh_token_if_already_expired_11_seconds_ago(
 
 
 def test_pds_request_expired_token(mocker, mock_get_patient_data):
-    response = Response()
-    response.status_code = 200
-    response._content = json.dumps(PDS_PATIENT).encode("utf-8")
     mock_api_request_parameters = ("api.test/endpoint/", json.dumps(RESPONSE_TOKEN))
     nhs_number = "1111111111"
     mock_url_endpoint = "api.test/endpoint/Patient/" + nhs_number
@@ -389,11 +386,11 @@ def test_pds_request_expired_token(mocker, mock_get_patient_data):
         return_value=new_mock_access_token,
     )
     mocker.patch("uuid.uuid4", return_value="123412342")
-    mocker.patch("requests.get", return_value=response)
 
+    expected = mock_get_patient_data.get.return_value
     actual = pds_service.pds_request(nhs_number="1111111111", retry_on_expired=True)
 
-    assert actual == response
+    assert actual == expected
     mock_get_parameters.assert_called_once()
     mock_new_access_token.assert_called_once()
     mock_get_patient_data.get.assert_called_with(

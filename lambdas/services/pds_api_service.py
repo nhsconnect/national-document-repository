@@ -7,7 +7,6 @@ import jwt
 import requests
 from botocore.exceptions import ClientError
 from enums.pds_ssm_parameters import SSMParameter
-from requests import RequestException
 from requests.adapters import HTTPAdapter
 from requests.models import HTTPError
 from services.patient_search_service import PatientSearch
@@ -62,10 +61,9 @@ class PdsApiService(PatientSearch):
             if pds_response.status_code == 401 and retry_on_expired:
                 return self.pds_request(nhs_number, retry_on_expired=False)
 
-            pds_response.raise_for_status()
             return pds_response
 
-        except (ClientError, JSONDecodeError, RequestException) as e:
+        except (ClientError, JSONDecodeError) as e:
             logger.error(str(e), {"Result": "Error when getting ssm parameters"})
             raise PdsErrorException("Failed to perform patient search")
 
