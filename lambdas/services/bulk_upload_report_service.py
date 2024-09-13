@@ -102,13 +102,20 @@ class BulkUploadReportService:
     @staticmethod
     def get_times_for_scan() -> tuple[datetime, datetime]:
         current_time = datetime.datetime.now()
-        end_report_time = datetime.time(7, 00, 00, 0)
         today_date = datetime.datetime.today()
-        end_timestamp = datetime.datetime.combine(today_date, end_report_time)
-        if current_time < end_timestamp:
-            end_timestamp -= datetime.timedelta(days=1)
-        start_timestamp = end_timestamp - datetime.timedelta(days=30)
+        start_timestamp = today_date - datetime.timedelta(days=30)
+        start_timestamp = datetime.datetime.combine(start_timestamp, datetime.time.min)
+        end_timestamp = current_time
         return start_timestamp, end_timestamp
+
+        # current_time = datetime.datetime.now()
+        # end_report_time = datetime.time(7, 00, 00, 0)
+        # today_date = datetime.datetime.today()
+        # end_timestamp = datetime.datetime.combine(today_date, end_report_time)
+        # if current_time < end_timestamp:
+        #     end_timestamp -= datetime.timedelta(days=1)
+        # start_timestamp = end_timestamp - datetime.timedelta(days=1)
+        # return start_timestamp, end_timestamp
 
     def group_data_by_ods_code(self, report_data: list):
         ods_reports = {}
